@@ -18,12 +18,9 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRA
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { createEntity, updateAttribute } from '../../database/middleware';
 import { FunctionalError } from '../../config/errors';
-import { publishUserAction } from '../../listener/UserActionListener';
-import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
 import { exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 
 /**
  * Exclusion list: entity types not capable of
@@ -125,11 +122,18 @@ export const addCustomView = async (
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
   };
-  return await createEntity(
+  return createInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewToCreate,
     ENTITY_TYPE_CUSTOM_VIEW,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (element) => ({
+        ...element,
+        manifest: '[sanitized]',
+      }),
+    },
   );
 };
 
@@ -140,7 +144,7 @@ export const editCustomView = async (
   input: EditInput[],
 ) => {
   const nameInput = input.find((i) => i.key === 'name');
-  const { element } = await updateAttribute<StoreEntityCustomView>(
+  return editInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewId,
@@ -152,18 +156,14 @@ export const editCustomView = async (
         value: [slugify(nameInput.value[0])],
       }] : []),
     ],
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (input) => input.map((entry) => ({
+        ...entry,
+        value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+      })),
+    },
   );
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for custom view ${element.name}`,
-    context_data: { id: element.id, entity_type: ENTITY_TYPE_CUSTOM_VIEW, input },
-  });
-
-  await notify(BUS_TOPICS[ENTITY_TYPE_CUSTOM_VIEW].EDIT_TOPIC, element, user);
-  return element;
 };
 
 export const customViewImportWidgetConfiguration = async (
@@ -172,40 +172,26 @@ export const customViewImportWidgetConfiguration = async (
   customViewId: string,
   input: CustomViewImportWidgetInput,
 ) => {
-  const { updatedManifest, importedWidgetId } = await importDashboardWidgetConfiguration(
+  const { updatedManifest } = await importDashboardWidgetConfiguration(
     context,
     user,
     input.file,
     input.manifest,
   );
-  const { element } = await updateAttribute<StoreEntityCustomView>(
+  return editInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewId,
     ENTITY_TYPE_CUSTOM_VIEW,
     [{ key: 'manifest', value: [updatedManifest] }],
-  );
-
-  // Because manifest can be huge we remove this data from activity logs.
-  const sanitizedCustomView = {
-    ...element,
-    manifest: undefined,
-  };
-
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `import widget (id : ${importedWidgetId}) in custom view (id : ${customViewId})`,
-    context_data: {
-      id: customViewId,
-      entity_type: ENTITY_TYPE_CUSTOM_VIEW,
-      input: sanitizedCustomView,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (input) => input.map((entry) => ({
+        ...entry,
+        value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+      })),
     },
-  });
-  await notify(BUS_TOPICS[ENTITY_TYPE_CUSTOM_VIEW].EDIT_TOPIC, element, user);
-  return element;
+  );
 };
 
 export const exportCustomViewWidget = async (
