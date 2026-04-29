@@ -1,4 +1,4 @@
-import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/StixCoreObjectsList';
+import { stixCoreObjectsListQuery } from '../../../../private/components/common/stix_core_objects/StixCoreObjectsList';
 import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
