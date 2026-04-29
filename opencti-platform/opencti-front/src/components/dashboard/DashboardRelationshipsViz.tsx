@@ -15,10 +15,10 @@ import StixRelationshipsMultiHeatMap from '@components/common/stix_relationships
 import StixRelationshipsTreeMap from '@components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
-import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
-import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import type { DashboardConfig } from '../../../../utils/dashboard';
+import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import type { Widget, WidgetDataSelection } from '../../utils/widget/widget';
+import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../utils/filters/filtersUtils';
+import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;

@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense, useMemo } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
-import { PLATFORM_DASHBOARD } from './DashboardSettings';
+import { PLATFORM_DASHBOARD } from './HomeDashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsPolarArea from './common/stix_relationships/StixRelationshipsPolarArea';
 import StixCoreObjectsList from './common/stix_core_objects/StixCoreObjectsList';
@@ -19,7 +19,7 @@ import Security from '../../utils/Security';
 import { lastDayOfThePreviousMonth, monthsAgo, yearsAgo } from '../../utils/Time';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRelationshipsHorizontalBars';
-import DashboardView from './workspaces/dashboards/Dashboard';
+import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
@@ -39,7 +39,7 @@ const useStyles = makeStyles(() => ({
 
 // TargetedCountries
 const dashboardStixCoreRelationshipsDistributionQuery = graphql`
-  query DashboardStixCoreRelationshipsDistributionQuery(
+  query HomeDashboardStixCoreRelationshipsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $relationship_type: [String]
@@ -448,24 +448,18 @@ const DefaultDashboard = ({ timeField }) => {
 };
 
 const dashboardCustomDashboardQuery = graphql`
-  query DashboardCustomDashboardQuery($id: String!) {
+  query HomeDashboardCustomDashboardQuery($id: String!) {
     workspace(id: $id) {
       id
       name
-      ...Dashboard_workspace
+      ...CustomDashboard_workspace
     }
   }
 `;
 const WorkspaceDashboardComponent = ({ queryRef, timeField }) => {
   const data = usePreloadedQuery(dashboardCustomDashboardQuery, queryRef);
   if (data.workspace) {
-    return (
-      <DashboardView
-        data={data.workspace}
-        noToolbar={true}
-        timeField={timeField}
-      />
-    );
+    return <CustomDashboard data={data.workspace} noToolbar={true} />;
   }
   return <DefaultDashboard timeField={timeField} />;
 };
@@ -486,7 +480,7 @@ const WorkspaceDashboard = ({ dashboard, timeField }) => {
     </>
   );
 };
-const CustomDashboard = ({ dashboard, timeField }) => {
+const CustomHomeDashboard = ({ dashboard, timeField }) => {
   const { t_i18n } = useFormatter();
   return (
     <Security
@@ -503,15 +497,15 @@ const CustomDashboard = ({ dashboard, timeField }) => {
 };
 
 const dashboardQuery = graphql`
-  query DashboardQuery {
+  query HomeDashboardQuery {
     me {
-      ...DashboardMeFragment
+      ...HomeDashboardMeFragment
     }
   }
 `;
 
 const dashboardMeFragment = graphql`
-  fragment DashboardMeFragment on MeUser {
+  fragment HomeDashboardMeFragment on MeUser {
     id
     default_dashboard {
       id
@@ -522,7 +516,7 @@ const dashboardMeFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'dashboard';
 
-const DashboardComponent = ({ queryRef }) => {
+const HomeDashboardComponent = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const authContext = useAuth();
@@ -554,7 +548,7 @@ const DashboardComponent = ({ queryRef }) => {
     <UserContext.Provider value={dashboardContextValue}>
       <div className={classes.root} data-testid="dashboard-page">
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
-          <CustomDashboard
+          <CustomHomeDashboard
             dashboard={defaultDashboard}
             timeField={default_time_field}
           />
@@ -566,17 +560,17 @@ const DashboardComponent = ({ queryRef }) => {
   );
 };
 
-const Dashboard = () => {
+const HomeDashboard = () => {
   const queryRef = useQueryLoading(dashboardQuery, {});
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<div />}>
-          <DashboardComponent queryRef={queryRef} />
+          <HomeDashboardComponent queryRef={queryRef} />
         </React.Suspense>
       )}
     </>
   );
 };
 
-export default Dashboard;
+export default HomeDashboard;

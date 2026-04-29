@@ -1,3 +1,4 @@
+import type { GqlFilterGroup } from '../utils/filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 
 export type WidgetContext = 'workspace' | 'fintelTemplate';
@@ -32,6 +33,12 @@ export interface WidgetDataSelection {
   relationship_type?: string;
 }
 
+type GqlWidgetDataSelection = WidgetDataSelection & {
+  filters?: GqlFilterGroup | null;
+  dynamicFrom?: GqlFilterGroup | null;
+  dynamicTo?: GqlFilterGroup | null;
+};
+
 interface WidgetParameters {
   title?: string | null;
   interval?: string | null;
@@ -47,8 +54,8 @@ interface WidgetLayout {
   x: number;
   y: number;
   i: string;
-  moved: boolean;
-  static: boolean;
+  moved?: boolean;
+  static?: boolean;
 }
 
 export interface Widget {
@@ -59,6 +66,10 @@ export interface Widget {
   parameters?: WidgetParameters | null;
   layout?: WidgetLayout | null;
 }
+
+export type GqlWidget = Widget & {
+  dataSelection: GqlWidgetDataSelection[];
+};
 
 interface PirWidgetDataSelection extends WidgetDataSelection {
   pirId: string;

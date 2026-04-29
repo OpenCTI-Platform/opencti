@@ -1,52 +1,57 @@
-import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
-import { Box } from '@mui/material';
-import DashboardViz from '@components/workspaces/dashboards/DashboardViz';
-import useDashboard from '@components/widgets/useDashboard';
+import { Suspense } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { ErrorBoundary } from '@components/Error';
+import { MESSAGING$ } from '../../../relay/environment';
+import Loader from '../../../components/Loader';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useDashboard from '../../../components/dashboard/useDashboard';
+import DashboardContent from '../../../components/dashboard/DashboardContent';
+import { CustomView_Query } from './__generated__/CustomView_Query.graphql';
 
-interface CustomViewProps {
-  manifest: string;
+const customViewQuery = graphql`
+  query CustomView_Query($id: ID!) {
+    customViewDisplay(id: $id) {
+      id
+      manifest
+    }
+  }
+`;
+
+interface CustomViewComponentProps {
+  queryRef: PreloadedQuery<CustomView_Query>;
 }
 
-/**
- * Displays a custom view from its serialized content
- */
-const CustomView = ({ manifest }: CustomViewProps) => {
-  const { width, containerRef } = useContainerWidth();
-  const { config, widgetsArray, widgetsLayouts } = useDashboard(manifest);
+const CustomViewComponent = ({ queryRef }: CustomViewComponentProps) => {
+  const { customViewDisplay: customView } = usePreloadedQuery(customViewQuery, queryRef);
+  if (!customView) {
+    MESSAGING$.notifyError('Failed to load custom view');
+    return null;
+  }
+  if (!customView?.manifest) {
+    // Admin hasn't save the dashboard once yet
+    return null;
+  }
+
+  const helpers = useDashboard({ entity: customView });
+  return <DashboardContent helpers={helpers} isEditable={false} entity={customView} />;
+};
+
+interface CustomViewProps {
+  customViewId: string;
+}
+
+export const CustomView = ({ customViewId }: CustomViewProps) => {
+  const queryRef = useQueryLoading<CustomView_Query>(
+    customViewQuery,
+    { id: customViewId },
+  );
+
   return (
-    <Box
-      ref={containerRef}
-      sx={{
-      // Compensate gridConfig margins to avoid outer margins
-        margin: '0 -20px 0 -20px',
-        marginTop: '-20px',
-      }}
-    >
-      <ReactGridLayout
-        className="layout"
-        width={width}
-        layout={Object.values(widgetsLayouts)}
-        gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
-        resizeConfig={{ enabled: false }}
-        dragConfig={{ enabled: false }}
-        dropConfig={{ enabled: false }}
-      >
-        {widgetsArray.map((widget) => (
-          <div
-            key={widget.id}
-            style={{
-              display: 'relative',
-            }}
-          >
-            <DashboardViz
-              key={widget.id}
-              widget={widget}
-              config={config}
-            />
-          </div>
-        ))}
-      </ReactGridLayout>
-    </Box>
+    <ErrorBoundary>
+      <Suspense fallback={<Loader />}>
+        {queryRef && <CustomViewComponent queryRef={queryRef} />}
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import WidgetText from '../../../components/dashboard/WidgetText';
-import type { DashboardConfig } from '../../../utils/dashboard';
+import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
 import PublicStixCoreObjectsNumber from './stix_core_objects/PublicStixCoreObjectsNumber';
 import PublicStixCoreObjectsList from './stix_core_objects/PublicStixCoreObjectsList';

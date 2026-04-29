@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../components/i18n';
-import type { DashboardConfig } from '../../../utils/dashboard';
+import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
 import { buildDate } from '../../../utils/Time';
 
 interface PublicDashboardHeaderProps {

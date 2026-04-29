@@ -11,7 +11,7 @@ import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
 import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
 import { useFormatter } from '../../components/i18n';
-import type { DashboardManifest } from '../../utils/dashboard';
+import type { DashboardManifest } from '../../components/dashboard/dashboard-types';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {

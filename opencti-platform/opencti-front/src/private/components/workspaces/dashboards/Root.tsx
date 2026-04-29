@@ -1,35 +1,35 @@
 import { Suspense, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Dashboard from './Dashboard';
+import CustomDashboard from './CustomDashboard';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { RootDashboardQuery } from './__generated__/RootDashboardQuery.graphql';
+import { RootCustomDashboardQuery } from './__generated__/RootCustomDashboardQuery.graphql';
 import { requestSubscription } from '../../../../relay/environment';
 
 const subscription = graphql`
-  subscription RootDashboardSubscription($id: ID!) {
+  subscription RootCustomDashboardSubscription($id: ID!) {
     workspace(id: $id) {
-      ...Dashboard_workspace
+      ...CustomDashboard_workspace
     }
   }
 `;
 
 const dashboardQuery = graphql`
-  query RootDashboardQuery($id: String!) {
+  query RootCustomDashboardQuery($id: String!) {
     workspace(id: $id) {
       id
-      ...Dashboard_workspace
+      ...CustomDashboard_workspace
     }
   }
 `;
 
-interface RootDashboardComponentProps {
-  queryRef: PreloadedQuery<RootDashboardQuery>;
+interface RootCustomDashboardComponentProps {
+  queryRef: PreloadedQuery<RootCustomDashboardQuery>;
 }
 
-const RootDashboardComponent = ({ queryRef }: RootDashboardComponentProps) => {
+const RootCustomDashboardComponent = ({ queryRef }: RootCustomDashboardComponentProps) => {
   const { workspace } = usePreloadedQuery(dashboardQuery, queryRef);
   if (!workspace) return <ErrorNotFound />;
 
@@ -52,25 +52,25 @@ const RootDashboardComponent = ({ queryRef }: RootDashboardComponentProps) => {
         height: '100%',
       }}
     >
-      <Dashboard data={workspace} />
+      <CustomDashboard data={workspace} />
     </div>
   );
 };
 
-const RootDashboard = () => {
+const RootCustomDashboard = () => {
   const { workspaceId } = useParams();
   if (!workspaceId) return <ErrorNotFound />;
 
-  const queryRef = useQueryLoading<RootDashboardQuery>(
+  const queryRef = useQueryLoading<RootCustomDashboardQuery>(
     dashboardQuery,
     { id: workspaceId },
   );
 
   return (
     <Suspense fallback={<Loader />}>
-      {queryRef && <RootDashboardComponent queryRef={queryRef} />}
+      {queryRef && <RootCustomDashboardComponent queryRef={queryRef} />}
     </Suspense>
   );
 };
 
-export default RootDashboard;
+export default RootCustomDashboard;
