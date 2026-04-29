@@ -36,6 +36,7 @@ export type SchemaType = {
 export type PlatformLang
   = | 'de-de'
     | 'en-us'
+    | 'fa-ir'
     | 'es-es'
     | 'fr-fr'
     | 'it-it'

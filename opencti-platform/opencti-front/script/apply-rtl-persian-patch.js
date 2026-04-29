@@ -385,21 +385,28 @@ const cacheRTL = createCache({
   let appIntlProviderContent = readFile(appIntlProviderPath);
 
   if (appIntlProviderContent) {
-    // Check if Persian is already added
+    const dateFnsImportsFaIR = /import\s*\{[^}]*\bfaIR\b[^}]*\}\s*from\s*['"]date-fns\/locale['"]/.test(
+      appIntlProviderContent
+    );
+    // Require faIR in the date-fns import, not only in localeMap (avoids false skip on v7 merges).
     const isPersianAlreadyAdded = appIntlProviderContent.includes("'fa-ir'")
       && appIntlProviderContent.includes('messages_fa_front')
       && appIntlProviderContent.includes('messages_fa_back')
-      && appIntlProviderContent.includes('faIR')
+      && dateFnsImportsFaIR
       && appIntlProviderContent.includes("label: 'فارسی'");
     
     if (isPersianAlreadyAdded) {
       console.log('   ✅ Persian support already added, skipping...');
     } else {
       console.log('   📝 Adding Persian support...');
-      // Add faIR import from date-fns
+      // Add faIR import from date-fns (6.x and 7.x import shapes)
       appIntlProviderContent = appIntlProviderContent.replace(
-        /import { de, enUS, es, fr, it, ja, ko, zhCN, ru } from 'date-fns\/locale';/,
-        "import { de, enUS, es, fr, it, ja, ko, zhCN, ru, faIR } from 'date-fns/locale';"
+        /import \{ Locale, de, enUS, es, fr, it, ja, ko, zhCN, ru \} from 'date-fns\/locale';/,
+        "import { Locale, de, enUS, es, faIR, fr, it, ja, ko, zhCN, ru } from 'date-fns/locale';"
+      );
+      appIntlProviderContent = appIntlProviderContent.replace(
+        /import \{ de, enUS, es, fr, it, ja, ko, zhCN, ru \} from 'date-fns\/locale';/,
+        "import { de, enUS, es, faIR, fr, it, ja, ko, zhCN, ru } from 'date-fns/locale';"
       );
 
       // Add Persian message imports
@@ -457,6 +464,28 @@ import messages_fa_back from '../../lang/back/fa.json';`
     }
   } else {
     console.log('   ⚠️  AppIntlProvider.tsx not found, skipping...');
+  }
+
+  // 2b. OpenCTI 7+ defines PlatformLang in useAuth.ts (not in AppIntlProvider)
+  console.log('\n📝 Step 2b: Checking useAuth.ts for fa-ir in PlatformLang...');
+  const useAuthPath = path.join(__dirname, '../src/utils/hooks/useAuth.ts');
+  const useAuthContent = readFile(useAuthPath);
+  if (useAuthContent) {
+    if (/\|\s*'fa-ir'/.test(useAuthContent)) {
+      console.log('   ✅ PlatformLang already includes fa-ir, skipping...');
+    } else {
+      const useAuthPatched = useAuthContent.replace(
+        /\| 'en-us'\n    \| 'es-es'/,
+        "| 'en-us'\n    | 'fa-ir'\n    | 'es-es'"
+      );
+      if (useAuthPatched !== useAuthContent) {
+        writeFile(useAuthPath, useAuthPatched);
+      } else {
+        console.log('   ⚠️  useAuth.ts PlatformLang pattern not matched; add | \'fa-ir\' manually');
+      }
+    }
+  } else {
+    console.log('   ⚠️  useAuth.ts not found, skipping...');
   }
 
   // 3. Update useDocumentModifier.ts to add useDocumentDirectionModifier
