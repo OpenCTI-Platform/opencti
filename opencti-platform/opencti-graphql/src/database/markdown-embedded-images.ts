@@ -13,6 +13,10 @@ export const ALLOWED_EMBEDDED_IMAGE_MIME_TYPES = [
   'image/webp',
 ] as const;
 
+export const ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET = new Set(
+  ALLOWED_EMBEDDED_IMAGE_MIME_TYPES.map((mimeType) => mimeType.toLowerCase()),
+);
+
 export const DEFAULT_MAX_EMBEDDED_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 export const DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
 
@@ -63,7 +67,7 @@ export interface EmbeddedMarkdownStoragePathCollectionOptions {
   entityId?: string;
 }
 
-const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
+export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'] as const;
 
 interface ParsedMarkdownDestination {
   url: string;
@@ -77,8 +81,10 @@ const DATA_URI_IMAGE_REGEX = /^data:([^;,\s]+)(;base64)?,([\s\S]*)$/i;
 const normalizeMimeType = (mimeType: string) => mimeType.toLowerCase().trim();
 
 const getAllowedMimeTypes = (allowedMimeTypes?: readonly string[]) => {
-  const source = allowedMimeTypes ?? ALLOWED_EMBEDDED_IMAGE_MIME_TYPES;
-  return new Set(source.map((mimeType) => normalizeMimeType(mimeType)));
+  if (!allowedMimeTypes) {
+    return ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET;
+  }
+  return new Set(allowedMimeTypes.map((mimeType) => normalizeMimeType(mimeType)));
 };
 
 const isLikelyBase64 = (payload: string) => {
@@ -452,14 +458,11 @@ export const collectEmbeddedStoragePathsFromMarkdownFields = (
       const fieldValue = valueByKey[markdownField];
       if (typeof fieldValue === 'string') {
         addIfEmbeddedPath(fieldValue);
-      }
-    }
-
-    const descriptions = valueByKey.descriptions;
-    if (Array.isArray(descriptions)) {
-      for (let i = 0; i < descriptions.length; i += 1) {
-        if (typeof descriptions[i] === 'string') {
-          addIfEmbeddedPath(descriptions[i]);
+      } else if (Array.isArray(fieldValue)) {
+        for (let j = 0; j < fieldValue.length; j += 1) {
+          if (typeof fieldValue[j] === 'string') {
+            addIfEmbeddedPath(fieldValue[j]);
+          }
         }
       }
     }
@@ -467,7 +470,7 @@ export const collectEmbeddedStoragePathsFromMarkdownFields = (
     const entries = Object.entries(valueByKey);
     for (let i = 0; i < entries.length; i += 1) {
       const [key, value] = entries[i];
-      if (MARKDOWN_FIELD_KEYS.includes(key) || key === 'descriptions') {
+      if (MARKDOWN_FIELD_KEYS.includes(key as (typeof MARKDOWN_FIELD_KEYS)[number])) {
         continue;
       }
       visit(value);

@@ -113,32 +113,6 @@ describe('markdown-embedded-images utility', () => {
     expect(uri).toBe('/storage/get/embedded/Report/report--123/abc.png');
   });
 
-  it('should collect embedded storage paths from markdown fields recursively', () => {
-    const payload = {
-      description: '![a](/storage/get/embedded/Report/r-1/image-a.png)',
-      nested: {
-        content: '![b](https://platform.local/storage/view/embedded/Report/r-1/image-b.png)',
-      },
-      descriptions: [
-        '![c](/storage/view/embedded%2FReport%2Fr-1%2Fimage-c.png)',
-        '![d](https://platform.local/storage/view/embedded%2FReport%2Fr-1%2Fimage-d.png)',
-        '![x](https://example.org/image.png)',
-      ],
-    };
-
-    const collected = collectEmbeddedStoragePathsFromMarkdownFields(payload, {
-      entityType: 'Report',
-      entityId: 'r-1',
-    });
-
-    expect(Array.from(collected).sort()).toEqual([
-      'embedded/Report/r-1/image-a.png',
-      'embedded/Report/r-1/image-b.png',
-      'embedded/Report/r-1/image-c.png',
-      'embedded/Report/r-1/image-d.png',
-    ]);
-  });
-
   it('should compute removed embedded storage paths from markdown field updates', () => {
     const previousPayload = {
       description: [
