@@ -954,6 +954,7 @@
   "Custom dashboards | Dashboards": "Dashboard personalizzate | Dashboard",
   "Custom view": "Vista personalizzata",
   "Custom view created": "Vista personalizzata creata",
+  "Custom view updated": "Vista personalizzata aggiornata",
   "Custom Views": "Viste personalizzate",
   "Customization": "Personalizzazione",
   "Customize columns": "Personalizza le colonne",
@@ -1832,6 +1833,7 @@
   "Failed to parse a connector manager contract definition": "Impossibile analizzare una definizione di contratto del gestore di connettori",
   "Failed to parse a contract": "Errore nell'analisi di un contratto",
   "Failed to set draft context.": "Impossibile impostare il contesto della bozza.",
+  "Failed to update custom view": "Aggiornamento fallito della vista personalizzata",
   "Failed to update theme": "Non è stato possibile aggiornare il tema",
   "Failure": "Fallimento",
   "false": "falso",
@@ -3257,6 +3259,7 @@
   "Popover menu": "Menu Popover",
   "Popover of actions": "Popover di azioni",
   "Popover of actions workspace": "Popover dell'area di lavoro delle azioni",
+  "Popover of custom view actions": "Popover delle azioni della vista personalizzata",
   "Positions": "Posizioni",
   "Positions | Locations": "Posizioni | Località",
   "Post": "Messaggio",
@@ -4561,6 +4564,7 @@
   "Update component: {component_name}": "Aggiornare il componente: {component_name}",
   "Update connector": "Aggiornare il connettore",
   "Update context": "Aggiorna il contesto",
+  "Update custom view": "Aggiornare la vista personalizzata",
   "Update dashboard": "Aggiorna la dashboard",
   "Update date": "Aggiorna la data",
   "Update entities": "Aggiorna le entità",
@@ -4904,4 +4908,3 @@
   "Zoom in": "Ingrandisci",
   "Zoom out": "Riduci"
 }
-

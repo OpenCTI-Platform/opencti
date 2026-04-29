@@ -9757,9 +9757,9 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
-  customViewDisplay(id: ID!): CustomView
   customViews(entityType: String, first: Int, after: ID, orderBy: CustomViewsOrdering, search: String, orderMode: OrderingMode): CustomViewsConnection!
   customViewsSettings(entityType: String!): CustomViewsSettings!
+  customView(id: ID!): CustomView
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
   feed(id: String!): Feed
@@ -10708,6 +10708,8 @@ type Mutation {
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
   ldapProviderDelete(id: ID!): ID
   customViewAdd(input: CustomViewAddInput!): CustomView!
+  customViewEdit(id: ID!, input: [EditInput!]!): CustomView
+  customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed
@@ -16154,6 +16156,7 @@ type CustomView implements InternalObject & BasicObject {
   manifest: String
   path: String!
   targetEntityType: String!
+  toWidgetExport(widgetId: ID!): String!
 }
 
 type CustomViewsEdge {
@@ -16180,6 +16183,11 @@ input CustomViewAddInput {
   description: String
   manifest: String
   targetEntityType: String!
+}
+
+input CustomViewImportWidgetInput {
+  file: Upload!
+  manifest: String
 }
 
 type TaxiiCollection {

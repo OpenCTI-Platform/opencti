@@ -1,7 +1,7 @@
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { type QueryCustomViewsArgs, type CustomViewAddInput } from '../../generated/graphql';
+import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
+import { type QueryCustomViewsArgs, type CustomViewAddInput, type EditInput, type CustomViewImportWidgetInput } from '../../generated/graphql';
 import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -18,8 +18,9 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRA
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { createEntity } from '../../database/middleware';
 import { FunctionalError } from '../../config/errors';
+import { exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 
 /**
  * Exclusion list: entity types not capable of
@@ -65,9 +66,7 @@ export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) 
   return `${slug}-${id.replaceAll('-', '')}`;
 };
 
-// View Use Cases (all authed users)
-
-export const getCustomViewByIdForDisplay = async (
+export const findCustomViewById = async (
   context: AuthContext,
   user: AuthUser,
   customViewId: string,
@@ -101,8 +100,6 @@ export const findAllCustomViews = async (
   );
 };
 
-// Settings Use Cases (admin users)
-
 export const getCustomViewsSettings = (entityType: string) => {
   return { canEntityTypeHaveCustomViews: isCustomViewsAvailableForEntityType(entityType) };
 };
@@ -125,10 +122,87 @@ export const addCustomView = async (
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
   };
-  return await createEntity(
+  return createInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewToCreate,
     ENTITY_TYPE_CUSTOM_VIEW,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (element) => ({
+        ...element,
+        manifest: '[sanitized]',
+      }),
+    },
   );
+};
+
+export const editCustomView = async (
+  context: AuthContext,
+  user: AuthUser,
+  customViewId: string,
+  input: EditInput[],
+) => {
+  const nameInput = input.find((i) => i.key === 'name');
+  return editInternalObject<StoreEntityCustomView>(
+    context,
+    user,
+    customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    [
+      ...input,
+      ...(nameInput ? [{
+        key: 'slug',
+        value: [slugify(nameInput.value[0])],
+      }] : []),
+    ],
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (input) => input.map((entry) => ({
+        ...entry,
+        value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+      })),
+    },
+  );
+};
+
+export const customViewImportWidgetConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  customViewId: string,
+  input: CustomViewImportWidgetInput,
+) => {
+  const { updatedManifest } = await importDashboardWidgetConfiguration(
+    context,
+    user,
+    input.file,
+    input.manifest,
+  );
+  return editInternalObject<StoreEntityCustomView>(
+    context,
+    user,
+    customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    [{ key: 'manifest', value: [updatedManifest] }],
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (input) => input.map((entry) => ({
+        ...entry,
+        value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+      })),
+    },
+  );
+};
+
+export const exportCustomViewWidget = async (
+  context: AuthContext,
+  user: AuthUser,
+  customView: BasicStoreEntityCustomView,
+  widgetId: string,
+) => {
+  const result = await exportDashboardWidget(context, user, customView.manifest, widgetId);
+  if (!result.success) {
+    throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { customView: customView.id, widget: widgetId });
+  }
+  return result.data;
 };

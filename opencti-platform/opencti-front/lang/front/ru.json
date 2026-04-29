@@ -954,6 +954,7 @@
   "Custom dashboards | Dashboards": "Пользовательские панели | Панели инструментов",
   "Custom view": "Пользовательское представление",
   "Custom view created": "Создано пользовательское представление",
+  "Custom view updated": "Пользовательское представление обновлено",
   "Custom Views": "Пользовательские представления",
   "Customization": "Настройка",
   "Customize columns": "Настройте столбцы",
@@ -1832,6 +1833,7 @@
   "Failed to parse a connector manager contract definition": "Не удалось разобрать определение контракта менеджера коннектора",
   "Failed to parse a contract": "Не удалось разобрать контракт",
   "Failed to set draft context.": "Не удалось установить контекст проекта.",
+  "Failed to update custom view": "Не удалось обновить пользовательское представление",
   "Failed to update theme": "Не удалось обновить тему",
   "Failure": "Отказ",
   "false": "ложь",
@@ -3257,6 +3259,7 @@
   "Popover menu": "Всплывающее меню",
   "Popover of actions": "Всплывающее меню действий",
   "Popover of actions workspace": "Всплывающее окно рабочей области действий",
+  "Popover of custom view actions": "Поповер действий пользовательского представления",
   "Positions": "Позиции",
   "Positions | Locations": "Должности | Места",
   "Post": "Пост",
@@ -4561,6 +4564,7 @@
   "Update component: {component_name}": "Обновление компонента: {component_name}",
   "Update connector": "Обновление коннектора",
   "Update context": "Обновление контекста",
+  "Update custom view": "Обновить пользовательское представление",
   "Update dashboard": "Обновление дашборда",
   "Update date": "Дата обновления",
   "Update entities": "Обновление сущностей",
@@ -4904,4 +4908,3 @@
   "Zoom in": "Увеличить",
   "Zoom out": "Уменьшить масштаб"
 }
-

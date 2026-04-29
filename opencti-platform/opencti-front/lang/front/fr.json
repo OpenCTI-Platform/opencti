@@ -954,6 +954,7 @@
   "Custom dashboards | Dashboards": "Tableaux de bord personnalisés",
   "Custom view": "Vue personnalisée",
   "Custom view created": "Vue personnalisée créée",
+  "Custom view updated": "Vue personnalisée mise à jour",
   "Custom Views": "Vues personnalisées",
   "Customization": "Personnalisation",
   "Customize columns": "Personnaliser les colonnes",
@@ -1832,6 +1833,7 @@
   "Failed to parse a connector manager contract definition": "Échec de l'analyse d'une définition de contrat de gestionnaire de connecteurs",
   "Failed to parse a contract": "Échec de l'analyse d'un contrat",
   "Failed to set draft context.": "Échec de la définition du contexte de l'ébauche.",
+  "Failed to update custom view": "Échec de la mise à jour de la vue personnalisée",
   "Failed to update theme": "Échec de la mise à jour du thème",
   "Failure": "Échec",
   "false": "Faux",
@@ -3257,6 +3259,7 @@
   "Popover menu": "Menu contextuel",
   "Popover of actions": "Popover d'actions",
   "Popover of actions workspace": "Popover de l'espace de travail des actions",
+  "Popover of custom view actions": "Popover des actions de la vue personnalisée",
   "Positions": "Positions",
   "Positions | Locations": "Postes | Emplacements",
   "Post": "Poste",
@@ -4561,6 +4564,7 @@
   "Update component: {component_name}": "Mise à jour du composant : {component_name}",
   "Update connector": "Mise à jour d'un connecteur",
   "Update context": "Mise à jour du contexte",
+  "Update custom view": "Mettre à jour la vue personnalisée",
   "Update dashboard": "Modifier le tableau de bord",
   "Update date": "Date de mise à jour",
   "Update entities": "Modifier des entités",
@@ -4904,4 +4908,3 @@
   "Zoom in": "Zoomer",
   "Zoom out": "Zoom arrière"
 }
-

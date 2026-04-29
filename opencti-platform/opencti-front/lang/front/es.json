@@ -954,6 +954,7 @@
   "Custom dashboards | Dashboards": "Cuadros de mando personalizados | Cuadros de mando",
   "Custom view": "Vista personalizada",
   "Custom view created": "Vista personalizada creada",
+  "Custom view updated": "Vista personalizada actualizada",
   "Custom Views": "Vistas personalizadas",
   "Customization": "Personalización",
   "Customize columns": "Personalizar columnas",
@@ -1832,6 +1833,7 @@
   "Failed to parse a connector manager contract definition": "Error al analizar una definición de contrato de gestor de conectores",
   "Failed to parse a contract": "Error al analizar un contrato",
   "Failed to set draft context.": "Error al establecer el contexto de borrador.",
+  "Failed to update custom view": "Error al actualizar la vista personalizada",
   "Failed to update theme": "Error al actualizar el tema",
   "Failure": "Fallo",
   "false": "No",
@@ -3257,6 +3259,7 @@
   "Popover menu": "Menú desplegable",
   "Popover of actions": "Popover de acciones",
   "Popover of actions workspace": "Popover del espacio de trabajo de acciones",
+  "Popover of custom view actions": "Popover de acciones de vista personalizada",
   "Positions": "Localizaciones",
   "Positions | Locations": "Puestos | Ubicaciones",
   "Post": "Publicar",
@@ -4561,6 +4564,7 @@
   "Update component: {component_name}": "Actualizar componente: {component_name}",
   "Update connector": "Actualizar conector",
   "Update context": "Actualizar contexto",
+  "Update custom view": "Actualizar vista personalizada",
   "Update dashboard": "Actualizar el cuadro de mandos",
   "Update date": "Fecha de actualización",
   "Update entities": "Actualizar entidades",
@@ -4904,4 +4908,3 @@
   "Zoom in": "Ampliar",
   "Zoom out": "Alejar"
 }
-
