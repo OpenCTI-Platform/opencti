@@ -1,12 +1,10 @@
 import React, { useRef, useState } from 'react';
 import Button from '@common/button/Button';
 import MenuItem from '@mui/material/MenuItem';
-import { Widget } from 'src/utils/widget/widget';
-import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
-import WidgetConfig from '../../widgets/WidgetConfig';
-import Security from '../../../../utils/Security';
-import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import { useFormatter } from '../../../../components/i18n';
+import VisuallyHiddenInput from '../../private/components/common/VisuallyHiddenInput';
+import WidgetConfig from '../../private/components/widgets/WidgetConfig';
+import { useFormatter } from '../i18n';
+import type { Widget } from '../../utils/widget/widget';
 
 type WorkspaceWidgetConfigProps = {
   handleImportWidget: (widgetFile: File) => void;
@@ -15,7 +13,7 @@ type WorkspaceWidgetConfigProps = {
   closeMenu?: () => void;
 };
 
-const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget }: WorkspaceWidgetConfigProps) => {
+const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget }: WorkspaceWidgetConfigProps) => {
   const { t_i18n } = useFormatter();
   const [isWidgetConfigOpen, setIsWidgetConfigOpen] = useState<boolean>(false);
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null);
@@ -46,25 +44,21 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
             ref={inputRef}
             onChange={handleWidgetImport}
           />
-          <Security needs={[EXPLORE_EXUPDATE]}>
-            <>
-              <Button
-                variant="secondary"
-                disableElevation
-                onClick={handleImportWidgetButtonClick}
-              >
-                {t_i18n('Import Widget')}
-              </Button>
-              <Button
-                variant="secondary"
-                disableElevation
-                onClick={handleOpenWidgetConfig}
-                data-testid="create-widget-button"
-              >
-                {t_i18n('Create Widget')}
-              </Button>
-            </>
-          </Security>
+          <Button
+            variant="secondary"
+            disableElevation
+            onClick={handleImportWidgetButtonClick}
+          >
+            {t_i18n('Import Widget')}
+          </Button>
+          <Button
+            variant="secondary"
+            disableElevation
+            onClick={handleOpenWidgetConfig}
+            data-testid="create-widget-button"
+          >
+            {t_i18n('Create Widget')}
+          </Button>
         </>
       )}
       {widget && (
@@ -83,4 +77,4 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
   );
 };
 
-export default WorkspaceWidgetConfig;
+export default DashboardWidgetConfig;
