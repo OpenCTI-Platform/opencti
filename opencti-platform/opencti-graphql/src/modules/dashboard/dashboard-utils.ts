@@ -12,20 +12,14 @@ import type { ConfigImportData, WidgetConfigImportData, WidgetConfiguration } fr
 
 const MINIMAL_COMPATIBLE_VERSION = '5.12.16';
 
-const configurationImportTypeValidation = new Map<string, string>();
-configurationImportTypeValidation.set(
-  'dashboard',
-  'Invalid type. Please import OpenCTI dashboard-type only',
-);
-
-configurationImportTypeValidation.set(
-  'widget',
-  'Invalid type. Please import OpenCTI widget-type only',
-);
+const configurationImportTypeValidation = {
+  dashboard: 'Invalid type. Please import OpenCTI dashboard-type only',
+  widget: 'Invalid type. Please import OpenCTI widget-type only',
+} as const;
 
 export const checkDashboardConfigurationImport = (type: string, parsedData: ConfigImportData) => {
-  if (configurationImportTypeValidation.has(type) && parsedData.type !== type) {
-    throw FunctionalError(configurationImportTypeValidation.get(type), {
+  if (type in configurationImportTypeValidation && parsedData.type !== type) {
+    throw FunctionalError(configurationImportTypeValidation[type as keyof typeof configurationImportTypeValidation], {
       reason: parsedData.type,
     });
   }
