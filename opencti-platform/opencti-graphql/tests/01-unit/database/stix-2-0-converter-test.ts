@@ -526,7 +526,8 @@ describe('Stix 2.0 opencti converter - SMOs', () => {
   });
 });
 
-describe('Stix 2.0 opencti converter - SRO dispatch via convertStoreToStix_2_0', () => {
+describe('Stix 2.0 opencti converter - dispatch via convertStoreToStix_2_0', () => {
+  // SROs
   it('should dispatch StixCoreRelationship', () => {
     const result = convertStoreToStix_2_0(RELATION_INSTANCE);
     expect(result.type).toBe('relationship');
@@ -546,5 +547,54 @@ describe('Stix 2.0 opencti converter - SRO dispatch via convertStoreToStix_2_0',
     expect((result as any).relationship_type).toBe('in-pir');
     expect((result as any).source_ref).toBe('malware--b1c2d3e4-f5a6-7890-bcde-f01234567890');
     expect((result as any).target_ref).toBe('identity--c2d3e4f5-a6b7-8901-cdef-123456789012');
+  });
+  // SDO
+  it('should dispatch Malware (SDO)', () => {
+    const result = convertStoreToStix_2_0(MALWARE_INSTANCE);
+    expect(result.type).toBe('malware');
+    expect((result as any).name).toBe('Malware Stix 2.0');
+    expect(result.spec_version).toBe('2.0');
+  });
+  // SCO
+  it('should dispatch IPv4 Address (SCO)', () => {
+    const result = convertStoreToStix_2_0(IPV4_INSTANCE);
+    expect(result.type).toBe('ipv4-addr');
+    expect(result.spec_version).toBe('2.0');
+  });
+  // SMOs
+  it('should dispatch Marking Definition (SMO)', () => {
+    const result = convertStoreToStix_2_0(MARKING_DEFINITION_INSTANCE);
+    expect(result.type).toBe('marking-definition');
+    expect((result as any).definition_type).toBe('tlp');
+    expect((result as any).name).toBe('TLP:AMBER+STRICT');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch Label (SMO)', () => {
+    const result = convertStoreToStix_2_0(LABEL_INSTANCE);
+    expect(result.type).toBe('label');
+    expect((result as any).value).toBe('small');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch Kill Chain Phase (SMO)', () => {
+    const result = convertStoreToStix_2_0(KILL_CHAIN_PHASE_INSTANCE);
+    expect(result.type).toBe('kill-chain-phase');
+    expect((result as any).kill_chain_name).toBe('mitre-pre-attack');
+    expect((result as any).phase_name).toBe('launch');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch External Reference (SMO)', () => {
+    const result = convertStoreToStix_2_0(EXTERNAL_REFERENCE_INSTANCE);
+    expect(result.type).toBe('external-reference');
+    expect((result as any).source_name).toBe('20th January – Threat Intelligence Report');
+    expect(result.spec_version).toBe('2.0');
+  });
+  // Error cases
+  it('should throw when standard_id is missing', () => {
+    const invalidInstance = { entity_type: 'Malware' } as any;
+    expect(() => convertStoreToStix_2_0(invalidInstance)).toThrow();
+  });
+  it('should throw when entity_type is missing', () => {
+    const invalidInstance = { standard_id: 'malware--some-id' } as any;
+    expect(() => convertStoreToStix_2_0(invalidInstance)).toThrow();
   });
 });
