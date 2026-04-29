@@ -67,7 +67,7 @@ const dashboardSettingsMutation = graphql`
   }
 `;
 
-const DashboardSettings = () => {
+const HomeDashboardSettings = () => {
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const classes = useStyles({ bannerHeightNumber });
@@ -217,4 +217,4 @@ const DashboardSettings = () => {
   );
 };
 
-export default DashboardSettings;
+export default HomeDashboardSettings;
