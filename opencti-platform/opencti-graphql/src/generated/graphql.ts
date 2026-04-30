@@ -23308,9 +23308,11 @@ export type PlaybookManager = {
   __typename?: 'PlaybookManager';
   activated: Scalars['Boolean']['output'];
   firstStreamEventDate?: Maybe<Scalars['DateTime']['output']>;
-  lastEventDate?: Maybe<Scalars['DateTime']['output']>;
-  lastEventId?: Maybe<Scalars['String']['output']>;
+  firstStreamEventId?: Maybe<Scalars['String']['output']>;
+  lastProcessedEventDate?: Maybe<Scalars['DateTime']['output']>;
+  lastProcessedEventId?: Maybe<Scalars['String']['output']>;
   lastStreamEventDate?: Maybe<Scalars['DateTime']['output']>;
+  lastStreamEventId?: Maybe<Scalars['String']['output']>;
   managerInGoodHealth?: Maybe<Scalars['Boolean']['output']>;
 };
 
@@ -48049,9 +48051,11 @@ export type PlaybookInsertResultResolvers<ContextType = any, ParentType extends 
 export type PlaybookManagerResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookManager'] = ResolversParentTypes['PlaybookManager']> = ResolversObject<{
   activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   firstStreamEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  lastEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  lastEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  firstStreamEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastProcessedEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  lastProcessedEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastStreamEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  lastStreamEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   managerInGoodHealth?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 

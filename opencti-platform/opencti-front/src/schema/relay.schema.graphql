@@ -13463,9 +13463,11 @@ type PlaybookEdge {
 
 type PlaybookManager {
   activated: Boolean!
-  lastEventId: String
-  lastEventDate: DateTime
+  lastProcessedEventId: String
+  lastProcessedEventDate: DateTime
+  lastStreamEventId: String
   lastStreamEventDate: DateTime
+  firstStreamEventId: String
   firstStreamEventDate: DateTime
   managerInGoodHealth: Boolean
 }

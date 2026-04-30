@@ -115,7 +115,7 @@ const PLAYBOOK_MANAGER_INFO = gql`
   query playbookManagerInfo {
     playbookManagerInfo {
       activated
-      lastEventDate
+      lastProcessedEventDate
     }
   }
 `;

@@ -58,9 +58,9 @@ const CRON_SCHEDULE_TIME = 60000; // 1 minute
 
 export const getManagerInfo = async () => {
   const isPlaybookManagerActivated = await isModuleActivated('PLAYBOOK_MANAGER');
-  const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
-  const lastManagerEventId = lastEventState ? Number(lastEventState.split('-')[0]) : 0;
-  const lastEventDate = lastEventState ? utcDate(Number(lastEventState.split('-')[0])).toISOString() : null;
+  const lastProcessedEventId = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
+  const lastManagerEventId = lastProcessedEventId ? Number(lastProcessedEventId.split('-')[0]) : 0;
+  const lastProcessedEventDate = lastProcessedEventId ? utcDate(Number(lastProcessedEventId.split('-')[0])).toISOString() : null;
 
   const streamProcessorInfo = await fetchStreamInfo();
   const lastStreamEventId = streamProcessorInfo.lastEventId;
@@ -69,7 +69,16 @@ export const getManagerInfo = async () => {
   const firstStreamEventDate = firstStreamEventId ? utcDate(Number(firstStreamEventId.split('-')[0])).toISOString() : null;
   const middleStreamEventId = (Number(lastStreamEventId.split('-')[0]) + Number(firstStreamEventId.split('-')[0])) / 2;
   const isManagerLate = lastManagerEventId < middleStreamEventId;
-  return { activated: isPlaybookManagerActivated, lastEventId: lastEventState, lastEventDate, lastStreamEventDate, firstStreamEventDate, managerInGoodHealth: !isManagerLate };
+  return {
+    activated: isPlaybookManagerActivated,
+    lastProcessedEventId,
+    lastProcessedEventDate,
+    lastStreamEventId,
+    lastStreamEventDate,
+    firstStreamEventId,
+    firstStreamEventDate,
+    managerInGoodHealth: !isManagerLate,
+  };
 };
 
 const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
@@ -203,16 +212,10 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   return false;
 };
 
-const checkManagerDelay = async (streamProcessor: StreamProcessor) => {
-  const lastManagerEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
-  const lastManagerEventId = lastManagerEventState ? Number(lastManagerEventState.split('-')[0]) : 0;
-  const streamProcessorInfo = await streamProcessor.info() as { firstEventId: string; lastEventId: string };
-  const lastStreamEventId = streamProcessorInfo.lastEventId;
-  const firstStreamEventId = streamProcessorInfo.firstEventId;
-  const middleStreamEventId = (Number(lastStreamEventId.split('-')[0]) + Number(firstStreamEventId.split('-')[0])) / 2;
-  const isManagerLate = lastManagerEventId < middleStreamEventId;
-  if (isManagerLate) {
-    logApp.warn('[OPENCTI-MODULE] Playbook manager is late to process events', { lastManagerEventId, firstStreamEventId, lastStreamEventId });
+const checkManagerDelay = async () => {
+  const { lastProcessedEventId, lastStreamEventId, firstStreamEventId, managerInGoodHealth } = await getManagerInfo();
+  if (!managerInGoodHealth) {
+    logApp.warn('[OPENCTI-MODULE] Playbook manager is late to process events', { lastProcessedEventId, firstStreamEventId, lastStreamEventId });
   }
 };
 
@@ -243,7 +246,7 @@ const initPlaybookManager = () => {
         lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
         if (++delayCheckerCounter >= 10) {
-          await checkManagerDelay(streamProcessor);
+          await checkManagerDelay();
           delayCheckerCounter = 0;
         }
       }
