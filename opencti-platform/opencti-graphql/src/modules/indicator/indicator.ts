@@ -1,13 +1,13 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
-import convertIndicatorToStix from './indicator-converter';
+import { ENTITY_TYPE_INDICATOR, type Stix2Indicator, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
+import convertIndicatorToStix, { convertIndicatorToStix_2_0 } from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
 import { revoked, xOpenctiReliability } from '../../schema/attribute-definition';
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 
-const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator> = {
+const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator, Stix2Indicator> = {
   type: {
     id: 'indicator',
     name: ENTITY_TYPE_INDICATOR,
@@ -113,6 +113,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     return stix.name;
   },
   converter_2_1: convertIndicatorToStix,
+  converter_2_0: convertIndicatorToStix_2_0,
 };
 
 registerDefinition(INDICATOR_DEFINITION);

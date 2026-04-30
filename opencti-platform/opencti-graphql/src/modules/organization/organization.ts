@@ -1,5 +1,5 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import type { StixOrganization, StoreEntityOrganization } from './organization-types';
+import type { Stix2Organization, StixOrganization, StoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
@@ -26,9 +26,9 @@ import {
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_MEDIA_CONTENT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
-import convertOrganizationToStix from './organization-converter';
+import convertOrganizationToStix, { convertOrganizationToStix_2_0 } from './organization-converter';
 
-const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization> = {
+const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization, Stix2Organization> = {
   type: {
     id: 'organization',
     name: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -113,5 +113,6 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     return stix.name;
   },
   converter_2_1: convertOrganizationToStix,
+  converter_2_0: convertOrganizationToStix_2_0,
 };
 registerDefinition(ORGANIZATION_DEFINITION);

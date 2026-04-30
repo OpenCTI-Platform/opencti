@@ -3,6 +3,9 @@ import type { RelationDefinition } from '../database/stix';
 import { stixCoreRelationshipsMapping as coreRels } from '../database/stix';
 import type { ConvertFn, RepresentativeFn } from '../database/stix-2-1-converter';
 import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-2-1-converter';
+import type { ConvertFn as ConvertFn_2_0 } from '../database/stix-2-0-converter';
+import { registerStixDomainConverter_2_0, registerStixMetaConverter_2_0 } from '../database/stix-2-0-converter';
+import type * as S20 from '../types/stix-2-0-common';
 import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -32,7 +35,7 @@ import { pushAll } from '../utils/arrayUtil';
 
 export const modules = new Map();
 
-export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
+export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z0 extends S20.StixObject = S20.StixObject> {
   type: {
     id: string;
     name: string;
@@ -49,6 +52,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   };
   representative: RepresentativeFn<Z>;
   converter_2_1: ConvertFn<T, Z>;
+  converter_2_0?: ConvertFn_2_0<T, Z0>;
   bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>;
   overviewLayoutCustomization?: Array<OverviewWidgetCustomization>;
   attributes: Array<AttributeDefinition<any>>;
@@ -64,7 +68,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   depsKeys?: { src: string; types?: string[] }[];
 }
 
-export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(definition: ModuleDefinition<T, Z>) => {
+export const registerDefinition = <T extends StoreEntity, Z extends StixObject, Z0 extends S20.StixObject = S20.StixObject>(definition: ModuleDefinition<T, Z, Z0>) => {
   // Register types
   if (definition.type.category) {
     switch (definition.type.category) {
@@ -72,11 +76,13 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
         schemaTypesDefinition.add(ENTITY_TYPE_THREAT_ACTOR, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter_2_1);
+        if (definition.converter_2_0) registerStixDomainConverter_2_0(definition.type.name, definition.converter_2_0);
         break;
       case ENTITY_TYPE_LOCATION:
         schemaTypesDefinition.add(ENTITY_TYPE_LOCATION, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter_2_1);
+        if (definition.converter_2_0) registerStixDomainConverter_2_0(definition.type.name, definition.converter_2_0);
         break;
       case ENTITY_TYPE_CONTAINER:
         schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
@@ -84,6 +90,7 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
         if (definition.type.name !== ENTITY_TYPE_CONTAINER_CASE) {
           schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
           registerStixDomainConverter(definition.type.name, definition.converter_2_1);
+          if (definition.converter_2_0) registerStixDomainConverter_2_0(definition.type.name, definition.converter_2_0);
         }
         break;
       case ENTITY_TYPE_CONTAINER_CASE:
@@ -91,19 +98,23 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
         schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter_2_1);
+        if (definition.converter_2_0) registerStixDomainConverter_2_0(definition.type.name, definition.converter_2_0);
         break;
       case ENTITY_TYPE_IDENTITY:
         schemaTypesDefinition.add(ENTITY_TYPE_IDENTITY, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter_2_1);
+        if (definition.converter_2_0) registerStixDomainConverter_2_0(definition.type.name, definition.converter_2_0);
         break;
       case ABSTRACT_STIX_DOMAIN_OBJECT:
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter_2_1);
+        if (definition.converter_2_0) registerStixDomainConverter_2_0(definition.type.name, definition.converter_2_0);
         break;
       case ABSTRACT_STIX_META_OBJECT:
         schemaTypesDefinition.add(ABSTRACT_STIX_META_OBJECT, definition.type.name);
         registerStixMetaConverter(definition.type.name, definition.converter_2_1);
+        if (definition.converter_2_0) registerStixMetaConverter_2_0(definition.type.name, definition.converter_2_0);
         break;
       case ABSTRACT_INTERNAL_OBJECT:
         schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);

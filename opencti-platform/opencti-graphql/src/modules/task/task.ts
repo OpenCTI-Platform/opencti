@@ -2,12 +2,12 @@ import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { createdBy, objectAssignee, objectOrganization, objectParticipant } from '../../schema/stixRefRelationship';
-import { convertCaseTaskToStix_2_1 } from './task-converter';
-import type { StixTask, StoreEntityTask } from './task-types';
+import { convertCaseTaskToStix_2_1, convertTaskToStix_2_0 } from './task-converter';
+import type { Stix2Task, StixTask, StoreEntityTask } from './task-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from './task-types';
 import { workflowId } from '../attributes/stixDomainObject-registrationAttributes';
 
-const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
+const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask, Stix2Task> = {
   type: {
     id: 'task',
     name: ENTITY_TYPE_CONTAINER_TASK,
@@ -48,5 +48,6 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
     return stix.name;
   },
   converter_2_1: convertCaseTaskToStix_2_1,
+  converter_2_0: convertTaskToStix_2_0,
 };
 registerDefinition(CASE_TASK_DEFINITION);

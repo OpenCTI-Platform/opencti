@@ -592,7 +592,14 @@ export const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixE
 // CONVERTERS
 export type ConvertFn<T extends StoreEntity, Z extends S.StixObject> = (instance: T) => Z;
 const stixDomainConverters = new Map<string, ConvertFn<any, any>>();
-// TODO add registerConverters for module converters
+const stixMetaConverters = new Map<string, ConvertFn<any, any>>();
+
+export const registerStixDomainConverter_2_0 = <T extends StoreEntity, Z extends S.StixObject>(type: string, convertFn: ConvertFn<T, Z>) => {
+  stixDomainConverters.set(type, convertFn);
+};
+export const registerStixMetaConverter_2_0 = <T extends StoreEntity, Z extends S.StixObject>(type: string, convertFn: ConvertFn<T, Z>) => {
+  stixMetaConverters.set(type, convertFn);
+};
 
 const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
   const type = instance.entity_type;
@@ -676,6 +683,10 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
   }
   if (isStixMetaObject(type)) {
     const basic = instance as StoreEntity;
+    const convertFn = stixMetaConverters.get(type);
+    if (convertFn) {
+      return convertFn(basic);
+    }
     switch (type) {
       case ENTITY_TYPE_MARKING_DEFINITION:
         return convertMarkingDefinitionToStix(basic);
