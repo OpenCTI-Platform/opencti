@@ -259,7 +259,7 @@ describe('useCustomViewTabs', () => {
     );
     const defaultTabElem = screen.getByRole('tab', { name: /My default custom view/i });
     expect(defaultTabElem).toBeInTheDocument();
-    const othersTabElem = screen.getByRole('tab', { name: /Custom view/i });
+    const othersTabElem = screen.getByRole('tab', { name: /^Custom view$/i });
     expect(othersTabElem).toBeInTheDocument();
     await user.click(othersTabElem);
     const firstLinkElem = screen.getByRole('link', { name: /My first custom view/i });
