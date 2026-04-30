@@ -23,7 +23,11 @@ const DEFAULT_VALUES: CustomViewFormInputs = {
 interface CustomViewFormProps {
   onClose: () => void;
   onSubmit: FormikConfig<CustomViewFormInputs>['onSubmit'];
-  onSubmitField: (name: string, value: unknown) => void;
+  onSubmitField: (
+    name: string,
+    value: unknown,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
+  ) => void;
   values?: CustomViewFormInputs;
   isEdition?: boolean;
 }
@@ -47,8 +51,8 @@ const CustomViewForm = ({
   const handleFieldSubmit = (
     setSubmitting: (v: boolean) => void,
   ) => (name: keyof typeof validators, value: unknown) => {
-    onSubmitField(name, validators[name].cast(value));
-    setSubmitting(false);
+    setSubmitting(true);
+    onSubmitField(name, validators[name].cast(value), { setSubmitting });
   };
 
   const initialValues = values ?? DEFAULT_VALUES;

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Box, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
 import Button from '@common/button/Button';
 import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/styles';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import IconButton from '@common/button/IconButton';
 import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
 import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -84,9 +86,9 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
         />
         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 1 }}>
           <Tooltip title={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}>
-            <Button variant="secondary" iconOnly disabled={mutating} onClick={handleToggleEnabled}>
+            <IconButton variant="secondary" size="default" disabled={mutating} onClick={handleToggleEnabled}>
               {customView.enabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
-            </Button>
+            </IconButton>
           </Tooltip>
           <CustomViewMenu data={customView} />
           <DashboardWidgetConfig
