@@ -675,7 +675,7 @@
   "Context_data.creator_ids": "Создатель связанной сущности",
   "Context_data.id": "Связанная сущность",
   "Context_data.labels_ids": "Метка связанной сущности",
-  "Context_data.object_marking_refs_ids": "Определение маркировки связанной сущности",
+  "Context_data.marking_definitions": "Определение маркировки связанной сущности",
   "Context_data.search": "Ключевое слово поиска связанной сущности",
   "contextCreatedBy": "Автор связанной сущности",
   "contextCreator": "Создатель связанной сущности",

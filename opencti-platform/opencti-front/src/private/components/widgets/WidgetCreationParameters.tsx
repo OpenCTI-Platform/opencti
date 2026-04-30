@@ -715,7 +715,7 @@ const WidgetCreationParameters = () => {
                             'context_data.id',
                             'context_data.created_by_ref_id',
                             'context_data.labels_ids',
-                            'context_data.object_marking_refs_ids',
+                            'context_data.marking_definitions',
                             'context_data.creator_ids',
                             'context_data.search',
                             'event_type',

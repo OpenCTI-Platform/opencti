@@ -675,7 +675,7 @@
   "Context_data.creator_ids": "Creatore dell'entità correlata",
   "Context_data.id": "Entità correlata",
   "Context_data.labels_ids": "Etichetta dell'entità correlata",
-  "Context_data.object_marking_refs_ids": "Definizione di marcatura dell'entità correlata",
+  "Context_data.marking_definitions": "Definizione di marcatura dell'entità correlata",
   "Context_data.search": "Parola chiave di ricerca dell'entità correlata",
   "contextCreatedBy": "Autore dell'entità correlata",
   "contextCreator": "Creatore dell'entità correlata",

@@ -675,7 +675,7 @@
   "Context_data.creator_ids": "関連エンティティの作成者",
   "Context_data.id": "関連団体",
   "Context_data.labels_ids": "関連エンティティのラベル",
-  "Context_data.object_marking_refs_ids": "関連エンティティのマーク定義",
+  "Context_data.marking_definitions": "関連エンティティのマーク定義",
   "Context_data.search": "関連エンティティの検索キーワード",
   "contextCreatedBy": "関連エンティティの著者",
   "contextCreator": "関連エンティティの作成者",

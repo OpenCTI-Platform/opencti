@@ -675,7 +675,7 @@
   "Context_data.creator_ids": "相关实体的创建者",
   "Context_data.id": "相关实体",
   "Context_data.labels_ids": "相关实体的标签",
-  "Context_data.object_marking_refs_ids": "相关实体的标记定义",
+  "Context_data.marking_definitions": "相关实体的标记定义",
   "Context_data.search": "相关实体的搜索关键词",
   "contextCreatedBy": "相关实体的作者",
   "contextCreator": "相关实体的创建者",

@@ -675,7 +675,7 @@
   "Context_data.creator_ids": "Creator of related entity",
   "Context_data.id": "Related entity",
   "Context_data.labels_ids": "Label of related entity",
-  "Context_data.object_marking_refs_ids": "Marking definition of related entity",
+  "Context_data.marking_definitions": "Marking definition of related entity",
   "Context_data.search": "Search keyword of related entity",
   "contextCreatedBy": "Author of related entity",
   "contextCreator": "Creator of related entity",

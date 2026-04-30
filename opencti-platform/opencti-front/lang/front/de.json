@@ -675,7 +675,7 @@
   "Context_data.creator_ids": "Ersteller der verwandten Entität",
   "Context_data.id": "Verbundene Entität",
   "Context_data.labels_ids": "Label der verwandten Entität",
-  "Context_data.object_marking_refs_ids": "Markierungsdefinition der verwandten Entität",
+  "Context_data.marking_definitions": "Markierungsdefinition der verwandten Entität",
   "Context_data.search": "Suchbegriff der verwandten Entität",
   "contextCreatedBy": "Autor der verwandten Entität",
   "contextCreator": "Ersteller des verwandten Objekts",
