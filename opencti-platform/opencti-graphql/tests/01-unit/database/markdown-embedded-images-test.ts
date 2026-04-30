@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   buildEmbeddedStorageGetUri,
   collectDataUriImagesFromMarkdown,
-  collectEmbeddedStoragePathsFromMarkdownFields,
   extractMarkdownImageReferences,
   findRemovedEmbeddedStoragePathsFromMarkdownFields,
   parseDataUriImage,
@@ -41,6 +40,16 @@ describe('markdown-embedded-images utility', () => {
     expect(refs[0].embeddedStoragePath).toBe('draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7/coucou (2)-a90ce37e.png');
     expect(refs[1].isEmbeddedStorage).toBe(true);
     expect(refs[1].embeddedStoragePath).toBe('draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7b/coucou.png');
+  });
+
+  it('should detect local embedded markdown links', () => {
+    const markdown = '![local](embedded/upload_image_example.png)';
+
+    const refs = extractMarkdownImageReferences(markdown);
+
+    expect(refs).toHaveLength(1);
+    expect(refs[0].isEmbeddedStorage).toBe(true);
+    expect(refs[0].embeddedStoragePath).toBe('embedded/upload_image_example.png');
   });
 
   it('should rewrite only embedded storage image links', () => {
@@ -139,6 +148,25 @@ describe('markdown-embedded-images utility', () => {
     const nextPayload = {
       description: '![keep](/storage/get/embedded/Report/r-1/keep.png)',
       content: 'No markdown image anymore',
+    };
+
+    const removed = findRemovedEmbeddedStoragePathsFromMarkdownFields(previousPayload, nextPayload, {
+      entityType: 'Report',
+      entityId: 'r-1',
+    });
+
+    expect(removed).toEqual(['embedded/Report/r-1/remove.png']);
+  });
+
+  it('should resolve local embedded links with entity context for removed-path detection', () => {
+    const previousPayload = {
+      description: [
+        '![keep](embedded/keep.png)',
+        '![remove](embedded/remove.png)',
+      ].join('\n'),
+    };
+    const nextPayload = {
+      description: '![keep](embedded/keep.png)',
     };
 
     const removed = findRemovedEmbeddedStoragePathsFromMarkdownFields(previousPayload, nextPayload, {

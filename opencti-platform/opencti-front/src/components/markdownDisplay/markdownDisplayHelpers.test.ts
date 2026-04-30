@@ -3,6 +3,11 @@ import { normalizeMarkdownImageUrl, resolveAndNormalizeMarkdownImageUrl } from '
 
 describe('markdownDisplay helpers', () => {
   describe('normalizeMarkdownImageUrl', () => {
+    it('keeps local embedded links contextual relative paths', () => {
+      expect(normalizeMarkdownImageUrl('embedded/Report/r-1/a.png', '/')).toBe('embedded/Report/r-1/a.png');
+      expect(normalizeMarkdownImageUrl('/embedded/Report/r-1/a.png', '/')).toBe('embedded/Report/r-1/a.png');
+    });
+
     it('rewrites embedded storage/get URLs to storage/view for inline rendering', () => {
       expect(normalizeMarkdownImageUrl('/storage/get/embedded/Report/r-1/a.png', '/')).toBe('/storage/view/embedded/Report/r-1/a.png');
     });

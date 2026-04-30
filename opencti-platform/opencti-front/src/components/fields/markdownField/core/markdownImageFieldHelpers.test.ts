@@ -2,6 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { extractEmbeddedStoragePathsFromMarkdown, getImageFiles, getMarkdownImageDragFeedback, isSvgImageFile } from './markdownImageFieldHelpers';
 
 describe('markdown image field helpers', () => {
+  it('extracts embedded storage paths from local embedded links', () => {
+    const markdown = [
+      '![rel](embedded/Report/r-1/image-a.png)',
+      '![root](/embedded/Report/r-1/image-b.png)',
+      '![ext](https://example.org/image.png)',
+    ].join('\n');
+
+    expect(extractEmbeddedStoragePathsFromMarkdown(markdown).sort()).toEqual([
+      'embedded/Report/r-1/image-a.png',
+      'embedded/Report/r-1/image-b.png',
+    ]);
+  });
+
   it('extracts embedded storage paths from relative storage/view URLs only', () => {
     const markdown = [
       '![b](/storage/view/embedded/Report/r-1/image-b.png)',

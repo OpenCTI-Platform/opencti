@@ -9,6 +9,11 @@ describe('markdown preview image utils', () => {
       expect(isAllowedUploadedImageUrl('/public/storage/view/image.png')).toBe(false);
     });
 
+    it('accepts canonical local embedded links', () => {
+      expect(isAllowedUploadedImageUrl('embedded/Report/r-1/image.png')).toBe(true);
+      expect(isAllowedUploadedImageUrl('/embedded/Report/r-1/image.png')).toBe(true);
+    });
+
     it('accepts temp image scheme and http/https URLs, rejects dangerous URLs', () => {
       expect(isAllowedUploadedImageUrl('opencti-image://temp/abc123')).toBe(true);
       expect(isAllowedUploadedImageUrl('https://example.org/image.png')).toBe(true);
@@ -21,6 +26,18 @@ describe('markdown preview image utils', () => {
   });
 
   describe('extractMarkdownPreviewImages', () => {
+    it('extracts canonical local embedded images after resolution', () => {
+      const markdown = '![local](embedded/Report/r-1/local.png)';
+      const resolveImageUrl = (url: string) => `/storage/view/${url}`;
+
+      expect(extractMarkdownPreviewImages(markdown, resolveImageUrl)).toEqual([
+        {
+          src: '/storage/view/embedded/Report/r-1/local.png',
+          alt: 'local',
+        },
+      ]);
+    });
+
     it('extracts and resolves markdown images with alt text', () => {
       const markdown = [
         '![first](/storage/view/embedded/Report/r-1/one.png)',

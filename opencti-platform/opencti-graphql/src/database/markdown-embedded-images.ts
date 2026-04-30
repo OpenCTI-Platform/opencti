@@ -68,6 +68,11 @@ export interface EmbeddedMarkdownStoragePathCollectionOptions {
   entityId?: string;
 }
 
+type EmbeddedStoragePathContext = {
+  entityType?: string;
+  entityId?: string;
+};
+
 export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'] as const;
 
 interface ParsedMarkdownDestination {
@@ -156,7 +161,10 @@ export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefin
     if (normalizedStoragePath.startsWith('embedded/')) {
       return normalizedStoragePath;
     }
-    return normalizedStoragePath.includes('/embedded/') ? normalizedStoragePath : undefined;
+    if (/^draft\/[^/]+\/embedded\//.test(normalizedStoragePath)) {
+      return normalizedStoragePath;
+    }
+    return undefined;
   };
 
   const decodeEmbeddedEncodedPath = (encodedPath: string): string | undefined => {
@@ -166,6 +174,11 @@ export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefin
       return undefined;
     }
   };
+
+  const directPath = extractEmbeddedStoragePath(trimmed);
+  if (directPath) {
+    return directPath;
+  }
 
   if (trimmed.startsWith(STORAGE_GET_EMBEDDED_PREFIX)) {
     return trimmed.slice(STORAGE_GET_PREFIX.length).split(/[?#]/)[0];
@@ -215,6 +228,33 @@ export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefin
   }
 
   return undefined;
+};
+
+export const resolveEmbeddedStoragePathWithContext = (
+  embeddedStoragePath: string,
+  context: EmbeddedStoragePathContext = {},
+): string => {
+  const normalizedPath = embeddedStoragePath.trim().replace(/^\/+/, '').split(/[?#]/)[0];
+  if (!normalizedPath.startsWith('embedded/')) {
+    return normalizedPath;
+  }
+
+  const { entityType, entityId } = context;
+  if (!entityType || !entityId) {
+    return normalizedPath;
+  }
+
+  const entityPrefix = `embedded/${entityType}/${entityId}/`;
+  if (normalizedPath.startsWith(entityPrefix)) {
+    return normalizedPath;
+  }
+
+  const relativePath = normalizedPath.slice('embedded/'.length);
+  if (!relativePath || relativePath.includes('/')) {
+    return normalizedPath;
+  }
+
+  return `${entityPrefix}${relativePath}`;
 };
 
 export const extractMarkdownImageReferences = (markdown: string): EmbeddedMarkdownImageReference[] => {
@@ -451,14 +491,17 @@ export const collectEmbeddedStoragePathsFromMarkdownFields = (
       if (!embeddedStoragePath) {
         continue;
       }
-      const normalizedPath = embeddedStoragePath.trim().replace(/^\/+/, '').split(/[?#]/)[0];
-      if (normalizedPath.includes('..')) {
+      const resolvedPath = resolveEmbeddedStoragePathWithContext(embeddedStoragePath, {
+        entityType: options.entityType,
+        entityId: options.entityId,
+      });
+      if (resolvedPath.includes('..')) {
         continue;
       }
-      if (entityPrefix && !normalizedPath.startsWith(entityPrefix)) {
+      if (entityPrefix && !resolvedPath.startsWith(entityPrefix)) {
         continue;
       }
-      collected.add(normalizedPath);
+      collected.add(resolvedPath);
     }
   };
 

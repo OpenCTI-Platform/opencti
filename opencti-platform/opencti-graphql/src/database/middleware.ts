@@ -238,6 +238,7 @@ import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPES,
   extractMarkdownImageReferences,
   findRemovedEmbeddedStoragePathsFromMarkdownFields,
+  resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
 } from './markdown-embedded-images';
 import {
@@ -678,7 +679,12 @@ const convertStoreToStixWithResolvedFiles = async (
     }
 
     const uriByStoragePath = new Map<string, string | null>();
-    const uniqueStoragePaths = R.uniq(embeddedReferences.map((reference) => reference.embeddedStoragePath as string));
+    const uniqueStoragePaths = R.uniq(embeddedReferences.map((reference) => {
+      return resolveEmbeddedStoragePathWithContext(reference.embeddedStoragePath as string, {
+        entityType: instance.entity_type,
+        entityId: instance.internal_id,
+      });
+    }));
 
     for (let i = 0; i < uniqueStoragePaths.length; i += 1) {
       const storagePath = uniqueStoragePaths[i];
@@ -709,7 +715,11 @@ const convertStoreToStixWithResolvedFiles = async (
       if (!reference.embeddedStoragePath) {
         return undefined;
       }
-      const resolvedUri = uriByStoragePath.get(reference.embeddedStoragePath);
+      const resolvedStoragePath = resolveEmbeddedStoragePathWithContext(reference.embeddedStoragePath, {
+        entityType: instance.entity_type,
+        entityId: instance.internal_id,
+      });
+      const resolvedUri = uriByStoragePath.get(resolvedStoragePath);
       return resolvedUri ?? undefined;
     });
 
@@ -3962,7 +3972,11 @@ const internalCreateEntityRaw = async (
         const prefix = embedded ? 'embedded' : 'import';
         const filePath = `${prefix}/${type}/${dataEntity.element[ID_INTERNAL]}`;
         const key = `${filePath}/${filename}`;
-        const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
+        // Embedded markdown assets are internal to markdown content and must not create external references.
+        const shouldCreateExternalReference = isAutoExternal && !embedded;
+        const meta = shouldCreateExternalReference
+          ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) }
+          : {};
         const { upload: uploadedFile } = await uploadToStorage(
           context,
           user,
@@ -3972,10 +3986,10 @@ const internalCreateEntityRaw = async (
         );
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
         if (embedded) {
-          embeddedImageUrls.push(`/storage/view/${encodeURIComponent(uploadedFile.id)}`);
+          embeddedImageUrls.push(`embedded/${uploadedFile.name}`);
         }
         // Add external references from files if necessary
-        if (isAutoExternal) {
+        if (shouldCreateExternalReference) {
           // Create external ref + link to current entity
           const createExternal = { source_name: uploadedFile.name, url: `/storage/get/${uploadedFile.id}`, fileId: uploadedFile.id };
           const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);

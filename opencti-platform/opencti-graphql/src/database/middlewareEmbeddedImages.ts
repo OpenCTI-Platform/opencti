@@ -209,7 +209,7 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
             meta: { mimetype: image.mimeType },
           },
         );
-        replacementUri = `/storage/view/${uploadedFile.id}`;
+        replacementUri = `embedded/${uploadedFile.name}`;
         uploadedUriByDedupeKey.set(image.dedupeKey, replacementUri);
       }
 

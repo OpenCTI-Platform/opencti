@@ -4,6 +4,12 @@ export const normalizeMarkdownImageUrl = (
 ): string => {
   let normalized = resolvedUrl;
 
+  // Keep local embedded links contextual so backend can resolve them via
+  // the current entity route (contains entity id in URL path).
+  if (normalized.startsWith('/embedded/')) {
+    normalized = normalized.slice(1);
+  }
+
   // /storage/get/* serves as attachment; use /storage/view/* for inline rendering.
   if (normalized.includes('/storage/get/embedded/')) {
     normalized = normalized.replace('/storage/get/embedded/', '/storage/view/embedded/');
