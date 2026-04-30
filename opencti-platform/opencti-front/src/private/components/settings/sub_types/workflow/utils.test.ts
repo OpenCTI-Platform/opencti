@@ -25,8 +25,8 @@ describe('Workflow utils', () => {
 
   it('should identify an initial state', () => {
     const nodes: Node[] = [
-      { id: 'state-1', type: WorkflowNodeType.status, data: {}, position: { x: 0, y: 0 } },
-      { id: 'state-2', type: WorkflowNodeType.status, data: {}, position: { x: 0, y: 0 } },
+      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' } }, position: { x: 0, y: 0 } },
+      { id: 'state-2', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-2', name: 'State 2', color: '#ffffff' } }, position: { x: 0, y: 0 } },
     ];
     const edges: Edge[] = [
       { id: 'e1-2', source: 'state-1', target: 'state-2', type: 'smoothstep' },
@@ -37,9 +37,9 @@ describe('Workflow utils', () => {
 
   it('should transform a simple graph with states and transitions', () => {
     const nodes: Node[] = [
-      { id: 'state-1', type: WorkflowNodeType.status, data: { onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
+      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
       { id: 'trans-1', type: WorkflowNodeType.transition, data: { event: 'start' }, position: { x: 0, y: 0 } },
-      { id: 'state-2', type: WorkflowNodeType.status, data: { onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
+      { id: 'state-2', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-2', name: 'State 2', color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
     ];
     const edges: Edge[] = [
       { id: 'e1', source: 'state-1', target: 'trans-1', type: 'smoothstep' },
@@ -59,7 +59,7 @@ describe('Workflow utils', () => {
 
   it('should handle transitions with no target', () => {
     const nodes: Node[] = [
-      { id: 'state-1', type: WorkflowNodeType.status, data: { onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
+      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
       { id: 'trans-1', type: WorkflowNodeType.transition, data: { event: 'end' }, position: { x: 0, y: 0 } },
     ];
     const edges: Edge[] = [
@@ -82,6 +82,7 @@ describe('Workflow utils', () => {
         id: 'state-1',
         type: WorkflowNodeType.status,
         data: {
+          statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' },
           onEnter: [
             {
               type: WorkflowActionType.updateAuthorizedMembers,
