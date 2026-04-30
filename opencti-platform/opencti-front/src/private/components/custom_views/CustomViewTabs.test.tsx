@@ -46,18 +46,14 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
   ));
 
   const renderDefaultCustomViewTab = () => {
-    if (defaultCustomView) {
-      return (
-        <Tab
-          component={Link}
-          to={defaultCustomView.path}
-          value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
-          label={defaultCustomView.name}
-        />
-      );
-    }
-
-    return null;
+    return defaultCustomView ? (
+      <Tab
+        component={Link}
+        to={defaultCustomView.path}
+        value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
+        label={defaultCustomView.name}
+      />
+    ) : null;
   };
 
   const renderOtherCustomViewsTab = () => {
