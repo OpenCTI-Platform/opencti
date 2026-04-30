@@ -28,7 +28,7 @@ describe('getCurrentTab', () => {
 });
 
 describe('getPaddingRight', () => {
-  const basePath = '/dashboard/threats/threat_actors_group/a079e1e7-ce97-4528-92f1-64df365d540b';
+  const basePath = '/dashboard/analyses/reports/a079e1e7-ce97-4528-92f1-64df365d540b';
 
   it('returns 200 for knowledge path when applyKnowledgePadding is true', () => {
     expect(getPaddingRight(`${basePath}/knowledge`, basePath)).toBe(200);
@@ -47,7 +47,8 @@ describe('getPaddingRight', () => {
   });
 
   it('returns 0 for paths that are neither knowledge nor content', () => {
-    expect(getPaddingRight(`${basePath}/overview`, basePath)).toBe(0);
+    expect(getPaddingRight(basePath, basePath)).toBe(0);
+    expect(getPaddingRight(`${basePath}/entities`, basePath)).toBe(0);
   });
 
   it('returns 200 for knowledge sub-paths', () => {
