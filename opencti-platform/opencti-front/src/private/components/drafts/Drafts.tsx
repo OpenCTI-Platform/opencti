@@ -145,7 +145,7 @@ interface DraftsProps {
 
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
   const { isFeatureEnable } = useHelper();
-  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
+  const isKnowledgeUpdater = useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNUPDATE] });
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
