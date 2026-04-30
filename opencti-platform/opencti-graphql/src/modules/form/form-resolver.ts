@@ -7,7 +7,7 @@ const formResolvers: Resolvers = {
     forms: (_, args, context) => findFormPaginated(context, context.user, args),
   },
   Form: {
-    toConfigurationExport: (form, _, context) => generateFormExportConfiguration(context, context.user, form),
+    toConfigurationExport: (form) => generateFormExportConfiguration(form),
   },
   Mutation: {
     formAdd: (_, { input }, context) => {

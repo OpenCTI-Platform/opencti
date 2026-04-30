@@ -561,6 +561,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 setFieldValue={setFieldValue}
                                 entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
                                 getFieldKey={(field) => `mainEntityFields.${field.name}`}
+                                getFieldOverride={(field) => ({ name: `mainEntityFields.${field.name}` })}
                               />
                             </>
                           )}
