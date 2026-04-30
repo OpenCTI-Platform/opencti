@@ -202,12 +202,12 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   const initialValues = useDefaultValues(
     INDICATOR_TYPE,
     {
-      name: inputValue ?? 'test D',
+      name: inputValue ?? '',
       confidence: defaultConfidence,
       indicator_types: [],
-      pattern: '[domain-name:value = \'testouille.com\']',
-      pattern_type: 'stix',
-      x_opencti_main_observable_type: 'Domain-Name',
+      pattern: '',
+      pattern_type: '',
+      x_opencti_main_observable_type: '',
       x_opencti_reliability: undefined,
       x_mitre_platforms: [],
       valid_from: null,
