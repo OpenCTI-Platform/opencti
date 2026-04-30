@@ -1,4 +1,4 @@
-import { Handle, NodeProps, Position, useReactFlow, useNodes } from 'reactflow';
+import { Handle, NodeProps, Position, useReactFlow } from 'reactflow';
 import { useFormatter } from '../../../../../../components/i18n';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
@@ -15,7 +15,6 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { getEdges } = useReactFlow();
-  const nodes = useNodes();
   const skew = NODE_SIZE.height * 0.2;
   const strokeWidth = 1;
 
