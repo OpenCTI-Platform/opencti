@@ -170,9 +170,9 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   return (
     <>
+      <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
       {workflowInstance.allowedTransitions.length < 3 ? (
         <>
-          <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
           {workflowInstance.allowedTransitions.map((transition) => {
             return (
               <Button

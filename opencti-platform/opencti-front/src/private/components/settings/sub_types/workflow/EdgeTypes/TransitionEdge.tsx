@@ -27,7 +27,7 @@ const TransitionEdge = ({
   });
 
   return (
-    <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} style={{ zIndex: -1 }}>
+    <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <path
         id={id}
         style={{
