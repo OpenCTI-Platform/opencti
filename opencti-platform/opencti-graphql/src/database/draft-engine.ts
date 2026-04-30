@@ -32,6 +32,13 @@ import { buildRefRelationKey } from '../schema/general';
 import { getFileContent } from './raw-file-storage';
 import { loadFile } from './file-storage';
 import { EditOperation } from '../generated/graphql';
+import mime from 'mime-types';
+import {
+  ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
+  extractMarkdownImageReferences,
+  MARKDOWN_FIELD_KEYS,
+  rewriteMarkdownImageUrls,
+} from './markdown-embedded-images';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRelation } from '../types/store';
 import { files } from '../schema/attribute-definition';
@@ -276,6 +283,52 @@ export const elDeleteDraftContextFromWorks = async (context: AuthContext, user: 
 
 export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUser, draftUpdates: InternalEditInput[]) => {
   const resolvedDraftUpdatePatch = [...draftUpdates.filter((k) => k.key !== files.name)];
+
+  const resolveEmbeddedImagesInMarkdown = async (markdown: string): Promise<string> => {
+    const embeddedReferences = extractMarkdownImageReferences(markdown)
+      .filter((reference) => reference.isEmbeddedStorage && reference.embeddedStoragePath);
+    if (embeddedReferences.length === 0) {
+      return markdown;
+    }
+
+    const uriByStoragePath = new Map<string, string | null>();
+    const uniqueStoragePaths = R.uniq(embeddedReferences.map((reference) => reference.embeddedStoragePath as string));
+
+    for (let i = 0; i < uniqueStoragePaths.length; i += 1) {
+      const storagePath = uniqueStoragePaths[i];
+      const detectedMime = mime.lookup(storagePath);
+      if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(String(detectedMime).toLowerCase())) {
+        uriByStoragePath.set(storagePath, null);
+        continue;
+      }
+      try {
+        const base64Data = await getFileContent(storagePath, 'base64');
+        uriByStoragePath.set(storagePath, base64Data ? `data:${detectedMime};base64,${String(base64Data)}` : null);
+      } catch {
+        uriByStoragePath.set(storagePath, null);
+      }
+    }
+
+    const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+      if (!reference.embeddedStoragePath) {
+        return undefined;
+      }
+      return uriByStoragePath.get(reference.embeddedStoragePath) ?? undefined;
+    });
+    return rewrittenMarkdown;
+  };
+
+  for (let i = 0; i < resolvedDraftUpdatePatch.length; i += 1) {
+    const update = resolvedDraftUpdatePatch[i];
+    if (!MARKDOWN_FIELD_KEYS.includes(update.key as (typeof MARKDOWN_FIELD_KEYS)[number])) {
+      continue;
+    }
+    if (update.operation === EditOperation.Remove || !Array.isArray(update.value) || typeof update.value[0] !== 'string') {
+      continue;
+    }
+    update.value = [await resolveEmbeddedImagesInMarkdown(update.value[0])];
+  }
+
   const addedFiles = draftUpdates.find((k) => k.key === files.name && k.operation === EditOperation.Add);
   if (addedFiles) {
     const fileIds = addedFiles.value;

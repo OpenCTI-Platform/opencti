@@ -28,6 +28,21 @@ describe('markdown-embedded-images utility', () => {
     expect(refs[2].isEmbeddedStorage).toBe(false);
   });
 
+  it('should detect draft-prefixed embedded storage links', () => {
+    const markdown = [
+      '![draft-view](/storage/view/draft%2F750a958d-816f-4b3e-b6ed-3fa8c9f42c7b%2Fembedded%2FReport%2F31342e9b-520d-43ea-a015-75c16c05cbc7%2Fcoucou%20(2)-a90ce37e.png)',
+      '![draft-get](/storage/get/draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7b/coucou.png)',
+    ].join('\n');
+
+    const refs = extractMarkdownImageReferences(markdown);
+
+    expect(refs).toHaveLength(2);
+    expect(refs[0].isEmbeddedStorage).toBe(true);
+    expect(refs[0].embeddedStoragePath).toBe('draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7/coucou (2)-a90ce37e.png');
+    expect(refs[1].isEmbeddedStorage).toBe(true);
+    expect(refs[1].embeddedStoragePath).toBe('draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7b/coucou.png');
+  });
+
   it('should rewrite only embedded storage image links', () => {
     const markdown = [
       '![one](/storage/get/embedded/Report/1/a.png)',

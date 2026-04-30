@@ -3,6 +3,7 @@ import { FunctionalError } from '../config/errors';
 
 const STORAGE_GET_EMBEDDED_PREFIX = '/storage/get/embedded/';
 const STORAGE_GET_PREFIX = '/storage/get/';
+const STORAGE_VIEW_PREFIX = '/storage/view/';
 const STORAGE_VIEW_EMBEDDED_PREFIX = '/storage/view/embedded/';
 const STORAGE_VIEW_EMBEDDED_PREFIX_ENCODED = '/storage/view/embedded%2F';
 
@@ -149,9 +150,18 @@ const parseMarkdownImageDestination = (destination: string): ParsedMarkdownDesti
 
 export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefined => {
   const trimmed = url.trim();
+
+  const extractEmbeddedStoragePath = (storagePath: string): string | undefined => {
+    const normalizedStoragePath = storagePath.replace(/^\/+/, '').split(/[?#]/)[0];
+    if (normalizedStoragePath.startsWith('embedded/')) {
+      return normalizedStoragePath;
+    }
+    return normalizedStoragePath.includes('/embedded/') ? normalizedStoragePath : undefined;
+  };
+
   const decodeEmbeddedEncodedPath = (encodedPath: string): string | undefined => {
     try {
-      return decodeURIComponent(encodedPath).split(/[?#]/)[0];
+      return extractEmbeddedStoragePath(decodeURIComponent(encodedPath));
     } catch {
       return undefined;
     }
@@ -159,6 +169,10 @@ export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefin
 
   if (trimmed.startsWith(STORAGE_GET_EMBEDDED_PREFIX)) {
     return trimmed.slice(STORAGE_GET_PREFIX.length).split(/[?#]/)[0];
+  }
+
+  if (trimmed.startsWith(STORAGE_GET_PREFIX)) {
+    return extractEmbeddedStoragePath(trimmed.slice(STORAGE_GET_PREFIX.length));
   }
 
   if (trimmed.startsWith(STORAGE_VIEW_EMBEDDED_PREFIX)) {
@@ -171,17 +185,29 @@ export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefin
     return decodeEmbeddedEncodedPath(encodedPath);
   }
 
+  if (trimmed.startsWith(STORAGE_VIEW_PREFIX)) {
+    const encodedPath = trimmed.slice(STORAGE_VIEW_PREFIX.length).split(/[?#]/)[0];
+    return decodeEmbeddedEncodedPath(encodedPath);
+  }
+
   try {
     const parsed = new URL(trimmed);
     const pathname = parsed.pathname;
     if (pathname.startsWith(STORAGE_GET_EMBEDDED_PREFIX)) {
       return pathname.slice(STORAGE_GET_PREFIX.length);
     }
+    if (pathname.startsWith(STORAGE_GET_PREFIX)) {
+      return extractEmbeddedStoragePath(pathname.slice(STORAGE_GET_PREFIX.length));
+    }
     if (pathname.startsWith(STORAGE_VIEW_EMBEDDED_PREFIX)) {
       return pathname.slice(STORAGE_VIEW_EMBEDDED_PREFIX.length - 'embedded/'.length);
     }
     if (/^\/storage\/view\/embedded%2f/i.test(pathname)) {
       const encodedPath = pathname.slice('/storage/view/'.length);
+      return decodeEmbeddedEncodedPath(encodedPath);
+    }
+    if (pathname.startsWith(STORAGE_VIEW_PREFIX)) {
+      const encodedPath = pathname.slice(STORAGE_VIEW_PREFIX.length);
       return decodeEmbeddedEncodedPath(encodedPath);
     }
   } catch {

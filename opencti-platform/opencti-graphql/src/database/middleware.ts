@@ -729,7 +729,7 @@ const convertStoreToStixWithResolvedFiles = async (
     }
 
     const markdownFieldCandidates = ['description', 'x_opencti_description', 'content'];
-    const hasEmbeddedStorageRef = (s: string) => s.includes('/storage/get/embedded/') || s.includes('/storage/view/embedded');
+    const hasEmbeddedStorageRef = (s: string) => extractMarkdownImageReferences(s).some((reference) => reference.isEmbeddedStorage);
     for (let i = 0; i < markdownFieldCandidates.length; i += 1) {
       const key = markdownFieldCandidates[i];
       const value = (payload as Record<string, unknown>)[key];
@@ -738,19 +738,10 @@ const convertStoreToStixWithResolvedFiles = async (
       }
     }
 
-    const descriptions = (payload as Record<string, unknown>).descriptions;
-    if (Array.isArray(descriptions)) {
-      for (let i = 0; i < descriptions.length; i += 1) {
-        if (typeof descriptions[i] === 'string' && hasEmbeddedStorageRef(descriptions[i])) {
-          descriptions[i] = await resolveEmbeddedImagesInMarkdownDescription(descriptions[i]);
-        }
-      }
-    }
-
     const entries = Object.entries(payload as Record<string, unknown>);
     for (let i = 0; i < entries.length; i += 1) {
       const [key, value] = entries[i];
-      if (markdownFieldCandidates.includes(key) || key === 'descriptions') {
+      if (markdownFieldCandidates.includes(key)) {
         continue;
       }
       await resolveEmbeddedImagesInDescriptionFields(value);
@@ -2572,14 +2563,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
   }
-  if (!draftId) {
-    await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
-      entityType: initial.entity_type,
-      entityId: initial.internal_id,
-      entity: initial,
-      fileMarkings: extractMarkingIds(initial as unknown as Record<string, any>),
-    });
-  }
+
+  await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
+    entityType: initial.entity_type,
+    entityId: initial.internal_id,
+    entity: initial,
+    fileMarkings: extractMarkingIds(initial as unknown as Record<string, any>),
+  });
+
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [
@@ -3312,14 +3303,12 @@ const upsertElement = async (
     }
   }
 
-  if (!getDraftContext(context, user)) {
-    await rewriteEmbeddedDataUriImagesInDescriptions(context, user, basePatch, {
-      entityType: type,
-      entityId: resolvedElement.internal_id,
-      entity: resolvedElement,
-      fileMarkings: extractMarkingIds(resolvedElement),
-    });
-  }
+  await rewriteEmbeddedDataUriImagesInDescriptions(context, user, basePatch, {
+    entityType: type,
+    entityId: resolvedElement.internal_id,
+    entity: resolvedElement,
+    fileMarkings: extractMarkingIds(resolvedElement),
+  });
 
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch as ObjectWithConfidence, resolvedElement);
 
@@ -3929,14 +3918,13 @@ const internalCreateEntityRaw = async (
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };
-    if (!getDraftContext(context, user)) {
-      await rewriteEmbeddedDataUriImagesInDescriptions(context, user, dataEntity.element, {
-        entityType: type,
-        entityId: dataEntity.element[ID_INTERNAL],
-        entity: dataEntity.element as BasicStoreBase,
-        fileMarkings: extractMarkingIds(resolvedInput),
-      });
-    }
+
+    await rewriteEmbeddedDataUriImagesInDescriptions(context, user, dataEntity.element, {
+      entityType: type,
+      entityId: dataEntity.element[ID_INTERNAL],
+      entity: dataEntity.element as BasicStoreBase,
+      fileMarkings: extractMarkingIds(resolvedInput),
+    });
 
     // Handle multiple files upload (new plural form)
     const filesToUpload = [];
