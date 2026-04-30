@@ -6,6 +6,7 @@ import useWorkflowLayout, { LayoutOptions, Direction } from './hooks/useWorkflow
 import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
+import { Typography } from '@mui/material';
 import { SaveOutlined } from '@mui/icons-material';
 import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -17,6 +18,8 @@ import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMu
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
+import { useTheme } from '@mui/material/styles';
+import type { Theme } from '../../../../../components/Theme';
 
 const workflowDefinitionSetMutation = graphql`
   mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
@@ -29,11 +32,6 @@ const workflowDefinitionSetMutation = graphql`
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = {};
-// const defaultEdgeOptions = {
-//   type: 'straight',
-//   markerEnd: { type: MarkerType.Arrow },
-//   style: { strokeWidth: 2, strokeDasharray: '3 3' },
-// };
 
 const emptyElement = {
   id: NEW_STATUS_NAME,
@@ -44,6 +42,7 @@ const emptyElement = {
 
 const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery> }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { fitView, getNode } = useReactFlow();
 
   const { workflowDefinition, statusTemplates, members } = usePreloadedQuery<SubTypeWorkflowQuery>(
@@ -140,24 +139,54 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
         zoomOnDoubleClick={false}
         proOptions={proOptions}
       >
-        <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Button onClick={onSave} startIcon={<SaveOutlined />} variant="secondary">
-            {t_i18n('Save')}
-          </Button>
-          <Button
-            onClick={() => {
-              setSelectedElement({
-                id: NEW_STATUS_NAME,
-                type: WorkflowNodeType.placeholder,
-                data: {},
-                position: { x: 0, y: 0 },
-              });
-              setOpen(true);
+        {nodes.length ? (
+          <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Button onClick={onSave} startIcon={<SaveOutlined />} variant="secondary">
+              {t_i18n('Save')}
+            </Button>
+            <Button
+              onClick={() => {
+                setSelectedElement({
+                  id: NEW_STATUS_NAME,
+                  type: WorkflowNodeType.placeholder,
+                  data: {},
+                  position: { x: 0, y: 0 },
+                });
+                setOpen(true);
+              }}
+            >
+              {t_i18n('Add Status')}
+            </Button>
+          </Panel>
+        ) : (
+          <Panel
+            position="top-center"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 12,
+              top: '40%',
             }}
           >
-            {t_i18n('Add Status')}
-          </Button>
-        </Panel>
+            <Typography variant="subtitle2" color={theme.palette.text.light}>
+              {t_i18n('Start to define your workflow by adding a Status.')}
+            </Typography>
+            <Button
+              onClick={() => {
+                setSelectedElement({
+                  id: NEW_STATUS_NAME,
+                  type: WorkflowNodeType.placeholder,
+                  data: {},
+                  position: { x: 0, y: 0 },
+                });
+                setOpen(true);
+              }}
+            >
+              {t_i18n('Add Status')}
+            </Button>
+          </Panel>
+        )}
       </ReactFlow>
       <WorkflowEditionDrawer
         open={open}

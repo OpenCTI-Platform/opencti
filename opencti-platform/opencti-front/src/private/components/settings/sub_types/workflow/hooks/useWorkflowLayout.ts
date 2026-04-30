@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { type Node, type Edge, useReactFlow, useNodesInitialized, useStore, getIncomers, Position } from 'reactflow';
 import { type HierarchyPointNode, stratify, tree } from 'd3-hierarchy';
+import { NODE_SIZE } from '../utils';
 
 type NodeWithPosition = Node & { x: number; y: number };
 export type Direction = 'TB' | 'LR' | 'RL' | 'BT';
@@ -90,26 +91,118 @@ const layoutAlgorithm = async (nodes: Node[], edges: Edge[], options = { directi
     .id((d) => d.id)
     .parentId(getParentId)([rootNode, ...initialNodes]);
 
-  // We create a map of the laid out nodes here to avoid multiple traversals when
-  // looking up a node's position later on.
-  const root = layout(hierarchy);
+  // First pass: Build a temporary hierarchy to identify backward transitions
+  const tempRoot = layout(hierarchy);
+  const tempLayoutNodes = new Map<string, HierarchyPointNode<NodeWithPosition>>();
+  tempRoot.each((node) => {
+    tempLayoutNodes.set(node.id!, node);
+  });
+
+  // Helper function to check if targetNode is an ancestor of sourceNode
+  const isAncestor = (targetNodeId: string, sourceNodeId: string, layoutMap: Map<string, HierarchyPointNode<NodeWithPosition>>): boolean => {
+    const sourceHierarchyNode = layoutMap.get(sourceNodeId);
+    if (!sourceHierarchyNode) return false;
+
+    let current = sourceHierarchyNode.parent;
+    while (current) {
+      if (current.id === targetNodeId) return true;
+      current = current.parent;
+    }
+    return false;
+  };
+
+  // Identify backward transitions (transitions whose target is an ancestor of their source)
+  const backwardTransitions = new Set<string>();
+  for (const node of initialNodes) {
+    if (node.type === 'transition') {
+      const outgoingEdge = edges.find((edge) => edge.source === node.id);
+      const incomingEdge = edges.find((edge) => edge.target === node.id);
+
+      if (outgoingEdge && incomingEdge) {
+        const sourceStatusId = incomingEdge.source;
+        const targetStatusId = outgoingEdge.target;
+
+        // Check if this is a backward transition
+        if (isAncestor(targetStatusId, sourceStatusId, tempLayoutNodes)) {
+          backwardTransitions.add(node.id);
+        }
+      }
+    }
+  }
+
+  // Second pass: Build hierarchy excluding backward transitions
+  // This ensures D3 only spaces forward transitions horizontally
+  const forwardNodes = initialNodes.filter((node) => !backwardTransitions.has(node.id));
+  const forwardHierarchy = stratify<NodeWithPosition>()
+    .id((d) => d.id)
+    .parentId(getParentId)([rootNode, ...forwardNodes]);
+
+  // Apply layout to the filtered hierarchy
+  const root = layout(forwardHierarchy);
   const layoutNodes = new Map<string, HierarchyPointNode<NodeWithPosition>>();
   root.each((node) => {
     layoutNodes.set(node.id!, node);
   });
 
   const nextNodes = nodes.map((node) => {
-    const { x, y } = layoutNodes.get(node.id)!;
-    const position = { x, y };
-    // The layout algorithm uses the node's center point as its origin, so we need
-    // to offset that position because React Flow uses the top left corner as a
-    // node's origin by default.
-    const offsetPosition = {
-      x: position.x - (node.width ?? 0) / 2,
-      y: position.y - (node.height ?? 0) / 2,
-    };
+    // Handle backward transitions separately - position them at midpoint
+    if (backwardTransitions.has(node.id)) {
+      const outgoingEdge = edges.find((edge) => edge.source === node.id);
+      const incomingEdge = edges.find((edge) => edge.target === node.id);
 
-    return { ...node, position: offsetPosition };
+      if (outgoingEdge && incomingEdge) {
+        const sourceStatusId = incomingEdge.source;
+        const targetStatusId = outgoingEdge.target;
+
+        const sourcePos = layoutNodes.get(sourceStatusId);
+        const targetPos = layoutNodes.get(targetStatusId);
+
+        if (sourcePos && targetPos) {
+          // Determine if source is in left or right branch by comparing to root
+          const rootX = root.x;
+          const isLeftBranch = sourcePos.x < rootX;
+
+          // Alternate positioning: left branch gets negative offset, right branch gets positive
+          const horizontalOffset = isLeftBranch
+            ? -NODE_SIZE.width * 2
+            : NODE_SIZE.width * 2;
+
+          // Position the transition node in the middle between source and target
+          const position = {
+            x: ((sourcePos.x + targetPos.x) / 2) + horizontalOffset,
+            y: (sourcePos.y + targetPos.y) / 2,
+          };
+
+          const offsetPosition = {
+            x: position.x - (node.width ?? 0) / 2,
+            y: position.y - (node.height ?? 0) / 2,
+          };
+
+          return {
+            ...node,
+            position: offsetPosition,
+          };
+        }
+      }
+    }
+
+    // For all other nodes (forward transitions and status nodes), use D3 layout
+    const layoutNode = layoutNodes.get(node.id);
+    if (layoutNode) {
+      const { x, y } = layoutNode;
+      const offsetPosition = {
+        x: x - (node.width ?? 0) / 2,
+        y: y - (node.height ?? 0) / 2,
+      };
+
+      return {
+        ...node,
+        position: offsetPosition,
+      };
+    }
+
+    // Fallback - should not happen
+    return node;
   });
 
   return { nodes: nextNodes, edges };

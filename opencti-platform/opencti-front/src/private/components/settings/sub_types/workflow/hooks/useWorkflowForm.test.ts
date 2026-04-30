@@ -1,9 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Node, Edge } from 'reactflow';
-import { FormikHelpers } from 'formik';
 import { useWorkflowForm } from './useWorkflowForm'; // Adjust path
-import { WorkflowNodeType, WorkflowDataType, WorkflowActionType, Action, NEW_STATUS_NAME } from '../utils';
+import { WorkflowNodeType, NEW_STATUS_NAME } from '../utils';
 import { WorkflowEditionFormValues } from '../WorkflowEditionDrawer';
 
 const mockSetNodes = vi.fn();
@@ -36,11 +35,6 @@ describe('useWorkflowForm', () => {
     vi.clearAllMocks();
   });
 
-  // Helper to create a typed mock of FormikHelpers
-  const createMockFormikHelpers = () => ({
-    setFieldValue: vi.fn() as FormikHelpers<WorkflowEditionFormValues>['setFieldValue'],
-  } as unknown as FormikHelpers<WorkflowEditionFormValues>);
-
   describe('Initialization and State', () => {
     it('should identify a status node and return correct title', () => {
       const node: Node = { id: '1', type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data: {} };
@@ -66,55 +60,6 @@ describe('useWorkflowForm', () => {
 
       expect(result.current.isStatus).toBe(false);
       expect(result.current.drawerTitle).toBe('Edit transition');
-    });
-  });
-
-  describe('onAddObject', () => {
-    const mockValues: WorkflowEditionFormValues = {
-      statusTemplate: { id: NEW_STATUS_NAME, name: NEW_STATUS_NAME, color: '#a1b6d8' },
-      event: '',
-      onEnter: [],
-      onExit: [],
-    };
-
-    it('should add a new condition correctly', () => {
-      const node: Node = { id: '1', position: { x: 0, y: 0 }, data: {} };
-      const { result } = renderHook(() => useWorkflowForm(node, mockOnClose));
-      const helpers = createMockFormikHelpers();
-
-      act(() => {
-        result.current.onAddObject(WorkflowDataType.conditions, '', helpers.setFieldValue, mockValues);
-      });
-
-      expect(helpers.setFieldValue).toHaveBeenCalledWith(
-        WorkflowDataType.conditions,
-        expect.objectContaining({
-          filterGroups: [],
-          filters: [],
-          mode: 'and',
-        }),
-      );
-    });
-
-    it('should add a member update action with params', () => {
-      const node: Node = { id: '1', position: { x: 0, y: 0 }, data: {} };
-      const { result } = renderHook(() => useWorkflowForm(node, mockOnClose));
-      const helpers = createMockFormikHelpers();
-
-      act(() => {
-        result.current.onAddObject(
-          WorkflowDataType.onEnter,
-          WorkflowActionType.updateAuthorizedMembers,
-          helpers.setFieldValue,
-          mockValues,
-        );
-      });
-
-      const expectedAction: Action = {
-        type: WorkflowActionType.updateAuthorizedMembers,
-        params: { authorized_members: [] },
-      };
-      expect(helpers.setFieldValue).toHaveBeenCalledWith(WorkflowDataType.onEnter, [expectedAction]);
     });
   });
 

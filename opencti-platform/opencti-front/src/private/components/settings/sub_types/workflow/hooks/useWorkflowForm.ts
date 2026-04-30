@@ -1,4 +1,3 @@
-import { FormikHelpers } from 'formik';
 import { useMemo } from 'react';
 import { Node, Edge, useReactFlow } from 'reactflow';
 import * as Yup from 'yup';
@@ -6,9 +5,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import useAddStatus from './useAddStatus';
 import useDeleteElement from './useDeleteElement';
 import { WorkflowEditionFormValues } from '../WorkflowEditionDrawer';
-import { Action, WorkflowActionType, WorkflowDataType, WorkflowNodeType } from '../utils';
-import type { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
+import { WorkflowNodeType } from '../utils';
 
 // Validation Factory
 const getValidationSchema = (isStatus: boolean, t: (s: string) => string) => {
@@ -45,24 +42,6 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
   );
 
   // 3. Handlers
-  const onAddObject = (
-    type: keyof typeof WorkflowDataType,
-    actionName: string,
-    setFieldValue: FormikHelpers<WorkflowEditionFormValues>['setFieldValue'],
-    values: WorkflowEditionFormValues,
-  ) => {
-    if (type === WorkflowDataType.conditions) {
-      const newItem: FilterGroup = emptyFilterGroup;
-      setFieldValue(type, newItem);
-    } else {
-      const newItem: Action = actionName === WorkflowActionType.updateAuthorizedMembers
-        ? { type: actionName, params: { authorized_members: [] } }
-        : { type: actionName };
-      const currentList = values[type] || [];
-      setFieldValue(type, [...currentList, newItem]);
-    }
-  };
-
   const onSubmit = (values: WorkflowEditionFormValues) => {
     if (isNewStatus) {
       addStatus(values);
@@ -92,6 +71,5 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
     validationSchema,
     onSubmit,
     onDelete,
-    onAddObject,
   };
 };

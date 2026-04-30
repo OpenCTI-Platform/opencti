@@ -25,6 +25,36 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const hasIncomingEdge = edges.some((edge) => edge.target === id);
   const hasOutgoingEdge = edges.some((edge) => edge.source === id);
 
+  // Detect if this is a backward transition (going back to an ancestor status)
+  const isBackwardTransition = useMemo(() => {
+    const outgoingEdge = edges.find((edge) => edge.source === id);
+    const incomingEdge = edges.find((edge) => edge.target === id);
+
+    if (!outgoingEdge || !incomingEdge) return false;
+
+    const sourceStatusId = incomingEdge.source;
+    const targetStatusId = outgoingEdge.target;
+
+    // Check if target is an ancestor of source by traversing parent relationships
+    const isAncestor = (ancestorId: string, descendantId: string): boolean => {
+      let currentId = descendantId;
+      const visited = new Set<string>();
+
+      while (currentId && !visited.has(currentId)) {
+        if (currentId === ancestorId) return true;
+        visited.add(currentId);
+
+        // Find parent by looking for incoming edges
+        const parentEdge = edges.find((e) => e.target === currentId && e.source !== id);
+        if (!parentEdge) break;
+        currentId = parentEdge.source;
+      }
+      return false;
+    };
+
+    return isAncestor(targetStatusId, sourceStatusId);
+  }, [edges, id]);
+
   const conditionAndActions = useMemo(() => {
     const filterCount = data.conditions?.filters?.filters?.length ?? 0;
     const filterGroupCount = data.conditions?.filters?.filterGroups?.length ?? 0;
@@ -49,12 +79,15 @@ const TransitionNode = ({ data, id }: NodeProps) => {
     [skew, innerHeight],
   ]);
 
+  const targetPosition = isBackwardTransition ? Position.Bottom : Position.Top;
+  const sourcePosition = isBackwardTransition ? Position.Top : Position.Bottom;
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
       <Handle
         type="target"
-        position={Position.Top}
-        style={{ visibility: hasIncomingEdge ? 'hidden' : 'visible', top: -2 }}
+        position={targetPosition}
+        style={{ visibility: hasIncomingEdge ? 'hidden' : 'visible', [isBackwardTransition ? 'bottom' : 'top']: -2 }}
       />
       <svg width={NODE_SIZE.width} height={NODE_SIZE.height}>
         <g transform={`translate(${strokeWidth}, ${strokeWidth})`}>
@@ -96,8 +129,8 @@ const TransitionNode = ({ data, id }: NodeProps) => {
       </svg>
       <Handle
         type="source"
-        position={Position.Bottom}
-        style={{ visibility: hasOutgoingEdge ? 'hidden' : 'visible', bottom: -2 }}
+        position={sourcePosition}
+        style={{ visibility: hasOutgoingEdge ? 'hidden' : 'visible', [isBackwardTransition ? 'top' : 'bottom']: -2 }}
       />
     </div>
   );
