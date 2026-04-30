@@ -30,7 +30,6 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
     isNewStatus,
     onSubmit,
     onDelete,
-    onAddObject,
     validationSchema,
   } = useWorkflowForm(selectedElement, onClose);
 
@@ -41,15 +40,26 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
           initialValues={selectedElement.data}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
-          initialStatus={{ onAddObject, onDelete } as WorkflowFormStatus}
+          initialStatus={{ onDelete } as WorkflowFormStatus}
         >
           {({ submitForm, isSubmitting }) => (
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {isStatus ? (<StatusForm />) : (<TransitionForm />)}
               <FormButtonContainer>
-                <Button variant="secondary" onClick={onDelete} disabled={isSubmitting}>
-                  {isNewStatus ? t_i18n('Cancel') : t_i18n('Delete')}
-                </Button>
+                {isNewStatus ? (
+                  <Button variant="secondary" onClick={onDelete} disabled={isSubmitting}>
+                    {t_i18n('Cancel')}
+                  </Button>
+                ) : (
+                  <Button
+                    intent="destructive"
+                    variant="secondary"
+                    onClick={onDelete}
+                    disabled={isSubmitting}
+                  >
+                    {t_i18n('Delete')}
+                  </Button>
+                )}
                 <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
                   {isNewStatus ? t_i18n('Add') : t_i18n('Update')}
                 </Button>
