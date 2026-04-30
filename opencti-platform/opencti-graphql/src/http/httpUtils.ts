@@ -173,13 +173,24 @@ export const buildDefaultHelmetParameters = () => {
   return helmetConfiguration;
 };
 
+/**
+ * Generate a rate-limit key combining IP and User-Agent.
+ * This allows to distinguish different users behind a shared IP.
+ */
+const buildRateLimitKey = (req: Request): string => {
+  const ip = req.ip ?? 'unknown';
+  const userAgent = req.headers['user-agent'] ?? 'unknown';
+  return `${ip}|${userAgent}`;
+};
+
 export const buildRateLimiterOptions = (): Options => {
   const skipList: string[] = getRateProtectionIpSkipList();
   const rateLimitOptions: Partial<Options> = {
     windowMs: getRateProtectionTimeWindowMs(),
     limit: getRateProtectionMaxRequests(),
+    keyGenerator: buildRateLimitKey,
     handler: (req, res /* , next */) => {
-      logApp.debug(`[RATE-LIMIT] over quota for ${req?.ip}`);
+      logApp.debug(`[RATE-LIMIT] over quota for ${buildRateLimitKey(req)}`);
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
     skip: (req, _res) => req.ip ? skipList.includes(req.ip) : false,
