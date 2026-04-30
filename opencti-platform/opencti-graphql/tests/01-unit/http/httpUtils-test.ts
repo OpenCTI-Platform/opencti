@@ -66,7 +66,7 @@ describe('buildHelmetParameters coverage', () => {
     vi.restoreAllMocks();
   });
 
-  it('should most secure option works file', () => {
+  it('should most secure option works fine', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('');
