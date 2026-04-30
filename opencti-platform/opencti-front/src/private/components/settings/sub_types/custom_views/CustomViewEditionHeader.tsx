@@ -9,7 +9,7 @@ import CustomViewFormDrawer from './CustomViewFormDrawer';
 import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
-import CustomViewKebabMenu from './CustomViewKebabMenu';
+import CustomViewMenu from './CustomViewMenu';
 
 const headerFragment = graphql`
   fragment CustomViewEditionHeader_customView on CustomView {
@@ -17,7 +17,7 @@ const headerFragment = graphql`
     name
     description
     targetEntityType
-    ...CustomViewKebabMenu_customView
+    ...CustomViewMenu_customView
   }
 `;
 
@@ -52,7 +52,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
           {customView.name}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 1 }}>
-          <CustomViewKebabMenu data={customView} />
+          <CustomViewMenu data={customView} />
           <DashboardWidgetConfig
             onComplete={onCreateWidget}
             handleImportWidget={onImportWidget}

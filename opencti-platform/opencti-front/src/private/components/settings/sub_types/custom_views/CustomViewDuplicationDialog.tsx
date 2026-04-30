@@ -107,7 +107,7 @@ const CustomViewDuplicationDialog: FunctionComponent<
     <Dialog
       open={displayDuplicate}
       onClose={handleCloseDuplicate}
-      fullWidth={true}
+      size="small"
       title={t_i18n('Duplicate the custom view')}
     >
       <TextField

@@ -6,12 +6,12 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useFormatter } from '../../../../../components/i18n';
 import CustomViewDuplicationDialog from './CustomViewDuplicationDialog';
-import type { CustomViewKebabMenu_customView$key } from './__generated__/CustomViewKebabMenu_customView.graphql';
+import type { CustomViewMenu_customView$key } from './__generated__/CustomViewMenu_customView.graphql';
 import CustomViewDeletionDialog from './CustomViewDeletionDialog';
 import { useNavigate } from 'react-router-dom';
 
 const kebabMenuFragment = graphql`
-  fragment CustomViewKebabMenu_customView on CustomView {
+  fragment CustomViewMenu_customView on CustomView {
     id
     name
     targetEntityType
@@ -19,8 +19,8 @@ const kebabMenuFragment = graphql`
   }
 `;
 
-interface CustomViewKebabMenuProps {
-  data: CustomViewKebabMenu_customView$key;
+interface CustomViewMenuProps {
+  data: CustomViewMenu_customView$key;
 }
 
 const noop = () => {};
@@ -55,7 +55,7 @@ const useDelete = (onDelete = noop) => {
   return { openDelete, handleOpenDeletion, handleCloseDeletion };
 };
 
-const CustomViewKebabMenu = ({ data }: CustomViewKebabMenuProps) => {
+const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
   const customView = useFragment(kebabMenuFragment, data);
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -134,4 +134,4 @@ const CustomViewKebabMenu = ({ data }: CustomViewKebabMenuProps) => {
   );
 };
 
-export default CustomViewKebabMenu;
+export default CustomViewMenu;
