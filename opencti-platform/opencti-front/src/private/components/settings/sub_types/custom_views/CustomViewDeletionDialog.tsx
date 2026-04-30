@@ -2,7 +2,7 @@ import { type UIEvent } from 'react';
 import { graphql } from 'relay-runtime';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import useDeletion from '../../../../../utils/hooks/useDeletion';
+import { Deletion } from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import { useCustomViewsData } from '../../../../components/custom_views/useCustomViewsData';
 import { CustomViewDeletionDialog_Mutation } from './__generated__/CustomViewDeletionDialog_Mutation.graphql';
@@ -17,16 +17,14 @@ const customViewDeletionDialogMutation = graphql`
 
 interface CustomViewDeletionDialogProps {
   id: string;
-  isOpen: boolean;
-  handleClose: (e?: UIEvent) => void;
+  deletion: Deletion;
   onDeleted?: () => void;
   paginationOptions?: Record<string, unknown>;
 }
 
 const CustomViewDeletionDialog = ({
   id,
-  isOpen,
-  handleClose,
+  deletion,
   onDeleted,
   paginationOptions,
 }: CustomViewDeletionDialogProps) => {
@@ -40,12 +38,9 @@ const CustomViewDeletionDialog = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const deletion = useDeletion({ handleClose });
-  const { setDeleting } = deletion;
-
   const submitDelete = (e: UIEvent) => {
     stopEvent(e);
-    setDeleting(true);
+    deletion.setDeleting(true);
     commit({
       variables: {
         id,
@@ -56,8 +51,7 @@ const CustomViewDeletionDialog = ({
         }
       },
       onCompleted: () => {
-        setDeleting(false);
-        handleClose();
+        deletion.setDeleting(false);
         refetchCustomViews();
         onDeleted?.();
       },
@@ -67,8 +61,6 @@ const CustomViewDeletionDialog = ({
     <DeleteDialog
       deletion={deletion}
       submitDelete={submitDelete}
-      isOpen={isOpen}
-      onClose={handleClose}
       message={t_i18n('Do you want to delete this custom view?')}
     />
   );

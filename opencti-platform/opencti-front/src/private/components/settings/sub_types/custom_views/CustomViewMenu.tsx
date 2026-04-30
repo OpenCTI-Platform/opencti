@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { UIEvent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVert from '@mui/icons-material/MoreVert';
-import ToggleButton from '@mui/material/ToggleButton';
+import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../components/i18n';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
 import CustomViewDuplicationDialog from './CustomViewDuplicationDialog';
 import type { CustomViewMenu_customView$key } from './__generated__/CustomViewMenu_customView.graphql';
 import CustomViewDeletionDialog from './CustomViewDeletionDialog';
-import { useNavigate } from 'react-router-dom';
 
-const kebabMenuFragment = graphql`
+const menuFragment = graphql`
   fragment CustomViewMenu_customView on CustomView {
     id
     name
@@ -44,19 +45,8 @@ const useDuplicate = (onDuplicate = noop) => {
   };
 };
 
-const useDelete = (onDelete = noop) => {
-  const [openDelete, setOpenDelete] = useState(false);
-  const handleCloseDeletion = () => setOpenDelete(false);
-  const handleOpenDeletion = () => {
-    onDelete();
-    setOpenDelete(true);
-  };
-
-  return { openDelete, handleOpenDeletion, handleCloseDeletion };
-};
-
 const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
-  const customView = useFragment(kebabMenuFragment, data);
+  const customView = useFragment(menuFragment, data);
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -78,23 +68,27 @@ const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
     handleDuplication,
     handleCloseDuplicate,
   } = useDuplicate(handleClose);
-  const { openDelete, handleOpenDeletion, handleCloseDeletion } = useDelete(handleClose);
+  const deletion = useDeletion({ handleClose });
+  const handleOpenDelete = (e: UIEvent) => {
+    setAnchorEl(null);
+    deletion.handleOpenDelete(e);
+  };
   return (
     <div>
-      <ToggleButton
+      <IconButton
         aria-label={t_i18n('Popover of custom view actions')}
         value="popover"
-        size="small"
-        color="primary"
-        id="custom-view-kebab-button"
-        aria-controls={open ? 'custom-view-kebab-menu' : undefined}
+        color="secondary"
+        id="custom-view-menu-button"
+        aria-controls={open ? 'custom-view-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        sx={{ height: '100%' }}
+        variant="secondary"
+        size="default"
       >
         <MoreVert color="primary" fontSize="small" />
-      </ToggleButton>
+      </IconButton>
       <Menu
         id="custom-view-kebab-menu"
         anchorEl={anchorEl}
@@ -115,12 +109,11 @@ const CustomViewMenu = ({ data }: CustomViewMenuProps) => {
         }}
       >
         <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate the custom view')}</MenuItem>
-        <MenuItem onClick={handleOpenDeletion}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <CustomViewDeletionDialog
         id={customView.id}
-        isOpen={openDelete}
-        handleClose={handleCloseDeletion}
+        deletion={deletion}
         onDeleted={handleDeleted}
       />
       <CustomViewDuplicationDialog

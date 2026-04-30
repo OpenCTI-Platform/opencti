@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import stopEvent from '../../../../../utils/domEvent';
 import { CustomViewPopover_customView$key } from './__generated__/CustomViewPopover_customView.graphql';
 import CustomViewDeletionDialog from './CustomViewDeletionDialog';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 const customViewPopoverFragment = graphql`
   fragment CustomViewPopover_customView on CustomView {
@@ -35,17 +36,11 @@ const CustomViewPopover = ({ data, paginationOptions }: CustomViewPopoverProps) 
     setAnchorEl(null);
   };
 
-  const [isDeletionDialogOpen, setIsDeletionDialogOpen] = useState(false);
+  const deletion = useDeletion({});
+
   const handleOpenDelete = (event: UIEvent) => {
-    stopEvent(event);
-    setIsDeletionDialogOpen(true);
+    deletion.handleOpenDelete(event);
     setAnchorEl(null);
-  };
-  const handleCloseDelete = (event?: UIEvent) => {
-    if (event) {
-      stopEvent(event);
-    }
-    setIsDeletionDialogOpen(false);
   };
 
   return (
@@ -64,8 +59,7 @@ const CustomViewPopover = ({ data, paginationOptions }: CustomViewPopoverProps) 
       </Menu>
       <CustomViewDeletionDialog
         id={id}
-        isOpen={isDeletionDialogOpen}
-        handleClose={handleCloseDelete}
+        deletion={deletion}
         paginationOptions={paginationOptions}
       />
     </div>
