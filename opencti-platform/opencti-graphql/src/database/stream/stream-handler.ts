@@ -13,6 +13,7 @@ import {
   isStreamPublishable,
   LIVE_STREAM_NAME,
   type RawStreamClient,
+  STREAM_FULL_DEBUG_ACTIVATED,
   type StreamProcessor,
   type StreamProcessorOption,
 } from './stream-utils';
@@ -20,6 +21,7 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
+import { logApp } from '../../config/conf';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
 export const initializeStreamStack = async () => {
@@ -32,6 +34,9 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
+    if (STREAM_FULL_DEBUG_ACTIVATED) {
+      logApp.info('Pushing event to stream', { event: eventToPush });
+    }
     const pushToStreamFn = async () => {
       await streamClient.rawPushToStream(eventToPush);
     };

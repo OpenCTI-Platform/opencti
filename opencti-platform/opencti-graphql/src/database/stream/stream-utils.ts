@@ -21,7 +21,9 @@ import type {
   UpdateEventOpts,
 } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import { booleanConf } from '../../config/conf';
 
+export const STREAM_FULL_DEBUG_ACTIVATED = booleanConf('app:stream_full_debug_mode', false);
 export const LIVE_STREAM_NAME = 'stream.opencti';
 export const NOTIFICATION_STREAM_NAME = 'stream.notification';
 export const ACTIVITY_STREAM_NAME = 'stream.activity';
