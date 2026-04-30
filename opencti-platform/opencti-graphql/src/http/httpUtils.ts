@@ -180,7 +180,7 @@ export const buildDefaultHelmetParameters = () => {
 const buildRateLimitKey = (req: Request): string => {
   const ip = req.ip ?? 'unknown';
   const userAgent = req.headers['user-agent'] ?? 'unknown';
-  return `${ip}|${userAgent}`;
+  return crypto.createHash('sha256').update(`${ip}|${userAgent}`).digest('hex');
 };
 
 export const buildRateLimiterOptions = (): Options => {
@@ -190,7 +190,7 @@ export const buildRateLimiterOptions = (): Options => {
     limit: getRateProtectionMaxRequests(),
     keyGenerator: buildRateLimitKey,
     handler: (req, res /* , next */) => {
-      logApp.debug(`[RATE-LIMIT] over quota for ${buildRateLimitKey(req)}`);
+      logApp.info(`[RATE-LIMIT] over quota for ${req.ip ?? 'unknown'}|${req.headers['user-agent'] ?? 'unknown'}`);
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
     skip: (req, _res) => req.ip ? skipList.includes(req.ip) : false,
