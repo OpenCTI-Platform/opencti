@@ -114,6 +114,8 @@ export class TelemetryMeterManager {
 
   ssoGithubStrategyEnabled = 0;
 
+  customViewCreatedCount = 0;
+
   // endregion providers usage
 
   constructor(meterProvider: MeterProvider) {
@@ -288,6 +290,10 @@ export class TelemetryMeterManager {
     this.securityCoveragesCount = n;
   }
 
+  setCustomViewCreatedCount(n: number) {
+    this.customViewCreatedCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: {
     unit?: string;
     valueType?: ValueType;
@@ -346,5 +352,6 @@ export class TelemetryMeterManager {
     this.registerGauge('is_sso_facebook_strategy_enabled', 'FacebookStrategy is configured and enabled', 'ssoFacebookStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_google_strategy_enabled', 'GoogleStrategy is configured and enabled', 'ssoGoogleStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
   }
 }

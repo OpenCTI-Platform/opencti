@@ -33,6 +33,7 @@ import { convertDashboardManifestIds, exportDashboardWidget, importDashboardWidg
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
+import { addCustomViewCreatedCount } from '../../manager/telemetryManager';
 
 /**
  * Exclusion list: entity types not capable of
@@ -123,6 +124,10 @@ const applyUniqueDefaultCustomViewConstraint = async (
   await Promise.all(promises);
 };
 
+const TELEMETRY = {
+  customViewCreated: addCustomViewCreatedCount,
+};
+
 export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) => {
   return `${slug}-${id.replaceAll('-', '')}`;
 };
@@ -206,6 +211,7 @@ export const addCustomView = async (
       }),
     },
   );
+  TELEMETRY.customViewCreated();
   if (element.default) {
     // Unset the `default` fields for other CustomViews of the same
     // target_entity_type to enforce uniqueness constraint
@@ -334,6 +340,7 @@ export async function duplicateCustomView(
       }),
     },
   );
+  TELEMETRY.customViewCreated();
   if (duplicate.default) {
     // Unset the `default` fields for other CustomViews of the same
     // target_entity_type to enforce uniqueness constraint
@@ -408,7 +415,7 @@ export const importCustomViewConfiguration = async (
     default: false,
     enabled: false,
   };
-  return createInternalObject<StoreEntityCustomView>(
+  const imported = await createInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewToCreate,
@@ -421,4 +428,6 @@ export const importCustomViewConfiguration = async (
       }),
     },
   );
+  TELEMETRY.customViewCreated();
+  return imported;
 };
