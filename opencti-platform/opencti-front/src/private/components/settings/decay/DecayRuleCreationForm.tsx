@@ -48,7 +48,6 @@ type DecayRuleCreationFormData = {
   decay_pound: number;
   decay_points: number[];
   decay_revoke_score: number;
-  // decay_observable_types: string[];
   decay_filters: string;
 };
 
