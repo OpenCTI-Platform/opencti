@@ -52,7 +52,7 @@ services:
   rabbitmq:
     profiles: ["backend"]
     container_name: rabbitmq
-    image: rabbitmq:4.2-management
+    image: rabbitmq:4.3-management
     restart: unless-stopped
     networks:
       - runner-docker-network
