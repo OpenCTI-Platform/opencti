@@ -3,6 +3,8 @@ import { getCurrentTab } from '../../../utils/utils';
 import type { CustomView } from './CustomViews-types';
 import { useCustomViewsData } from './useCustomViewsData';
 
+export const DEFAULT_CUSTOM_VIEW_TAB_VALUE = 'default-custom-view';
+
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
 export const customViewsFragment = graphql`
@@ -26,6 +28,7 @@ export const customViewsFragment = graphql`
           name
           path
           targetEntityType
+          default
         }
       }
     }
@@ -35,8 +38,11 @@ export const customViewsFragment = graphql`
 function matchPath(customViews: CustomView[]) {
   return (fullPath: string, basePath: string) => {
     const current = getCurrentTab(fullPath, basePath);
-    if (customViews.find(({ path }) => path === current)) {
-      return CUSTOM_VIEW_TAB_VALUE;
+    const currentCustomView = customViews.find(({ path }) => path === current);
+    if (currentCustomView) {
+      return currentCustomView.default
+        ? DEFAULT_CUSTOM_VIEW_TAB_VALUE
+        : CUSTOM_VIEW_TAB_VALUE;
     }
     return undefined;
   };

@@ -6,7 +6,7 @@ import Tab from '@mui/material/Tab';
 import { screen } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import useCustomViewTabs from './useCustomViewTabs';
-import { CUSTOM_VIEW_TAB_VALUE } from './useCustomViews';
+import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from './useCustomViews';
 import { DropDownMenu, TabWithDropDownMenu } from '../../../components/TabWithDropDownMenu';
 import { useCustomViewsData } from './useCustomViewsData';
 
@@ -24,7 +24,8 @@ interface TestWrapperProps {
 
 const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
   const {
-    customViews,
+    defaultCustomView,
+    otherCustomViews,
     displayMode,
     dropDownMenuState,
     currentCustomViewTab,
@@ -32,7 +33,7 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
 
   const { anchorEl, onOpen, onClose, isOpen } = dropDownMenuState;
 
-  const renderMenuItems = () => customViews.map(({ id, name, path }) => (
+  const renderMenuItems = () => otherCustomViews.map(({ id, name, path }) => (
     <MenuItem
       key={id}
       role="link"
@@ -44,19 +45,34 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
     </MenuItem>
   ));
 
-  const renderCustomViewTab = () => {
-    if (displayMode === 'single') {
+  const renderDefaultCustomViewTab = () => {
+    if (defaultCustomView) {
       return (
         <Tab
           component={Link}
-          to={customViews[0].path}
-          value={CUSTOM_VIEW_TAB_VALUE}
-          label={customViews[0].name}
+          to={defaultCustomView.path}
+          value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
+          label={defaultCustomView.name}
         />
       );
     }
 
-    if (displayMode === 'dropdown') {
+    return null;
+  };
+
+  const renderOtherCustomViewsTab = () => {
+    if (displayMode.others === 'single') {
+      return (
+        <Tab
+          component={Link}
+          to={otherCustomViews[0].path}
+          value={CUSTOM_VIEW_TAB_VALUE}
+          label={otherCustomViews[0].name}
+        />
+      );
+    }
+
+    if (displayMode.others === 'dropdown') {
       return (
         <TabWithDropDownMenu
           value={CUSTOM_VIEW_TAB_VALUE}
@@ -73,9 +89,10 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
   return (
     <>
       <Tabs value={currentCustomViewTab || false}>
-        {renderCustomViewTab()}
+        {renderDefaultCustomViewTab()}
+        {renderOtherCustomViewsTab()}
       </Tabs>
-      {displayMode === 'dropdown' && (
+      {displayMode.others === 'dropdown' && (
         <DropDownMenu
           anchorEl={anchorEl}
           isOpen={isOpen}
@@ -98,6 +115,7 @@ describe('useCustomViewTabs', () => {
         name: customViewDisplayName,
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
+        default: false,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -131,11 +149,13 @@ describe('useCustomViewTabs', () => {
         name: 'My first custom view',
         path: 'some-path',
         targetEntityType: 'Intrusion-Set',
+        default: false,
       }, {
         id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
         name: 'My second custom view',
         path: 'some-other-path',
         targetEntityType: 'Intrusion-Set',
+        default: false,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -167,7 +187,7 @@ describe('useCustomViewTabs', () => {
     );
   });
 
-  it('does not renders another tab when custom view available but for other entity type', () => {
+  it('does not render another tab when custom view available but for other entity type', () => {
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
@@ -176,6 +196,7 @@ describe('useCustomViewTabs', () => {
         name: customViewDisplayName,
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
+        default: false,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -198,5 +219,58 @@ describe('useCustomViewTabs', () => {
     expect(screen.queryByRole('tab', {
       name: /Custom view/i,
     })).not.toBeInTheDocument();
+  });
+
+  it('renders a default and a "Custom view" tab with other values when multiple custom views available and one is default', async () => {
+    vi.mocked(useCustomViewsData).mockImplementation(() => ({
+      allCustomViews: [{
+        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+        name: 'My first custom view',
+        path: 'some-path',
+        targetEntityType: 'Intrusion-Set',
+        default: false,
+      }, {
+        id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
+        name: 'My second custom view',
+        path: 'some-other-path',
+        targetEntityType: 'Intrusion-Set',
+        default: false,
+      }, {
+        id: '808605b9-7bb3-4578-9175-e1ca74600e34',
+        name: 'My default custom view',
+        path: 'default-path',
+        targetEntityType: 'Intrusion-Set',
+        default: true,
+      }],
+      refetchCustomViews: () => ({ dispose: () => {} }),
+    }));
+    const { user } = testRender(
+      <TestWrapper entityType="Intrusion-Set" basePath="" />,
+      {
+        userContext: createMockUserContext({
+          settings: {
+            platform_feature_flags: [{
+              id: 'CUSTOM_VIEW',
+              enable: true,
+            }],
+          },
+        }),
+      },
+    );
+    const defaultTabElem = screen.getByRole('tab', { name: /My default custom view/i });
+    expect(defaultTabElem).toBeInTheDocument();
+    const othersTabElem = screen.getByRole('tab', { name: /Custom view/i });
+    expect(othersTabElem).toBeInTheDocument();
+    await user.click(othersTabElem);
+    const firstLinkElem = screen.getByRole('link', { name: /My first custom view/i });
+    expect(firstLinkElem).toHaveAttribute(
+      'href',
+      expect.stringMatching(/some-path$/),
+    );
+    const secondLinkElem = screen.getByRole('link', { name: /My second custom view/i });
+    expect(secondLinkElem).toHaveAttribute(
+      'href',
+      expect.stringMatching(/some-other-path$/),
+    );
   });
 });
