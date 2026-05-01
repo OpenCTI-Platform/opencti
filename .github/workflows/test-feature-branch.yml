@@ -24,7 +24,7 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         image_tag: ${{ github.ref_name }}
-        publish_to_registry: true
+        publish_to_registry: 'true'
       secrets: inherit
 
   deploy:
@@ -36,6 +36,28 @@ jobs:
 
       - name: Install AWX cli
         run: pip install awxkit
+
+      - name: Wait for Docker tags availability
+        run: |
+          tag="${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}"
+          images=("filigran/platform" "filigran/worker")
+          for image in "${images[@]}"; do
+            echo "Checking ${image}:${tag} availability..."
+            available=false
+            for attempt in {1..20}; do
+              if docker manifest inspect "${image}:${tag}" >/dev/null 2>&1; then
+                echo "${image}:${tag} is available"
+                available=true
+                break
+              fi
+              echo "Attempt ${attempt}/20: ${image}:${tag} not yet available, retrying in 15s..."
+              sleep 15
+            done
+            if [ "${available}" != "true" ]; then
+              echo "Image tag not available after retries: ${image}:${tag}"
+              exit 1
+            fi
+          done
 
       - name: Deploy feature environment via AWX
         run: |
