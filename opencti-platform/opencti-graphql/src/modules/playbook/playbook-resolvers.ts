@@ -35,6 +35,7 @@ import {
   playbookDuplicate,
   findPlaybooksForEnrollment,
   findPlaybooksForEnrollmentByFilters,
+  validatePlaybookNodeConfigs,
 } from './playbook-domain';
 import { executePlaybookOnEntity, playbookStepExecution, getManagerInfo } from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
@@ -53,7 +54,7 @@ const playbookResolvers: Resolvers = {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     playbookComponents: (_, __, context) => availableComponents(context),
-    playbookManagerInfo: (_, __, ___) => getManagerInfo(),
+    playbookNodeConfigurationValidation: (_, { id }, context) => validatePlaybookNodeConfigs(context, context.user, id),
   },
   Playbook: {
     creators: async (current, _, context) => loadCreators(context, context.user, current),
