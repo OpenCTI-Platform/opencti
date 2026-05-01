@@ -26,6 +26,10 @@ const fragmentData = graphql`
     startDate: { type: "DateTime!" }
     endDate: { type: "DateTime" }
   ) {
+    rules {
+      id
+      activated
+    }
     stixDomainObjectsTimeSeries(
       field: "created_at"
       types: ["Stix-Object"]
@@ -86,6 +90,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
     stixDomainObjectsNumber,
     stixRelationshipsNumber,
     ruleManagerInfo,
+    rules,
   } = useFragment(fragmentData, data);
 
   const totalRelations = stixRelationshipsNumber?.total ?? 0;
@@ -93,6 +98,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
   const totalEntities = stixDomainObjectsNumber?.total ?? 0;
   const differenceEntities = totalEntities - (stixDomainObjectsNumber?.count ?? 0);
   const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
+  const activeRulesCount = (rules ?? []).filter((r) => r?.activated).length;
   const lastEventTimestamp = parseInt((ruleManagerInfo?.lastEventId ?? '-').split('-')[0], 10);
 
   const chartDataEntities = (stixDomainObjectsTimeSeries ?? []).flatMap((entry) => {
@@ -162,10 +168,15 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
                 />
               )}
               value={(
-                <ItemBoolean
-                  status={isEngineEnabled}
-                  label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
-                />
+                <div>
+                  <ItemBoolean
+                    status={isEngineEnabled}
+                    label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+                  />
+                  <div style={{ fontSize: 14, marginTop: 4 }}>
+                    {`${activeRulesCount} ${t_i18n('active rules')}`}
+                  </div>
+                </div>
               )}
             />
           </Grid>
