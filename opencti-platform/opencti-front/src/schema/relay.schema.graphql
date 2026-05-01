@@ -9689,8 +9689,7 @@ type Query {
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
   playbooksForEntity(id: String!): [Playbook]
-  playbooksForEnrollment: [Playbook]
-  playbookManagerInfo: PlaybookManager
+  playbookNodeConfigurationValidation(id: ID!): [PlaybookNodeValidation!]!
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionRssAddInputFromImport(file: Upload!): IngestionRssAddInputFromImport!
@@ -13679,15 +13678,9 @@ type PlaybookEdge {
   node: Playbook!
 }
 
-type PlaybookManager {
-  activated: Boolean!
-  lastProcessedEventId: String
-  lastProcessedEventDate: DateTime
-  lastStreamEventId: String
-  lastStreamEventDate: DateTime
-  firstStreamEventId: String
-  firstStreamEventDate: DateTime
-  managerInGoodHealth: Boolean
+type PlaybookNodeValidation {
+  node_id: String!
+  is_valid: Boolean!
 }
 
 input PlaybookAddInput {

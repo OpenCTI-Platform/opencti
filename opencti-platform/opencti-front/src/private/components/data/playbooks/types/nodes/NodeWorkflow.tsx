@@ -5,7 +5,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { MoreVert, LoginOutlined } from '@mui/icons-material';
+import { MoreVert, LoginOutlined, ErrorOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../../components/i18n';
 import { getShortComponentDescription } from '../../utils/playbookComponentDescriptions';
@@ -48,6 +48,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
     lineHeight: 1.2,
     marginTop: 4,
   },
+  componentError: {
+    maxWidth: 160,
+    color: theme.palette.error.main,
+    fontSize: 8,
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
+    lineHeight: 1.2,
+    marginTop: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+  },
   handlesWrapper: {
     position: 'absolute',
     bottom: 0,
@@ -78,6 +90,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const componentDescription = getShortComponentDescription(data.component?.name, data.component?.description);
   const nodeDescription = data.description?.trim() || t_i18n(componentDescription);
 
+  const configurationInvalid = data.configurationInvalid ?? false;
+
   return (
     <div style={{
       position: 'relative',
@@ -98,9 +112,18 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
             {t_i18n(truncate(data.name, 100, false))}
           </div>
         </Tooltip>
-        <Tooltip title={nodeDescription}>
-          <div className={classes.component}>{nodeDescription}</div>
-        </Tooltip>
+        {configurationInvalid ? (
+          <Tooltip title={t_i18n('One or more configuration values are missing or refer to entities that no longer exist. Open the component to reconfigure it.')}>
+            <div className={classes.componentError}>
+              <ErrorOutlined style={{ fontSize: 8, marginRight: 2 }} />
+              {t_i18n('Configuration required')}
+            </div>
+          </Tooltip>
+        ) : (
+          <Tooltip title={nodeDescription}>
+            <div className={classes.component}>{nodeDescription}</div>
+          </Tooltip>
+        )}
       </div>
       <div className="clearfix" />
       <div style={{ position: 'absolute', top: 0, right: 0 }}>
