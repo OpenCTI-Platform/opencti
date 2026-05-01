@@ -1,6 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import { ExpandMore } from '@mui/icons-material';
 import RulesListItem from '@components/settings/rules/RulesListItem';
 import { useTheme } from '@mui/material/styles';
 import RulesStatusChangeDialog, { RulesStatusChangeDialogProps } from '@components/settings/rules/RulesStatusChangeDialog';
@@ -103,9 +107,15 @@ const fragmentData = graphql`
 
 interface RulesListProps {
   data: RulesList_data$key;
+  ruleConfiguredCounts?: Record<string, { active: number; total: number }>;
+  onRuleConfiguredCountsChange?: (ruleId: string, counts: { active: number; total: number }) => void;
 }
 
-const RulesList = ({ data }: RulesListProps) => {
+const RulesList = ({
+  data,
+  ruleConfiguredCounts = {},
+  onRuleConfiguredCountsChange,
+}: RulesListProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { viewStorage } = usePaginationLocalStorage(RULES_LOCAL_STORAGE_KEY, {});
@@ -113,6 +123,7 @@ const RulesList = ({ data }: RulesListProps) => {
 
   const [selectedRule, setSelectedRule] = useState<string>();
   const [pendingMutation, setPendingMutation] = useState<RulesStatusChangeDialogProps['status']>();
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   const { rules, backgroundTasks } = useFragment(fragmentData, data);
 
@@ -129,6 +140,16 @@ const RulesList = ({ data }: RulesListProps) => {
     return Array.from(setOfCategories).sort();
   }, [filteredRules]);
 
+  useEffect(() => {
+    setExpandedCategories((previous) => {
+      const next: Record<string, boolean> = {};
+      categories.forEach((category) => {
+        next[category] = previous[category] ?? true;
+      });
+      return next;
+    });
+  }, [categories]);
+
   const getRulesByCategory = (cat: string) => filteredRules
     .filter((r) => r.category === cat).sort((a, b) => a.name.localeCompare(b.name));
   const getTasksByRuleId = (ruleId: string) => (backgroundTasks?.edges ?? [])
@@ -137,22 +158,80 @@ const RulesList = ({ data }: RulesListProps) => {
   return (
     <div style={{ marginTop: theme.spacing(3) }}>
       {categories.map((category) => (
-        <div key={category}>
-          <Typography variant="h2" gutterBottom={true} sx={{ marginBottom: 2 }}>
-            {t_i18n(category)}
-          </Typography>
-          {getRulesByCategory(category).map((catRule) => (
-            <RulesListItem
-              key={catRule.id}
-              rule={catRule}
-              task={getTasksByRuleId(catRule.id)[0]}
-              toggle={() => {
-                setSelectedRule(catRule.id);
-                setPendingMutation(catRule.activated ? 'disable' : 'enable');
+        (() => {
+          const sectionRules = getRulesByCategory(category);
+          const sectionCounts = sectionRules.reduce((acc, sectionRule) => {
+            const override = ruleConfiguredCounts[sectionRule.id];
+            if (override) {
+              return {
+                active: acc.active + override.active,
+                total: acc.total + override.total,
+              };
+            }
+            return {
+              active: acc.active + (sectionRule.activated ? 1 : 0),
+              total: acc.total + 1,
+            };
+          }, { active: 0, total: 0 });
+          return (
+            <Accordion
+              key={category}
+              expanded={expandedCategories[category] ?? true}
+              onChange={(_, expanded) => {
+                setExpandedCategories((previous) => ({
+                  ...previous,
+                  [category]: expanded,
+                }));
               }}
-            />
-          ))}
-        </div>
+              disableGutters
+              slotProps={{ transition: { unmountOnExit: false } }}
+              sx={{ boxShadow: 'none', background: 'transparent', '&:before': { display: 'none' } }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                sx={{
+                  px: 0,
+                  borderTop: (t) => `1px solid ${t.palette.divider}`,
+                  borderBottom: (t) => `1px solid ${t.palette.divider}`,
+                  minHeight: 56,
+                  '&.Mui-expanded': {
+                    minHeight: 56,
+                  },
+                  '& .MuiAccordionSummary-content.Mui-expanded': {
+                    margin: '12px 0',
+                  },
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingRight: theme.spacing(1) }}>
+                  <Typography variant="h2" gutterBottom={false} sx={{ marginBottom: 0 }}>
+                    {t_i18n(category)}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {sectionCounts.active}
+                    /
+                    {sectionCounts.total}
+                    {' '}
+                    {t_i18n('active')}
+                  </Typography>
+                </div>
+              </AccordionSummary>
+              <AccordionDetails sx={{ px: 0, pt: 1 }}>
+                {sectionRules.map((catRule) => (
+                  <RulesListItem
+                    key={catRule.id}
+                    rule={catRule}
+                    task={getTasksByRuleId(catRule.id)[0]}
+                    onConfiguredRuleCountsChange={(counts) => onRuleConfiguredCountsChange?.(catRule.id, counts)}
+                    toggle={() => {
+                      setSelectedRule(catRule.id);
+                      setPendingMutation(catRule.activated ? 'disable' : 'enable');
+                    }}
+                  />
+                ))}
+              </AccordionDetails>
+            </Accordion>
+          );
+        })()
       ))}
       <RulesStatusChangeDialog
         ruleId={selectedRule}

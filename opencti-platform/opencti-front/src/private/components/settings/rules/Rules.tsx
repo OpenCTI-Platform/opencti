@@ -1,4 +1,4 @@
-import React, { Suspense, useRef } from 'react';
+import React, { Suspense, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import RulesHeader from './RulesHeader';
@@ -22,15 +22,33 @@ export const rulesQuery = graphql`
 
 interface RulesComponentProps {
   queryRef: PreloadedQuery<RulesQuery>;
+  ruleConfiguredCounts: Record<string, RuleConfiguredCounts>;
+  onRuleConfiguredCountsChange: (ruleId: string, counts: RuleConfiguredCounts) => void;
 }
 
-const RulesComponent = ({ queryRef }: RulesComponentProps) => {
+export interface RuleConfiguredCounts {
+  active: number;
+  total: number;
+}
+
+const RulesComponent = ({
+  queryRef,
+  ruleConfiguredCounts,
+  onRuleConfiguredCountsChange,
+}: RulesComponentProps) => {
   const data = usePreloadedQuery(rulesQuery, queryRef);
 
   return (
     <>
-      <RulesHeader data={data} />
-      <RulesList data={data} />
+      <RulesHeader
+        data={data}
+        ruleConfiguredCounts={ruleConfiguredCounts}
+      />
+      <RulesList
+        data={data}
+        ruleConfiguredCounts={ruleConfiguredCounts}
+        onRuleConfiguredCountsChange={onRuleConfiguredCountsChange}
+      />
     </>
   );
 };
@@ -52,6 +70,7 @@ const Rules = () => {
   // Use a ref for variables otherwise we have new variables at each calls (with different seconds)
   // which can cause blink effects with slower networks.
   const queryVariables = useRef({ startDate: yearsAgo(1), endDate: dayAgo() });
+  const [ruleConfiguredCounts, setRuleConfiguredCounts] = useState<Record<string, RuleConfiguredCounts>>({});
   const [rulesQueryRef, loadQuery] = useQueryLoader<RulesQuery>(rulesQuery);
   useInterval(
     () => {
@@ -75,7 +94,16 @@ const Rules = () => {
 
       {ruleEngineEnabled && rulesQueryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RulesComponent queryRef={rulesQueryRef} />
+          <RulesComponent
+            queryRef={rulesQueryRef}
+            ruleConfiguredCounts={ruleConfiguredCounts}
+            onRuleConfiguredCountsChange={(ruleId, counts) => {
+              setRuleConfiguredCounts((previous) => ({
+                ...previous,
+                [ruleId]: counts,
+              }));
+            }}
+          />
         </Suspense>
       )}
     </div>

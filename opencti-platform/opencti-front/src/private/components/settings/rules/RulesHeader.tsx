@@ -76,9 +76,10 @@ const fragmentData = graphql`
 
 interface RulesHeaderProps {
   data: RulesHeader_data$key;
+  ruleConfiguredCounts?: Record<string, { active: number; total: number }>;
 }
 
-const RulesHeader = ({ data }: RulesHeaderProps) => {
+const RulesHeader = ({ data, ruleConfiguredCounts = {} }: RulesHeaderProps) => {
   const theme = useTheme<Theme>();
   const { platformModuleHelpers } = useAuth();
   const { t_i18n, nsdt, md } = useFormatter();
@@ -98,7 +99,13 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
   const totalEntities = stixDomainObjectsNumber?.total ?? 0;
   const differenceEntities = totalEntities - (stixDomainObjectsNumber?.count ?? 0);
   const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
-  const activeRulesCount = (rules ?? []).filter((r) => r?.activated).length;
+  const configuredCountsEntries = Object.values(ruleConfiguredCounts);
+  const activeRulesCount = configuredCountsEntries.length > 0
+    ? configuredCountsEntries.reduce((acc, counts) => acc + counts.active, 0)
+    : (rules ?? []).reduce((acc, rule) => {
+      if (!rule) return acc;
+      return acc + (rule.activated ? 1 : 0);
+    }, 0);
   const lastEventTimestamp = parseInt((ruleManagerInfo?.lastEventId ?? '-').split('-')[0], 10);
 
   const chartDataEntities = (stixDomainObjectsTimeSeries ?? []).flatMap((entry) => {

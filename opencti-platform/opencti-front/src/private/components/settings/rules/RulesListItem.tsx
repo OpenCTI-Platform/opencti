@@ -372,12 +372,34 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
   const hasAnyFilters = Object.values(filtersMap).some((fg) => (fg?.filters?.length ?? 0) > 0);
   if (!hasAnyFilters) return null;
 
-  const styleStep: CSSProperties = {
-    display: 'flex',
+  const styleStepPrimaryRow: CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '96px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)',
+    alignItems: 'center',
+    columnGap: theme.spacing(1),
+    padding: `${theme.spacing(0.5)} ${theme.spacing(0.5)} 0`,
+    width: '100%',
+    minHeight: 28,
+  };
+
+  const styleStepConditionsRow: CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '96px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)',
     alignItems: 'flex-start',
-    gap: theme.spacing(1),
-    flexWrap: 'wrap',
-    padding: `${theme.spacing(0.5)} 0`,
+    columnGap: theme.spacing(1),
+    padding: `0 ${theme.spacing(0.5)} ${theme.spacing(0.5)}`,
+    width: '100%',
+  };
+
+  const stylePreviewBlock: CSSProperties = {
+    flex: 1,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: Number(theme.shape.borderRadius),
+    padding: theme.spacing(1),
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+    minWidth: 420,
   };
 
   return (
@@ -390,58 +412,77 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-        {t_i18n('Rule preview with configuration')}
-      </Typography>
-
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 2, flexWrap: 'wrap' }}>
         {/* IF block */}
-        <Box>
+        <Box style={stylePreviewBlock}>
           {(rule.display?.if ?? []).map((step, index) => (
-            <Box key={index} sx={styleStep}>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, minWidth: 20 }}>
-                {t_i18n('IF')}
-              </Typography>
-              <Box>
-                <RuleTag color={step?.source_color} label={step?.source ?? undefined} />
-                <FilterSummaryChips filters={getFilters(step?.source) ?? createEmptyFilterGroup()} />
-              </Box>
-              {step?.relation && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {t_i18n(step.relation)}
-                </Typography>
-              )}
-              {step?.target && step?.relation !== 'relationship_has' && (
-                <Box>
-                  <RuleTag color={step.target_color} label={step.target} />
-                  <FilterSummaryChips filters={getFilters(step.target) ?? createEmptyFilterGroup()} />
+            <Box key={index}>
+              <Box sx={styleStepPrimaryRow}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'left' }}>
+                    {t_i18n('IF')}
+                  </Typography>
                 </Box>
-              )}
+                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+                  <RuleTag color={step?.source_color} label={step?.source ?? undefined} />
+                </Box>
+                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+                  {step?.relation && (
+                    <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                      {t_i18n(step.relation)}
+                    </Typography>
+                  )}
+                </Box>
+                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+                  {step?.target && step?.relation !== 'relationship_has' && (
+                    <RuleTag color={step.target_color} label={step.target} />
+                  )}
+                </Box>
+              </Box>
+
+              <Box sx={styleStepConditionsRow}>
+                <Box sx={{ minWidth: 0 }} />
+                <Box sx={{ minWidth: 0 }}>
+                  <FilterSummaryChips filters={getFilters(step?.source) ?? createEmptyFilterGroup()} />
+                </Box>
+                <Box sx={{ minWidth: 0 }}>
+                  <FilterSummaryChips filters={filtersMap[`relationship::triplet-${index}`] ?? createEmptyFilterGroup()} />
+                </Box>
+                <Box sx={{ minWidth: 0 }}>
+                  {step?.target && step?.relation !== 'relationship_has' && (
+                    <FilterSummaryChips filters={getFilters(step.target) ?? createEmptyFilterGroup()} />
+                  )}
+                </Box>
+              </Box>
             </Box>
           ))}
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 0.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <ArrowRightAlt />
           <Typography variant="caption" color="text.secondary">{t_i18n('THEN')}</Typography>
         </Box>
 
         {/* THEN block */}
-        <Box>
+        <Box style={stylePreviewBlock}>
           {(rule.display?.then ?? []).map((step, index) => (
-            <Box key={index} sx={styleStep}>
-              <RuleTag action label={step?.action} />
-              {step?.source && (
-                <Box>
-                  <RuleTag color={step.source_color} label={step.source} />
-                </Box>
-              )}
-              {step?.relation && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {t_i18n(step.relation)}
-                </Typography>
-              )}
-              {step?.target && <RuleTag color={step.target_color} label={step.target} />}
+            <Box key={index} sx={styleStepPrimaryRow}>
+              <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'flex-start' }}>
+                <RuleTag action label={step?.action} />
+              </Box>
+              <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+                {step?.source && <RuleTag color={step.source_color} label={step.source} />}
+              </Box>
+              <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+                {step?.relation && (
+                  <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                    {t_i18n(step.relation)}
+                  </Typography>
+                )}
+              </Box>
+              <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+                {step?.target && <RuleTag color={step.target_color} label={step.target} />}
+              </Box>
             </Box>
           ))}
         </Box>
@@ -740,9 +781,15 @@ interface RulesListItemProps {
   rule: NonNullable<Rule>;
   task: Task;
   toggle: () => void;
+  onConfiguredRuleCountsChange?: (counts: { active: number; total: number }) => void;
 }
 
-const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
+const RulesListItem = ({
+  rule,
+  task,
+  toggle,
+  onConfiguredRuleCountsChange,
+}: RulesListItemProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { platformModuleHelpers, schema } = useAuth();
@@ -761,8 +808,19 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
   const ruleStatus = isEngineEnabled && rule.activated ? t_i18n('Enabled') : t_i18n('Disabled');
   const taskWork = task?.work;
   const activeConfiguredRulesCount = configuredRules.filter((r) => r.active).length;
+  const totalRuleCount = configuredRules.length > 0 ? configuredRules.length : 1;
+  const activeRuleCount = configuredRules.length > 0
+    ? activeConfiguredRulesCount
+    : (rule.activated ? 1 : 0);
 
   const configuredRulePendingDeletion = configuredRules.find((r) => r.id === configuredRuleToDelete);
+
+  useEffect(() => {
+    onConfiguredRuleCountsChange?.({
+      active: activeRuleCount,
+      total: totalRuleCount,
+    });
+  }, [onConfiguredRuleCountsChange, activeRuleCount, totalRuleCount]);
 
   const handleAddConfiguredRule = () => {
     setConfiguredRules((previous) => [
@@ -817,8 +875,17 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
   };
   const styleDefinition: CSSProperties = {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'stretch',
     gap: theme.spacing(4),
+  };
+  const styleIfThenBlock: CSSProperties = {
+    flex: 1,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: Number(theme.shape.borderRadius),
+    padding: theme.spacing(1.5),
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
   };
   const styleStep: CSSProperties = {
     margin: theme.spacing(1),
@@ -922,52 +989,61 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
           <Card
             sx={{ overflowX: 'auto', minWidth: 0 }}
             title=" "
-            action={canManageConfiguredRules ? (
-              <Button
-                size="small"
-                variant="secondary"
-                onClick={handleAddConfiguredRule}
-                startIcon={<AddOutlined fontSize="small" />}
-              >
-                {t_i18n('Add configuration')}
-              </Button>
-            ) : undefined}
           >
-            <div style={styleDefinition}>
-              <div style={{ flex: '1' }}>
-                {(rule.display?.if ?? []).map((step, index) => (
-                  <div key={index} style={styleStep}>
-                    <span style={{ width: '30px', flexShrink: 0 }}>{t_i18n('IF')}</span>
-                    <RuleTag color={step?.source_color} label={step?.source} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <span>{t_i18n(step?.relation)}</span>
-                    </div>
-                    <RuleTag color={step?.target_color} label={step?.target} />
-                  </div>
-                ))}
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <ArrowRightAlt fontSize="large" />
-                <br />
-                <span style={{ width: '80px' }}>{t_i18n('THEN')}</span>
-              </div>
-              <div style={{ flex: '1' }}>
-                {(rule.display?.then ?? []).map((step, index) => {
-                  return (
+            <Box
+              sx={{
+                borderRadius: 1,
+                p: 2,
+              }}
+            >
+              {canManageConfiguredRules && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1.5 }}>
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    onClick={handleAddConfiguredRule}
+                    startIcon={<AddOutlined fontSize="small" />}
+                  >
+                    {t_i18n('Add configuration')}
+                  </Button>
+                </Box>
+              )}
+
+              <div style={styleDefinition}>
+                <div style={styleIfThenBlock}>
+                  {(rule.display?.if ?? []).map((step, index) => (
                     <div key={index} style={styleStep}>
-                      <RuleTag action label={step?.action} />
+                      <span style={{ width: '30px', flexShrink: 0 }}>{t_i18n('IF')}</span>
                       <RuleTag color={step?.source_color} label={step?.source} />
-                      {step?.relation && (
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span>{t_i18n(step?.relation)}</span>
-                        </div>
-                      )}
-                      {step?.target && <RuleTag color={step?.target_color} label={step?.target} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span>{t_i18n(step?.relation)}</span>
+                      </div>
+                      <RuleTag color={step?.target_color} label={step?.target} />
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <ArrowRightAlt fontSize="large" />
+                  <span style={{ width: '80px' }}>{t_i18n('THEN')}</span>
+                </div>
+                <div style={styleIfThenBlock}>
+                  {(rule.display?.then ?? []).map((step, index) => {
+                    return (
+                      <div key={index} style={styleStep}>
+                        <RuleTag action label={step?.action} />
+                        <RuleTag color={step?.source_color} label={step?.source} />
+                        {step?.relation && (
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span>{t_i18n(step?.relation)}</span>
+                          </div>
+                        )}
+                        {step?.target && <RuleTag color={step?.target_color} label={step?.target} />}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            </Box>
           </Card>
 
           {configuredRules.length > 0 && (
