@@ -40,6 +40,8 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
 import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren } from './playbook-utils';
 import type { SharingConfiguration } from './components/sharing-component';
+import { connectorsForPlaybook } from '../../database/repository';
+import { usableNotifiers } from '../notifier/notifier-domain';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -492,4 +494,148 @@ export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id
     },
   });
   return importPlaybookId;
+};
+
+/**
+ * For each node in a playbook, verifies that all entity IDs referenced in its
+ * configuration actually exist on the platform. Covers:
+ *  - Enrichment connector (config.connector)
+ *  - Notifiers (config.notifiers[])
+ *  - Organisations (config.organizations[])
+ *  - Case templates (config.caseTemplates[])
+ *  - Update-knowledge action values (config.actions-N-value[])
+ *  - Filter entity values (values inside config.filters JSON)
+ */
+export const validatePlaybookNodeConfigs = async (
+  context: AuthContext,
+  user: AuthUser,
+  playbookId: string,
+): Promise<{ node_id: string; is_valid: boolean }[]> => {
+  await checkEnterpriseEdition(context);
+  const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
+  if (!playbook || !playbook.playbook_definition) return [];
+
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+
+  // Pre-fetch valid connector IDs and notifier IDs once for the whole playbook
+  const [connectors, notifiers] = await Promise.all([
+    connectorsForPlaybook(context, SYSTEM_USER),
+    usableNotifiers(context, SYSTEM_USER),
+  ]);
+  const validConnectorIds = new Set(connectors.map((c: { id: string }) => c.id));
+  const validNotifierIds = new Set(notifiers.map((n: { id: string }) => n.id));
+
+  // Collect all internal entity IDs referenced across all nodes for a single bulk lookup
+  const allEntityIds = new Set<string>();
+  const nodeEntityMap = new Map<string, string[]>(); // nodeId -> entity IDs to check
+
+  for (const node of definition.nodes) {
+    const component = PLAYBOOK_COMPONENTS[node.component_id];
+    if (!component || component.is_entry_point) continue;
+    if (!node.configuration) continue;
+
+    let config: Record<string, unknown>;
+    try {
+      config = JSON.parse(node.configuration) as Record<string, unknown>;
+    } catch {
+      nodeEntityMap.set(node.id, []);
+      continue;
+    }
+
+    const entityIds: string[] = [];
+
+    // Organisations: stored as {label, value}[] or string[]
+    const orgs = config.organizations as Array<{ value: string } | string> | undefined;
+    if (Array.isArray(orgs)) {
+      orgs.forEach((o) => entityIds.push(typeof o === 'string' ? o : o.value));
+    }
+
+    // Case templates: stored as {label, value}[]
+    const caseTemplates = config.caseTemplates as Array<{ value: string }> | undefined;
+    if (Array.isArray(caseTemplates)) {
+      caseTemplates.forEach((ct) => entityIds.push(ct.value));
+    }
+
+    // Update-knowledge action values: stored at keys matching actions-N-value
+    Object.entries(config)
+      .filter(([key]) => /^actions-\d+-value$/.test(key))
+      .forEach(([, val]) => {
+        if (Array.isArray(val)) {
+          (val as Array<{ value: string }>).forEach((item) => {
+            if (item.value) entityIds.push(item.value);
+          });
+        }
+      });
+
+    // Filter entity values: parse filter JSON and extract values arrays
+    const filtersRaw = config.filters as string | undefined;
+    if (filtersRaw) {
+      try {
+        const filters = JSON.parse(filtersRaw) as { filters?: Array<{ values?: string[] }> };
+        (filters.filters ?? []).forEach((f) => {
+          (f.values ?? []).forEach((v) => entityIds.push(v));
+        });
+      } catch {
+        // unparseable filters
+      }
+    }
+
+    entityIds.forEach((id) => allEntityIds.add(id));
+    nodeEntityMap.set(node.id, entityIds);
+  }
+
+  // Bulk lookup all referenced entity IDs in a single query
+  const foundEntities = allEntityIds.size > 0
+    ? await internalFindByIds(context, SYSTEM_USER, [...allEntityIds], { baseData: true, baseFields: ['internal_id'], toMap: true }) as Record<string, unknown>
+    : {};
+
+  const results: { node_id: string; is_valid: boolean }[] = [];
+
+  for (const node of definition.nodes) {
+    const component = PLAYBOOK_COMPONENTS[node.component_id];
+
+    if (!component || component.is_entry_point) {
+      results.push({ node_id: node.id, is_valid: true });
+      continue;
+    }
+
+    if (!node.configuration) {
+      results.push({ node_id: node.id, is_valid: false });
+      continue;
+    }
+
+    let config: Record<string, unknown>;
+    try {
+      config = JSON.parse(node.configuration) as Record<string, unknown>;
+    } catch {
+      results.push({ node_id: node.id, is_valid: false });
+      continue;
+    }
+
+    let is_valid = true;
+
+    // Check connector
+    const connector = config.connector as string | undefined;
+    if (connector !== undefined) {
+      if (!connector || !validConnectorIds.has(connector)) is_valid = false;
+    }
+
+    // Check notifiers
+    const notifierList = config.notifiers as string[] | undefined;
+    if (is_valid && Array.isArray(notifierList) && notifierList.length > 0) {
+      if (!notifierList.every((id) => validNotifierIds.has(id))) is_valid = false;
+    }
+
+    // Check all other entity IDs via bulk lookup
+    if (is_valid) {
+      const entityIds = nodeEntityMap.get(node.id) ?? [];
+      if (entityIds.length > 0 && !entityIds.every((id) => foundEntities[id] !== undefined)) {
+        is_valid = false;
+      }
+    }
+
+    results.push({ node_id: node.id, is_valid });
+  }
+
+  return results;
 };

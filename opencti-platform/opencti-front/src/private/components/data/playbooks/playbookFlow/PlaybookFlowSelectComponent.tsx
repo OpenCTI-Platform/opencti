@@ -32,21 +32,22 @@ const normalizeComponentName = (name: string) => name.trim().toLowerCase().repla
 
 const nonEntrySections: Array<{ title: string; components: PlaybookSectionComponent[] }> = [
   {
-    title: 'Transform bundle',
+    title: 'Transform and Enrich',
     components: [
       { name: 'Apply predefined rule' },
       { name: 'Container Wrapper' },
-      { name: 'Security Coverage', displayName: 'Create Security Coverage' },
       { name: 'Enrich through connector' },
       { name: 'Extract observables from indicator' },
       { name: 'Match knowledge', displayName: 'Filter Bundle' },
       { name: 'Manipulate knowledge', displayName: 'Manipulate Bundle' },
       { name: 'Promote observable to indicator' },
       { name: 'Reduce knowledge', displayName: 'Reduce Bundle' },
+      { name: 'Security Coverage', displayName: 'Create Security Coverage' },
+      { name: 'Log data in standard output' },
     ],
   },
   {
-    title: 'Share',
+    title: 'Share and Access',
     components: [
       { name: 'Manage access restrictions' },
       { name: 'Remove access restrictions' },
@@ -55,9 +56,8 @@ const nonEntrySections: Array<{ title: string; components: PlaybookSectionCompon
     ],
   },
   {
-    title: 'End playbook',
+    title: 'End Playbook',
     components: [
-      { name: 'Log data in standard output' },
       { name: 'Send email from template' },
       { name: 'Send for ingestion', displayName: 'Send to knowledge' },
       { name: 'Send to notifier' },

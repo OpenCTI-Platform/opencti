@@ -36,6 +36,7 @@ export type PlaybookNode = Node<{
   description?: string;
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
+  configurationInvalid?: boolean;
   openConfig: (nodeId: string) => void;
   openReplace: (nodeId: string) => void;
   openAddSibling: (nodeId: string) => void;

@@ -23304,6 +23304,12 @@ export type PlaybookInsertResult = {
   nodeId: Scalars['String']['output'];
 };
 
+export type PlaybookNodeValidation = {
+  __typename?: 'PlaybookNodeValidation';
+  is_valid: Scalars['Boolean']['output'];
+  node_id: Scalars['String']['output'];
+};
+
 export enum PlaybooksOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
@@ -24225,6 +24231,7 @@ export type Query = {
   pirs?: Maybe<PirConnection>;
   playbook?: Maybe<Playbook>;
   playbookComponents: Array<Maybe<PlaybookComponent>>;
+  playbookNodeConfigurationValidation: Array<PlaybookNodeValidation>;
   playbooks?: Maybe<PlaybookConnection>;
   playbooksForEntity?: Maybe<Array<Maybe<Playbook>>>;
   position?: Maybe<Position>;
@@ -26006,6 +26013,11 @@ export type QueryPirsArgs = {
 
 export type QueryPlaybookArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryPlaybookNodeConfigurationValidationArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -39461,6 +39473,7 @@ export type ResolversTypes = ResolversObject<{
   PlaybookConnection: ResolverTypeWrapper<Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversTypes['PlaybookEdge']> }>;
   PlaybookEdge: ResolverTypeWrapper<Omit<PlaybookEdge, 'node'> & { node: ResolversTypes['Playbook'] }>;
   PlaybookInsertResult: ResolverTypeWrapper<PlaybookInsertResult>;
+  PlaybookNodeValidation: ResolverTypeWrapper<PlaybookNodeValidation>;
   PlaybooksOrdering: PlaybooksOrdering;
   Position: ResolverTypeWrapper<Omit<Position, 'avatar' | 'cases' | 'city' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, city?: Maybe<ResolversTypes['City']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversTypes['FintelTemplate']>>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   PositionAddInput: PositionAddInput;
@@ -40468,6 +40481,7 @@ export type ResolversParentTypes = ResolversObject<{
   PlaybookConnection: Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversParentTypes['PlaybookEdge']> };
   PlaybookEdge: Omit<PlaybookEdge, 'node'> & { node: ResolversParentTypes['Playbook'] };
   PlaybookInsertResult: PlaybookInsertResult;
+  PlaybookNodeValidation: PlaybookNodeValidation;
   Position: Omit<Position, 'avatar' | 'cases' | 'city' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, city?: Maybe<ResolversParentTypes['City']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   PositionAddInput: PositionAddInput;
   PositionConnection: Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['PositionEdge']>>> };
@@ -48032,6 +48046,11 @@ export type PlaybookInsertResultResolvers<ContextType = any, ParentType extends 
   nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type PlaybookNodeValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookNodeValidation'] = ResolversParentTypes['PlaybookNodeValidation']> = ResolversObject<{
+  is_valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  node_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type PositionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Position'] = ResolversParentTypes['Position']> = ResolversObject<{
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<PositionCasesArgs>>;
@@ -48498,6 +48517,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   pirs?: Resolver<Maybe<ResolversTypes['PirConnection']>, ParentType, ContextType, Partial<QueryPirsArgs>>;
   playbook?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<QueryPlaybookArgs, 'id'>>;
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
+  playbookNodeConfigurationValidation?: Resolver<Array<ResolversTypes['PlaybookNodeValidation']>, ParentType, ContextType, RequireFields<QueryPlaybookNodeConfigurationValidationArgs, 'id'>>;
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
   playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
@@ -52563,6 +52583,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PlaybookConnection?: PlaybookConnectionResolvers<ContextType>;
   PlaybookEdge?: PlaybookEdgeResolvers<ContextType>;
   PlaybookInsertResult?: PlaybookInsertResultResolvers<ContextType>;
+  PlaybookNodeValidation?: PlaybookNodeValidationResolvers<ContextType>;
   Position?: PositionResolvers<ContextType>;
   PositionConnection?: PositionConnectionResolvers<ContextType>;
   PositionEdge?: PositionEdgeResolvers<ContextType>;

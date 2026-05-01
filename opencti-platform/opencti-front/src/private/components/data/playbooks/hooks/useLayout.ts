@@ -5,8 +5,14 @@ import { timer } from 'd3-timer';
 import { commitMutation } from '../../../../../relay/environment';
 import { useManipulateComponentsPlaybookUpdatePositionsMutation } from './useManipulateComponents';
 
+const PLAYBOOK_LAYOUT_HORIZONTAL_SPACING = 280;
+const PLAYBOOK_LAYOUT_VERTICAL_SPACING = 170;
+
 const layout = tree<Node>()
-  .nodeSize([200, 150])
+  .nodeSize([
+    PLAYBOOK_LAYOUT_HORIZONTAL_SPACING,
+    PLAYBOOK_LAYOUT_VERTICAL_SPACING,
+  ])
   .separation(() => 1);
 
 const options = { duration: 300 };

@@ -1,17 +1,69 @@
 import { Dispatch, SetStateAction } from 'react';
-import { PlaybookComponents, PlaybookDefinitionEdge, PlaybookDefinitionNode, PlaybookEdge, PlaybookNode } from '../types/playbook-types';
+import { PlaybookComponent, PlaybookComponents, PlaybookDefinitionEdge, PlaybookDefinitionNode, PlaybookEdge, PlaybookNode } from '../types/playbook-types';
+
+/**
+ * Checks whether a node's configuration references entity values that appear
+ * to be missing or incomplete (e.g. empty filter values, empty action values).
+ * This covers both "never configured" and structurally broken configurations.
+ * Server-side validation (e.g. detecting deleted entities by ID) should extend
+ * this check by resolving referenced entity IDs before calling computeNodes.
+ */
+export const isNodeConfigurationInvalid = (
+  configuration: Record<string, unknown> | undefined,
+  component: PlaybookComponent | undefined,
+): boolean => {
+  // No component resolved — treat as invalid
+  if (!component) return true;
+  // Entry points (triggers) don't require entity references
+  if (component.is_entry_point) return false;
+  // No configuration saved yet
+  if (!configuration) return true;
+
+  // Check filter-based components: filter values must not be empty
+  const filtersRaw = configuration.filters as string | undefined;
+  if (filtersRaw) {
+    try {
+      const filters = JSON.parse(filtersRaw) as { filters?: Array<{ values?: unknown[] }> };
+      const hasEmptyFilterValue = (filters.filters ?? []).some(
+        (f) => Array.isArray(f.values) && f.values.length === 0,
+      );
+      if (hasEmptyFilterValue) return true;
+    } catch {
+      return true;
+    }
+  }
+
+  // Check update-knowledge components: action values must not be empty
+  const actionKeys = Object.keys(configuration).filter((k) => /^actions-\d+-value$/.test(k));
+  if (actionKeys.length > 0) {
+    const hasEmptyActionValue = actionKeys.some((key) => {
+      const val = configuration[key];
+      return !Array.isArray(val) || val.length === 0;
+    });
+    if (hasEmptyActionValue) return true;
+  }
+
+  return false;
+};
 
 export const computeNodes = (
   playbookNodes: PlaybookDefinitionNode[],
   playbookComponents: PlaybookComponents,
   setAction: Dispatch<SetStateAction<string | null>>,
   setSelectedNode: Dispatch<SetStateAction<string | null>>,
+  serverValidation?: Map<string, boolean>,
 ): PlaybookNode[] => {
   return playbookNodes.map((node) => {
     const component = playbookComponents.find((playbookComponent) => {
       return playbookComponent?.id === node?.component_id;
     }) || undefined;
     const configuration = node.configuration ? JSON.parse(node.configuration) : undefined;
+
+    // If the server has returned validation results, use those authoritatively.
+    // Otherwise fall back to the client-side structural check.
+    const configurationInvalid = serverValidation?.has(node.id)
+      ? !serverValidation.get(node.id)
+      : isNodeConfigurationInvalid(configuration, component);
 
     return {
       id: node.id,
@@ -22,6 +74,7 @@ export const computeNodes = (
         description: configuration?.description,
         configuration,
         component,
+        configurationInvalid,
         openConfig: (nodeId: string) => {
           setSelectedNode(nodeId);
           setAction('config');

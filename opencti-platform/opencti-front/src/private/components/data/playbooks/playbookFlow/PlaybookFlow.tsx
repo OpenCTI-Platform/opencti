@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import ReactFlow from 'reactflow';
+import { useEffect, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import PlaybookFlowAddComponents from './PlaybookFlowAddComponents';
 import PlaybookFlowDeleteNode from './PlaybookFlowDeleteNode';
@@ -22,6 +23,7 @@ import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import useLayout from '../hooks/useLayout';
 import nodeTypes from '../types/nodes';
 import edgeTypes from '../types/edges';
+import usePlaybookNodeValidation from '../hooks/usePlaybookNodeValidation';
 import { PlaybookFlow_playbookComponents$key } from './__generated__/PlaybookFlow_playbookComponents.graphql';
 import { PlaybookFlow_playbook$key } from './__generated__/PlaybookFlow_playbook.graphql';
 
@@ -64,6 +66,9 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   const { playbookComponents } = useFragment(playbookComponentsFragment, dataPlaybookComponents);
   const definition = JSON.parse(playbook.playbook_definition || '{}');
 
+  // Server-side validation: resolves entity IDs (connectors, notifiers, orgs, labels, etc.)
+  const serverValidation = usePlaybookNodeValidation(playbook.id);
+
   const {
     action,
     setAction,
@@ -81,6 +86,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
     playbookComponents,
     setAction as React.Dispatch<React.SetStateAction<string | null>>, // TODO : remove set casts when useManipulateComponents is in ts
     setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
+    serverValidation,
   );
   const initialEdges = computeEdges(
     definition.links ?? [],
@@ -97,9 +103,22 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   // Needs to be called after computing nodes and edges.
   useLayout(playbook.id);
 
+  // When server validation arrives, increment a key to remount <ReactFlow> with
+  // freshly computed defaultNodes (which already include the serverValidation map).
+  // This is simpler and more reliable than trying to imperatively patch nodes via setNodes.
+  const [nodesKey, setNodesKey] = useState(0);
+  const prevValidationRef = useRef<Map<string, boolean>>(new Map());
+  useEffect(() => {
+    if (serverValidation.size > 0 && serverValidation !== prevValidationRef.current) {
+      prevValidationRef.current = serverValidation;
+      setNodesKey((k) => k + 1);
+    }
+  }, [serverValidation]);
+
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
       <ReactFlow
+        key={nodesKey}
         defaultNodes={flowNodes}
         defaultEdges={flowEdges}
         nodeTypes={nodeTypes}

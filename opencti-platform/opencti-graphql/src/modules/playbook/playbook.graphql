@@ -73,6 +73,12 @@ type PlaybookEdge {
     node: Playbook!
 }
 
+# Validation
+type PlaybookNodeValidation {
+    node_id: String!
+    is_valid: Boolean!
+}
+
 # Queries
 type Query {
     playbook(id: String!): Playbook @auth(for: [AUTOMATION])
@@ -86,6 +92,7 @@ type Query {
     ): PlaybookConnection @auth(for: [AUTOMATION])
     playbookComponents: [PlaybookComponent]! @auth(for: [AUTOMATION])
     playbooksForEntity(id: String!): [Playbook] @auth(for: [AUTOMATION])
+    playbookNodeConfigurationValidation(id: ID!): [PlaybookNodeValidation!]! @auth(for: [AUTOMATION])
 }
 
 input PlaybookAddInput {
