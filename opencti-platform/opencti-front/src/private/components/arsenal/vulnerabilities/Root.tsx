@@ -166,7 +166,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              entityType="Vulnerability"
+              entity={vulnerability}
               basePath={basePath}
               pages={{
                 overview: (

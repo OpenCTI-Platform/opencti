@@ -22,7 +22,10 @@ describe('StixDomainObjectMain', () => {
     const pageContent = `${tabName} page content !`;
     const { user } = testRender(
       <StixDomainObjectMain
-        entityType="Intrusion-Set"
+        entity={{
+          id: '856251e7-f040-4739-8dce-15b90027e4dd',
+          entity_type: 'Intrusion-Set',
+        }}
         pages={{ overview: 'overview', [tab]: <span>{pageContent}</span> }}
         basePath=""
       />,
@@ -39,7 +42,10 @@ describe('StixDomainObjectMain', () => {
     const extraRoute = '/somewhere';
     testRender(
       <StixDomainObjectMain
-        entityType="Intrusion-Set"
+        entity={{
+          id: '856251e7-f040-4739-8dce-15b90027e4dd',
+          entity_type: 'Intrusion-Set',
+        }}
         pages={{ overview: 'overview' }}
         basePath=""
         extraRoutes={<Route path={extraRoute} element={pageContent} />}
@@ -55,7 +61,10 @@ describe('StixDomainObjectMain', () => {
     const nowhereRoute = '/nowhere';
     testRender(
       <StixDomainObjectMain
-        entityType="Intrusion-Set"
+        entity={{
+          id: '856251e7-f040-4739-8dce-15b90027e4dd',
+          entity_type: 'Intrusion-Set',
+        }}
         pages={{ overview: 'overview' }}
         basePath=""
       />,

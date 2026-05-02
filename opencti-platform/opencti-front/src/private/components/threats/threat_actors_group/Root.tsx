@@ -171,7 +171,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              entityType="Threat-Actor-Group"
+              entity={threatActorGroup}
               basePath={basePath}
               pages={{
                 overview:

@@ -159,7 +159,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              entityType="SecurityPlatform"
+              entity={securityPlatform}
               basePath={basePath}
               pages={{
                 overview: (

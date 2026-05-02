@@ -119,7 +119,7 @@ class RootArtifact extends Component {
                       )}
                     />
                     <StixDomainObjectMain
-                      entityType="Artifact"
+                      entity={stixCyberObservable}
                       basePath={basePath}
                       pages={{
                         overview: (
