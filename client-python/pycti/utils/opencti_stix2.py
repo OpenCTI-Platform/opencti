@@ -177,36 +177,62 @@ class OpenCTIStix2:
             return None
 
     @staticmethod
-    def _extract_embedded_storage_path(uri: str) -> Optional[str]:
+    def _extract_embedded_storage_path(
+        uri: str,
+        entity_type: Optional[str] = None,
+        entity_id: Optional[str] = None,
+    ) -> Optional[str]:
         if not isinstance(uri, str):
             return None
+
+        def _normalize_embedded_path(path: str) -> Optional[str]:
+            normalized_path = unquote(path).split("?", 1)[0].split("#", 1)[0]
+            normalized_path = normalized_path.lstrip("/")
+            if not normalized_path.startswith("embedded/"):
+                return None
+            # Relative markdown links such as embedded/file.png need entity context.
+            if entity_type and entity_id:
+                relative_tail = normalized_path[len("embedded/") :]
+                expected_prefix = f"{entity_type}/{entity_id}/"
+                # Only prefix single-segment paths (embedded/file.png).
+                # If path already includes folders, keep it as-is.
+                if "/" not in relative_tail and not relative_tail.startswith(
+                    expected_prefix
+                ):
+                    normalized_path = f"embedded/{expected_prefix}{relative_tail}"
+            return normalized_path
+
         normalized_uri = unquote(uri)
         parsed_uri = urlparse(normalized_uri)
-        normalized_path = parsed_uri.path
-        storage_prefixes = ["/storage/get/embedded/", "/storage/view/embedded/"]
-        for prefix in storage_prefixes:
-            if normalized_path.startswith(prefix):
-                storage_root = prefix.split("embedded/", 1)[0]
-                storage_path = normalized_path[len(storage_root) :]
-                return storage_path if storage_path.startswith("embedded/") else None
+        normalized_path = parsed_uri.path or normalized_uri
+
+        direct_embedded_path = _normalize_embedded_path(normalized_path)
+        if direct_embedded_path is not None:
+            return direct_embedded_path
 
         return None
 
-    def _rewrite_markdown_embedded_storage_images(self, markdown: str) -> str:
+    def _rewrite_markdown_embedded_storage_images(
+        self,
+        markdown: str,
+        entity_type: Optional[str] = None,
+        entity_id: Optional[str] = None,
+    ) -> str:
         if not isinstance(markdown, str):
             return markdown
 
         normalized_markdown = unquote(markdown)
-        if (
-            "/storage/get/embedded/" not in normalized_markdown
-            and "/storage/view/embedded/" not in normalized_markdown
-        ):
+        if "embedded/" not in normalized_markdown:
             return markdown
 
         embedded_data_uri_by_path: Dict[str, str] = {}
 
         def _replace_image(alt_text: str, url: str, full_match: str) -> str:
-            embedded_storage_path = self._extract_embedded_storage_path(url)
+            embedded_storage_path = self._extract_embedded_storage_path(
+                url,
+                entity_type=entity_type,
+                entity_id=entity_id,
+            )
             if embedded_storage_path is None:
                 return full_match
 
@@ -256,10 +282,28 @@ class OpenCTIStix2:
         if not isinstance(entity, dict):
             return
 
+        entity_type = entity.get("x_opencti_type") or entity.get("entity_type")
+        entity_id = entity.get("x_opencti_id") or entity.get("id")
+
         for key in MARKDOWN_EXPORT_FIELDS:
             value = entity.get(key)
             if isinstance(value, str):
-                entity[key] = self._rewrite_markdown_embedded_storage_images(value)
+                entity[key] = self._rewrite_markdown_embedded_storage_images(
+                    value,
+                    entity_type=entity_type,
+                    entity_id=entity_id,
+                )
+
+    def _rewrite_embedded_image_uris_in_bundle_for_export(self, bundle: Dict) -> None:
+        if not isinstance(bundle, dict):
+            return
+
+        objects = bundle.get("objects")
+        if not isinstance(objects, list):
+            return
+
+        for item in objects:
+            self._rewrite_embedded_image_uris_for_export(item)
 
     def format_date(self, date: Any = None) -> str:
         """Convert multiple input date formats to OpenCTI style dates.
@@ -1437,6 +1481,7 @@ class OpenCTIStix2:
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
                 noTriggerImport=extras.get("noTriggerImport", False),
+                embedded=extras.get("embedded", None),
                 upsert_operations=upsert_operations,
             )
         else:
@@ -1465,6 +1510,7 @@ class OpenCTIStix2:
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
                 noTriggerImport=extras.get("noTriggerImport", False),
+                embedded=extras.get("embedded", None),
                 upsert_operations=upsert_operations,
             )
         if stix_observable_result is not None:
@@ -2062,7 +2108,6 @@ class OpenCTIStix2:
         """
         result = []
         objects_to_get = []
-
         self._rewrite_embedded_image_uris_for_export(entity)
 
         # CreatedByRef
@@ -2630,6 +2675,7 @@ class OpenCTIStix2:
         )
         if stix_objects is not None:
             bundle["objects"].extend(stix_objects)
+        self._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
         if only_entity:
             return [e for e in bundle["objects"] if e.get("id") == entity_standard_id][
                 0
@@ -2842,6 +2888,7 @@ class OpenCTIStix2:
                     for x in entity_bundle_filtered:
                         uuids.append(x["id"])
                     bundle["objects"] = bundle["objects"] + entity_bundle_filtered
+        self._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
         return bundle
 
     def export_selected(
@@ -2882,6 +2929,7 @@ class OpenCTIStix2:
                     bundle["objects"] + entity_bundle_filtered
                 )  # unsupported operand type(s) for +: 'dict' and 'list'
 
+            self._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
         return bundle
 
     def apply_patch_files(self, item):
