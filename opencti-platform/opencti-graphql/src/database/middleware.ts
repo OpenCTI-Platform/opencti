@@ -2520,12 +2520,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   // --- take lock, ensure no one currently create or update this element
   let lock;
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
-  const heldLocks = R.uniq([...(opts.locks ?? []), ...participantIds]);
   try {
     // Try to get the lock in redis
-    if (participantIds.length > 0) {
-      lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
-    }
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities: BasicStoreBase[] = [];
@@ -2553,9 +2550,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         // Everything ok, let merge
         hashMergeValidation([updated, ...(existingEntities as BasicStoreCommon[])]);
         const sourceEntityIds = existingEntities.map((c) => c.internal_id);
-        const merged = await mergeEntities(context, user, updated.internal_id, sourceEntityIds, { locks: heldLocks });
+        const merged = await mergeEntities(context, user, updated.internal_id, sourceEntityIds, { locks: participantIds });
         // Then apply initial updates on merged result
-        return updateAttributeMetaResolved(context, user, merged, updates, { ...opts, locks: heldLocks });
+        return updateAttributeMetaResolved(context, user, merged, updates, { ...opts, locks: participantIds });
       }
       // noinspection ExceptionCaughtLocallyJS
       throw FunctionalError('This update will produce a duplicate', {
@@ -2578,18 +2575,6 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
     // region handle metas
     const relationsToCreate: any[] = [];
     const relationsToDelete: any[] = [];
-    const relationReadCache = new Map<string, BasicStoreRelation[]>();
-    const getCurrentRelations = async (relationType: string, fromId: string, indices?: string[]) => {
-      const cacheKey = `${relationType}:${fromId}:${(indices ?? []).join(',')}`;
-      if (!relationReadCache.has(cacheKey)) {
-        const currentRels = await fullRelationsList(context, user, relationType, {
-          fromId,
-          ...(indices ? { indices } : {}),
-        });
-        relationReadCache.set(cacheKey, currentRels);
-      }
-      return relationReadCache.get(cacheKey) ?? [];
-    };
     const buildInstanceRelTo = (
       to: BasicStoreBase | BasicStoreBase[],
       relType: string | undefined,
@@ -2612,7 +2597,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         if (currentValue?.id !== targetCreated?.internal_id) {
           // Delete the current relation
           if (currentValue?.standard_id) {
-            const currentRels = (await getCurrentRelations(relType, initial.id))
+            const currentRels = (await fullRelationsList(context, user, relType, { fromId: initial.id }))
               .map((rel) => ({
                 ...rel,
                 // we resolve from and to without need of an extra query
@@ -2649,7 +2634,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         }
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
-          const currentRels = await getCurrentRelations(relType, initial.internal_id, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
+          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const currentRelsToIds = currentRels.map((n: BasicStoreRelation) => n.toId);
           const newTargetsIds = refs.map((n) => n.id);
           if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
@@ -2667,11 +2652,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          // Re-evaluate existing refs from storage while we hold the lock.
-          // The loaded instance can be stale when concurrent workers update the same object.
-          const currentRels = await getCurrentRelations(relType, initial.internal_id, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
-          const currentRelToIds = new Set(currentRels.map((rel: BasicStoreRelation) => rel.toId));
-          const refsToCreate = refs.filter((r) => !currentRelToIds.has(r.internal_id));
+          const filteredList = (updatedInstance[key] || []).filter((d: any) => !isInferredIndex(d.i_relation._index));
+          const currentIds = filteredList.map((o: any) => [o.id, o.standard_id]).flat();
+          const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             pushAll(relationsToCreate, newRelations);
@@ -2682,7 +2665,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
           const targetIds = refs.map((t) => t.internal_id);
-          const currentRels = await getCurrentRelations(relType, initial.internal_id, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
+          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId))
             .map((r) => ({
               ...r,
@@ -2702,9 +2685,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
     }
     // endregion
     // region build attributes inner information
-    if (lock) {
-      lock.signal.throwIfAborted();
-    }
+    lock.signal.throwIfAborted();
     const impactedKeys: string[] = impactedInputs.map((input) => input.key);
     pushAll(impactedKeys, [...relationsToCreate, ...relationsToDelete].map((rel: any) => {
       if (!updatedInstance.entity_type || !rel.relationship_type) {
@@ -2920,42 +2901,6 @@ export const updateAttribute = async <T extends StoreObject>(
   }
   return data;
 };
-
-// Lock-first variant used by relation patch flows to avoid stale preloaded snapshots.
-// It acquires the resource lock before loading refs, then delegates to the existing update pipeline.
-export const updateAttributeLockFirst = async <T extends StoreObject>(
-  context: AuthContext,
-  user: AuthUser,
-  id: string,
-  type: string,
-  inputs: EditInput[],
-  opts: { noEnrich?: boolean } & UpdateAttributeOpts = {},
-) => {
-  const draftId = getDraftContext(context, user);
-  const acquiredLocks = R.uniq([...(opts.locks ?? []), id]);
-  let lock;
-  try {
-    lock = await lockResources([id], { draftId });
-    const initial = await storeLoadByIdWithRefs<T>(context, user, id, { ...opts, type });
-    if (!initial) {
-      throw FunctionalError('Cant find element to update', { id, type });
-    }
-    // Keep validation parity with updateAttribute while preserving lock-first loading.
-    const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-    await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
-    const mergedOpts = { ...opts, locks: acquiredLocks };
-    const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, mergedOpts);
-    if (!opts.noEnrich && data.event) {
-      await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
-    }
-    return data;
-  } finally {
-    if (lock) {
-      await lock.unlock();
-    }
-  }
-};
-
 type PatchAttributeOpts = UpdateAttributeOpts & {
   operations?: Record<string, undefined | 'add' | 'remove' | 'replace'>;
 };
@@ -3089,19 +3034,16 @@ const upsertEntityRule = async (
   opts: UpsertEntityRuleOpts,
 ) => {
   const { fromRule } = opts;
-  const resolvedInstance = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
-  if (!resolvedInstance) {
-    throw FunctionalError('Cant find element to resolve', { id: instance.internal_id });
-  }
   // 01. If relation already have max explanation, don't do anything
   // Strict equals to clean existing element with too many explanations
-  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, resolvedInstance);
+  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, instance);
   if (ruleExplanationsSize === MAX_EXPLANATIONS_PER_RULE) {
-    return resolvedInstance;
+    return instance;
   }
   logApp.debug('Upsert inferred entity', { input });
-  const patch = await createUpsertRulePatch(resolvedInstance, input, opts);
-  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, resolvedInstance, patch, opts);
+  const patch = await createUpsertRulePatch(instance, input, opts);
+  const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
+  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
 };
 const upsertRelationRule = async (
   context: AuthContext,
@@ -3111,27 +3053,24 @@ const upsertRelationRule = async (
   opts: { fromRule: string; fromRuleDeletion?: boolean } & PatchAttributeOpts,
 ) => {
   const { fromRule, fromRuleDeletion = false } = opts;
-  const resolvedInstance = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
-  if (!resolvedInstance) {
-    throw FunctionalError('Cant find element to resolve', { id: instance.internal_id });
-  }
   // 01. If relation already have max explanation, don't do anything
   // Strict equals to clean existing element with too many explanations
-  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, resolvedInstance);
+  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, instance);
   if (!fromRuleDeletion && ruleExplanationsSize === MAX_EXPLANATIONS_PER_RULE) {
-    return resolvedInstance;
+    return instance;
   }
   logApp.debug('Upsert inferred relation', { input });
   // 02 - Update the rule
   const updatedRule = input[fromRule];
   if (!fromRuleDeletion) {
     const keepRuleHashes = input[fromRule].map((i: any) => i.hash);
-    const instanceRuleToKeep = (resolvedInstance[fromRule] ?? []).filter((i: any) => !keepRuleHashes.includes(i.hash));
+    const instanceRuleToKeep = (instance[fromRule] ?? []).filter((i: any) => !keepRuleHashes.includes(i.hash));
     pushAll(updatedRule, instanceRuleToKeep);
   }
   // 03 - Create the patch
-  const patch = await createUpsertRulePatch(resolvedInstance, input, opts);
-  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, resolvedInstance, patch, opts);
+  const patch = await createUpsertRulePatch(instance, input, opts);
+  const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
+  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
 };
 // endregion
 
@@ -3226,12 +3165,16 @@ const upsertElement = async (
   element: BasicStoreBase,
   type: string,
   basePatch: Record<string, any>,
-  opts: UpdateAttributeMetaResolvedOpts = {},
+  opts: { elementAlreadyResolved?: boolean } & UpdateAttributeMetaResolvedOpts = {},
 ) => {
-  // -- Independent update (load once by id under caller lock context)
-  const resolvedElement = await storeLoadByIdWithRefs(context, user, element?.internal_id, { type });
-  if (!resolvedElement) {
-    throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
+  // -- Independent update
+  let resolvedElement = element as StoreObject;
+  if (!opts.elementAlreadyResolved) {
+    const finalResolvedElement = await storeLoadByIdWithRefs(context, user, element?.internal_id, { type });
+    if (!finalResolvedElement) {
+      throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
+    }
+    resolvedElement = finalResolvedElement;
   }
 
   // If a decay exclusion rule is already applied, we must not apply a new decay rule or a new decay exclusion rule
@@ -3436,8 +3379,9 @@ export const createRelationRaw = async (
           fromId: from.internal_id,
         });
       }
-      // Keep lightweight element here; full refs will be resolved in the upsert path under the held lock.
-      existingRelationship = filteredRelations[0];
+      // TODO Handling merging relation when updating to prevent multiple relations finding
+      // resolve all refs so we can upsert properly
+      existingRelationship = await storeLoadByIdWithRefs(context, user, filteredRelations[0].internal_id);
     }
     if (!existingRelationship) {
       // We do not use default values on upsert.
@@ -3453,7 +3397,7 @@ export const createRelationRaw = async (
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
       // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
+      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
@@ -3769,8 +3713,12 @@ const internalCreateEntityRaw = async (
         return await upsertEntityRule(context, user, filteredEntities[0], input, { ...opts, fromRule, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
-        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
-        return upsertElement(context, user, filteredEntities[0], type, resolvedInput, upsertEntityOpts);
+        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };
+        const element = await storeLoadByIdWithRefs(context, user, filteredEntities[0].internal_id, { type });
+        if (!element) {
+          throw FunctionalError('Cant find element to resolve', { id: filteredEntities[0].internal_id });
+        }
+        return upsertElement(context, user, element, type, resolvedInput, upsertEntityOpts);
       }
       // If creation is not by a reference
       // We can in best effort try to merge a common stix_id
