@@ -43,7 +43,7 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString(), exact_path: false });
   } else if (scope === 'history') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
-    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'updated_at' });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: 1 });
     return result.pageInfo.globalCount;
   } else if (scope === 'activity') {
