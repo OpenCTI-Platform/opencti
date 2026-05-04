@@ -30,6 +30,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -57,6 +58,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -83,6 +85,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -109,6 +112,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));

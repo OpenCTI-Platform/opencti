@@ -11,6 +11,14 @@ export const customViewsFragment = graphql`
     customViews(
       orderBy: name
       orderMode: asc
+      filters: {
+        mode: and
+        filters: [{
+          key: ["enabled"]
+          values: [true]
+        }]
+        filterGroups: []
+      }
     ) {
       edges {
         node {

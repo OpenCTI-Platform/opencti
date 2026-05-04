@@ -2581,6 +2581,7 @@
   "Make this stream public and available to anyone": "Rendi questo flusso pubblico e disponibile a chiunque",
   "Make this taxii collection public and available to anyone": "Rendi questa raccolta TAXII pubblica",
   "Make this TAXII collection public and available to anyone": "Rendi questa raccolta TAXII pubblica",
+  "Make this view visible to users": "Rendere questa vista visibile agli utenti",
   "Malicious": "Malevole",
   "Maliciousness": "Malvagità",
   "Malware": "Malware",
@@ -4724,6 +4725,8 @@
   "View associated public dashboards": "Visualizza le dashboard pubbliche associate",
   "View draft": "Visualizza bozza",
   "View full details": "Visualizza tutti i dettagli",
+  "View is disabled": "La vista è disabilitata",
+  "View is enabled": "La vista è abilitata",
   "View rule": "Visualizza la regola",
   "View the element": "Visualizza l'elemento",
   "View the item": "Visualizza l'elemento",
@@ -4913,4 +4916,3 @@
   "Zoom in": "Ingrandisci",
   "Zoom out": "Riduci"
 }
-
