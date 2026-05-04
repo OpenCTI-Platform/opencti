@@ -45,6 +45,7 @@ import {
   getInitialMandatoryFields,
   normalizeDraftAuthorizedMembersDefaults,
 } from './FormUtils';
+import CreatedByField from '@components/common/form/CreatedByField';
 
 type DraftAdvancedDefaultsValues = {
   objectAssignee: FieldOption[];
@@ -1768,7 +1769,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 onSubmit={() => {}}
                 enableReinitialize
               >
-                {() => (
+                {({ setFieldValue }) => (
                   <>
                     {/* Draft Assignees Section */}
                     <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>

@@ -565,6 +565,20 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           validateOnBlur={true}
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
+            const showDraftName = isDraft && schema.draftDefaults?.name?.enabled && (isBypass || schema.draftDefaults.name.isEditable);
+            const showDraftDescription = isDraft && schema.draftDefaults?.description?.enabled && (isBypass || schema.draftDefaults.description.isEditable);
+            const showDraftObjectAssignee = isDraft && schema.draftDefaults?.objectAssignee?.enabled && (isBypass || schema.draftDefaults.objectAssignee.isEditable);
+            const showDraftObjectParticipant = isDraft && schema.draftDefaults?.objectParticipant?.enabled && (isBypass || schema.draftDefaults.objectParticipant.isEditable);
+            const showDraftAuthor = isDraft && schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable);
+            const showDraftAuthorizedMembers = isDraft
+              && schema.draftDefaults?.authorizedMembers?.enabled
+              && (isBypass || (schema.draftDefaults.authorizedMembers.isEditable && isManageAuthMembers));
+            const showDraftSection = showDraftName
+              || showDraftDescription
+              || showDraftObjectAssignee
+              || showDraftObjectParticipant
+              || showDraftAuthor
+              || showDraftAuthorizedMembers;
             return (
               <Form noValidate>
                 {/* Main Entity Fields */}
@@ -934,78 +948,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     </>
                   );
                 })()}
-                {isDraft && schema.draftDefaults?.name?.enabled && (isBypass || schema.draftDefaults.name.isEditable) && (
-                  <div style={{ marginTop: 20 }}>
-                    <Field
-                      component={TextField}
-                      name="draftName"
-                      label={t_i18n('Draft name')}
-                      required={schema.draftDefaults?.name?.isRequired}
-                      fullWidth
-                    />
-                  </div>
-                )}
-                {isDraft && schema.draftDefaults?.description?.enabled && (isBypass || schema.draftDefaults.description.isEditable) && (
-                  <div style={{ marginTop: 20 }}>
-                    <Field
-                      component={MarkdownField}
-                      name="draftDescription"
-                      label={t_i18n('Draft description')}
-                      required={schema.draftDefaults?.description?.isRequired}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                    />
-                  </div>
-                )}
-                {isDraft && schema.draftDefaults?.objectAssignee?.enabled && (isBypass || schema.draftDefaults.objectAssignee.isEditable) && (
-                  <div style={{ marginTop: 20 }}>
-                    <ObjectAssigneeField
-                      name="draftObjectAssignee"
-                      required={schema.draftDefaults?.objectAssignee?.isRequired}
-                      style={{ width: '100%', marginBottom: 20 }}
-                    />
-                  </div>
-                )}
-                {isDraft && schema.draftDefaults?.objectParticipant?.enabled && (isBypass || schema.draftDefaults.objectParticipant.isEditable) && (
-                  <div style={{ marginTop: 20 }}>
-                    <ObjectParticipantField
-                      name="draftObjectParticipant"
-                      required={schema.draftDefaults?.objectParticipant?.isRequired}
-                      style={{ width: '100%', marginBottom: 20 }}
-                    />
-                  </div>
-                )}
-                {isDraft && schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable) && (
-                  <div style={{ marginTop: 20 }}>
-                    <CreatedByField
-                      name="draftAuthor"
-                      label={t_i18n('Draft author')}
-                      style={{ width: '100%', marginBottom: 20 }}
-                      setFieldValue={setFieldValue}
-                      required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults?.author?.type === 'none'}
-                      clearable={schema.draftDefaults?.author?.type === 'main_entity_author'}
-                      helpertext={schema.draftDefaults?.author?.type === 'main_entity_author' ? t_i18n('Default: Reuse main entity author (leave empty to inherit)') : undefined}
-                    />
-                  </div>
-                )}
-                {isDraft && schema.draftDefaults?.authorizedMembers?.enabled && (isBypass || (schema.draftDefaults.authorizedMembers.isEditable && isManageAuthMembers)) && (
-                  <div style={{ marginTop: 20, marginBottom: 20 }}>
-                    <Field
-                      component={AuthorizedMembersField}
-                      name="draftAuthorizedMembers"
-                      label={t_i18n('Authorized Members')}
-                      withDynamicKeys={true}
-                      allowDynamicGroupsRestriction={true}
-                      dynamicContextTypeLabel="Dynamic from draft"
-                      dynamicAuthorOrgLabel="Draft author (org)"
-                      includeBundleOrganizationDynamicOption={false}
-                      dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
-                    />
-                  </div>
-                )}
+                {isDraft && <Divider style={{ marginTop: 40 }} />}
                 <FormControlLabel
                   className={classes.draftCheckbox}
+                  style={{ marginBottom: showDraftSection ? 12 : undefined }}
                   control={(
                     <Checkbox
                       checked={isDraft}
@@ -1015,6 +961,83 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                   )}
                   label={t_i18n('Create as draft')}
                 />
+                {showDraftSection && (
+                  <>
+                    <Typography variant="h5" className={classes.sectionTitle} style={{ marginTop: 0 }}>
+                      {t_i18n('Draft')}
+                    </Typography>
+                    {showDraftName && (
+                      <div style={{ marginTop: 20 }}>
+                        <Field
+                          component={TextField}
+                          name="draftName"
+                          label={t_i18n('Draft name')}
+                          required={schema.draftDefaults?.name?.isRequired}
+                          fullWidth
+                        />
+                      </div>
+                    )}
+                    {showDraftDescription && (
+                      <div style={{ marginTop: 20 }}>
+                        <Field
+                          component={MarkdownField}
+                          name="draftDescription"
+                          label={t_i18n('Draft description')}
+                          required={schema.draftDefaults?.description?.isRequired}
+                          fullWidth={true}
+                          multiline={true}
+                          rows="4"
+                        />
+                      </div>
+                    )}
+                    {showDraftObjectAssignee && (
+                      <div style={{ marginTop: 20 }}>
+                        <ObjectAssigneeField
+                          name="draftObjectAssignee"
+                          required={schema.draftDefaults?.objectAssignee?.isRequired}
+                          style={{ width: '100%', marginBottom: 20 }}
+                        />
+                      </div>
+                    )}
+                    {showDraftObjectParticipant && (
+                      <div style={{ marginTop: 20 }}>
+                        <ObjectParticipantField
+                          name="draftObjectParticipant"
+                          required={schema.draftDefaults?.objectParticipant?.isRequired}
+                          style={{ width: '100%', marginBottom: 20 }}
+                        />
+                      </div>
+                    )}
+                    {showDraftAuthor && (
+                      <div style={{ marginTop: 20 }}>
+                        <CreatedByField
+                          name="draftAuthor"
+                          label={t_i18n('Draft author')}
+                          style={{ width: '100%', marginBottom: 20 }}
+                          setFieldValue={setFieldValue}
+                          required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults?.author?.type !== 'main_entity_author'}
+                          clearable={schema.draftDefaults?.author?.type === 'main_entity_author'}
+                          helpertext={schema.draftDefaults?.author?.type === 'main_entity_author' ? t_i18n('Default: Reuse main entity author (leave empty to inherit)') : undefined}
+                        />
+                      </div>
+                    )}
+                    {showDraftAuthorizedMembers && (
+                      <div style={{ marginTop: 20, marginBottom: 20 }}>
+                        <Field
+                          component={AuthorizedMembersField}
+                          name="draftAuthorizedMembers"
+                          label={t_i18n('Authorized Members')}
+                          withDynamicKeys={true}
+                          allowDynamicGroupsRestriction={true}
+                          dynamicContextTypeLabel="Dynamic from draft"
+                          dynamicAuthorOrgLabel="Draft author (org)"
+                          includeBundleOrganizationDynamicOption={false}
+                          dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
                 <Button
                   className={classes.submitButton}
                   type="submit"
