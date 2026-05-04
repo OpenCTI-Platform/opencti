@@ -26,6 +26,7 @@ import {
   FilterAltOutlined,
   FlagOutlined,
   HelpOutlined,
+  Insights,
   LayersClearOutlined,
   LinkOutlined,
   LocalOfferOutlined,
@@ -605,6 +606,8 @@ const iconSelector = (
       return <LockOutline style={style} fontSize={fontSize} role="img" />;
     case 'lock-remove':
       return <LockMinusOutline style={style} fontSize={fontSize} role="img" />;
+    case 'customview':
+      return <Insights style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:
