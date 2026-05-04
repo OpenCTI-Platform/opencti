@@ -136,6 +136,7 @@ export const getAttackPatternsMatrix_v1 = async (context: AuthContext, user: Aut
 };
 
 export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: AuthUser) => {
+  logApp.info('[ATTACK PATTERN MATRIX] Using new algorithm');
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
