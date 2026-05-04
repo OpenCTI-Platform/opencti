@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import React from 'react';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
@@ -29,7 +28,7 @@ export type FiltersRestrictions = {
   preventFilterValuesEditionFor?: Map<string, string[]>; // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
-export const emptyFilterGroup = {
+export const emptyFilterGroup: FilterGroup = {
   mode: 'and',
   filters: [],
   filterGroups: [],
@@ -797,9 +796,13 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
   return filterKeysMap;
 };
 
-export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
+export const useAvailableFilterKeysForEntityTypes = (
+  entityTypes: string[],
+  addNotCleanableFilterKeys = false,
+) => {
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  return uniqueArray(filterKeysMap.keys() ?? []);
+  return uniqueArray(filterKeysMap.keys() ?? [])
+    .concat(addNotCleanableFilterKeys ? NOT_CLEANABLE_FILTER_KEYS : []);
 };
 
 const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
@@ -1140,4 +1143,22 @@ export const formatFiltersInPirContext = (f: FilterGroup, pirId: string): Filter
       ? f.filterGroups.map((fg) => formatFiltersInPirContext(fg, pirId))
       : [],
   };
+};
+
+/**
+ * Replace SELF_ID sentinel with the actual entity ID in context.
+ * The filter values are not typed well so we have to use a "big bertha"-like
+ * solution: JSON.stringify + String.replace + JSON.parse.
+ */
+export const buildFiltersForCustomView = (
+  filters: FilterGroup | null | undefined,
+  entityId?: string,
+): FilterGroup | null | undefined => {
+  if (!filters) return filters;
+  const filtersStr = JSON.stringify(filters);
+  const updatedFiltersStr = filtersStr.replace(SELF_ID, entityId || '');
+  if (filtersStr === updatedFiltersStr) {
+    return filters;
+  }
+  return JSON.parse(updatedFiltersStr);
 };

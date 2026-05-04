@@ -1,5 +1,4 @@
 import React, { createContext, Dispatch, ReactNode, useContext, useEffect, useState } from 'react';
-import { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
 import type { Widget, WidgetContext, WidgetDataSelection, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
@@ -18,9 +17,6 @@ export interface WidgetConfigType {
 interface WidgetConfigContextProps {
   context: WidgetContext;
   disabledSteps: number[];
-  fintelWidgets?: FintelTemplateWidget[];
-  fintelEntityType?: string;
-  fintelEditorValue?: string;
   step: number;
   setStep: Dispatch<React.SetStateAction<number>>;
   config: WidgetConfigType;
@@ -41,9 +37,6 @@ interface WidgetConfigProviderProps {
   children: ReactNode;
   context: WidgetContext;
   disabledSteps: number[];
-  fintelWidgets: FintelTemplateWidget[] | undefined;
-  fintelEntityType: string | undefined;
-  fintelEditorValue: string | undefined;
   initialWidget: Widget | undefined;
   initialVariableName: string | undefined;
   open: boolean;
@@ -55,7 +48,7 @@ const buildConfig = (
   varName?: string,
 ): WidgetConfigType => {
   let type = w?.type ?? '';
-  if (type === '' && context === 'fintelTemplate') {
+  if (type === '' && context.kind === 'fintelTemplate') {
     type = 'list';
   }
 
@@ -88,9 +81,6 @@ export const WidgetConfigProvider = ({
   context,
   initialWidget,
   initialVariableName,
-  fintelWidgets,
-  fintelEntityType,
-  fintelEditorValue,
   open,
   disabledSteps,
 }: WidgetConfigProviderProps) => {
@@ -111,7 +101,7 @@ export const WidgetConfigProvider = ({
       } else if (initialWidget?.dataSelection) {
         initialStep = 2;
       }
-    } else if (context === 'fintelTemplate') {
+    } else if (context.kind === 'fintelTemplate') {
       initialStep = 1;
     }
     setStep(initialStep);
@@ -166,9 +156,6 @@ export const WidgetConfigProvider = ({
     <WidgetConfigContext.Provider value={{
       context,
       disabledSteps,
-      fintelWidgets,
-      fintelEntityType,
-      fintelEditorValue,
       config: conf,
       setConfigWidget,
       setConfigVariableName,

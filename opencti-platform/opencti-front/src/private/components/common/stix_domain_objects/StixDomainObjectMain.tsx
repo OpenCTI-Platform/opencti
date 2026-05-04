@@ -67,7 +67,7 @@ const StixDomainObjectMain = ({
           element={isCustomViewFeatureEnabled
             ? (
                 <CustomViewRedirector
-                  entityType={entityType}
+                  entity={entity}
                   Fallback={<ErrorNotFound />}
                   indexFallback={<Navigate to="overview" replace />}
                 />

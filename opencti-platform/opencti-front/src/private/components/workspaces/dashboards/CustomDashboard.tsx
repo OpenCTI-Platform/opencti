@@ -11,6 +11,7 @@ import useDashboard from '../../../../components/dashboard/useDashboard';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
+import { WIDGET_WORKSPACE_CONTEXT } from './custom-dashboards-utils';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -147,6 +148,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
         helpers={helpers}
         isEditable={userCanEdit}
         entity={workspace}
+        context={WIDGET_WORKSPACE_CONTEXT}
       />
     </Stack>
   );

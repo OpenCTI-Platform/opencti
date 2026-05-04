@@ -7,6 +7,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixRelationshipsPolarAreasDistributionQuery = graphql`
   query StixRelationshipsPolarAreaDistributionQuery(
@@ -111,15 +113,24 @@ const StixRelationshipsPolarArea = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    context,
+  });
 
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     let selection = {};
     let filtersAndOptions;
-    if (dataSelection) {
-      selection = dataSelection[0];
+    if (resolvedDataSelection) {
+      selection = resolvedDataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
     const finalField = selection.attribute || field || 'entity_type';
@@ -169,6 +180,7 @@ const StixRelationshipsPolarArea = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

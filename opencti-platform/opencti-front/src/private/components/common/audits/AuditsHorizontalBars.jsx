@@ -28,6 +28,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useState } from 'react';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const auditsHorizontalBarsDistributionQuery = graphql`
   query AuditsHorizontalBarsDistributionQuery(
@@ -99,6 +101,7 @@ const AuditsHorizontalBars = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
@@ -107,8 +110,16 @@ const AuditsHorizontalBars = ({
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { buildWidgetProps } = useDistributionGraphData();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    context,
+  });
 
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -128,7 +139,7 @@ const AuditsHorizontalBars = ({
         </div>
       );
     }
-    const selection = dataSelection[0];
+    const selection = resolvedDataSelection[0];
     return (
       <QueryRenderer
         query={auditsHorizontalBarsDistributionQuery}
@@ -187,6 +198,7 @@ const AuditsHorizontalBars = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

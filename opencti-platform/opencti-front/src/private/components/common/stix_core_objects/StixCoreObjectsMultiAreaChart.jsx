@@ -8,6 +8,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiAreaChartTimeSeriesQuery(
@@ -38,12 +40,18 @@ const StixCoreObjectsMultiAreaChart = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    context,
+  });
 
   const timeSeriesParameters = useMemo(() => {
-    return dataSelection.map((selection) => {
+    return resolvedDataSelection.map((selection) => {
       const dataSelectionTypes = ['Stix-Core-Object'];
       const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
@@ -55,7 +63,7 @@ const StixCoreObjectsMultiAreaChart = ({
         filters,
       };
     });
-  }, [dataSelection]);
+  }, [resolvedDataSelection]);
 
   // Compute fallback dates once per component mount to prevent now() recalculations
   // from busting the variables memoization on every render.
@@ -72,6 +80,9 @@ const StixCoreObjectsMultiAreaChart = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
 
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiAreaChartTimeSeriesQuery}
@@ -80,7 +91,7 @@ const StixCoreObjectsMultiAreaChart = ({
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             return (
               <WidgetMultiAreas
-                series={dataSelection.map((selection, i) => ({
+                series={resolvedDataSelection.map((selection, i) => ({
                   name: selection.label || t_i18n('Number of entities'),
                   data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
                     (entry) => ({
@@ -112,6 +123,7 @@ const StixCoreObjectsMultiAreaChart = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

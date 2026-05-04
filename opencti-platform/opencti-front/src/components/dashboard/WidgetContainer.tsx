@@ -5,6 +5,11 @@ import Label from '../common/label/Label';
 import ChartExportPopover from '../../private/components/common/charts/ChartExportPopover';
 import { ErrorBoundary } from '@components/Error';
 import WidgetNoData from './WidgetNoData';
+import { Box, Chip } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../components/Theme';
+import { hexToRGB } from '../../utils/Colors';
+import { useFormatter } from '../../components/i18n';
 
 interface WidgetContainerProps {
   children: ReactNode;
@@ -14,6 +19,7 @@ interface WidgetContainerProps {
   padding?: CardProps['padding'];
   chart?: ApexCharts;
   action?: ReactNode;
+  showPreviewTag?: boolean;
 }
 
 const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
@@ -24,13 +30,32 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   padding,
   chart,
   action,
+  showPreviewTag,
 }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const previewColor = theme.palette.designSystem.tertiary.orange['400'];
   return (
     <div style={{ height: height || '100%' }}>
       {variant !== 'inLine' && variant !== 'inEntity'
         ? (
             <Card
-              title={title}
+              title={showPreviewTag ? (
+                <Box sx={{ gap: 1, display: 'flex', alignItems: 'center' }}>
+                  {title}
+                  <Chip
+                    label={t_i18n('Preview data')}
+                    size="small"
+                    sx={{
+                      backgroundColor: hexToRGB(previewColor, 0.1),
+                      color: previewColor,
+                      border: `1px solid ${previewColor}`,
+                      fontWeight: 700,
+                      fontSize: '0.65rem',
+                    }}
+                  />
+                </Box>
+              ) : title}
               padding={padding}
               action={(
                 <div>

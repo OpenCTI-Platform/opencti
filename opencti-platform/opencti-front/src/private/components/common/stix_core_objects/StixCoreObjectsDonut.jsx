@@ -7,6 +7,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useState } from 'react';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixCoreObjectsDonutDistributionQuery = graphql`
   query StixCoreObjectsDonutDistributionQuery(
@@ -96,14 +98,23 @@ const StixCoreObjectsDonut = ({
   parameters = {},
   withoutTitle = false,
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    context,
+  });
 
   const defaultTitle = withoutTitle ? undefined : t_i18n('Distribution of entities');
 
   const renderContent = () => {
-    const selection = dataSelection[0];
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
+    const selection = resolvedDataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
     const variables = {
       types: dataSelectionTypes,
@@ -152,6 +163,7 @@ const StixCoreObjectsDonut = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>
@@ -165,6 +177,7 @@ StixCoreObjectsDonut.propTypes = {
   endDate: PropTypes.string,
   dataSelection: PropTypes.array,
   parameters: PropTypes.object,
+  context: PropTypes.object,
 };
 
 export default StixCoreObjectsDonut;

@@ -8,6 +8,8 @@ import { graphql, usePreloadedQuery } from 'react-relay';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
 import { Suspense, useState } from 'react';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
@@ -394,20 +396,26 @@ const StixRelationshipsMultiHorizontalBars = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    context,
+  });
 
   let selection = {};
   let filtersAndOptions;
   let subDistributionFiltersAndOptions;
   let subSelection = {};
   let subDistributionTypes = null;
-  if (dataSelection) {
-    selection = dataSelection[0];
+  if (resolvedDataSelection) {
+    selection = resolvedDataSelection[0];
     filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
-    if (dataSelection.length > 1) {
-      subSelection = dataSelection[1];
+    if (resolvedDataSelection.length > 1) {
+      subSelection = resolvedDataSelection[1];
       subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters);
       if (subSelection.perspective === 'entities') {
         subDistributionTypes = ['Stix-Core-Object'];
@@ -476,20 +484,26 @@ const StixRelationshipsMultiHorizontalBars = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
-      <Suspense fallback={<Loader />}>
-        {queryRef && (
-          <StixRelationshipsMultiHorizontalBarsComponent
-            queryRef={queryRef}
-            parameters={parameters}
-            finalField={finalField}
-            queryToCall={queryToCall}
-            subSelection={subSelection}
-            finalSubDistributionField={finalSubDistributionField}
-            onMounted={setChart}
-          />
-        )}
-      </Suspense>
+      {isMissingContextEntity
+        ? <WidgetNoContextEntity context={context} />
+        : (
+            <Suspense fallback={<Loader />}>
+              {queryRef && (
+                <StixRelationshipsMultiHorizontalBarsComponent
+                  queryRef={queryRef}
+                  parameters={parameters}
+                  finalField={finalField}
+                  queryToCall={queryToCall}
+                  subSelection={subSelection}
+                  finalSubDistributionField={finalSubDistributionField}
+                  onMounted={setChart}
+                />
+              )}
+            </Suspense>
+          )
+      }
     </WidgetContainer>
   );
 };

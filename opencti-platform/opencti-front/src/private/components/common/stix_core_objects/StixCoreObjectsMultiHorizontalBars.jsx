@@ -13,6 +13,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useState } from 'react';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
   query StixCoreObjectsMultiHorizontalBarsDistributionQuery(
@@ -382,17 +384,26 @@ const stixCoreObjectsMultiHorizontalBars = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
   const navigate = useNavigate();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    context,
+  });
 
   const renderContent = () => {
-    const selection = dataSelection[0];
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
+    const selection = resolvedDataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
     const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
-    const subSelection = dataSelection[1];
+    const subSelection = resolvedDataSelection[1];
     const subSelectionDataSelectionTypes = ['Stix-Core-Object'];
     const { filters: subSelectionFilters, dataSelectionToTypes: subSelectionDataSelectionToTypes } = buildFiltersAndOptionsForWidgets(subSelection.filters);
     return (
@@ -513,6 +524,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

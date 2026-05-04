@@ -26,6 +26,8 @@ import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDen
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -59,11 +61,17 @@ const AuditsNumber = ({
   popover,
   variant,
   height,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    context,
+  });
 
   const title = parameters.title ?? t_i18n('Audits number');
   const translatedTitle = translateEntityType(title);
@@ -72,7 +80,7 @@ const AuditsNumber = ({
     return <WidgetAccessDenied />;
   }
 
-  const selection = dataSelection[0];
+  const selection = resolvedDataSelection[0];
   const types = ['History', 'Activity'];
   const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
     ? selection.date_attribute
@@ -89,29 +97,36 @@ const AuditsNumber = ({
       title={t_i18n('Entities number')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
-      <QueryRenderer
-        query={auditsNumberNumberQuery}
-        variables={{ types, filters, startDate, endDate: dayAgo() }}
-        render={({ props }) => {
-          if (props && props.auditsNumber) {
-            const { total, count } = props.auditsNumber;
-            return (
-              <WidgetNumber
-                entityType={entityType}
-                label={translatedTitle}
-                value={total}
-                diffLabel={t_i18n('24 hours')}
-                diffValue={total - count}
+      {
+        isMissingContextEntity
+          ? <WidgetNoContextEntity context={context} />
+          : (
+              <QueryRenderer
+                query={auditsNumberNumberQuery}
+                variables={{ types, filters, startDate, endDate: dayAgo() }}
+                render={({ props }) => {
+                  if (props && props.auditsNumber) {
+                    const { total, count } = props.auditsNumber;
+                    return (
+                      <WidgetNumber
+                        entityType={entityType}
+                        label={translatedTitle}
+                        value={total}
+                        diffLabel={t_i18n('24 hours')}
+                        diffValue={total - count}
+                      />
+                    );
+                  }
+                  if (props) {
+                    return <WidgetNoData />;
+                  }
+                  return <Loader variant={LoaderVariant.inElement} />;
+                }}
               />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+            )
+      }
     </WidgetContainer>
   );
 };

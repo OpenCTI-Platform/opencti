@@ -8,6 +8,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useState, useMemo } from 'react';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -44,12 +46,18 @@ const StixRelationshipsMultiAreaChart = ({
   parameters = {},
   popover,
   relationshipTypes,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    context,
+  });
 
   const timeSeriesParameters = useMemo(() => {
-    return dataSelection.map((selection) => {
+    return resolvedDataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
@@ -61,7 +69,7 @@ const StixRelationshipsMultiAreaChart = ({
         dynamicTo: selection.dynamicTo,
       };
     });
-  }, [dataSelection]);
+  }, [resolvedDataSelection]);
 
   const fallbackDates = useMemo(() => ({
     start: monthsAgo(12),
@@ -78,6 +86,9 @@ const StixRelationshipsMultiAreaChart = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, relationshipTypes, timeSeriesParameters]);
 
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     return (
       <QueryRenderer
         query={stixRelationshipsMultiAreaChartTimeSeriesQuery}
@@ -86,7 +97,7 @@ const StixRelationshipsMultiAreaChart = ({
           if (props && props.stixRelationshipsMultiTimeSeries) {
             return (
               <WidgetMultiAreas
-                series={dataSelection.map((selection, i) => ({
+                series={resolvedDataSelection.map((selection, i) => ({
                   name: selection.label || t_i18n('Number of entities'),
                   data: props.stixRelationshipsMultiTimeSeries[i].data.map(
                     (entry) => ({
@@ -118,6 +129,7 @@ const StixRelationshipsMultiAreaChart = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

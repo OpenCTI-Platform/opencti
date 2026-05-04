@@ -24,6 +24,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const auditsDonutDistributionQuery = graphql`
   query AuditsDonutDistributionQuery(
@@ -86,13 +88,22 @@ const AuditsDonut = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    context,
+  });
 
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -112,7 +123,7 @@ const AuditsDonut = ({
         </div>
       );
     }
-    const selection = dataSelection[0];
+    const selection = resolvedDataSelection[0];
     const variables = {
       types: ['History', 'Activity'],
       field: selection.attribute,
@@ -160,6 +171,7 @@ const AuditsDonut = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>
@@ -173,6 +185,7 @@ AuditsDonut.propTypes = {
   endDate: PropTypes.string,
   dataSelection: PropTypes.array,
   parameters: PropTypes.object,
+  context: PropTypes.object,
 };
 
 export default AuditsDonut;

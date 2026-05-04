@@ -7,6 +7,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 export const stixRelationshipsWordCloudsDistributionQuery = graphql`
   query StixRelationshipsWordCloudDistributionQuery(
@@ -111,13 +113,22 @@ const StixRelationshipsWordCloud = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    context,
+  });
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     let selection = {};
     let filtersAndOptions;
-    if (dataSelection) {
-      selection = dataSelection[0];
+    if (resolvedDataSelection) {
+      selection = resolvedDataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
     const finalField = selection.attribute || field || 'entity_type';
@@ -161,6 +172,7 @@ const StixRelationshipsWordCloud = ({
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

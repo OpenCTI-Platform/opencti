@@ -8,6 +8,8 @@ import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizon
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useState } from 'react';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
@@ -115,16 +117,25 @@ const StixRelationshipsHorizontalBars = ({
   relationshipType,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    context,
+  });
 
   const { buildWidgetProps } = useDistributionGraphData();
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     let selection = {};
     let filtersAndOptions;
-    if (dataSelection) {
-      selection = dataSelection[0];
+    if (resolvedDataSelection) {
+      selection = resolvedDataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
     const finalField = selection.attribute || field || 'entity_type';
@@ -179,6 +190,7 @@ const StixRelationshipsHorizontalBars = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

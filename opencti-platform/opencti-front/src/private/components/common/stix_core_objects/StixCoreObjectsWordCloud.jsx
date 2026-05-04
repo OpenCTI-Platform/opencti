@@ -7,6 +7,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixCoreObjectsWordCloudDistributionQuery = graphql`
   query StixCoreObjectsWordCloudDistributionQuery(
@@ -95,10 +97,19 @@ const StixCoreObjectsWordCloud = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    context,
+  });
   const renderContent = () => {
-    const selection = dataSelection[0];
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
+    const selection = resolvedDataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
     const variables = {
       types: dataSelectionTypes,
@@ -141,6 +152,7 @@ const StixCoreObjectsWordCloud = ({
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>
@@ -154,6 +166,7 @@ StixCoreObjectsWordCloud.propTypes = {
   endDate: PropTypes.string,
   dataSelection: PropTypes.array,
   parameters: PropTypes.object,
+  context: PropTypes.object,
 };
 
 export default StixCoreObjectsWordCloud;

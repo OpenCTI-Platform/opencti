@@ -8,8 +8,10 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -128,6 +130,7 @@ interface StixCoreObjectsPolarAreaProps {
   variant?: string;
   height?: CSSProperties['height'];
   popover?: ReactNode;
+  context?: WidgetContext;
 }
 
 const StixCoreObjectsPolarArea = ({
@@ -138,11 +141,17 @@ const StixCoreObjectsPolarArea = ({
   height,
   variant,
   popover,
+  context,
 }: StixCoreObjectsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    context,
+  });
 
-  const selection = dataSelection[0];
+  const selection = resolvedDataSelection[0];
   const dataSelectionTypes = ['Stix-Core-Object'];
 
   const queryRef = useQueryLoading<StixCoreObjectsPolarAreaDistributionQuery>(
@@ -172,12 +181,15 @@ const StixCoreObjectsPolarArea = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
+      {isMissingContextEntity ? (
+        <WidgetNoContextEntity context={context} />
+      ) : queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <StixCoreObjectsPolarAreaComponent
             queryRef={queryRef}
-            dataSelection={dataSelection}
+            dataSelection={resolvedDataSelection}
             onMounted={setChart}
           />
         </React.Suspense>

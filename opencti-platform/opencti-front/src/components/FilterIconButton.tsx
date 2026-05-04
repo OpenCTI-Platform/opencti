@@ -5,6 +5,7 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
+import type { WidgetContext } from '../utils/widget/widget';
 import FilterIconButtonContainer, { FilterIconButtonVariant } from './FilterIconButtonContainer';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
@@ -28,7 +29,7 @@ export interface FilterIconButtonProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  fintelTemplatesContext?: boolean;
+  context?: WidgetContext;
   hasSavedFilters?: boolean;
 }
 
@@ -57,7 +58,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  fintelTemplatesContext,
+  context,
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
@@ -92,7 +93,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
-            fintelTemplatesContext={fintelTemplatesContext}
+            context={context}
             hasSavedFilters={hasSavedFilters}
             filterChipsParams={filterChipsParams}
             setFilterChipsParams={setFilterChipsParams}
@@ -131,7 +132,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  fintelTemplatesContext,
+  context,
   hasSavedFilters,
 }) => {
   const hasRenderedRef = useRef(false);
@@ -172,7 +173,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         searchContext={searchContext}
         availableEntityTypes={availableEntityTypes}
         availableRelationshipTypes={availableRelationshipTypes}
-        fintelTemplatesContext={fintelTemplatesContext}
+        context={context}
         hasSavedFilters={hasSavedFilters}
         filterChipsParams={filterChipsParams}
         setFilterChipsParams={setFilterChipsParams}

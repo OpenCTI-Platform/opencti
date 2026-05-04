@@ -20,6 +20,7 @@ import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionCo
 import { WorkspaceHeaderFragment$key } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import type { Widget } from 'src/utils/widget/widget';
+import { WIDGET_WORKSPACE_CONTEXT } from '../dashboards/custom-dashboards-utils';
 
 const workspaceHeaderFragment = graphql`
   fragment WorkspaceHeaderFragment on Workspace {
@@ -124,6 +125,7 @@ const WorkspaceHeader = ({
                 <DashboardWidgetConfig
                   onComplete={handleAddWidget}
                   handleImportWidget={handleImportWidget}
+                  context={WIDGET_WORKSPACE_CONTEXT}
                 />
               </Security>
             </>

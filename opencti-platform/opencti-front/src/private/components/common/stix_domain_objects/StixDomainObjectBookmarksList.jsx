@@ -1,4 +1,3 @@
-import React from 'react';
 import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -7,6 +6,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixDomainObjectBookmarksListQuery = graphql`
   query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup) {
@@ -168,10 +169,19 @@ const StixDomainObjectBookmarksList = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    context,
+  });
   const renderContent = () => {
-    const selection = dataSelection[0];
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
+    const selection = resolvedDataSelection[0];
     return (
       <QueryRenderer
         query={stixDomainObjectBookmarksListQuery}
@@ -198,6 +208,7 @@ const StixDomainObjectBookmarksList = ({
       title={parameters.title ?? t_i18n('Entities list')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

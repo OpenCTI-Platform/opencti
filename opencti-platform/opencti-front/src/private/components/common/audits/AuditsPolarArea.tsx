@@ -26,8 +26,10 @@ import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_OR
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -122,6 +124,7 @@ interface AuditsPolarAreaProps {
   variant?: string;
   height?: CSSProperties['height'];
   popover?: ReactNode;
+  context?: WidgetContext;
 }
 
 const AuditsPolarAreaQueyRef = ({
@@ -132,10 +135,16 @@ const AuditsPolarAreaQueyRef = ({
   height,
   variant,
   popover,
+  context,
 }: AuditsPolarAreaProps) => {
-  const selection = dataSelection[0];
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    context,
+  });
+  const selection = resolvedDataSelection[0];
 
   const queryRef = useQueryLoading<AuditsPolarAreaDistributionQuery>(
     auditsPolarAreaDistributionQuery,
@@ -164,12 +173,15 @@ const AuditsPolarAreaQueyRef = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
+      {isMissingContextEntity ? (
+        <WidgetNoContextEntity context={context} />
+      ) : queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <AuditsPolarAreaComponent
             queryRef={queryRef}
-            dataSelection={dataSelection}
+            dataSelection={resolvedDataSelection}
             onMounted={setChart}
           />
         </React.Suspense>

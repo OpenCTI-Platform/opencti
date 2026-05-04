@@ -73,12 +73,11 @@ const WidgetCreationParameters = () => {
     context,
     setConfigVariableName,
     setDataSelectionWithIndex,
-    fintelWidgets,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
   const { isWidgetVarNameAlreadyUsed, isVariableNameValid } = useWidgetConfigValidateForm();
 
-  const alreadyUsedInstances = (fintelWidgets ?? []).flatMap(({ widget }) => {
+  const alreadyUsedInstances = (context.kind === 'fintelTemplate' ? context.fintelWidgets : []).flatMap(({ widget }) => {
     if (widget.type !== 'attribute') return [];
     return widget.dataSelection[0].instance_id ?? [];
   });
@@ -184,14 +183,14 @@ const WidgetCreationParameters = () => {
     <div style={{ marginTop: 20 }}>
       <TextField
         label={t_i18n('Title')}
-        required={context === 'fintelTemplate'}
+        required={context.kind === 'fintelTemplate'}
         fullWidth={true}
         value={parameters.title}
         disabled={dataSelection[0]?.instance_id === SELF_ID}
         onChange={(event) => handleChangeParameter('title', event.target.value)}
       />
 
-      {(context === 'fintelTemplate' && type !== 'attribute') && (
+      {(context.kind === 'fintelTemplate' && type !== 'attribute') && (
         <div style={{ marginTop: 20 }}>
           <TextField
             label={t_i18n('Variable name')}
@@ -801,7 +800,7 @@ const WidgetCreationParameters = () => {
             label={t_i18n('Display legend')}
           />
         )}
-        {type === 'list' && context !== 'fintelTemplate'
+        {type === 'list' && context.kind !== 'fintelTemplate'
           && dataSelection.map(({ perspective, columns, filters }, index) => {
             if (perspective === 'relationships' || perspective === 'entities') {
               const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {

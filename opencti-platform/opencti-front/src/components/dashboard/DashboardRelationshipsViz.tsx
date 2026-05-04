@@ -16,20 +16,21 @@ import StixRelationshipsTreeMap from '@components/common/stix_relationships/Stix
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
-import type { Widget, WidgetDataSelection } from '../../utils/widget/widget';
-import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../utils/filters/filtersUtils';
+import type { Widget, WidgetContext } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: DashboardConfig;
+  context?: WidgetContext;
 }
 
 const DashboardRelationshipsViz = ({
   widget,
   popover,
   config,
+  context,
 }: DashboardRelationshipsVizProps) => {
   const startDate = config.relativeDate
     ? computerRelativeDate(config.relativeDate)
@@ -39,19 +40,6 @@ const DashboardRelationshipsViz = ({
     ? formatDate(dayStartDate(null, false))
     : config.endDate;
 
-  let mainEntityTypes = ['Stix-Core-Object'];
-  if (widget.perspective === 'relationships') {
-    mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
-  } else if (widget.perspective === 'audits') {
-    mainEntityTypes = ['History'];
-  }
-  const dataSelection: WidgetDataSelection[] = widget.dataSelection.map((data) => ({
-    ...data,
-    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
-    dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
-    dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
-  }));
-
   switch (widget.type) {
     case 'number':
       return (
@@ -60,129 +48,138 @@ const DashboardRelationshipsViz = ({
           height={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'list':
       return (
         <StixRelationshipsList
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
           widgetId={widget.id}
-          dataSelection={dataSelection} // dynamicFrom and dynamicTo TODO
+          dataSelection={widget.dataSelection} // dynamicFrom and dynamicTo TODO
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'distribution-list':
       return (
         <StixRelationshipsDistributionList // TODO idem
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           overflow={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'vertical-bar':
       return (
         <StixRelationshipsMultiVerticalBars
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'line':
       return (
         <StixRelationshipsMultiLineChart
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'area':
       return (
         <StixRelationshipsMultiAreaChart
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           relationshipTypes={undefined}
           popover={popover}
+          context={context}
         />
       );
     case 'timeline':
       return (
         <StixRelationshipsTimeline
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'donut':
       return (
         <StixRelationshipsDonut
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'horizontal-bar':
       if (
-        dataSelection.length > 1
-        && dataSelection[0].attribute === 'internal_id'
+        widget.dataSelection.length > 1
+        && widget.dataSelection[0].attribute === 'internal_id'
       ) {
         return (
           <StixRelationshipsMultiHorizontalBars
-            variant={undefined} // because calling js component in ts
+            variant={undefined}
             endDate={endDate}
             startDate={startDate}
-            dataSelection={dataSelection}
+            dataSelection={widget.dataSelection}
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
             title={undefined} // because calling js component in ts
             field={undefined} // because calling js component in ts
             popover={popover}
+            context={context}
           />
         );
       }
       return (
         <StixRelationshipsHorizontalBars
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
@@ -190,88 +187,95 @@ const DashboardRelationshipsViz = ({
           fromId={undefined} // because calling js component in ts
           relationshipType={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'radar':
       return (
         <StixRelationshipsRadar
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'polar-area':
       return (
         <StixRelationshipsPolarArea
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'heatmap':
       return (
         <StixRelationshipsMultiHeatMap
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'tree':
       return (
         <StixRelationshipsTreeMap
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'map':
       return (
         <StixRelationshipsMap
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     case 'wordcloud':
       return (
         <StixRelationshipsWordCloud
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
+          context={context}
         />
       );
     default:

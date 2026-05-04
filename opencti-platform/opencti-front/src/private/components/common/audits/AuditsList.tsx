@@ -23,9 +23,11 @@ import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } f
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const auditsListComponentQuery = graphql`
   query AuditsListComponentQuery(
@@ -94,6 +96,7 @@ interface AuditsListProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;
+  context?: WidgetContext;
 }
 
 const AuditsList: FunctionComponent<AuditsListProps> = ({
@@ -104,12 +107,18 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
   dataSelection,
   parameters,
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const selection = dataSelection[0];
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    context,
+  });
+  const selection = resolvedDataSelection[0];
   const dateAttribute = (selection.date_attribute && selection.date_attribute.length > 0
     ? selection.date_attribute
     : 'timestamp') as LogsOrdering;
@@ -133,6 +142,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       title={parameters?.title ?? t_i18n('Audits list')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {(!isGrantedToSettings || !isEnterpriseEdition)
         ? (
@@ -150,15 +160,17 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
               </span>
             </div>
           )
-        : (
-            <>
-              {queryRef && (
-                <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                  <AuditsListComponent queryRef={queryRef} />
-                </React.Suspense>
-              )}
-            </>
-          )}
+        : isMissingContextEntity
+          ? <WidgetNoContextEntity context={context} />
+          : (
+              <>
+                {queryRef && (
+                  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                    <AuditsListComponent queryRef={queryRef} />
+                  </React.Suspense>
+                )}
+              </>
+            )}
     </WidgetContainer>
   );
 };

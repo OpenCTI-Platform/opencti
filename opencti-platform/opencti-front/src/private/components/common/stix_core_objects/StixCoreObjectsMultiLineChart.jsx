@@ -8,6 +8,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
 
 const stixCoreObjectsMultiLineChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiLineChartTimeSeriesQuery(
@@ -38,12 +40,18 @@ const StixCoreObjectsMultiLineChart = ({
   dataSelection,
   parameters = {},
   popover,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    context,
+  });
 
   const timeSeriesParameters = useMemo(() => {
-    return dataSelection.map((selection) => {
+    return resolvedDataSelection.map((selection) => {
       const dataSelectionTypes = ['Stix-Core-Object'];
       const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
@@ -55,7 +63,7 @@ const StixCoreObjectsMultiLineChart = ({
         filters,
       };
     });
-  }, [dataSelection]);
+  }, [resolvedDataSelection]);
 
   const fallbackDates = useMemo(() => ({
     start: monthsAgo(12),
@@ -70,6 +78,9 @@ const StixCoreObjectsMultiLineChart = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
 
   const renderContent = () => {
+    if (isMissingContextEntity) {
+      return <WidgetNoContextEntity context={context} />;
+    }
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiLineChartTimeSeriesQuery}
@@ -78,7 +89,7 @@ const StixCoreObjectsMultiLineChart = ({
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             return (
               <WidgetMultiLines
-                series={dataSelection.map((selection, i) => ({
+                series={resolvedDataSelection.map((selection, i) => ({
                   name: selection.label || t_i18n('Number of entities'),
                   data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
                     (entry) => ({
@@ -110,6 +121,7 @@ const StixCoreObjectsMultiLineChart = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ErrorBoundary } from '@components/Error';
 import { MESSAGING$ } from '../../../relay/environment';
@@ -19,9 +19,11 @@ const customViewQuery = graphql`
 
 interface CustomViewComponentProps {
   queryRef: PreloadedQuery<CustomView_Query>;
+  entityId: string;
+  entityType: string;
 }
 
-const CustomViewComponent = ({ queryRef }: CustomViewComponentProps) => {
+const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewComponentProps) => {
   const { customView } = usePreloadedQuery(customViewQuery, queryRef);
   if (!customView) {
     MESSAGING$.notifyError('Failed to load custom view');
@@ -33,14 +35,28 @@ const CustomViewComponent = ({ queryRef }: CustomViewComponentProps) => {
   }
 
   const helpers = useDashboard({ entity: customView });
-  return <DashboardContent helpers={helpers} isEditable={false} entity={customView} />;
+  const context = useMemo(() => ({
+    kind: 'custom-view' as const,
+    customViewTargetEntityType: entityType,
+    customViewTargetEntityId: entityId,
+  }), [entityType]);
+  return (
+    <DashboardContent
+      helpers={helpers}
+      isEditable={false}
+      entity={customView}
+      context={context}
+    />
+  );
 };
 
 export interface CustomViewProps {
   customViewId: string;
+  entityId: string;
+  entityType: string;
 }
 
-export const CustomView = ({ customViewId }: CustomViewProps) => {
+export const CustomView = ({ customViewId, entityId, entityType }: CustomViewProps) => {
   const queryRef = useQueryLoading<CustomView_Query>(
     customViewQuery,
     { id: customViewId },
@@ -49,7 +65,7 @@ export const CustomView = ({ customViewId }: CustomViewProps) => {
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loader />}>
-        {queryRef && <CustomViewComponent queryRef={queryRef} />}
+        {queryRef && <CustomViewComponent queryRef={queryRef} entityId={entityId} entityType={entityType} />}
       </Suspense>
     </ErrorBoundary>
   );
