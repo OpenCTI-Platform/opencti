@@ -33,12 +33,7 @@ import { getFileContent } from './raw-file-storage';
 import { loadFile } from './file-storage';
 import { EditOperation } from '../generated/graphql';
 import mime from 'mime-types';
-import {
-  ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
-  extractMarkdownImageReferences,
-  MARKDOWN_FIELD_KEYS,
-  rewriteMarkdownImageUrls,
-} from './markdown-embedded-images';
+import { ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET, extractMarkdownImageReferences, MARKDOWN_FIELD_KEYS, rewriteMarkdownImageUrls } from './markdown-embedded-images';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRelation } from '../types/store';
 import { files } from '../schema/attribute-definition';

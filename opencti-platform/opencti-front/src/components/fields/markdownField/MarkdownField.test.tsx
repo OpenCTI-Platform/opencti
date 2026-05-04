@@ -14,7 +14,7 @@ vi.mock('../../../relay/environment', async () => {
     commitMutation: (config: {
       onCompleted?: (response: {
         stixCoreObjectEdit?: {
-          importPush?: { id?: string } | null;
+          importPush?: { id?: string; name?: string } | null;
         } | null;
       }) => void;
       onError?: (error: Error) => void;
@@ -48,7 +48,7 @@ describe('Component: MarkdownField', () => {
     commitMutationMock.mockImplementation(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
-          importPush: { id: 'import/global/default-uploaded-file' },
+          importPush: { id: 'import/global/default-uploaded-file', name: 'default-uploaded-file.png' },
         },
       });
     });
@@ -376,14 +376,14 @@ describe('Component: MarkdownField', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:unmount');
   });
 
-  it('finalizes temp image links to storage URL on blur submit', async () => {
+  it('finalizes temp image links to embedded URL on blur submit', async () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:finalize');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
     vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000007');
     commitMutationMock.mockImplementationOnce(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
-          importPush: { id: 'import/global/uploaded-1' },
+          importPush: { id: 'import/global/uploaded-1', name: 'to-finalize-00000000.png' },
         },
       });
     });
@@ -410,11 +410,11 @@ describe('Component: MarkdownField', () => {
     fireEvent.blur(textArea, { relatedTarget: document.body });
 
     await waitFor(() => {
-      expect(textArea.value).toContain('/storage/view/import%2Fglobal%2Fuploaded-1');
+      expect(textArea.value).toContain('embedded/to-finalize-00000000.png');
     });
     expect(onSubmit).toHaveBeenCalledWith(
       'description',
-      '![to-finalize.png](/storage/view/import%2Fglobal%2Fuploaded-1)',
+      '![to-finalize.png](embedded/to-finalize-00000000.png)',
     );
   });
 
