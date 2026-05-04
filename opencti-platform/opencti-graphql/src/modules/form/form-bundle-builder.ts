@@ -1,10 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { FormSchemaDefinition, StoreEntityForm } from './form-types';
+import type { FormSchemaDefinition } from './form-types';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
-import { storeLoadById } from '../../database/middleware-loader';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { isStixDomainObjectContainer, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
@@ -16,6 +15,7 @@ import { checkObservableSyntax } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { transformSpecialFields, convertFieldType } from './form-fields-converter';
 import { completeEntity } from './form-entity-builder';
+import { loadFormEntity } from './form-utils';
 
 export const buildMainStixEntities = async (
   context: AuthContext,
@@ -30,7 +30,7 @@ export const buildMainStixEntities = async (
   if (schema.mainEntityLookup) {
     const vals = Array.isArray(values.mainEntityLookup) ? values.mainEntityLookup : [values.mainEntityLookup];
     const mainEntities = await Promise.all(vals.map((id: string) => {
-      return storeLoadById<StoreEntityForm>(context, user, id, mainEntityType);
+      return loadFormEntity(context, user, id, mainEntityType);
     }));
     for (let index = 0; index < mainEntities.length; index += 1) {
       mainStixEntities.push(convertStoreToStix_2_1(mainEntities[index]));
@@ -165,7 +165,7 @@ export const buildAdditionalEntities = async (
       if (isNotEmptyField(values[`additional_${additionalEntity.id}_lookup`])) {
         const vals = Array.isArray(values[`additional_${additionalEntity.id}_lookup`]) ? values[`additional_${additionalEntity.id}_lookup`] : [values[`additional_${additionalEntity.id}_lookup`]];
         const additionalEntities = await Promise.all(vals.map((id: string) => {
-          return storeLoadById<StoreEntityForm>(context, user, id, additionalEntityType);
+          return loadFormEntity(context, user, id, additionalEntityType);
         }));
         for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
           const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntities[index2]);
