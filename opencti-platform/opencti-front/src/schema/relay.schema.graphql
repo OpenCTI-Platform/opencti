@@ -10710,6 +10710,8 @@ type Mutation {
   customViewAdd(input: CustomViewAddInput!): CustomView!
   customViewEdit(id: ID!, input: [EditInput!]!): CustomView
   customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView
+  customViewDuplicate(input: CustomViewDuplicateInput!): CustomView
+  customViewDelete(id: ID!): ID!
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed
@@ -16188,6 +16190,14 @@ input CustomViewAddInput {
 input CustomViewImportWidgetInput {
   file: Upload!
   manifest: String
+}
+
+input CustomViewDuplicateInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  manifest: String
+  targetEntityType: String!
 }
 
 type TaxiiCollection {

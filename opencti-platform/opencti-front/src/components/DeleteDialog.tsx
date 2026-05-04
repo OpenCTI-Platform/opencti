@@ -9,7 +9,7 @@ import { useFormatter } from './i18n';
 type DeleteDialogProps = {
   deletion: Deletion;
   submitDelete: (e: UIEvent) => void;
-  onClose?: () => void;
+  onClose?: (e: UIEvent) => void;
   message: React.ReactNode;
   warning?: {
     title?: string;
