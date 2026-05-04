@@ -2581,6 +2581,7 @@
   "Make this stream public and available to anyone": "将此流公开并提供给任何人",
   "Make this taxii collection public and available to anyone": "将此Taxii集合公开，任何人都可以使用",
   "Make this TAXII collection public and available to anyone": "公开 TAXII 数据库，供任何人使用",
+  "Make this view visible to users": "让用户看到此视图",
   "Malicious": "恶意",
   "Maliciousness": "恶意行为",
   "Malware": "恶意软件",
@@ -4724,6 +4725,8 @@
   "View associated public dashboards": "查看相关的公共仪表板",
   "View draft": "查看草案",
   "View full details": "查看完整详情",
+  "View is disabled": "查看已禁用",
+  "View is enabled": "查看已启用",
   "View rule": "查看规则",
   "View the element": "查看元素",
   "View the item": "查看项目",
@@ -4913,4 +4916,3 @@
   "Zoom in": "放大",
   "Zoom out": "缩小"
 }
-

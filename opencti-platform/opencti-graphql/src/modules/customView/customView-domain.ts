@@ -1,7 +1,14 @@
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
-import { type QueryCustomViewsArgs, type CustomViewAddInput, type CustomViewDuplicateInput, type EditInput, type CustomViewImportWidgetInput } from '../../generated/graphql';
+import {
+  type QueryCustomViewsArgs,
+  type CustomViewAddInput,
+  type CustomViewDuplicateInput,
+  type EditInput,
+  type CustomViewImportWidgetInput,
+  FilterMode,
+} from '../../generated/graphql';
 import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -85,17 +92,25 @@ export const findAllCustomViews = async (
   entityType: string | undefined | null,
   paginationOptions: Omit<QueryCustomViewsArgs, 'entityType'>,
 ) => {
+  const entityTypeFilterGroup = addFilter(
+    undefined,
+    'target_entity_type',
+    entityType ? [entityType] : getEntityTypesCandidateToCustomViews(),
+  );
   return pageEntitiesConnection<BasicStoreEntityCustomView>(
     context,
     user,
     [ENTITY_TYPE_CUSTOM_VIEW],
     {
       ...paginationOptions,
-      filters: addFilter(
-        undefined,
-        'target_entity_type',
-        entityType ? [entityType] : getEntityTypesCandidateToCustomViews(),
-      ),
+      filters: {
+        filterGroups: [
+          entityTypeFilterGroup,
+          ...paginationOptions.filters ? [paginationOptions.filters] : [],
+        ],
+        mode: FilterMode.And,
+        filters: [],
+      },
     },
   );
 };
@@ -121,6 +136,7 @@ export const addCustomView = async (
     name: input.name,
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
+    enabled: input.enabled ?? false,
   };
   return createInternalObject<StoreEntityCustomView>(
     context,
@@ -224,6 +240,7 @@ export async function duplicateCustomView(
     name: input.name,
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
+    enabled: input.enabled ?? false,
   };
   return createInternalObject<StoreEntityCustomView>(
     context,

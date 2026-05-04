@@ -2581,6 +2581,7 @@
   "Make this stream public and available to anyone": "Сделайте этот поток открытым и доступным для всех желающих",
   "Make this taxii collection public and available to anyone": "Сделайте эту коллекцию Taxii открытой и доступной для всех желающих",
   "Make this TAXII collection public and available to anyone": "Сделать эту коллекцию TAXII открытой и доступной для всех желающих",
+  "Make this view visible to users": "Сделайте это представление видимым для пользователей",
   "Malicious": "Вредоносный",
   "Maliciousness": "Вредоносность",
   "Malware": "Вредоносные программы",
@@ -4724,6 +4725,8 @@
   "View associated public dashboards": "Просмотр связанных публичных информационных дашбордов",
   "View draft": "Посмотреть проект",
   "View full details": "Посмотреть все детали",
+  "View is disabled": "Вид отключен",
+  "View is enabled": "Просмотр включен",
   "View rule": "Правило просмотра",
   "View the element": "Посмотреть элемент",
   "View the item": "Посмотреть товар",
@@ -4913,4 +4916,3 @@
   "Zoom in": "Увеличить",
   "Zoom out": "Уменьшить масштаб"
 }
-

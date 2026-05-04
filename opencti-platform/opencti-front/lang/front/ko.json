@@ -2581,6 +2581,7 @@
   "Make this stream public and available to anyone": "이 스트림을 공개하고 누구나 사용할 수 있도록 설정",
   "Make this taxii collection public and available to anyone": "이 TAXII 컬렉션을 공개하고 누구나 사용할 수 있도록 설정",
   "Make this TAXII collection public and available to anyone": "이 TAXII 컬렉션을 공개하여 누구나 사용할 수 있도록 합니다",
+  "Make this view visible to users": "이 뷰를 사용자에게 표시하도록 설정",
   "Malicious": "악의적",
   "Maliciousness": "악의성",
   "Malware": "악성 소프트웨어",
@@ -4724,6 +4725,8 @@
   "View associated public dashboards": "연결된 공개 대시보드 보기",
   "View draft": "초안 보기",
   "View full details": "전체 세부 정보 보기",
+  "View is disabled": "보기가 비활성화됨",
+  "View is enabled": "보기가 활성화됨",
   "View rule": "규칙 보기",
   "View the element": "요소 보기",
   "View the item": "항목 보기",
@@ -4913,4 +4916,3 @@
   "Zoom in": "확대",
   "Zoom out": "축소"
 }
-

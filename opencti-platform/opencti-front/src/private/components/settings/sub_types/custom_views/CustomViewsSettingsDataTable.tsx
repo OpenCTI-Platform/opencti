@@ -3,7 +3,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../../components/i18n';
-import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
+import ItemBoolean from '../../../../../components/ItemBoolean';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import type { CustomViewsSettingsDataTablePaginationQuery } from './__generated__/CustomViewsSettingsDataTablePaginationQuery.graphql';
 import type { CustomViewsSettingsDataTable_data$data } from './__generated__/CustomViewsSettingsDataTable_data.graphql';
@@ -19,6 +19,7 @@ const customViewFragment = graphql`
     id
     name
     description
+    enabled
     ...CustomViewPopover_customView
   }
 `;
@@ -74,8 +75,24 @@ const customViewsLinesFragment = graphql`
 `;
 
 const DATA_COLUMNS = {
-  name: { percentWidth: 40, isSortable: true },
-  description: { percentWidth: 60, isSortable: false },
+  name: { percentWidth: 35, isSortable: true },
+  customViewEnabled: {
+    id: 'enabled',
+    label: 'Status',
+    percentWidth: 15,
+    isSortable: true,
+    render: ({ enabled }: CustomViewsSettingsDataTable_node$data) => {
+      const { t_i18n } = useFormatter();
+      return (
+        <ItemBoolean
+          label={enabled ? t_i18n('View is enabled') : t_i18n('View is disabled')}
+          status={enabled}
+          labelTextTransform="none"
+        />
+      );
+    },
+  },
+  description: { percentWidth: 50, isSortable: true },
 } as const;
 
 const DEFAULT_SORT_CONFIG = {
@@ -122,7 +139,6 @@ const CustomViewsSettingsDataTable = ({
 
   return (
     <DataTable
-      icon={() => <DrawOutlinedIcon color="secondary" />}
       initialValues={DEFAULT_SORT_CONFIG}
       dataColumns={DATA_COLUMNS}
       storageKey={storageKey}
