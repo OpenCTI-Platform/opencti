@@ -624,22 +624,14 @@ export const upload = async (
 
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
-    let currentFileExistsInStorage = true;
-    try {
-      await getFileSize(user, key);
-    } catch {
-      // Document index can be stale while raw storage object is missing.
-      // In that case, force a re-upload instead of returning an "untouched" file.
-      currentFileExistsInStorage = false;
-    }
     // If file exists, we want to use it's internal_id to use the same casing and keep it compatible
     key = currentFile.internal_id;
-    // If the file content is identical (same SHA256) and object exists in storage, skip upload.
-    if (currentFileExistsInStorage && (currentFile.metaData as FileMetadata).sha256 === sha256) {
+    // If the file content is identical, we don't upload
+    if ((currentFile.metaData as FileMetadata).sha256 === sha256) {
       return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
     }
     // keep version handling backward compatible, if the existing file version is newer or equal than the uploaded one, we skip the upload
-    if (currentFileExistsInStorage && utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(metadata.version as string))) {
+    if (utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(metadata.version as string))) {
       return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
     }
     if (errorOnExisting) {
