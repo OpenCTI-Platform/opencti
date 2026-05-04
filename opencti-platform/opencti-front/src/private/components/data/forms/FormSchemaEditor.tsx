@@ -1797,6 +1797,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       )}
                       <ObjectAssigneeField
                         name="objectAssignee"
+                        label={t_i18n('Default assignee(s)')}
                         style={{ marginBottom: 20 }}
                       />
                     </Box>
@@ -1828,53 +1829,75 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       )}
                       <ObjectParticipantField
                         name="objectParticipant"
+                        label={t_i18n('Default participants')}
                         style={{ marginBottom: 20 }}
                       />
                     </Box>
 
                     {/* Draft Author Section */}
                     <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
-                    <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
-                      <InputLabel>{t_i18n('Author Source')}</InputLabel>
-                      <Select
-                        value={formData.draftDefaults?.author?.type || 'none'}
-                        onChange={(e) => {
-                          const currentAuthorDefaults = formData.draftDefaults?.author;
-                          handleFieldChange('draftDefaults.author', {
-                            type: e.target.value,
-                            isEditable: currentAuthorDefaults?.isEditable ?? false,
-                            isRequired: currentAuthorDefaults?.isRequired ?? false,
-                          });
-                        }}
-                        label={t_i18n('Author Source')}
-                      >
-                        <MenuItem value="none">{t_i18n('None (Default)')}</MenuItem>
-                        <MenuItem value="main_entity_author">{t_i18n('Reuse Main Entity Author')}</MenuItem>
-                        <MenuItem value="current_user">{t_i18n('Current user')}</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <FormControlLabel
-                      control={(
-                        <Switch
-                          checked={formData.draftDefaults?.author?.isEditable || false}
-                          onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
-                        />
-                      )}
-                      label={t_i18n('Editable by end user')}
-                      style={{ display: 'block' }}
-                    />
-                    {formData.draftDefaults?.author?.isEditable && (
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
                       <FormControlLabel
                         control={(
                           <Switch
-                            checked={formData.draftDefaults?.author?.isRequired || false}
-                            onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                            checked={formData.draftDefaults?.author?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
                           />
                         )}
-                        label={t_i18n('Required')}
-                        style={{ display: 'block', marginBottom: 20 }}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
                       />
-                    )}
+                      {formData.draftDefaults?.author?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.author?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                      <Box
+                        style={formData.draftDefaults?.author?.type === 'static'
+                          ? {
+                              border: '1px solid rgba(255, 255, 255, 0.12)',
+                              borderRadius: 4,
+                              padding: '12px',
+                              marginBottom: 20,
+                            }
+                          : { marginBottom: 20 }}
+                      >
+                        <FormControl fullWidth variant="standard" style={{ marginBottom: formData.draftDefaults?.author?.type === 'static' ? 8 : 0 }}>
+                          <InputLabel>{t_i18n('Default author source')}</InputLabel>
+                          <Select
+                            value={formData.draftDefaults?.author?.type || 'none'}
+                            onChange={(e) => {
+                              const currentAuthorDefaults = formData.draftDefaults?.author;
+                              handleFieldChange('draftDefaults.author', {
+                                type: e.target.value,
+                                isEditable: currentAuthorDefaults?.isEditable ?? false,
+                                isRequired: currentAuthorDefaults?.isRequired ?? false,
+                              });
+                            }}
+                            label={t_i18n('Default author source')}
+                          >
+                            <MenuItem value="none">{t_i18n('None (no author specified)')}</MenuItem>
+                            <MenuItem value="main_entity_author">{t_i18n('Main entity author (reuse the same author)')}</MenuItem>
+                            <MenuItem value="static">{t_i18n('Specific Author')}</MenuItem>
+                          </Select>
+                        </FormControl>
+                        {formData.draftDefaults?.author?.type === 'static' && (
+                          <CreatedByField
+                            name="authorDefaultIdentity"
+                            label={t_i18n('Default author')}
+                            style={{ width: '100%', marginBottom: 0 }}
+                            setFieldValue={setFieldValue}
+                          />
+                        )}
+                      </Box>
+                    </Box>
 
                     {/* Authorized Members Section */}
                     <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
@@ -1910,10 +1933,10 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                               onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
                             />
                           )}
-                          label={t_i18n('Required (Users cannot remove default members)')}
+                          label={t_i18n('Editable by end user')}
                           style={{ display: 'block', marginBottom: 15 }}
                         />
-                        <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Member Rules')}</Typography>
+                        <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Default authorized members')}</Typography>
                         <Formik
                           initialValues={{
                             authorized_members: normalizeDraftAuthorizedMembersDefaults(
