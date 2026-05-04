@@ -92,3 +92,24 @@ export const importDashboardWidgetConfiguration = async (
     importedWidgetId,
   };
 };
+
+// region workspace ids converter_2_1
+// Export => Dashboard filter ids must be converted to standard id
+// Import => Dashboards filter ids must be converted back to internal id
+export const convertDashboardManifestIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  manifest: string,
+  from: 'internal' | 'stix',
+): Promise<string> => {
+  const parsedManifest = fromB64(manifest ?? '{}');
+  // Regeneration for dashboards
+  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
+    const { widgets } = parsedManifest;
+    const widgetDefinitions = Object.values(widgets);
+    await convertWidgetsIds(context, user, widgetDefinitions, from);
+    return toB64(parsedManifest) as string;
+  }
+  return manifest;
+};
+// endregion
