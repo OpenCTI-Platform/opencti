@@ -27,7 +27,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { buildReverseUpdateFieldPatch } from './draft-utils';
-import { updateAttributeLockFirst } from './middleware';
+import { storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from './middleware';
 import { buildRefRelationKey } from '../schema/general';
 import { getFileContent } from './raw-file-storage';
 import { loadFile } from './file-storage';
@@ -78,9 +78,11 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
     return;
   }
 
+  // apply reverse field patch
+  const elementWithRefs = await storeLoadByIdWithRefs(context, user, element.internal_id);
   if (element.draft_change.draft_updates_patch) {
     const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_updates_patch);
-    await updateAttributeLockFirst(context, user, element.internal_id, element.entity_type, reverseUpdateFieldPatch);
+    await updateAttributeFromLoadedWithRefs(context, user, elementWithRefs, reverseUpdateFieldPatch);
   }
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
 
