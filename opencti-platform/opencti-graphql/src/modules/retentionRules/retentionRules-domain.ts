@@ -100,7 +100,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input },
   });
   if (input.scope === 'history') {
-    await addRetentionHistoryCreationCount();
+    addRetentionHistoryCreationCount();
   }
   return retentionRule;
 };

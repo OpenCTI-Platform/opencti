@@ -160,8 +160,8 @@ export const addCustomViewEnabledCount = () => {
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
 };
 
-export const addRetentionHistoryCreationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_RETENTION_HISTORY, 1);
+export const addRetentionHistoryCreationCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_RETENTION_HISTORY, 1).catch((reason) => logApp.info('Error add retention history creation in telemetry', { reason }));
 };
 
 // End Region user event counters
