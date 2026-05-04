@@ -37,7 +37,7 @@ describe('completeEntity', () => {
 
   it('does not set created/modified for a non-SDO type', () => {
     const entity: any = { name: 'Test' };
-    const result = completeEntity('DraftWorkspace', entity);
+    const result = completeEntity('StixFile', entity);
 
     expect(result.created).toBeUndefined();
     expect(result.modified).toBeUndefined();
