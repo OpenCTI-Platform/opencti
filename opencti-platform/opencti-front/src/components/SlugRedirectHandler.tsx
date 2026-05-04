@@ -1,6 +1,15 @@
 import { ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 
+const EXTRACT_UUID_FROM_SEGMENT = (segment: string) => {
+  console.log(segment);
+  const results = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.exec(segment);
+  if (results && results[0]) {
+    return results[0];
+  }
+  return null;
+};
+
 export interface SlugRedirectHandlerPageInfo {
   path: string;
 }
@@ -15,6 +24,13 @@ interface SlugRedirectHandlerProps {
    * that is passed back in the render prop upon match.
    */
   pagesInfo: Record<string, SlugRedirectHandlerPageInfo>;
+  /**
+   * Strategy to extract page id (index of `pagesInfo`) from the URL segment.
+   * Ex: extract id `dc6049d4-e3fd-436b-9ed1-956c4670517a` from
+   * segment `a-great-page-dc6049d4-e3fd-436b-9ed1-956c4670517a`.
+   * Default strategy handles UUIDs with hyphens.
+   */
+  extractPageIdFromSegment?: (segment: string) => string | null;
 }
 
 /**
@@ -37,18 +53,23 @@ interface SlugRedirectHandlerProps {
  *      renderMatch={({ path }) => `Matched on ${path}`}
  *      NoMatch="No match :("
  *      pagesInfo={{
- *        'dc6049d4e3fd436b9ed1956c4670517a': {
- *          path: 'a-great-page-dc6049d4e3fd436b9ed1956c4670517a',
+ *        'dc6049d4-e3fd-436b-9ed1-956c4670517a': {
+ *          path: 'a-great-page-dc6049d4-e3fd-436b-9ed1-956c4670517a',
  *        },
- *        '73f7840b2b4d444c861bd6a18b9e6d66': {
- *          path: 'another-great-page-73f7840b2b4d444c861bd6a18b9e6d66',
+ *        '73f7840b-2b4d-444c-861b-d6a18b9e6d66': {
+ *          path: 'another-great-page-73f7840b-2b4d-444c-861b-d6a18b9e6d66',
  *        },
  *      }}
  *  } />
  * </Routes>
  * ```
  */
-const SlugRedirectHandler = ({ renderMatch, NoMatch, pagesInfo }: SlugRedirectHandlerProps) => {
+const SlugRedirectHandler = ({
+  renderMatch,
+  NoMatch,
+  pagesInfo,
+  extractPageIdFromSegment = EXTRACT_UUID_FROM_SEGMENT,
+}: SlugRedirectHandlerProps) => {
   const { '*': splat } = useParams();
   if (!splat) {
     return NoMatch;
@@ -56,11 +77,10 @@ const SlugRedirectHandler = ({ renderMatch, NoMatch, pagesInfo }: SlugRedirectHa
   let firstSegmentEnd = splat.indexOf('/');
   firstSegmentEnd = firstSegmentEnd < 0 ? splat.length : firstSegmentEnd;
   const segment = splat.substring(0, firstSegmentEnd);
-  const dashPos = segment.lastIndexOf('-');
-  if (dashPos < 0) {
+  const id = extractPageIdFromSegment(segment);
+  if (id === null) {
     return NoMatch;
   }
-  const id = segment.substring(dashPos + 1);
   const pageInfo = pagesInfo[id];
   if (!pageInfo) {
     return NoMatch;

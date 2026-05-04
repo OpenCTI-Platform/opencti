@@ -23,7 +23,7 @@ const CustomViewRedirector = ({ entity, Fallback, indexFallback }: CustomViewRed
   const pagesInfo = useMemo(() => customViews.reduce(
     (acc, customViewInfo) => ({
       ...acc,
-      [customViewInfo.id.replaceAll('-', '')]: customViewInfo,
+      [customViewInfo.id]: customViewInfo,
     }), {} as Record<string, CustomViewType>,
   ), [customViews]);
   const { '*': splat } = useParams();

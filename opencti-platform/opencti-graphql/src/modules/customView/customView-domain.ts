@@ -130,7 +130,7 @@ const TELEMETRY = {
 };
 
 export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) => {
-  return `${slug}-${id.replaceAll('-', '')}`;
+  return `${slug}-${id}`;
 };
 
 export const findCustomViewById = async (

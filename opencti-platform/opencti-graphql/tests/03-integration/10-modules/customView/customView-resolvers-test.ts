@@ -248,7 +248,7 @@ describe('CustomView resolvers', () => {
         id: customView1?.id,
         name: CUSTOM_VIEW_ENTITY_1.name,
         description: CUSTOM_VIEW_ENTITY_1.description,
-        path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customView1?.id.replaceAll('-', '')}`,
+        path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customView1?.id}`,
         created_at: expect.any(Date),
         updated_at: expect.any(Date),
         targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
@@ -259,7 +259,7 @@ describe('CustomView resolvers', () => {
         id: customView2?.id,
         name: CUSTOM_VIEW_ENTITY_2.name,
         description: CUSTOM_VIEW_ENTITY_2.description,
-        path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customView2?.id.replaceAll('-', '')}`,
+        path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customView2?.id}`,
         created_at: expect.any(Date),
         updated_at: expect.any(Date),
         targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
@@ -329,7 +329,7 @@ describe('CustomView resolvers', () => {
           id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
           name,
           description,
-          path: `custom-view-name-${result.data.customViewAdd.id.replaceAll('-', '')}`,
+          path: `custom-view-name-${result.data.customViewAdd.id}`,
           targetEntityType,
           created_at: expect.any(Date),
           updated_at: expect.any(Date),
@@ -408,7 +408,7 @@ describe('CustomView resolvers', () => {
           },
         });
         expect(result.data.customViewEdit.name).toBe(updatedName);
-        expect(result.data.customViewEdit.path).toBe(`updated-name-${customView1?.id.replaceAll('-', '')}`);
+        expect(result.data.customViewEdit.path).toBe(`updated-name-${customView1?.id}`);
       });
 
       it('should allow exporting a widget', async () => {
@@ -465,7 +465,7 @@ describe('CustomView resolvers', () => {
           id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
           name: duplicateName,
           description: customView2?.description,
-          path: `duplicated-custom-view-2-${result.data.customViewDuplicate.id.replaceAll('-', '')}`,
+          path: `duplicated-custom-view-2-${result.data.customViewDuplicate.id}`,
           targetEntityType: customView2?.target_entity_type,
           created_at: expect.any(Date),
           updated_at: expect.any(Date),
@@ -618,7 +618,7 @@ describe('CustomView resolvers', () => {
           name: 'A view to import',
           enabled: false,
           default: false,
-          path: `a-view-to-import-${result.data.customViewConfigurationImport.id.replaceAll('-', '')}`,
+          path: `a-view-to-import-${result.data.customViewConfigurationImport.id}`,
           targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
         });
       });

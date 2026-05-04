@@ -1,9 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { Route } from 'react-router-dom';
-import testRender from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import StixDomainObjectMain from './StixDomainObjectMain';
 import { StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
+
+vi.mock('../../../components/custom_views/useCustomViewsData', () => ({
+  useCustomViewsData: vi.fn().mockReturnValue({
+    allCustomViews: [],
+  }),
+}));
 
 const TABS_TEST_DATA = [
   ['Overview', 'overview'],
@@ -57,7 +63,7 @@ describe('StixDomainObjectMain', () => {
     expect(screen.getByText(pageContent)).toBeInTheDocument();
   });
 
-  it('renders 404 error for unknown route', () => {
+  it('renders 404 error for unknown route when CUSTOM_VIEW flag is enabled', () => {
     const nowhereRoute = '/nowhere';
     testRender(
       <StixDomainObjectMain
@@ -70,6 +76,14 @@ describe('StixDomainObjectMain', () => {
       />,
       {
         route: nowhereRoute,
+        userContext: createMockUserContext({
+          settings: {
+            platform_feature_flags: [{
+              enable: true,
+              id: 'CUSTOM_VIEW',
+            }],
+          },
+        }),
       },
     );
     expect(screen.getByText(/This page is not found/i)).toBeInTheDocument();
