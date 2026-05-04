@@ -1,13 +1,18 @@
 import { Readable } from 'node:stream';
 import mime from 'mime-types';
+import { logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { uploadToStorage } from './file-storage';
+import { getFileContent } from './raw-file-storage';
+import { getDraftContext } from '../utils/draftContext';
+import { getDraftFilePrefix } from './draft-utils';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPES,
   collectDataUriImagesFromMarkdown,
   DEFAULT_MAX_EMBEDDED_IMAGE_SIZE_BYTES,
   DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES,
   extractMarkdownImageReferences,
+  resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
 } from './markdown-embedded-images';
 import { UPDATE_OPERATION_REMOVE } from './utils';
@@ -17,6 +22,8 @@ import type { EditInput } from '../generated/graphql';
 
 const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
 const TEMP_IMAGE_TOKEN_REGEX = /([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
+const EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS = 3;
+const ALLOWED_EMBEDDED_IMAGE_MIME_TYPES_SET = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
 
 const visitObjectGraph = (
   node: unknown,
@@ -86,6 +93,11 @@ export type RewriteEmbeddedDataUriOptions = {
   entityId: string;
   entity: BasicStoreBase;
   fileMarkings: string[];
+};
+
+export type ResolveEmbeddedImagesForExportOptions = {
+  entityType: string;
+  entityId: string;
 };
 
 const extractTempTokenFromImageUrl = (imageUrl: string): string | null => {
@@ -284,5 +296,143 @@ export const rewriteEmbeddedDataUriImagesInUpdateInputs = async (
     if (typeof rewrittenValue === 'string') {
       updateInput.value = [rewrittenValue];
     }
+  }
+};
+
+const resolveEmbeddedImageDataUriForExport = async (
+  context: AuthContext,
+  storagePath: string,
+  mimeType: string,
+  fetchAttempts: number,
+): Promise<string | null> => {
+  const draftContext = getDraftContext(context);
+  const draftPrefix = draftContext ? getDraftFilePrefix(draftContext) : null;
+  const candidatePaths = [storagePath];
+  if (draftPrefix && !storagePath.startsWith(draftPrefix)) {
+    candidatePaths.push(`${draftPrefix}${storagePath}`);
+  }
+
+  for (let pathIndex = 0; pathIndex < candidatePaths.length; pathIndex += 1) {
+    const candidatePath = candidatePaths[pathIndex];
+    for (let attempt = 1; attempt <= fetchAttempts; attempt += 1) {
+      try {
+        const base64Data = await getFileContent(candidatePath, 'base64');
+        if (base64Data) {
+          return `data:${mimeType};base64,${base64Data}`;
+        }
+      } catch (error) {
+        if (attempt === fetchAttempts) {
+          logApp.warn('[OPENCTI] Unable to fetch embedded markdown image during STIX export', {
+            storagePath,
+            candidatePath,
+            attempts: fetchAttempts,
+            cause: error,
+          });
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+const resolveEmbeddedImagesInMarkdownDescriptionForExport = async (
+  context: AuthContext,
+  markdown: string,
+  options: ResolveEmbeddedImagesForExportOptions,
+): Promise<string> => {
+  const embeddedReferences = extractMarkdownImageReferences(markdown)
+    .filter((reference) => reference.isEmbeddedStorage && reference.embeddedStoragePath);
+
+  if (embeddedReferences.length === 0) {
+    return markdown;
+  }
+
+  const uniqueStoragePaths = Array.from(new Set(embeddedReferences.map((reference) => {
+    return resolveEmbeddedStoragePathWithContext(reference.embeddedStoragePath as string, {
+      entityType: options.entityType,
+      entityId: options.entityId,
+    });
+  })));
+  const uriByStoragePath = new Map<string, string | null>();
+
+  for (let i = 0; i < uniqueStoragePaths.length; i += 1) {
+    const storagePath = uniqueStoragePaths[i];
+    const detectedMime = mime.lookup(storagePath);
+    if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPES_SET.has(detectedMime as typeof ALLOWED_EMBEDDED_IMAGE_MIME_TYPES[number])) {
+      logApp.warn('[OPENCTI] Unsupported embedded markdown image mime type during STIX export, keeping original URI', {
+        storagePath,
+        mimeType: detectedMime || null,
+      });
+      uriByStoragePath.set(storagePath, null);
+      continue;
+    }
+
+    const dataUri = await resolveEmbeddedImageDataUriForExport(
+      context,
+      storagePath,
+      detectedMime as string,
+      EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS,
+    );
+    if (!dataUri) {
+      logApp.warn('[OPENCTI] Unable to resolve embedded markdown image during STIX export after retries, keeping original URI', {
+        storagePath,
+        attempts: EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS,
+      });
+      uriByStoragePath.set(storagePath, null);
+      continue;
+    }
+
+    uriByStoragePath.set(storagePath, dataUri);
+  }
+
+  const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+    if (!reference.embeddedStoragePath) {
+      return undefined;
+    }
+    const resolvedStoragePath = resolveEmbeddedStoragePathWithContext(reference.embeddedStoragePath, {
+      entityType: options.entityType,
+      entityId: options.entityId,
+    });
+    const resolvedUri = uriByStoragePath.get(resolvedStoragePath);
+    return resolvedUri ?? undefined;
+  });
+
+  return rewrittenMarkdown;
+};
+
+export const resolveEmbeddedImagesInDescriptionFieldsForExport = async (
+  context: AuthContext,
+  payload: unknown,
+  options: ResolveEmbeddedImagesForExportOptions,
+): Promise<void> => {
+  if (!payload || typeof payload !== 'object') {
+    return;
+  }
+
+  if (Array.isArray(payload)) {
+    for (let i = 0; i < payload.length; i += 1) {
+      await resolveEmbeddedImagesInDescriptionFieldsForExport(context, payload[i], options);
+    }
+    return;
+  }
+
+  const markdownFieldCandidates = ['description', 'x_opencti_description', 'content'];
+  const hasEmbeddedStorageRef = (s: string) => extractMarkdownImageReferences(s).some((reference) => reference.isEmbeddedStorage);
+  for (let i = 0; i < markdownFieldCandidates.length; i += 1) {
+    const key = markdownFieldCandidates[i];
+    const value = (payload as Record<string, unknown>)[key];
+    if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
+      (payload as Record<string, unknown>)[key] = await resolveEmbeddedImagesInMarkdownDescriptionForExport(context, value, options);
+    }
+  }
+
+  const entries = Object.entries(payload as Record<string, unknown>);
+  for (let i = 0; i < entries.length; i += 1) {
+    const [key, value] = entries[i];
+    if (markdownFieldCandidates.includes(key)) {
+      continue;
+    }
+    await resolveEmbeddedImagesInDescriptionFieldsForExport(context, value, options);
   }
 };
