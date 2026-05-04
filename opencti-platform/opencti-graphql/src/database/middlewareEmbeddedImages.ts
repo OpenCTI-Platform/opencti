@@ -197,10 +197,11 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
           filename: fileName,
           mimeType: image.mimeType,
         };
+        const uploadPath = `embedded/${options.entityType}/${options.entityId}`;
         const { upload: uploadedFile } = await uploadToStorage(
           context,
           user,
-          `embedded/${options.entityType}/${options.entityId}`,
+          uploadPath,
           fileUpload,
           {
             entity: options.entity,

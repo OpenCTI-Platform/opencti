@@ -8,8 +8,8 @@ describe('markdownDisplay helpers', () => {
       expect(normalizeMarkdownImageUrl('/embedded/Report/r-1/a.png', '/')).toBe('embedded/Report/r-1/a.png');
     });
 
-    it('rewrites embedded storage/get URLs to storage/view for inline rendering', () => {
-      expect(normalizeMarkdownImageUrl('/storage/get/embedded/Report/r-1/a.png', '/')).toBe('/storage/view/embedded/Report/r-1/a.png');
+    it('does not rewrite storage/get URLs anymore', () => {
+      expect(normalizeMarkdownImageUrl('/storage/get/embedded/Report/r-1/a.png', '/')).toBe('/storage/get/embedded/Report/r-1/a.png');
     });
 
     it('prefixes base path for /storage URLs when missing', () => {
@@ -24,7 +24,7 @@ describe('markdownDisplay helpers', () => {
   describe('resolveAndNormalizeMarkdownImageUrl', () => {
     it('uses resolver when provided and normalizes output', () => {
       const resolver = () => '/storage/get/embedded/Report/r-1/b.png';
-      expect(resolveAndNormalizeMarkdownImageUrl('/ignored', resolver, '/opencti')).toBe('/opencti/storage/view/embedded/Report/r-1/b.png');
+      expect(resolveAndNormalizeMarkdownImageUrl('/ignored', resolver, '/opencti')).toBe('/opencti/storage/get/embedded/Report/r-1/b.png');
     });
 
     it('returns null when resolver returns null', () => {

@@ -15,40 +15,20 @@ describe('markdown image field helpers', () => {
     ]);
   });
 
-  it('extracts embedded storage paths from relative storage/view URLs only', () => {
+  it('ignores storage/get and storage/view URLs', () => {
     const markdown = [
       '![b](/storage/view/embedded/Report/r-1/image-b.png)',
       '![ignored](/storage/get/embedded/Report/r-1/image-a.png)',
       '![c](https://example.org/image.png)',
     ].join('\n');
 
-    expect(extractEmbeddedStoragePathsFromMarkdown(markdown)).toEqual(['embedded/Report/r-1/image-b.png']);
-  });
-
-  it('extracts embedded storage paths from encoded view URLs (relative and absolute)', () => {
-    const markdown = [
-      '![rel](/storage/view/embedded%2FReport%2Fr-1%2Fimage-c.png)',
-      '![abs](https://platform.local/storage/view/embedded%2FReport%2Fr-1%2Fimage-d.png)',
-    ].join('\n');
-
-    expect(extractEmbeddedStoragePathsFromMarkdown(markdown).sort()).toEqual([
-      'embedded/Report/r-1/image-c.png',
-      'embedded/Report/r-1/image-d.png',
-    ]);
-  });
-
-  it('handles markdown image destinations with nested parentheses in filenames', () => {
-    const markdown = '![chart](/storage/view/embedded/Report/r-1/figure(1).png)';
-
-    expect(extractEmbeddedStoragePathsFromMarkdown(markdown)).toEqual([
-      'embedded/Report/r-1/figure(1).png',
-    ]);
+    expect(extractEmbeddedStoragePathsFromMarkdown(markdown)).toEqual([]);
   });
 
   it('deduplicates repeated references to the same embedded path', () => {
     const markdown = [
-      '![first](/storage/view/embedded/Report/r-1/dup.png)',
-      '![second](/storage/view/embedded/Report/r-1/dup.png)',
+      '![first](embedded/Report/r-1/dup.png)',
+      '![second](embedded/Report/r-1/dup.png)',
     ].join('\n');
 
     expect(extractEmbeddedStoragePathsFromMarkdown(markdown)).toEqual([
@@ -67,15 +47,15 @@ describe('markdown image field helpers', () => {
   });
 
   it('rejects suspicious paths containing traversal segments', () => {
-    const markdown = '![bad](/storage/view/embedded/Report/r-1/../secrets.png)';
+    const markdown = '![bad](embedded/Report/r-1/../secrets.png)';
 
     expect(extractEmbeddedStoragePathsFromMarkdown(markdown)).toEqual([]);
   });
 
   it('supports angle-bracket destinations and optional title text', () => {
     const markdown = [
-      '![angled](</storage/view/embedded/Report/r-1/from-angle.png>)',
-      '![titled](/storage/view/embedded/Report/r-1/with-title.png "My image")',
+      '![angled](<embedded/Report/r-1/from-angle.png>)',
+      '![titled](embedded/Report/r-1/with-title.png "My image")',
     ].join('\n');
 
     expect(extractEmbeddedStoragePathsFromMarkdown(markdown).sort()).toEqual([

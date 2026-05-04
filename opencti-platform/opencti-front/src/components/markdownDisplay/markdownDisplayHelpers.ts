@@ -10,11 +10,6 @@ export const normalizeMarkdownImageUrl = (
     normalized = normalized.slice(1);
   }
 
-  // /storage/get/* serves as attachment; use /storage/view/* for inline rendering.
-  if (normalized.includes('/storage/get/embedded/')) {
-    normalized = normalized.replace('/storage/get/embedded/', '/storage/view/embedded/');
-  }
-
   const normalizedBasePath = appBasePath === '/' ? '' : appBasePath;
   if (
     normalizedBasePath

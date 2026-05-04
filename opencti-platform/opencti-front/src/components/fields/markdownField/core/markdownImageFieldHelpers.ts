@@ -12,8 +12,6 @@ type CleanupRefs = {
 
 const EMBEDDED_PATH_PREFIX = 'embedded/';
 const EMBEDDED_PATH_PREFIX_WITH_SLASH = '/embedded/';
-const STORAGE_VIEW_PREFIX = '/storage/view/';
-const STORAGE_VIEW_EMBEDDED_PREFIX = `${STORAGE_VIEW_PREFIX}${EMBEDDED_PATH_PREFIX}`;
 
 const ALLOWED_MARKDOWN_IMAGE_MIME_TYPES = new Set([
   'image/png',
@@ -26,22 +24,14 @@ export type MarkdownImageDragFeedback = 'none' | 'valid' | 'invalid';
 
 // Extracts the storage path (e.g. "embedded/Report/r-1/image.png") from a markdown
 // image URL if and only if it points to an embedded file in this platform's storage.
-// Four URL forms are supported:
+// Three URL forms are supported:
 //   1. Relative embedded/...
 //   2. Relative /embedded/...
-//   3. Relative /storage/view/embedded/...
-//   4. Absolute https://host/storage/view/embedded%2F... (percent-encoded path segment)
+//   3. Absolute https://host/embedded/...
 // Returns null for any URL that does not match these patterns (external images, etc.).
 const extractEmbeddedStoragePathFromUrl = (url: string): string | null => {
   const trimmed = url.trim();
   const hasUrlScheme = (value: string): boolean => /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(value);
-  const decodeEmbeddedEncodedPath = (encodedPath: string): string | null => {
-    try {
-      return decodeURIComponent(encodedPath).split(/[?#]/)[0];
-    } catch {
-      return null;
-    }
-  };
   const startsWithIgnoreCase = (value: string, prefix: string): boolean => value.toLowerCase().startsWith(prefix.toLowerCase());
 
   const pathCandidate = (() => {
@@ -68,18 +58,6 @@ const extractEmbeddedStoragePathFromUrl = (url: string): string | null => {
 
   if (startsWithIgnoreCase(pathCandidate, EMBEDDED_PATH_PREFIX_WITH_SLASH)) {
     return pathCandidate.slice(1);
-  }
-
-  if (startsWithIgnoreCase(pathCandidate, STORAGE_VIEW_EMBEDDED_PREFIX)) {
-    return pathCandidate.slice(STORAGE_VIEW_PREFIX.length);
-  }
-
-  if (startsWithIgnoreCase(pathCandidate, STORAGE_VIEW_PREFIX)) {
-    const storageViewTail = pathCandidate.slice(STORAGE_VIEW_PREFIX.length);
-    const decodedTail = decodeEmbeddedEncodedPath(storageViewTail);
-    if (decodedTail && startsWithIgnoreCase(decodedTail, EMBEDDED_PATH_PREFIX)) {
-      return decodedTail;
-    }
   }
 
   return null;

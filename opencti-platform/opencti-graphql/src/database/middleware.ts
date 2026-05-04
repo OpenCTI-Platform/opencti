@@ -231,7 +231,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
-import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
+import { getDraftChanges, getDraftFilePrefix, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import {
@@ -633,6 +633,7 @@ export const stixLoadById = async (
   return instance ? convertStoreToStix(instance, version) : null;
 };
 const convertStoreToStixWithResolvedFiles = async (
+  context: AuthContext,
   instance: StoreCommon,
   version = Version.Stix_2_1,
 ): Promise<S.StixObject | S2.StixObject> => {
@@ -648,7 +649,16 @@ const convertStoreToStixWithResolvedFiles = async (
   };
 
   const resolveEmbeddedImageBase64 = async (storagePath: string): Promise<string | null> => {
-    const candidatePaths = R.uniq([storagePath, encodeStoragePath(storagePath)]);
+    const draftContext = context?.draft_context;
+    const draftPath = draftContext && !storagePath.startsWith('draft/')
+      ? `${getDraftFilePrefix(draftContext)}${storagePath}`
+      : undefined;
+    const candidatePaths = R.uniq([
+      storagePath,
+      encodeStoragePath(storagePath),
+      draftPath,
+      draftPath ? encodeStoragePath(draftPath) : undefined,
+    ].filter((path): path is string => isNotEmptyField(path)));
     for (let attempt = 0; attempt < EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS; attempt += 1) {
       for (let i = 0; i < candidatePaths.length; i += 1) {
         const candidatePath = candidatePaths[i];
@@ -809,7 +819,7 @@ export const stixLoadByIds = async (
   if (resolveStixFiles) {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
       .filter((i) => isNotEmptyField(i))
-      .map((e) => (convertStoreToStixWithResolvedFiles(e as BasicStoreCommon, version)));
+      .map((e) => (convertStoreToStixWithResolvedFiles(context, e as BasicStoreCommon, version)));
     return BluePromise.all(fileResolvedInstancesPromise);
   }
   return ids.map((id) => loadedInstancesMap.get(id))

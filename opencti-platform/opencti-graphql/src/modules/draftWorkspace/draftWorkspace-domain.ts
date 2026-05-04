@@ -1,10 +1,13 @@
 import { BUS_TOPICS, logApp } from '../../config/conf';
+import mime from 'mime-types';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
 import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, stixLoadByIds, updateAttribute } from '../../database/middleware';
+import { ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET, extractMarkdownImageReferences, rewriteMarkdownImageUrls } from '../../database/markdown-embedded-images';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
+import { getFileContent } from '../../database/raw-file-storage';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
@@ -65,6 +68,71 @@ const bypassDraftContext = (context: AuthContext): AuthContext => {
     draft_context: undefined,
     user: context.user ? { ...context.user, draft_context: undefined } : undefined,
   };
+};
+
+const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'] as const;
+
+const resolveDraftEmbeddedImagesInMarkdownFields = async (payload: unknown): Promise<void> => {
+  if (!payload || typeof payload !== 'object') {
+    return;
+  }
+
+  if (Array.isArray(payload)) {
+    for (let i = 0; i < payload.length; i += 1) {
+      await resolveDraftEmbeddedImagesInMarkdownFields(payload[i]);
+    }
+    return;
+  }
+
+  const valueByKey = payload as Record<string, unknown>;
+  for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
+    const key = MARKDOWN_FIELD_KEYS[i];
+    const value = valueByKey[key];
+    if (typeof value !== 'string') {
+      continue;
+    }
+
+    const draftEmbeddedReferences = extractMarkdownImageReferences(value)
+      .filter((reference) => reference.isEmbeddedStorage && reference.embeddedStoragePath?.startsWith('draft/'));
+    if (draftEmbeddedReferences.length === 0) {
+      continue;
+    }
+
+    const replacementByStoragePath = new Map<string, string>();
+    const uniqueStoragePaths = [...new Set(draftEmbeddedReferences.map((reference) => String(reference.embeddedStoragePath)))];
+    for (let j = 0; j < uniqueStoragePaths.length; j += 1) {
+      const storagePath = uniqueStoragePaths[j];
+      const detectedMime = mime.lookup(storagePath);
+      if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(String(detectedMime).toLowerCase())) {
+        continue;
+      }
+      try {
+        const base64Data = await getFileContent(storagePath, 'base64');
+        if (base64Data) {
+          replacementByStoragePath.set(storagePath, `data:${detectedMime};base64,${String(base64Data)}`);
+        }
+      } catch {
+        // Keep original URI if content cannot be loaded.
+      }
+    }
+
+    const { markdown: rewritten } = rewriteMarkdownImageUrls(value, (reference) => {
+      if (!reference.embeddedStoragePath) {
+        return undefined;
+      }
+      return replacementByStoragePath.get(reference.embeddedStoragePath);
+    });
+    valueByKey[key] = rewritten;
+  }
+
+  const entries = Object.entries(valueByKey);
+  for (let i = 0; i < entries.length; i += 1) {
+    const [key, nestedValue] = entries[i];
+    if (MARKDOWN_FIELD_KEYS.includes(key as (typeof MARKDOWN_FIELD_KEYS)[number])) {
+      continue;
+    }
+    await resolveDraftEmbeddedImagesInMarkdownFields(nestedValue);
+  }
 };
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -409,6 +477,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const createEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_CREATE);
   const createEntitiesIds = createEntities.map((e) => e.internal_id);
   const createStixEntities = await stixLoadByIds(contextInDraft, user, createEntitiesIds, { resolveStixFiles: true });
+  await Promise.all(createStixEntities.map((entity) => resolveDraftEmbeddedImagesInMarkdownFields(entity)));
 
   // We add all deleted elements as stix objects to the bundle, but we mark them as a delete operation
   const deletedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_DELETE);

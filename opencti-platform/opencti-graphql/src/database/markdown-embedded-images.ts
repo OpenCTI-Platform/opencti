@@ -1,12 +1,6 @@
 import { createHash } from 'node:crypto';
 import { FunctionalError } from '../config/errors';
 
-const STORAGE_GET_EMBEDDED_PREFIX = '/storage/get/embedded/';
-const STORAGE_GET_PREFIX = '/storage/get/';
-const STORAGE_VIEW_PREFIX = '/storage/view/';
-const STORAGE_VIEW_EMBEDDED_PREFIX = '/storage/view/embedded/';
-const STORAGE_VIEW_EMBEDDED_PREFIX_ENCODED = '/storage/view/embedded%2F';
-
 export const ALLOWED_EMBEDDED_IMAGE_MIME_TYPES = [
   'image/png',
   'image/jpeg',
@@ -167,62 +161,15 @@ export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefin
     return undefined;
   };
 
-  const decodeEmbeddedEncodedPath = (encodedPath: string): string | undefined => {
-    try {
-      return extractEmbeddedStoragePath(decodeURIComponent(encodedPath));
-    } catch {
-      return undefined;
-    }
-  };
-
   const directPath = extractEmbeddedStoragePath(trimmed);
   if (directPath) {
     return directPath;
   }
 
-  if (trimmed.startsWith(STORAGE_GET_EMBEDDED_PREFIX)) {
-    return trimmed.slice(STORAGE_GET_PREFIX.length).split(/[?#]/)[0];
-  }
-
-  if (trimmed.startsWith(STORAGE_GET_PREFIX)) {
-    return extractEmbeddedStoragePath(trimmed.slice(STORAGE_GET_PREFIX.length));
-  }
-
-  if (trimmed.startsWith(STORAGE_VIEW_EMBEDDED_PREFIX)) {
-    return trimmed.slice(STORAGE_VIEW_EMBEDDED_PREFIX.length - 'embedded/'.length).split(/[?#]/)[0];
-  }
-
-  if (trimmed.startsWith(STORAGE_VIEW_EMBEDDED_PREFIX_ENCODED)) {
-    // /storage/view/embedded%2FType%2Fid%2Ffile.ext — decode and normalise to embedded/...
-    const encodedPath = trimmed.slice('/storage/view/'.length).split(/[?#]/)[0];
-    return decodeEmbeddedEncodedPath(encodedPath);
-  }
-
-  if (trimmed.startsWith(STORAGE_VIEW_PREFIX)) {
-    const encodedPath = trimmed.slice(STORAGE_VIEW_PREFIX.length).split(/[?#]/)[0];
-    return decodeEmbeddedEncodedPath(encodedPath);
-  }
-
   try {
     const parsed = new URL(trimmed);
-    const pathname = parsed.pathname;
-    if (pathname.startsWith(STORAGE_GET_EMBEDDED_PREFIX)) {
-      return pathname.slice(STORAGE_GET_PREFIX.length);
-    }
-    if (pathname.startsWith(STORAGE_GET_PREFIX)) {
-      return extractEmbeddedStoragePath(pathname.slice(STORAGE_GET_PREFIX.length));
-    }
-    if (pathname.startsWith(STORAGE_VIEW_EMBEDDED_PREFIX)) {
-      return pathname.slice(STORAGE_VIEW_EMBEDDED_PREFIX.length - 'embedded/'.length);
-    }
-    if (/^\/storage\/view\/embedded%2f/i.test(pathname)) {
-      const encodedPath = pathname.slice('/storage/view/'.length);
-      return decodeEmbeddedEncodedPath(encodedPath);
-    }
-    if (pathname.startsWith(STORAGE_VIEW_PREFIX)) {
-      const encodedPath = pathname.slice(STORAGE_VIEW_PREFIX.length);
-      return decodeEmbeddedEncodedPath(encodedPath);
-    }
+    const pathname = parsed.pathname.replace(/^\/+/, '').split(/[?#]/)[0];
+    return extractEmbeddedStoragePath(pathname);
   } catch {
     // Ignore invalid absolute URLs.
   }
@@ -355,22 +302,6 @@ export const rewriteMarkdownImageUrls = (
   }
 
   return { markdown: updated, replacedCount };
-};
-
-export const buildStorageGetUri = (storagePath: string): string => {
-  const normalized = storagePath.replace(/^\/+/, '');
-  if (normalized.startsWith('storage/get/')) {
-    return `/${normalized}`;
-  }
-  return `${STORAGE_GET_PREFIX}${normalized}`;
-};
-
-export const buildEmbeddedStorageGetUri = (
-  entityType: string,
-  entityId: string,
-  fileName: string,
-): string => {
-  return buildStorageGetUri(`embedded/${entityType}/${entityId}/${fileName}`);
 };
 
 export const dedupeKeyFromBytes = (bytes: Buffer): string => {

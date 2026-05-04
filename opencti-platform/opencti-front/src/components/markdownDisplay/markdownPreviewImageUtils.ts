@@ -7,14 +7,9 @@ export type MarkdownPreviewImage = {
   alt: string;
 };
 
-const STORAGE_IMAGE_PATHS = ['/storage/view', '/storage/get'];
 const EMBEDDED_IMAGE_PATH_PREFIXES = ['embedded/', '/embedded/'];
 
 const hasUrlScheme = (url: string): boolean => /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(url);
-
-const isAllowedRelativeStoragePath = (url: string): boolean => {
-  return STORAGE_IMAGE_PATHS.some((path) => url.startsWith(path));
-};
 
 const isAllowedHttpUrl = (url: string): boolean => {
   if (defaultUrlTransform(url) === '') {
@@ -35,9 +30,6 @@ export const isAllowedUploadedImageUrl = (url: string): boolean => {
   if (normalizedUrl.startsWith(TEMP_IMAGE_SCHEME)) return true;
   if (EMBEDDED_IMAGE_PATH_PREFIXES.some((prefix) => normalizedUrl.startsWith(prefix))) {
     return true;
-  }
-  if (normalizedUrl.startsWith('/')) {
-    return isAllowedRelativeStoragePath(normalizedUrl);
   }
   if (hasUrlScheme(normalizedUrl)) {
     return isAllowedHttpUrl(normalizedUrl);

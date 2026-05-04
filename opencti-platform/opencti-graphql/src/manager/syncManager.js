@@ -19,7 +19,13 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
 import { InterruptibleTimer } from './interruptible-timer';
-import { ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET, extractMarkdownImageReferences, MARKDOWN_FIELD_KEYS, rewriteMarkdownImageUrls } from '../database/markdown-embedded-images';
+import {
+  ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
+  extractMarkdownImageReferences,
+  MARKDOWN_FIELD_KEYS,
+  resolveEmbeddedStoragePathWithContext,
+  rewriteMarkdownImageUrls,
+} from '../database/markdown-embedded-images';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
@@ -28,7 +34,9 @@ const WAIT_TIME_ACTION = 2000;
 const waitLoopTimer = new InterruptibleTimer();
 
 const hasEmbeddedStorageRef = (markdown) => {
-  return markdown.includes('/storage/get/embedded/') || markdown.includes('/storage/view/embedded');
+  return markdown.includes('embedded/')
+    || markdown.includes('/storage/get/embedded/')
+    || markdown.includes('/storage/view/embedded');
 };
 
 const extractMimeTypeFromHeader = (response) => {
@@ -52,11 +60,12 @@ const extractStorageRelativePath = (candidateUri) => {
   return normalizedUri.substring(pathIndex).replace(/^\/+/, '');
 };
 
-const buildSyncStorageFetchUri = (syncUri, storageUri) => {
+const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   if (typeof storageUri !== 'string') {
     return null;
   }
 
+  const { entityType, entityId } = options;
   const trimmedStorageUri = storageUri.trim();
   if (/^https?:\/\//i.test(trimmedStorageUri)) {
     try {
@@ -64,6 +73,11 @@ const buildSyncStorageFetchUri = (syncUri, storageUri) => {
       const extractedPath = extractStorageRelativePath(`${parsedUri.pathname}${parsedUri.search}`);
       if (extractedPath) {
         return `${httpBase(syncUri)}${extractedPath}`;
+      }
+      const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
+      if (normalizedPath.startsWith('embedded/')) {
+        const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
+        return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
       }
       return null;
     } catch {
@@ -74,6 +88,12 @@ const buildSyncStorageFetchUri = (syncUri, storageUri) => {
   const extractedPath = extractStorageRelativePath(trimmedStorageUri);
   if (extractedPath) {
     return `${httpBase(syncUri)}${extractedPath}`;
+  }
+
+  const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
+  if (normalizedPath.startsWith('embedded/')) {
+    const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
+    return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
   }
 
   return null;
@@ -115,6 +135,11 @@ const syncManagerInstance = (syncId) => {
   const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
     const { uri } = sync;
     const processingData = { ...data };
+    const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
+    const markdownEntityContext = {
+      entityType: octiExtension.type,
+      entityId: octiExtension.id,
+    };
     // Reverse patch the id if modified
     const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
     // Handle file enrichment
@@ -148,7 +173,7 @@ const syncManagerInstance = (syncId) => {
       for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
         const embeddedStorageUri = uniqueReferenceUrls[i];
         try {
-          const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri);
+          const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
           if (!fetchUri) {
             logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
               embeddedStorageUri,

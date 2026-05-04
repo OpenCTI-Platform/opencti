@@ -3,9 +3,9 @@ import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markd
 
 describe('markdown preview image utils', () => {
   describe('isAllowedUploadedImageUrl', () => {
-    it('accepts platform relative storage URLs', () => {
-      expect(isAllowedUploadedImageUrl('/storage/view/embedded/Report/r-1/image.png')).toBe(true);
-      expect(isAllowedUploadedImageUrl('/storage/get/embedded/Report/r-1/image.png')).toBe(true);
+    it('rejects platform relative storage URLs', () => {
+      expect(isAllowedUploadedImageUrl('/storage/view/embedded/Report/r-1/image.png')).toBe(false);
+      expect(isAllowedUploadedImageUrl('/storage/get/embedded/Report/r-1/image.png')).toBe(false);
       expect(isAllowedUploadedImageUrl('/public/storage/view/image.png')).toBe(false);
     });
 
@@ -40,14 +40,14 @@ describe('markdown preview image utils', () => {
 
     it('extracts and resolves markdown images with alt text', () => {
       const markdown = [
-        '![first](/storage/view/embedded/Report/r-1/one.png)',
+        '![first](embedded/Report/r-1/one.png)',
         '![second](https://example.org/two.png)',
       ].join('\n');
 
       const resolveImageUrl = (url: string) => `/resolved?u=${encodeURIComponent(url)}`;
       expect(extractMarkdownPreviewImages(markdown, resolveImageUrl)).toEqual([
         {
-          src: '/resolved?u=%2Fstorage%2Fview%2Fembedded%2FReport%2Fr-1%2Fone.png',
+          src: '/resolved?u=embedded%2FReport%2Fr-1%2Fone.png',
           alt: 'first',
         },
         {
@@ -59,9 +59,9 @@ describe('markdown preview image utils', () => {
 
     it('deduplicates by resolved src and alt text', () => {
       const markdown = [
-        '![same](/storage/view/embedded/Report/r-1/dup.png)',
-        '![same](/storage/get/embedded/Report/r-1/dup.png)',
-        '![different-alt](/storage/get/embedded/Report/r-1/dup.png)',
+        '![same](embedded/Report/r-1/dup.png)',
+        '![same](embedded/Report/r-1/dup.png)',
+        '![different-alt](embedded/Report/r-1/dup.png)',
       ].join('\n');
 
       const resolveImageUrl = () => '/resolved/dup.png';
@@ -73,7 +73,7 @@ describe('markdown preview image utils', () => {
 
     it('supports nested parentheses and skips non-resolvable URLs', () => {
       const markdown = [
-        '![chart](/storage/view/embedded/Report/r-1/figure(1).png)',
+        '![chart](embedded/Report/r-1/figure(1).png)',
         '![ignored](https://example.org/skip.png)',
       ].join('\n');
 
@@ -85,7 +85,7 @@ describe('markdown preview image utils', () => {
       };
 
       expect(extractMarkdownPreviewImages(markdown, resolveImageUrl)).toEqual([
-        { src: '/storage/view/embedded/Report/r-1/figure(1).png', alt: 'chart' },
+        { src: 'embedded/Report/r-1/figure(1).png', alt: 'chart' },
       ]);
     });
   });

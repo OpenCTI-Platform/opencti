@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildEmbeddedStorageGetUri,
   collectDataUriImagesFromMarkdown,
   extractMarkdownImageReferences,
   findRemovedEmbeddedStoragePathsFromMarkdownFields,
@@ -12,9 +11,9 @@ describe('markdown-embedded-images utility', () => {
   it('should detect embedded markdown image links and extract their storage path', () => {
     const markdown = [
       'before',
-      '![inline](/storage/get/embedded/Report/abc123/file.png)',
-      '![other](https://example.org/storage/get/embedded/Note/n-1/img.webp)',
-      '![ignore](/storage/get/import/global/report.pdf)',
+      '![inline](embedded/Report/abc123/file.png)',
+      '![other](https://example.org/embedded/Note/n-1/img.webp)',
+      '![ignore](import/global/report.pdf)',
     ].join('\n');
 
     const refs = extractMarkdownImageReferences(markdown);
@@ -29,8 +28,8 @@ describe('markdown-embedded-images utility', () => {
 
   it('should detect draft-prefixed embedded storage links', () => {
     const markdown = [
-      '![draft-view](/storage/view/draft%2F750a958d-816f-4b3e-b6ed-3fa8c9f42c7b%2Fembedded%2FReport%2F31342e9b-520d-43ea-a015-75c16c05cbc7%2Fcoucou%20(2)-a90ce37e.png)',
-      '![draft-get](/storage/get/draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7b/coucou.png)',
+      '![draft-view](<draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7/coucou (2)-a90ce37e.png>)',
+      '![draft-get](draft/750a958d-816f-4b3e-b6ed-3fa8c9f42c7b/embedded/Report/31342e9b-520d-43ea-a015-75c16c05cbc7b/coucou.png)',
     ].join('\n');
 
     const refs = extractMarkdownImageReferences(markdown);
@@ -54,7 +53,7 @@ describe('markdown-embedded-images utility', () => {
 
   it('should rewrite only embedded storage image links', () => {
     const markdown = [
-      '![one](/storage/get/embedded/Report/1/a.png)',
+      '![one](embedded/Report/1/a.png)',
       '![two](https://example.org/no-change.png)',
     ].join('\n');
 
@@ -132,21 +131,16 @@ describe('markdown-embedded-images utility', () => {
       .toThrowError('Data URI images exceed max total size (8 bytes)');
   });
 
-  it('should generate an embedded storage URI replacement', () => {
-    const uri = buildEmbeddedStorageGetUri('Report', 'report--123', 'abc.png');
-    expect(uri).toBe('/storage/get/embedded/Report/report--123/abc.png');
-  });
-
   it('should compute removed embedded storage paths from markdown field updates', () => {
     const previousPayload = {
       description: [
-        '![keep](/storage/get/embedded/Report/r-1/keep.png)',
-        '![remove](/storage/get/embedded/Report/r-1/remove.png)',
+        '![keep](embedded/Report/r-1/keep.png)',
+        '![remove](embedded/Report/r-1/remove.png)',
       ].join('\n'),
-      content: '![other](/storage/get/embedded/Report/r-2/nope.png)',
+      content: '![other](embedded/Report/r-2/nope.png)',
     };
     const nextPayload = {
-      description: '![keep](/storage/get/embedded/Report/r-1/keep.png)',
+      description: '![keep](embedded/Report/r-1/keep.png)',
       content: 'No markdown image anymore',
     };
 
