@@ -2174,6 +2174,7 @@
   "Import | Import | Data": "Importar | Importar | Datos",
   "Import a CSV Feed": "Importar un feed CSV",
   "Import a CSV mapper": "Importar un mapeador CSV",
+  "Import a custom view": "Importar una vista personalizada",
   "Import a JSON mapper": "Importar un mapeador JSON",
   "Import a RSS Feed": "Importar un canal RSS",
   "Import a Taxii Feed": "Importar un feed de Taxii",

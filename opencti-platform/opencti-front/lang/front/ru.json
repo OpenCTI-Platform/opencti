@@ -2174,6 +2174,7 @@
   "Import | Import | Data": "Импорт | Импорт | Данные",
   "Import a CSV Feed": "Импорт CSV-файла",
   "Import a CSV mapper": "Импорт отображателя CSV",
+  "Import a custom view": "Импорт пользовательского представления",
   "Import a JSON mapper": "Импорт JSON-маппера",
   "Import a RSS Feed": "Импорт RSS-канала",
   "Import a Taxii Feed": "Импорт ленты Taxii",

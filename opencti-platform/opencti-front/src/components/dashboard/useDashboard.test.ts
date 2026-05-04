@@ -77,7 +77,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result, rerender } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });
@@ -142,7 +142,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result, rerender } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });
@@ -197,7 +197,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result, rerender } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });
@@ -307,7 +307,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result, rerender } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });
@@ -368,7 +368,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result, rerender } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });
@@ -421,7 +421,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result, rerender } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });
@@ -490,7 +490,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });
@@ -568,7 +568,7 @@ describe('useDashboard', () => {
         }),
       };
       const importWidgetSpy = vi.fn();
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onImportWidget: importWidgetSpy,
       }), { initialProps: entity });
@@ -632,7 +632,7 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onExportWidget: undefined, // Intentionally not provided
       }), { initialProps: entity });
@@ -672,7 +672,7 @@ describe('useDashboard', () => {
         }),
       };
       const exportWidgetStub = vi.fn().mockResolvedValue('some-string');
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onExportWidget: exportWidgetStub,
       }), { initialProps: entity });
@@ -717,7 +717,7 @@ describe('useDashboard', () => {
         }),
       };
       const saveSpy = vi.fn();
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
+      const { result } = renderHook((entity: Pick<DashboardLike, 'id' | 'manifest'>) => useDashboard({
         entity,
         onSave: saveSpy,
       }), { initialProps: entity });

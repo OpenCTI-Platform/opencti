@@ -2174,6 +2174,7 @@
   "Import | Import | Data": "导入 | 导入 | 数据",
   "Import a CSV Feed": "导入 CSV 饲料",
   "Import a CSV mapper": "导入 CSV 映射器",
+  "Import a custom view": "导入自定义视图",
   "Import a JSON mapper": "导入 JSON 映射器",
   "Import a RSS Feed": "导入 RSS 源",
   "Import a Taxii Feed": "导入 Taxii Feed",

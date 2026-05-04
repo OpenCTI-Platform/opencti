@@ -20,5 +20,6 @@ export interface DashboardManifest {
  */
 export interface DashboardLike {
   id: string;
+  name: string;
   manifest: string | undefined | null;
 }
