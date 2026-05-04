@@ -1107,6 +1107,7 @@
   "Default value(s)": "Valor(es) por defecto",
   "Default values are applied only during entity creation. So only for entities created after default values have been set": "Los valores predeterminados se aplican sólo durante la creación de la entidad. Entonces, solo para entidades creadas después de que se hayan establecido los valores predeterminados",
   "Default values set": "Valores por defecto establecidos",
+  "Default: Reuse {entityType} author (leave empty to inherit)": "Por defecto: Reutilizar {entityType} autor (dejar vacío para heredar)",
   "Default: Reuse main entity author (leave empty to inherit)": "Por defecto Reutilizar autor entidad principal (dejar vacío para heredar)",
   "Define a group that will be assigned to each user created on the fly for ingestion": "Defina un grupo que se asignará a cada usuario creado sobre la marcha para cada tipo de ingestión",
   "Define at which score thresholds the indicator is updated.": "Definir en qué umbrales de puntuación se actualiza el indicador.",

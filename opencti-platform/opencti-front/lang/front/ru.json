@@ -1107,6 +1107,7 @@
   "Default value(s)": "Значение(я) по умолчанию",
   "Default values are applied only during entity creation. So only for entities created after default values have been set": "Значения по умолчанию применяются только при создании сущности. Поэтому только для сущностей, созданных после установки значений по умолчанию",
   "Default values set": "Установка значений по умолчанию",
+  "Default: Reuse {entityType} author (leave empty to inherit)": "По умолчанию: Повторно использовать автора {entityType} (оставить пустым, чтобы наследовать)",
   "Default: Reuse main entity author (leave empty to inherit)": "По умолчанию: Повторно использовать автора основной сущности (оставить пустым, чтобы наследовать)",
   "Define a group that will be assigned to each user created on the fly for ingestion": "Определите группу, которая будет назначаться каждому пользователю, созданному на лету для ингестирования",
   "Define at which score thresholds the indicator is updated.": "Определите, при каких пороговых значениях баллов обновляется показатель.",

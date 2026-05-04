@@ -1107,6 +1107,7 @@
   "Default value(s)": "기본값",
   "Default values are applied only during entity creation. So only for entities created after default values have been set": "기본값은 엔터티 생성 시에만 적용됩니다. 따라서 기본값이 설정된 후에 생성된 엔터티에만 적용됩니다.",
   "Default values set": "기본값 설정",
+  "Default: Reuse {entityType} author (leave empty to inherit)": "기본값입니다: 0}} 작성자 재사용(상속하려면 비워 두기)",
   "Default: Reuse main entity author (leave empty to inherit)": "기본값입니다: 주 엔터티 작성자 재사용(상속을 위해 비워둠)",
   "Define a group that will be assigned to each user created on the fly for ingestion": "각 수집 유형에 대해 즉석에서 생성된 각 사용자에게 할당될 그룹을 정의합니다",
   "Define at which score thresholds the indicator is updated.": "지표가 업데이트되는 점수 임계값을 정의합니다.",

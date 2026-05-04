@@ -580,6 +580,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
               || showDraftObjectParticipant
               || showDraftAuthor
               || showDraftAuthorizedMembers;
+            const draftAuthorInheritanceHelper = t_i18n('', {
+              id: 'Default: Reuse {entityType} author (leave empty to inherit)',
+              values: { entityType: t_i18n(schema.mainEntityType || 'main entity') },
+            });
             return (
               <Form noValidate>
                 {/* Main Entity Fields */}
@@ -1021,7 +1025,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         />
                         {schema.draftDefaults?.author?.type === 'main_entity_author' && (
                           <FormHelperText style={{ marginTop: -16, marginBottom: 20 }}>
-                            {t_i18n('Default: Reuse main entity author (leave empty to inherit)')}
+                            {draftAuthorInheritanceHelper}
                           </FormHelperText>
                         )}
                       </div>

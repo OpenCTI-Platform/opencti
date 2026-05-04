@@ -1107,6 +1107,7 @@
   "Default value(s)": "Default value(s)",
   "Default values are applied only during entity creation. So only for entities created after default values have been set": "Default values are applied only during entity creation. So only for entities created after default values have been set",
   "Default values set": "Default values set",
+  "Default: Reuse {entityType} author (leave empty to inherit)": "Default: Reuse {entityType} author (leave empty to inherit)",
   "Default: Reuse main entity author (leave empty to inherit)": "Default: Reuse main entity author (leave empty to inherit)",
   "Define a group that will be assigned to each user created on the fly for ingestion": "Define a group that will be assigned to each user created on the fly for ingestion",
   "Define at which score thresholds the indicator is updated.": "Define at which score thresholds the indicator is updated.",

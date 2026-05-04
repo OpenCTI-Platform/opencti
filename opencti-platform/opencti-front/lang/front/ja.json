@@ -1107,6 +1107,7 @@
   "Default value(s)": "デフォルト値",
   "Default values are applied only during entity creation. So only for entities created after default values have been set": "デフォルト値はエンティティの作成時にのみ適用されます。したがって、デフォルト値が設定された後に作成されたエンティティのみが対象です",
   "Default values set": "デフォルト値設定",
+  "Default: Reuse {entityType} author (leave empty to inherit)": "デフォルト：作者 {entityType} を再利用 (継承する場合は空白にする)",
   "Default: Reuse main entity author (leave empty to inherit)": "デフォルトメインエンティティの作者を再利用する（継承する場合は空白にする）",
   "Define a group that will be assigned to each user created on the fly for ingestion": "インジェストタイプごとに、その場で作成された各ユーザーに割り当てられるグループを定義する",
   "Define at which score thresholds the indicator is updated.": "どのスコアしきい値でインジケータを更新するかを定義します。",
