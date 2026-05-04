@@ -2,7 +2,7 @@ import { Field, useFormikContext } from 'formik';
 import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import WorkflowFieldList from './WorkflowFieldList';
-import { WorkflowActionType, WorkflowDataType } from './utils';
+import { CommentMode, WorkflowActionType, WorkflowDataType } from './utils';
 import { FormControlLabel, Icon, Switch, Typography, Box } from '@mui/material';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { FlagOutlined } from '@mui/icons-material';
@@ -13,6 +13,18 @@ const TransitionForm = () => {
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
   const hasUpdateAuthorizedMembers = values.actions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasValidateDraft = values.actions?.some((a) => a.type === WorkflowActionType.validateDraft);
+
+  const commentMode: CommentMode = values.comment ?? 'disable';
+  const enableComments = commentMode !== 'disable';
+  const requireComments = commentMode === 'required';
+
+  const handleToggleEnableComments = (checked: boolean) => {
+    setFieldValue('comment', checked ? 'allowed' : 'disable');
+  };
+
+  const handleToggleRequireComments = (checked: boolean) => {
+    setFieldValue('comment', checked ? 'required' : 'allowed');
+  };
 
   const handleToggleAction = (actionType: WorkflowActionType, checked: boolean) => {
     const currentActions = values.actions ?? [];
@@ -67,6 +79,35 @@ const TransitionForm = () => {
               </Box>
             )}
           />
+        </Box>
+      </Box>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+        <Typography variant="h6">
+          {t_i18n('Comments')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={enableComments}
+                onChange={(e) => handleToggleEnableComments(e.target.checked)}
+              />
+            )}
+            label={t_i18n('Enable comments')}
+          />
+          <Box sx={{ pl: 4 }}>
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={requireComments}
+                  disabled={!enableComments}
+                  onChange={(e) => handleToggleRequireComments(e.target.checked)}
+                />
+              )}
+              label={t_i18n('Required')}
+            />
+          </Box>
         </Box>
       </Box>
     </>

@@ -21,6 +21,7 @@ type WorkflowSerializedTransition {
     event: String!
     actions: [WorkflowActionConfig!]
     conditions: JSON
+    comment: String
 }
 
 type WorkflowSchema {
