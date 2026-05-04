@@ -3,15 +3,18 @@ import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT, type SecurityCoverageConfiguratio
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import type { StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
+import type { StixDomainObject } from '../../../../src/types/stix-2-1-common';
 
 const REPORT_ID = 'report--b4754e7d-88b4-51d9-aac4-86edaad66c4d';
 const INTRUSION_SET_ID = 'intrusion-set--1ad04810-ab05-5873-96f5-a89d19607e1c';
 const CAMPAIGN_ID = 'campaign--c85bcdd3-1042-5f74-ab5d-05fddf30bdb8';
+const LABEL_ID = '98d475ca-0f72-4878-8d64-de2e094f007e';
 
 const BUNDLE_OBJECTS = () => [
-  testBundleObject({
+  testBundleObject<StixDomainObject>({
     id: REPORT_ID,
     type: 'report',
+    labels: [LABEL_ID],
     octiExtension: { type: 'Report' },
     object_refs: [
       INTRUSION_SET_ID,
@@ -113,6 +116,7 @@ describe('Security coverage component', () => {
     const filterReport = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report"],"mode":"or"}],"filterGroups":[]}';
     const filterReportCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report", "Campaign"],"mode":"or"}],"filterGroups":[]}';
     const filterAll = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report", "Campaign", "Intrusion-Set"],"mode":"or"}],"filterGroups":[]}';
+    const filterLabel = JSON.stringify({ mode: 'or', filters: [{ key: ['objectLabel'], operator: 'eq', values: [LABEL_ID], mode: 'or' }], filterGroups: [] });
 
     it('should create nothing if no match (only-main)', async () => {
       const result = await PLAYBOOK_SECURITY_COVERAGE_COMPONENT.executor(testExecutor({
@@ -175,6 +179,22 @@ describe('Security coverage component', () => {
       expect(securityCoverages).toHaveLength(2);
       expect(securityCoverages[0].covered_ref).toEqual(REPORT_ID);
       expect(securityCoverages[1].covered_ref).toEqual(CAMPAIGN_ID);
+    });
+
+    it('should create only for element with matching label if partial match (all-elements)', async () => {
+      const result = await PLAYBOOK_SECURITY_COVERAGE_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterLabel,
+        }),
+      }));
+
+      const securityCoverages = result.bundle.objects
+        .filter((o) => o.type === 'security-coverage') as StixSecurityCoverage[];
+      expect(securityCoverages).toHaveLength(1);
+      expect(securityCoverages[0].covered_ref).toEqual(REPORT_ID);
     });
 
     it('should create for all elements if full match (all-elements)', async () => {

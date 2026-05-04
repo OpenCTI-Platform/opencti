@@ -6,25 +6,27 @@ import type { StixIndicator } from '../../../../src/modules/indicator/indicator-
 import type { StixRelation } from '../../../../src/types/stix-2-1-sro';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../../../../src/schema/stixCoreRelationship';
 import type { StixId } from '../../../../src/types/stix-2-0-common';
-import type { StixCyberObject } from '../../../../src/types/stix-2-1-common';
+import type { CyberObjectExtension, StixCyberObject } from '../../../../src/types/stix-2-1-common';
 import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 import type { StixInternalExternalReference } from '../../../../src/types/stix-2-1-smo';
 
 const OBSERVABLE_ID = 'domain-name--a1b2c3d4-0000-0000-0000-000000000001' as const;
 const INTRUSION_SET_ID = 'intrusion-set--1ad04810-ab05-5873-96f5-a89d19607e1c' as const;
 const REPORT_ID = 'report--b4754e7d-88b4-51d9-aac4-86edaad66c4d' as const;
+const LABEL_ID = '98d475ca-0f72-4878-8d64-de2e094f007e';
 
 const FAKE_PATTERN = "[domain-name:value = 'malicious.example.com']";
 
-const domainObservable = (id: StixId = OBSERVABLE_ID) =>
+const domainObservable = (objectProperties?: { id: StixId; scoExtension?: Partial<CyberObjectExtension> }) =>
   testBundleObject<StixCyberObject & { value: string }>({
-    id,
+    id: OBSERVABLE_ID, // default, is replaced by objectProperties.id if existing
     type: 'domain-name',
     value: 'malicious.example.com',
     octiExtension: {
       type: 'Domain-Name',
       id: '',
     },
+    ...objectProperties,
   });
 
 const reportObject = () =>
@@ -132,7 +134,7 @@ describe('Create indicator component', () => {
     const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
       testExecutor({
         mainId: OBSERVABLE_ID,
-        bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+        bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
         configuration: { applyToElements: playbookBundleElementsToApply.allElements.value, wrap_in_container: false, types: [] },
       }),
     );
@@ -158,7 +160,7 @@ describe('Create indicator component', () => {
     const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
       testExecutor({
         mainId: OBSERVABLE_ID,
-        bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+        bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
         configuration: { applyToElements: playbookBundleElementsToApply.allExceptMain.value, wrap_in_container: false, types: [] },
       }),
     );
@@ -185,7 +187,7 @@ describe('Create indicator component', () => {
     const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
       testExecutor({
         mainId: OBSERVABLE_ID,
-        bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+        bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
         configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
       }),
     );
@@ -278,6 +280,7 @@ describe('Create indicator component', () => {
 
     const filterDomainNames = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Domain-Name"],"mode":"or"}],"filterGroups":[]}';
     const filterNotMatching = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["IPv4-Addr"],"mode":"or"}],"filterGroups":[]}';
+    const filterLabel = JSON.stringify({ mode: 'or', filters: [{ key: ['objectLabel'], operator: 'eq', values: [LABEL_ID], mode: 'or' }], filterGroups: [] });
 
     // -- all-elements + filter matching all observables
 
@@ -285,7 +288,7 @@ describe('Create indicator component', () => {
       const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
         testExecutor({
           mainId: OBSERVABLE_ID,
-          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
           configuration: {
             applyToElements: playbookBundleElementsToApply.allElements.value,
             applyWithFilters: filterDomainNames,
@@ -308,13 +311,47 @@ describe('Create indicator component', () => {
       expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID_2);
     });
 
+    // -- all-elements + filter matching label
+
+    it('should create indicators for the observable with matching label when applyToElements = "all-elements" and filter matches a label', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(
+            {
+              id: OBSERVABLE_ID,
+              scoExtension: {
+                labels: [LABEL_ID],
+              } }), domainObservable({ id: OBSERVABLE_ID_2 })],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allElements.value,
+            applyWithFilters: filterLabel,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      expect(result.output_port).toBe('out');
+
+      const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+      expect(indicators).toHaveLength(1);
+
+      const basedOnRels = result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      ) as StixRelation[];
+      expect(basedOnRels).toHaveLength(1);
+      expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID);
+      expect(basedOnRels.map((r) => r.target_ref)).not.toContain(OBSERVABLE_ID_2);
+    });
+
     // -- all-elements + filter not matching any observable
 
     it('should not create any indicator when applyToElements = "all-elements" and filter does not match any observable', async () => {
       const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
         testExecutor({
           mainId: OBSERVABLE_ID,
-          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
           configuration: {
             applyToElements: playbookBundleElementsToApply.allElements.value,
             applyWithFilters: filterNotMatching,
@@ -337,7 +374,7 @@ describe('Create indicator component', () => {
       const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
         testExecutor({
           mainId: OBSERVABLE_ID,
-          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
           configuration: {
             applyToElements: playbookBundleElementsToApply.onlyMain.value,
             applyWithFilters: filterDomainNames,
@@ -366,7 +403,7 @@ describe('Create indicator component', () => {
       const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
         testExecutor({
           mainId: OBSERVABLE_ID,
-          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
           configuration: {
             applyToElements: playbookBundleElementsToApply.onlyMain.value,
             applyWithFilters: filterNotMatching,
@@ -389,7 +426,7 @@ describe('Create indicator component', () => {
       const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
         testExecutor({
           mainId: OBSERVABLE_ID,
-          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
           configuration: {
             applyToElements: playbookBundleElementsToApply.allExceptMain.value,
             applyWithFilters: filterDomainNames,
@@ -418,7 +455,7 @@ describe('Create indicator component', () => {
       const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
         testExecutor({
           mainId: OBSERVABLE_ID,
-          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          bundleObjects: [domainObservable({ id: OBSERVABLE_ID }), domainObservable({ id: OBSERVABLE_ID_2 })],
           configuration: {
             applyToElements: playbookBundleElementsToApply.allExceptMain.value,
             applyWithFilters: filterNotMatching,
@@ -442,8 +479,8 @@ describe('Create indicator component', () => {
         testExecutor({
           mainId: OBSERVABLE_ID,
           bundleObjects: [
-            domainObservable(OBSERVABLE_ID),
-            domainObservable(OBSERVABLE_ID_2),
+            domainObservable({ id: OBSERVABLE_ID }),
+            domainObservable({ id: OBSERVABLE_ID_2 }),
             testBundleObject({
               id: INTRUSION_SET_ID_2,
               type: 'intrusion-set',
@@ -483,8 +520,8 @@ describe('Create indicator component', () => {
         testExecutor({
           mainId: OBSERVABLE_ID,
           bundleObjects: [
-            domainObservable(OBSERVABLE_ID),
-            domainObservable(OBSERVABLE_ID_2),
+            domainObservable({ id: OBSERVABLE_ID }),
+            domainObservable({ id: OBSERVABLE_ID_2 }),
             testBundleObject({
               id: INTRUSION_SET_ID_2,
               type: 'intrusion-set',
