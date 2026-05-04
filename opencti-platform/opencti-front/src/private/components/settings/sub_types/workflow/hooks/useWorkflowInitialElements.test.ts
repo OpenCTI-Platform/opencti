@@ -68,6 +68,7 @@ describe('useWorkflowInitialElements', () => {
         event: 'close_event',
         conditions: {},
         actions: [],
+        comment: null,
       },
     ],
   };
@@ -163,6 +164,9 @@ describe('useWorkflowInitialElements', () => {
 
     const newDef: SubTypeWorkflowQuery$data['workflowDefinition'] = {
       ...mockWorkflowDefinition,
+      id: mockWorkflowDefinition!.id,
+      name: mockWorkflowDefinition!.name,
+      initialState: mockWorkflowDefinition!.initialState,
       states: [],
     };
     rerender({ def: newDef });

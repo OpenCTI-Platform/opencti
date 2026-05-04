@@ -19,10 +19,13 @@ export type Status = {
   onExit?: Action[];
 };
 
+export type CommentMode = 'disable' | 'allowed' | 'required';
+
 export type Transition = {
   event: string;
   actions?: Action[];
   conditions?: { filters: FilterGroup };
+  comment?: CommentMode;
 };
 
 export const NEW_EVENT_NAME = 'NEW_EVENT';
@@ -90,7 +93,7 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = {}, actions = [] } = node.data;
+      const { event, conditions = {}, actions = [], comment } = node.data;
 
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
@@ -107,6 +110,7 @@ const transformToWorkflowDefinition = (
             event,
             conditions,
             actions: formatActions(actions),
+            comment,
           })),
         );
       }
@@ -117,6 +121,7 @@ const transformToWorkflowDefinition = (
         event,
         conditions,
         actions: formatActions(actions),
+        comment,
       }));
     }
     return [];
