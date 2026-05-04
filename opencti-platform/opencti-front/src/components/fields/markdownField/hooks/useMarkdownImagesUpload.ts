@@ -1,6 +1,5 @@
 import { graphql } from 'react-relay';
 import { commitMutation } from '../../../../relay/environment';
-import { getFileUri } from '../../../../utils/utils';
 import { extractTempImageTokens, MarkdownTempAttachmentRegistry, replaceTempImageTokenUrl } from '../core/markdownImagePreviewUtils';
 
 type UseMarkdownImagesUploadArgs = {
@@ -26,6 +25,7 @@ const uploadEntityImportPushMutation = graphql`
         embedded: $embedded
       ) {
         id
+        name
       }
     }
   }
@@ -61,11 +61,24 @@ const withUniqueUploadName = (file: File, token: string): File => {
   });
 };
 
+const toEmbeddedMarkdownUrl = (uploadedFileId: string, uploadedFileName: string): string => {
+  if (uploadedFileName) {
+    return `embedded/${uploadedFileName}`;
+  }
+
+  const normalizedId = uploadedFileId.startsWith('/') ? uploadedFileId.slice(1) : uploadedFileId;
+  const filename = normalizedId.split('/').pop();
+  if (!filename) {
+    throw new Error('Missing uploaded file name');
+  }
+  return `embedded/${filename}`;
+};
+
 const useMarkdownImagesUpload = ({
   uploadEntityId,
   uploadFileMarkings = [],
 }: UseMarkdownImagesUploadArgs) => {
-  const uploadFile = (file: File, uploadEntityIdOverride?: string): Promise<string> => {
+  const uploadFile = (file: File, uploadEntityIdOverride?: string): Promise<{ id: string; name: string }> => {
     return new Promise((resolve, reject) => {
       const resolvedUploadEntityId = uploadEntityIdOverride ?? uploadEntityId;
       if (!resolvedUploadEntityId) {
@@ -90,15 +103,15 @@ const useMarkdownImagesUpload = ({
         optimisticResponse: undefined,
         onCompleted: (response: {
           stixCoreObjectEdit?: {
-            importPush?: { id?: string } | null;
+            importPush?: { id?: string; name?: string } | null;
           } | null;
         }) => {
-          const fileId = response?.stixCoreObjectEdit?.importPush?.id;
-          if (!fileId) {
+          const uploadedFile = response?.stixCoreObjectEdit?.importPush;
+          if (!uploadedFile?.id) {
             reject(new Error('Missing uploaded file id'));
             return;
           }
-          resolve(fileId);
+          resolve({ id: uploadedFile.id, name: uploadedFile.name ?? '' });
         },
         onError: reject,
         setSubmitting: undefined,
@@ -126,8 +139,8 @@ const useMarkdownImagesUpload = ({
       }
 
       const uploadFileInput = withUniqueUploadName(attachment.file, token);
-      const fileId = await uploadFile(uploadFileInput, options?.uploadEntityIdOverride);
-      const finalUrl = getFileUri(fileId);
+      const uploadedFile = await uploadFile(uploadFileInput, options?.uploadEntityIdOverride);
+      const finalUrl = toEmbeddedMarkdownUrl(uploadedFile.id, uploadedFile.name);
       result = replaceTempImageTokenUrl(result, token, finalUrl);
       onTokenFinalized(token);
     }

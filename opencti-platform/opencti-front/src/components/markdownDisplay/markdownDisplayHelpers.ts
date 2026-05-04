@@ -3,6 +3,7 @@ export const normalizeMarkdownImageUrl = (
   appBasePath: string,
 ): string => {
   let normalized = resolvedUrl;
+  const normalizedBasePath = appBasePath === '/' ? '' : appBasePath;
 
   // Keep local embedded links contextual so backend can resolve them via
   // the current entity route (contains entity id in URL path).
@@ -10,7 +11,6 @@ export const normalizeMarkdownImageUrl = (
     normalized = normalized.slice(1);
   }
 
-  const normalizedBasePath = appBasePath === '/' ? '' : appBasePath;
   if (
     normalizedBasePath
     && normalized.startsWith('/storage/')

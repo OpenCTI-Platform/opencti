@@ -110,10 +110,12 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
     if (!url) {
       return null;
     }
+
     const normalizedUrl = url.startsWith('/') ? url.slice(1) : url;
     if (!normalizedUrl.startsWith('embedded/')) {
       return url;
     }
+
     const normalizedCardLink = cardLink.endsWith('/') ? cardLink.slice(0, -1) : cardLink;
     return `${normalizedCardLink}/${normalizedUrl}`;
   };

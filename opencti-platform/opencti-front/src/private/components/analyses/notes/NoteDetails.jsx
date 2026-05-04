@@ -12,6 +12,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
 import Tag from '@common/tag/Tag';
 import { Stack } from '@mui/material';
+import { resolveNoteEmbeddedImageUrl } from './note-utils';
 
 const styles = (theme) => ({
   chip: {
@@ -28,6 +29,8 @@ const styles = (theme) => ({
 class NoteDetailsComponent extends Component {
   render() {
     const { t, note } = this.props;
+    const noteImageResolver = (url) => resolveNoteEmbeddedImageUrl(url, note.id);
+
     return (
       <div style={{ height: '100%' }}>
         <Card title={t('Entity details')}>
@@ -39,6 +42,7 @@ class NoteDetailsComponent extends Component {
               <MarkdownDisplay
                 content={note.attribute_abstract}
                 remarkGfmPlugin={true}
+                resolveImageUrl={noteImageResolver}
               />
               <Label
                 sx={{ marginTop: 2 }}
@@ -49,6 +53,7 @@ class NoteDetailsComponent extends Component {
                 content={note.content}
                 remarkGfmPlugin={true}
                 commonmark={true}
+                resolveImageUrl={noteImageResolver}
               />
             </Grid>
             <Grid item xs={3}>
