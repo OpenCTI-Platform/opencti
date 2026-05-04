@@ -17,7 +17,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
-import { enabledFilters } from './utils/enabledFilters';
+import { enabledFilters } from './DecayExclusionRuleCreationForm';
 import { useTheme } from '@mui/material/styles';
 
 export const decayExclusionRuleEditionFieldPatch = graphql`

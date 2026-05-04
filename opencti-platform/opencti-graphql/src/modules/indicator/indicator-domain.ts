@@ -49,7 +49,7 @@ import {
   type DecayHistoryChart,
   type DecayHistory,
   type DecayLiveDetails,
-  checkDecayRules,
+  findDecayRuleForIndicator,
 } from '../decayRule/decayRule-domain';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkScore, prepareDate, utcDate } from '../../utils/format';
@@ -275,32 +275,31 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
 
+  // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
+  const decayRule = await findDecayRuleForIndicator(context, observableType);
+
+  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
+
   const baseIndicator = {
     ...indicator,
     pattern: formattedPattern,
     x_opencti_main_observable_type: observableType,
     [X_SCORE]: indicatorBaseScore,
     x_opencti_detection: indicator.x_opencti_detection ?? false,
+    valid_from: validFrom.toISOString(),
+    valid_until: validUntil.toISOString(),
+    revoked,
   };
   delete baseIndicator.basedOn;
   delete baseIndicator.createObservables;
 
   const isDecayActivated: boolean = await isDecayEnabled();
 
+  const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
   const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
   const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting as BasicStoreEntityEntitySetting);
-
-  const decayRule = await checkDecayRules(context, user, resolvedIndicator);
-  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
-
-  const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
   const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
-  const indicatorToCreate = {
-    ...resolvedIndicator,
-    valid_from: validFrom.toISOString(),
-    valid_until: validUntil.toISOString(),
-    revoked,
-  };
+  const indicatorToCreate = { ...resolvedIndicator };
 
   let finalIndicatorToCreate;
 

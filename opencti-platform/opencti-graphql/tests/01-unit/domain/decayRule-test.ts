@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import moment from 'moment';
 import {
   computeIndicatorDecayHistory,
@@ -6,24 +6,21 @@ import {
   computeLivePoints,
   computeLiveScore,
   type IndicatorPatch,
-  MAX_DECAY_HISTORY_POINTS,
-} from '../../../../src/modules/indicator/indicator-domain';
-import type { BasicStoreEntityIndicator, IndicatorDecayRule } from '../../../../src/modules/indicator/indicator-types';
+  MAX_DECAY_HISTORY_POINTS
+} from '../../../src/modules/indicator/indicator-domain';
+import type { BasicStoreEntityIndicator, IndicatorDecayRule } from '../../../src/modules/indicator/indicator-types';
 import {
   type DecayRuleConfiguration,
+  selectDecayRuleForIndicator,
   computeNextScoreReactionDate,
   computeScoreFromExpectedTime,
   computeTimeFromExpectedScore,
   computeScoreList,
   computeChartDecayAlgoSerie,
   type ComputeDecayChartInput,
-  type DecayHistory,
-  checkDecayRules,
-} from '../../../../src/modules/decayRule/decayRule-domain';
-import { ADMIN_USER, testContext } from '../../../../tests/utils/testQuery';
-import { ENTITY_URL, ENTITY_IPV4_ADDR } from '../../../../src/schema/stixCyberObservable';
-import * as cacheModule from '../../../../src/database/cache';
-import * as stixFilteringModule from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
+  type DecayHistory
+} from '../../../src/modules/decayRule/decayRule-domain';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 const indicator_fallback_applied_rule: IndicatorDecayRule = {
   decay_rule_id: 'fake-rule-id',
@@ -41,10 +38,38 @@ const TEST_DEFAULT_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 1.0,
   decay_points: [80, 60, 40, 20],
   decay_revoke_score: 0,
-  decay_filters: '', // no filter means all
+  decay_observable_types: [], // no observable means any
   order: 0,
   active: true,
 };
+
+export const TEST_URL_DECAY_RULE: DecayRuleConfiguration = {
+  id: 'test-url-rule',
+  name: 'URL Decay Rule',
+  description: 'Built-in decay rule for URL indicators',
+  decay_lifetime: 180,
+  decay_pound: 1.0,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 0,
+  decay_observable_types: ['Url'],
+  order: 1,
+  active: true,
+};
+
+export const TEST_IP_DECAY_RULE: DecayRuleConfiguration = {
+  id: 'test-ip-rule',
+  name: 'IP Decay Rule',
+  description: 'Built-in decay rule for IPs indicators',
+  decay_lifetime: 60,
+  decay_pound: 1.0,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 0,
+  decay_observable_types: ['IPv4-Addr', 'IPv6-Addr'],
+  order: 1,
+  active: true,
+};
+
+const BUILT_IN_DECAY_RULES_FOR_TEST = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
 
 describe('Decay formula testing', () => {
   it('should compute score', () => {
@@ -80,6 +105,61 @@ describe('Decay formula testing', () => {
     expect(computeTime).toBeCloseTo(0.350, 3);
   });
 
+  it('should find the right rule for indicator type', () => {
+    // GIVEN the type is unknown or not filled, WHEN getting decay rule, THEN the FALLBACK one is return.
+    let decayRule: DecayRuleConfiguration = selectDecayRuleForIndicator('', BUILT_IN_DECAY_RULES_FOR_TEST);
+    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
+
+    // GIVEN the type is IP, WHEN getting decay rule, THEN the IP one is return.
+    decayRule = selectDecayRuleForIndicator('IPv6-Addr', BUILT_IN_DECAY_RULES_FOR_TEST);
+    expect(decayRule.id).toBe(TEST_IP_DECAY_RULE.id);
+
+    // GIVEN the type is URL, WHEN getting decay rule, THEN the URL one is return.
+    decayRule = selectDecayRuleForIndicator('Url', BUILT_IN_DECAY_RULES_FOR_TEST);
+    expect(decayRule.id).toBe(TEST_URL_DECAY_RULE.id);
+
+    // GIVEN the type is URL, URL decay rule is disabled, WHEN getting decay rule, THEN the default one is return.
+    const activeDecayRules = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, { ...TEST_URL_DECAY_RULE, active: false }];
+    decayRule = selectDecayRuleForIndicator('Url', activeDecayRules);
+    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
+
+    // GIVEN the type is URL, default decay rule has higher order, WHEN getting decay rule, THEN the default one is return.
+    const highDecayRules = [{ ...TEST_DEFAULT_DECAY_RULE, order: 2 }, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
+    decayRule = selectDecayRuleForIndicator('Url', highDecayRules);
+    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
+
+    // GIVEN the type 'Url' that matched 2 rules
+    const rulesWithTwoUrls: DecayRuleConfiguration[] = [];
+    rulesWithTwoUrls.push({
+      id: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
+      name: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
+      description: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
+      decay_lifetime: 60,
+      decay_pound: 0.33,
+      decay_points: [60],
+      decay_revoke_score: 0,
+      decay_observable_types: ['Url'],
+      order: 2,
+      active: true,
+    });
+    rulesWithTwoUrls.push({
+      id: 'URL_DECAY_RULE',
+      name: 'URL_DECAY_RULE',
+      description: 'URL_DECAY_RULE',
+      decay_lifetime: 180,
+      decay_pound: 1.0,
+      decay_points: [80, 60, 40, 20],
+      decay_revoke_score: 0,
+      decay_observable_types: ['Url'],
+      order: 3,
+      active: true,
+    });
+    // WHEN getting decay rule
+    decayRule = selectDecayRuleForIndicator('Url', rulesWithTwoUrls);
+    // THEN the rule is the one with lower value in order
+    expect(decayRule.id, 'When several rules matches, the one with lower order value should be taken.').toBe('URL_DECAY_RULE');
+  });
+
   it('should find the next reaction date', () => {
     const startDate = moment('2023-01-01');
 
@@ -109,7 +189,7 @@ describe('Decay update testing', () => {
       decay_history: [{
         updated_at: moment().subtract('5', 'days').toDate(),
         score: 50,
-        updated_by: ADMIN_USER.id,
+        updated_by: ADMIN_USER.id
       }],
     };
 
@@ -126,7 +206,7 @@ describe('Decay update testing', () => {
 
   it('should move to next score and update next reaction date', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
-    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 100,
       decay_base_score: 100,
       decay_history: [],
@@ -138,7 +218,7 @@ describe('Decay update testing', () => {
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 10,
-      },
+      }
     };
 
     // WHEN next reaction point is computed
@@ -154,7 +234,7 @@ describe('Decay update testing', () => {
 
   it('should be revoked when revoke score is reached', () => {
     // GIVEN an Indicator with decay that is on the last decay point and has next a revoke score
-    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 20,
       decay_base_score: 100,
       decay_history: [
@@ -168,7 +248,7 @@ describe('Decay update testing', () => {
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 10,
-      },
+      }
     };
 
     // WHEN next reaction point is computed
@@ -185,7 +265,7 @@ describe('Decay update testing', () => {
   it('should revoke when current score is already lower than revoke score', () => {
     // GIVEN an Indicator with a stable score that is already lower than revoke score
     // use case that should not happen with a normal usage
-    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 30,
       decay_base_score: 100,
       decay_history: [],
@@ -197,7 +277,7 @@ describe('Decay update testing', () => {
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 50,
-      },
+      }
     };
 
     // WHEN next reaction point is computed
@@ -213,7 +293,7 @@ describe('Decay update testing', () => {
   it('should revoke when revoke score is higher than all decay points', () => {
     // GIVEN an Indicator with revoke score higher than all decay points
     // use case that should not happen with a normal usage
-    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 50,
       decay_base_score: 100,
       decay_history: [],
@@ -225,7 +305,7 @@ describe('Decay update testing', () => {
         decay_points: [80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 100,
-      },
+      }
     };
 
     // WHEN next reaction point is computed
@@ -240,12 +320,12 @@ describe('Decay update testing', () => {
 
   it('should do nothing when decay rule is null', () => {
     // GIVEN an Indicator with no decay rule
-    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 50,
       decay_base_score: 100,
       decay_history: [],
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate()
     };
 
     // WHEN next reaction point is computed
@@ -283,7 +363,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_base_score_date: moment().subtract('5', 'days').toDate(),
       decay_applied_rule: indicator_fallback_applied_rule,
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate()
     };
 
     const liveScore = computeLiveScore(indicator as BasicStoreEntityIndicator);
@@ -297,7 +377,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_base_score_date: undefined,
       decay_history: [],
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate()
     };
     const liveScore = computeLiveScore(indicator as BasicStoreEntityIndicator);
     expect(liveScore, 'The live score should be = score when data required for computation are missing.').toBe(42);
@@ -311,7 +391,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_history: [],
       decay_applied_rule: indicator_fallback_applied_rule,
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate()
     };
 
     const result = computeLivePoints(indicator as BasicStoreEntityIndicator);
@@ -344,7 +424,7 @@ describe('Decay chart data generation', () => {
       decayBaseScoreDate: startDate,
       decayRule: indicator_fallback_applied_rule,
       scoreList: computedScoreList,
-      decayHistory: [],
+      decayHistory: []
     };
     const result = computeChartDecayAlgoSerie(computeChartInput);
 
@@ -387,53 +467,5 @@ describe('Decay chart data generation', () => {
     expect(result[50].updated_at).toBe(orderedDataByDateAsc[50].updated_at);
     expect(result[100].updated_at).toBe(orderedDataByDateAsc[100].updated_at);
     expect(result[101].updated_at).toBe(orderedDataByDateAsc[101].updated_at);
-  });
-});
-
-describe('checkDecayRules testing', () => {
-  it('should return matching decay rule with the highest priority (order)', async () => {
-    // Mock the rules cache to return some active rules and one inactive
-    const getEntitiesMock = vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([
-      { id: 'rule-low-priority', order: 1, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
-      { id: 'rule-high-priority', order: 5, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
-      { id: 'rule-inactive', order: 10, active: false, decay_filters: '{"mode":"and", "filters":[]}' }
-    ] as any);
-
-    // Mock filter group match to true so that both active rules match
-    const filterGroupMock = vi.spyOn(stixFilteringModule, 'isStixMatchFilterGroup').mockResolvedValue(true);
-
-    const indicatorInput = {
-      entity_type: 'Indicator',
-      x_opencti_main_observable_type: ENTITY_IPV4_ADDR,
-    };
-
-    const result = await checkDecayRules(testContext, ADMIN_USER, indicatorInput as any);
-
-    // It should pick rule-high-priority instead of rule-low-priority, and ignore rule-inactive
-    expect(result?.id).toBe('rule-high-priority');
-
-    getEntitiesMock.mockRestore();
-    filterGroupMock.mockRestore();
-  });
-
-  it('should return undefined if no rule matches', async () => {
-    const getEntitiesMock = vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([
-      { id: 'rule1', order: 1, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
-    ] as any);
-
-    // Mock to false so it does not match
-    const filterGroupMock = vi.spyOn(stixFilteringModule, 'isStixMatchFilterGroup').mockResolvedValue(false);
-
-    const indicatorInput = {
-      entity_type: 'Indicator',
-      x_opencti_main_observable_type: ENTITY_URL,
-    };
-
-    const result = await checkDecayRules(testContext, ADMIN_USER, indicatorInput as any);
-
-    expect(result).toBeUndefined();
-
-    getEntitiesMock.mockRestore();
-    filterGroupMock.mockRestore();
   });
 });

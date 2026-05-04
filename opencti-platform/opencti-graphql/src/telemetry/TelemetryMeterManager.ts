@@ -92,9 +92,6 @@ export class TelemetryMeterManager {
   // Number security coverages
   securityCoveragesCount = 0;
 
-  // Number of decay rules created
-  decayRuleCreationCount = 0;
-
   // Region Telemetry on SSO providers usage
   // True when the strategy is configured and enabled. False if not.
   ssoLocalStrategyEnabled = 0;
@@ -291,10 +288,6 @@ export class TelemetryMeterManager {
     this.securityCoveragesCount = n;
   }
 
-  setDecayRuleCreationCount(n: number) {
-    this.decayRuleCreationCount = n;
-  }
-
   registerGauge(name: string, description: string, observer: string, opts: {
     unit?: string;
     valueType?: ValueType;
@@ -343,7 +336,6 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
-    this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
     this.registerGauge('is_sso_local_strategy_enabled', 'LocalStrategy is configured and enabled', 'ssoLocalStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_openid_strategy_enabled', 'OpenidStrategy is configured and enabled', 'ssoOpenidStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_ldap_strategy_enabled', 'LDAPStrategy is configured and enabled', 'ssoLDAPStrategyEnabled', { unit: 'boolean' });

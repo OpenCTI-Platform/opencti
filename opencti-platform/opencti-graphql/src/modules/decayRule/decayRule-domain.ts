@@ -1,7 +1,7 @@
 import moment, { type Moment } from 'moment/moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { DecayRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
+import type { DecayRuleAddInput, EditInput, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
 import { createInternalObject } from '../../domain/internalObject';
@@ -13,7 +13,7 @@ import { FunctionalError } from '../../config/errors';
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../config/conf';
-import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { notify } from '../../database/redis';
 import {
   ENTITY_DOMAIN_NAME,
@@ -24,10 +24,6 @@ import {
   ENTITY_URL,
 } from '../../schema/stixCyberObservable';
 import { unshiftAll } from '../../utils/arrayUtil';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { convertTypeToStixType } from '../../database/stix-2-1-converter';
-import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { addDecayRuleCreationCount } from '../../manager/telemetryManager';
 
 const DECAY_FACTOR: number = 3.0;
 
@@ -46,7 +42,7 @@ export interface DecayRuleConfiguration extends DecayModel {
   id?: string;
   name: string;
   description: string;
-  decay_filters: string;
+  decay_observable_types: string[]; // x_opencti_main_observable_type
   order: number; // low priority = 0
   active: boolean;
 }
@@ -108,11 +104,7 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   }
 
   const decayRuleInput = { ...input, ...defaultOps };
-  const created = await createInternalObject<StoreEntityDecayRule>(context, user, decayRuleInput, ENTITY_TYPE_DECAY_RULE);
-  if (!builtIn) {
-    await addDecayRuleCreationCount();
-  }
-  return created;
+  return createInternalObject<StoreEntityDecayRule>(context, user, decayRuleInput, ENTITY_TYPE_DECAY_RULE);
 };
 
 export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
@@ -274,7 +266,7 @@ export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 0.35,
   decay_points: [80, 50],
   decay_revoke_score: 20,
-  decay_filters: '', // Matches all
+  decay_observable_types: [], // Matches all
   order: 0,
   active: true,
 };
@@ -285,18 +277,10 @@ export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
   decay_pound: 0.3,
   decay_points: [80],
   decay_revoke_score: 20,
-  decay_filters: JSON.stringify({
-    mode: 'and',
-    filters: [
-      {
-        key: ['x_opencti_main_observable_type'],
-        operator: 'eq',
-        values: [ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_ARTIFACT],
-        mode: 'or',
-      },
-    ],
-    filterGroups: [],
-  }),
+  decay_observable_types: [
+    ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+    ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ],
   order: 1,
   active: true,
 };
@@ -308,18 +292,11 @@ export const BUILT_IN_DECAY_RULE_IP_URL: DecayRuleConfiguration = {
   decay_pound: 0.55,
   decay_points: [80, 50],
   decay_revoke_score: 20,
-  decay_filters: JSON.stringify({
-    mode: 'and',
-    filters: [
-      {
-        key: ['x_opencti_main_observable_type'],
-        operator: 'eq',
-        values: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_URL],
-        mode: 'or',
-      },
-    ],
-    filterGroups: [],
-  }),
+  decay_observable_types: [
+    ENTITY_IPV4_ADDR,
+    ENTITY_IPV6_ADDR,
+    ENTITY_URL,
+  ],
   order: 1,
   active: true,
 };
@@ -331,18 +308,9 @@ export const BUILT_IN_DECAY_RULE_DOMAIN_NAME: DecayRuleConfiguration = {
   decay_pound: 0.7,
   decay_points: [80, 50],
   decay_revoke_score: 20,
-  decay_filters: JSON.stringify({
-    mode: 'and',
-    filters: [
-      {
-        key: ['x_opencti_main_observable_type'],
-        operator: 'eq',
-        values: [ENTITY_DOMAIN_NAME],
-        mode: 'or',
-      },
-    ],
-    filterGroups: [],
-  }),
+  decay_observable_types: [
+    ENTITY_DOMAIN_NAME,
+  ],
   order: 1,
   active: true,
 };
@@ -379,43 +347,26 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
 };
 
 // end region
-
-export type ResolvedDecayRule = Record<string, any>;
-
-const getActiveDecayRules = async (context: AuthContext) => {
-  const decayRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
-  return decayRuleList.filter((rule) => rule.active);
+export const selectDecayRuleForIndicator = (indicatorObservableType: string, decayRules: DecayRuleConfiguration[]) => {
+  const orderedRules = [...decayRules].filter((d) => d.active)
+    .sort((a, b) => (b.order || 0) - (a.order || 0));
+  const decayRule = orderedRules.find((rule) => {
+    if (rule.decay_observable_types?.length > 0) {
+      // return first rule matching the indicator main observable type
+      return indicatorObservableType && rule.decay_observable_types.includes(indicatorObservableType);
+    }
+    return true; // return first rule
+  });
+  if (!decayRule) {
+    // always return a fallback decay rule
+    return { ...FALLBACK_DECAY_RULE, id: 'FALLBACK_DECAY_RULE' };
+  }
+  return decayRule;
 };
 
-export const checkDecayRules = async (context: AuthContext, user: AuthUser, resolvedIndicator: ResolvedDecayRule) => {
-  const enabledRules = await getActiveDecayRules(context);
-
-  const formattedIndicator = {
-    ...resolvedIndicator,
-    type: convertTypeToStixType(resolvedIndicator.entity_type),
-    object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
-    created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
-    labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.value),
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        main_observable_type: resolvedIndicator.x_opencti_main_observable_type,
-        creator_ids: [user.internal_id],
-      },
-    },
-  } as ResolvedDecayRule;
-
-  const availableRules = [];
-  for (let i = 0; i < enabledRules.length; i += 1) {
-    if (enabledRules[i].decay_filters) {
-      const filterGroup = JSON.parse(enabledRules[i].decay_filters);
-      const result = await isStixMatchFilterGroup(context, user, formattedIndicator, filterGroup);
-      if (result) availableRules.push(enabledRules[i]);
-    } else {
-      availableRules.push(enabledRules[i]);
-    }
-  }
-  const sortedAvailableRules = availableRules.sort((a, b) => b.order - a.order);
-  return sortedAvailableRules[0];
+export const findDecayRuleForIndicator = async (context: AuthContext, indicatorObservableType: string) => {
+  const enabledRules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
+  return selectDecayRuleForIndicator(indicatorObservableType, enabledRules);
 };
 
 // region decay compute

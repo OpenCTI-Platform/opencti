@@ -19,8 +19,8 @@ type DecayRule implements InternalObject & BasicObject {
   decay_pound: Float!
   decay_points: [Int!]
   decay_revoke_score: Int!
+  decay_observable_types: [String!]
   decaySettingsChartData: DecayData
-  decay_filters: String!
 }
 
 type DecayData {
@@ -67,7 +67,7 @@ input DecayRuleAddInput {
   decay_pound: Float!
   decay_points: [Int!]
   decay_revoke_score: Int!
-  decay_filters: String!
+  decay_observable_types: [String!]
 }
 
 type Mutation {
