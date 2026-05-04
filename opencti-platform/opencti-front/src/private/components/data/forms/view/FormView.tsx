@@ -7,6 +7,7 @@ import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
@@ -1017,8 +1018,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           setFieldValue={setFieldValue}
                           required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults?.author?.type !== 'main_entity_author'}
                           clearable={schema.draftDefaults?.author?.type === 'main_entity_author'}
-                          helpertext={schema.draftDefaults?.author?.type === 'main_entity_author' ? t_i18n('Default: Reuse main entity author (leave empty to inherit)') : undefined}
                         />
+                        {schema.draftDefaults?.author?.type === 'main_entity_author' && (
+                          <FormHelperText style={{ marginTop: -16, marginBottom: 20 }}>
+                            {t_i18n('Default: Reuse main entity author (leave empty to inherit)')}
+                          </FormHelperText>
+                        )}
                       </div>
                     )}
                     {showDraftAuthorizedMembers && (
