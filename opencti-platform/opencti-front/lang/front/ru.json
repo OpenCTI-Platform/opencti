@@ -954,6 +954,8 @@
   "Custom dashboards | Dashboards": "Пользовательские панели | Панели инструментов",
   "Custom view": "Пользовательское представление",
   "Custom view created": "Создано пользовательское представление",
+  "Custom view popover of actions": "Пользовательское всплывающее окно просмотра действий",
+  "Custom view successfully deleted": "Пользовательское представление успешно удалено",
   "Custom view updated": "Пользовательское представление обновлено",
   "Custom Views": "Пользовательские представления",
   "Customization": "Настройка",
@@ -1242,6 +1244,7 @@
   "Do you want to delete this CSV Feed?": "Вы хотите удалить этот CSV-канал?",
   "Do you want to delete this CSV ingester?": "Вы хотите удалить этот CSV-загрузчик?",
   "Do you want to delete this CSV mapper?": "Вы хотите удалить этот CSV-маппер?",
+  "Do you want to delete this custom view?": "Хотите ли вы удалить это пользовательское представление?",
   "Do you want to delete this dashboard?": "Вы хотите удалить этот дашборд?",
   "Do you want to delete this data component?": "Хотите ли вы удалить этот компонент данных?",
   "Do you want to delete this data source?": "Хотите ли вы удалить этот источник данных?",
@@ -1420,6 +1423,7 @@
   "Duplicate a form": "Дублировать форму",
   "Duplicate a JSON feed": "Дублировать фид в формате JSON",
   "Duplicate a JSON mapper": "Дублирование маппера JSON",
+  "Duplicate the custom view": "Дублировать пользовательское представление",
   "Duplicate the dashboard": "Дублировать дашборд",
   "Duration": "Продолжительность",
   "Dynamic filter": "Динамический фильтр",
@@ -4135,6 +4139,7 @@
   "The connector state has been reset": "Состояние коннектора было сброшено",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "Метрика результата покрытия показывает, насколько конкретная сущность была задействована в выполнении сценария AEV.\\n Покрытие может быть частичным, если некоторые инжекты не были выполнены, если не были решены placeholders, или если платформа не поддерживает определенные действия",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV-файл был создан с параметрами представления и готов к загрузке.",
+  "The custom view has been duplicated. You can manage it": "Пользовательское представление было продублировано. Вы можете управлять ею",
   "The dashboard has been duplicated. You can manage it": "Дашборд был продублирован. Вы можете управлять ею",
   "the dedicated page": "специальная страница",
   "The default groups are:": "По умолчанию используются следующие группы:",
@@ -4903,3 +4908,4 @@
   "Zoom in": "Увеличить",
   "Zoom out": "Уменьшить масштаб"
 }
+
