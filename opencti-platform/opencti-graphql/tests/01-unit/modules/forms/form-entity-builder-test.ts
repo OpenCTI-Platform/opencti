@@ -1,6 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
-
-vi.mock('uuid', () => ({ v4: () => 'test-uuid-1234' }));
+import { describe, it, expect } from 'vitest';
 
 import { completeEntity } from '../../../../src/modules/form/form-entity-builder';
 
