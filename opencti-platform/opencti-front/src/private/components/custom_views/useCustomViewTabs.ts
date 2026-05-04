@@ -10,10 +10,14 @@ interface UseCustomViewTabsParams {
   basePath: string;
 }
 
-export type CustomViewDisplayMode = 'none' | 'single' | 'dropdown';
+export interface CustomViewDisplayMode {
+  default: boolean;
+  others: 'none' | 'single' | 'dropdown';
+}
 
 interface UseCustomViewTabsResult {
-  customViews: ReturnType<typeof useCustomViews>['customViews'];
+  defaultCustomView: ReturnType<typeof useCustomViews>['customViews'][number] | undefined;
+  otherCustomViews: ReturnType<typeof useCustomViews>['customViews'];
   displayMode: CustomViewDisplayMode;
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   currentCustomViewTab: string | undefined;
@@ -27,12 +31,25 @@ const useCustomViewTabs = ({ basePath, entityType }: UseCustomViewTabsParams): U
   const currentCustomViewMenuItem = getCurrentTab(location.pathname, basePath);
   const dropDownMenuState = useDropDownMenuState();
 
-  let displayMode: CustomViewDisplayMode = 'none';
-  if (customViews.length === 1) displayMode = 'single';
-  else if (customViews.length > 1) displayMode = 'dropdown';
+  const defaultCustomView = customViews.find(({ default: def }) => def);
+  const hasDefault = !!defaultCustomView;
+
+  let othersDisplayMode: CustomViewDisplayMode['others'] = 'none';
+  const minCountForOthers = hasDefault ? 2 : 1;
+  if (customViews.length === minCountForOthers) {
+    othersDisplayMode = 'single';
+  } else if (customViews.length > minCountForOthers) {
+    othersDisplayMode = 'dropdown';
+  }
+  const displayMode: CustomViewDisplayMode = {
+    default: hasDefault,
+    others: othersDisplayMode,
+  };
+  const otherCustomViews = hasDefault ? customViews.filter((c) => !c.default) : customViews;
 
   return {
-    customViews,
+    defaultCustomView,
+    otherCustomViews,
     displayMode,
     dropDownMenuState,
     currentCustomViewTab,

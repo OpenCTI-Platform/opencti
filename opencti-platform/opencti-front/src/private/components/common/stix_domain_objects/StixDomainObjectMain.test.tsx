@@ -23,7 +23,7 @@ describe('StixDomainObjectMain', () => {
     const { user } = testRender(
       <StixDomainObjectMain
         entityType="Intrusion-Set"
-        pages={{ [tab]: <span>{pageContent}</span> }}
+        pages={{ overview: 'overview', [tab]: <span>{pageContent}</span> }}
         basePath=""
       />,
       {
@@ -40,7 +40,7 @@ describe('StixDomainObjectMain', () => {
     testRender(
       <StixDomainObjectMain
         entityType="Intrusion-Set"
-        pages={{}}
+        pages={{ overview: 'overview' }}
         basePath=""
         extraRoutes={<Route path={extraRoute} element={pageContent} />}
       />,
@@ -56,7 +56,7 @@ describe('StixDomainObjectMain', () => {
     testRender(
       <StixDomainObjectMain
         entityType="Intrusion-Set"
-        pages={{}}
+        pages={{ overview: 'overview' }}
         basePath=""
       />,
       {

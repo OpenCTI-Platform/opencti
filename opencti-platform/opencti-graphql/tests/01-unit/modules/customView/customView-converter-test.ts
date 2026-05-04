@@ -14,6 +14,7 @@ type StoreEntityCustomViewForTest = Required<Pick<
   | 'manifest'
   | 'target_entity_type'
   | 'enabled'
+  | 'default'
 >>;
 
 describe('customView module STIX converter', () => {
@@ -35,6 +36,7 @@ describe('customView module STIX converter', () => {
       }) ?? '',
       target_entity_type: 'Intrusion-Set',
       enabled: true,
+      default: true,
     };
     const stixCustomView = convertCustomViewToStix(customView as unknown as StoreEntityCustomView);
     expect(stixCustomView).toMatchObject({
@@ -45,6 +47,7 @@ describe('customView module STIX converter', () => {
       target_entity_type: customView.target_entity_type,
       path: computeCustomViewPath(customView as StoreEntityCustomView),
       enabled: true,
+      default: true,
     });
   });
 });

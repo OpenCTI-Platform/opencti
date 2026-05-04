@@ -37,6 +37,9 @@ const customViewResolver: Resolvers = {
     toWidgetExport: (customView, { widgetId }, context) => {
       return exportCustomViewWidget(context, context.user, customView, widgetId);
     },
+    default: (customView) => {
+      return Boolean(customView.default);
+    },
   },
   Mutation: {
     customViewAdd: (_, { input }, context) => {

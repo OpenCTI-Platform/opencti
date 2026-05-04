@@ -8,9 +8,9 @@ import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
-import CustomViewTab from '@components/custom_views/CustomViewTab';
+import { OtherCustomViewsTab, DefaultCustomViewTab } from '@components/custom_views/CustomViewTab';
 import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
-import { CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
+import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -44,7 +44,7 @@ interface TabInfo {
 // Order is important, will be reflected in the UI.
 const TABS_INFO: readonly TabInfo[] = [{
   tab: 'overview',
-  path: '',
+  path: 'overview',
   label: 'Overview',
 }, {
   tab: 'result',
@@ -97,7 +97,8 @@ const TabsWithCustomViews = ({
   currentTab,
 }: TabsWithCustomViewsProps) => {
   const {
-    customViews,
+    defaultCustomView,
+    otherCustomViews,
     displayMode,
     dropDownMenuState,
     currentCustomViewTab,
@@ -106,18 +107,25 @@ const TabsWithCustomViews = ({
 
   return (
     <>
-      <Tabs value={currentCustomViewTab ?? currentTab}>
+      <Tabs value={(currentCustomViewTab ?? currentTab) || false}>
+        {defaultCustomView ? (
+          <DefaultCustomViewTab
+            value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
+            displayMode={displayMode}
+            defaultCustomView={defaultCustomView}
+          />
+        ) : null}
         {children}
-        <CustomViewTab
+        <OtherCustomViewsTab
           value={CUSTOM_VIEW_TAB_VALUE}
           displayMode={displayMode}
-          customViews={customViews}
+          otherCustomViews={otherCustomViews}
           dropDownMenuState={dropDownMenuState}
         />
       </Tabs>
       <CustomViewTabDropDownMenu
         currentCustomViewMenuItem={currentCustomViewMenuItem}
-        customViews={customViews}
+        otherCustomViews={otherCustomViews}
         displayMode={displayMode}
         dropDownMenuState={dropDownMenuState}
       />
@@ -166,7 +174,7 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
           {staticTabs}
         </TabsWithCustomViews>
       ) : (
-        <Tabs value={currentTab}>
+        <Tabs value={currentTab || false}>
           {staticTabs}
         </Tabs>
       )}

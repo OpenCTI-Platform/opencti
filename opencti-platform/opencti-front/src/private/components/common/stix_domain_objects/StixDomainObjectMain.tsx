@@ -1,5 +1,5 @@
 import { ReactElement, ReactNode } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
@@ -8,7 +8,8 @@ import useHelper from '../../../../utils/hooks/useHelper';
 interface StixDomainObjectMainProps {
   entityType: string;
   basePath: string;
-  pages: Partial<Record<StixDomainObjectTabsBoxTab, ReactNode>>;
+  /** The overview page is mandatory **/
+  pages: { overview: ReactNode } & Partial<Omit<Record<StixDomainObjectTabsBoxTab, ReactNode>, 'overview'>>;
   extraActions?: ReactNode;
   extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
 }
@@ -32,9 +33,7 @@ const StixDomainObjectMain = ({
         extraActions={extraActions}
       />
       <Routes>
-        {tabs.includes('overview') && (
-          <Route path="/" element={pages.overview} />
-        )}
+        <Route path="/overview" element={pages.overview} />
         {tabs.includes('result') && (
           <Route path="/result" element={pages.result} />
         )}
@@ -70,6 +69,7 @@ const StixDomainObjectMain = ({
                 <CustomViewRedirector
                   entityType={entityType}
                   Fallback={<ErrorNotFound />}
+                  indexFallback={<Navigate to="overview" replace />}
                 />
               )
             : <ErrorNotFound />

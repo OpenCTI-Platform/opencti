@@ -17,7 +17,11 @@ export const useDropDownMenuState = () => {
     setAnchorEl(null);
   };
 
-  return { anchorEl, onOpen, onClose, isOpen: Boolean(anchorEl) };
+  const close = () => {
+    setAnchorEl(null);
+  };
+
+  return { anchorEl, onOpen, onClose, isOpen: Boolean(anchorEl), close };
 };
 
 type TabWithDropDownMenuProps = Omit<TabProps<'div'>, 'onClick'> & {
