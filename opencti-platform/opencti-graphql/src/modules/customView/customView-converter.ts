@@ -15,6 +15,7 @@ const convertCustomViewToStix = (instance: StoreEntityCustomView): StixCustomVie
     target_entity_type: instance.target_entity_type,
     enabled: Boolean(instance.enabled),
     path: computeCustomViewPath(instance),
+    default: Boolean(instance.default),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

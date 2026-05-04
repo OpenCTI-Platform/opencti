@@ -1,4 +1,4 @@
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
 import {
@@ -8,6 +8,7 @@ import {
   type EditInput,
   type CustomViewImportWidgetInput,
   FilterMode,
+  FilterOperator,
 } from '../../generated/graphql';
 import slugify from 'slug';
 import {
@@ -28,6 +29,7 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { FunctionalError } from '../../config/errors';
 import { exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
+import { updateAttribute } from '../../database/middleware';
 
 /**
  * Exclusion list: entity types not capable of
@@ -67,6 +69,55 @@ const getEntityTypesCandidateToCustomViews = () => {
 
 const isCustomViewsAvailableForEntityType = (entityType: string) => {
   return getEntityTypesCandidateToCustomViews().includes(entityType);
+};
+
+const applyUniqueDefaultCustomViewConstraint = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetEntityType: string,
+  newDefaultCustomViewId: string,
+) => {
+  const previousDefaultCustomViews = await fullEntitiesList<BasicStoreEntityCustomView>(
+    context,
+    user,
+    [ENTITY_TYPE_CUSTOM_VIEW],
+    {
+      baseData: true,
+      filters: {
+        filters: [{
+          key: ['target_entity_type'],
+          values: [targetEntityType],
+        }, {
+          key: ['default'],
+          values: [true],
+        }, {
+          key: ['id'],
+          values: [newDefaultCustomViewId],
+          operator: FilterOperator.NotEq,
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+  if (previousDefaultCustomViews.length === 0) {
+    return;
+  }
+  // There should be only one but we never know as the constraint is not
+  // enforced at the DB level.
+  const promises = previousDefaultCustomViews.map((entity) => {
+    return updateAttribute<StoreEntityCustomView>(
+      context,
+      user,
+      entity.id,
+      ENTITY_TYPE_CUSTOM_VIEW,
+      [{
+        key: 'default',
+        value: [false],
+      }],
+    );
+  });
+  await Promise.all(promises);
 };
 
 export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) => {
@@ -137,8 +188,9 @@ export const addCustomView = async (
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
     enabled: input.enabled ?? false,
+    default: input.default ?? false,
   };
-  return createInternalObject<StoreEntityCustomView>(
+  const element = await createInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewToCreate,
@@ -151,6 +203,17 @@ export const addCustomView = async (
       }),
     },
   );
+  if (element.default) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+    await applyUniqueDefaultCustomViewConstraint(
+      context,
+      user,
+      element.target_entity_type,
+      element.id,
+    );
+  }
+  return element;
 };
 
 export const editCustomView = async (
@@ -160,7 +223,8 @@ export const editCustomView = async (
   input: EditInput[],
 ) => {
   const nameInput = input.find((i) => i.key === 'name');
-  return editInternalObject<StoreEntityCustomView>(
+  const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
+  const element = await editInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewId,
@@ -180,6 +244,17 @@ export const editCustomView = async (
       })),
     },
   );
+  if (defaultFieldValue) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+    await applyUniqueDefaultCustomViewConstraint(
+      context,
+      user,
+      element.target_entity_type,
+      element.id,
+    );
+  }
+  return element;
 };
 
 export const customViewImportWidgetConfiguration = async (
@@ -241,8 +316,9 @@ export async function duplicateCustomView(
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
     enabled: input.enabled ?? false,
+    default: input.default ?? false,
   };
-  return createInternalObject<StoreEntityCustomView>(
+  const duplicate = await createInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewToCreate,
@@ -255,6 +331,17 @@ export async function duplicateCustomView(
       }),
     },
   );
+  if (duplicate.default) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+    await applyUniqueDefaultCustomViewConstraint(
+      context,
+      user,
+      duplicate.target_entity_type,
+      duplicate.id,
+    );
+  }
+  return duplicate;
 };
 
 export const deleteCustomView = async (

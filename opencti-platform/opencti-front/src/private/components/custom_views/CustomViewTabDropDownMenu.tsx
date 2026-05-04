@@ -6,14 +6,14 @@ import { type CustomViewDisplayMode } from './useCustomViewTabs';
 
 interface CustomViewTabDropDownMenuProps {
   displayMode: CustomViewDisplayMode;
-  customViews: ReturnType<typeof useCustomViews>['customViews'];
+  otherCustomViews: ReturnType<typeof useCustomViews>['customViews'];
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   currentCustomViewMenuItem?: string;
 }
 
-const CustomViewTabDropDownMenu = ({ displayMode, customViews, dropDownMenuState, currentCustomViewMenuItem }: CustomViewTabDropDownMenuProps) => {
-  const { anchorEl, isOpen, onClose } = dropDownMenuState;
-  if (displayMode !== 'dropdown') {
+const CustomViewTabDropDownMenu = ({ displayMode, otherCustomViews: customViews, dropDownMenuState, currentCustomViewMenuItem }: CustomViewTabDropDownMenuProps) => {
+  const { anchorEl, isOpen, onClose, close } = dropDownMenuState;
+  if (displayMode.others !== 'dropdown') {
     return null;
   }
   return (
@@ -30,6 +30,7 @@ const CustomViewTabDropDownMenu = ({ displayMode, customViews, dropDownMenuState
             role="link"
             component={Link}
             to={path}
+            onClick={close}
             sx={{
               '&.Mui-selected': {
                 boxShadow: 'none',
