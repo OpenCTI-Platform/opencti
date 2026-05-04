@@ -1,4 +1,5 @@
 import { graphql } from 'relay-runtime';
+import Insights from '@mui/icons-material/Insights';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
@@ -20,6 +21,7 @@ const customViewFragment = graphql`
     name
     description
     enabled
+    default
     ...CustomViewPopover_customView
   }
 `;
@@ -76,6 +78,7 @@ const customViewsLinesFragment = graphql`
 
 const DATA_COLUMNS = {
   name: { percentWidth: 35, isSortable: true },
+  description: { percentWidth: 50, isSortable: false },
   customViewEnabled: {
     id: 'enabled',
     label: 'Status',
@@ -92,7 +95,6 @@ const DATA_COLUMNS = {
       );
     },
   },
-  description: { percentWidth: 50, isSortable: true },
 } as const;
 
 const DEFAULT_SORT_CONFIG = {
@@ -152,6 +154,16 @@ const CustomViewsSettingsDataTable = ({
       hideFilters={true}
       disableLineSelection={true}
       actions={(row) => <CustomViewPopover data={row} paginationOptions={queryPaginationOptions} />}
+      icon={
+        ({ default: def }) => (
+          <Insights sx={{
+            color: def
+              ? 'designSystem.tertiary.yellow.400'
+              : 'designSystem.tertiary.blue.500',
+          }}
+          />
+        )
+      }
     />
   );
 };
