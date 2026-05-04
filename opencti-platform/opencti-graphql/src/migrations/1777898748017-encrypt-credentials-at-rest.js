@@ -71,6 +71,5 @@ export const up = async (next) => {
 };
 
 export const down = async (next) => {
-  logMigration.info(`${message} > down (skipped — encrypted values cannot be safely reverted to plain text)`);
   next();
 };
