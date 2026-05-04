@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
 import { notify } from '../database/redis';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT } from '../schema/stixDomainObject';
@@ -67,7 +67,8 @@ export const dataComponentsPaginated = async (context: AuthContext, user: AuthUs
   return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_DETECTS, ENTITY_TYPE_DATA_COMPONENT, true, args);
 };
 
-export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUser) => {
+export const getAttackPatternsMatrix_v1 = async (context: AuthContext, user: AuthUser) => {
+  logApp.info('[ATTACK PATTERN MATRIX] Using old algorithm');
   const attackPatternsOfPhases = [];
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
@@ -75,14 +76,10 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] },
   };
   const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
-  console.log('nb attack patterns', allAttackPatterns.length);
   const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
   const allKillChainPhases = await fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
-  console.log('nb kcp', allKillChainPhases.length);
   const subTechniquesRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
-  console.log('nb rels', subTechniquesRelations.length);
 
-  const start = Date.now();
   for (let index = 0; index < allKillChainPhases.length; index += 1) {
     const killChainPhase = allKillChainPhases[index];
     const phaseAttackPatterns = allAttackPatterns.flatMap((attackPattern) => {
@@ -136,7 +133,79 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
       });
     }
   }
-  const tmp = Date.now();
-  console.log('time to process', tmp - start);
   return { attackPatternsOfPhases };
+};
+
+export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: AuthUser) => {
+  const attackPatternsArgs = {
+    withoutRels: false, // Must be replace by relation queries
+    indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+    filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] },
+  };
+
+  // 1. Load all data
+  const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
+  const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
+  const allKillChainPhases = await fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
+  const subTechniquesRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
+
+  // 2. Pre-compute indexes
+  const subTechniqueIds = new Set(subTechniquesRelations.map((s) => s.fromId));
+  const subTechniquesByParentId = new Map<string, { attack_pattern_id: string; name: string; description?: string }[]>();
+  const searchTextPartsByParentId = new Map<string, string[]>();
+  for (const s of subTechniquesRelations) {
+    const subAP = allAttackPatternsById.get(s.fromId);
+    if (subAP) {
+      if (!subTechniquesByParentId.has(s.toId)) {
+        subTechniquesByParentId.set(s.toId, []);
+        searchTextPartsByParentId.set(s.toId, []);
+      }
+      subTechniquesByParentId.get(s.toId)!.push({ attack_pattern_id: subAP.id, name: subAP.name, description: subAP.description });
+      searchTextPartsByParentId.get(s.toId)!.push(`${subAP.x_mitre_id} ${subAP.name} ${subAP.description}`);
+    }
+  }
+
+  const parentAPsByKcpId = new Map<string, typeof allAttackPatterns>();
+  for (const ap of allAttackPatterns) {
+    if (subTechniqueIds.has(ap.id)) continue;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const kcpIds: string[] = ap[RELATION_KILL_CHAIN_PHASE] ?? [];
+    for (const kcpId of kcpIds) {
+      if (!parentAPsByKcpId.has(kcpId)) parentAPsByKcpId.set(kcpId, []);
+      parentAPsByKcpId.get(kcpId)!.push(ap);
+    }
+  }
+
+  // 3. Build result
+  const attackPatternsOfPhases = [];
+  for (const kcp of allKillChainPhases) {
+    const phaseAPs = parentAPsByKcpId.get(kcp.id) ?? [];
+    if (phaseAPs.length === 0) continue;
+    attackPatternsOfPhases.push({
+      kill_chain_id: kcp.id,
+      kill_chain_name: kcp.kill_chain_name,
+      phase_name: kcp.phase_name,
+      x_opencti_order: kcp.x_opencti_order,
+      attackPatterns: phaseAPs.map((ap) => ({
+        attack_pattern_id: ap.id,
+        name: ap.name,
+        description: ap.description,
+        x_mitre_id: ap.x_mitre_id,
+        subAttackPatterns: subTechniquesByParentId.get(ap.id) ?? [],
+        subAttackPatternsSearchText: (searchTextPartsByParentId.get(ap.id) ?? []).join(' | '),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        killChainPhasesIds: [...ap[RELATION_KILL_CHAIN_PHASE]],
+      })),
+    });
+  }
+  return { attackPatternsOfPhases };
+};
+
+export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUser) => {
+  if (isFeatureEnabled('ATTACK_PATTERN_MATRIX_OPTI')) {
+    return getAttackPatternsMatrix_v2(context, user);
+  }
+  return getAttackPatternsMatrix_v1(context, user);
 };
