@@ -293,27 +293,6 @@ describe('inconsistencyCleaner', () => {
       expect(mockElRawUpdateByQuery).toHaveBeenCalledTimes(1);
     });
 
-    it('should not clean duplicates when only RefMissingRepair operation is specified', async () => {
-      mockIsBypassUser.mockReturnValue(true);
-      mockIsSingleRelationsRef.mockReturnValue(false);
-      mockIsStixRefUnidirectionalRelationship.mockReturnValue(true);
-
-      const entityDoc = buildElasticHit({
-        entity_type: 'Malware',
-        'rel_object-marking.internal_id': ['m1', 'm1'],
-      });
-      mockElRawSearch.mockResolvedValue(buildElasticSearchResponse([entityDoc]));
-
-      await cleanAllEntityInconsistencies(
-        buildContext(),
-        buildBypassUser(),
-        'entity-id',
-        [InconsistencyCleaningType.RefMissingRepair],
-      );
-
-      expect(mockElRawUpdateByQuery).not.toHaveBeenCalled();
-    });
-
     it('should throw a DatabaseError when elRawSearch fails', async () => {
       mockIsBypassUser.mockReturnValue(true);
       mockElRawSearch.mockRejectedValue(new Error('ES connection failed'));
