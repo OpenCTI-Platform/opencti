@@ -1,7 +1,7 @@
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
-import { type QueryCustomViewsArgs, type CustomViewAddInput, type EditInput, type CustomViewImportWidgetInput } from '../../generated/graphql';
+import { type QueryCustomViewsArgs, type CustomViewAddInput, type CustomViewDuplicateInput, type EditInput, type CustomViewImportWidgetInput } from '../../generated/graphql';
 import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -20,7 +20,7 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObserva
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { FunctionalError } from '../../config/errors';
 import { exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
-import { createInternalObject, editInternalObject } from '../../domain/internalObject';
+import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 
 /**
  * Exclusion list: entity types not capable of
@@ -205,4 +205,57 @@ export const exportCustomViewWidget = async (
     throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { customView: customView.id, widget: widgetId });
   }
   return result.data;
+};
+
+export async function duplicateCustomView(
+  context: AuthContext,
+  user: AuthUser,
+  input: CustomViewDuplicateInput,
+) {
+  if (!isCustomViewsAvailableForEntityType(input.targetEntityType)) {
+    throw FunctionalError(
+      'Custom views cannot be created for given entity type', {
+        entityType: input.targetEntityType,
+      });
+  }
+  const customViewToCreate = {
+    description: input.description,
+    manifest: input.manifest,
+    name: input.name,
+    target_entity_type: input.targetEntityType,
+    slug: slugify(input.name),
+  };
+  return createInternalObject<StoreEntityCustomView>(
+    context,
+    user,
+    customViewToCreate,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (element) => ({
+        ...element,
+        manifest: '[sanitized]',
+      }),
+    },
+  );
+};
+
+export const deleteCustomView = async (
+  context: AuthContext,
+  user: AuthUser,
+  customViewId: string,
+) => {
+  return deleteInternalObject<StoreEntityCustomView>(
+    context,
+    user,
+    customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (element) => ({
+        ...element,
+        manifest: '[sanitized]',
+      }),
+    },
+  );
 };

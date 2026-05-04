@@ -954,6 +954,8 @@
   "Custom dashboards | Dashboards": "Cuadros de mando personalizados | Cuadros de mando",
   "Custom view": "Vista personalizada",
   "Custom view created": "Vista personalizada creada",
+  "Custom view popover of actions": "Vista personalizada popover de acciones",
+  "Custom view successfully deleted": "Vista personalizada eliminada correctamente",
   "Custom view updated": "Vista personalizada actualizada",
   "Custom Views": "Vistas personalizadas",
   "Customization": "Personalización",
@@ -1242,6 +1244,7 @@
   "Do you want to delete this CSV Feed?": "¿Desea eliminar este feed CSV?",
   "Do you want to delete this CSV ingester?": "¿Quieres eliminar este importador CSV?",
   "Do you want to delete this CSV mapper?": "¿Desea eliminar este mapeador CSV?",
+  "Do you want to delete this custom view?": "¿Desea eliminar esta vista personalizada?",
   "Do you want to delete this dashboard?": "¿Desea eliminar este cuadro de mandos?",
   "Do you want to delete this data component?": "¿Quieres borrar este componente de datos?",
   "Do you want to delete this data source?": "¿Quieres eliminar esta fuente de datos?",
@@ -1420,6 +1423,7 @@
   "Duplicate a form": "Duplicar un formulario",
   "Duplicate a JSON feed": "Duplicar un feed JSON",
   "Duplicate a JSON mapper": "Duplicar un mapeador JSON",
+  "Duplicate the custom view": "Duplicar la vista personalizada",
   "Duplicate the dashboard": "Duplicar el salpicadero",
   "Duration": "Duración",
   "Dynamic filter": "Filtro dinámico",
@@ -4138,7 +4142,8 @@
   "The connector state has been reset": "El estado de este conector ha sido reiniciado",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "La métrica de resultado de cobertura muestra en qué medida una entidad específica estuvo implicada en la ejecución del escenario AEV.\\n La cobertura puede ser parcial si no se ejecutaron algunas inyecciones, si no se resolvieron marcadores de posición o si la plataforma no admite determinadas acciones",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "El fichero CSV se ha generado con los parámetros de la vista y está preparado para ser descargado.",
-  "The dashboard has been duplicated. You can manage it": "El tablero ha sido duplicado. puedes gestionarlo",
+  "The custom view has been duplicated. You can manage it": "La vista personalizada ha sido duplicada. Puede gestionarla",
+  "The dashboard has been duplicated. You can manage it": "El tablero ha sido duplicado. Puede gestionarlo",
   "the dedicated page": "la página dedicada",
   "The default groups are:": "Los grupos por defecto son:",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "El despliegue de conectores de este catálogo requiere una licencia Enterprise Edition.",
@@ -4908,3 +4913,4 @@
   "Zoom in": "Ampliar",
   "Zoom out": "Alejar"
 }
+

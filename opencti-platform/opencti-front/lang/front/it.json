@@ -954,6 +954,8 @@
   "Custom dashboards | Dashboards": "Dashboard personalizzate | Dashboard",
   "Custom view": "Vista personalizzata",
   "Custom view created": "Vista personalizzata creata",
+  "Custom view popover of actions": "Popover di visualizzazione personalizzato delle azioni",
+  "Custom view successfully deleted": "Vista personalizzata cancellata con successo",
   "Custom view updated": "Vista personalizzata aggiornata",
   "Custom Views": "Viste personalizzate",
   "Customization": "Personalizzazione",
@@ -1242,6 +1244,7 @@
   "Do you want to delete this CSV Feed?": "Vuoi cancellare questo Feed CSV?",
   "Do you want to delete this CSV ingester?": "Vuoi eliminare questo ingester CSV?",
   "Do you want to delete this CSV mapper?": "Vuoi eliminare questo mapper CSV?",
+  "Do you want to delete this custom view?": "Si desidera eliminare questa vista personalizzata?",
   "Do you want to delete this dashboard?": "Vuoi eliminare questa dashboard?",
   "Do you want to delete this data component?": "Vuoi eliminare questo componente dati?",
   "Do you want to delete this data source?": "Vuoi eliminare questa fonte dati?",
@@ -1420,6 +1423,7 @@
   "Duplicate a form": "Duplicare un modulo",
   "Duplicate a JSON feed": "Duplicare un feed JSON",
   "Duplicate a JSON mapper": "Duplicare un mappatore JSON",
+  "Duplicate the custom view": "Duplicare la vista personalizzata",
   "Duplicate the dashboard": "Duplica la dashboard",
   "Duration": "Durata",
   "Dynamic filter": "Filtro dinamico",
@@ -4138,6 +4142,7 @@
   "The connector state has been reset": "Il connettore è stato ripristinato",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "La metrica del risultato della copertura mostra quanto una specifica entità sia stata coinvolta nell'esecuzione dello scenario AEV.\\n La copertura può essere parziale se alcune iniezioni non sono state eseguite, se i segnaposto non sono stati risolti o se la piattaforma non supporta alcune azioni",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "Il file CSV è stato generato con i parametri della vista ed è pronto per il download.",
+  "The custom view has been duplicated. You can manage it": "La vista personalizzata è stata duplicata. Puoi gestirla",
   "The dashboard has been duplicated. You can manage it": "La dashboard è stata duplicata. Puoi gestirla",
   "the dedicated page": "la pagina dedicata",
   "The default groups are:": "I gruppi predefiniti sono:",
@@ -4908,3 +4913,4 @@
   "Zoom in": "Ingrandisci",
   "Zoom out": "Riduci"
 }
+

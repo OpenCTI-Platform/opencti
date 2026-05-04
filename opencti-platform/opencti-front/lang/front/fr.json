@@ -954,6 +954,8 @@
   "Custom dashboards | Dashboards": "Tableaux de bord personnalisés",
   "Custom view": "Vue personnalisée",
   "Custom view created": "Vue personnalisée créée",
+  "Custom view popover of actions": "Affichage personnalisé des actions",
+  "Custom view successfully deleted": "Vue personnalisée supprimée avec succès",
   "Custom view updated": "Vue personnalisée mise à jour",
   "Custom Views": "Vues personnalisées",
   "Customization": "Personnalisation",
@@ -1242,6 +1244,7 @@
   "Do you want to delete this CSV Feed?": "Voulez-vous supprimer ce flux CSV ?",
   "Do you want to delete this CSV ingester?": "Voulez-vous supprimer cet ingéreur CSV ?",
   "Do you want to delete this CSV mapper?": "Voulez-vous supprimer ce mappeur CSV ?",
+  "Do you want to delete this custom view?": "Voulez-vous supprimer cette vue personnalisée ?",
   "Do you want to delete this dashboard?": "Voulez-vous supprimer ce tableau de bord ?",
   "Do you want to delete this data component?": "Souhaitez-vous supprimer ce composant de données ?",
   "Do you want to delete this data source?": "Souhaitez-vous supprimer cette source de données ?",
@@ -1420,6 +1423,7 @@
   "Duplicate a form": "Dupliquer un formulaire",
   "Duplicate a JSON feed": "Dupliquer un flux JSON",
   "Duplicate a JSON mapper": "Dupliquer un mappeur JSON",
+  "Duplicate the custom view": "Dupliquer la vue personnalisée",
   "Duplicate the dashboard": "Dupliquer le tableau de bord",
   "Duration": "Durée",
   "Dynamic filter": "Filtre dynamique",
@@ -4138,6 +4142,7 @@
   "The connector state has been reset": "L'état du connecteur a été réinitialisé",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "La mesure du résultat de la couverture indique dans quelle mesure une entité spécifique a été impliquée dans l'exécution du scénario AEV. La couverture peut être partielle si certaines injections n'ont pas été exécutées, si les espaces réservés n'ont pas été résolus ou si la plate-forme ne prend pas en charge certaines actions",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "Le fichier CSV a été généré avec les paramètres de la vue et est prêt pour être téléchargé.",
+  "The custom view has been duplicated. You can manage it": "La vue personnalisée a été dupliquée. Vous pouvez l'administrer",
   "The dashboard has been duplicated. You can manage it": "Le tableau de bord a été dupliqué. Vous pouvez l'administrer",
   "the dedicated page": "la page dédiée",
   "The default groups are:": "Les groupes par défaut sont les suivants",
@@ -4908,3 +4913,4 @@
   "Zoom in": "Zoomer",
   "Zoom out": "Zoom arrière"
 }
+
