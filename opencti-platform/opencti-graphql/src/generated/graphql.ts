@@ -24185,8 +24185,8 @@ export type Query = {
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
   customView?: Maybe<CustomView>;
-  customViews: CustomViewsConnection;
-  customViewsSettings: CustomViewsSettings;
+  customViews?: Maybe<CustomViewsConnection>;
+  customViewsSettings?: Maybe<CustomViewsSettings>;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
   dataSource?: Maybe<DataSource>;
@@ -48549,8 +48549,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
   customView?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<QueryCustomViewArgs, 'id'>>;
-  customViews?: Resolver<ResolversTypes['CustomViewsConnection'], ParentType, ContextType, Partial<QueryCustomViewsArgs>>;
-  customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
+  customViews?: Resolver<Maybe<ResolversTypes['CustomViewsConnection']>, ParentType, ContextType, Partial<QueryCustomViewsArgs>>;
+  customViewsSettings?: Resolver<Maybe<ResolversTypes['CustomViewsSettings']>, ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;

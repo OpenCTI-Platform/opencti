@@ -17,12 +17,12 @@ export const useProvideCustomViewsSettingsContext = ({
   data,
 }: { data?: SubTypeQuery$data | null | undefined }) => {
   const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const result = useFragment<CustomViewsSettingsContext_data$key>(
     fragment,
-    data,
+    isCustomViewFeatureEnabled ? data : null,
   );
-  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
-  const isCustomViewsEnabled = Boolean(result?.customViewsSettings.canEntityTypeHaveCustomViews
-    && isCustomViewFeatureEnabled);
+  const isCustomViewsEnabled = isCustomViewFeatureEnabled
+    && Boolean(result?.customViewsSettings?.canEntityTypeHaveCustomViews);
   return { isCustomViewsEnabled };
 };

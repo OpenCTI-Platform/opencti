@@ -10,7 +10,7 @@ export const useCustomViewsData = () => {
     UseCustomViewsRefetchQuery,
     useCustomViews_data$key
   >(customViewsFragment, queryData);
-  const allCustomViews = data?.customViews.edges.map((e) => e.node) ?? [];
+  const allCustomViews = data.customViews?.edges.map((e) => e.node) ?? [];
   const refetchCustomViews = () => refetch({}, { fetchPolicy: 'store-and-network' });
   return { allCustomViews, refetchCustomViews };
 };

@@ -70,10 +70,10 @@ type Query {
         search: String
         orderMode: OrderingMode
         filters: FilterGroup
-    ): CustomViewsConnection! @auth @ff(flags: ["CUSTOM_VIEW"])
+    ): CustomViewsConnection @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
     customViewsSettings(
         entityType: String!
-    ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+    ): CustomViewsSettings @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"], softFail: true)
     customView(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
 }
 

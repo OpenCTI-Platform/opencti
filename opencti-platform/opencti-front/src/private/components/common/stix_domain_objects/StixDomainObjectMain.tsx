@@ -62,19 +62,23 @@ const StixDomainObjectMain = ({
           <Route path="/history" element={pages.history} />
         )}
         {extraRoutes}
-        <Route
-          path="*"
-          element={isCustomViewFeatureEnabled
-            ? (
-                <CustomViewRedirector
-                  entity={entity}
-                  Fallback={<ErrorNotFound />}
-                  indexFallback={<Navigate to="overview" replace />}
-                />
-              )
-            : <ErrorNotFound />
-          }
-        />
+        {isCustomViewFeatureEnabled
+          ? (
+              <Route
+                path="*"
+                element={(
+                  <CustomViewRedirector
+                    entity={entity}
+                    Fallback={<ErrorNotFound />}
+                    indexFallback={<Navigate to="overview" replace />}
+                  />
+                )
+                }
+              />
+            )
+          : <Route path="/" element={<Navigate to="overview" replace />} />
+
+        }
       </Routes>
     </>
   );
