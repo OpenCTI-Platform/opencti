@@ -106,6 +106,18 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
     .map((n) => n?.node?.to?.name))
     .join(', ');
 
+  const resolveEmbeddedImageUrl = (url: string) => {
+    if (!url) {
+      return null;
+    }
+    const normalizedUrl = url.startsWith('/') ? url.slice(1) : url;
+    if (!normalizedUrl.startsWith('embedded/')) {
+      return url;
+    }
+    const normalizedCardLink = cardLink.endsWith('/') ? cardLink.slice(0, -1) : cardLink;
+    return `${normalizedCardLink}/${normalizedUrl}`;
+  };
+
   const Info = (props: { title: string; value: string }) => (
     <Stack direction="row" gap={1} alignItems="center">
       <Typography
@@ -182,6 +194,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             removeLinks={true}
             removeLineBreaks={true}
             limit={260}
+            resolveImageUrl={resolveEmbeddedImageUrl}
           />
         </div>
         <div style={{ paddingTop: 12 }}>
