@@ -75,52 +75,57 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] },
   };
   const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
+  console.log('nb attack patterns', allAttackPatterns.length);
   const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
   const allKillChainPhases = await fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
+  console.log('nb kcp', allKillChainPhases.length);
   const subTechniquesRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
+  console.log('nb rels', subTechniquesRelations.length);
+
+  const start = Date.now();
   for (let index = 0; index < allKillChainPhases.length; index += 1) {
     const killChainPhase = allKillChainPhases[index];
-    const phaseAttackPatterns = allAttackPatterns
-      .filter((a) => {
-        // filter sub attack patterns
-        const isSub = subTechniquesRelations.some((s) => s.fromId === a.id);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return !isSub && a[RELATION_KILL_CHAIN_PHASE] && a[RELATION_KILL_CHAIN_PHASE].includes(killChainPhase.id);
-      })
-      .map((attackPattern) => {
-        const subAttackPatterns: { attack_pattern_id: string; name: string; description?: string }[] = [];
-        let subAttackPatternsSearchText: string = '';
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        if (attackPattern[RELATION_SUBTECHNIQUE_OF]) {
-          const subAttackPatternsFromRelation = subTechniquesRelations.filter((s) => s.toId === attackPattern.id);
-          if (subAttackPatternsFromRelation.length > 0) {
-            subAttackPatternsFromRelation.forEach((s) => {
-              const subAttackPattern = allAttackPatternsById.get(s.fromId);
-              if (subAttackPattern) {
-                subAttackPatterns.push({
-                  attack_pattern_id: subAttackPattern.id,
-                  name: subAttackPattern.name,
-                  description: subAttackPattern.description,
-                });
-                subAttackPatternsSearchText += `${subAttackPattern.x_mitre_id} ${subAttackPattern.name} ${subAttackPattern.description} | `;
-              }
-            });
+    const phaseAttackPatterns = allAttackPatterns.flatMap((attackPattern) => {
+      // filter sub attack patterns
+      const isSubAttackPattern = subTechniquesRelations.some((s) => s.fromId === attackPattern.id);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const isPartOfKCP = (attackPattern[RELATION_KILL_CHAIN_PHASE] ?? []).includes(killChainPhase.id);
+      if (isSubAttackPattern || !isPartOfKCP) {
+        return [];
+      }
+
+      const subAttackPatterns: { attack_pattern_id: string; name: string; description?: string }[] = [];
+      let subAttackPatternsSearchText: string = '';
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (attackPattern[RELATION_SUBTECHNIQUE_OF]) {
+        subTechniquesRelations.forEach((s) => {
+          if (s.toId === attackPattern.id) {
+            const subAttackPattern = allAttackPatternsById.get(s.fromId);
+            if (subAttackPattern) {
+              subAttackPatterns.push({
+                attack_pattern_id: subAttackPattern.id,
+                name: subAttackPattern.name,
+                description: subAttackPattern.description,
+              });
+              subAttackPatternsSearchText += `${subAttackPattern.x_mitre_id} ${subAttackPattern.name} ${subAttackPattern.description} | `;
+            }
           }
-        }
-        return {
-          attack_pattern_id: attackPattern.id,
-          name: attackPattern.name,
-          description: attackPattern.description,
-          x_mitre_id: attackPattern.x_mitre_id,
-          subAttackPatterns,
-          subAttackPatternsSearchText,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          killChainPhasesIds: [...attackPattern[RELATION_KILL_CHAIN_PHASE]],
-        };
-      });
+        });
+      }
+      return {
+        attack_pattern_id: attackPattern.id,
+        name: attackPattern.name,
+        description: attackPattern.description,
+        x_mitre_id: attackPattern.x_mitre_id,
+        subAttackPatterns,
+        subAttackPatternsSearchText,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        killChainPhasesIds: [...attackPattern[RELATION_KILL_CHAIN_PHASE]],
+      };
+    });
     if (phaseAttackPatterns.length > 0) {
       attackPatternsOfPhases.push({
         kill_chain_id: killChainPhase.id,
@@ -131,5 +136,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
       });
     }
   }
+  const tmp = Date.now();
+  console.log('time to process', tmp - start);
   return { attackPatternsOfPhases };
 };
