@@ -251,18 +251,21 @@ export const itemColor = (
   type: string | null | undefined,
   reversed: boolean = false,
 ): string => {
-  const family = type ? ENTITY_TYPE_TO_FAMILY[type] : null;
+  const normalizedType = (type === 'Dynamic from context' || type === 'Dynamic from draft')
+    ? 'Dynamic options'
+    : type;
+  const family = normalizedType ? ENTITY_TYPE_TO_FAMILY[normalizedType] : null;
 
   // SCO colors are generated based on their type to differentiate them
-  if (type && family === 'observables') {
-    return stringToColour(type);
+  if (normalizedType && family === 'observables') {
+    return stringToColour(normalizedType);
   }
 
   if (family) {
     return COLOR_FAMILIES[family];
   }
 
-  return stringToColour(type, reversed);
+  return stringToColour(normalizedType, reversed);
 };
 
 export const hexToRGB = (hex?: string, transp: number = 0.1) => {

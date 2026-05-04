@@ -226,7 +226,7 @@ describe('formSubmit', () => {
     );
   });
 
-  it('should resolve dynamic authorized members logic (CREATORS) with groups restriction', async () => {
+  it('should ignore groups restriction for dynamic authorized members logic (CREATORS)', async () => {
     const input = {
       formId: 'form-1',
       values: JSON.stringify({ name: 'Test Individual' }),
@@ -259,7 +259,7 @@ describe('formSubmit', () => {
           expect.objectContaining({
             id: mockUser.id,
             access_right: 'edit',
-            groups_restriction_ids: ['group-creators'],
+            groups_restriction_ids: undefined,
           }),
         ]),
       }),

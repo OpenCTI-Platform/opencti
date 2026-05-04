@@ -997,6 +997,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       label={t_i18n('Authorized Members')}
                       withDynamicKeys={true}
                       allowDynamicGroupsRestriction={true}
+                      dynamicContextTypeLabel="Dynamic from draft"
+                      dynamicAuthorOrgLabel="Draft author (org)"
+                      includeBundleOrganizationDynamicOption={false}
+                      dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
                     />
                   </div>
                 )}

@@ -52,6 +52,11 @@ interface AuthorizedMembersFieldProps
   adminDefault?: boolean;
   withDynamicKeys?: boolean;
   allowDynamicGroupsRestriction?: boolean;
+  dynamicContextTypeLabel?: string;
+  dynamicBundleTypeLabel?: string;
+  dynamicAuthorOrgLabel?: string;
+  includeBundleOrganizationDynamicOption?: boolean;
+  dynamicGroupsRestrictionSupportedValues?: string[];
   isCanUseEnable?: boolean;
   customInfoMessage?: string;
   style?: CSSProperties;
@@ -97,6 +102,11 @@ const AuthorizedMembersField = ({
   adminDefault = false,
   withDynamicKeys = false,
   allowDynamicGroupsRestriction = false,
+  dynamicContextTypeLabel = 'Dynamic from context',
+  dynamicBundleTypeLabel = 'Dynamic from bundle',
+  dynamicAuthorOrgLabel = 'Author (organization)',
+  includeBundleOrganizationDynamicOption = true,
+  dynamicGroupsRestrictionSupportedValues = DYNAMIC_GROUPS_RESTRICTION_SUPPORTED,
   isCanUseEnable = false,
   customInfoMessage,
   style,
@@ -371,7 +381,7 @@ const AuthorizedMembersField = ({
             if (!allowDynamicGroupsRestriction) {
               return false;
             }
-            return DYNAMIC_GROUPS_RESTRICTION_SUPPORTED.includes(values.newAccessMember.value);
+            return dynamicGroupsRestrictionSupportedValues.includes(values.newAccessMember.value);
           })();
 
           return (
@@ -426,6 +436,10 @@ const AuthorizedMembersField = ({
                         name="newAccessMember"
                         disabled={!values.applyAccesses}
                         withDynamicKeys={withDynamicKeys}
+                        dynamicContextTypeLabel={dynamicContextTypeLabel}
+                        dynamicBundleTypeLabel={dynamicBundleTypeLabel}
+                        dynamicAuthorOrgLabel={dynamicAuthorOrgLabel}
+                        includeBundleOrganizationDynamicOption={includeBundleOrganizationDynamicOption}
                       />
                       {value?.find(
                         (a) => a.value === values.newAccessMember?.value,

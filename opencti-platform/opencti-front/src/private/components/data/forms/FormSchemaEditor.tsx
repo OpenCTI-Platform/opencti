@@ -1943,8 +1943,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                               formData.draftDefaults?.authorizedMembers?.defaults || [],
                               {
                                 creatorsLabel: t_i18n('Creators'),
-                                authorOrgLabel: t_i18n('Author (organization)'),
-                                dynamicOptionsLabel: t_i18n('Dynamic options'),
+                                authorOrgLabel: t_i18n('Draft author (org)'),
+                                dynamicOptionsLabel: t_i18n('Dynamic from draft'),
                               },
                             ),
                           }}
@@ -1957,6 +1957,10 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                                 component={AuthorizedMembersField}
                                 withDynamicKeys={true}
                                 allowDynamicGroupsRestriction={true}
+                                dynamicContextTypeLabel="Dynamic from draft"
+                                dynamicAuthorOrgLabel="Draft author (org)"
+                                includeBundleOrganizationDynamicOption={false}
+                                dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
                               />
                               <AuthorizedMembersSync
                                 onChange={(vals) => {
