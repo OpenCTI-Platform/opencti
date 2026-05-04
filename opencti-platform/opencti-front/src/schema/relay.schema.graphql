@@ -9752,7 +9752,7 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
-  customViews(entityType: String, first: Int, after: ID, orderBy: CustomViewsOrdering, search: String, orderMode: OrderingMode): CustomViewsConnection!
+  customViews(entityType: String, first: Int, after: ID, orderBy: CustomViewsOrdering, search: String, orderMode: OrderingMode, filters: FilterGroup): CustomViewsConnection!
   customViewsSettings(entityType: String!): CustomViewsSettings!
   customView(id: ID!): CustomView
   taxiiCollection(id: String!): TaxiiCollection
@@ -16136,6 +16136,7 @@ type CustomView implements InternalObject & BasicObject {
   manifest: String
   path: String!
   targetEntityType: String!
+  enabled: Boolean!
   toWidgetExport(widgetId: ID!): String!
 }
 
@@ -16151,6 +16152,7 @@ type CustomViewsConnection {
 
 enum CustomViewsOrdering {
   name
+  enabled
 }
 
 type CustomViewsSettings {
@@ -16163,6 +16165,7 @@ input CustomViewAddInput {
   description: String
   manifest: String
   targetEntityType: String!
+  enabled: Boolean
 }
 
 input CustomViewImportWidgetInput {
@@ -16176,6 +16179,7 @@ input CustomViewDuplicateInput {
   description: String
   manifest: String
   targetEntityType: String!
+  enabled: Boolean
 }
 
 type TaxiiCollection {

@@ -31,6 +31,9 @@ const customViewResolver: Resolvers = {
     targetEntityType: (customView) => {
       return customView.target_entity_type;
     },
+    enabled: (customView) => {
+      return Boolean(customView.enabled);
+    },
     toWidgetExport: (customView, { widgetId }, context) => {
       return exportCustomViewWidget(context, context.user, customView, widgetId);
     },

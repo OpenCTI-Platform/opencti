@@ -2579,6 +2579,7 @@
   "Make this stream public and available to anyone": "このストリームを公開して誰でも利用できるようにする",
   "Make this taxii collection public and available to anyone": "このTaxiiコレクションを公開し、誰でも利用できるようにする",
   "Make this TAXII collection public and available to anyone": "このTAXIIコレクションを公開し、誰でも利用できるようにする。",
+  "Make this view visible to users": "このビューをユーザーに見せる",
   "Malicious": "悪性",
   "Maliciousness": "悪意がある",
   "Malware": "マルウェア",
@@ -4720,6 +4721,8 @@
   "View associated public dashboards": "関連する公開ダッシュボードを見る",
   "View draft": "草案を見る",
   "View full details": "詳細を表示",
+  "View is disabled": "表示は無効",
+  "View is enabled": "表示が有効",
   "View rule": "ルールを見る",
   "View the element": "エレメントを見る",
   "View the item": "アイテムの表示",
@@ -4908,4 +4911,3 @@
   "Zoom in": "ズームイン",
   "Zoom out": "ズームアウト"
 }
-

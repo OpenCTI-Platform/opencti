@@ -6437,6 +6437,7 @@ export type CustomView = BasicObject & InternalObject & {
   __typename?: 'CustomView';
   created_at: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   manifest?: Maybe<Scalars['String']['output']>;
@@ -6458,6 +6459,7 @@ export type CustomViewToWidgetExportArgs = {
 
 export type CustomViewAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
   manifest?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   targetEntityType: Scalars['String']['input'];
@@ -6465,6 +6467,7 @@ export type CustomViewAddInput = {
 
 export type CustomViewDuplicateInput = {
   description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
   manifest?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   targetEntityType: Scalars['String']['input'];
@@ -6488,6 +6491,7 @@ export type CustomViewsEdge = {
 };
 
 export enum CustomViewsOrdering {
+  Enabled = 'enabled',
   Name = 'name'
 }
 
@@ -24950,6 +24954,7 @@ export type QueryCustomViewArgs = {
 export type QueryCustomViewsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   entityType?: InputMaybe<Scalars['String']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<CustomViewsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -42989,6 +42994,7 @@ export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends R
 export type CustomViewResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomView'] = ResolversParentTypes['CustomView']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

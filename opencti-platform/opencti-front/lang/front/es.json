@@ -2579,6 +2579,7 @@
   "Make this stream public and available to anyone": "Haz que esta transmisión sea pública y esté disponible para todos.",
   "Make this taxii collection public and available to anyone": "Hacer esta colección taxii pública y disponible para cualquiera",
   "Make this TAXII collection public and available to anyone": "Hacer pública esta colección TAXII y ponerla a disposición de cualquiera",
+  "Make this view visible to users": "Hacer esta vista visible para los usuarios",
   "Malicious": "Malicioso",
   "Maliciousness": "Maldad",
   "Malware": "Malware",
@@ -4720,6 +4721,8 @@
   "View associated public dashboards": "Ver los cuadros de mando públicos asociados",
   "View draft": "Ver borrador",
   "View full details": "Ver detalles completos",
+  "View is disabled": "Vista desactivada",
+  "View is enabled": "Vista activada",
   "View rule": "Ver regla",
   "View the element": "Ver el elemento",
   "View the item": "Ver el objeto",
@@ -4908,4 +4911,3 @@
   "Zoom in": "Ampliar",
   "Zoom out": "Alejar"
 }
-
