@@ -13,6 +13,7 @@ type CustomView implements InternalObject & BasicObject {
     manifest: String
     path: String! # Derived field, not stored in DB
     targetEntityType: String!
+    enabled: Boolean!
     toWidgetExport(widgetId: ID!): String! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
 
@@ -28,6 +29,7 @@ type CustomViewsConnection {
 
 enum CustomViewsOrdering {
     name
+    enabled
 }
 
 type CustomViewsSettings {
@@ -39,6 +41,7 @@ input CustomViewAddInput {
     description: String
     manifest: String
     targetEntityType: String!
+    enabled: Boolean # Defaults to False
 }
 
 input CustomViewImportWidgetInput {
@@ -51,6 +54,7 @@ input CustomViewDuplicateInput {
     description: String
     manifest: String
     targetEntityType: String!
+    enabled: Boolean # Defaults to False
 }
 
 type Query {
@@ -61,6 +65,7 @@ type Query {
         orderBy: CustomViewsOrdering
         search: String
         orderMode: OrderingMode
+        filters: FilterGroup
     ): CustomViewsConnection! @auth @ff(flags: ["CUSTOM_VIEW"])
     customViewsSettings(
         entityType: String!

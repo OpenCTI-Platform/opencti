@@ -33,7 +33,10 @@ const CustomViewFormDrawer = ({
     values,
     { setSubmitting, resetForm },
   ) => {
-    if (isEdition) return;
+    if (isEdition) {
+      setSubmitting(false);
+      return;
+    }
     commitAddMutation({
       variables: {
         input: {
@@ -58,12 +61,23 @@ const CustomViewFormDrawer = ({
     });
   };
 
-  const handleEditField = (field: string, value: unknown) => {
-    if (!isEdition) return;
+  const handleEditField = (
+    field: string,
+    value: unknown,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
+  ) => {
+    if (!isEdition) {
+      setSubmitting(false);
+      return;
+    }
     const input: { key: string; value: [unknown] } = { key: field, value: [value] };
     commitEditMutation({
       variables: { id: customView.id, input: [input] },
+      onCompleted: () => {
+        setSubmitting(false);
+      },
       onError: () => {
+        setSubmitting(false);
         MESSAGING$.notifyError(t_i18n('Failed to update custom view'));
       },
     });

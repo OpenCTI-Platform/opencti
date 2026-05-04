@@ -72,7 +72,7 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
 
   return (
     <>
-      <Tabs value={currentCustomViewTab}>
+      <Tabs value={currentCustomViewTab || false}>
         {renderCustomViewTab()}
       </Tabs>
       {displayMode === 'dropdown' && (

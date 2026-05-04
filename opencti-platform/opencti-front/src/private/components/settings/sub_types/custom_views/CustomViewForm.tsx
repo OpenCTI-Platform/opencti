@@ -6,6 +6,7 @@ import FormButtonContainer from '../../../../../components/common/form/FormButto
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { Stack } from '@mui/material';
 
 export interface CustomViewFormInputs {
   name: string;
@@ -22,7 +23,11 @@ const DEFAULT_VALUES: CustomViewFormInputs = {
 interface CustomViewFormProps {
   onClose: () => void;
   onSubmit: FormikConfig<CustomViewFormInputs>['onSubmit'];
-  onSubmitField: (name: string, value: unknown) => void;
+  onSubmitField: (
+    name: string,
+    value: unknown,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
+  ) => void;
   values?: CustomViewFormInputs;
   isEdition?: boolean;
 }
@@ -36,14 +41,18 @@ const CustomViewForm = ({
 }: CustomViewFormProps) => {
   const { t_i18n } = useFormatter();
 
-  const validation = Yup.object().shape({
+  const validators = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-  });
+  };
 
-  const handleFieldSubmit = (setSubmitting: (v: boolean) => void) => (name: string, value: unknown) => {
-    onSubmitField(name, value);
-    setSubmitting(false);
+  const validation = Yup.object().shape(validators);
+
+  const handleFieldSubmit = (
+    setSubmitting: (v: boolean) => void,
+  ) => (name: keyof typeof validators, value: unknown) => {
+    setSubmitting(true);
+    onSubmitField(name, validators[name].cast(value), { setSubmitting });
   };
 
   const initialValues = values ?? DEFAULT_VALUES;
@@ -57,44 +66,46 @@ const CustomViewForm = ({
       {({ submitForm, handleReset, isSubmitting, setSubmitting }) => {
         return (
           <Form>
-            <Field
-              autoFocus
-              component={TextField}
-              name="name"
-              label={t_i18n('Name')}
-              fullWidth={true}
-              required
-              onSubmit={handleFieldSubmit(setSubmitting)}
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t_i18n('Description')}
-              style={fieldSpacingContainerStyle}
-              multiline={true}
-              rows="4"
-              onSubmit={handleFieldSubmit(setSubmitting)}
-            />
-            {!isEdition && (
-              <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    handleReset();
-                    onClose();
-                  }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
-                  {t_i18n('Create')}
-                </Button>
-              </FormButtonContainer>
-            )}
+            <Stack gap={1}>
+              <Field
+                autoFocus
+                component={TextField}
+                name="name"
+                label={t_i18n('Name')}
+                fullWidth={true}
+                required
+                onSubmit={handleFieldSubmit(setSubmitting)}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t_i18n('Description')}
+                style={fieldSpacingContainerStyle}
+                multiline={true}
+                rows="4"
+                onSubmit={handleFieldSubmit(setSubmitting)}
+              />
+              {!isEdition && (
+                <FormButtonContainer>
+                  <Button
+                    variant="secondary"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      handleReset();
+                      onClose();
+                    }}
+                  >
+                    {t_i18n('Cancel')}
+                  </Button>
+                  <Button
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                  >
+                    {t_i18n('Create')}
+                  </Button>
+                </FormButtonContainer>
+              )}
+            </Stack>
           </Form>
         );
       }}

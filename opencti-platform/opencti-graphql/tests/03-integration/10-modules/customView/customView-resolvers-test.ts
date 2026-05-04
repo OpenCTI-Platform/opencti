@@ -43,6 +43,7 @@ const READ_ALL_CUSTOM_VIEWS_QUERY = gql`
           created_at
           updated_at
           targetEntityType
+          enabled
         }
       }
     }
@@ -59,6 +60,7 @@ const CREATE_CUSTOM_VIEW_QUERY = gql`
       targetEntityType
       updated_at
       created_at
+      enabled
     }
   }
 `;
@@ -111,6 +113,7 @@ const DUPLICATE_CUSTOM_VIEW_QUERY = gql`
       targetEntityType
       created_at
       updated_at
+      enabled
     }
   }
 `;
@@ -183,6 +186,7 @@ describe('CustomView resolvers', () => {
           created_at: expect.any(Date),
           updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          enabled: true,
         });
         expect(nodes).toContainEqual({
           id: customView2?.id,
@@ -192,6 +196,7 @@ describe('CustomView resolvers', () => {
           created_at: expect.any(Date),
           updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
+          enabled: false,
         });
         // Ordered by name ascending as defined by the query
         // Doesn't contain custom view not part of the whitelist
@@ -262,6 +267,8 @@ describe('CustomView resolvers', () => {
             targetEntityType,
             created_at: expect.any(Date),
             updated_at: expect.any(Date),
+            // Defaults to false when not provided
+            enabled: false,
           });
         });
 
@@ -390,6 +397,8 @@ describe('CustomView resolvers', () => {
             targetEntityType: customView2?.target_entity_type,
             created_at: expect.any(Date),
             updated_at: expect.any(Date),
+            // Defaults to false when not provided
+            enabled: false,
           };
           expect(result.data.customViewDuplicate).toMatchObject(expectedResult);
           expect(result.data.customViewDuplicate.id).not.toBe(customView2?.id);
