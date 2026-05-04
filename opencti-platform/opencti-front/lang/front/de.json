@@ -954,6 +954,8 @@
   "Custom dashboards | Dashboards": "Benutzerdefinierte Dashboards | Dashboards",
   "Custom view": "Benutzerdefinierte Ansicht",
   "Custom view created": "Benutzerdefinierte Ansicht erstellt",
+  "Custom view popover of actions": "Benutzerdefinierte Ansicht Popover von Aktionen",
+  "Custom view successfully deleted": "Benutzerdefinierte Ansicht erfolgreich gelöscht",
   "Custom view updated": "Benutzerdefinierte Ansicht aktualisiert",
   "Custom Views": "Benutzerdefinierte Ansichten",
   "Customization": "Anpassungen",
@@ -1242,6 +1244,7 @@
   "Do you want to delete this CSV Feed?": "Möchten Sie diesen CSV-Feed löschen?",
   "Do you want to delete this CSV ingester?": "Möchten Sie diesen CSV-Importer löschen?",
   "Do you want to delete this CSV mapper?": "Möchten Sie diesen CSV-Mapper löschen?",
+  "Do you want to delete this custom view?": "Möchten Sie diese benutzerdefinierte Ansicht löschen?",
   "Do you want to delete this dashboard?": "Möchten Sie dieses Dashboard löschen?",
   "Do you want to delete this data component?": "Möchten Sie diese Datenkomponente löschen?",
   "Do you want to delete this data source?": "Möchten Sie diese Datenquelle löschen?",
@@ -1420,6 +1423,7 @@
   "Duplicate a form": "Ein Formular duplizieren",
   "Duplicate a JSON feed": "Duplizieren eines JSON-Feeds",
   "Duplicate a JSON mapper": "Duplizieren Sie einen JSON-Mapper",
+  "Duplicate the custom view": "Duplizieren Sie die benutzerdefinierte Ansicht",
   "Duplicate the dashboard": "Duplizieren Sie das Dashboard",
   "Duration": "Dauer",
   "Dynamic filter": "Dynamischer Filter",
@@ -4138,6 +4142,7 @@
   "The connector state has been reset": "Der Zustand des Verbinders wurde zurückgesetzt",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "Die Coverage Result Metric zeigt, wie stark eine bestimmte Entität in die Ausführung des AEV-Szenarios involviert war. Die Coverage kann unvollständig sein, wenn einige Injects nicht ausgeführt wurden, wenn Platzhalter nicht aufgelöst wurden oder wenn die Plattform bestimmte Aktionen nicht unterstützt",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "Die CSV-Datei wurde mit den Parametern der Ansicht erstellt und steht zum Download bereit.",
+  "The custom view has been duplicated. You can manage it": "Die benutzerdefinierte Ansicht wurde dupliziert. Sie können es verwalten",
   "The dashboard has been duplicated. You can manage it": "Das Dashboard wurde dupliziert. Sie können es verwalten",
   "the dedicated page": "der entsprechenden Seite",
   "The default groups are:": "Die Standardgruppen sind:",
@@ -4908,3 +4913,4 @@
   "Zoom in": "Vergrößern",
   "Zoom out": "Verkleinern"
 }
+

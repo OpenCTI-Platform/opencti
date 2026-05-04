@@ -8,6 +8,7 @@ import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalSt
 import type { CustomViewsSettingsDataTablePaginationQuery } from './__generated__/CustomViewsSettingsDataTablePaginationQuery.graphql';
 import type { CustomViewsSettingsDataTable_data$data } from './__generated__/CustomViewsSettingsDataTable_data.graphql';
 import type { CustomViewsSettingsDataTable_node$data } from './__generated__/CustomViewsSettingsDataTable_node.graphql';
+import CustomViewPopover from './CustomViewPopover';
 
 interface CustomViewsSettingsDataTableProps {
   targetType: string;
@@ -18,6 +19,7 @@ const customViewFragment = graphql`
     id
     name
     description
+    ...CustomViewPopover_customView
   }
 `;
 
@@ -55,7 +57,7 @@ const customViewsLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       entityType: $entityType
-    ) @connection(key: "Pagination_customViews") {
+    ) @connection(key: "CustomViewsSettingsDataTable_customViews") {
       edges {
         node {
           id
@@ -88,20 +90,23 @@ const CustomViewsSettingsDataTable = ({
   targetType,
 }: CustomViewsSettingsDataTableProps) => {
   const { t_i18n } = useFormatter();
-  const getCustomViewLink = (entry: CustomViewsSettingsDataTable_node$data) => `/dashboard/settings/customization/entity_types/${targetType}/custom-views/${entry.id}`;
+  const getCustomViewLink = (entry: CustomViewsSettingsDataTable_node$data) => {
+    return `/dashboard/settings/customization/entity_types/${targetType}/custom-views/${entry.id}`;
+  };
   const storageKey = `custom-views-${targetType}`;
 
   const { paginationOptions } = usePaginationLocalStorage<typeof DEFAULT_SORT_CONFIG>(
     storageKey,
     DEFAULT_SORT_CONFIG,
   );
+  const queryPaginationOptions = {
+    entityType: targetType,
+    ...paginationOptions,
+  };
 
   const queryRef = useQueryLoading<CustomViewsSettingsDataTablePaginationQuery>(
     customViewsLinesQuery,
-    {
-      entityType: targetType,
-      ...paginationOptions,
-    },
+    queryPaginationOptions,
   );
 
   if (!queryRef) {
@@ -130,6 +135,7 @@ const CustomViewsSettingsDataTable = ({
       hideSearch={true}
       hideFilters={true}
       disableLineSelection={true}
+      actions={(row) => <CustomViewPopover data={row} paginationOptions={queryPaginationOptions} />}
     />
   );
 };
