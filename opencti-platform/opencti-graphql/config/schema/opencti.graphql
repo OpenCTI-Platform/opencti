@@ -16076,7 +16076,6 @@ type MappedEntity {
 enum InconsistencyCleaningType {
   ALL,
   REF_DUPLICATE_CLEAN,
-  REF_MISSING_REPAIR
 }
 
 type StixCoreObjectEditMutations {

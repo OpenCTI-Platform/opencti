@@ -12536,8 +12536,7 @@ export enum IncidentsOrdering {
 
 export enum InconsistencyCleaningType {
   All = 'ALL',
-  RefDuplicateClean = 'REF_DUPLICATE_CLEAN',
-  RefMissingRepair = 'REF_MISSING_REPAIR'
+  RefDuplicateClean = 'REF_DUPLICATE_CLEAN'
 }
 
 export type IndexedFile = {
