@@ -164,9 +164,23 @@ export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
   );
 };
 
-export const isFilterFormatCorrect = (stringFilters: string): boolean => {
+export const isStringifiedFilterGroupFormatCorrect = (stringFilters: string): boolean => {
   const filters = JSON.parse(stringFilters);
-  return filters.mode && filters.filters && filters.filterGroups;
+  return isFilterGroupFormatCorrect(filters);
+};
+
+/**
+ * Checks whether a given value has the correct structure of a FilterGroup,
+ * i.e. it is an object with a valid mode ('and' | 'or'), and arrays for filters and filterGroups.
+ */
+export const isFilterGroupFormatCorrect = (value: unknown): boolean => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const objectValue = value as { mode?: unknown; filters?: unknown; filterGroups?: unknown };
+  return (objectValue.mode === 'or' || objectValue.mode === 'and')
+    && Array.isArray(objectValue.filters)
+    && Array.isArray(objectValue.filterGroups);
 };
 
 export const isUniqFilter = (key: string, filterKeysSchema: Map<string, Map<string, FilterDefinition>>) => {
@@ -198,7 +212,8 @@ export const findFilterFromKey = (
 ) => {
   for (const filter of filters) {
     if (filter.key === key) {
-      if (filter.operator === operator) {
+      const filterOperator = filter.operator || 'eq';
+      if (filterOperator === operator) {
         return filter;
       }
     }

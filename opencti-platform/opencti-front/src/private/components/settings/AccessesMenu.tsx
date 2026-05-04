@@ -17,9 +17,9 @@ import useGranted, { SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETDISSEMI
 const AccessesMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
     {
-      path: '/dashboard/settings/accesses/roles',
-      label: 'Roles',
-      icon: <SecurityOutlined fontSize="medium" />,
+      path: '/dashboard/settings/accesses/users',
+      label: 'Users',
+      icon: <PermIdentityOutlined fontSize="medium" />,
     },
     {
       path: '/dashboard/settings/accesses/groups',
@@ -27,14 +27,14 @@ const AccessesMenu: FunctionComponent = () => {
       icon: <AccountGroupOutline fontSize="medium" />,
     },
     {
-      path: '/dashboard/settings/accesses/users',
-      label: 'Users',
-      icon: <PermIdentityOutlined fontSize="medium" />,
-    },
-    {
       path: '/dashboard/settings/accesses/organizations',
       label: 'Organizations',
       icon: <AccountBalanceOutlined fontSize="medium" />,
+    },
+    {
+      path: '/dashboard/settings/accesses/roles',
+      label: 'Roles',
+      icon: <SecurityOutlined fontSize="medium" />,
     },
     {
       path: '/dashboard/settings/accesses/sessions',
@@ -102,14 +102,14 @@ const AccessesMenu: FunctionComponent = () => {
     menuEntries.push(
       ...[
         {
-          path: '/dashboard/settings/accesses/organizations',
-          label: 'Organizations',
-          icon: <AccountBalanceOutlined fontSize="medium" />,
-        },
-        {
           path: '/dashboard/settings/accesses/users',
           label: 'Users',
           icon: <PermIdentityOutlined fontSize="medium" />,
+        },
+        {
+          path: '/dashboard/settings/accesses/organizations',
+          label: 'Organizations',
+          icon: <AccountBalanceOutlined fontSize="medium" />,
         },
       ],
     );

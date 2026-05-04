@@ -1,10 +1,11 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { isEmpty } from 'ramda';
+import { useSearchParams } from 'react-router-dom';
 import SearchBulkUnknownEntities from './SearchBulkUnknownEntities';
 import { useFormatter } from '../../components/i18n';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -17,6 +18,7 @@ import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 const SearchBulkContainer = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   setTitle(t_i18n('Bulk Search'));
 
@@ -28,14 +30,36 @@ const SearchBulkContainer = () => {
 
   const setValuesAfterDebounce = useDebounceCallback(setValues, 500); // set values with a 500ms debounce
 
-  const handleChangeTab = (value: number) => {
-    setCurrentTab(value);
-  };
   const bulkTextToValues = (text: string) => {
     return text
       .split('\n')
       .filter((o) => o.length > 1)
       .map((val) => val.trim()) ?? [];
+  };
+
+  // Pre-fill from ?q= query parameter (e.g. when coming from the top bar search)
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) {
+      // Normalize: split commas/semicolons into lines (same as handleChangeTextField)
+      const text = q
+        .split('\n')
+        .map((o) => o
+          .split(',')
+          .map((p) => p.split(';'))
+          .flat())
+        .flat()
+        .join('\n');
+      setTextFieldValue(text);
+      setValues(bulkTextToValues(text));
+      // Clean up the query param so it doesn't persist on refresh
+      searchParams.delete('q');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams]);
+
+  const handleChangeTab = (value: number) => {
+    setCurrentTab(value);
   };
 
   const handleChangeTextField = (event: ChangeEvent<HTMLInputElement>) => {

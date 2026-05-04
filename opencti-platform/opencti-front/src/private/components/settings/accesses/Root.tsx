@@ -38,7 +38,7 @@ const AccessesRedirect = () => {
   const hasSetAuth = useGranted([SETTINGS_SETAUTH]);
 
   if (hasSetAccesses) {
-    return <Navigate to="/dashboard/settings/accesses/roles" />;
+    return <Navigate to="/dashboard/settings/accesses/users" />;
   }
   if (hasVirtualOrgAdmin) {
     return <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />;

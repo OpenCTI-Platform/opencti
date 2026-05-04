@@ -126,10 +126,14 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
         await processStreamResult([], callback, opts.withInternal);
       }
       const bufferTime = opts.bufferTime ?? 50;
-      if (bufferTime > 0) {
+      if (bufferTime > 0 && streamListening) {
         await wait(bufferTime);
       }
     } catch (err) {
+      // During shutdown, connection errors are expected (client is disconnected to cancel blocking XREAD)
+      if (!streamListening) {
+        return false;
+      }
       logApp.error('Redis stream consume fail', { cause: err, provider });
       if (opts.autoReconnect) {
         await waitInSec(5);
@@ -172,10 +176,14 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     shutdown: async () => {
       logApp.info('[STREAM] Shutdown stream processor', { provider });
       streamListening = false;
+      // Disconnect the Redis client to immediately cancel any blocking XREAD
+      if (client) {
+        client.disconnect();
+      }
       if (processingLoopPromise) {
         await processingLoopPromise;
       }
-      logApp.info('[STREAM] Stream processor current promise terminated');
+      logApp.info('[STREAM] Stream processor current promise terminated', { provider });
     },
   };
 };

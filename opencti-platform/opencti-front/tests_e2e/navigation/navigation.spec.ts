@@ -1663,11 +1663,11 @@ const navigateSettings = async (page: Page) => {
 const navigateSecurity = async (page: Page) => {
   const securityPage = new SettingsSecurityPage(page);
   await securityPage.navigateFromMenu();
-  await expect(securityPage.getSecurityPages('roles-settings-page')).toBeVisible();
+  await expect(securityPage.getSecurityPages('users-settings-page')).toBeVisible();
   await securityPage.navigateRightMenu('Groups');
   await expect(securityPage.getSecurityPages('groups-settings-page')).toBeVisible();
-  await securityPage.navigateRightMenu('Users');
-  await expect(securityPage.getSecurityPages('users-settings-page')).toBeVisible();
+  await securityPage.navigateRightMenu('Roles');
+  await expect(securityPage.getSecurityPages('roles-settings-page')).toBeVisible();
   await securityPage.navigateRightMenu('Organizations');
   await expect(securityPage.getSecurityPages('orga-settings-page')).toBeVisible();
   await securityPage.navigateRightMenu('Sessions');

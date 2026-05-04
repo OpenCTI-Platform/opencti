@@ -125,7 +125,7 @@ type DraftWorkspaceEdit {
 }
 
 type Mutation {
-    draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth(for: [KNOWLEDGE])
+    draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit @auth(for: [KNOWLEDGE_KNUPDATE])
     draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE])
     draftWorkspaceValidate(id: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])

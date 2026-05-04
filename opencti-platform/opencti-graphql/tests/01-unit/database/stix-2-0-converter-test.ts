@@ -14,6 +14,7 @@ import { EXPECTED_RFI, RFI_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/c
 import { EXPECTED_TOOL, TOOL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/arsenal/tool';
 import { EXPECTED_VULNERABILITY, INSTANCE_VULNERABILITY } from './stix-2-0-converter-fixtures/SDOs/arsenal/vulnerability';
 import { CHANNEL_INSTANCE, EXPECTED_CHANNEL } from './stix-2-0-converter-fixtures/SDOs/arsenal/channel';
+import { MALWARE_ANALYSIS_INSTANCE, EXPECTED_MALWARE_ANALYSIS } from './stix-2-0-converter-fixtures/SDOs/arsenal/malware-analysis';
 import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/grouping-converter';
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
 import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
@@ -46,8 +47,12 @@ import {
   convertInPirRelToStix,
   convertIdentityToStix,
   convertLocationToStix,
-  convertInfrastructureToStix,
   convertStoreToStix_2_0,
+  convertMarkingDefinitionToStix,
+  convertLabelToStix,
+  convertKillChainPhaseToStix,
+  convertExternalReferenceToStix,
+  convertInfrastructureToStix,
 } from '../../../src/database/stix-2-0-converter';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -85,8 +90,8 @@ import { POSITION_INSTANCE, EXPECTED_POSITION } from './stix-2-0-converter-fixtu
 import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './stix-2-0-converter-fixtures/SDOs/locations/administrative-area';
 import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/administrativeArea/administrativeArea-converter';
 import { convertIndicatorToStix_2_0 } from '../../../src/modules/indicator/indicator-converter';
+import { convertMalwareAnalysisToStix_2_0 } from '../../../src/modules/malwareAnalysis/malwareAnalysis-converter';
 import { INDICATOR_INSTANCE, EXPECTED_INDICATOR } from './stix-2-0-converter-fixtures/SDOs/observations/indicator';
-import { INFRASTRUCTURE_INSTANCE, EXPECTED_INFRASTRUCTURE } from './stix-2-0-converter-fixtures/SDOs/observations/infrastructure';
 import { IPV4_INSTANCE, EXPECTED_IPV4 } from './stix-2-0-converter-fixtures/SCOs/ipv4-addr';
 import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './stix-2-0-converter-fixtures/SCOs/domain-name';
 import { URL_INSTANCE, EXPECTED_URL } from './stix-2-0-converter-fixtures/SCOs/url';
@@ -170,6 +175,16 @@ import { AI_PROMPT_INSTANCE, EXPECTED_AI_PROMPT } from './stix-2-0-converter-fix
 import { ICCID_INSTANCE, EXPECTED_ICCID } from './stix-2-0-converter-fixtures/SCOs/iccid';
 import { IMSI_INSTANCE, EXPECTED_IMSI } from './stix-2-0-converter-fixtures/SCOs/imsi';
 import { EMAIL_MIME_PART_INSTANCE, EXPECTED_EMAIL_MIME_PART } from './stix-2-0-converter-fixtures/SCOs/email-mime-part';
+import {
+  MARKING_DEFINITION_INSTANCE,
+  EXPECTED_MARKING_DEFINITION,
+  PAP_MARKING_DEFINITION_INSTANCE,
+  EXPECTED_PAP_MARKING_DEFINITION,
+} from './stix-2-0-converter-fixtures/SMOs/marking-definition';
+import { LABEL_INSTANCE, EXPECTED_LABEL } from './stix-2-0-converter-fixtures/SMOs/label';
+import { KILL_CHAIN_PHASE_INSTANCE, EXPECTED_KILL_CHAIN_PHASE } from './stix-2-0-converter-fixtures/SMOs/kill-chain-phase';
+import { EXTERNAL_REFERENCE_INSTANCE, EXPECTED_EXTERNAL_REFERENCE } from './stix-2-0-converter-fixtures/SMOs/external-reference';
+import { EXPECTED_INFRASTRUCTURE, INFRASTRUCTURE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/observations/infrastructure';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -188,6 +203,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Vulnerability', async () => {
     const result = convertVulnerabilityToStix(INSTANCE_VULNERABILITY);
     expect(result).toEqual(EXPECTED_VULNERABILITY);
+  });
+  it('should convert Malware Analysis', async () => {
+    const result = convertMalwareAnalysisToStix_2_0(MALWARE_ANALYSIS_INSTANCE as any);
+    expect(result).toEqual(EXPECTED_MALWARE_ANALYSIS);
   });
   it('should convert Indicator', async () => {
     const result = convertIndicatorToStix_2_0(INDICATOR_INSTANCE);
@@ -488,9 +507,31 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
     expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);
   });
+  // SMOs
+  it('should convert Marking Definition', () => {
+    const result = convertMarkingDefinitionToStix(MARKING_DEFINITION_INSTANCE);
+    expect(result).toEqual(EXPECTED_MARKING_DEFINITION);
+  });
+  it('should convert Marking Definition (non-TLP, e.g. PAP)', () => {
+    const result = convertMarkingDefinitionToStix(PAP_MARKING_DEFINITION_INSTANCE);
+    expect(result).toEqual(EXPECTED_PAP_MARKING_DEFINITION);
+  });
+  it('should convert Label', () => {
+    const result = convertLabelToStix(LABEL_INSTANCE);
+    expect(result).toEqual(EXPECTED_LABEL);
+  });
+  it('should convert Kill Chain Phase', () => {
+    const result = convertKillChainPhaseToStix(KILL_CHAIN_PHASE_INSTANCE);
+    expect(result).toEqual(EXPECTED_KILL_CHAIN_PHASE);
+  });
+  it('should convert External Reference', () => {
+    const result = convertExternalReferenceToStix(EXTERNAL_REFERENCE_INSTANCE);
+    expect(result).toEqual(EXPECTED_EXTERNAL_REFERENCE);
+  });
 });
 
-describe('Stix 2.0 opencti converter - SRO dispatch via convertStoreToStix_2_0', () => {
+describe('Stix 2.0 opencti converter - dispatch via convertStoreToStix_2_0', () => {
+  // SROs
   it('should dispatch StixCoreRelationship', () => {
     const result = convertStoreToStix_2_0(RELATION_INSTANCE);
     expect(result.type).toBe('relationship');
@@ -510,5 +551,54 @@ describe('Stix 2.0 opencti converter - SRO dispatch via convertStoreToStix_2_0',
     expect((result as any).relationship_type).toBe('in-pir');
     expect((result as any).source_ref).toBe('malware--b1c2d3e4-f5a6-7890-bcde-f01234567890');
     expect((result as any).target_ref).toBe('identity--c2d3e4f5-a6b7-8901-cdef-123456789012');
+  });
+  // SDO
+  it('should dispatch Malware (SDO)', () => {
+    const result = convertStoreToStix_2_0(MALWARE_INSTANCE);
+    expect(result.type).toBe('malware');
+    expect((result as any).name).toBe('Malware Stix 2.0');
+    expect(result.spec_version).toBe('2.0');
+  });
+  // SCO
+  it('should dispatch IPv4 Address (SCO)', () => {
+    const result = convertStoreToStix_2_0(IPV4_INSTANCE);
+    expect(result.type).toBe('ipv4-addr');
+    expect(result.spec_version).toBe('2.0');
+  });
+  // SMOs
+  it('should dispatch Marking Definition (SMO)', () => {
+    const result = convertStoreToStix_2_0(MARKING_DEFINITION_INSTANCE);
+    expect(result.type).toBe('marking-definition');
+    expect((result as any).definition_type).toBe('tlp');
+    expect((result as any).name).toBe('TLP:AMBER+STRICT');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch Label (SMO)', () => {
+    const result = convertStoreToStix_2_0(LABEL_INSTANCE);
+    expect(result.type).toBe('label');
+    expect((result as any).value).toBe('small');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch Kill Chain Phase (SMO)', () => {
+    const result = convertStoreToStix_2_0(KILL_CHAIN_PHASE_INSTANCE);
+    expect(result.type).toBe('kill-chain-phase');
+    expect((result as any).kill_chain_name).toBe('mitre-pre-attack');
+    expect((result as any).phase_name).toBe('launch');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch External Reference (SMO)', () => {
+    const result = convertStoreToStix_2_0(EXTERNAL_REFERENCE_INSTANCE);
+    expect(result.type).toBe('external-reference');
+    expect((result as any).source_name).toBe('20th January – Threat Intelligence Report');
+    expect(result.spec_version).toBe('2.0');
+  });
+  // Error cases
+  it('should throw when standard_id is missing', () => {
+    const invalidInstance = { entity_type: 'Malware' } as any;
+    expect(() => convertStoreToStix_2_0(invalidInstance)).toThrow();
+  });
+  it('should throw when entity_type is missing', () => {
+    const invalidInstance = { standard_id: 'malware--some-id' } as any;
+    expect(() => convertStoreToStix_2_0(invalidInstance)).toThrow();
   });
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { useParams } from 'react-router-dom';
@@ -21,6 +22,7 @@ import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import Label from '../../../../components/common/label/Label';
+import FilterIconButton from 'src/components/FilterIconButton';
 
 const decayRuleQuery = graphql`
   query DecayRuleQuery($id: String!) {
@@ -43,7 +45,7 @@ const decayRuleFragment = graphql`
     decay_pound
     decay_points
     decay_revoke_score
-    decay_observable_types
+    decay_filters
     active
     order
     decaySettingsChartData {
@@ -127,14 +129,20 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   </Tooltip>
                 )}
                 >
-                  {t_i18n('Indicator observable types')}
+                  {t_i18n('Decay indicator filter')}
                 </Label>
-                <FieldOrEmpty source={decayRule.decay_observable_types}>
-                  <span>
-                    {decayRule.decay_observable_types
-                      ?.map((option) => t_i18n(`entity_${option}`))
-                      .join(', ')}
-                  </span>
+                <FieldOrEmpty source={decayRule.decay_filters}>
+                  <Box
+                    sx={{
+                      '& > div': {
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                      },
+                    }}
+                  >
+                    <FilterIconButton filters={JSON.parse(decayRule.decay_filters)} />
+                  </Box>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>

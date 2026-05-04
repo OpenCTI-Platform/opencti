@@ -1,5 +1,4 @@
 import IconButton from '@common/button/IconButton';
-import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
 import { alpha, Badge, Stack } from '@mui/material';
@@ -20,9 +19,7 @@ import SearchInput from '../../../components/SearchInput';
 import type { Theme } from '../../../components/Theme';
 import UploadImport from '../../../components/UploadImport';
 import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
-import { RelayError } from '../../../relay/relayTypes';
 import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -37,6 +34,7 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
+import { useAINLQ } from '../common/ai/AINLQ';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -71,15 +69,6 @@ const topBarQuery = graphql`
   }
 `;
 
-const topBarAskAINLQMutation = graphql`
-  mutation TopBarAskAINLQMutation($search: String!) {
-    aiNLQ(search: $search) {
-      filters
-      notResolvedValues
-    }
-  }
-`;
-
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
@@ -101,8 +90,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
-  const [isNLQLoading, setIsNLQLoading] = useState(false);
-  const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
 
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
@@ -145,6 +132,26 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
 
+  const { search: nlqSearch, isLoading: isNLQLoading } = useAINLQ({
+    onFiltersResolved: (keyword, filters, notResolvedValues) => {
+      let hasNonEmptyFilters = false;
+      if (filters) {
+        try {
+          hasNonEmptyFilters = isFilterGroupNotEmpty(JSON.parse(filters));
+        } catch {
+          hasNonEmptyFilters = false;
+        }
+      }
+      if (notResolvedValues && notResolvedValues.length > 0) {
+        MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
+      } else if (!hasNonEmptyFilters) {
+        MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
+      }
+      handleSearchByFilter(keyword, 'nlq', navigate, filters);
+    },
+    onError: (msg) => MESSAGING$.notifyError(msg),
+  });
+
   const handleOpenMenu = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
@@ -155,30 +162,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setMenuOpen({ open: false, anchorEl: null });
   };
 
-  const handleSearch = (searchKeyword: string, askAI = false) => {
+  const handleSearch = (searchKeyword: string, askAI = false, agentSlug?: string) => {
     if (askAI && isEnterpriseEdition) {
-      setIsNLQLoading(true);
-      commitMutationNLQ({
-        variables: {
-          search: searchKeyword,
-        },
-        onCompleted: (response: TopBarAskAINLQMutation$data) => {
-          setIsNLQLoading(false);
-          const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
-          const filters = response.aiNLQ?.filters;
-          if (notResolvedValues.length > 0) {
-            MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
-          } else if (!filters || !isFilterGroupNotEmpty(JSON.parse(filters))) {
-            MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
-          }
-          handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
-        },
-        onError: (error: Error) => {
-          setIsNLQLoading(false);
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
-        },
-      });
+      nlqSearch(searchKeyword, agentSlug);
     } else {
       handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
     }

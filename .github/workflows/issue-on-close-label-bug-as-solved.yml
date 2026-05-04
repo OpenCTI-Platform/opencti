@@ -1,0 +1,52 @@
+name: Label completed bugs as solved
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  label-bug-as-solved:
+    runs-on: ubuntu-latest
+    if: github.event.issue.state_reason == 'completed'
+    permissions:
+      issues: write
+
+    steps:
+      - name: Label bug as solved
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const issueTypeName = (issue.type?.name ?? '').toLowerCase();
+            const labelNames    = (issue.labels ?? []).map(l => l.name.toLowerCase());
+            const isBug =
+              issueTypeName === 'bug' ||
+              labelNames.includes('bug');
+            
+            if (isBug) {
+              const labelName = 'solved';
+
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName
+                });
+              } catch (error) {
+                if (error.status === 404) {
+                  console.error(
+                    `Label "${labelName}" does not exist. Please create it in the repository before using this workflow.`
+                  );
+                  return;
+                }
+
+                throw error;
+              }
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [labelName]
+              });
+            }

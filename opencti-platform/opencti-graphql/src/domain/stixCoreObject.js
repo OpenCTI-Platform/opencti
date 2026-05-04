@@ -490,6 +490,7 @@ export const stixCoreObjectsDistributionByEntity = async (context, user, args) =
     filterGroups: [],
   } } = args;
   let finalFilters = filters;
+  const objectIds = Array.isArray(objectId) ? objectId : [objectId];
   // Here, we need to force regardingOf ID = objectID
   // Check if filter is already present and replace id
   if (findFiltersFromKey(filters.filters ?? [], INSTANCE_REGARDING_OF).length > 0) {
@@ -499,14 +500,14 @@ export const stixCoreObjectsDistributionByEntity = async (context, user, args) =
         ...n,
         values: [
           ...n.values.filter((i) => i.key !== 'id'),
-          { key: 'id', values: [objectId] },
+          { key: 'id', values: objectIds },
         ],
       } : n)),
     };
   // If not present, adding it
   } else {
     finalFilters = addFilter(filters, INSTANCE_REGARDING_OF, [
-      { key: 'id', values: [objectId] },
+      { key: 'id', values: objectIds },
       { key: 'type', values: [ABSTRACT_STIX_CORE_RELATIONSHIP] },
     ]);
   }

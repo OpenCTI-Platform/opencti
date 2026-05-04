@@ -122,9 +122,9 @@ export const buildPublicHelmetParameters = () => {
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false,
     contentSecurityPolicy: {
-      useDefaults: false,
+      useDefaults: true,
       directives: {
-        defaultSrc: ["'self'"],
+        defaultSrc: ["'none'"],
         scriptSrc: buildScriptSrc(),
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrcAttr: ["'none'"],
@@ -150,9 +150,9 @@ export const buildDefaultHelmetParameters = () => {
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false,
     contentSecurityPolicy: {
-      useDefaults: false,
+      useDefaults: true,
       directives: {
-        defaultSrc: ["'self'"],
+        defaultSrc: ["'none'"],
         scriptSrc: buildScriptSrc(),
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrcAttr: ["'none'"],

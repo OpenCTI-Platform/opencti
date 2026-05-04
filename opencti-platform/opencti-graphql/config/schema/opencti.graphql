@@ -3868,7 +3868,7 @@ input NoteAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   attribute_abstract: String
-  content: String! @constraint(minLength: 2)
+  content: String! @constraint(minLength: 2, format: "not-blank")
   authors: [String]
   note_types: [String]
   likelihood: Int

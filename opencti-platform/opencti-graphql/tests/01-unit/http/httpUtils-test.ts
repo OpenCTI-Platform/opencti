@@ -76,7 +76,7 @@ describe('buildHelmetParameters coverage', () => {
       contentSecurityPolicy: {
         directives: {
           connectSrc: ["'self'", 'wss://*', 'data:', 'https://*'],
-          defaultSrc: ["'self'"],
+          defaultSrc: ["'none'"],
           fontSrc: ["'self'", 'data:'],
           frameAncestors: "'none'",
           frameSrc: ["'self'"],
@@ -87,7 +87,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
         },
-        useDefaults: false,
+        useDefaults: true,
       },
       crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: false,
@@ -103,7 +103,7 @@ describe('buildHelmetParameters coverage', () => {
       contentSecurityPolicy: {
         directives: {
           connectSrc: ["'self'", 'wss://*', 'data:', 'https://*'],
-          defaultSrc: ["'self'"],
+          defaultSrc: ["'none'"],
           fontSrc: ["'self'", 'data:'],
           frameAncestors: "'none'",
           imgSrc: ["'self'", 'data:', 'https://*'],
@@ -113,7 +113,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
         },
-        useDefaults: false,
+        useDefaults: true,
       },
       crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: false,
@@ -135,7 +135,7 @@ describe('buildHelmetParameters coverage', () => {
       contentSecurityPolicy: {
         directives: {
           connectSrc: ["'self'", 'wss://*', 'data:', 'https://*', 'http://*', 'ws://*'],
-          defaultSrc: ["'self'"],
+          defaultSrc: ["'none'"],
           fontSrc: ["'self'", 'data:'],
           frameAncestors: 'https://myctidomain.com',
           frameSrc: ["'self'"],
@@ -146,7 +146,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
         },
-        useDefaults: false,
+        useDefaults: true,
       },
       crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: false,
@@ -162,7 +162,7 @@ describe('buildHelmetParameters coverage', () => {
       contentSecurityPolicy: {
         directives: {
           connectSrc: ["'self'", 'wss://*', 'data:', 'https://*', 'http://*', 'ws://*'],
-          defaultSrc: ["'self'"],
+          defaultSrc: ["'none'"],
           fontSrc: ["'self'", 'data:'],
           frameAncestors: "'none'",
           imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
@@ -172,7 +172,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
         },
-        useDefaults: false,
+        useDefaults: true,
       },
       crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: false,

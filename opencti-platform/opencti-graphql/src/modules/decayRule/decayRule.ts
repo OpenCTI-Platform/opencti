@@ -26,7 +26,7 @@ const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRul
     { name: 'decay_pound', label: 'Decay factor', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'decay_points', label: 'Reaction points', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'decay_revoke_score', label: 'Revoke score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'decay_observable_types', label: 'Indicator observable types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'decay_filters', label: 'Decay indicator filter', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixDecayRule) => {

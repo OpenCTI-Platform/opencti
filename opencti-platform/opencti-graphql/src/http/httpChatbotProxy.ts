@@ -21,6 +21,9 @@ export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
 /**
  * Authenticate the request and verify chatbot prerequisites (CGU + license).
  * Returns the authenticated context or null (response already sent in that case).
+ *
+ * When XTM One is configured, the license check is relaxed because XTM One
+ * handles its own licensing validation during registration.
  */
 const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -267,8 +270,99 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
       setCookieError(res, message);
       res.status(200).json({ content: '', status: 'error', error: detail, code: e.response.status });
     } else {
+      const userMessage = 'XTM One is unreachable';
+      setCookieError(res, userMessage);
+      res.status(200).json({ content: '', status: 'error', error: userMessage, code: 503 });
+    }
+  }
+};
+
+// ── POST /chatbot/agent/stream ──────────────────────────────────────────
+// Streaming agent call: sends a message with stream=true and pipes the
+// SSE event stream back to the client for real-time rendering.
+// Body: { agent_slug, content }
+
+export const postAgentMessageStream = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+
+    const { agent_slug, content } = req.body || {};
+    if (!agent_slug || !content) {
+      res.status(400).json({ error: 'agent_slug and content are required' });
+      return;
+    }
+
+    const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const response = await axios.post(url, {
+      agent_slug,
+      content,
+      stream: true,
+    }, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        'Content-Type': 'application/json',
+        'X-Platform-URL': getChatbotUrl(req),
+        'X-Platform-Product': 'opencti',
+        'X-Platform-Version': PLATFORM_VERSION,
+      },
+      responseType: 'stream',
+      decompress: false,
+      timeout: 0,
+    });
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    response.data.pipe(res);
+
+    req.on('close', () => {
+      response.data.destroy();
+    });
+
+    response.data.on('error', (error: Error) => {
+      logApp.error('Stream error in agent stream proxy', { cause: error });
+      if (!res.headersSent) {
+        res.status(500).send({ status: 'error', error: error.message });
+      } else {
+        res.end();
+      }
+    });
+  } catch (e: unknown) {
+    logApp.error('Error in agent stream proxy', { cause: e });
+    const { message } = e as Error;
+    if (axios.isAxiosError(e) && e.response) {
+      // For streaming responses, e.response.data may be a stream, not parsed JSON.
+      let detail = message;
+      try {
+        if (typeof e.response.data === 'object' && e.response.data !== null) {
+          if ('detail' in e.response.data) {
+            detail = e.response.data.detail;
+          } else if (typeof e.response.data.pipe === 'function') {
+            const chunks: Buffer[] = [];
+            for await (const chunk of e.response.data) {
+              chunks.push(Buffer.from(chunk));
+            }
+            const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+            detail = body.detail ?? message;
+          }
+        }
+      } catch {
+        // If parsing fails, fall back to the error message
+      }
       setCookieError(res, message);
-      res.status(200).json({ content: '', status: 'error', error: message, code: 503 });
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.status(200);
+      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detail}` })}\n\n`);
+      res.end();
+    } else {
+      const userMessage = 'XTM One is unreachable';
+      setCookieError(res, userMessage);
+      res.status(503).send({ status: 503, error: userMessage });
     }
   }
 };

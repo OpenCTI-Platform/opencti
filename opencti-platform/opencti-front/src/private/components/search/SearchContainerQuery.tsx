@@ -30,8 +30,8 @@ interface SearchRootComponentProps {
 const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children, filesCount = 0 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { keyword } = useParams() as { keyword: string };
-  const encodedKeyword = encodeURIComponent(keyword);
+  const { keyword } = useParams() as { keyword?: string };
+  const encodedKeyword = keyword ? encodeURIComponent(keyword) : '';
   const location = useLocation();
   let searchType = 'knowledge';
   if (location.pathname.includes('/files')) {

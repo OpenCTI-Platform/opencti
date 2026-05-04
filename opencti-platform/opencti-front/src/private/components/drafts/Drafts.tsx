@@ -25,6 +25,7 @@ import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql'
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftPopover from './DraftPopover';
 import useHelper from '../../../utils/hooks/useHelper';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -144,6 +145,7 @@ interface DraftsProps {
 
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
   const { isFeatureEnable } = useHelper();
+  const isKnowledgeUpdater = useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNUPDATE] });
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
@@ -321,7 +323,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
             hideHeaders={!!entityId}
             disableLineSelection={!!entityId}
             emptyStateMessage={emptyStateMessage}
-            createButton={!draftContext && <DraftCreation paginationOptions={queryPaginationOptions} />}
+            createButton={!draftContext && isKnowledgeUpdater && <DraftCreation paginationOptions={queryPaginationOptions} />}
             actions={(row) => (
               <DraftPopover
                 draftId={row.id}
