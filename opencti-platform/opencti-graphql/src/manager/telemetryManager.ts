@@ -69,6 +69,7 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
+export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -148,6 +149,11 @@ export const addUserLoginCount = () => {
 export const addCustomViewCreatedCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED, 1)
     .catch((reason) => logApp.warn('Error adding custom view created count to telemetry', { reason }));
+};
+
+export const addCustomViewEnabledCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
+    .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
 };
 
 // End Region user event counters
@@ -338,6 +344,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
+    const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+    manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
     // end region Telemetry user events
 
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
