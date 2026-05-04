@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
-import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import type { CyberObjectExtension, StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
 import type { StixId } from '../../../../src/types/stix-2-0-common';
 import type { ExecutorParameters } from '../../../../src/modules/playbook/playbook-types';
 
@@ -8,12 +8,14 @@ type TestBundleObjectArgs<T extends StixObject> = {
   id?: StixId;
   type: string;
   octiExtension?: Partial<StixOpenctiExtension>;
+  scoExtension?: Partial<CyberObjectExtension>;
 } & Partial<Omit<T, 'extensions' | 'id' | 'type'>>;
 
 export const testBundleObject = <T extends StixObject>({
   id,
   type,
   octiExtension,
+  scoExtension,
   ...args
 }: TestBundleObjectArgs<T>): T => {
   return {
@@ -28,6 +30,14 @@ export const testBundleObject = <T extends StixObject>({
         type,
         ...octiExtension,
       },
+      ...(scoExtension
+        ? {
+            [STIX_EXT_OCTI_SCO]: {
+              extension_type: 'property-extension',
+              ...scoExtension,
+            },
+          } : {}
+      ),
     },
   } as T;
 };
