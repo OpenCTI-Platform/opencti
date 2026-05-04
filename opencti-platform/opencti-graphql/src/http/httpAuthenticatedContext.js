@@ -14,6 +14,8 @@ import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
+import { FunctionalError } from '../config/errors';
+import { findById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -50,8 +52,9 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
   // region handle user
+  let user;
   try {
-    const user = await authenticateUserFromRequest(executeContext, req);
+    user = await authenticateUserFromRequest(executeContext, req);
     if (user) {
       if (!Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
         executeContext.draft_context = user.draft_context;
@@ -71,6 +74,18 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
   }
+
+  if (executeContext.draft_context) {
+    if (user) {
+      const draft = await findById(executionContext, user, executeContext.draft_context);
+      if (!draft) {
+        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
+      }
+    } else {
+      throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
+    }
+  }
+
   // endregion
   // Return with batch loaders
   executeContext.changeDraftContext = (draftId) => {
