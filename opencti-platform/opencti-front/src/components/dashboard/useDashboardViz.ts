@@ -23,7 +23,7 @@ const useDashboardViz = ({
     let filters = [data.filters, data.dynamicFrom, data.dynamicTo];
     if (context?.kind === 'custom-view') {
       const resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, context.customViewTargetEntityId));
-      contextEntityNeeded = filters.some((f, i) => f !== resolvedFilters[i]);
+      contextEntityNeeded = contextEntityNeeded || filters.some((f, i) => f !== resolvedFilters[i]);
       filters = resolvedFilters;
     }
     return {
