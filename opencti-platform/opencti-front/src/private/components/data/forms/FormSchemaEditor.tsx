@@ -1765,6 +1765,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 initialValues={{
                   objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
                   objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
+                  authorDefaultIdentity: (formData.draftDefaults?.author?.type === 'static' && formData.draftDefaults.author.defaultValue)
+                    ? {
+                        value: formData.draftDefaults.author.defaultValue,
+                        label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
+                        type: formData.draftDefaults.author.defaultValueType,
+                      }
+                    : null,
                 }}
                 onSubmit={() => {}}
                 enableReinitialize
@@ -1895,6 +1902,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                             label={t_i18n('Default author')}
                             style={{ width: '100%', marginBottom: 0 }}
                             setFieldValue={setFieldValue}
+                            onChange={(_name: string, value: { value: string; label: string; type?: string } | null) => {
+                              if (value) {
+                                handleFieldChange('draftDefaults.author.defaultValue', value.value);
+                                handleFieldChange('draftDefaults.author.defaultValueLabel', value.label);
+                                handleFieldChange('draftDefaults.author.defaultValueType', value.type);
+                              } else {
+                                handleFieldChange('draftDefaults.author.defaultValue', undefined);
+                                handleFieldChange('draftDefaults.author.defaultValueLabel', undefined);
+                                handleFieldChange('draftDefaults.author.defaultValueType', undefined);
+                              }
+                            }}
                           />
                         )}
                       </Box>
