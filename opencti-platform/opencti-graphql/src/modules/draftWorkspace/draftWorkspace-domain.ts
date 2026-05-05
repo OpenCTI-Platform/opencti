@@ -51,12 +51,15 @@ import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type 
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
-export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, id: string) => {
-  const draft = await findById(context, user, id);
-  if (!draft) {
-    throw FunctionalError(`Draft ${id} cannot be found`);
+export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  if (draftId) {
+    const draft = await findById(context, user, draftId);
+    if (!draft) {
+      throw FunctionalError(`Draft ${draftId} cannot be found`);
+    }
+    return draft;
   }
-  return draft;
+  throw FunctionalError(`Draft ${draftId} cannot be found`);
 };
 
 const bypassDraftContext = (context: AuthContext): AuthContext => {

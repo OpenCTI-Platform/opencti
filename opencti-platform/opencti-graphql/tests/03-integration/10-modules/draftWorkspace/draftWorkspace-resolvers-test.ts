@@ -1,14 +1,14 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, testContext, TEST_ORGANIZATION, USER_PARTICIPATE, getUserIdByEmail, getOrganizationIdByName, queryInitPlatformAsAdmin } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
-import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
-import { fileToReadStream } from '../../../src/database/file-storage';
-import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
-import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
+import { ADMIN_USER, testContext, TEST_ORGANIZATION, USER_PARTICIPATE, getUserIdByEmail, getOrganizationIdByName, queryInitPlatformAsAdmin } from '../../../utils/testQuery';
+import { queryAsAdmin } from '../../../utils/testQueryHelper';
+import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../../src/schema/identifier';
+import { buildDraftValidationBundle } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../../src/modules/draftWorkspace/draftWorkspace-connector';
+import { fileToReadStream } from '../../../../src/database/file-storage';
+import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../../src/modules/draftWorkspace/draftStatuses';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
