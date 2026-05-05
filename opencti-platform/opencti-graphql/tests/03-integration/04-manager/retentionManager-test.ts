@@ -101,7 +101,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: fileUpdateQuery
+      body: fileUpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -132,7 +132,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: progressFileUpdateQuery
+      body: progressFileUpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -159,7 +159,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: workbench1UpdateQuery
+      body: workbench1UpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -205,7 +205,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: report1UpdateQuery
+      body: report1UpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -247,7 +247,7 @@ describe('Retention Manager tests ', () => {
         retention_unit: 'days',
         scope: 'knowledge',
         filters: emptyStringFilters,
-      }
+      },
     };
     const fileRule_toCreate = {
       input: {
@@ -256,7 +256,7 @@ describe('Retention Manager tests ', () => {
         retention_unit: 'days',
         scope: 'file',
         filters: emptyStringFilters,
-      }
+      },
     };
     const knowledgeRuleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
@@ -291,7 +291,7 @@ describe('Retention Manager tests ', () => {
   it('should fetch the correct files to be deleted by a retention rule on files', async () => {
     // check the number of files imported in Data/import
     const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
-    expect(files.length).toEqual(10); // 8 files from index-file-test + the 2 created files
+    expect(files.length).toEqual(9); // 7 files from index-file-test + the 2 created files
     // retention rule on files not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
     filesToDelete = await getElementsToDelete(context, 'file', before);
@@ -299,7 +299,7 @@ describe('Retention Manager tests ', () => {
     expect(filesToDelete.edges[0].node.id).toEqual(fileId);
     // retention rule on all the files
     const filesToDelete2 = await getElementsToDelete(context, 'file', utcDate());
-    expect(filesToDelete2.edges.length).toEqual(9); // all the files that has not been modified since now and with uploadStatus = complete
+    expect(filesToDelete2.edges.length).toEqual(8); // all the files that has not been modified since now and with uploadStatus = complete
   });
   it('should fetch the correct files to be deleted by a retention rule on workbenches', async () => {
     // retention rule on workbenches not modified since 2023-07-01
@@ -341,7 +341,7 @@ describe('Retention Manager tests ', () => {
     // delete file
     await deleteElement(context, 'file', fileId); // should delete fileToTestRetentionRule
     const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
-    expect(files.length).toEqual(9); // 8 files from index-file-test + the 2 created files - fileToTestRetentionRule that should have been deleted
+    expect(files.length).toEqual(8); // 7 files from index-file-test + the 2 created files - fileToTestRetentionRule that should have been deleted
     // delete workbench
     await deleteElement(context, 'workbench', workbench1Id); // should delete workbench1
     const workbenches = await allFilesForPaths(testContext, ADMIN_USER, [pendingPath]);
