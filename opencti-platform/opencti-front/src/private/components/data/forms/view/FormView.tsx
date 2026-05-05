@@ -566,11 +566,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           validateOnBlur={true}
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
-            const showDraftName = isDraft && schema.draftDefaults?.name?.enabled && (isBypass || schema.draftDefaults.name.isEditable);
-            const showDraftDescription = isDraft && schema.draftDefaults?.description?.enabled && (isBypass || schema.draftDefaults.description.isEditable);
-            const showDraftObjectAssignee = isDraft && schema.draftDefaults?.objectAssignee?.enabled && (isBypass || schema.draftDefaults.objectAssignee.isEditable);
-            const showDraftObjectParticipant = isDraft && schema.draftDefaults?.objectParticipant?.enabled && (isBypass || schema.draftDefaults.objectParticipant.isEditable);
-            const showDraftAuthor = isDraft && schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable);
+            const showDraftName = isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
+            const showDraftDescription = isDraft && !!(schema.draftDefaults?.description && (isBypass || schema.draftDefaults.description.isEditable));
+            const showDraftObjectAssignee = isDraft && !!(schema.draftDefaults?.objectAssignee && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
+            const showDraftObjectParticipant = isDraft && !!(schema.draftDefaults?.objectParticipant && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
+            const showDraftAuthor = isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
             const showDraftAuthorizedMembers = isDraft
               && schema.draftDefaults?.authorizedMembers?.enabled
               && (isBypass || isManageAuthMembers);
