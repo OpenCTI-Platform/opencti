@@ -5,7 +5,7 @@ import Label from '../common/label/Label';
 import ChartExportPopover from '../../private/components/common/charts/ChartExportPopover';
 import { ErrorBoundary } from '@components/Error';
 import WidgetNoData from './WidgetNoData';
-import { Box } from '@mui/material';
+import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../components/Theme';
 import { hexToRGB } from '../../utils/Colors';
@@ -42,7 +42,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
         ? (
             <Card
               title={showPreviewTag ? (
-                <Box sx={{ gap: 1, display: 'flex', alignItems: 'center' }}>
+                <Stack direction="row" alignItems="center" gap={1}>
                   {title}
                   <Tag
                     label={t_i18n('Preview data')}
@@ -55,7 +55,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
                       fontSize: '0.65rem',
                     }}
                   />
-                </Box>
+                </Stack>
               ) : title}
               padding={padding}
               action={(
