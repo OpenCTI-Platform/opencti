@@ -1930,8 +1930,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                         <FormControlLabel
                           control={(
                             <Switch
-                              checked={formData.draftDefaults?.authorizedMembers?.isRequired || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
+                              checked={formData.draftDefaults?.authorizedMembers?.isEditable || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isEditable', e.target.checked)}
                             />
                           )}
                           label={t_i18n('Editable by end user')}
