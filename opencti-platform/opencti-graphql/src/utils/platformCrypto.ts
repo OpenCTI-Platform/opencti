@@ -206,7 +206,7 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
 
     return {
       publicKeys: {
-        [toHex(kid)]: publicKey,
+        [toHex(kid)]: publicJWK,
       },
       jwks: {
         keys: [
