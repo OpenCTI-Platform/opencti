@@ -32792,6 +32792,7 @@ export type Subscription = {
   managerConfiguration?: Maybe<ManagerConfiguration>;
   markingDefinition?: Maybe<MarkingDefinition>;
   me?: Maybe<MeUser>;
+  newsFeedItem?: Maybe<NewsFeedItem>;
   notification?: Maybe<Notification>;
   notificationsNumber?: Maybe<NotificationCount>;
   securityCoverage?: Maybe<SecurityCoverage>;
@@ -50743,6 +50744,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   managerConfiguration?: SubscriptionResolver<Maybe<ResolversTypes['ManagerConfiguration']>, "managerConfiguration", ParentType, ContextType, RequireFields<SubscriptionManagerConfigurationArgs, 'id'>>;
   markingDefinition?: SubscriptionResolver<Maybe<ResolversTypes['MarkingDefinition']>, "markingDefinition", ParentType, ContextType, RequireFields<SubscriptionMarkingDefinitionArgs, 'id'>>;
   me?: SubscriptionResolver<Maybe<ResolversTypes['MeUser']>, "me", ParentType, ContextType>;
+  newsFeedItem?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedItem']>, "newsFeedItem", ParentType, ContextType>;
   notification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "notification", ParentType, ContextType>;
   notificationsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NotificationCount']>, "notificationsNumber", ParentType, ContextType>;
   securityCoverage?: SubscriptionResolver<Maybe<ResolversTypes['SecurityCoverage']>, "securityCoverage", ParentType, ContextType, RequireFields<SubscriptionSecurityCoverageArgs, 'id'>>;

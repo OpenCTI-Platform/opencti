@@ -46,3 +46,7 @@ type Query {
   ): NewsFeedItemConnection @auth
   myUnreadNewsFeedsCount: Int @auth
 }
+
+type Subscription {
+  newsFeedItem: NewsFeedItem @auth
+}
