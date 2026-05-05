@@ -115,7 +115,8 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   }, [removeLinks, removeLineBreaks]);
 
   const resolveMarkdownImageUrl = useCallback((url: string) => {
-    return resolveAndNormalizeMarkdownImageUrl(url, resolveImageUrl, APP_BASE_PATH);
+    const currentPathname = typeof window === 'undefined' ? '' : window.location.pathname;
+    return resolveAndNormalizeMarkdownImageUrl(url, resolveImageUrl, APP_BASE_PATH, currentPathname);
   }, [resolveImageUrl]);
 
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);

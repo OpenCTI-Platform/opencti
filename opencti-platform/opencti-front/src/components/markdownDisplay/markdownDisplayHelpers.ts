@@ -22,12 +22,32 @@ export const normalizeMarkdownImageUrl = (
   return normalized;
 };
 
+const resolveContextualEmbeddedImageUrl = (
+  url: string,
+  currentPathname: string,
+): string => {
+  const normalizedUrl = url.startsWith('/') ? url.slice(1) : url;
+  if (!normalizedUrl.startsWith('embedded/')) {
+    return url;
+  }
+
+  const normalizedPathname = currentPathname.replace(/\/+$/, '');
+  if (!normalizedPathname) {
+    return `/${normalizedUrl}`;
+  }
+
+  return `${normalizedPathname}/${normalizedUrl}`;
+};
+
 export const resolveAndNormalizeMarkdownImageUrl = (
   url: string,
   resolveImageUrl: ((url: string) => string | null) | undefined,
   appBasePath: string,
+  currentPathname: string,
 ): string | null => {
-  const resolved = resolveImageUrl ? resolveImageUrl(url) : url;
+  const resolved = resolveImageUrl
+    ? resolveImageUrl(url)
+    : resolveContextualEmbeddedImageUrl(url, currentPathname);
   if (!resolved) {
     return null;
   }
