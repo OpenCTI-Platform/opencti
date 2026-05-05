@@ -5959,14 +5959,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.15.2":
-  version: 1.15.2
-  resolution: "axios@npm:1.15.2"
+"axios@npm:1.16.0":
+  version: 1.16.0
+  resolution: "axios@npm:1.16.0"
   dependencies:
-    follow-redirects: "npm:^1.15.11"
+    follow-redirects: "npm:^1.16.0"
     form-data: "npm:^4.0.5"
     proxy-from-env: "npm:^2.1.0"
-  checksum: 10c0/4eeae0feeaa7fdc1ef24f81f8b378fdadedf4aebdd6bf224484675160f8744cf17b9b0d1c215279979940f7e8ce463beffa2f713099612e428eac238515c81d5
+  checksum: 10c0/1c91a5221b77b76072026b4cc95ecdf38f7c3e33e63423abec09a85e6e9a12279637dcc9ac2ba1fc333e0c447fb3b0f46d7965acb5d7cea02d188e9c6d425c0b
   languageName: node
   linkType: hard
 
@@ -8186,7 +8186,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.15.11":
+"follow-redirects@npm:^1.16.0":
   version: 1.16.0
   resolution: "follow-redirects@npm:1.16.0"
   peerDependenciesMeta:
@@ -10850,7 +10850,7 @@ __metadata:
     archiver-zip-encrypted: "npm:2.0.0"
     async-lock: "npm:1.4.1"
     aws-sdk-v3-proxy: "npm:2.2.0"
-    axios: "npm:1.15.2"
+    axios: "npm:1.16.0"
     axios-cookiejar-support: "npm:6.0.5"
     bcryptjs: "npm:3.0.3"
     bluebird: "npm:3.7.2"
