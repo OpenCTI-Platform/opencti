@@ -566,7 +566,7 @@ export const convertFormBuilderDataToSchema = (
           : undefined,
         authorizedMembers: values.draftDefaults.authorizedMembers
           ? {
-              enabled: hasNonEmptyArray(normalizedDraftAuthorizedMembersDefaults),
+              enabled: values.draftDefaults.authorizedMembers.enabled ?? hasNonEmptyArray(normalizedDraftAuthorizedMembersDefaults),
               isRequired: values.draftDefaults.authorizedMembers.isRequired ?? false,
               defaults: normalizedDraftAuthorizedMembersDefaults,
             }
