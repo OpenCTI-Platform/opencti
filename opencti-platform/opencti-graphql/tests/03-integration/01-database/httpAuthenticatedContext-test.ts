@@ -180,25 +180,5 @@ describe('Testing createAuthenticatedContext', () => {
       expect(executeContext.user?.origin).toBeDefined();
       expect(executeContext.synchronizedUpsert).toBe(false); // not bypass, no full sync
     });
-
-    it('should throw error if draft does not exists for user', async () => {
-      const token = editorUserToken.plaintext_token;
-      const res = {};
-      const req = {
-        headers: {
-          'opencti-draft-id': '1234-1234', // draft that does not exist at all in platform
-          authorization: 'Bearer ' + token,
-        },
-        header: (header: string) => {
-          return header; // fake response to make conf.getRequestAuditHeaders work
-        },
-        socket: {
-          remoteAddress: '128.0.0.1',
-        },
-      };
-      await expect(async () => {
-        await createAuthenticatedContext(req, res, 'draft-test');
-      }).rejects.toThrowError('Draft 1234-1234 cannot be found');
-    });
   });
 });

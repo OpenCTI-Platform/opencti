@@ -19,6 +19,8 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorksp
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../../src/modules/administrativeArea/administrativeArea-types';
 import { RELATION_LOCATED_AT } from '../../../../src/schema/stixCoreRelationship';
 import * as rabbitMock from '../../../../src/database/rabbitmq';
+import { checkDraftInContext } from '../../../../src/http/httpServer-draft';
+import { executionContext } from '../../../../src/utils/access';
 
 describe('Drafts workspace domain testing', () => {
   let testDraftId: string;
@@ -44,8 +46,10 @@ describe('Drafts workspace domain testing', () => {
     const created = await addDraftWorkspace(testContext, editorAuthUser, input);
     testDraftId = created.id;
 
+    const editorContext = executionContext('testing', editorAuthUser);
+
     testDraftContext = {
-      ...testContext,
+      ...editorContext,
       draft_context: `${testDraftId}`,
     };
 
@@ -76,6 +80,10 @@ describe('Drafts workspace domain testing', () => {
       await deleteElementById(testContext, ADMIN_USER, testDraftId, ENTITY_TYPE_DRAFT_WORKSPACE);
     }
     vi.restoreAllMocks();
+  });
+
+  it('should checkDraftInContext as editor be all good on Opened draft', async () => {
+    await checkDraftInContext(testDraftContext);
   });
 
   it('should draftWorkspaceEditContext as editor', async () => {
@@ -129,5 +137,11 @@ describe('Drafts workspace domain testing', () => {
     vi.spyOn(rabbitMock, 'pushToWorkerForConnector').mockResolvedValue(true);
     const validateDraftWorkId = await validateDraftWorkspace(testContext, editorAuthUser, testDraftId);
     expect(validateDraftWorkId).toBeDefined();
+  });
+
+  it('should checkDraftInContext as editor throw error on closed draft', async () => {
+    await expect(async () => {
+      await checkDraftInContext(testDraftContext);
+    }).rejects.toThrowError('Draft is in a locked state, no request can be done within this draft');
   });
 });

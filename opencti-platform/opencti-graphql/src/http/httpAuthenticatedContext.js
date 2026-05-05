@@ -14,8 +14,6 @@ import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
-import { FunctionalError } from '../config/errors';
-import { findById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -73,17 +71,6 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
     }
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
-  }
-
-  if (executeContext.draft_context) {
-    if (user) {
-      const draft = await findById(executionContext, user, executeContext.draft_context);
-      if (!draft) {
-        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
-      }
-    } else {
-      throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
-    }
   }
 
   // endregion
