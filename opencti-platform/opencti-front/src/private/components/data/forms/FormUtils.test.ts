@@ -79,6 +79,7 @@ describe('convertFormBuilderDataToSchema', () => {
       draftDefaults: {
         authorizedMembers: {
           enabled: true,
+          isEditable: true,
           isRequired: true,
           defaults: legacyDefaults,
         },

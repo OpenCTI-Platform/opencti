@@ -15,7 +15,7 @@ import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
@@ -1192,6 +1192,17 @@ export const formSubmit = async (
         authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
       } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
         authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
+      }
+
+      // Ensure the submitter is an admin member of the draft if not already included.
+      // Required for form intakes, where the authorized_members are defined at creation and not afterward.
+      if (!isBypass && authorized_members.length > 0) {
+        const submitterIdx = authorized_members.findIndex((m) => m.id === user.id);
+        if (submitterIdx === -1) {
+          authorized_members.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
+        } else if (authorized_members[submitterIdx].access_right !== MEMBER_ACCESS_RIGHT_ADMIN) {
+          authorized_members[submitterIdx] = { ...authorized_members[submitterIdx], access_right: MEMBER_ACCESS_RIGHT_ADMIN };
+        }
       }
 
       const draftInput: DraftWorkspaceAddInput = {
