@@ -454,4 +454,51 @@ describe('Retention Manager tests ', () => {
     // Cleanup
     await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
   });
+  it('should fetch activity log entries to be deleted by a retention rule on activity scope', async () => {
+    // A very large retention window should include all activity log entries
+    const before = utcDate();
+    const activityElements = await getElementsToDelete(context, 'activity', before);
+    // All returned elements must be of entity_type 'Activity'
+    activityElements.edges.forEach((edge: any) => {
+      expect(edge.node.entity_type).toBe('Activity');
+    });
+  });
+  it('should return 0 activity log entries when retention window excludes all entries', async () => {
+    // A date far in the past → no entries should be older than that date
+    const beforeThePlatformExisted = utcDate('2000-01-01T00:00:00.000Z');
+    const activityElements = await getElementsToDelete(context, 'activity', beforeThePlatformExisted);
+    expect(activityElements.edges.length).toBe(0);
+  });
+  it('should execute processing for activity scope with no elements: rule patched with 0 deleted', async () => {
+    // Create an activity retention rule with a window far in the past (no entries)
+    const ruleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: {
+        input: {
+          name: '[Test] Activity rule no deletion',
+          max_retention: 36500, // 100 years → nothing older than that
+          retention_unit: 'days',
+          scope: 'activity',
+          filters: emptyStringFilters,
+        },
+      },
+    });
+    const rule = ruleQuery.data?.retentionRuleAdd;
+    expect(rule).toBeDefined();
+    // Run executeProcessing — nothing should be deleted
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'activity',
+      max_retention: 36500,
+      retention_unit: 'days',
+      filters: emptyStringFilters,
+    } as any);
+    // Rule should be patched but with 0 deletions
+    const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(updatedRule?.last_execution_date).toBeDefined();
+    expect(updatedRule?.last_deleted_count).toBe(0);
+    // Cleanup
+    await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
+  });
 });

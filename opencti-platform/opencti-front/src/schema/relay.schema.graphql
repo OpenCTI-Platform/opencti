@@ -16381,6 +16381,7 @@ enum RetentionRuleScope {
   file
   workbench
   history
+  activity
 }
 
 enum RetentionUnit {

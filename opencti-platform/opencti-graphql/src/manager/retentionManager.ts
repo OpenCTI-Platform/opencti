@@ -19,7 +19,7 @@ import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
-import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
@@ -51,6 +51,8 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId, { forceDelete: true });
   } else if (scope === 'history') {
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_HISTORY, { forceDelete: true });
+  } else if (scope === 'activity') {
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_ACTIVITY, { forceDelete: true });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
@@ -71,6 +73,10 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: RETENTION_BATCH_SIZE }) as any;
+  } else if (scope === 'activity') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: RETENTION_BATCH_SIZE }) as any;
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
@@ -84,6 +90,9 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
 export const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope } = retentionRule;
   if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
+    return;
+  }
+  if (scope === 'activity' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
     return;
   }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
@@ -107,7 +116,7 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
           await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, { knowledgeType: node.entity_type });
           logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
 
-          if (scope === 'history') {
+          if (scope === 'history' || scope === 'activity') {
             deletedHistoryEntries.push({
               id: node.id,
               timestamp: (node as any).timestamp ?? up,
@@ -147,9 +156,9 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
     last_deleted_count: deletedCount,
   };
   await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
-  // Publish audit log for history scope deletions (History is an internal object and does not
+  // Publish audit log for history/activity scope deletions (these are internal objects and do not
   // generate stream events automatically via storeDeleteEvent, so we log explicitly here)
-  if (scope === 'history' && deletedCount > 0) {
+  if ((scope === 'history' || scope === 'activity') && deletedCount > 0) {
     await publishUserAction({
       user: RETENTION_MANAGER_USER,
       event_type: 'mutation',
