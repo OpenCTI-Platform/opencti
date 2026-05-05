@@ -597,6 +597,8 @@
   "Comma": "Coma",
   "Comma-separated": "Separados por comas",
   "comment": "Comentario",
+  "comment allowed": "comentario permitido",
+  "comment required": "comentario obligatorio",
   "Comments": "Comentarios",
   "Commit message": "Mensaje de confirmación",
   "Commit message when updating data from the UI.": "Mensaje al modificar datos en la interfaz.",

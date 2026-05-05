@@ -597,6 +597,8 @@
   "Comma": "Запятая",
   "Comma-separated": "Разделенные запятыми",
   "comment": "Комментарий",
+  "comment allowed": "комментарий разрешён",
+  "comment required": "комментарий обязателен",
   "Comments": "Комментарии",
   "Commit message": "Сообщение коммита",
   "Commit message when updating data from the UI.": "Сообщение о фиксации при обновлении данных из пользовательского интерфейса.",

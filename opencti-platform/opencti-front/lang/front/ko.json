@@ -597,6 +597,8 @@
   "Comma": "콤마",
   "Comma-separated": "쉼표로 구분",
   "comment": "코멘트",
+  "comment allowed": "댓글 허용",
+  "comment required": "댓글 필수",
   "Comments": "댓글",
   "Commit message": "커밋 메시지",
   "Commit message when updating data from the UI.": "UI에서 데이터 업데이트 시 커밋 메시지.",

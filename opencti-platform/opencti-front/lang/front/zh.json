@@ -597,6 +597,8 @@
   "Comma": "逗号",
   "Comma-separated": "逗号分隔",
   "comment": "注释",
+  "comment allowed": "允许评论",
+  "comment required": "需要评论",
   "Comments": "评论",
   "Commit message": "提交消息",
   "Commit message when updating data from the UI.": "从UI更新数据时提交消息",

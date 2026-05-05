@@ -597,6 +597,8 @@
   "Comma": "カンマ",
   "Comma-separated": "カンマ区切り",
   "comment": "コメント",
+  "comment allowed": "コメント許可",
+  "comment required": "コメント必須",
   "Comments": "コメント",
   "Commit message": "コミットメッセージ",
   "Commit message when updating data from the UI.": "UIからデータを更新したときのコミットメッセージ。",

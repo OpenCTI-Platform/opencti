@@ -597,6 +597,8 @@
   "Comma": "Komma",
   "Comma-separated": "Komma-getrennt",
   "comment": "Kommentar",
+  "comment allowed": "kommentar erlaubt",
+  "comment required": "kommentar erforderlich",
   "Comments": "Kommentare",
   "Commit message": "Commit Nachricht",
   "Commit message when updating data from the UI.": "Commit-Meldung bei der Aktualisierung von Daten aus der UI.",

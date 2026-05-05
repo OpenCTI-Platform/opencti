@@ -597,6 +597,8 @@
   "Comma": "Virgola",
   "Comma-separated": "Separato da virgole",
   "comment": "Commento",
+  "comment allowed": "commento consentito",
+  "comment required": "commento richiesto",
   "Comments": "Commenti",
   "Commit message": "Messaggio di commit",
   "Commit message when updating data from the UI.": "Messaggio di commit quando si aggiornano i dati dall'interfaccia utente.",
