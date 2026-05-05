@@ -5,11 +5,12 @@ import Label from '../common/label/Label';
 import ChartExportPopover from '../../private/components/common/charts/ChartExportPopover';
 import { ErrorBoundary } from '@components/Error';
 import WidgetNoData from './WidgetNoData';
-import { Box, Chip } from '@mui/material';
+import { Box } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../components/Theme';
 import { hexToRGB } from '../../utils/Colors';
 import { useFormatter } from '../../components/i18n';
+import Tag from '@common/tag/Tag';
 
 interface WidgetContainerProps {
   children: ReactNode;
@@ -43,7 +44,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
               title={showPreviewTag ? (
                 <Box sx={{ gap: 1, display: 'flex', alignItems: 'center' }}>
                   {title}
-                  <Chip
+                  <Tag
                     label={t_i18n('Preview data')}
                     size="small"
                     sx={{
