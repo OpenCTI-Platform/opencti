@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as stixFiltering from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
 import { FilterMode } from '../../../../src/generated/graphql';
-import { filterBundleElements, isBundleElementMatchFilters } from '../../../../src/modules/playbook/playbook-utils';
+import { filterBundleElements, isBundleElementMatchFilters, updateImportedPlaybookDefinitionScope } from '../../../../src/modules/playbook/playbook-utils';
 import { testContext } from '../../../utils/testQuery';
 import type { StixObject } from '../../../../src/types/stix-2-1-common';
 import * as cache from '../../../../src/database/cache';
@@ -391,6 +391,64 @@ describe('Playbook utils unit tests', () => {
       const users = await convertMembersToUsers(members, baseData, testBundle);
       const usersNames = users.map((u) => u.name);
       expect(usersNames).toEqual(['user-bundle-organization@opencti.io']);
+    });
+  });
+
+  describe('Function: updateImportedPlaybookDefinitionScope()', () => {
+    it('should not update a component not listed in the listOfScopedPlaybookComponents even if all key is defined', () => {
+      const PLAYBOOK_DEFINITION_OUT_OF_LIST = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Manipulate knowledge","position":{"x":-100,"y":300},"component_id":"RANDOM_PLAYBOOK_COMPONENT","configuration":"{\\"actions\\":[],\\"all\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+      const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_OUT_OF_LIST);
+
+      expect(result).toEqual(PLAYBOOK_DEFINITION_OUT_OF_LIST);
+    });
+
+    describe('When component is in the list of updated components', () => {
+      it('should keep the applyToElements value if defined and remove all and excludeMainElement keys if defined', () => {
+        const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
+        const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+        expect(result).toEqual(expectedResult);
+      });
+
+      describe('When component has not applyToElements defined', () => {
+        it('should return applyToElements = all-except-main if all and excludeMainElement are true', () => {
+          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
+          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-except-main\\"}"}],"links":[]}';
+
+          expect(result).toEqual(expectedResult);
+        });
+
+        it('should return applyToElements = all-elements if all is true and excludeMainElement is false', () => {
+          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
+          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-elements\\"}"}],"links":[]}';
+
+          expect(result).toEqual(expectedResult);
+        });
+
+        it('should return applyToElements = only-main if all is false', () => {
+          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
+          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+
+          expect(result).toEqual(expectedResult);
+        });
+
+        it('should return applyToElements = only-main if all is not defined', () => {
+          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
+          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+
+          expect(result).toEqual(expectedResult);
+        });
+      });
     });
   });
 });

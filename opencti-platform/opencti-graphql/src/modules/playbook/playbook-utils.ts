@@ -16,6 +16,15 @@ import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../u
 import { playbookBundleElementsToApply, type ComponentDefinition, type LinkDefinition, type NodeDefinition, type PlaybookBundleElementsToApply } from './playbook-types';
 import { logApp } from '../../config/conf';
 import { pushAll } from '../../utils/arrayUtil';
+import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-restrictions-component';
+import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
+import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from './components/create-indicator-component';
+import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observable-component';
+import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate-knowledge-component';
+import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remove-access-restrictions-component';
+import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from './components/security-coverage-component';
+import { PLAYBOOK_SHARING_COMPONENT } from './components/sharing-component';
+import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
 
 export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -201,4 +210,47 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
     }
   }
   return JSON.stringify({ ...config, filters: stringifiedFilters });
+};
+
+export const updateImportedPlaybookDefinitionScope = (playbookDefinition: any) => {
+  if (!playbookDefinition) {
+    return;
+  }
+  const listOfScopedPlaybookComponents = [
+    PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.id,
+    PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id,
+    PLAYBOOK_CREATE_INDICATOR_COMPONENT.id,
+    PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id,
+    PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.id,
+    PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.id,
+    PLAYBOOK_SECURITY_COVERAGE_COMPONENT.id,
+    PLAYBOOK_SHARING_COMPONENT.id,
+    PLAYBOOK_UNSHARING_COMPONENT.id,
+  ];
+  const parsedPlaybookDefinition = JSON.parse(playbookDefinition);
+  const playbookDefinitionNodes = parsedPlaybookDefinition.nodes;
+  for (let index = 0; index < playbookDefinitionNodes.length; index += 1) {
+    const playbookDefinitionNodeToParse = playbookDefinitionNodes[index];
+    const configuration = JSON.parse(playbookDefinitionNodeToParse.configuration);
+    const { all, excludeMainElement, ...restOfConfig } = configuration;
+
+    let finalConfig;
+    if (!listOfScopedPlaybookComponents.includes(playbookDefinitionNodeToParse.component_id)) {
+      finalConfig = configuration;
+    } else if (configuration?.applyToElements) {
+      finalConfig = restOfConfig;
+    } else if (all === true) {
+      if (excludeMainElement === true) {
+        finalConfig = { ...restOfConfig, applyToElements: playbookBundleElementsToApply.allExceptMain.value };
+      } else {
+        finalConfig = { ...restOfConfig, applyToElements: playbookBundleElementsToApply.allElements.value };
+      }
+    } else {
+      finalConfig = { ...restOfConfig, applyToElements: playbookBundleElementsToApply.onlyMain.value };
+    }
+
+    playbookDefinitionNodeToParse.configuration = JSON.stringify(finalConfig);
+  }
+  const finalPlaybookDefinition = JSON.stringify({ ...parsedPlaybookDefinition, nodes: playbookDefinitionNodes });
+  return finalPlaybookDefinition;
 };

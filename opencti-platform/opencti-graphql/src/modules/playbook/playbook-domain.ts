@@ -38,10 +38,11 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren } from './playbook-utils';
-import type { SharingConfiguration } from './components/sharing-component';
+import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
+import { type SharingConfiguration } from './components/sharing-component';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
+export const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260428.0'; // to update after merge of playbook scope feature
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = async (context: AuthContext, user: AuthUser, playbookId: string) => {
   await checkEnterpriseEdition(context);
@@ -442,6 +443,11 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
+  if (isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
+    const updatedPlaybookDefinition = updateImportedPlaybookDefinitionScope(config.playbook_definition);
+    config.playbook_definition = updatedPlaybookDefinition;
+  }
+
   const importData = {
     name: config.name,
     description: config.description,
