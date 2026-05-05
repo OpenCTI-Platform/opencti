@@ -109,7 +109,7 @@ describe('CustomViewRedirector', () => {
     expect(screen.getByText(/Not matched/i)).toBeInTheDocument();
   });
 
-  it.only('renders custom view when the id in the path matches but not the slug', () => {
+  it('renders custom view when the id in the path matches but not the slug', () => {
     const id = '1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
       allCustomViews: [{
