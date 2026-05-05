@@ -573,7 +573,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
             const showDraftAuthor = isDraft && schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable);
             const showDraftAuthorizedMembers = isDraft
               && schema.draftDefaults?.authorizedMembers?.enabled
-              && (isBypass || (schema.draftDefaults.authorizedMembers.isEditable && isManageAuthMembers));
+              && (isBypass || isManageAuthMembers);
             const showDraftSection = showDraftName
               || showDraftDescription
               || showDraftObjectAssignee
@@ -1042,6 +1042,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           dynamicAuthorOrgLabel="Draft author (org)"
                           includeBundleOrganizationDynamicOption={false}
                           dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
+                          disabled={!isBypass && !schema.draftDefaults?.authorizedMembers?.isEditable}
                         />
                       </div>
                     )}
