@@ -36,6 +36,7 @@ import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/st
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage';
+import { resolveEmbeddedImagesInDescriptionFieldsForExport } from '../../database/middlewareEmbeddedImages';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -424,12 +425,28 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draft_updates_patch);
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
+
   const updateStixEntitiesWithPatchPromises = updateStixEntities.map(async (d: any) => {
-    const updateFieldPatchNonResolved = buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id)?.draft_change?.draft_updates_patch as string);
-    const updateFieldPatchResolved = await resolveDraftUpdateFiles(contextInDraft, user, updateFieldPatchNonResolved);
-    const stixWithPatch = { ...d };
+    const draftEntity = updateEntities.find((e) => e.standard_id === d.id);
+    let stixPayloadReadyForExport = d;
+    if (draftEntity) {
+      // Resolve embedded markdown image URLs in the object payload.
+      stixPayloadReadyForExport = await resolveEmbeddedImagesInDescriptionFieldsForExport(contextInDraft, d, {
+        entityType: draftEntity.entity_type,
+        entityId: draftEntity.internal_id,
+      });
+    }
+    // Build patch operations from the stored draft change payload.
+    const updateFieldPatchFromDraftChange = buildUpdateFieldPatch(draftEntity?.draft_change?.draft_updates_patch as string);
+    // Resolve patch values (files and markdown) so import can apply them out of draft.
+    const updateFieldPatchReadyForImport = await resolveDraftUpdateFiles(contextInDraft, user, updateFieldPatchFromDraftChange, {
+      entityType: draftEntity?.entity_type,
+      entityId: draftEntity?.internal_id,
+    });
+
+    const stixWithPatch = { ...stixPayloadReadyForExport };
     stixWithPatch.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
-    stixWithPatch.extensions[STIX_EXT_OCTI].opencti_field_patch = updateFieldPatchResolved;
+    stixWithPatch.extensions[STIX_EXT_OCTI].opencti_field_patch = updateFieldPatchReadyForImport;
     return stixWithPatch;
   });
   const updateStixEntitiesWithPatch = await Promise.all(updateStixEntitiesWithPatchPromises);

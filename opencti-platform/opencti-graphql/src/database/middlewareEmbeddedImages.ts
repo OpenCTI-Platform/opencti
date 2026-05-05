@@ -19,8 +19,9 @@ import { UPDATE_OPERATION_REMOVE } from './utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase } from '../types/store';
 import type { EditInput } from '../generated/graphql';
+import type { InternalEditInput } from '../types/store';
 
-const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
+export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
 const TEMP_IMAGE_TOKEN_REGEX = /([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
 const EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS = 3;
 const ALLOWED_EMBEDDED_IMAGE_MIME_TYPES_SET = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
@@ -261,13 +262,12 @@ export const rewriteEmbeddedDataUriImagesInUpdateInputs = async (
   updates: EditInput[],
   options: RewriteEmbeddedDataUriOptions,
 ): Promise<void> => {
-  const updateKeysToRewrite = new Set(MARKDOWN_FIELD_KEYS);
   const payloadByKey = new Map<string, unknown>();
 
   for (let i = 0; i < updates.length; i += 1) {
     const updateInput = updates[i];
     const { key, value, operation } = updateInput;
-    if (!updateKeysToRewrite.has(key)) {
+    if (!MARKDOWN_FIELD_KEYS.includes(key)) {
       continue;
     }
     if (operation === UPDATE_OPERATION_REMOVE || !Array.isArray(value) || value.length === 0) {
@@ -287,7 +287,7 @@ export const rewriteEmbeddedDataUriImagesInUpdateInputs = async (
 
   for (let i = 0; i < updates.length; i += 1) {
     const updateInput = updates[i];
-    if (!updateKeysToRewrite.has(updateInput.key)) {
+    if (!MARKDOWN_FIELD_KEYS.includes(updateInput.key)) {
       continue;
     }
     const rewrittenValue = payloadByKey.has(updateInput.key)
@@ -401,38 +401,63 @@ const resolveEmbeddedImagesInMarkdownDescriptionForExport = async (
   return rewrittenMarkdown;
 };
 
-export const resolveEmbeddedImagesInDescriptionFieldsForExport = async (
+export const resolveEmbeddedImagesInDescriptionFieldsForExport = async <T extends object>(
   context: AuthContext,
-  payload: unknown,
+  payload: T,
   options: ResolveEmbeddedImagesForExportOptions,
-): Promise<void> => {
-  if (!payload || typeof payload !== 'object') {
-    return;
-  }
-
-  if (Array.isArray(payload)) {
-    for (let i = 0; i < payload.length; i += 1) {
-      await resolveEmbeddedImagesInDescriptionFieldsForExport(context, payload[i], options);
-    }
-    return;
-  }
-
-  const markdownFieldCandidates = ['description', 'x_opencti_description', 'content'];
+): Promise<T> => {
   const hasEmbeddedStorageRef = (s: string) => extractMarkdownImageReferences(s).some((reference) => reference.isEmbeddedStorage);
-  for (let i = 0; i < markdownFieldCandidates.length; i += 1) {
-    const key = markdownFieldCandidates[i];
-    const value = (payload as Record<string, unknown>)[key];
+  const payloadByKey = payload as Record<string, unknown>;
+  const nextPayload = { ...payload } as T;
+  const nextPayloadByKey = nextPayload as Record<string, unknown>;
+
+  for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
+    const key = MARKDOWN_FIELD_KEYS[i];
+    const value = payloadByKey[key];
     if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
-      (payload as Record<string, unknown>)[key] = await resolveEmbeddedImagesInMarkdownDescriptionForExport(context, value, options);
+      nextPayloadByKey[key] = await resolveEmbeddedImagesInMarkdownDescriptionForExport(context, value, options);
     }
   }
 
-  const entries = Object.entries(payload as Record<string, unknown>);
-  for (let i = 0; i < entries.length; i += 1) {
-    const [key, value] = entries[i];
-    if (markdownFieldCandidates.includes(key)) {
+  return nextPayload;
+};
+
+export const rewriteMarkdownPatchUpdatesForExport = async (
+  context: AuthContext,
+  updates: InternalEditInput[],
+  options: ResolveEmbeddedImagesForExportOptions,
+): Promise<InternalEditInput[]> => {
+  const rewrittenPatches = [];
+
+  for (let i = 0; i < updates.length; i += 1) {
+    const patch = updates[i];
+    if (!MARKDOWN_FIELD_KEYS.includes(patch.key) || !Array.isArray(patch.value) || patch.value.length === 0) {
+      rewrittenPatches.push(patch);
       continue;
     }
-    await resolveEmbeddedImagesInDescriptionFieldsForExport(context, value, options);
+
+    // Only markdown strings are rewritten; non-string patch values are kept as-is.
+    const rewrittenValues = await Promise.all(patch.value.map(async (currentValue) => {
+      if (typeof currentValue !== 'string') {
+        return currentValue;
+      }
+
+      const rewrittenPayload = await resolveEmbeddedImagesInDescriptionFieldsForExport(
+        context,
+        { [patch.key]: currentValue },
+        options,
+      );
+
+      const rewrittenMarkdown = rewrittenPayload[patch.key];
+
+      return typeof rewrittenMarkdown === 'string' ? rewrittenMarkdown : currentValue;
+    }));
+
+    rewrittenPatches.push({
+      ...patch,
+      value: rewrittenValues,
+    });
   }
+
+  return rewrittenPatches;
 };

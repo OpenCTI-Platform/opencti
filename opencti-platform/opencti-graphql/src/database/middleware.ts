@@ -643,7 +643,7 @@ const convertStoreToStixWithResolvedFiles = async (
       currentFile.no_trigger_import = true;
     }
   }
-  await resolveEmbeddedImagesInDescriptionFieldsForExport(
+  const resolvedInstanceInStix = await resolveEmbeddedImagesInDescriptionFieldsForExport(
     context,
     instanceInStix,
     {
@@ -651,7 +651,7 @@ const convertStoreToStixWithResolvedFiles = async (
       entityId: instance.internal_id,
     },
   );
-  return instanceInStix;
+  return resolvedInstanceInStix;
 };
 
 const extractMarkingIds = (entity: Record<string, any>): string[] => {
