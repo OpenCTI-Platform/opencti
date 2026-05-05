@@ -80,6 +80,7 @@ import {
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
+import { bypassDraftContext } from '../utils/draftContext';
 import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups } from './group';
 import { addIndividual } from './individual';
@@ -997,7 +998,13 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push(input);
     }
   }
-  const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
+  const isDraftSelfExit = user.id === userId
+    && inputs.length === 1
+    && inputs[0].key === 'draft_context'
+    && !inputs[0].value?.[0];
+  const effectiveContext = isDraftSelfExit ? bypassDraftContext(context) : context;
+  const effectiveUser = isDraftSelfExit ? (effectiveContext.user ?? user) : user;
+  const { element } = await updateAttribute(effectiveContext, effectiveUser, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
