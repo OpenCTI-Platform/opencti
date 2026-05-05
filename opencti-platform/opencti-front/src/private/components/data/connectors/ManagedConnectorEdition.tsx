@@ -100,6 +100,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
     const input = {
       id: connector.id,
       name: values.name,
+      title: values.display_name,
       connector_user_id: values.creator?.value,
       manager_contract_configuration: buildContractConfiguration(values),
     };
@@ -208,7 +209,6 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                 name="display_name"
                 label={t_i18n('Display name')}
                 required
-                disabled
                 fullWidth={true}
               />
 

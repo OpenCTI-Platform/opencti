@@ -7860,6 +7860,7 @@ export type EditManagedConnectorInput = {
   id: Scalars['ID']['input'];
   manager_contract_configuration: Array<ContractConfigInput>;
   name: Scalars['String']['input'];
+  title: Scalars['String']['input'];
 };
 
 export enum EditOperation {

@@ -224,6 +224,7 @@ export const managedConnectorEdit = async (
   );
   const patch: any = {
     name: input.name,
+    title: input.title,
     connector_type: targetContract.container_type,
     connector_user_id: input.connector_user_id,
     manager_contract_configuration: contractConfigurations,

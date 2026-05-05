@@ -1964,6 +1964,7 @@ input RegisterConnectorInput {
 input EditManagedConnectorInput {
   id: ID!
   name: String! @constraint(minLength:2, format: "not-blank")
+  title: String! @constraint(minLength:2, format: "not-blank")
   connector_user_id: ID!
   manager_contract_configuration: [ContractConfigInput!]!
 }

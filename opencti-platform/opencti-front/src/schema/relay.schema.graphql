@@ -2041,6 +2041,9 @@ input EditManagedConnectorInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  title: String!
   connector_user_id: ID!
   manager_contract_configuration: [ContractConfigInput!]!
 }
