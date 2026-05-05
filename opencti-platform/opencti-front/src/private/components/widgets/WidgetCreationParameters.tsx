@@ -553,7 +553,7 @@ const WidgetCreationParameters = () => {
                             { value: 'object-marking.internal_id', label: 'Marking definition' },
                             { value: 'kill-chain-phase.internal_id', label: 'Kill chain phase' },
                             { value: 'creator_id', label: 'Creator' },
-                            { value: 'x_opencti_workflow_id', label: 'Status' },
+                            { value: 'x_opencti_workflow_id', label: 'Processing status' },
                           ].map((n) => (
                             <MenuItem key={n.value} value={n.value}>
                               {t_i18n(n.label)}

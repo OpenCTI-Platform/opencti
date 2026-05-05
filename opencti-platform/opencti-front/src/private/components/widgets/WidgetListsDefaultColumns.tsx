@@ -21,7 +21,7 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'modified', label: 'Modification date' },
     { attribute: 'createdBy' },
     { attribute: 'creators', label: 'Creators' },
-    { attribute: 'x_opencti_workflow_id' },
+    { attribute: 'x_opencti_workflow_id', label: 'Processing status' },
     { attribute: 'objectLabel' },
     { attribute: 'objectMarking' },
   ],

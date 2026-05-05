@@ -1517,7 +1517,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   x_opencti_workflow_id: {
     id: 'x_opencti_workflow_id',
-    label: 'Status',
+    label: 'Processing status',
     percentWidth: 8,
     isSortable: true,
     render: (
