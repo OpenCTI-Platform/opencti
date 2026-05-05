@@ -638,7 +638,7 @@ export const elRawDeleteByQuery = async (query: any) => {
   };
   return retryElOperations(rawDeleteOperation);
 };
-export const elRawBulk = async (args: any) => {
+export const elRawBulk = async (context: AuthContext, args: any) => {
   const bulkOperation = async () => {
     return await elExecuteWithAbortSignal(
       context?.requestAbortSignal,
@@ -3957,11 +3957,11 @@ export const elUpdate = async (
       body: documentBody,
     };
     try {
-        return await elExecuteWithAbortSignal(
-            context?.requestAbortSignal,
-            (opts) => (engine as ElkClient).update(updateRequest, opts),
-            () => (engine as OpenClient).update(updateRequest),
-        );
+      return await elExecuteWithAbortSignal(
+        context?.requestAbortSignal,
+        (opts) => (engine as ElkClient).update(updateRequest, opts),
+        () => (engine as OpenClient).update(updateRequest),
+      );
     } catch (err: any) {
       throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
     }
