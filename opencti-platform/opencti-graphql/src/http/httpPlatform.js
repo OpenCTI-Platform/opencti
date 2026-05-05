@@ -202,7 +202,7 @@ const createApp = async (app, schema) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(data.id);
+      const stream = await downloadFile(file);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
@@ -235,18 +235,7 @@ const createApp = async (app, schema) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const candidateFiles = [...new Set([data.id, file].filter((candidate) => !!candidate))];
-      let stream = null;
-      for (let i = 0; i < candidateFiles.length; i += 1) {
-        // Try resolved storage key first, then route-derived fallback.
-        stream = await downloadFile(candidateFiles[i]);
-        if (stream) {
-          break;
-        }
-      }
-      if (!stream) {
-        throw new Error(`File stream not found for embedded image (${candidateFiles.join(', ')})`);
-      }
+      const stream = await downloadFile(file);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);

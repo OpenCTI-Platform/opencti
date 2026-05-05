@@ -655,22 +655,13 @@ const convertStoreToStixWithResolvedFiles = async (
 };
 
 const extractMarkingIds = (entity: Record<string, any>): string[] => {
-  const candidates = entity.objectMarking ?? entity[INPUT_MARKINGS] ?? [];
-  if (!Array.isArray(candidates)) {
+  if (!Array.isArray(entity.objectMarking)) {
     return [];
   }
 
-  return candidates
-    .map((candidate) => {
-      if (typeof candidate === 'string') {
-        return candidate;
-      }
-      if (candidate?.internal_id) {
-        return candidate.internal_id;
-      }
-      return candidate?.id;
-    })
-    .filter((id) => isNotEmptyField(id));
+  return entity.objectMarking
+    .map(({ id }: { id: string }) => id)
+    .filter((id: string) => isNotEmptyField(id));
 };
 
 export const stixLoadByIds = async (
@@ -2459,7 +2450,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
     entityType: initial.entity_type,
     entityId: initial.internal_id,
     entity: initial,
-    fileMarkings: extractMarkingIds(initial as unknown as Record<string, any>),
+    fileMarkings: extractMarkingIds(initial),
   });
 
   // Split attributes and meta
