@@ -112,7 +112,7 @@ const useGranted = (
 
   // Check capabilities in Draft if provided
   const draftGranted = capabilitiesInDraft?.length
-    ? checkCapabilities(capabilitiesInDraft, userCapabilitiesInDraft, matchAll)
+    ? checkCapabilities(capabilitiesInDraft, [...userBaseCapabilities, ...userCapabilitiesInDraft], matchAll)
     : false;
 
   // Check base and draft capabilities in draft context
