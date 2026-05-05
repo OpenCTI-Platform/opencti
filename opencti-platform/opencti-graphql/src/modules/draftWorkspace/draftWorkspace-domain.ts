@@ -214,9 +214,10 @@ export const listDraftRelations = async (context: AuthContext, user: AuthUser, a
   return pageRelationsConnection<BasicStoreRelation>(draftContext, user, types, newArgs);
 };
 
-export const listDraftSightingRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
+export const listDraftSightingRelations = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
+  await checkAndReturnDraft(context, user, draftId);
   if (args.types) {
     types = args.types.filter((t) => t && isStixSightingRelationship(t)) as string[];
   }
