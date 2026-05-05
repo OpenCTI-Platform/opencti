@@ -248,8 +248,20 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | smtp:port                | SMTP__PORT                | 465           | SMTP Port (25 or 465 for TLS)             |
 | smtp:use_ssl             | SMTP__USE_SSL             | `false`       | SMTP over TLS                             |
 | smtp:reject_unauthorized | SMTP__REJECT_UNAUTHORIZED | `false`       | Enable TLS certificate check              |
-| smtp:username            | SMTP__USERNAME            |               | SMTP Username if authentication is needed |
-| smtp:password            | SMTP__PASSWORD            |               | SMTP Password if authentication is needed |
+| smtp:username            | SMTP__USERNAME            |               | SMTP Username if authentication is needed (Basic Auth) |
+| smtp:password            | SMTP__PASSWORD            |               | SMTP Password if authentication is needed (Basic Auth) |
+| smtp:auth_type           | SMTP__AUTH_TYPE           | `basic`       | Authentication type: `basic` or `oauth2`               |
+| smtp:oauth_user          | SMTP__OAUTH_USER          |               | OAuth2: email address of the SMTP user                 |
+| smtp:oauth_client_id     | SMTP__OAUTH_CLIENT_ID     |               | OAuth2: Azure AD application (client) ID               |
+| smtp:oauth_client_secret | SMTP__OAUTH_CLIENT_SECRET |               | OAuth2: Azure AD client secret                         |
+| smtp:oauth_access_token  | SMTP__OAUTH_ACCESS_TOKEN  |               | OAuth2: static access token                            |
+
+!!! note "OAuth2 authentication (Microsoft/Office 365)"
+
+    If your SMTP server requires OAuth2 (e.g. `smtp.office365.com` after Microsoft retired Basic Auth in April 2026),
+    set `smtp:auth_type` to `oauth2` and provide the four `oauth_*` fields.
+    All four fields are required when `oauth2` is selected.
+    Basic Auth (`smtp:auth_type: basic`) remains the default and is unaffected by this change.
 
 #### AI Service
 
