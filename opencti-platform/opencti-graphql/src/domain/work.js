@@ -395,12 +395,20 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     logApp.warn('The work cannot be found in database, processed time cannot be updated.', { workId });
     return workId;
   }
-  const { isMultiPartWork } = await redisGetWorkCompletionState(workId);
-  if (isMultiPartWork) {
+  const { expected, total, isMultiPartWork } = await redisGetWorkCompletionState(workId);
+  const isComplete = isWorkFinished(expected, total);
+  if (isMultiPartWork && !isComplete) {
     await redisMarkWorkAsProcessed(workId);
   }
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
+  if (isComplete) {
+    params.completed_number = total && !Number.isNaN(total) ? total : 1;
+    source += `ctx._source['status'] = "complete";
+               ctx._source['import_expected_number'] = params.completed_number;
+               ctx._source['completed_number'] = params.completed_number;
+               ctx._source['completed_time'] = params.processed_time;`;
+  }
   if (isNotEmptyField(message)) {
     if (inError) {
       source += 'ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); ';
