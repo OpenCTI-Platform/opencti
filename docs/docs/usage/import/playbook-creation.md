@@ -3,7 +3,7 @@
 
     Playbook automation is available under the "OpenCTI Enterprise Edition" license. Read the [dedicated page](../administration/enterprise.md) for full details.
 
-OpenCTI playbooks are flexible automation scenarios that you can fully customize and activate to enrich, filter, and modify data created or updated in the platform. Platform administrators manage playbooks.
+OpenCTI playbooks are flexible automation scenarios that you can fully customize and activate to enrich, filter, and modify data created or updated in the platform.
 
 You can access playbook automation in the user interface under **Data > Processing > Automation**.
 
