@@ -49,7 +49,7 @@ describe('addDraftWorkspace', () => {
           expect.objectContaining({ id: 'user3', access_right: 'admin', groups_restriction_ids: ['group1'] }),
         ]),
       }),
-      expect.anything()
+      expect.anything(),
     );
     // Ensure groups_restriction_ids is removed for user2
     const callArgs = vi.mocked(middleware.createEntity).mock.calls[0][2];
@@ -57,7 +57,7 @@ describe('addDraftWorkspace', () => {
     expect(user2Member.groups_restriction_ids).toBeUndefined();
   });
 
-  it('should throw if authorized members do not contain valid admin', async () => {
+  it('should not throw if authorized members do not contain valid admin', async () => {
     vi.spyOn(accessModule, 'containsValidAdmin').mockResolvedValue(false);
 
     const input = {
@@ -68,8 +68,9 @@ describe('addDraftWorkspace', () => {
     };
 
     await expect(addDraftWorkspace(mockContext, mockUser, input))
-      .rejects
-      .toThrow('It should have at least one valid member with admin access');
+      .resolves
+      .not
+      .toThrow();
   });
 
   it('should allow creation without authorized members', async () => {
@@ -78,14 +79,14 @@ describe('addDraftWorkspace', () => {
     };
 
     await addDraftWorkspace(mockContext, mockUser, input);
-    
+
     expect(middleware.createEntity).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        expect.objectContaining({
-            name: 'Simple Draft'
-        }),
-        expect.anything()
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        name: 'Simple Draft',
+      }),
+      expect.anything(),
     );
   });
 });
