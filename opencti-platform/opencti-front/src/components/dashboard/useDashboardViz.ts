@@ -1,14 +1,14 @@
-import type { WidgetContext, WidgetDataSelection, WidgetPerspective } from '../../utils/widget/widget';
+import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from '../../utils/widget/widget';
 import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObject, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 
 const useDashboardViz = ({
   dataSelection,
   perspective,
-  context,
+  host,
 }: {
   dataSelection: WidgetDataSelection[];
   perspective: WidgetPerspective;
-  context?: WidgetContext;
+  host?: WidgetHost;
 }) => {
   let mainEntityTypes = ['Stix-Core-Object'];
   if (perspective === 'relationships') {
@@ -18,12 +18,12 @@ const useDashboardViz = ({
   }
   const availableFilterKeysMain = useAvailableFilterKeysForEntityTypes(mainEntityTypes, true);
   const availableFilterKeysSecondary = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object'], true);
-  let contextEntityNeeded = false;
+  let hostEntityNeeded = false;
   const updatedDataSelection = dataSelection.map((data) => {
     let filters = [data.filters, data.dynamicFrom, data.dynamicTo];
-    if (context?.kind === 'custom-view') {
-      const resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, context.customViewTargetEntityId));
-      contextEntityNeeded = contextEntityNeeded || filters.some((f, i) => f !== resolvedFilters[i]);
+    if (host?.kind === 'custom-view') {
+      const resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
+      hostEntityNeeded = hostEntityNeeded || filters.some((f, i) => f !== resolvedFilters[i]);
       filters = resolvedFilters;
     }
     return {
@@ -33,11 +33,11 @@ const useDashboardViz = ({
       dynamicTo: removeIdAndIncorrectKeysFromFilterGroupObject(filters[2], availableFilterKeysSecondary),
     };
   });
-  const isPreviewMode = context?.kind === 'custom-view' && context.previewMode;
-  const isMissingContextEntity = contextEntityNeeded && context?.kind === 'custom-view' && !context.customViewTargetEntityId;
+  const isPreviewMode = host?.kind === 'custom-view' && host.previewMode;
+  const isMissingHostEntity = hostEntityNeeded && host?.kind === 'custom-view' && !host.customViewTargetEntityId;
   return {
     resolvedDataSelection: updatedDataSelection,
-    isMissingContextEntity,
+    isMissingHostEntity,
     isPreviewMode,
   };
 };

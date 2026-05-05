@@ -249,7 +249,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         onComplete={handleUpsertWidget}
         widget={selectedWidget?.widget}
         disabledSteps={[0]}
-        context={context}
+        host={context}
         initialVariableName={selectedWidget?.variable_name}
       />
 

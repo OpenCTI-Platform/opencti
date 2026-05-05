@@ -95,7 +95,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               },
             ]}
             popover={undefined}
-            context={undefined}
+            host={undefined}
           />
         </Grid>
         <Grid item xs={6}>
@@ -164,7 +164,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               },
             ]}
             popover={undefined}
-            context={undefined}
+            host={undefined}
           />
         </Grid>
         {!userServiceAccount && (
@@ -195,7 +195,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 },
               ]}
               popover={undefined}
-              context={undefined}
+              host={undefined}
             />
           </Grid>
         )}
@@ -230,7 +230,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               },
             ]}
             popover={undefined}
-            context={undefined}
+            host={undefined}
           />
         </Grid>
         {!userServiceAccount && (
@@ -267,7 +267,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                   },
                 ]}
                 popover={undefined}
-                context={undefined}
+                host={undefined}
               />
             </Grid>
             <Grid item xs={8}>
@@ -332,7 +332,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                   },
                 ]}
                 popover={undefined}
-                context={undefined}
+                host={undefined}
               />
             </Grid>
           </>

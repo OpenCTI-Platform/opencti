@@ -9,7 +9,7 @@ import useDistributionGraphData from '../../../../utils/hooks/useDistributionGra
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useState } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
@@ -117,20 +117,20 @@ const StixRelationshipsHorizontalBars = ({
   relationshipType,
   parameters = {},
   popover,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'relationships',
     dataSelection,
-    context,
+    host,
   });
 
   const { buildWidgetProps } = useDistributionGraphData();
   const renderContent = () => {
-    if (isMissingContextEntity) {
-      return <WidgetNoContextEntity context={context} />;
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
     }
     let selection = {};
     let filtersAndOptions;

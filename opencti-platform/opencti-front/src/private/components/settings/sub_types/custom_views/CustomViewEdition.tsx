@@ -12,7 +12,7 @@ import type { useCustomViewDashboardEdit_Query } from './__generated__/useCustom
 import CustomViewEditionHeader from './CustomViewEditionHeader';
 import useCustomViewDashboardEdit, { customViewQuery } from './useCustomViewDashboardEdit';
 import CustomViewPreviewEntitySelector from './CustomViewPreviewEntitySelector';
-import CustomViewEditionMissingContextEntityFiller from './CustomViewEditionMissingContextEntityFiller';
+import CustomViewEditionMissingHostEntityFiller from './CustomViewEditionMissingHostEntityFiller';
 
 interface CustomViewEditionComponentProps {
   queryRef: PreloadedQuery<useCustomViewDashboardEdit_Query>;
@@ -27,12 +27,12 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
   const handlePreviewEntityChange = (id: string | null) => {
     setPreviewEntityId(id);
   };
-  const context = useMemo(() => ({
+  const host = useMemo(() => ({
     kind: 'custom-view' as const,
     customViewTargetEntityType: entityType,
     customViewTargetEntityId: previewEntityId ?? undefined,
     previewMode: Boolean(previewEntityId),
-    missingContextEntityFiller: <CustomViewEditionMissingContextEntityFiller />,
+    missingHosttEntityFiller: <CustomViewEditionMissingHostEntityFiller />,
   }), [entityType, previewEntityId]);
   if (!customView) {
     return <ErrorNotFound />;
@@ -44,7 +44,7 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
           data={customView}
           onCreateWidget={handleAddWidget}
           onImportWidget={handleImportWidget}
-          context={context}
+          host={host}
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DashboardTimeFilters
@@ -58,7 +58,7 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
         helpers={helpers}
         entity={customView}
         isEditable={true}
-        context={context}
+        host={host}
       />
     </Stack>
   );

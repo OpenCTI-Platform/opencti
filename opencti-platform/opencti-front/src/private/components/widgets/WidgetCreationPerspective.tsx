@@ -15,16 +15,16 @@ import Card from '../../../components/common/card/Card';
 
 const WidgetCreationPerspective = () => {
   const { t_i18n } = useFormatter();
-  const { context, config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { host, config, setStep, setConfigWidget } = useWidgetConfigContext();
   const { type, dataSelection } = config.widget;
 
   // Container and domain object have different filters for the perspective selection
   const { containerTypes } = useAttributes();
 
-  const hostEntityType = context.kind === 'fintelTemplate'
-    ? context.fintelEntityType
-    : context.kind === 'custom-view'
-      ? context.customViewTargetEntityType
+  const hostEntityType = host.kind === 'fintelTemplate'
+    ? host.fintelEntityType
+    : host.kind === 'custom-view'
+      ? host.customViewTargetEntityType
       : null;
 
   const isContainer = hostEntityType
@@ -34,7 +34,7 @@ const WidgetCreationPerspective = () => {
   const handleSelectPerspective = (perspective: WidgetPerspective) => {
     let initialFilters = emptyFilterGroup;
     // For fintel templates and custom views, we want to pre-fill filters
-    if (['fintelTemplate', 'custom-view'].includes(context.kind)) {
+    if (['fintelTemplate', 'custom-view'].includes(host.kind)) {
       let initialFilterKey = 'objects';
       let initialFilterValues: (object | string)[] = [SELF_ID];
 
@@ -44,13 +44,13 @@ const WidgetCreationPerspective = () => {
           initialFilterKey = 'regardingOf';
           initialFilterValues = [{ key: 'id', values: [SELF_ID] }];
         } else if (perspective === 'relationships') {
-          initialFilterKey = context.kind === 'fintelTemplate'
+          initialFilterKey = host.kind === 'fintelTemplate'
             ? 'fromId'
-            : context.kind === 'custom-view'
+            : host.kind === 'custom-view'
               ? 'fromOrToId'
               : '';
         } else if (perspective === 'audits') {
-          initialFilterKey = context.kind === 'custom-view'
+          initialFilterKey = host.kind === 'custom-view'
             ? 'contextEntityId'
             : '';
         }
@@ -68,7 +68,7 @@ const WidgetCreationPerspective = () => {
       };
     }
     const initialColumns = perspective === 'entities' || perspective === 'relationships'
-      ? getDefaultWidgetColumns(perspective, context)
+      ? getDefaultWidgetColumns(perspective, host)
       : [];
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
@@ -91,7 +91,7 @@ const WidgetCreationPerspective = () => {
     return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isEntities ?? false;
   };
   const getCurrentIsAudits = () => {
-    return (context.kind !== 'fintelTemplate' && indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isAudits) ?? false;
+    return (host.kind !== 'fintelTemplate' && indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isAudits) ?? false;
   };
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;

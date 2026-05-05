@@ -23,11 +23,11 @@ import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } f
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const auditsListComponentQuery = graphql`
   query AuditsListComponentQuery(
@@ -96,7 +96,7 @@ interface AuditsListProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;
-  context?: WidgetContext;
+  host?: WidgetHost;
 }
 
 const AuditsList: FunctionComponent<AuditsListProps> = ({
@@ -107,16 +107,16 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
   dataSelection,
   parameters,
   popover,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'audits',
     dataSelection,
-    context,
+    host,
   });
   const selection = resolvedDataSelection[0];
   const dateAttribute = (selection.date_attribute && selection.date_attribute.length > 0
@@ -160,8 +160,8 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
               </span>
             </div>
           )
-        : isMissingContextEntity
-          ? <WidgetNoContextEntity context={context} />
+        : isMissingHostEntity
+          ? <WidgetNoHostEntity host={host} />
           : (
               <>
                 {queryRef && (

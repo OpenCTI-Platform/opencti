@@ -26,10 +26,10 @@ import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_OR
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -124,7 +124,7 @@ interface AuditsPolarAreaProps {
   variant?: string;
   height?: CSSProperties['height'];
   popover?: ReactNode;
-  context?: WidgetContext;
+  host?: WidgetHost;
 }
 
 const AuditsPolarAreaQueyRef = ({
@@ -135,14 +135,14 @@ const AuditsPolarAreaQueyRef = ({
   height,
   variant,
   popover,
-  context,
+  host,
 }: AuditsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'audits',
     dataSelection,
-    context,
+    host,
   });
   const selection = resolvedDataSelection[0];
 
@@ -175,8 +175,8 @@ const AuditsPolarAreaQueyRef = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {isMissingContextEntity ? (
-        <WidgetNoContextEntity context={context} />
+      {isMissingHostEntity ? (
+        <WidgetNoHostEntity host={host} />
       ) : queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <AuditsPolarAreaComponent

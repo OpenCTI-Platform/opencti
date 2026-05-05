@@ -8,7 +8,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixCoreObjectsRadarDistributionQuery = graphql`
   query StixCoreObjectsRadarDistributionQuery(
@@ -95,19 +95,19 @@ const StixCoreObjectsRadar = ({
   dataSelection,
   parameters = {},
   popover,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'entities',
     dataSelection,
-    context,
+    host,
   });
 
   const renderContent = () => {
-    if (isMissingContextEntity) {
-      return <WidgetNoContextEntity context={context} />;
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
     }
     const selection = resolvedDataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];

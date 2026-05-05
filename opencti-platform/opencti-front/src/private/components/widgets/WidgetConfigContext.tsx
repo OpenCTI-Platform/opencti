@@ -1,5 +1,5 @@
 import React, { createContext, Dispatch, ReactNode, useContext, useEffect, useState } from 'react';
-import type { Widget, WidgetContext, WidgetDataSelection, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
+import type { Widget, WidgetHost, WidgetDataSelection, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
@@ -15,7 +15,7 @@ export interface WidgetConfigType {
 }
 
 interface WidgetConfigContextProps {
-  context: WidgetContext;
+  host: WidgetHost;
   disabledSteps: number[];
   step: number;
   setStep: Dispatch<React.SetStateAction<number>>;
@@ -35,7 +35,7 @@ const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(
 
 interface WidgetConfigProviderProps {
   children: ReactNode;
-  context: WidgetContext;
+  host: WidgetHost;
   disabledSteps: number[];
   initialWidget: Widget | undefined;
   initialVariableName: string | undefined;
@@ -43,7 +43,7 @@ interface WidgetConfigProviderProps {
 }
 
 const buildConfig = (
-  context: WidgetContext,
+  context: WidgetHost,
   w?: Widget,
   varName?: string,
 ): WidgetConfigType => {
@@ -78,22 +78,22 @@ const buildConfig = (
 
 export const WidgetConfigProvider = ({
   children,
-  context,
+  host,
   initialWidget,
   initialVariableName,
   open,
   disabledSteps,
 }: WidgetConfigProviderProps) => {
-  const [conf, setConfig] = useState(buildConfig(context, undefined, undefined));
+  const [conf, setConfig] = useState(buildConfig(host, undefined, undefined));
   const [step, setStep] = useState(0);
 
   const reset = () => {
-    setConfig(buildConfig(context, undefined, undefined));
+    setConfig(buildConfig(host, undefined, undefined));
     setStep(0);
   };
 
   const init = () => {
-    setConfig(buildConfig(context, initialWidget, initialVariableName));
+    setConfig(buildConfig(host, initialWidget, initialVariableName));
     let initialStep = 0;
     if (initialWidget) {
       if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute') {
@@ -101,7 +101,7 @@ export const WidgetConfigProvider = ({
       } else if (initialWidget?.dataSelection) {
         initialStep = 2;
       }
-    } else if (context.kind === 'fintelTemplate') {
+    } else if (host.kind === 'fintelTemplate') {
       initialStep = 1;
     }
     setStep(initialStep);
@@ -154,7 +154,7 @@ export const WidgetConfigProvider = ({
 
   return (
     <WidgetConfigContext.Provider value={{
-      context,
+      host,
       disabledSteps,
       config: conf,
       setConfigWidget,

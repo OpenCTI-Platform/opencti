@@ -15,7 +15,7 @@ import StixCoreObjectsRadar from '@components/common/stix_core_objects/StixCoreO
 import StixCoreObjectsMultiHeatMap from '@components/common/stix_core_objects/StixCoreObjectsMultiHeatMap';
 import StixCoreObjectsTreeMap from '@components/common/stix_core_objects/StixCoreObjectsTreeMap';
 import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixCoreObjectsWordCloud';
-import type { Widget, WidgetContext } from '../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { DashboardConfig } from './dashboard-types';
 
@@ -23,14 +23,14 @@ interface DashboardEntitiesVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: DashboardConfig;
-  context?: WidgetContext;
+  host?: WidgetHost;
 }
 
 const DashboardEntitiesViz = ({
   widget,
   popover,
   config,
-  context,
+  host,
 }: DashboardEntitiesVizProps) => {
   const startDate = config.relativeDate
     ? computerRelativeDate(config.relativeDate)
@@ -49,7 +49,7 @@ const DashboardEntitiesViz = ({
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'number':
@@ -63,7 +63,7 @@ const DashboardEntitiesViz = ({
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'list':
@@ -78,7 +78,7 @@ const DashboardEntitiesViz = ({
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'distribution-list':
@@ -91,7 +91,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'vertical-bar':
@@ -104,7 +104,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'line':
@@ -117,7 +117,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'area':
@@ -130,7 +130,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'timeline':
@@ -143,7 +143,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'donut':
@@ -156,7 +156,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined}
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'polar-area':
@@ -168,7 +168,7 @@ const DashboardEntitiesViz = ({
           dataSelection={widget.dataSelection}
           parameters={widget.parameters}
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'horizontal-bar':
@@ -185,7 +185,7 @@ const DashboardEntitiesViz = ({
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
             popover={popover}
-            context={context}
+            host={host}
           />
         );
       }
@@ -198,7 +198,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'radar':
@@ -211,7 +211,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'heatmap':
@@ -224,7 +224,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'tree':
@@ -237,7 +237,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'wordcloud':
@@ -250,7 +250,7 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined}
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     default:

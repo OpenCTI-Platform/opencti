@@ -160,7 +160,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               startDate={undefined}
               endDate={undefined}
               popover={undefined}
-              context={undefined}
+              host={undefined}
             />
           </Grid>
           <Grid item xs={6}>
@@ -172,7 +172,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               startDate={undefined}
               endDate={undefined}
               popover={undefined}
-              context={undefined}
+              host={undefined}
             />
           </Grid>
         </Grid>

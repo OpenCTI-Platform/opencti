@@ -9,7 +9,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixRelationshipsMultiHeatMapTimeSeriesQuery = graphql`
   query StixRelationshipsMultiHeatMapTimeSeriesQuery(
@@ -42,14 +42,14 @@ const StixRelationshipsMultiHeatMap = ({
   dataSelection,
   parameters = {},
   popover,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'relationships',
     dataSelection,
-    context,
+    host,
   });
 
   const timeSeriesParameters = useMemo(() => {
@@ -81,8 +81,8 @@ const StixRelationshipsMultiHeatMap = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
 
   const renderContent = () => {
-    if (isMissingContextEntity) {
-      return <WidgetNoContextEntity context={context} />;
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
     }
     return (
       <QueryRenderer

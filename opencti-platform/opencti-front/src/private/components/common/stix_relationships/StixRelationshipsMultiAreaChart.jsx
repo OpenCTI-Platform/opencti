@@ -9,7 +9,7 @@ import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useState, useMemo } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -46,14 +46,14 @@ const StixRelationshipsMultiAreaChart = ({
   parameters = {},
   popover,
   relationshipTypes,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'relationships',
     dataSelection,
-    context,
+    host,
   });
 
   const timeSeriesParameters = useMemo(() => {
@@ -86,8 +86,8 @@ const StixRelationshipsMultiAreaChart = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, relationshipTypes, timeSeriesParameters]);
 
   const renderContent = () => {
-    if (isMissingContextEntity) {
-      return <WidgetNoContextEntity context={context} />;
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
     }
     return (
       <QueryRenderer

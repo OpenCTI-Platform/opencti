@@ -15,7 +15,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import CustomViewFormDrawer from './CustomViewFormDrawer';
 import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
-import type { Widget, WidgetContext } from '../../../../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../../../../utils/widget/widget';
 import CustomViewMenu from './CustomViewMenu';
 import type { Theme } from '../../../../../components/Theme';
 import useCustomViewEdit from './useCustomViewEdit';
@@ -36,10 +36,10 @@ interface CustomViewEditionHeaderProps {
   data: CustomViewEditionHeader_customView$key;
   onImportWidget: (widgetFile: File) => void;
   onCreateWidget: (value: Widget, variableName?: string) => void;
-  context: WidgetContext;
+  host: WidgetHost;
 }
 
-const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, context }: CustomViewEditionHeaderProps) => {
+const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }: CustomViewEditionHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const [isFormOpen, setFormOpen] = useState(false);
@@ -96,7 +96,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, context
           <DashboardWidgetConfig
             onComplete={onCreateWidget}
             handleImportWidget={onImportWidget}
-            context={context}
+            host={host}
           />
           <Button disableElevation onClick={() => setFormOpen(true)}>
             {t_i18n('Update')}

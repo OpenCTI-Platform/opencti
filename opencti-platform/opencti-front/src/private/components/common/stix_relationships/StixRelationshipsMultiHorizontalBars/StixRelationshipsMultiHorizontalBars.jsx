@@ -9,7 +9,7 @@ import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsM
 import { Suspense, useState } from 'react';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
@@ -396,14 +396,14 @@ const StixRelationshipsMultiHorizontalBars = ({
   dataSelection,
   parameters = {},
   popover,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'relationships',
     dataSelection,
-    context,
+    host,
   });
 
   let selection = {};
@@ -486,8 +486,8 @@ const StixRelationshipsMultiHorizontalBars = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {isMissingContextEntity
-        ? <WidgetNoContextEntity context={context} />
+      {isMissingHostEntity
+        ? <WidgetNoHostEntity host={host} />
         : (
             <Suspense fallback={<Loader />}>
               {queryRef && (

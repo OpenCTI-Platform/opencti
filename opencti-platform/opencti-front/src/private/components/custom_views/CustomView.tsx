@@ -35,7 +35,7 @@ const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewCompo
   }
 
   const helpers = useDashboard({ entity: customView });
-  const context = useMemo(() => ({
+  const host = useMemo(() => ({
     kind: 'custom-view' as const,
     customViewTargetEntityType: entityType,
     customViewTargetEntityId: entityId,
@@ -45,7 +45,7 @@ const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewCompo
       helpers={helpers}
       isEditable={false}
       entity={customView}
-      context={context}
+      host={host}
     />
   );
 };

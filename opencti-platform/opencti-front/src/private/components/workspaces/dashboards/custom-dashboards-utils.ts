@@ -1,3 +1,3 @@
-import type { WidgetContext } from '../../../../utils/widget/widget';
+import type { WidgetHost } from '../../../../utils/widget/widget';
 
-export const WIDGET_WORKSPACE_CONTEXT: WidgetContext = { kind: 'workspace' as const };
+export const WIDGET_WORKSPACE_HOST: WidgetHost = { kind: 'workspace' as const };

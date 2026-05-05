@@ -4,10 +4,10 @@ import { getCurrentAvailableParameters, isDataSelectionNumberValid } from '../..
 export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
 
 const useWidgetConfigValidateForm = () => {
-  const { context, config, step } = useWidgetConfigContext();
+  const { host, config, step } = useWidgetConfigContext();
   const { type, parameters, dataSelection } = config.widget;
 
-  const alreadyUsedVariables = (context.kind === 'fintelTemplate' ? context.fintelWidgets : [])
+  const alreadyUsedVariables = (host.kind === 'fintelTemplate' ? host.fintelWidgets : [])
     .filter((w) => w.variable_name !== config.fintelVariableName)
     .flatMap(({ widget, variable_name }) => {
       if (widget.type !== 'attribute') return variable_name;
@@ -42,7 +42,7 @@ const useWidgetConfigValidateForm = () => {
     || (getCurrentAvailableParameters(type).includes('attribute') && isDataSelectionAttributesValid());
 
   // Check variable name is filled in case of fintel
-  const needVariableName = context.kind === 'fintelTemplate' && type !== 'attribute';
+  const needVariableName = host.kind === 'fintelTemplate' && type !== 'attribute';
   const isVariableNameFilled = !needVariableName || !!config.fintelVariableName;
 
   // Check variable name is valid in case of fintel
@@ -53,8 +53,8 @@ const useWidgetConfigValidateForm = () => {
 
   // Check title is filled in case of fintel
   const isTitleFilled = (
-    (context.kind !== 'fintelTemplate')
-    || (context.kind === 'fintelTemplate' && !!parameters?.title)
+    (host.kind !== 'fintelTemplate')
+    || (host.kind === 'fintelTemplate' && !!parameters?.title)
   );
 
   // Check if the variable name is already used in an other widget

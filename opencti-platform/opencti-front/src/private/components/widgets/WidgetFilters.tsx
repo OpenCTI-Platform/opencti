@@ -23,7 +23,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
-  const { context } = useWidgetConfigContext();
+  const { host } = useWidgetConfigContext();
 
   useEffect(() => {
     setDataSelection({
@@ -118,7 +118,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Domain-Object',
             'Stix-Cyber-Observable',
           ]}
-          context={context}
+          context={host}
         />
 
         {isFilterGroupNotEmpty(filtersDynamicTo)
@@ -138,7 +138,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Domain-Object',
             'Stix-Cyber-Observable',
           ]}
-          context={context}
+          context={host}
         />
 
         {isFilterGroupNotEmpty(filters) && perspective === 'relationships' && (
@@ -152,7 +152,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           searchContext={searchContext}
           availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
           entityTypes={searchContext.entityTypes}
-          context={context}
+          context={host}
         />
       </Box>
     </>

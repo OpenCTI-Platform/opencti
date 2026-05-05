@@ -9,7 +9,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
@@ -427,13 +427,13 @@ const StixCoreObjectsList = ({
   widgetId,
   parameters = {},
   popover,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'entities',
     dataSelection,
-    context,
+    host,
   });
   const selection = resolvedDataSelection[0];
   const columns = selection.columns ?? getDefaultWidgetColumns('entities');
@@ -460,8 +460,8 @@ const StixCoreObjectsList = ({
     >
       <div ref={rootRef} style={{ height: '100%' }}>
         {
-          isMissingContextEntity
-            ? <WidgetNoContextEntity context={context} />
+          isMissingHostEntity
+            ? <WidgetNoHostEntity host={host} />
             : (
                 <QueryRenderer
                   query={stixCoreObjectsListQuery}

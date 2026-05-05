@@ -19,7 +19,7 @@ const DashboardWidgetPopover = ({
   onExport,
   widget,
   entity,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -68,7 +68,7 @@ const DashboardWidgetPopover = ({
           closeMenu={() => setAnchorEl(null)}
           onComplete={onUpdate}
           widget={widget}
-          context={context}
+          host={host}
         />
         <MenuItem onClick={handleExportWidget}>{t_i18n('Export')}</MenuItem>
         <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>

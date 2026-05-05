@@ -4,13 +4,13 @@ import useDashboard from './useDashboard';
 import DashboardWidgetPopover from './DashboardWidgetPopover';
 import DashboardViz from './DashboardViz';
 import type { DashboardLike } from './dashboard-types';
-import type { WidgetContext } from '../../utils/widget/widget';
+import type { WidgetHost } from '../../utils/widget/widget';
 
 interface DashboardContentProps {
   entity: DashboardLike;
   isEditable: boolean;
   helpers: ReturnType<typeof useDashboard>;
-  context: WidgetContext;
+  host: WidgetHost;
 }
 
 const DashboardContent = ({
@@ -28,7 +28,7 @@ const DashboardContent = ({
     idToResize,
     config,
   },
-  context,
+  host,
 }: DashboardContentProps) => {
   const { width, containerRef } = useContainerWidth();
   return (
@@ -67,7 +67,7 @@ const DashboardContent = ({
               onDuplicate={handleDuplicateWidget}
               onDelete={() => handleDeleteWidget(widget.id)}
               onExport={handleExportWidget}
-              context={context}
+              host={host}
             />
           );
 
@@ -76,7 +76,7 @@ const DashboardContent = ({
               {isEditable && widget.id === idToResize ? <div /> : (
                 <DashboardViz
                   widget={widget}
-                  context={context}
+                  host={host}
                   config={config}
                   popover={popover}
                 />

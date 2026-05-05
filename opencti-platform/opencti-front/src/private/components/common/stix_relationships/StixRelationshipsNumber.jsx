@@ -9,7 +9,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixRelationshipsNumberNumberQuery = graphql`
     query StixRelationshipsNumberNumberSeriesQuery(
@@ -67,7 +67,7 @@ const StixRelationshipsNumber = ({
   popover,
   variant,
   height,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
@@ -75,10 +75,10 @@ const StixRelationshipsNumber = ({
   const title = parameters.title ?? t_i18n('Entities number');
   const translatedTitle = translateEntityType(title);
 
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'relationships',
     dataSelection,
-    context,
+    host,
   });
 
   const selection = resolvedDataSelection[0];
@@ -97,8 +97,8 @@ const StixRelationshipsNumber = ({
       showPreviewTag={isPreviewMode}
     >
       {
-        isMissingContextEntity
-          ? <WidgetNoContextEntity context={context} />
+        isMissingHostEntity
+          ? <WidgetNoHostEntity host={host} />
           : (
               <QueryRenderer
                 query={stixRelationshipsNumberNumberQuery}

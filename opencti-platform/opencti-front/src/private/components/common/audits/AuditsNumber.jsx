@@ -27,7 +27,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoContextEntity from '../../../../components/dashboard/WidgetNoContextEntity';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -61,16 +61,16 @@ const AuditsNumber = ({
   popover,
   variant,
   height,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { resolvedDataSelection, isMissingContextEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'audits',
     dataSelection,
-    context,
+    host,
   });
 
   const title = parameters.title ?? t_i18n('Audits number');
@@ -100,8 +100,8 @@ const AuditsNumber = ({
       showPreviewTag={isPreviewMode}
     >
       {
-        isMissingContextEntity
-          ? <WidgetNoContextEntity context={context} />
+        isMissingHostEntity
+          ? <WidgetNoHostEntity host={host} />
           : (
               <QueryRenderer
                 query={auditsNumberNumberQuery}

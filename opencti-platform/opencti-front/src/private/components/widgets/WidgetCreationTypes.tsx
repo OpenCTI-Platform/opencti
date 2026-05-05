@@ -15,13 +15,13 @@ import Card from '../../../components/common/card/Card';
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
-  const { context, setStep, setConfigWidget, config } = useWidgetConfigContext();
+  const { host, setStep, setConfigWidget, config } = useWidgetConfigContext();
 
-  const visualizationTypes = context.kind === 'workspace'
+  const visualizationTypes = host.kind === 'workspace'
     ? workspacesWidgetVisualizationTypes
-    : context.kind === 'fintelTemplate'
+    : host.kind === 'fintelTemplate'
       ? fintelTemplatesWidgetVisualizationTypes
-      : context.kind === 'custom-view'
+      : host.kind === 'custom-view'
         ? customViewsWidgetVisualizationTypes
         : [];
 

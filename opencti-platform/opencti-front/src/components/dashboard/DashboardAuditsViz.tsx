@@ -13,21 +13,21 @@ import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
-import type { Widget, WidgetContext } from '../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardAuditsVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: DashboardConfig;
-  context?: WidgetContext;
+  host?: WidgetHost;
 }
 
 const DashboardAuditsViz = ({
   widget,
   popover,
   config,
-  context,
+  host,
 }: DashboardAuditsVizProps) => {
   const startDate = config.relativeDate
     ? computerRelativeDate(config.relativeDate)
@@ -49,7 +49,7 @@ const DashboardAuditsViz = ({
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'list':
@@ -62,7 +62,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'distribution-list':
@@ -75,7 +75,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'vertical-bar':
@@ -88,7 +88,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'line':
@@ -101,7 +101,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'area':
@@ -114,7 +114,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'donut':
@@ -127,7 +127,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'polar-area':
@@ -140,7 +140,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'horizontal-bar':
@@ -153,7 +153,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'radar':
@@ -166,7 +166,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'heatmap':
@@ -179,7 +179,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'tree':
@@ -192,7 +192,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'wordcloud':
@@ -205,7 +205,7 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     default:

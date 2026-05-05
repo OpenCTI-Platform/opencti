@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { v4 as uuid } from 'uuid';
-import type { Widget, WidgetContext } from '../../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../../utils/widget/widget';
 import WidgetUpsert from './WidgetUpsert';
 import { WidgetConfigProvider, WidgetConfigType } from './WidgetConfigContext';
 
@@ -9,7 +9,7 @@ interface WidgetConfigProps {
   open: boolean;
   onClose: () => void;
   widget?: Widget;
-  context: WidgetContext;
+  host: WidgetHost;
   initialVariableName?: string;
   disabledSteps?: number[];
 }
@@ -19,7 +19,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   widget,
   onClose,
   open,
-  context,
+  host,
   initialVariableName,
   disabledSteps,
 }) => {
@@ -41,7 +41,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     <WidgetConfigProvider
       initialWidget={widget}
       initialVariableName={initialVariableName}
-      context={context}
+      host={host}
       disabledSteps={disabledSteps ?? []}
       open={open}
     >

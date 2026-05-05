@@ -16,21 +16,21 @@ import StixRelationshipsTreeMap from '@components/common/stix_relationships/Stix
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
-import type { Widget, WidgetContext } from '../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: DashboardConfig;
-  context?: WidgetContext;
+  host?: WidgetHost;
 }
 
 const DashboardRelationshipsViz = ({
   widget,
   popover,
   config,
-  context,
+  host,
 }: DashboardRelationshipsVizProps) => {
   const startDate = config.relativeDate
     ? computerRelativeDate(config.relativeDate)
@@ -52,7 +52,7 @@ const DashboardRelationshipsViz = ({
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'list':
@@ -66,7 +66,7 @@ const DashboardRelationshipsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'distribution-list':
@@ -82,7 +82,7 @@ const DashboardRelationshipsViz = ({
           field={undefined} // because calling js component in ts
           overflow={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'vertical-bar':
@@ -95,7 +95,7 @@ const DashboardRelationshipsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'line':
@@ -108,7 +108,7 @@ const DashboardRelationshipsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'area':
@@ -123,7 +123,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           relationshipTypes={undefined}
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'timeline':
@@ -136,7 +136,7 @@ const DashboardRelationshipsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'donut':
@@ -151,7 +151,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'horizontal-bar':
@@ -170,7 +170,7 @@ const DashboardRelationshipsViz = ({
             title={undefined} // because calling js component in ts
             field={undefined} // because calling js component in ts
             popover={popover}
-            context={context}
+            host={host}
           />
         );
       }
@@ -187,7 +187,7 @@ const DashboardRelationshipsViz = ({
           fromId={undefined} // because calling js component in ts
           relationshipType={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'radar':
@@ -202,7 +202,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'polar-area':
@@ -217,7 +217,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'heatmap':
@@ -230,7 +230,7 @@ const DashboardRelationshipsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'tree':
@@ -245,7 +245,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'map':
@@ -260,7 +260,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     case 'wordcloud':
@@ -275,7 +275,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           popover={popover}
-          context={context}
+          host={host}
         />
       );
     default:

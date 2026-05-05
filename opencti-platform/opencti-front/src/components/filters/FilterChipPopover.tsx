@@ -29,7 +29,7 @@ import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import useAttributes from '../../utils/hooks/useAttributes';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
-import type { WidgetContext } from '../../utils/widget/widget';
+import type { WidgetHost } from '../../utils/widget/widget';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import BasicFilterInput from './BasicFilterInput';
@@ -51,7 +51,7 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  context?: WidgetContext;
+  context?: WidgetHost;
 }
 
 export interface FilterChipsParameter {
