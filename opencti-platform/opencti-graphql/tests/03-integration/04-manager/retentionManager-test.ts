@@ -8,14 +8,17 @@ import { deleteElement, executeProcessing, getElementsToDelete } from '../../../
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { uploadToStorage } from '../../../src/database/file-storage';
-import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
-import { READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
+import { elIndex, elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
+import { INDEX_HISTORY, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
 import { deleteElementById } from '../../../src/database/middleware';
 import { canDeleteElement } from '../../../src/database/data-consistency';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
+import { ENTITY_TYPE_ACTIVITY } from '../../../src/schema/internalObject';
+import { BASE_TYPE_ENTITY } from '../../../src/schema/general';
+import { generateInternalId, generateStandardId } from '../../../src/schema/identifier';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -468,6 +471,98 @@ describe('Retention Manager tests ', () => {
     const beforeThePlatformExisted = utcDate('2000-01-01T00:00:00.000Z');
     const activityElements = await getElementsToDelete(context, 'activity', beforeThePlatformExisted);
     expect(activityElements.edges.length).toBe(0);
+  });
+  it('should delete an activity log entry using deleteElement with activity scope', async () => {
+    // Insert a synthetic Activity entry in the history index to be able to delete it
+    const activityId = generateInternalId();
+    const activityDate = utcDate().subtract(5, 'minutes').toDate();
+    const activityEntry = {
+      internal_id: activityId,
+      standard_id: generateStandardId(ENTITY_TYPE_ACTIVITY, { internal_id: activityId }),
+      base_type: BASE_TYPE_ENTITY,
+      entity_type: ENTITY_TYPE_ACTIVITY,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
+      event_status: 'success',
+      created_at: activityDate,
+      updated_at: activityDate,
+      timestamp: activityDate.toISOString(),
+      user_id: ADMIN_USER.id,
+      group_ids: [],
+      organization_ids: [],
+      context_data: { message: 'test activity entry for retention test' },
+    };
+    await elIndex(INDEX_HISTORY, activityEntry);
+    // Verify it was indexed
+    const indexed = await elLoadById(testContext, ADMIN_USER, activityId, { indices: READ_INDEX_HISTORY });
+    expect(indexed).toBeDefined();
+    // Delete it via the retention manager
+    await deleteElement(context, 'activity', activityId);
+    // Verify it is no longer findable
+    const deleted = await elLoadById(testContext, ADMIN_USER, activityId, { indices: READ_INDEX_HISTORY });
+    expect(deleted).toBeUndefined();
+  });
+  it('should execute processing for activity scope: patch the rule and collect deleted entries', async () => {
+    // Insert a synthetic Activity entry old enough to be caught by a 1-minute retention rule
+    const activityId = generateInternalId();
+    const activityDate = utcDate().subtract(5, 'minutes').toDate();
+    const activityEntry = {
+      internal_id: activityId,
+      standard_id: generateStandardId(ENTITY_TYPE_ACTIVITY, { internal_id: activityId }),
+      base_type: BASE_TYPE_ENTITY,
+      entity_type: ENTITY_TYPE_ACTIVITY,
+      event_type: 'authentication',
+      event_scope: 'login',
+      event_access: 'administration',
+      event_status: 'success',
+      created_at: activityDate,
+      updated_at: activityDate,
+      timestamp: activityDate.toISOString(),
+      user_id: ADMIN_USER.id,
+      group_ids: [],
+      organization_ids: [],
+      context_data: { message: 'test activity entry for executeProcessing retention test' },
+    };
+    await elIndex(INDEX_HISTORY, activityEntry);
+    // Create an activity retention rule with 1-minute window
+    const ruleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: {
+        input: {
+          name: '[Test] Activity processing rule',
+          max_retention: 1,
+          retention_unit: 'minutes',
+          scope: 'activity',
+          filters: emptyStringFilters,
+        },
+      },
+    });
+    const rule = ruleQuery.data?.retentionRuleAdd;
+    expect(rule).toBeDefined();
+    // Ensure the synthetic entry is in the deletion window
+    const before = utcDate().subtract(1, 'minutes');
+    const activityElements = await getElementsToDelete(context, 'activity', before);
+    expect(activityElements.edges.length).toBeGreaterThan(0);
+    // Run executeProcessing
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'activity',
+      max_retention: 1,
+      retention_unit: 'minutes',
+      filters: emptyStringFilters,
+    } as any);
+    // The rule should be patched with last_execution_date and last_deleted_count > 0
+    const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(updatedRule?.last_execution_date).toBeDefined();
+    expect(updatedRule?.last_deleted_count).toBeGreaterThan(0);
+    expect(updatedRule?.remaining_count).toBeGreaterThanOrEqual(0);
+    // The synthetic entry must no longer be findable
+    const deletedEntry = await elLoadById(testContext, ADMIN_USER, activityId, { indices: READ_INDEX_HISTORY });
+    expect(deletedEntry).toBeUndefined();
+    // Cleanup rule
+    await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
   });
   it('should execute processing for activity scope with no elements: rule patched with 0 deleted', async () => {
     // Create an activity retention rule with a window far in the past (no entries)
