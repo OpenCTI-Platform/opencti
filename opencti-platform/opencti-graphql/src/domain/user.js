@@ -1948,7 +1948,7 @@ export const authenticateUserFromRequest = async (context, req) => {
     // If bearer is a JWT
     if (bearerToken.startsWith(JWT_TOKEN_PREFIX)) {
       try {
-        return authenticateUserByJWT(context, req, bearerToken);
+        return await authenticateUserByJWT(context, req, bearerToken);
       } catch (err) {
         logApp.warn('Error resolving user by JWT', { cause: err });
         return undefined;

@@ -104,6 +104,11 @@ export const verifyXtmJwt = async (token: string) => {
     if (err?.name === 'AuthenticationFailure' || err?.attributes?.reason) {
       throw err;
     }
+    logApp.warn('[XTM_AUTH] JWT verification failed', {
+      code: err?.code,
+      message: err?.message,
+      name: err?.name,
+    });
     throw AuthenticationFailure('JWT signature verification failed');
   }
 };
