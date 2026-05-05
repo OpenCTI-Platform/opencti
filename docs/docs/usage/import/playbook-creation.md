@@ -114,7 +114,7 @@ To view execution traces, open a playbook and click the execution traces icon in
 
 ## Tips on creating playbooks
 
-- The criteria set on the trigger node for a playbook controls the playbook availability. You can choose to add criteria in order to mean that the playbook is only available in certain conditions or if you prefer to enable users to run the playbook even with data that may not be valid then you can move the filter condition to a subsequent step in the playbook. 
+- The criteria set on the trigger node for a playbook controls the playbook availability to users for manual enrollment. You can choose to add criteria to the trigger node so the playbook is only available in certain conditions (e.g. or only for indicator entities). Alternatively, you can choose to leave the trigger node criteria empty and add a match knowledge node below to allow users to run the playbook on any data. 
 
 - It is possible to configure playbooks to run based on the output of a previous playbook, allowing you to chain multiple processes to automate your data processing needs. For example one playbook can add a label, such as ‘weekly digest’, which can then be used as the trigger criteria for a (weekly) scheduled query that then creates a new container with all ‘weekly digest’ entities added. 
 
