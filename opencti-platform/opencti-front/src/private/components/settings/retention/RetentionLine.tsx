@@ -89,7 +89,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
     scopeColor = 'error';
     appliedOnContent = t_i18n('Knowledge history logs');
   } else if (data.scope === 'activity') {
-    scopeColor = 'info';
+    scopeColor = 'success';
     appliedOnContent = t_i18n('Activity logs');
   }
   return (
@@ -135,7 +135,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               style={{ width: dataColumns.scope.width }}
             >
               <Chip
-                color={scopeColor as 'warning' | 'secondary' | 'primary' | 'error' | 'info'}
+                color={scopeColor as 'warning' | 'secondary' | 'primary' | 'error' | 'success'}
                 classes={{ root: classes.chipInList }}
                 label={t_i18n(data.scope)}
                 variant="outlined"
