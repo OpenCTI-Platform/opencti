@@ -106,7 +106,6 @@ const CustomViewPreviewEntitySelector: FunctionComponent<CustomViewPreviewEntity
         renderInput={(params) => (
           <TextField
             {...params}
-            value={value}
             size="small"
             hiddenLabel
             variant="outlined"
