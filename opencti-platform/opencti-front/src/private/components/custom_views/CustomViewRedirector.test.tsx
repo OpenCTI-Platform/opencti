@@ -25,6 +25,7 @@ describe('CustomViewRedirector', () => {
     vi.restoreAllMocks();
   });
   it('renders custom view when on custom view route', () => {
+    const customViewPath = 'my-custom-view-1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
       allCustomViews: [{
         id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
@@ -35,7 +36,6 @@ describe('CustomViewRedirector', () => {
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
-    const customViewPath = 'my-custom-view-1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
     const id = '1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
     testRender(
       <Routes>
