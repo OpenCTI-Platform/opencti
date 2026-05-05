@@ -36,11 +36,13 @@ Map the GraphQL Query/Mutation fields to the functions in `<name>-domain.ts`.
 Implement `ModuleDefinition` interface.
 Define attributes, relations, and register the definition using `registerDefinition`.
 
-### Step 8a — Create Module Entry Point
-Create `index.ts` in the module folder that re-exports the module definition.
+### Step 8a — Create GraphQL Registration File (`<name>-graphql.ts`)
+Create a `<name>-graphql.ts` file in the module folder that imports the module schema/resolvers and calls `registerGraphqlSchema(...)`.
 
-### Step 8b — Register Module in Index
-Import and add the new module to `src/modules/index.ts`.
+### Step 8b — Register Module in `src/modules/index.ts`
+Add two distinct imports in `src/modules/index.ts`:
+1. In the **`region registration modules`** section, import `./<entityName>/<entityName>` (module definition registration).
+2. In the **`region graphql registration`** section, import `./<entityName>/<entityName>-graphql` (GraphQL endpoint registration).
 
 ### Step 8c — Update GraphQL Unions (if applicable)
 If the entity belongs to a STIX union type (e.g., `StixObject`, `StixDomainObject`), add it to the relevant unions in `src/schema/opencti.graphql`.
