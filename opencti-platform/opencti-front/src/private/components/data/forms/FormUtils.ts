@@ -526,7 +526,7 @@ export const convertFormBuilderDataToSchema = (
           ? {
               enabled: hasNonEmptyString(values.draftDefaults.name.defaultValue),
               isEditable: values.draftDefaults.name.isEditable ?? false,
-              isRequired: values.draftDefaults.name.isRequired ?? false,
+              isRequired: (values.draftDefaults.name.isEditable ?? false) && (values.draftDefaults.name.isRequired ?? false),
               defaultValue: values.draftDefaults.name.defaultValue ?? '',
             }
           : undefined,
@@ -534,7 +534,7 @@ export const convertFormBuilderDataToSchema = (
           ? {
               enabled: hasNonEmptyString(values.draftDefaults.description.defaultValue),
               isEditable: values.draftDefaults.description.isEditable ?? false,
-              isRequired: values.draftDefaults.description.isRequired ?? false,
+              isRequired: (values.draftDefaults.description.isEditable ?? false) && (values.draftDefaults.description.isRequired ?? false),
               defaultValue: values.draftDefaults.description.defaultValue ?? '',
             }
           : undefined,
@@ -542,7 +542,7 @@ export const convertFormBuilderDataToSchema = (
           ? {
               enabled: hasNonEmptyArray(values.draftDefaults.objectAssignee.defaults),
               isEditable: values.draftDefaults.objectAssignee.isEditable ?? false,
-              isRequired: values.draftDefaults.objectAssignee.isRequired ?? false,
+              isRequired: (values.draftDefaults.objectAssignee.isEditable ?? false) && (values.draftDefaults.objectAssignee.isRequired ?? false),
               defaults: values.draftDefaults.objectAssignee.defaults ?? [],
             }
           : undefined,
@@ -550,7 +550,7 @@ export const convertFormBuilderDataToSchema = (
           ? {
               enabled: hasNonEmptyArray(values.draftDefaults.objectParticipant.defaults),
               isEditable: values.draftDefaults.objectParticipant.isEditable ?? false,
-              isRequired: values.draftDefaults.objectParticipant.isRequired ?? false,
+              isRequired: (values.draftDefaults.objectParticipant.isEditable ?? false) && (values.draftDefaults.objectParticipant.isRequired ?? false),
               defaults: values.draftDefaults.objectParticipant.defaults ?? [],
             }
           : undefined,
@@ -558,7 +558,7 @@ export const convertFormBuilderDataToSchema = (
           ? {
               type: values.draftDefaults.author.type,
               isEditable: values.draftDefaults.author.isEditable ?? false,
-              isRequired: values.draftDefaults.author.isRequired ?? false,
+              isRequired: (values.draftDefaults.author.isEditable ?? false) && (values.draftDefaults.author.isRequired ?? false),
               defaultValue: values.draftDefaults.author.defaultValue,
               defaultValueLabel: values.draftDefaults.author.defaultValueLabel,
               defaultValueType: values.draftDefaults.author.defaultValueType,
