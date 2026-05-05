@@ -10,6 +10,9 @@ import { useFormatter } from '../../components/i18n';
 import { commitMutation } from '../../relay/environment';
 import withRouter from '../../utils/compat_router/withRouter';
 
+// --- Region UI errors components
+// -------------------------------
+
 // Highest level of error catching, do not rely on any tierce (intl, theme, ...) pure fallback
 export const HighLevelError = () => (
   <Alert severity="error">An unknown error occurred. Please contact your administrator or OpenCTI maintainers</Alert>
@@ -36,6 +39,7 @@ export const SimpleError = () => {
   );
 };
 
+// Custom warning message display
 export const DedicatedWarning = ({ title, description }) => (
   <Alert severity="warning">
     <AlertTitle>{title}</AlertTitle>
@@ -43,6 +47,13 @@ export const DedicatedWarning = ({ title, description }) => (
   </Alert>
 );
 
+// 404
+export const NoMatch = () => <ErrorNotFound />;
+
+// --- End region
+// --------------
+
+// Mutation to send the frontend error to the backend.
 const frontendErrorLogMutation = graphql`
   mutation ErrorFrontendLogMutation($message: String!, $codeStack: String, $componentStack: String) {
     frontendErrorLog(message: $message, codeStack: $codeStack, componentStack: $componentStack)
@@ -59,7 +70,7 @@ class ErrorBoundaryComponent extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     try {
-      const isNetworkError = this.state.error.res;
+      const isNetworkError = this.state.error?.res;
       if (!isNetworkError) {
         // If direct javascript error, sent the error for back logging
         commitMutation({
@@ -96,6 +107,9 @@ class ErrorBoundaryComponent extends React.Component {
       if (includes('FORBIDDEN_ACCESS', types)) {
         return <ErrorNotFound />;
       }
+      if (includes('RESOURCE_NOT_FOUND', types)) {
+        return this.props.resNotFoundDisplay || <ErrorNotFound />;
+      }
       if (includes('AUTH_REQUIRED', types)) {
         throw this.state.error;
       }
@@ -107,6 +121,7 @@ class ErrorBoundaryComponent extends React.Component {
 }
 
 ErrorBoundaryComponent.propTypes = {
+  resNotFoundDisplay: PropTypes.object,
   display: PropTypes.object,
   children: PropTypes.node,
 };
@@ -119,6 +134,3 @@ export const boundaryWrapper = (Component) => {
     </ErrorBoundary>
   );
 };
-
-// 404
-export const NoMatch = () => <ErrorNotFound />;

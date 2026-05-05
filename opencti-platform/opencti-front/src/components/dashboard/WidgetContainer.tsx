@@ -4,6 +4,7 @@ import Card, { CardProps } from '../common/card/Card';
 import Label from '../common/label/Label';
 import ChartExportPopover from '../../private/components/common/charts/ChartExportPopover';
 import { ErrorBoundary } from '@components/Error';
+import WidgetNoData from './WidgetNoData';
 
 interface WidgetContainerProps {
   children: ReactNode;
@@ -38,7 +39,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
                 </div>
               )}
             >
-              <ErrorBoundary>
+              <ErrorBoundary resNotFoundDisplay={<WidgetNoData />}>
                 {children}
               </ErrorBoundary>
             </Card>
@@ -46,7 +47,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
         : (
             <>
               {title && <Label>{title}</Label>}
-              <ErrorBoundary>
+              <ErrorBoundary resNotFoundDisplay={<WidgetNoData />}>
                 {children}
               </ErrorBoundary>
             </>
