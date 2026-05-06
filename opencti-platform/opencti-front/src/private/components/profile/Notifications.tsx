@@ -13,8 +13,8 @@ import type { NotificationsUnreadNewsFeedsCountQuery } from './__generated__/Not
 import { NotificationsNotificationNumberSubscription$data } from '@components/profile/__generated__/NotificationsNotificationNumberSubscription.graphql';
 
 const notificationsUnreadNewsFeedsCountQuery = graphql`
-  query NotificationsUnreadNewsFeedsCountQuery {
-    myUnreadNewsFeedsCount
+  query NotificationsUnreadNewsFeedsCountQuery($skipNewsFeedsCount: Boolean!) {
+    myUnreadNewsFeedsCount @skip(if: $skipNewsFeedsCount)
     myUnreadNotificationsCount
   }
 `;
@@ -38,9 +38,12 @@ const Notifications: FunctionComponent = () => {
 
   setTitle(t_i18n('Notifications'));
 
+  const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
+  const isNewsFeedTabVisible = isXTMHubAccessible && isXTMHubNewsFeedEnabled && !isUnsubscribedFromAllNewsFeeds;
+
   const data = useLazyLoadQuery<NotificationsUnreadNewsFeedsCountQuery>(
     notificationsUnreadNewsFeedsCountQuery,
-    {},
+    { skipNewsFeedsCount: !isNewsFeedTabVisible },
   );
   const unreadNewsFeedsCount = data.myUnreadNewsFeedsCount ?? 0;
 
@@ -60,8 +63,6 @@ const Notifications: FunctionComponent = () => {
     ? liveNotificationsCount
     : (data.myUnreadNotificationsCount ?? 0);
 
-  const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
-  const isNewsFeedTabVisible = isXTMHubAccessible && isXTMHubNewsFeedEnabled && !isUnsubscribedFromAllNewsFeeds;
   const activeTab = location.pathname.endsWith('news-feed') ? 'news-feed' : 'alerts';
 
   const handleTabChange = (_: React.SyntheticEvent, value: string) => {
