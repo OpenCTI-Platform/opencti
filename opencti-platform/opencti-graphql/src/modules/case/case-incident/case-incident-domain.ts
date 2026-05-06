@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { createEntity } from '../../../database/middleware';
+import { createEntity, updateAttribute } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { BUS_TOPICS } from '../../../config/conf';
@@ -13,9 +13,13 @@ import type { BasicStoreEntityCaseIncident } from './case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './case-incident-types';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import type { CaseIncidentAddInput } from '../../../generated/graphql';
+import { EditOperation, FilterMode } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
-import { FilterMode } from '../../../generated/graphql';
+import { FunctionalError } from '../../../config/errors';
+import { findById as findCustomFieldDefinitionById } from '../../customField/custom-field-domain';
+import type { BasicStoreEntityCustomFieldDefinition } from '../../customField/custom-field-types';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../../customField/custom-field-types';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
@@ -55,3 +59,48 @@ export const caseIncidentContainsStixObjectOrStixRelationship = async (context: 
   const caseIncidentFound = await findCaseIncidentPaginated(context, user, args);
   return caseIncidentFound.edges.length > 0;
 };
+
+export const setCaseIncidentCustomFieldValue = async (context: AuthContext, user: AuthUser, caseIncidentId: string, fieldId: string, value: string) => {
+  // Load and validate the CustomFieldDefinition
+  const definition = await storeLoadById<BasicStoreEntityCustomFieldDefinition>(context, user, fieldId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+  if (!definition) throw FunctionalError('CustomFieldDefinition not found', { fieldId });
+  if (!definition.entity_types?.includes(ENTITY_TYPE_CONTAINER_CASE_INCIDENT)) {
+    throw FunctionalError('This custom field is not applicable to Case-Incident', { fieldId });
+  }
+  // Validate integer constraints
+  if (definition.field_type === 'integer') {
+    const intVal = parseInt(value, 10);
+    if (Number.isNaN(intVal)) throw FunctionalError('Value must be an integer', { value });
+    if (definition.min_value !== undefined && definition.min_value !== null && intVal < definition.min_value) {
+      throw FunctionalError(`Value ${intVal} is below min_value ${definition.min_value}`);
+    }
+    if (definition.max_value !== undefined && definition.max_value !== null && intVal > definition.max_value) {
+      throw FunctionalError(`Value ${intVal} exceeds max_value ${definition.max_value}`);
+    }
+  }
+  // Load current entity to get existing custom_field_values
+  const caseIncident = await storeLoadById<BasicStoreEntityCaseIncident>(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+  if (!caseIncident) throw FunctionalError('CaseIncident not found', { caseIncidentId });
+  const existing: Array<{ field_id: string; field_name: string; int_value?: number }> = (caseIncident as any).custom_field_values ?? [];
+  const fieldName = `x_opencti_${definition.name}`;
+  const newEntry = definition.field_type === 'integer'
+    ? { field_id: fieldId, field_name: fieldName, int_value: parseInt(value, 10) }
+    : { field_id: fieldId, field_name: fieldName };
+  const updated = [...existing.filter((v) => v.field_id !== fieldId), newEntry];
+  const { element } = await updateAttribute(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT, [
+    { key: 'custom_field_values', value: updated, operation: EditOperation.Replace },
+  ]);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+};
+
+export const removeCaseIncidentCustomFieldValue = async (context: AuthContext, user: AuthUser, caseIncidentId: string, fieldId: string) => {
+  const caseIncident = await storeLoadById<BasicStoreEntityCaseIncident>(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+  if (!caseIncident) throw FunctionalError('CaseIncident not found', { caseIncidentId });
+  const existing: Array<{ field_id: string }> = (caseIncident as any).custom_field_values ?? [];
+  const updated = existing.filter((v) => v.field_id !== fieldId);
+  const { element } = await updateAttribute(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT, [
+    { key: 'custom_field_values', value: updated, operation: EditOperation.Replace },
+  ]);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+};
+
