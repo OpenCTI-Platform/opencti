@@ -43,6 +43,7 @@ const CustomViewFormDrawer = ({
           name: values.name,
           description: values.description,
           targetEntityType: entityType,
+          default: values.default,
         },
       },
       onCompleted: (response) => {
