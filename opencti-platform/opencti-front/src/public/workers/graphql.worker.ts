@@ -13,6 +13,6 @@
  * before any message dispatch takes place.
  */
 import { initialize } from 'monaco-editor/esm/vs/editor/editor.worker';
-import { GraphQLWorker } from 'monaco-graphql/esm/GraphQLWorker';
+import { GraphQLWorker } from 'monaco-graphql/esm/GraphQLWorker.js';
 
 initialize((ctx, createData) => new GraphQLWorker(ctx, createData));
