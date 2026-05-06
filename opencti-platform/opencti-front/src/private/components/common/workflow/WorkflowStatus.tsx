@@ -32,6 +32,7 @@ export const workflowStatusFragment = graphql`
         event
         toState
         actions
+        comment
         toStatus {
           id
           template {
