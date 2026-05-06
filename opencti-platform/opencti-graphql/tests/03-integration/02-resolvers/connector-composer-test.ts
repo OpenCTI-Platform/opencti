@@ -657,6 +657,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const updateInput = {
         id: logLevelConnectorId,
         name: 'Log Level Test Connector',
+        title: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
@@ -719,6 +720,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const updateInput2 = {
         id: logLevelConnectorId,
         name: 'Log Level Test Connector',
+        title: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
@@ -762,10 +764,11 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(logStrings2).toContain('[XTM-Composer] Configuration changed, redeploying connector...');
       expect(logStrings2).toContain('[XTM-Composer] Connector redeployed successfully');
 
-      // Test updating only the name without changing configuration (should not redeploy)
+      // Test updating only the name and title without changing configuration (should not redeploy)
       const updateInput3 = {
         id: logLevelConnectorId,
         name: 'Log Level Test Connector - Updated Name Only',
+        title: 'Log Level Test Connector - Updated Name Only',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
