@@ -1777,6 +1777,9 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
+export const specialElasticCharsEscapeWithFF = (query: string) => {
+  return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
+};
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
@@ -2084,7 +2087,7 @@ function processSearch(
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
-    const cleanElement = improvedFuzzyWildActivated ? partialElement : specialElasticCharsEscape(partialElement);
+    const cleanElement = improvedFuzzyWildActivated ? specialElasticCharsEscapeWithFF(partialElement) : specialElasticCharsEscape(partialElement);
     if (isNotEmptyField(cleanElement)) {
       querySearch.push(`${useWildcardPrefix && !improvedFuzzyWildActivated ? '*' : ''}${cleanElement}*`);
       if (ES_DEFAULT_FUZZY && !improvedFuzzyWildActivated) {
