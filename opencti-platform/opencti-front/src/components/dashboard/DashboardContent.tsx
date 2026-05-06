@@ -9,13 +9,9 @@ import type { WidgetHost } from '../../utils/widget/widget';
 type DashboardContentProps = {
   helpers: ReturnType<typeof useDashboard>;
   host: WidgetHost;
-} & ({
   entity: DashboardLike;
-  isEditable: true;
-} | {
-  entity: Pick<DashboardLike, 'id' | 'manifest'>;
-  isEditable: false;
-});
+  isEditable: boolean;
+};
 
 const DashboardContent = ({
   entity,

@@ -1,12 +1,12 @@
 import { BaseSyntheticEvent, useRef } from 'react';
 import fileDownload from 'js-file-download';
 import VisuallyHiddenInput from '../../private/components/common/VisuallyHiddenInput';
-import { DashboardLike } from './dashboard-types';
+import type { ExportableDashboardLike } from './dashboard-types';
 
 interface useDashboardImportExportProps {
   onExport: (entityId: string) => Promise<string | null>;
   configType: string;
-  entity: Pick<DashboardLike, 'id' | 'name'>;
+  entity: ExportableDashboardLike;
 }
 
 export const useDashboardExport = ({

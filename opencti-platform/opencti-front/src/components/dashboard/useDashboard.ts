@@ -7,7 +7,7 @@ import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDash
 import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 
 interface useDashboardProps {
-  entity: Pick<DashboardLike, 'id' | 'manifest'> | undefined | null;
+  entity: DashboardLike | undefined | null;
   onSave?: (entityId: string, newSerializedManifest: string, noRefresh: boolean, onCompleted: () => void) => void;
   onImportWidget?: (entityId: string, widgetConfigFile: File, serializedManifest: string) => void;
   onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string | null>;

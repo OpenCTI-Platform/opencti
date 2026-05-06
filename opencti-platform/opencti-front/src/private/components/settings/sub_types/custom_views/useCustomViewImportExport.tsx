@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import { graphql } from 'react-relay';
 import { fetchQuery, handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { DashboardHiddenImportInput, useDashboardExport, useDashboardImport } from '../../../../../components/dashboard/useDashboardImportExport';
 import { useFormatter } from '../../../../../components/i18n';
-import { graphql } from 'react-relay';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import type { ExportableDashboardLike } from '../../../../../components/dashboard/dashboard-types';
 import type { useCustomViewImportExport_Mutation } from './__generated__/useCustomViewImportExport_Mutation.graphql';
 import type { useCustomViewImportExport_Query$data } from './__generated__/useCustomViewImportExport_Query.graphql';
 
@@ -64,6 +65,6 @@ const onExport = async (id: string) => {
   return exportString;
 };
 
-export const useCustomViewExport = (customView: { id: string; name: string }) => {
+export const useCustomViewExport = (customView: ExportableDashboardLike) => {
   return useDashboardExport({ onExport, configType: 'custom-view', entity: customView });
 };
