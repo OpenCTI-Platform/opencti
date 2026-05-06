@@ -4,10 +4,11 @@ import Tooltip from '@mui/material/Tooltip';
 import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../components/i18n';
+import DashboardHiddenImportInput from '../../../../../components/dashboard/import-export/DashboardHiddenImportInput';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
+import useCustomViewImport from './import-export/useCustomViewImport';
 import CustomViewsSettingsDataTable from './CustomViewsSettingsDataTable';
 import CustomViewFormDrawer from './CustomViewFormDrawer';
-import { CustomViewHiddenImportInput, useCustomViewImport } from './useCustomViewImportExport';
 
 /**
  * Custom Views settings page.
@@ -19,7 +20,7 @@ const CustomViewsSettings = () => {
   const importHelpers = useCustomViewImport({ targetEntityType: subType.id });
   return (
     <>
-      <CustomViewHiddenImportInput helpers={importHelpers} />
+      <DashboardHiddenImportInput helpers={importHelpers} />
       <Card
         title={t_i18n('Custom Views')}
         sx={{

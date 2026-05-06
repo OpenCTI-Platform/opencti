@@ -18,7 +18,7 @@ import type { Theme } from '../../../../../components/Theme';
 import useCustomViewEdit from './useCustomViewEdit';
 import ExportButtons from '../../../../../components/ExportButtons';
 import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
-import { useCustomViewExport } from './useCustomViewImportExport';
+import { getCustomViewExportHandler } from './import-export/custom-view-export-utils';
 import CustomViewFormDrawer from './CustomViewFormDrawer';
 import CustomViewMenu from './CustomViewMenu';
 
@@ -48,7 +48,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
   const customView = useFragment(headerFragment, data);
   const theme = useTheme<Theme>();
   const [commitCustomViewMutation, mutating] = useCustomViewEdit();
-  const { handleExport } = useCustomViewExport(customView);
+  const handleExport = getCustomViewExportHandler(customView);
   const customizationLink = '/dashboard/settings/customization/entity_types';
   const subTypeLink = `${customizationLink}/${customView.targetEntityType}/custom-views`;
   const breadcrumb = [

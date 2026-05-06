@@ -8,7 +8,7 @@ import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../.
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
-import { useDashboardExport } from '../../../../components/dashboard/useDashboardImportExport';
+import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
@@ -146,7 +146,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     onExportWidget,
   });
   const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
-  const { handleExport } = useDashboardExport({ onExport, configType: 'dashboard', entity: workspace });
+  const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
   return (
     <Stack gap={2}>
       {!noToolbar && (
