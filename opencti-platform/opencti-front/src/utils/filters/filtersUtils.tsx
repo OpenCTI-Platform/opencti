@@ -1172,7 +1172,7 @@ export const buildFiltersForCustomView = (
 ): FilterGroup | null | undefined => {
   if (!filters) return filters;
   const filtersStr = JSON.stringify(filters);
-  const updatedFiltersStr = filtersStr.replace(SELF_ID, entityId || '');
+  const updatedFiltersStr = filtersStr.replaceAll(SELF_ID, entityId || '');
   if (filtersStr === updatedFiltersStr) {
     return filters;
   }
