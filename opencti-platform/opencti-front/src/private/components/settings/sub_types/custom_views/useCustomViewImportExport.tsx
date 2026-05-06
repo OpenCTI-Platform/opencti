@@ -60,7 +60,7 @@ const onExport = async (id: string) => {
   const result = data as useCustomViewImportExport_Query$data;
   const exportString = result.customView?.toConfigurationExport;
   if (!exportString) {
-    throw new Error('Failed to export custom view');
+    return null;
   }
   return exportString;
 };
