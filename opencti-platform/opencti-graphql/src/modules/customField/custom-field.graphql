@@ -72,5 +72,7 @@ type Mutation {
   customFieldAdd(input: CustomFieldAddInput!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
   customFieldDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
   customFieldFieldPatch(id: ID!, input: [EditInput!]!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldAddEntityType(id: ID!, entityType: String!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldRemoveEntityType(id: ID!, entityType: String!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 

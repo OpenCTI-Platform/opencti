@@ -1,6 +1,7 @@
 import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityCustomField, ENTITY_TYPE_CUSTOM_FIELD, type StoreEntityCustomField } from './custom-field-types';
 import type { EditInput } from '../../generated/graphql';
+import { EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
@@ -31,6 +32,15 @@ export const findById: DomainFindById<BasicStoreEntityCustomField> = (context: A
 
 export const findCustomFieldsPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCustomField>) => {
   return pageEntitiesConnection<BasicStoreEntityCustomField>(context, user, [ENTITY_TYPE_CUSTOM_FIELD], opts);
+};
+
+export const findCustomFieldsForEntityType = (context: AuthContext, user: AuthUser, entityType: string) => {
+  const filters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['entity_types'], values: [entityType], operator: FilterOperator.Eq }],
+    filterGroups: [],
+  };
+  return pageEntitiesConnection<BasicStoreEntityCustomField>(context, user, [ENTITY_TYPE_CUSTOM_FIELD], { filters });
 };
 
 export const customFieldAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldAddInput) => {
@@ -71,5 +81,13 @@ export const customFieldEdit = async (context: AuthContext, user: AuthUser, cust
     context_data: { id: customFieldId, entity_type: ENTITY_TYPE_CUSTOM_FIELD, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+export const customFieldAddEntityType = (context: AuthContext, user: AuthUser, customFieldId: string, entityType: string) => {
+  return customFieldEdit(context, user, customFieldId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Add }]);
+};
+
+export const customFieldRemoveEntityType = (context: AuthContext, user: AuthUser, customFieldId: string, entityType: string) => {
+  return customFieldEdit(context, user, customFieldId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Remove }]);
 };
 
