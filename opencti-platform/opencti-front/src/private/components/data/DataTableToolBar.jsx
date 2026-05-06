@@ -17,6 +17,8 @@ import {
   LockOpenOutlined,
   MergeOutlined,
   MoveToInboxOutlined,
+  PlayCircleOutlined,
+  PrecisionManufacturingOutlined,
   RestoreOutlined,
   TransformOutlined,
   UnpublishedOutlined,
@@ -73,6 +75,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
+  AUTOMATION,
   BYPASS,
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
@@ -195,6 +198,15 @@ const styles = (theme) => ({
   },
   autoCompleteIndicator: {
     display: 'none',
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
+  },
+  noResult: {
+    color: theme.palette.text.primary,
+    fontSize: 15,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
@@ -340,6 +352,20 @@ const toolbarGroupsQuery = graphql`
     }
 `;
 
+const toolBarPlaybooksQuery = graphql`
+  query DataTableToolBarPlaybooksQuery($search: String) {
+    playbooks(search: $search) {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
+  }
+`;
+
 export const toolBarUsersLinesSearchQuery = graphql`
     query  DataTableToolBarUsersLinesSearchQuery(
         $first: Int, $search: String,
@@ -372,6 +398,9 @@ class DataTableToolBar extends Component {
       displayShare: false,
       displayUnshare: false,
       displayPromote: false,
+      displayEnrollPlaybook: false,
+      enrollPlaybookId: null,
+      enrollPlaybooks: [],
       displaySendEmail: false,
       containerCreation: false,
       organizationCreation: false,
@@ -489,6 +518,40 @@ class DataTableToolBar extends Component {
 
   handleClosePromote() {
     this.setState({ displayPromote: false });
+  }
+
+  handleOpenEnrollPlaybook() {
+    fetchQuery(toolBarPlaybooksQuery, { search: '' })
+      .toPromise()
+      .then((data) => {
+        const enrollPlaybooks = (data?.playbooks?.edges ?? [])
+          .map((e) => ({
+            label: e.node.name,
+            value: e.node.id,
+            description: e.node.description,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
+        this.setState({
+          displayEnrollPlaybook: true,
+          enrollPlaybooks,
+          enrollPlaybookId: null,
+        });
+      });
+  }
+
+  handleCloseEnrollPlaybook() {
+    this.setState({ displayEnrollPlaybook: false, enrollPlaybookId: null });
+  }
+
+  handleLaunchEnrollPlaybook(playbookId) {
+    const actions = [{
+      type: 'ENROLL_PLAYBOOK',
+      context: { values: [playbookId] },
+    }];
+    this.setState({ actions }, () => {
+      this.handleCloseEnrollPlaybook();
+      this.handleOpenTask();
+    });
   }
 
   handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
@@ -2524,6 +2587,20 @@ class DataTableToolBar extends Component {
                         </Security>
                       </>
                     )}
+                    <Security needs={[AUTOMATION]}>
+                      <Tooltip title={t('Enroll in playbook')}>
+                        <span>
+                          <IconButton
+                            aria-label="enroll-playbook"
+                            disabled={numberOfSelectedElements === 0 || this.state.processing}
+                            onClick={this.handleOpenEnrollPlaybook.bind(this)}
+                            size="small"
+                          >
+                            <PrecisionManufacturingOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Security>
                     {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
                       <Security needs={[deleteCapability]}>
                         <Tooltip title={warningMessage || t('Delete')}>
@@ -3328,6 +3405,54 @@ class DataTableToolBar extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
+              <Drawer
+                title={t('Enroll in playbook')}
+                open={this.state.displayEnrollPlaybook}
+                onClose={this.handleCloseEnrollPlaybook.bind(this)}
+              >
+                <div>
+                  <Alert severity="info" variant="outlined">
+                    {t('Select a playbook to enroll the selected entities.')}
+                  </Alert>
+                  <List>
+                    {this.state.enrollPlaybooks.length > 0 ? (
+                      this.state.enrollPlaybooks.map((playbook) => (
+                        <div key={playbook.value}>
+                          <ListItem
+                            divider={true}
+                            classes={{ root: classes.item }}
+                            secondaryAction={(
+                              <Security needs={[AUTOMATION]}>
+                                <div style={{ right: 0 }}>
+                                  <Tooltip title={t('Enroll in this playbook')}>
+                                    <IconButton
+                                      onClick={this.handleLaunchEnrollPlaybook.bind(this, playbook.value)}
+                                    >
+                                      <PlayCircleOutlined />
+                                    </IconButton>
+                                  </Tooltip>
+                                </div>
+                              </Security>
+                            )}
+                          >
+                            <ListItemIcon classes={{ root: classes.itemIcon }}>
+                              <ItemIcon type="Playbook" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={playbook.label}
+                              secondary={playbook.description ?? ''}
+                            />
+                          </ListItem>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={classes.noResult}>
+                        {t('No playbook available')}
+                      </div>
+                    )}
+                  </List>
+                </div>
+              </Drawer>
             </>
           );
         }}

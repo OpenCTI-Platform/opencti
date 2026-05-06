@@ -25,6 +25,7 @@ import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
   ACTION_TYPE_ENRICHMENT,
+  ACTION_TYPE_ENROLL_PLAYBOOK,
   ACTION_TYPE_MERGE,
   ACTION_TYPE_PROMOTE,
   ACTION_TYPE_REMOVE,
@@ -139,7 +140,8 @@ const throwErrorInDraftContext = (context, user, actionType) => {
     || actionType === ACTION_TYPE_RULE_APPLY
     || actionType === ACTION_TYPE_RULE_CLEAR
     || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
-    || actionType === ACTION_TYPE_SEND_EMAIL) {
+    || actionType === ACTION_TYPE_SEND_EMAIL
+    || actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };
@@ -241,6 +243,16 @@ const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_operation = 'send_email';
     baseOperationObject.template_id = operations[0].context.values;
   }
+  // Playbook enrollment
+  if (actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
+    baseOperationObject.opencti_operation = 'enroll_playbook';
+    baseOperationObject.playbook_ids = operations[0].context.values;
+  }
+
+  logApp.info('[TASK-MANAGER] buildBundleElement result', {
+    baseOperationObject,
+    elementInternalId: element.internal_id,
+  });
   return baseOperationObject;
 };
 

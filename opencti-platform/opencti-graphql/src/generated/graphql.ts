@@ -1780,6 +1780,7 @@ export enum BackgroundTaskActionType {
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
   Enrichment = 'ENRICHMENT',
+  EnrollPlaybook = 'ENROLL_PLAYBOOK',
   Merge = 'MERGE',
   Promote = 'PROMOTE',
   Remove = 'REMOVE',

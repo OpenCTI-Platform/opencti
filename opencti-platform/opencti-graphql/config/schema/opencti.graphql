@@ -950,6 +950,7 @@ enum BackgroundTaskActionType {
   ADD_GROUPS
   REMOVE_GROUPS
   SEND_EMAIL
+  ENROLL_PLAYBOOK
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
