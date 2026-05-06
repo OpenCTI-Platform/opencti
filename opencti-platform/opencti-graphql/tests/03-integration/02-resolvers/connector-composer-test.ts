@@ -1268,6 +1268,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const input = {
         id: managedConnectorId,
         name: 'Updated IpInfo Connector',
+        title: 'Updated IpInfo Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'updated-token-456' },
