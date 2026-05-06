@@ -5,6 +5,48 @@
 import { FieldOption } from '../../../../utils/field';
 import { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
+// Draft defaults type shared between FormBuilderData and FormSchemaDefinition
+export interface DraftDefaults {
+  name?: {
+    enabled: boolean;
+    isEditable: boolean;
+    isRequired: boolean;
+    defaultValue?: string;
+  };
+  description?: {
+    enabled: boolean;
+    isEditable: boolean;
+    isRequired: boolean;
+    defaultValue?: string;
+  };
+  objectAssignee?: {
+    enabled: boolean;
+    isEditable: boolean;
+    isRequired: boolean;
+    defaults: FieldOption[];
+  };
+  objectParticipant?: {
+    enabled: boolean;
+    isEditable: boolean;
+    isRequired: boolean;
+    defaults: FieldOption[];
+  };
+  author?: {
+    type: 'none' | 'main_entity_author' | 'static';
+    isEditable: boolean;
+    isRequired: boolean;
+    defaultValue?: string;
+    defaultValueLabel?: string;
+    defaultValueType?: string;
+  };
+  authorizedMembers?: {
+    enabled: boolean;
+    isEditable: boolean;
+    isRequired: boolean;
+    defaults: AuthorizedMemberOption[];
+  };
+}
+
 // Field type definitions
 export interface FormFieldAttribute {
   id: string;
@@ -60,46 +102,7 @@ export interface FormBuilderData {
   includeInContainer: boolean; // Whether to include entities in container (only for container types)
   isDraftByDefault: boolean; // Whether forms should be created as draft by default
   allowDraftOverride: boolean; // Whether users can override the draft setting
-  draftDefaults?: {
-    name?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaultValue?: string;
-    };
-    description?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaultValue?: string;
-    };
-    objectAssignee?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaults: FieldOption[];
-    };
-    objectParticipant?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaults: FieldOption[];
-    };
-    author?: {
-      type: 'none' | 'main_entity_author' | 'static';
-      isEditable: boolean;
-      isRequired: boolean;
-      defaultValue?: string;
-      defaultValueLabel?: string;
-      defaultValueType?: string;
-    };
-    authorizedMembers?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaults: AuthorizedMemberOption[];
-    };
-  };
+  draftDefaults?: DraftDefaults;
   mainEntityMultiple: boolean; // Whether main entity allows multiple
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing entities)
   mainEntityDisableCreation?: boolean; // Whether to disable on-the-fly entity creation in main entity lookup mode
@@ -136,46 +139,7 @@ export interface FormSchemaDefinition {
   includeInContainer?: boolean;
   isDraftByDefault?: boolean; // Whether forms should be created as draft by default
   allowDraftOverride?: boolean; // Whether users can override the draft setting
-  draftDefaults?: {
-    name?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaultValue?: string;
-    };
-    description?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaultValue?: string;
-    };
-    objectAssignee?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaults: FieldOption[];
-    };
-    objectParticipant?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaults: FieldOption[];
-    };
-    author?: {
-      type: 'none' | 'main_entity_author' | 'static';
-      isEditable: boolean;
-      isRequired: boolean;
-      defaultValue?: string;
-      defaultValueLabel?: string;
-      defaultValueType?: string;
-    };
-    authorizedMembers?: {
-      enabled: boolean;
-      isEditable: boolean;
-      isRequired: boolean;
-      defaults: AuthorizedMemberOption[];
-    };
-  };
+  draftDefaults?: DraftDefaults;
   mainEntityMultiple?: boolean;
   mainEntityLookup?: boolean;
   mainEntityDisableCreation?: boolean; // Whether to disable on-the-fly entity creation in main entity lookup mode
