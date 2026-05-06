@@ -64,7 +64,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
     : '';
   const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation);
   const navigate = useNavigate();
-  const onImport = (file: File) => new Promise<void>((resolve, reject) => {
+  const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
       variables: { file },
       onCompleted: (data) => {
@@ -79,7 +79,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
       },
     });
   });
-  const importHelpers = useDashboardImport({ onImport });
+  const importHelpers = useDashboardImport({ onImport: handleImport });
 
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
 
