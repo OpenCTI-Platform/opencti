@@ -747,6 +747,13 @@ export const redisGetTelemetry = async (gaugeName: string) => {
 export const redisClearTelemetry = async () => {
   return getClientBase().del(TELEMETRY_EVENT_KEY);
 };
+
+/**
+ * Delete specific gauge entry
+ */
+export const redisClearTelemetryGauge = async (gaugeName: string) => {
+  return getClientBase().hdel(TELEMETRY_EVENT_KEY, gaugeName);
+};
 // endregion - telemetry gauges
 
 // region - manager stream state
