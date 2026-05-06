@@ -35,6 +35,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+    display: 'flex',
+    alignItems: 'center',
   },
   goIcon: {
     position: 'absolute',
