@@ -31,6 +31,8 @@ The settings page lists all existing Custom Views with the following columns:
 
 The default Custom View is displayed with a yellow icon.
 
+![Custom Views settings](assets/custom-views-settings.png)
+
 !!! info
     Managing, creating and editing Custom Views is only available to users with the `Manage customization` capability.
 
@@ -45,6 +47,8 @@ The default Custom View is displayed with a yellow icon.
     - **Description** *(optional)* — internal documentation for the view, <br/>
     - **Set as default custom view** — toggle to set this view as the default landing tab for the selected entity type (replaces the standard Overview tab).<br/>
 4. Click **Create**.
+
+![Create a Custom View](assets/custom-views-create.png)
 
 Once created, the view opens in **edit mode** where you can add and configure widgets.
 
@@ -66,7 +70,9 @@ Other non-container entity types come with the following:
 
 This means widgets are immediately relevant out of the box. You can still layer additional filters on top to refine what each widget displays.
 
-However, it is also possible for a user to select a different filter and still add the current entity, for example: `source entity = current entity`
+However, it is also possible for a user to select a different filter and still add the current entity, for example: `source entity = current entity`.
+
+![Contextual filters](assets/custom-views-filters.png)
 
 ### Preview mode
 
