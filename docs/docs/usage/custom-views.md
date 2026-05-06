@@ -66,6 +66,8 @@ Other non-container entity types come with the following:
 
 This means widgets are immediately relevant out of the box. You can still layer additional filters on top to refine what each widget displays.
 
+However, it is also possible for a user to select a different filter and still add the current entity, for example: `source entity = current entity`
+
 ### Preview mode
 
 While editing, a **Preview** toggle lets you see how the view will look when rendered on a real entity page, using sample data from an entity of the target type found in the platform.
