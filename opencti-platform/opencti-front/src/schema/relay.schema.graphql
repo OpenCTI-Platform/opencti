@@ -10789,12 +10789,20 @@ type WorkflowTransition {
   actions: [String!]
 }
 
+type WorkflowLastHistoryEntry {
+  state: String!
+  event: String!
+  user_id: String!
+  timestamp: String!
+  comment: String
+}
+
 type WorkflowInstance {
   id: ID!
   currentState: String!
   currentStatus: Status
   allowedTransitions: [WorkflowTransition!]!
-  lastComment: String
+  lastHistoryEntry: WorkflowLastHistoryEntry
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {

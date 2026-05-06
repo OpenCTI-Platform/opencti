@@ -3,7 +3,7 @@ import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import WorkflowFieldList from './WorkflowFieldList';
 import { CommentMode, WorkflowActionType, WorkflowDataType } from './utils';
-import { FormControlLabel, Icon, Switch, Typography, Box } from '@mui/material';
+import { FormControlLabel, Icon, Switch, Typography, Box, Alert } from '@mui/material';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { FlagOutlined } from '@mui/icons-material';
 import WorkflowConditionFilters from './WorkflowConditionFilters';
@@ -84,8 +84,11 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Comments')}
+          {t_i18n('Comment')}
         </Typography>
+        <Alert severity="info" variant="outlined">
+          {t_i18n('When enabled, users will be prompted to leave a comment when changing the status.')}
+        </Alert>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
             control={(
@@ -94,7 +97,7 @@ const TransitionForm = () => {
                 onChange={(e) => handleToggleEnableComments(e.target.checked)}
               />
             )}
-            label={t_i18n('Enable comments')}
+            label={t_i18n('Enable comment')}
           />
           <Box sx={{ pl: 4 }}>
             <FormControlLabel

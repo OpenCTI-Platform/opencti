@@ -29,7 +29,9 @@ export const workflowStatusFragment = graphql`
           color
         }
       }
-      lastComment
+      lastHistoryEntry {
+        comment
+      }
       allowedTransitions {
         event
         toState
@@ -99,7 +101,7 @@ const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) =
 
   const { workflowInstance } = draft;
   const currentStatus = workflowInstance.currentStatus;
-  const lastComment = workflowInstance.lastComment ?? null;
+  const lastComment = workflowInstance.lastHistoryEntry?.comment ?? null;
 
   return (
     <>
@@ -255,8 +257,8 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
       >
         <DialogContentText sx={{ marginBottom: 2 }}>
           {commentDialogTransition?.comment === 'required'
-            ? t_i18n('A comment is required to perform this transition.')
-            : t_i18n('You can optionally add a comment before performing this transition.')}
+            ? t_i18n('A comment is required before changing the status.')
+            : t_i18n('You can optionally add a comment before changing the status.')}
         </DialogContentText>
         <TextField
           autoFocus
