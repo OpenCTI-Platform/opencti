@@ -56,6 +56,7 @@ export interface Transition<TContext extends Context = Context> {
   from: State;
   to: State;
   event: Event;
+  comment?: string;
   conditions?: ConditionValidator<TContext>[];
   onTransition?: SideEffect<TContext>[];
   actionTypes?: string[];
@@ -121,6 +122,7 @@ export interface WorkflowSerializedTransition {
   from: string | string[];
   to: string;
   event: string;
+  comment?: string;
   actions?: WorkflowActionConfig[];
   conditions?: FilterGroup;
 }

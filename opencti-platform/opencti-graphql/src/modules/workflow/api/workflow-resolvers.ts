@@ -44,6 +44,7 @@ const workflowResolvers = {
   },
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
+    comment: (transition: any) => transition.comment ?? null,
     actions: (transition: any) => transition.actions ?? [],
   },
   WorkflowTriggerResult: {

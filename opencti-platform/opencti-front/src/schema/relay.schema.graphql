@@ -10785,6 +10785,7 @@ type WorkflowTransition {
   event: String!
   toState: String!
   toStatus: Status
+  comment: String
   actions: [String!]
 }
 

@@ -244,6 +244,7 @@ export const getAllowedTransitions = async (
     return {
       event: transition.event,
       toState: transition.to,
+      comment: transition.comment,
       actions: transition.actionTypes || [],
     };
   });
