@@ -1,15 +1,17 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { createEntity } from '../../../../src/database/middleware';
+import { createEntity, deleteElementById } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsAdminWithError } from '../../../utils/testQueryHelper';
-import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID, DASHBOARD_MANIFEST, DASHBOARD_MANIFEST_OBJECT } from './customView-fixtures';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../../src/modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
-import type { StoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
+import { ENTITY_TYPE_CUSTOM_VIEW, type StoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 import { fileToReadStream } from '../../../../src/database/file-storage';
+import { redisClearTelemetryGauge, redisGetTelemetry } from '../../../../src/database/redis';
+import { TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED, TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED } from '../../../../src/manager/telemetryManager';
+import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID, DASHBOARD_MANIFEST, DASHBOARD_MANIFEST_OBJECT } from './customView-fixtures';
 
 const READ_CUSTOM_VIEW_QUERY = gql`
   query CustomViewTest($id: ID!) {
@@ -104,6 +106,7 @@ const EDIT_CUSTOM_VIEW_QUERY = gql`
       manifest
       updated_at
       default
+      enabled
     }
   }
 `;
@@ -182,7 +185,6 @@ const createUploadFile = (filePath: string, fileName: string) => {
     executor(fileUpload);
   });
   upload.file = fileUpload;
-
   return upload;
 };
 
@@ -209,6 +211,23 @@ describe('CustomView resolvers', () => {
       'CustomView',
     );
   });
+  afterAll(async () => {
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+    const result = await queryAsAdminWithSuccess({
+      query: READ_ALL_CUSTOM_VIEWS_QUERY,
+    });
+    const nodes = result.data.customViews.edges.map((e: any) => e.node);
+    await Promise.all(nodes.map(({ id }: { id: string }) =>
+      deleteElementById(
+        testContext,
+        ADMIN_USER,
+        id,
+        ENTITY_TYPE_CUSTOM_VIEW,
+      ),
+    ));
+  });
+
   describe('display use cases', () => {
     it('should retrieve serialized dashboard manifest', async () => {
       const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
@@ -363,12 +382,16 @@ describe('CustomView resolvers', () => {
             }, {
               key: 'manifest',
               value: [updatedManifest],
+            }, {
+              key: 'enabled',
+              value: [true],
             }],
           },
         });
         expect(result.data.customViewEdit.description).toBe(updatedDescription);
         expect(result.data.customViewEdit.manifest).toBe(updatedManifest);
         expect(result.data.customViewEdit.updated_at).not.toBe(updatedAtBefore);
+        expect(result.data.customViewEdit.enabled).toBe(true);
         // TODO: Check activity logs using the audits query
       });
 
@@ -660,6 +683,13 @@ describe('CustomView resolvers', () => {
             },
           },
         });
+      });
+    });
+
+    describe('telemetry', () => {
+      it('gauges are updated', async () => {
+        expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED)).toBe(5);
+        expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED)).toBe(1);
       });
     });
   });
