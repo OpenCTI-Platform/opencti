@@ -47,13 +47,13 @@ const CustomViewFormDrawer = ({
         },
       },
       onCompleted: (response) => {
-        setSubmitting(false);
         resetForm();
         onClose();
         if (response.customViewAdd) {
           const { id } = response.customViewAdd;
           navigate(`/dashboard/settings/customization/entity_types/${entityType}/custom-views/${id}`);
         }
+        setSubmitting(false);
       },
       onError: (error) => {
         setSubmitting(false);
