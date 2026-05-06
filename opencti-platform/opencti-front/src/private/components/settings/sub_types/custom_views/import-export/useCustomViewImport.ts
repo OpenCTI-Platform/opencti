@@ -4,10 +4,10 @@ import { handleError, MESSAGING$ } from '../../../../../../relay/environment';
 import useDashboardImport from '../../../../../../components/dashboard/import-export/useDashboardImport';
 import { useFormatter } from '../../../../../../components/i18n';
 import useApiMutation from '../../../../../../utils/hooks/useApiMutation';
-import type { useCustomViewImportExport_Mutation } from '../__generated__/useCustomViewImportExport_Mutation.graphql';
+import type { useCustomViewImport_Mutation } from './__generated__/useCustomViewImport_Mutation.graphql';
 
 const customViewImportMutation = graphql`
-  mutation useCustomViewImportExport_Mutation($targetEntityType: String!, $file: Upload!) {
+  mutation useCustomViewImport_Mutation($targetEntityType: String!, $file: Upload!) {
     customViewConfigurationImport(targetEntityType: $targetEntityType, file: $file) {
       id
     }
@@ -17,7 +17,7 @@ const customViewImportMutation = graphql`
 const useCustomViewImport = ({ targetEntityType }: { targetEntityType: string }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [commitImportMutation, importing] = useApiMutation<useCustomViewImportExport_Mutation>(customViewImportMutation);
+  const [commitImportMutation, importing] = useApiMutation<useCustomViewImport_Mutation>(customViewImportMutation);
 
   const onImport = (file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
