@@ -468,6 +468,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
     .filter((k) => !(getAvailableKeys().has(k)
       || k.startsWith(RULE_PREFIX)
+      || k.startsWith('x_opencti_cf_') // dynamic custom field keys — registered at runtime
       || getMetricsAttributesNames().includes(k)
     ));
 

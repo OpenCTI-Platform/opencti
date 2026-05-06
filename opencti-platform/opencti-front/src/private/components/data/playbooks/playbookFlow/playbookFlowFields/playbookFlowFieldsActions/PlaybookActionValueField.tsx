@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { Field, useFormikContext } from 'formik';
+import MenuItem from '@mui/material/MenuItem';
 import SwitchField from '../../../../../../../components/fields/SwitchField';
+import SelectField from '../../../../../../../components/fields/SelectField';
 import { FieldOption } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import CreatedByField from '../../../../../common/form/CreatedByField';
@@ -26,6 +28,7 @@ import ObjectParticipantField from '../../../../../common/form/ObjectParticipant
 import OpenVocabField from '../../../../../common/form/OpenVocabField';
 import StatusField from '../../../../../common/form/StatusField';
 import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
+import { CustomFieldOption } from './useActionFieldOptions';
 import TextField from '../../../../../../../components/TextField';
 import useAttributes from '../../../../../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../../../../../components/i18n';
@@ -33,11 +36,13 @@ import { useFormatter } from '../../../../../../../components/i18n';
 interface PlaybookActionValueFieldProps {
   action: PlaybookUpdateAction;
   index: number;
+  customFieldOptions?: CustomFieldOption[];
 }
 
 const PlaybookActionValueField = ({
   action,
   index,
+  customFieldOptions = [],
 }: PlaybookActionValueFieldProps) => {
   const { t_i18n } = useFormatter();
   const { numberAttributes } = useAttributes();
@@ -267,6 +272,43 @@ const PlaybookActionValueField = ({
         />
       );
     default:
+      // Dynamic custom fields: render the appropriate input based on field_type
+      if (action.attribute?.startsWith('x_opencti_cf_')) {
+        const cfDef = customFieldOptions.find((o) => o.value === action.attribute);
+        if (cfDef?.field_type === 'select' && cfDef.select_options && cfDef.select_options.length > 0) {
+          return (
+            <Field
+              component={SelectField}
+              variant="standard"
+              name={formValueName}
+              label={t_i18n('Value')}
+              disabled={disabled}
+              containerstyle={{ width: '100%' }}
+              onChange={(_: string, val: string) => {
+                setFieldValue(valueName, [{ label: val, value: val, patch_value: val }]);
+              }}
+            >
+              {cfDef.select_options.map((opt: string) => (
+                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+              ))}
+            </Field>
+          );
+        }
+        return (
+          <Field
+            component={TextField}
+            disabled={disabled}
+            type={cfDef?.field_type === 'integer' ? 'number' : 'text'}
+            variant="standard"
+            name={formValueName}
+            label={t_i18n('Value')}
+            fullWidth
+            onChange={(_: string, val: string) => {
+              setFieldValue(valueName, [{ label: val, value: val, patch_value: val }]);
+            }}
+          />
+        );
+      }
       return (
         <Field
           component={TextField}

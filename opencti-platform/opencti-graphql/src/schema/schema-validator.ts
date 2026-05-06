@@ -222,6 +222,9 @@ export const validateInputCreation = async (
 export const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
   const invalidKeys: string[] = [];
   Object.entries(input).forEach(([key]) => {
+    // Dynamic custom field attributes (flat storage) bypass schema validation — their mapping
+    // is registered at runtime via elAddDynamicFieldMapping / registerDynamicAttribute.
+    if (key.startsWith('x_opencti_cf_')) return;
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
     const reference = schemaRelationsRefDefinition.getRelationRef(instanceType, key);
     const schemaAttribute = attribute || reference;

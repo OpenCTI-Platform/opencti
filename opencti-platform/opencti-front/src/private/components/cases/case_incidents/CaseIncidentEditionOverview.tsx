@@ -1,14 +1,16 @@
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import * as Yup from 'yup';
+import MenuItem from '@mui/material/MenuItem';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
+import SelectField from '../../../../components/fields/SelectField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -25,8 +27,9 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import { CaseIncidentEditionOverviewCustomFieldDefinitionsQuery } from './__generated__/CaseIncidentEditionOverviewCustomFieldDefinitionsQuery.graphql';
 
-export const caseIncidentMutationFieldPatch = graphql`
+const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
@@ -60,6 +63,24 @@ export const caseIncidentEditionOverviewFocus = graphql`
   }
 `;
 
+const caseIncidentCustomFieldDefinitionsQuery = graphql`
+  query CaseIncidentEditionOverviewCustomFieldDefinitionsQuery($filters: FilterGroup) {
+    customFieldDefinitions(first: 50, filters: $filters) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          select_options
+          mandatory
+          description
+        }
+      }
+    }
+  }
+`;
+
 const caseIncidentEditionOverviewFragment = graphql`
   fragment CaseIncidentEditionOverview_case on CaseIncident {
     id
@@ -73,6 +94,13 @@ const caseIncidentEditionOverviewFragment = graphql`
     entity_type
     created
     response_types
+    customFieldValues {
+      field_id
+      field_name
+      int_value
+      string_value
+      select_value
+    }
     creators {
       id
       name
@@ -177,6 +205,12 @@ interface CaseIncidentEditionFormValues {
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
 
+const CUSTOM_FIELD_DEFINITIONS_FILTERS = {
+  mode: 'and',
+  filters: [{ key: 'entity_types', values: ['Case-Incident'], operator: 'eq', mode: 'or' }],
+  filterGroups: [],
+};
+
 const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverviewProps> = ({
   caseRef,
   context,
@@ -186,6 +220,15 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   const { t_i18n } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
   const { mandatoryAttributes } = useIsMandatoryAttribute(CASE_INCIDENT_TYPE);
+
+  // Load custom field definitions for Case-Incident
+  const customFieldDefsData = useLazyLoadQuery<CaseIncidentEditionOverviewCustomFieldDefinitionsQuery>(
+    caseIncidentCustomFieldDefinitionsQuery,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { filters: CUSTOM_FIELD_DEFINITIONS_FILTERS as any },
+  );
+  const customFieldDefs = customFieldDefsData?.customFieldDefinitions?.edges?.map((e) => e.node) ?? [];
+
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     severity: Yup.string().nullable(),
@@ -239,6 +282,22 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
       if (['x_opencti_workflow_id'].includes(name)) {
         finalValue = (value as FieldOption).value;
       }
+      // For integer custom fields, coerce string → number so ES stores the right type
+      if (name.startsWith('x_opencti_cf_')) {
+        const numCandidate = Number(finalValue);
+        if (finalValue !== '' && finalValue !== null && !Number.isNaN(numCandidate)) {
+          finalValue = numCandidate;
+        }
+        // Bypass Yup validation: x_opencti_cf_* keys are not in the Yup schema,
+        // so validateAt() would throw and the silent .catch() would swallow the save.
+        editor.fieldPatch({
+          variables: {
+            id: caseData.id,
+            input: { key: name, value: finalValue ?? '' },
+          },
+        });
+        return;
+      }
       validator
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -252,6 +311,23 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
         .catch(() => false);
     }
   };
+
+  // Build custom field initial values from customFieldValues resolver
+  const customFieldInitialValues: Record<string, string | number | null> = {};
+  customFieldDefs.forEach((def) => {
+    const flatKey = `x_opencti_cf_${def.name}`;
+    const cfValue = caseData.customFieldValues?.find(
+      (cv) => cv?.field_name === flatKey,
+    );
+    if (def.field_type === 'integer') {
+      // cfValue.int_value is a number, or null if not set
+      customFieldInitialValues[flatKey] = cfValue?.int_value ?? null;
+    } else {
+      // string or select — prefer select_value, then string_value
+      customFieldInitialValues[flatKey] = cfValue?.select_value ?? cfValue?.string_value ?? '';
+    }
+  });
+
   const initialValues = {
     name: caseData.name,
     description: caseData.description,
@@ -266,6 +342,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     objectParticipant: convertParticipants(caseData),
     x_opencti_workflow_id: convertStatus(t_i18n, caseData) as FieldOption,
     references: [],
+    ...customFieldInitialValues,
   };
   return (
     <Formik
@@ -378,6 +455,45 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
+
+          {/* ── Custom fields ── */}
+          {customFieldDefs.map((def) => {
+            const flatKey = `x_opencti_cf_${def.name}`;
+            if (def.field_type === 'select' && def.select_options && def.select_options.length > 0) {
+              return (
+                <Field
+                  key={flatKey}
+                  component={SelectField}
+                  variant="standard"
+                  name={flatKey}
+                  label={t_i18n(def.label)}
+                  required={def.mandatory}
+                  containerstyle={{ ...fieldSpacingContainerStyle, width: '100%' }}
+                  onSubmit={handleSubmitField}
+                >
+                  <MenuItem value="">&nbsp;</MenuItem>
+                  {def.select_options.map((opt: string) => (
+                    <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                  ))}
+                </Field>
+              );
+            }
+            return (
+              <Field
+                key={flatKey}
+                component={TextField}
+                variant="standard"
+                name={flatKey}
+                label={t_i18n(def.label)}
+                required={def.mandatory}
+                fullWidth={true}
+                type={def.field_type === 'integer' ? 'number' : 'text'}
+                style={fieldSpacingContainerStyle}
+                onFocus={editor.changeFocus}
+                onSubmit={handleSubmitField}
+              />
+            );
+          })}
 
           <ObjectAssigneeField
             name="objectAssignee"

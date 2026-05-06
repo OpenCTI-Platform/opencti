@@ -453,6 +453,24 @@ export const filterValue = (
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);
   }
+  if (filterKey === 'customFieldValue') {
+    // Encoded format: "x_opencti_cf_gravity|select_value|G1" → "gravity = G1"
+    if (value && typeof value === 'string' && value.includes('|')) {
+      const parts = (value as string).split('|');
+      const fieldDisplay = (parts[0] ?? '').replace(/^x_opencti_cf_/, '').replace(/^x_opencti_/, '');
+      const fieldValue = parts[2] ?? '';
+      return fieldValue ? `${fieldDisplay} = ${fieldValue}` : fieldDisplay;
+    }
+    // Legacy object format (backward compat)
+    if (value && typeof value === 'object' && 'key' in value && 'values' in value) {
+      const subFilter = value as { key: string; values: string[] };
+      if (subFilter.key === 'field_name') {
+        return (subFilter.values[0] ?? '').replace(/^x_opencti_/, '');
+      }
+      return subFilter.values[0] ?? '';
+    }
+    return String(value ?? '');
+  }
   if (
     value
     && (filterType === 'boolean' || filterType === 'enum')
@@ -842,6 +860,9 @@ export const useAvailableFilterKeysForEntityTypes = (
 };
 
 const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
+  // Dynamic custom field keys are always valid — they are registered at runtime
+  // and may not be present in the filterKeysSchema cached at login time
+  if (key.startsWith('x_opencti_cf_')) return true;
   const completedAvailableFilterKeys = availableFilterKeys.concat(NOT_CLEANABLE_FILTER_KEYS);
   return completedAvailableFilterKeys.includes(key);
 };

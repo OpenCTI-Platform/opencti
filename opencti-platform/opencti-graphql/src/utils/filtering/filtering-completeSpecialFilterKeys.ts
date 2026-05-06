@@ -5,6 +5,7 @@ import {
   BULK_SEARCH_KEYWORDS_FILTER,
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
+  CUSTOM_FIELD_VALUE_FILTER,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -556,6 +557,44 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
   return { newFilter, newFilterGroup: undefined };
 };
 
+const adaptFilterToCustomFieldValueFilterKey = (filter: Filter) => {
+  const { values, operator, mode } = filter;
+  const op: string = operator ?? FilterOperator.Eq;
+
+  if (values.length === 0) {
+    throw FunctionalError('customFieldValue filter requires at least one value', { filter });
+  }
+
+  // Format: "fieldName|subKey|value"  e.g. "x_opencti_cf_gravity|select_value|G1"
+  // Flat storage: fieldName IS the ES key — subKey is used only to hint the value type (ignored for query)
+  const flatFilters = values.flatMap((encodedValue: any) => {
+    if (typeof encodedValue !== 'string') return [];
+    const parts = (encodedValue as string).split('|');
+    if (parts.length !== 3) return [];
+    const [fieldName, , subValue] = parts;
+    return [{
+      key: [fieldName],
+      values: [subValue],
+      operator: op,
+    }];
+  });
+
+  if (flatFilters.length === 0) {
+    throw FunctionalError('customFieldValue filter has no valid encoded values', { filter });
+  }
+  if (flatFilters.length === 1) {
+    return { newFilter: flatFilters[0] as Filter, newFilterGroup: undefined };
+  }
+  return {
+    newFilter: undefined,
+    newFilterGroup: {
+      mode: mode ?? FilterMode.Or,
+      filters: flatFilters as Filter[],
+      filterGroups: [],
+    } as FilterGroup,
+  };
+};
+
 const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
   const { operator, mode, values } = filter;
   let newFilter;
@@ -827,6 +866,15 @@ export const completeSpecialFilterKeys = async (
         const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
         finalFilters.push(newFilter);
       }
+      if (filterKey === CUSTOM_FIELD_VALUE_FILTER) {
+        const { newFilter, newFilterGroup } = adaptFilterToCustomFieldValueFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
+      }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
         const { newFilter, newFilterGroup } = adaptFilterToServiceAccountFilterKey(filter);
         if (newFilter) {
@@ -854,29 +902,17 @@ export const completeSpecialFilterKeys = async (
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }
       const definition = schemaAttributesDefinition.getAttributeByName(key[0]) as ComplexAttribute;
-      if (definition.format === 'standard') {
-        finalFilterGroups.push({
-          mode: filter.mode ?? FilterMode.And,
-          filters: filter.values.map((v) => {
-            const filterKeys = Array.isArray(v.key) ? v.key : [v.key];
-            return { ...v, key: filterKeys.map((k: any) => `${k}.${v.key}`) };
-          }),
-          filterGroups: [],
-        });
-      } else if (definition.format === 'nested') {
-        finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });
+      if (definition?.multiple) {
+        // in case of array attribute, we need to build a nested query
+        const nested = [{ key: 'value', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: [key[0]], nested, mode: filter.mode, values: [] });
       } else {
-        throw UnsupportedError('Object attribute format is not filterable', { format: definition.format });
+        // in case of single value attribute, nothing special to do
+        finalFilters.push(filter);
       }
     } else {
-      // not a special case, leave the filter unchanged
-      // Of special case but in a multi keys filter but is currently not supported
       finalFilters.push(filter);
     }
   }
-  return {
-    ...inputFilters,
-    filters: finalFilters,
-    filterGroups: finalFilterGroups,
-  };
+  return { mode: inputFilters.mode, filters: finalFilters, filterGroups: finalFilterGroups };
 };

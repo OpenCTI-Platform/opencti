@@ -352,3 +352,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixDomainObjectsAttributes);
+
+// Custom field values are stored flat (x_opencti_cf_<name>) — dynamic putMapping at field creation time.
+

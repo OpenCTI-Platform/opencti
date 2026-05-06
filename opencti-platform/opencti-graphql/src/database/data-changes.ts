@@ -81,12 +81,39 @@ export const generateRestoreMessage = (instance: any) => {
   return generateCreateDeleteMessage('restore', instance);
 };
 
+/**
+ * Build a minimal synthetic AttributeDefinition for an unregistered x_opencti_cf_* key.
+ * Used as a fallback when the attribute has not been registered at runtime
+ * (e.g. after a server restart before registerDynamicAttribute is called).
+ */
+const syntheticCfAttrDef = (key: string): AttributeDefinition => {
+  // Try the runtime-registered definition first (has the proper human label).
+  const registered = (schemaAttributesDefinition as any).allAttributes?.get(key);
+  if (registered) return registered as AttributeDefinition;
+  // Fallback: derive a human-readable label from the key name.
+  const label = key.replace(/^x_opencti_cf_/, '').replace(/_/g, ' ');
+  return {
+    name: key,
+    label,
+    type: 'string',
+    format: 'short',
+    multiple: false,
+    mandatoryType: 'no',
+    upsert: true,
+    isFilterable: true,
+    editDefault: false,
+  } as any;
+};
+
 const resolveAttribute = (field: string) => {
   const fieldSplit = field.split('--');
   const key = fieldSplit[1];
   const entityType = fieldSplit[0];
   const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
   const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
+  if (!attributeDefinition && !relationsRefDefinition && key?.startsWith('x_opencti_cf_')) {
+    return syntheticCfAttrDef(key);
+  }
   return attributeDefinition || relationsRefDefinition;
 };
 
@@ -168,7 +195,9 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
     const entityType = fieldSplit[0];
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
     const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
-    const attribute = attributeDefinition || relationsRefDefinition;
+    // Fall back to synthetic definition for unregistered custom fields
+    const attribute = attributeDefinition || relationsRefDefinition
+      || (key?.startsWith('x_opencti_cf_') ? syntheticCfAttrDef(key) : null);
     const convertChange = (vals?: string[], noValueToEmpty = false): string => {
       const isTooMuch = vals && vals.length > 3;
       const values = isTooMuch ? vals.slice(0, 3) : (vals ?? []);
@@ -300,6 +329,8 @@ export const buildChanges = async (context: AuthContext, user: AuthUser,
     const { key: field, previous: prevValues, value } = input;
     const ref = schemaRelationsRefDefinition.getRelationRef(entityType, field);
     if (ref) return []; // Ref are already available, no need to extra resolved them.
+    // Custom fields: scalar values, nothing to pre-resolve (no IDs).
+    if (field.startsWith('x_opencti_cf_')) return [];
     const attr = schemaAttributesDefinition.getAttribute(entityType, field);
     if (!attr) throw UnsupportedError('Cant resolve attribute', { entityType, field });
     const prev = Array.isArray(prevValues) ? prevValues : [prevValues];
@@ -317,6 +348,20 @@ export const buildChanges = async (context: AuthContext, user: AuthUser,
     if (!field) {
       continue;
     }
+    // ----- Custom fields (x_opencti_cf_*): generate history entry directly -----
+    if (field.startsWith('x_opencti_cf_')) {
+      const cfAttr = syntheticCfAttrDef(field);
+      const prevArr = Array.isArray(prevValues) ? prevValues : [prevValues];
+      const valArr = Array.isArray(value) ? value : [value];
+      const toChangeValue = (v: any): ChangeValue => ({ raw: v !== null && v !== undefined ? String(v) : '' });
+      changes.push({
+        field: entityType + '--' + field,
+        changes_removed: prevArr.filter((v) => v !== null && v !== undefined).map(toChangeValue),
+        changes_added: valArr.filter((v) => v !== null && v !== undefined).map(toChangeValue),
+      });
+      continue;
+    }
+    // ----- Standard attributes -----
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, field);
     const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, field);
     const attribute = attributeDefinition || relationsRefDefinition;

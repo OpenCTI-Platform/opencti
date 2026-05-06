@@ -30,7 +30,29 @@ const WidgetListCoreObjects = ({
           if (!attribute) {
             return acc;
           }
-          acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+          // Custom fields (x_opencti_cf_*) are dynamic and not in defaultColumnsMap,
+          // so we provide a simple text renderer to display their raw value.
+          if (attribute.startsWith('x_opencti_cf_')) {
+            acc[attribute] = {
+              percentWidth,
+              isSortable: false,
+              ...(label ? { label } : {}),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              render: (rowData: any) => {
+                const val = rowData[attribute];
+                if (val === null || val === undefined || val === '') {
+                  return <span>-</span>;
+                }
+                return (
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {String(val)}
+                  </span>
+                );
+              },
+            };
+          } else {
+            acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+          }
           return acc;
         },
         {},

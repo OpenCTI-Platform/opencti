@@ -1508,8 +1508,34 @@ const elCreateIndexTemplate = async (index: string, mappingProperties: Record<st
 };
 const sortMappingsKeys = (o: Record<string, any>): Record<string, any> => (Object(o) !== o || Array.isArray(o) ? o
   : Object.keys(o).sort().reduce((a, k) => ({ ...a, [k]: sortMappingsKeys(o[k]) }), {}));
+/**
+ * Dynamically adds a flat field mapping to all platform indices.
+ * Used when a CustomFieldDefinition is created to allow storing x_opencti_cf_<name> flat in ES
+ * without restarting the platform (ES dynamic: strict would reject unknown fields otherwise).
+ */
+export const elAddDynamicFieldMapping = async (fieldName: string, esType: 'keyword' | 'long' | 'text'): Promise<void> => {
+  const indices = await elPlatformIndices();
+  for (let i = 0; i < indices.length; i += 1) {
+    const { index } = indices[i];
+    const body = { properties: { [fieldName]: { type: esType } } };
+    const args = { index, body };
+    if (engine instanceof ElkClient) {
+      await engine.indices.putMapping(args).catch((e: any) => {
+        if (e?.meta?.body?.error?.type !== 'illegal_argument_exception') {
+          throw DatabaseError('Adding dynamic field mapping fail', { index, fieldName, cause: e });
+        }
+      });
+    } else {
+      await engine.indices.putMapping(args).catch((e: any) => {
+        if (e?.meta?.body?.error?.type !== 'illegal_argument_exception') {
+          throw DatabaseError('Adding dynamic field mapping fail', { index, fieldName, cause: e });
+        }
+      });
+    }
+  }
+};
+
 export const elUpdateIndicesMappings = async (): Promise<void> => {
-  // Update core settings
   await updateCoreSettings();
   // Reset the templates
   const mappingProperties = engineMappingGenerator();
@@ -2352,6 +2378,8 @@ export const elGenerateFieldTextSearchShould = (
   return shouldSearch;
 };
 const buildFieldForQuery = (field: string) => {
+  // Dynamic custom field attributes are mapped as plain `keyword` or `long` — no .keyword sub-field
+  if (field.startsWith('x_opencti_cf_')) return field;
   return isDateNumericOrBooleanAttribute(field) || field === '_id' || isObjectFlatAttribute(field)
     ? field
     : `${field}.keyword`;
@@ -2426,9 +2454,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 },
               });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+              const rangeValue = nestedSearchValue;
               nestedShould.push({
                 range: {
-                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue },
+                  [nestedFieldKey]: { [nestedOperator]: rangeValue },
                 },
               });
             } else { // nestedOperator = 'eq'
@@ -2628,12 +2657,18 @@ export const buildLocalMustFilter = (validFilter: any) => {
             }
           } else if (operator === 'eq' || operator === 'not_eq') {
             const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
-            targets.push({
-              multi_match: {
-                fields: arrayKeys.map((k) => buildFieldForQuery(k)),
-                query: values[i].toString(),
-              },
-            });
+            const fieldKeys = arrayKeys.map((k) => buildFieldForQuery(k));
+            // Dynamic custom fields are plain keyword/long fields — use term query for exact match
+            if (fieldKeys.length === 1 && fieldKeys[0].startsWith('x_opencti_cf_')) {
+              targets.push({ term: { [fieldKeys[0]]: values[i].toString() } });
+            } else {
+              targets.push({
+                multi_match: {
+                  fields: fieldKeys,
+                  query: values[i].toString(),
+                },
+              });
+            }
           } else if (operator === 'only_eq_to' || operator === 'not_only_eq_to') {
             const targets = operator === 'only_eq_to' ? valuesFiltering : noValuesFiltering;
             targets.push({

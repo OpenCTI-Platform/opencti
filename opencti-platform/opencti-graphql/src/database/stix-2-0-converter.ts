@@ -59,7 +59,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
-import { assertType, checkInstanceCompletion, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
+import { assertType, checkInstanceCompletion, cleanObject, convertObjectReferences, convertToStixDate, extractCustomFields, isValidStix } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -193,10 +193,12 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
 
 // Builders
 const buildStixObject = (instance: StoreObject): S.StixObject => {
+  const customFields = extractCustomFields(instance as unknown as Record<string, any>);
   return {
     id: buildStixId(instance.entity_type, instance.standard_id),
     type: convertTypeToStix2Type(instance.entity_type),
     spec_version: '2.0',
+    ...customFields,
     // extensions
     x_opencti_id: instance.id,
     x_opencti_type: instance.entity_type,
