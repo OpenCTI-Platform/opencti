@@ -1,4 +1,3 @@
-/* eslint-disable class-methods-use-this */
 import session from 'express-session';
 import { LRUCache } from 'lru-cache';
 import AsyncLock from 'async-lock';
@@ -16,7 +15,8 @@ class RedisStore extends Store {
     this.prefix = options.prefix == null ? 'sess:' : options.prefix;
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
-    this.touchCache = new LRUCache({ ttl: 120000, max: 1000 }); // Touch the session every 2 minutes
+    // ttl < 2mins, divide by 10 to have a more frequent touch, otherwise touch every 2 mins
+    this.touchCache = new LRUCache({ ttl: Math.min(options.ttl / 10, 120000), max: 1000 });
     this.locker = new AsyncLock();
   }
 
