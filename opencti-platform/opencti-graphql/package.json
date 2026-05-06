@@ -88,7 +88,7 @@
     "@types/passport": "1.0.17",
     "@types/passport-local": "1.0.38",
     "ae-cvss-calculator": "1.0.12",
-    "ajv": "8.18.0",
+    "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
     "amqplib": "1.0.3",
     "antlr4": "4.13.2",
