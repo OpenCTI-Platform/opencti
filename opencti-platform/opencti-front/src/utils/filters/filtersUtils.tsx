@@ -765,8 +765,10 @@ export const useFetchFilterKeysSchema = () => {
   return filterKeysSchema;
 };
 
-export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
-  const { filterKeysSchema } = useAuth().schema;
+export const getBuildFilterKeysMapFromEntityType = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  entityTypes = ['Stix-Core-Object'],
+): Map<string, FilterDefinition> => {
   // 1. case one entity type
   if (entityTypes.length === 1) {
     return filterKeysSchema.get(entityTypes[0]) ?? new Map();
@@ -796,13 +798,27 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
   return filterKeysMap;
 };
 
+export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
+  const { filterKeysSchema } = useAuth().schema;
+  return getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes);
+};
+
+export const getAvailableFilterKeysForEntityTypes = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  entityTypes: string[],
+  addNotCleanableFilterKeys = false,
+) => {
+  const filterKeysMap = getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes);
+  return uniqueArray(filterKeysMap.keys() ?? [])
+    .concat(addNotCleanableFilterKeys ? NOT_CLEANABLE_FILTER_KEYS : []);
+};
+
 export const useAvailableFilterKeysForEntityTypes = (
   entityTypes: string[],
   addNotCleanableFilterKeys = false,
 ) => {
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  return uniqueArray(filterKeysMap.keys() ?? [])
-    .concat(addNotCleanableFilterKeys ? NOT_CLEANABLE_FILTER_KEYS : []);
+  const { filterKeysSchema } = useAuth().schema;
+  return getAvailableFilterKeysForEntityTypes(filterKeysSchema, entityTypes, addNotCleanableFilterKeys);
 };
 
 const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
