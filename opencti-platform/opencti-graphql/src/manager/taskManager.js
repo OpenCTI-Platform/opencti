@@ -248,11 +248,6 @@ const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_operation = 'enroll_playbook';
     baseOperationObject.playbook_ids = operations[0].context.values;
   }
-
-  logApp.info('[TASK-MANAGER] buildBundleElement result', {
-    baseOperationObject,
-    elementInternalId: element.internal_id,
-  });
   return baseOperationObject;
 };
 
