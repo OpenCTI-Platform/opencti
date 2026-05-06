@@ -12,6 +12,11 @@ export const isUnsecureHttpResourceAllowed = () => {
   return IS_HTTP_ALLOWED;
 };
 
+const DISABLE_UPGRADE_INSECURE_REQUEST: boolean = booleanConf('app:disable_upgrade_insecure_request', false);
+export const isUpgradeInsecureRequestDisabled = () => {
+  return DISABLE_UPGRADE_INSECURE_REQUEST;
+};
+
 export const isDevMode = () => {
   return DEV_MODE;
 };
