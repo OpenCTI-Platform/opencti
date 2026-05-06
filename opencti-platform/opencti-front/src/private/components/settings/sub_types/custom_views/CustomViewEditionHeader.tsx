@@ -9,18 +9,18 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import IconButton from '@common/button/IconButton';
 import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
-import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
-import CustomViewFormDrawer from './CustomViewFormDrawer';
 import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
-import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
+import DashboardWidgetConfig from '../../../../../components/dashboard/DashboardWidgetConfig';
 import type { Widget, WidgetHost } from '../../../../../utils/widget/widget';
-import CustomViewMenu from './CustomViewMenu';
 import type { Theme } from '../../../../../components/Theme';
 import useCustomViewEdit from './useCustomViewEdit';
-import ExportButtons from 'src/components/ExportButtons';
+import ExportButtons from '../../../../../components/ExportButtons';
+import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
 import { useCustomViewExport } from './useCustomViewImportExport';
+import CustomViewFormDrawer from './CustomViewFormDrawer';
+import CustomViewMenu from './CustomViewMenu';
 
 const headerFragment = graphql`
   fragment CustomViewEditionHeader_customView on CustomView {
