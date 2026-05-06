@@ -3224,7 +3224,9 @@ class OpenCTIStix2:
         if entity_id is None:
             entity_id = item.get("id")
         for playbook_id in playbook_ids:
-            self.opencti.playbook.enroll_playbook(playbook_id=playbook_id, entity_id=entity_id)
+            self.opencti.playbook.enroll_playbook(
+                playbook_id=playbook_id, entity_id=entity_id
+            )
 
     def element_operation_delete(self, item, operation):
         """Delete an element.

@@ -168,7 +168,8 @@ class Settings:
             password_policy_min_uppercase
         """
 
-        self.editable_properties = """
+        self.editable_properties = (
+            """
             id
             platform_organization {
                 id
@@ -184,7 +185,9 @@ class Settings:
             platform_banner_level
             platform_whitemark
             analytics_google_analytics_v4
-        """ + self.password_policy_properties
+        """
+            + self.password_policy_properties
+        )
 
     def read(self, **kwargs) -> Dict:
         """Reads settings from the platform
