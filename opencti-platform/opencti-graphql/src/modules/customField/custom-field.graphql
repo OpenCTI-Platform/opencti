@@ -1,4 +1,11 @@
-type CustomField implements InternalObject & BasicObject {
+# Value of a CustomFieldDefinition on a specific entity instance
+type CustomFieldValue {
+  field_id:   ID!      # id of the CustomFieldDefinition
+  field_name: String!  # ex: "x_opencti_priority"
+  int_value:  Int      # value for field_type = integer
+}
+
+type CustomFieldDefinition implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -6,7 +13,7 @@ type CustomField implements InternalObject & BasicObject {
   metrics: [Metric]
   created: DateTime
   modified: DateTime
-  # CustomField - mandatory attributes
+  # CustomFieldDefinition - mandatory attributes
   name: String!
   label: String!
   field_type: String!    # 'integer' for now
@@ -21,7 +28,7 @@ type CustomField implements InternalObject & BasicObject {
 }
 
 # Ordering
-enum CustomFieldsOrdering {
+enum CustomFieldDefinitionsOrdering {
   name
   label
   field_type
@@ -30,30 +37,30 @@ enum CustomFieldsOrdering {
 }
 
 # Relay connections
-type CustomFieldConnection {
+type CustomFieldDefinitionConnection {
   pageInfo: PageInfo!
-  edges: [CustomFieldEdge!]!
+  edges: [CustomFieldDefinitionEdge!]!
 }
-type CustomFieldEdge {
+type CustomFieldDefinitionEdge {
   cursor: String!
-  node: CustomField!
+  node: CustomFieldDefinition!
 }
 
 # Queries
 type Query {
-  customField(id: String!): CustomField @auth
-  customFields(
+  customFieldDefinition(id: String!): CustomFieldDefinition @auth
+  customFieldDefinitions(
     first: Int
     after: ID
-    orderBy: CustomFieldsOrdering
+    orderBy: CustomFieldDefinitionsOrdering
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-  ): CustomFieldConnection @auth
+  ): CustomFieldDefinitionConnection @auth
 }
 
 # Mutations
-input CustomFieldAddInput {
+input CustomFieldDefinitionAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   label: String! @constraint(minLength: 2, format: "not-blank")
   field_type: String!
@@ -69,10 +76,9 @@ input CustomFieldAddInput {
 }
 
 type Mutation {
-  customFieldAdd(input: CustomFieldAddInput!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldFieldPatch(id: ID!, input: [EditInput!]!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldAddEntityType(id: ID!, entityType: String!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldRemoveEntityType(id: ID!, entityType: String!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
-

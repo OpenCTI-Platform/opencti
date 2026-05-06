@@ -1,5 +1,5 @@
 import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityCustomField, ENTITY_TYPE_CUSTOM_FIELD, type StoreEntityCustomField } from './custom-field-types';
+import { type BasicStoreEntityCustomFieldDefinition, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type StoreEntityCustomFieldDefinition } from './custom-field-types';
 import type { EditInput } from '../../generated/graphql';
 import { EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
@@ -11,7 +11,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
 
 // Local type until GraphQL types are regenerated
-interface CustomFieldAddInput {
+interface CustomFieldDefinitionAddInput {
   name: string;
   label: string;
   field_type: string;
@@ -26,68 +26,67 @@ interface CustomFieldAddInput {
   max_value?: number | null;
 }
 
-export const findById: DomainFindById<BasicStoreEntityCustomField> = (context: AuthContext, user: AuthUser, customFieldId: string) => {
-  return storeLoadById(context, user, customFieldId, ENTITY_TYPE_CUSTOM_FIELD);
+export const findById: DomainFindById<BasicStoreEntityCustomFieldDefinition> = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
+  return storeLoadById(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
 };
 
-export const findCustomFieldsPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCustomField>) => {
-  return pageEntitiesConnection<BasicStoreEntityCustomField>(context, user, [ENTITY_TYPE_CUSTOM_FIELD], opts);
+export const findCustomFieldDefinitionsPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCustomFieldDefinition>) => {
+  return pageEntitiesConnection<BasicStoreEntityCustomFieldDefinition>(context, user, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION], opts);
 };
 
-export const findCustomFieldsForEntityType = (context: AuthContext, user: AuthUser, entityType: string) => {
+export const findCustomFieldDefinitionsForEntityType = (context: AuthContext, user: AuthUser, entityType: string) => {
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['entity_types'], values: [entityType], operator: FilterOperator.Eq }],
     filterGroups: [],
   };
-  return pageEntitiesConnection<BasicStoreEntityCustomField>(context, user, [ENTITY_TYPE_CUSTOM_FIELD], { filters });
+  return pageEntitiesConnection<BasicStoreEntityCustomFieldDefinition>(context, user, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION], { filters });
 };
 
-export const customFieldAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldAddInput) => {
-  const created = await createEntity(context, user, input, ENTITY_TYPE_CUSTOM_FIELD);
+export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
+  const created = await createEntity(context, user, input, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'administration',
-    message: `creates custom field \`${input.name}\``,
-    context_data: { id: created.id, entity_type: ENTITY_TYPE_CUSTOM_FIELD, input },
+    message: `creates custom field definition \`${input.name}\``,
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const customFieldDelete = async (context: AuthContext, user: AuthUser, customFieldId: string) => {
-  const element = await deleteElementById<StoreEntityCustomField>(context, user, customFieldId, ENTITY_TYPE_CUSTOM_FIELD);
+export const customFieldDefinitionDelete = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
+  const element = await deleteElementById<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'delete',
     event_access: 'administration',
-    message: `deletes custom field \`${element.name}\``,
-    context_data: { id: customFieldId, entity_type: ENTITY_TYPE_CUSTOM_FIELD, input: element },
+    message: `deletes custom field definition \`${element.name}\``,
+    context_data: { id: customFieldDefinitionId, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input: element },
   });
-  return customFieldId;
+  return customFieldDefinitionId;
 };
 
-export const customFieldEdit = async (context: AuthContext, user: AuthUser, customFieldId: string, input: EditInput[]) => {
-  const { element: updatedElem } = await updateAttribute<StoreEntityCustomField>(context, user, customFieldId, ENTITY_TYPE_CUSTOM_FIELD, input);
+export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
+  const { element: updatedElem } = await updateAttribute<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for custom field \`${updatedElem.name}\``,
-    context_data: { id: customFieldId, entity_type: ENTITY_TYPE_CUSTOM_FIELD, input },
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for custom field definition \`${updatedElem.name}\``,
+    context_data: { id: customFieldDefinitionId, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
-export const customFieldAddEntityType = (context: AuthContext, user: AuthUser, customFieldId: string, entityType: string) => {
-  return customFieldEdit(context, user, customFieldId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Add }]);
+export const customFieldDefinitionAddEntityType = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, entityType: string) => {
+  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Add }]);
 };
 
-export const customFieldRemoveEntityType = (context: AuthContext, user: AuthUser, customFieldId: string, entityType: string) => {
-  return customFieldEdit(context, user, customFieldId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Remove }]);
+export const customFieldDefinitionRemoveEntityType = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, entityType: string) => {
+  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Remove }]);
 };
-

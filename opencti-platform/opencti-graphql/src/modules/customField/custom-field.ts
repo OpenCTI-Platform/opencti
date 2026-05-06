@@ -1,18 +1,18 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { StixCustomField, StoreEntityCustomField } from './custom-field-types';
-import { ENTITY_TYPE_CUSTOM_FIELD } from './custom-field-types';
-import convertCustomFieldToStix from './custom-field-converter';
+import type { StixCustomFieldDefinition, StoreEntityCustomFieldDefinition } from './custom-field-types';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from './custom-field-types';
+import convertCustomFieldDefinitionToStix from './custom-field-converter';
 
-const CUSTOM_FIELD_DEFINITION: ModuleDefinition<StoreEntityCustomField, StixCustomField> = {
+const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFieldDefinition, StixCustomFieldDefinition> = {
   type: {
-    id: 'custom-field',
-    name: ENTITY_TYPE_CUSTOM_FIELD,
+    id: 'custom-field-definition',
+    name: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
     category: ABSTRACT_INTERNAL_OBJECT,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CUSTOM_FIELD]: [{ src: 'name' }, { src: 'entity_types' }],
+      [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: [{ src: 'name' }, { src: 'entity_types' }],
     },
   },
   attributes: [
@@ -28,11 +28,10 @@ const CUSTOM_FIELD_DEFINITION: ModuleDefinition<StoreEntityCustomField, StixCust
   ],
   relations: [],
   relationsRefs: [],
-  representative: (stix: StixCustomField) => {
+  representative: (stix: StixCustomFieldDefinition) => {
     return stix.label ?? stix.name;
   },
-  converter_2_1: convertCustomFieldToStix,
+  converter_2_1: convertCustomFieldDefinitionToStix,
 };
 
-registerDefinition(CUSTOM_FIELD_DEFINITION);
-
+registerDefinition(CUSTOM_FIELD_DEFINITION_DEFINITION);

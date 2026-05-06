@@ -2,9 +2,9 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
-export const ENTITY_TYPE_CUSTOM_FIELD = 'CustomField';
+export const ENTITY_TYPE_CUSTOM_FIELD_DEFINITION = 'CustomFieldDefinition';
 
-export interface BasicStoreEntityCustomField extends BasicStoreEntity {
+export interface BasicStoreEntityCustomFieldDefinition extends BasicStoreEntity {
   name: string;
   description: string;
   label: string;
@@ -18,7 +18,7 @@ export interface BasicStoreEntityCustomField extends BasicStoreEntity {
   max_value?: number;
 }
 
-export interface StoreEntityCustomField extends StoreEntity {
+export interface StoreEntityCustomFieldDefinition extends StoreEntity {
   name: string;
   description: string;
   label: string;
@@ -30,7 +30,7 @@ export interface StoreEntityCustomField extends StoreEntity {
   max_value?: number;
 }
 
-export interface StixCustomField extends StixObject {
+export interface StixCustomFieldDefinition extends StixObject {
   name: string;
   description: string;
   label: string;
