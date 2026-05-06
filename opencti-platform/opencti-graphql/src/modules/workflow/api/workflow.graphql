@@ -54,20 +54,12 @@ type WorkflowTransition {
     actions: [String!]
 }
 
-type WorkflowHistoryEntry {
-    state: String!
-    event: String!
-    user_id: String!
-    timestamp: String!
-    comment: String
-}
-
 type WorkflowInstance {
     id: ID!
     currentState: String!
     currentStatus: Status
     allowedTransitions: [WorkflowTransition!]!
-    history: [WorkflowHistoryEntry!]!
+    lastComment: String
 }
 
 extend type DraftWorkspace {
