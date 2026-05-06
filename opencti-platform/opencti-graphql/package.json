@@ -214,7 +214,7 @@
     "globals": "17.5.0",
     "graphql-tag": "2.12.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.59.0",
+    "typescript-eslint": "8.59.1",
     "vitest": "3.2.4"
   },
   "resolutions": {
