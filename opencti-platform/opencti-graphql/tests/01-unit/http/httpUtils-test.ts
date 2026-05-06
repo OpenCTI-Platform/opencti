@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters, buildRateLimiterOptions } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
-import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs, isUpgradeInsecureRequestDisabled } from '../../../src/http/httpConfig';
+import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
 
 describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('encodeOidcState', () => {
@@ -70,7 +70,6 @@ describe('buildHelmetParameters coverage', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('');
-    vi.spyOn(httpConfig, 'isUpgradeInsecureRequestDisabled').mockReturnValue(false);
 
     const publicHelmetParam = buildPublicHelmetParameters();
     expect(publicHelmetParam).toStrictEqual({
@@ -132,8 +131,6 @@ describe('buildHelmetParameters coverage', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(true);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(true);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('https://myctidomain.com');
-    vi.spyOn(httpConfig, 'isUpgradeInsecureRequestDisabled').mockReturnValue(true);
-
     const publicHelmetParam = buildPublicHelmetParameters();
     expect(publicHelmetParam).toStrictEqual({
       contentSecurityPolicy: {
