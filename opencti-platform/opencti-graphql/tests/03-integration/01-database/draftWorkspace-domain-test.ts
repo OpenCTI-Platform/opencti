@@ -1,26 +1,26 @@
 import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
-import { ADMIN_USER, getAuthUser, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../../utils/testQuery';
+import { ADMIN_USER, getAuthUser, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import {
   addDraftWorkspace,
   draftWorkspaceEditContext,
   listDraftObjects,
   listDraftRelations,
   validateDraftWorkspace,
-} from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
-import type { AdministrativeAreaAddInput, CityAddInput, DraftWorkspaceAddInput, StixCoreRelationshipAddInput } from '../../../../src/generated/graphql';
-import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { addCity } from '../../../../src/domain/city';
-import { addAdministrativeArea } from '../../../../src/modules/administrativeArea/administrativeArea-domain';
-import { addStixCoreRelationship } from '../../../../src/domain/stixCoreRelationship';
-import { ENTITY_TYPE_LOCATION_CITY } from '../../../../src/schema/stixDomainObject';
-import { deleteElementById } from '../../../../src/database/middleware';
-import type { BasicNodeEdge, BasicStoreEntity, BasicStoreRelation } from '../../../../src/types/store';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../../src/modules/administrativeArea/administrativeArea-types';
-import { RELATION_LOCATED_AT } from '../../../../src/schema/stixCoreRelationship';
-import * as rabbitMock from '../../../../src/database/rabbitmq';
-import { checkDraftInContext } from '../../../../src/http/httpServer-draft';
-import { executionContext } from '../../../../src/utils/access';
+} from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import type { AdministrativeAreaAddInput, CityAddInput, DraftWorkspaceAddInput, StixCoreRelationshipAddInput } from '../../../src/generated/graphql';
+import type { AuthContext, AuthUser } from '../../../src/types/user';
+import { addCity } from '../../../src/domain/city';
+import { addAdministrativeArea } from '../../../src/modules/administrativeArea/administrativeArea-domain';
+import { addStixCoreRelationship } from '../../../src/domain/stixCoreRelationship';
+import { ENTITY_TYPE_LOCATION_CITY } from '../../../src/schema/stixDomainObject';
+import { deleteElementById } from '../../../src/database/middleware';
+import type { BasicNodeEdge, BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
+import { RELATION_LOCATED_AT } from '../../../src/schema/stixCoreRelationship';
+import * as rabbitMock from '../../../src/database/rabbitmq';
+import { checkDraftInContext } from '../../../src/http/httpServer-draft';
+import { executionContext } from '../../../src/utils/access';
 
 describe('Drafts workspace domain testing', () => {
   let testDraftId: string;
