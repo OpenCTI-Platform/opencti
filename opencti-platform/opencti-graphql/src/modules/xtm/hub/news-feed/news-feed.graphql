@@ -35,6 +35,11 @@ type NewsFeedItemEdge {
   node: NewsFeedItem!
 }
 
+type NewsFeedCount {
+  user_id: String
+  count: Int
+}
+
 type Query {
   myNewsFeeds(
     first: Int
@@ -49,4 +54,5 @@ type Query {
 
 type Subscription {
   newsFeedItem: NewsFeedItem @auth
+  newsFeedsNumber: NewsFeedCount @auth
 }

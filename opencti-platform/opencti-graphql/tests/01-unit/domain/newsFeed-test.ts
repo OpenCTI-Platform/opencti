@@ -8,6 +8,7 @@ const mockPageEntitiesConnection = vi.fn();
 const mockElCount = vi.fn();
 const mockFullEntitiesList = vi.fn();
 const mockPatchAttribute = vi.fn();
+const mockNotify = vi.fn();
 
 vi.mock('../../../src/domain/internalObject', () => ({
   createInternalObject: (...args: unknown[]) => mockCreateInternalObject(...args),
@@ -26,6 +27,23 @@ vi.mock('../../../src/database/middleware', () => ({
   patchAttribute: (...args: unknown[]) => mockPatchAttribute(...args),
 }));
 
+vi.mock('../../../src/database/redis', () => ({
+  notify: (...args: unknown[]) => mockNotify(...args),
+}));
+
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/config/conf')>();
+  return {
+    ...actual,
+    BUS_TOPICS: {
+      ...actual.BUS_TOPICS,
+      NewsFeedNumber: {
+        EDIT_TOPIC: 'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
+      },
+    },
+  };
+});
+
 vi.mock('../../../src/utils/filtering/filtering-utils', () => ({
   addFilter: vi.fn((filters: unknown, key: string, value: string) => ({
     mode: 'and',
@@ -43,13 +61,19 @@ const baseInput: NewsFeedAddInput = {
   tags: ['tag1', 'tag2'],
   metadata: [{ key: 'key1', value: 'value1' }],
   creation_date: new Date('2026-01-01T00:00:00.000Z'),
-  user_id: 'user-1',
+  user_id: mockUser.id,
 };
 
 describe('News feed', () => {
   describe('addNewsFeed', () => {
     beforeEach(() => {
       mockCreateInternalObject.mockReset();
+      mockElCount.mockReset();
+      mockNotify.mockReset();
+
+      // Default mocks for the happy path
+      mockElCount.mockResolvedValue(0);
+      mockNotify.mockResolvedValue(undefined);
     });
 
     it('should call createInternalObject with the correct entity type', async () => {
@@ -66,7 +90,7 @@ describe('News feed', () => {
     });
 
     it('should default is_read to false when not provided', async () => {
-      mockCreateInternalObject.mockResolvedValue({});
+      mockCreateInternalObject.mockResolvedValue({ user_id: mockUser.id });
 
       await addNewsFeed(mockContext, mockUser, baseInput);
 
@@ -79,7 +103,7 @@ describe('News feed', () => {
     });
 
     it('should preserve is_read when explicitly provided as true', async () => {
-      mockCreateInternalObject.mockResolvedValue({});
+      mockCreateInternalObject.mockResolvedValue({ user_id: mockUser.id });
 
       await addNewsFeed(mockContext, mockUser, { ...baseInput, is_read: true });
 
@@ -92,7 +116,7 @@ describe('News feed', () => {
     });
 
     it('should default tags to an empty array when not provided', async () => {
-      mockCreateInternalObject.mockResolvedValue({});
+      mockCreateInternalObject.mockResolvedValue({ user_id: mockUser.id });
       const inputWithoutTags: NewsFeedAddInput = { ...baseInput, tags: undefined as unknown as string[] };
 
       await addNewsFeed(mockContext, mockUser, inputWithoutTags);
@@ -106,7 +130,7 @@ describe('News feed', () => {
     });
 
     it('should preserve tags when provided', async () => {
-      mockCreateInternalObject.mockResolvedValue({});
+      mockCreateInternalObject.mockResolvedValue({ user_id: mockUser.id });
 
       await addNewsFeed(mockContext, mockUser, baseInput);
 
@@ -119,12 +143,40 @@ describe('News feed', () => {
     });
 
     it('should return the result from createInternalObject', async () => {
-      const mockResult = { id: 'created-id', title: 'Test news feed item' };
+      const mockResult = { id: 'created-id', title: 'Test news feed item', user_id: mockUser.id };
       mockCreateInternalObject.mockResolvedValue(mockResult);
 
       const result = await addNewsFeed(mockContext, mockUser, baseInput);
 
       expect(result).toBe(mockResult);
+    });
+
+    it('should notify with the unread count for the created item user_id', async () => {
+      mockCreateInternalObject.mockResolvedValue({ id: 'new-id', user_id: mockUser.id });
+      mockElCount.mockResolvedValue(3);
+
+      await addNewsFeed(mockContext, mockUser, baseInput);
+
+      expect(mockNotify).toHaveBeenCalledOnce();
+      expect(mockNotify).toHaveBeenCalledWith(
+        'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
+        { count: 3, user_id: mockUser.id },
+        mockUser,
+      );
+    });
+
+    it('should use the user_id from the created entity (not from the auth user) when notifying', async () => {
+      const differentUserId = 'different-user-99';
+      mockCreateInternalObject.mockResolvedValue({ id: 'new-id', user_id: differentUserId });
+      mockElCount.mockResolvedValue(2);
+
+      await addNewsFeed(mockContext, mockUser, { ...baseInput, user_id: differentUserId });
+
+      expect(mockNotify).toHaveBeenCalledWith(
+        'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
+        { count: 2, user_id: differentUserId },
+        mockUser,
+      );
     });
   });
 
@@ -146,7 +198,7 @@ describe('News feed', () => {
         expect.objectContaining({
           filters: expect.objectContaining({
             filters: expect.arrayContaining([
-              expect.objectContaining({ key: 'user_id', values: ['user-1'] }),
+              expect.objectContaining({ key: 'user_id', values: [mockUser.id] }),
             ]),
           }),
         }),
@@ -168,7 +220,7 @@ describe('News feed', () => {
       mockElCount.mockReset();
     });
 
-    it('should call elCount with user_id and is_read=false filters', async () => {
+    it('should call elCount with auth user_id and is_read=false filters', async () => {
       mockElCount.mockResolvedValue(5);
 
       await myUnreadNewsFeedsCount(mockContext, mockUser);
@@ -180,7 +232,7 @@ describe('News feed', () => {
         expect.objectContaining({
           filters: expect.objectContaining({
             filters: expect.arrayContaining([
-              expect.objectContaining({ key: 'user_id', values: ['user-1'] }),
+              expect.objectContaining({ key: 'user_id', values: [mockUser.id] }),
               expect.objectContaining({ key: 'is_read', values: [false] }),
             ]),
           }),
@@ -194,6 +246,34 @@ describe('News feed', () => {
       const result = await myUnreadNewsFeedsCount(mockContext, mockUser);
 
       expect(result).toBe(3);
+    });
+
+    it('should use the provided userId instead of the auth user id when given', async () => {
+      const overrideUserId = 'other-user-42';
+      mockElCount.mockResolvedValue(4);
+
+      await myUnreadNewsFeedsCount(mockContext, mockUser, overrideUserId);
+
+      expect(mockElCount).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        expect.any(String),
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              expect.objectContaining({ key: 'user_id', values: [overrideUserId] }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('should return the count from elCount when a userId is provided', async () => {
+      mockElCount.mockResolvedValue(7);
+
+      const result = await myUnreadNewsFeedsCount(mockContext, mockUser, 'other-user-42');
+
+      expect(result).toBe(7);
     });
   });
 });

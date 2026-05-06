@@ -3,8 +3,8 @@ import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsF
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
 import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
 import { InsertChartOutlined, OpenInNewOutlined } from '@mui/icons-material';
-import React, { FunctionComponent, Suspense, useContext } from 'react';
-import { graphql, PreloadedQuery } from 'react-relay';
+import React, { FunctionComponent, Suspense, useCallback, useContext, useMemo } from 'react';
+import { graphql, PreloadedQuery, useSubscription } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -17,7 +17,7 @@ import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFro
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import useChipOverflow from '../data/IngestionCatalog/components/card/usecases/useChipOverflow';
 import { isRelativeUrl } from '../../../utils/url';
 
@@ -106,6 +106,14 @@ const newsFeedLinesFragment = graphql`
   }
 `;
 
+const newsFeedItemSubscription = graphql`
+  subscription NewsFeedSubscription {
+    newsFeedItem {
+      id
+    }
+  }
+`;
+
 const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[] }> = ({ tags }) => {
   const tagValues = tags.filter(Boolean) as string[];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(tagValues);
@@ -176,10 +184,18 @@ interface NewsFeedComponentProps {
   queryRef: PreloadedQuery<NewsFeedLinesPaginationQuery>;
   helpers: UseLocalStorageHelpers;
   contextFilters: FilterGroup;
+  onNewItem: () => void;
 }
 
-const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters }) => {
+const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem }) => {
   const { t_i18n } = useFormatter();
+
+  const subConfig = useMemo(() => ({
+    subscription: newsFeedItemSubscription,
+    variables: {},
+    onNext: () => onNewItem(),
+  }), [onNewItem]);
+  useSubscription(subConfig);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     type: {
@@ -295,10 +311,14 @@ const NewsFeed: FunctionComponent = () => {
     filters: contextFilters,
   } as unknown as NewsFeedLinesPaginationQuery$variables;
 
-  const queryRef = useQueryLoading<NewsFeedLinesPaginationQuery>(
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<NewsFeedLinesPaginationQuery>(
     newsFeedLinesQuery,
     queryPaginationOptions,
   );
+
+  const handleNewItem = useCallback(() => {
+    loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
+  }, [loadQuery, queryPaginationOptions]);
 
   return queryRef ? (
     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
@@ -306,6 +326,7 @@ const NewsFeed: FunctionComponent = () => {
         queryRef={queryRef}
         helpers={helpers}
         contextFilters={contextFilters}
+        onNewItem={handleNewItem}
       />
     </Suspense>
   ) : (

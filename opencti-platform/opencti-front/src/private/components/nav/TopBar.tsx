@@ -18,7 +18,7 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import SearchInput from '../../../components/SearchInput';
 import type { Theme } from '../../../components/Theme';
 import UploadImport from '../../../components/UploadImport';
-import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$, requestSubscription } from '../../../relay/environment';
 import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
@@ -32,6 +32,7 @@ import AskArianeButton from '../chatbox/AskArianeButton';
 import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import { TopBarNewsFeedNumberSubscription$data } from './__generated__/TopBarNewsFeedNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import { useAINLQ } from '../common/ai/AINLQ';
@@ -54,6 +55,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const topBarNotificationNumberSubscription = graphql`
   subscription TopBarNotificationNumberSubscription {
     notificationsNumber {
+      count
+    }
+  }
+`;
+
+const topBarNewsFeedNumberSubscription = graphql`
+  subscription TopBarNewsFeedNumberSubscription {
+    newsFeedsNumber {
       count
     }
   }
@@ -94,6 +103,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
+  const [newsFeedsNumberFromSub, setNewsFeedsNumberFromSub] = useState<null | number>(null);
 
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
@@ -103,10 +113,18 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     const notificationNumber = response ? (response as TopBarNotificationNumberSubscription$data).notificationsNumber?.count : null;
     return setNotificationsNumber(notificationNumber ?? null);
   };
+  const handleNewNewsFeedNumber = (
+    response: TopBarNewsFeedNumberSubscription$data | null | undefined | unknown,
+  ) => {
+    const newsFeedNumber = response ? (response as TopBarNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
+    return setNewsFeedsNumberFromSub(newsFeedNumber ?? null);
+  };
   const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const newsFeedCount = isXTMHubAccessible && !isAllNewsFeedUnsubscribed ? (data.myUnreadNewsFeedsCount ?? 0) : 0;
+  const newsFeedCount = isXTMHubAccessible && !isAllNewsFeedUnsubscribed
+    ? (newsFeedsNumberFromSub !== null ? newsFeedsNumberFromSub : (data.myUnreadNewsFeedsCount ?? 0))
+    : 0;
   const isNewNewsFeed = newsFeedCount > 0;
   const hasUnread = isNewNotification || isNewNewsFeed;
   const subConfig = useMemo(
@@ -118,6 +136,17 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     [topBarNotificationNumberSubscription],
   );
   useSubscription(subConfig);
+
+  const shouldSubscribeToNewsFeed = isXTMHubAccessible && !isAllNewsFeedUnsubscribed;
+  useEffect(() => {
+    if (!shouldSubscribeToNewsFeed) return undefined;
+    const sub = requestSubscription({
+      subscription: topBarNewsFeedNumberSubscription,
+      variables: {},
+      onNext: handleNewNewsFeedNumber,
+    });
+    return () => sub.dispose();
+  }, [shouldSubscribeToNewsFeed]);
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
