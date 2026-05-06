@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import { Alert, AlertTitle, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField } from '@mui/material';
-import { ArrowDropDownOutlined } from '@mui/icons-material';
+import { Alert, AlertTitle, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip } from '@mui/material';
+import { ArrowDropDownOutlined, ReviewsOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
 import Button from '../../../../components/common/button/Button';
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
@@ -29,6 +29,10 @@ export const workflowStatusFragment = graphql`
           color
         }
       }
+      history {
+        comment
+        timestamp
+      }
       allowedTransitions {
         event
         toState
@@ -47,8 +51,8 @@ export const workflowStatusFragment = graphql`
 `;
 
 const workflowStatusTriggerMutation = graphql`
-  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!) {
-    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName) {
+  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String) {
+    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment) {
       success
       reason
       newState
@@ -98,9 +102,21 @@ const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) =
 
   const { workflowInstance } = draft;
   const currentStatus = workflowInstance.currentStatus;
+  const history = workflowInstance.history ?? [];
+  const lastEntry = [...history]
+    .sort((a, b) => (a as any).timestamp.localeCompare((b as any).timestamp))
+    .at(-1) ?? null;
+  const lastComment = lastEntry?.comment ?? null;
 
   return (
-    <ItemStatus status={currentStatus} />
+    <>
+      {lastComment && (
+        <Tooltip title={lastComment} arrow>
+          <ReviewsOutlined fontSize="small" sx={{ marginRight: 0.5, color: 'text.secondary' }} />
+        </Tooltip>
+      )}
+      <ItemStatus status={currentStatus} />
+    </>
   );
 };
 
@@ -135,7 +151,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     setAnchorEl(null);
   };
 
-  const triggerTransition = (eventName: string, actions: readonly string[]) => {
+  const triggerTransition = (eventName: string, actions: readonly string[], comment?: string) => {
     if (actions.includes('validateDraft')) {
       setValidationTransition(eventName);
     } else {
@@ -143,6 +159,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         variables: {
           entityId: draft.id,
           eventName,
+          comment: comment ?? null,
         },
         onCompleted: () => {
           handleClose();
@@ -164,10 +181,9 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   const handleConfirmComment = () => {
     if (!commentDialogTransition) return;
     const { event, actions } = commentDialogTransition;
-    // comment value captured but not sent to backend yet
     setCommentDialogTransition(null);
     setCommentValue('');
-    triggerTransition(event, actions);
+    triggerTransition(event, actions, commentValue.trim() || undefined);
   };
 
   const handleValidateDraft = () => {

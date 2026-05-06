@@ -32,8 +32,8 @@ const workflowResolvers = {
     workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
     },
-    triggerWorkflowEvent: (_: any, { entityId, eventName }: { entityId: string; eventName: string }, context: AuthContext) => {
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName);
+    triggerWorkflowEvent: (_: any, { entityId, eventName, comment }: { entityId: string; eventName: string; comment?: string }, context: AuthContext) => {
+      return triggerWorkflowEvent(context, context.user!, entityId, eventName, comment);
     },
   },
   WorkflowInstance: {
@@ -41,6 +41,7 @@ const workflowResolvers = {
     currentState: (instance: any) => instance.currentState,
     currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
     allowedTransitions: (instance: any) => instance.allowedTransitions,
+    history: (instance: any) => instance.history ?? [],
   },
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),

@@ -205,6 +205,7 @@ export const getWorkflowInstance = async (
     __typename: 'WorkflowInstance',
     currentState: currentState || '',
     allowedTransitions,
+    history: JSON.parse(instanceEntity?.history || '[]'),
   };
 };
 
@@ -272,6 +273,7 @@ export const getAllowedNextStatuses = async (
  * @param user The auth user
  * @param entityId The ID of the entity to trigger the event on
  * @param eventName The name of the event to trigger
+ * @param comment Optional comment entered by the user when performing the transition
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
 export const triggerWorkflowEvent = async (
@@ -279,6 +281,7 @@ export const triggerWorkflowEvent = async (
   user: AuthUser,
   entityId: string,
   eventName: string,
+  comment?: string,
 ): Promise<TriggerResult> => {
   // 1. Fetch the entity
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
@@ -331,6 +334,7 @@ export const triggerWorkflowEvent = async (
         user_id: user.id,
         timestamp: new Date().toISOString(),
         event: eventName,
+        ...(comment ? { comment } : {}),
       });
       const instanceId = instanceEntity.internal_id || instanceEntity.id;
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
