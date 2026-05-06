@@ -3099,6 +3099,7 @@
   "Organizations restriction": "Organizations restriction",
   "Organizations sharing": "Organizations sharing",
   "Organizations splitter": "Organizations splitter",
+  "Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.": "Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.",
   "Origin of the case": "Origin of the case",
   "Original creation date": "Original creation date",
   "Originates from": "Originates from",
