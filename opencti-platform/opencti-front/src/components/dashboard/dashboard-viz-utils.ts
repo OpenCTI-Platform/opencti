@@ -36,9 +36,11 @@ export const resolveDataSelection = ({
       dynamicTo: removeIdAndIncorrectKeysFromFilterGroupObject(filters[2], availableFilterKeysSecondary),
     };
   });
-  const isMissingHostEntity = hostEntityNeeded && host?.kind === 'custom-view' && !host.customViewTargetEntityId;
+  const isMissingHostEntity = host?.kind === 'custom-view' && hostEntityNeeded && !host.customViewTargetEntityId;
+  const isPreviewMode = host?.kind === 'custom-view' && hostEntityNeeded && Boolean(host.customViewTargetEntityId) && host.previewMode;
   return {
     resolvedDataSelection: updatedDataSelection,
     isMissingHostEntity,
+    isPreviewMode,
   };
 };

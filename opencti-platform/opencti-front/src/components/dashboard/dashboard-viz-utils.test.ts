@@ -299,5 +299,64 @@ describe('resolvedDataSelection', () => {
       });
       expect(isMissingHostEntity).toBe(false);
     });
+
+    it('returns isPreviewMode if SELF_ID is used in filters, there is a host entity injected and input host config indicates previewMode===true', () => {
+      const dataSelection: WidgetDataSelection[] = [{
+        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+      }];
+      const { isPreviewMode } = resolveDataSelection({
+        filterKeysSchema,
+        dataSelection,
+        perspective: 'entities',
+        host: {
+          kind: 'custom-view',
+          customViewTargetEntityType: 'Campaign',
+          customViewTargetEntityId: 'some-entity-type',
+          previewMode: true,
+        },
+      });
+      expect(isPreviewMode).toBe(true);
+    });
+
+    it('does not return isPreviewMode if SELF_ID is used in filters and input host config indicates previewMode===true but no injected entity host', () => {
+      const dataSelection: WidgetDataSelection[] = [{
+        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+      }];
+      const { isPreviewMode } = resolveDataSelection({
+        filterKeysSchema,
+        dataSelection,
+        perspective: 'entities',
+        host: {
+          kind: 'custom-view',
+          customViewTargetEntityType: 'Campaign',
+          customViewTargetEntityId: undefined,
+        },
+      });
+      expect(isPreviewMode).toBe(false);
+    });
+
+    it('does not return isPreviewMode if input host config indicates previewMode===true and there is injected entity host but SELF_ID is not used in filters ', () => {
+      const dataSelection: WidgetDataSelection[] = [{
+        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
+      }];
+      const { isPreviewMode } = resolveDataSelection({
+        filterKeysSchema,
+        dataSelection,
+        perspective: 'entities',
+        host: {
+          kind: 'custom-view',
+          customViewTargetEntityType: 'Campaign',
+          customViewTargetEntityId: 'some-entity-type',
+          previewMode: true,
+        },
+      });
+      expect(isPreviewMode).toBe(false);
+    });
   });
 });

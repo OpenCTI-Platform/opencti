@@ -12,8 +12,7 @@ const useDashboardViz = ({
   host?: WidgetHost;
 }) => {
   const { filterKeysSchema } = useAuth().schema;
-  const isPreviewMode = host?.kind === 'custom-view' && host.previewMode;
-  const { resolvedDataSelection, isMissingHostEntity } = resolveDataSelection({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = resolveDataSelection({
     filterKeysSchema,
     dataSelection,
     perspective,
