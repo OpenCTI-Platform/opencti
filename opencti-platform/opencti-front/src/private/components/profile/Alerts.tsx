@@ -127,6 +127,76 @@ const alertsLineNotificationDeleteMutation = graphql`
   }
 `;
 
+interface AlertsLineActionsProps {
+  data: AlertsLine_node$data;
+  setNotificationToDelete: (notification: AlertsLine_node$data) => void;
+}
+
+const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
+  data,
+  setNotificationToDelete,
+}) => {
+  const { t_i18n } = useFormatter();
+  const [commitMarkRead] = useApiMutation(alertsLineNotificationMarkReadMutation);
+  const [updating, setUpdating] = useState<boolean>(false);
+
+  const handleRead = (id: string, read: boolean) => {
+    setUpdating(true);
+    return commitMarkRead({
+      variables: {
+        id,
+        read,
+      },
+      onCompleted: () => {
+        setUpdating(false);
+      },
+    });
+  };
+
+  const handleOpenDelete = () => {
+    setUpdating(true);
+    setNotificationToDelete(data);
+  };
+
+  return (
+    <div style={{ marginLeft: -40 }}>
+      <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}>
+        <IconButton
+          disabled={updating}
+          onClick={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            handleRead(data.id, !data.is_read);
+          }}
+          size="small"
+          color={data.is_read ? 'primary' : 'success'}
+        >
+          {data.is_read
+            ? <UnpublishedOutlined fontSize="small" />
+            : <CheckCircleOutlined fontSize="small" />
+          }
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={t_i18n('Delete this notification')}>
+        <span>
+          <IconButton
+            disabled={updating}
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              handleOpenDelete();
+            }}
+            size="small"
+            color="primary"
+          >
+            <DeleteOutlined fontSize="small" />
+          </IconButton>
+        </span>
+      </Tooltip>
+    </div>
+  );
+};
+
 interface AlertsComponentProps {
   queryRef: PreloadedQuery<AlertsLinesPaginationQuery>;
   helpers: UseLocalStorageHelpers;
@@ -144,9 +214,6 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [commitMarkRead] = useApiMutation(
-    alertsLineNotificationMarkReadMutation,
-  );
   const [commitDelete] = useApiMutation(
     alertsLineNotificationDeleteMutation,
   );
@@ -309,66 +376,6 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<AlertsLinesPaginationQuery>;
 
-  const renderActions = (data: AlertsLine_node$data) => {
-    const [updating, setUpdating] = useState<boolean>(false);
-
-    const handleRead = (id: string, read: boolean) => {
-      setUpdating(true);
-      return commitMarkRead({
-        variables: {
-          id,
-          read,
-        },
-        onCompleted: () => {
-          setUpdating(false);
-        },
-      });
-    };
-
-    const handleOpenDelete = () => {
-      setUpdating(true);
-      setNotificationToDelete(data);
-    };
-
-    return (
-      <div style={{ marginLeft: -40 }}>
-        <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}>
-          <IconButton
-            disabled={updating}
-            onClick={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-              handleRead(data.id, !data.is_read);
-            }}
-            size="small"
-            color={data.is_read ? 'primary' : 'success'}
-          >
-            {data.is_read
-              ? <UnpublishedOutlined fontSize="small" />
-              : <CheckCircleOutlined fontSize="small" />
-            }
-          </IconButton>
-        </Tooltip>
-        <Tooltip title={t_i18n('Delete this notification')}>
-          <span>
-            <IconButton
-              disabled={updating}
-              onClick={(event) => {
-                event.stopPropagation();
-                event.preventDefault();
-                handleOpenDelete();
-              }}
-              size="small"
-              color="primary"
-            >
-              <DeleteOutlined fontSize="small" />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </div>
-    );
-  };
-
   return (
     <div>
       <DataTable
@@ -391,7 +398,12 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
         contextFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
-        actions={renderActions}
+        actions={(data: AlertsLine_node$data) => (
+          <AlertsLineActions
+            data={data}
+            setNotificationToDelete={setNotificationToDelete}
+          />
+        )}
         markAsReadEnabled={true}
       />
       {notificationToDelete && (

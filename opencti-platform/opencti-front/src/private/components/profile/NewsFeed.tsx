@@ -146,6 +146,30 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
   );
 };
 
+const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> = ({ data }) => {
+  const { t_i18n } = useFormatter();
+  const { settings } = useContext(UserContext);
+
+  const urlPath = data.metadata?.find((m) => m?.key === 'url_path')?.value;
+  const href = !!settings?.platform_xtmhub_url && urlPath ? new URL(urlPath, settings.platform_xtmhub_url).toString() : undefined;
+
+  if (!href) return null;
+
+  return (
+    <Tooltip title={t_i18n('Open in XTM Hub')}>
+      <IconButton
+        component="a"
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      >
+        <OpenInNewOutlined fontSize="small" color="primary" />
+      </IconButton>
+    </Tooltip>
+  );
+};
+
 interface NewsFeedComponentProps {
   queryRef: PreloadedQuery<NewsFeedLinesPaginationQuery>;
   helpers: UseLocalStorageHelpers;
@@ -154,7 +178,6 @@ interface NewsFeedComponentProps {
 
 const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters }) => {
   const { t_i18n } = useFormatter();
-  const { settings } = useContext(UserContext);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     type: {
@@ -222,25 +245,7 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
             ? <InsertChartOutlined fontSize="small" color="primary" />
             : null
         )}
-        actions={(row) => {
-          const item = row as NewsFeedLine_node$data;
-          const urlPath = item.metadata?.find((m) => m?.key === 'url_path')?.value;
-          const href = !!settings?.platform_xtmhub_url && urlPath ? new URL(urlPath, settings.platform_xtmhub_url).toString() : undefined;
-          if (!href) return null;
-          return (
-            <Tooltip title={t_i18n('Open in XTM Hub')}>
-              <IconButton
-                component="a"
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
-              >
-                <OpenInNewOutlined fontSize="small" color="primary" />
-              </IconButton>
-            </Tooltip>
-          );
-        }}
+        actions={(row: NewsFeedLine_node$data) => <NewsFeedLineActions data={row} />}
         lineFragment={newsFeedLineFragment}
         contextFilters={contextFilters}
         availableEntityTypes={['NewsFeedItem']}
