@@ -90,6 +90,14 @@ const useCustomViewDashboardEdit = ({ customView }: {
           value: [newManifestEncoded],
         }],
       },
+      updater: (store, data) => {
+        if (data?.customViewEdit?.id) {
+          const record = store.get(data.customViewEdit.id);
+          if (record) {
+            record.setValue(newManifestEncoded, 'manifest');
+          }
+        }
+      },
       onCompleted,
       onError: () => {
         handleError('Failed to save custom view');
