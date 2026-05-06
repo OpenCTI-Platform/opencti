@@ -100,6 +100,7 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
+import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -2226,6 +2227,7 @@ class DataTableToolBar extends Component {
         {({ schema, settings, me }) => {
           const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
           const isInDraft = me.draftContext;
+          const isBulkEnrollEnabled = isFeatureEnable(settings, 'BULK_ENROLLMENT');
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -2587,20 +2589,22 @@ class DataTableToolBar extends Component {
                         </Security>
                       </>
                     )}
-                    <Security needs={[AUTOMATION]}>
-                      <Tooltip title={t('Enroll in playbook')}>
-                        <span>
-                          <IconButton
-                            aria-label="enroll-playbook"
-                            disabled={numberOfSelectedElements === 0 || this.state.processing}
-                            onClick={this.handleOpenEnrollPlaybook.bind(this)}
-                            size="small"
-                          >
-                            <PrecisionManufacturingOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Security>
+                    {isBulkEnrollEnabled && (
+                      <Security needs={[AUTOMATION]}>
+                        <Tooltip title={t('Enroll in playbook')}>
+                          <span>
+                            <IconButton
+                              aria-label="enroll-playbook"
+                              disabled={numberOfSelectedElements === 0 || this.state.processing}
+                              onClick={this.handleOpenEnrollPlaybook.bind(this)}
+                              size="small"
+                            >
+                              <PrecisionManufacturingOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Security>
+                    )}
                     {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
                       <Security needs={[deleteCapability]}>
                         <Tooltip title={warningMessage || t('Delete')}>

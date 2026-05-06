@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
 import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
@@ -244,7 +244,7 @@ const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.template_id = operations[0].context.values;
   }
   // Playbook enrollment
-  if (actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
+  if (isFeatureEnabled('BULK_ENROLLMENT') && actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
     baseOperationObject.opencti_operation = 'enroll_playbook';
     baseOperationObject.playbook_ids = operations[0].context.values;
   }
