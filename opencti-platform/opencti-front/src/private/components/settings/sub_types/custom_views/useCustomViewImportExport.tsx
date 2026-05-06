@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { fetchQuery, handleError, MESSAGING$ } from '../../../../../relay/environment';
-import { DashboardHiddenImportInput, useDashboardExport, useDashboardImport } from '../../../../../components/dashboard/useDashboardImportExport';
+import { useDashboardExport, useDashboardImport } from '../../../../../components/dashboard/useDashboardImportExport';
+import DashboardHiddenImportInput from '../../../../../components/dashboard/DashboardHiddenImportInput';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import type { ExportableDashboardLike } from '../../../../../components/dashboard/dashboard-types';

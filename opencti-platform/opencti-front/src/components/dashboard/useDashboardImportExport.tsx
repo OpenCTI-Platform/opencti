@@ -1,6 +1,5 @@
 import { BaseSyntheticEvent, useRef } from 'react';
 import fileDownload from 'js-file-download';
-import VisuallyHiddenInput from '../../private/components/common/VisuallyHiddenInput';
 import type { ExportableDashboardLike } from './dashboard-types';
 import { MESSAGING$ } from '../../relay/environment';
 
@@ -43,7 +42,7 @@ export const useDashboardImport = ({ onImport }: {
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const _onChange = (event: BaseSyntheticEvent) => {
+  const onChange = (event: BaseSyntheticEvent) => {
     const importedFile = event.target.files[0];
     onImport(importedFile)
       .catch((error) => {
@@ -59,9 +58,5 @@ export const useDashboardImport = ({ onImport }: {
   };
 
   const handleImport = () => inputRef.current?.click();
-  return { _onChange, handleImport, _inputRef: inputRef };
-};
-
-export const DashboardHiddenImportInput = ({ helpers }: { helpers: ReturnType<typeof useDashboardImport> }) => {
-  return <VisuallyHiddenInput type="file" accept="application/JSON" ref={helpers._inputRef} onChange={helpers._onChange} />;
+  return { onChange, handleImport, inputRef };
 };

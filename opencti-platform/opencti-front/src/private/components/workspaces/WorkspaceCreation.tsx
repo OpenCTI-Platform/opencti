@@ -23,7 +23,8 @@ import { isNotEmptyField } from '../../../utils/utils';
 import Drawer from '../common/drawer/Drawer';
 import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreationImportMutation.graphql';
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
-import { DashboardHiddenImportInput, useDashboardImport } from '../../../components/dashboard/useDashboardImportExport';
+import { useDashboardImport } from '../../../components/dashboard/useDashboardImportExport';
+import DashboardHiddenImportInput from '../../../components/dashboard/DashboardHiddenImportInput';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
