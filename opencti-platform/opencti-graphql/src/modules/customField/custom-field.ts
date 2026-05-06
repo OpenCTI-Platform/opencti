@@ -12,8 +12,9 @@ const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFiel
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: [{ src: 'name' }, { src: 'entity_types' }],
+      [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: [{ src: 'name' }],
     },
+    resolvers: {},
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
