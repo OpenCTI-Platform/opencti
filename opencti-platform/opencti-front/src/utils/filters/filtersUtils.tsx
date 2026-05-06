@@ -111,6 +111,13 @@ export const contextFilters = [
   'contextObjectMarking',
 ];
 
+// filters available on the live stream event envelope (origin) - kept narrow on purpose
+export const streamOriginFilters = [
+  'members_user',
+  'members_group',
+  'members_organization',
+];
+
 // filters available in stix filtering (streams, playbooks, triggers)
 export const stixFilters = [
   'entity_type',

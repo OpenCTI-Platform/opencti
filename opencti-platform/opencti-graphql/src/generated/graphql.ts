@@ -32474,6 +32474,7 @@ export type StreamCollection = {
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   name?: Maybe<Scalars['String']['output']>;
+  origin_filters?: Maybe<Scalars['String']['output']>;
   stream_live?: Maybe<Scalars['Boolean']['output']>;
   stream_public?: Maybe<Scalars['Boolean']['output']>;
   stream_public_user?: Maybe<Creator>;
@@ -32485,6 +32486,7 @@ export type StreamCollectionAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  origin_filters?: InputMaybe<Scalars['String']['input']>;
   stream_live?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public_user_id?: InputMaybe<Scalars['String']['input']>;
@@ -50403,6 +50405,7 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  origin_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
