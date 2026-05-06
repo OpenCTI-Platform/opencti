@@ -55,15 +55,17 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
+        const currentElementGrantedRefs = element.extensions[STIX_EXT_OCTI].granted_refs ?? [];
+        const newGrantedRefs = currentElementGrantedRefs.filter((o) => !organizationIds.includes(o));
         const patchValue = {
-          op: EditOperation.Remove,
+          op: EditOperation.Replace,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
-          value: organizationIds,
+          value: newGrantedRefs,
         };
         const patchOperation = {
-          operation: patchValue.op,
+          operation: EditOperation.Remove,
           key: INPUT_GRANTED_REFS,
-          value: patchValue.value,
+          value: organizationIds,
         };
         applyOperationFieldPatch(element, [patchOperation]);
         patchOperations.push(patchValue);
