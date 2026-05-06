@@ -28,7 +28,7 @@ const LocationDetails: FunctionComponent<LocationDetailsProps> = ({ locationData
           <Label>
             {t_i18n('Description')}
           </Label>
-          <ExpandableMarkdown source={location.description} limit={300} />
+          <ExpandableMarkdown source={location.description} limit={1400} />
         </div>
       </Card>
     </div>
