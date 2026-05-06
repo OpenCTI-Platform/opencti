@@ -10405,7 +10405,7 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting
   workflowDefinitionDelete(entityType: String!): EntitySetting
-  triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult!
+  triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult!
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
@@ -10789,11 +10789,20 @@ type WorkflowTransition {
   actions: [String!]
 }
 
+type WorkflowHistoryEntry {
+  state: String!
+  event: String!
+  user_id: String!
+  timestamp: String!
+  comment: String
+}
+
 type WorkflowInstance {
   id: ID!
   currentState: String!
   currentStatus: Status
   allowedTransitions: [WorkflowTransition!]!
+  history: [WorkflowHistoryEntry!]!
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {
