@@ -10913,7 +10913,7 @@ __metadata:
     node-forge: "npm:1.4.0"
     nodemailer: "npm:8.0.5"
     openai: "npm:6.34.0"
-    openid-client: "npm:6.8.3"
+    openid-client: "npm:6.8.4"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:13.4.0"
@@ -10967,13 +10967,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@npm:6.8.3":
-  version: 6.8.3
-  resolution: "openid-client@npm:6.8.3"
+"openid-client@npm:6.8.4":
+  version: 6.8.4
+  resolution: "openid-client@npm:6.8.4"
   dependencies:
     jose: "npm:^6.2.2"
     oauth4webapi: "npm:^3.8.5"
-  checksum: 10c0/3765b5d3be0f5d7443ccc9f711a3c2176452505436f069037e1b03adb710626a08c7242666d59809585272261402a1ab9795fe89696f714463af145bacc50406
+  checksum: 10c0/bb062df77d48368f99f776f26d94e11053da80b89d2baeea9f069b7a2b359ef5dc10e0c9b0f9a90fb361eded7ff02dba3f5419b8909ec3f0c379d09807824c49
   languageName: node
   linkType: hard
 
