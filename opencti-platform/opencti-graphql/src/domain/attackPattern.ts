@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT } from '../schema/stixDomainObject';
@@ -67,75 +67,7 @@ export const dataComponentsPaginated = async (context: AuthContext, user: AuthUs
   return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_DETECTS, ENTITY_TYPE_DATA_COMPONENT, true, args);
 };
 
-export const getAttackPatternsMatrix_v1 = async (context: AuthContext, user: AuthUser) => {
-  logApp.info('[ATTACK PATTERN MATRIX] Using old algorithm');
-  const attackPatternsOfPhases = [];
-  const attackPatternsArgs = {
-    withoutRels: false, // Must be replace by relation queries
-    indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
-    filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] },
-  };
-  const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
-  const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
-  const allKillChainPhases = await fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
-  const subTechniquesRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
-  for (let index = 0; index < allKillChainPhases.length; index += 1) {
-    const killChainPhase = allKillChainPhases[index];
-    const phaseAttackPatterns = allAttackPatterns
-      .filter((a) => {
-        // filter sub attack patterns
-        const isSub = subTechniquesRelations.some((s) => s.fromId === a.id);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return !isSub && a[RELATION_KILL_CHAIN_PHASE] && a[RELATION_KILL_CHAIN_PHASE].includes(killChainPhase.id);
-      })
-      .map((attackPattern) => {
-        const subAttackPatterns: { attack_pattern_id: string; name: string; description?: string }[] = [];
-        let subAttackPatternsSearchText: string = '';
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        if (attackPattern[RELATION_SUBTECHNIQUE_OF]) {
-          const subAttackPatternsFromRelation = subTechniquesRelations.filter((s) => s.toId === attackPattern.id);
-          if (subAttackPatternsFromRelation.length > 0) {
-            subAttackPatternsFromRelation.forEach((s) => {
-              const subAttackPattern = allAttackPatternsById.get(s.fromId);
-              if (subAttackPattern) {
-                subAttackPatterns.push({
-                  attack_pattern_id: subAttackPattern.id,
-                  name: subAttackPattern.name,
-                  description: subAttackPattern.description,
-                });
-                subAttackPatternsSearchText += `${subAttackPattern.x_mitre_id} ${subAttackPattern.name} ${subAttackPattern.description} | `;
-              }
-            });
-          }
-        }
-        return {
-          attack_pattern_id: attackPattern.id,
-          name: attackPattern.name,
-          description: attackPattern.description,
-          x_mitre_id: attackPattern.x_mitre_id,
-          subAttackPatterns,
-          subAttackPatternsSearchText,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          killChainPhasesIds: [...attackPattern[RELATION_KILL_CHAIN_PHASE]],
-        };
-      });
-    if (phaseAttackPatterns.length > 0) {
-      attackPatternsOfPhases.push({
-        kill_chain_id: killChainPhase.id,
-        kill_chain_name: killChainPhase.kill_chain_name,
-        phase_name: killChainPhase.phase_name,
-        x_opencti_order: killChainPhase.x_opencti_order,
-        attackPatterns: phaseAttackPatterns,
-      });
-    }
-  }
-  return { attackPatternsOfPhases };
-};
-
-export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: AuthUser) => {
+export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUser) => {
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
@@ -208,11 +140,4 @@ export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: Aut
     });
   }
   return { attackPatternsOfPhases };
-};
-
-export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUser) => {
-  if (isFeatureEnabled('ATTACK_PATTERN_MATRIX_OPTI')) {
-    return getAttackPatternsMatrix_v2(context, user);
-  }
-  return getAttackPatternsMatrix_v1(context, user);
 };
