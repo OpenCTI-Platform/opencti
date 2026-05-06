@@ -28,6 +28,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { getVocabularyMappingByAttribute } from '../../../../../utils/vocabularyMapping';
+import { useTheme } from '@mui/styles';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../../utils/hooks/useGranted';
 
@@ -99,6 +100,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
 
@@ -516,7 +518,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           variant="outlined"
           color="warning"
           label={t_i18n('Read-Only')}
-          style={{ position: 'absolute', top: -10, right: 0, zIndex: 1, backgroundColor: 'white' }}
+          style={{ position: 'absolute', top: -10, right: 0, zIndex: 1, backgroundColor: theme.palette.background.paper }}
         />
         {fieldContent}
       </div>,
