@@ -29,10 +29,7 @@ export const workflowStatusFragment = graphql`
           color
         }
       }
-      history {
-        comment
-        timestamp
-      }
+      lastComment
       allowedTransitions {
         event
         toState
@@ -102,11 +99,7 @@ const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) =
 
   const { workflowInstance } = draft;
   const currentStatus = workflowInstance.currentStatus;
-  const history = workflowInstance.history ?? [];
-  const lastEntry = [...history]
-    .sort((a, b) => (a as any).timestamp.localeCompare((b as any).timestamp))
-    .at(-1) ?? null;
-  const lastComment = lastEntry?.comment ?? null;
+  const lastComment = workflowInstance.lastComment ?? null;
 
   return (
     <>

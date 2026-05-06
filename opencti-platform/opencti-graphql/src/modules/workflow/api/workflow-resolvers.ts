@@ -41,7 +41,11 @@ const workflowResolvers = {
     currentState: (instance: any) => instance.currentState,
     currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
     allowedTransitions: (instance: any) => instance.allowedTransitions,
-    history: (instance: any) => instance.history ?? [],
+    lastComment: (instance: any) => {
+      const history: Array<{ timestamp: string; comment?: string | null }> = instance.history ?? [];
+      const lastEntry = [...history].sort((a, b) => a.timestamp.localeCompare(b.timestamp)).at(-1);
+      return lastEntry?.comment ?? null;
+    },
   },
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
