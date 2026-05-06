@@ -169,7 +169,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
 
       // granted_refs should be removed
-      expect(ext.granted_refs).toBe([]);
+      expect(ext.granted_refs).toStrictEqual([]);
 
       // upsert operation should be added
       if (!ext.opencti_upsert_operations || !ext.opencti_upsert_operations[0]) {
