@@ -19,7 +19,7 @@ An administrator can mark a Custom View as **Default** — in that case, its tab
 
 ## Managing Custom Views
 
-Custom Views are managed from **Settings > Customization > Custom Views**.
+Custom Views are managed from **Settings > Customization > Entity Type > Custom Views**.
 
 The settings page lists all existing Custom Views with the following columns:
 
