@@ -40,7 +40,7 @@ const IngestionTaxii = () => {
   const { platformModuleHelpers } = useAuth();
 
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}&integrationType=taxii_feed`
     : '';
 
   const {
