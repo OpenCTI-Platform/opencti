@@ -220,7 +220,8 @@
     "node": ">=20.0.0"
   },
   "resolutions": {
-    "@filigran/chatbot/lodash": "4.18.1",
+    "@filigran/chatbot@1.1.2/lodash": "4.18.1",
+    "@filigran/chatbot@1.1.2/uuid": "13.0.1",
     "@types/pdfmake": "0.3.2",
     "axios": "1.16.0",
     "cookie": "1.1.1",
