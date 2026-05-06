@@ -18,6 +18,9 @@
     "test:venv": "yarn with-python-venv yarn test",
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
+  "resolutions": {
+    "axios": "1.16.0"
+  },
   "dependenciesMeta": {
     "nx": {
       "built": false
