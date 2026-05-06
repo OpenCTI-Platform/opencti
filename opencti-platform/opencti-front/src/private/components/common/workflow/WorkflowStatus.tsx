@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import { Alert, AlertTitle, DialogActions, DialogContentText, Divider, Menu, MenuItem } from '@mui/material';
+import { Alert, AlertTitle, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField } from '@mui/material';
 import { ArrowDropDownOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
 import Button from '../../../../components/common/button/Button';
@@ -12,6 +12,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { useNavigate } from 'react-router-dom';
 import Transition from '../../../../components/Transition';
 import Dialog from '@common/dialog/Dialog';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 
 export const workflowStatusFragment = graphql`
   fragment WorkflowStatus_data on DraftWorkspace {
@@ -65,6 +66,7 @@ const workflowStatusTriggerMutation = graphql`
           event
           toState
           actions
+          comment
           toStatus {
             id
             template {
@@ -107,10 +109,17 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [validationTransition, setValidationTransition] = useState<string | null>(null);
+  const [commentDialogTransition, setCommentDialogTransition] = useState<{
+    event: string;
+    actions: readonly string[];
+    comment: string;
+  } | null>(null);
+  const [commentValue, setCommentValue] = useState('');
 
   const draft = useFragment(workflowStatusFragment, data);
   const { exitDraft } = useSwitchDraft();
   const [commit, approving] = useMutation<WorkflowStatusTriggerMutation>(workflowStatusTriggerMutation);
+  const canBypassMandatoryFields = useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS]);
 
   if (!draft.workflowInstance || draft.workflowInstance.allowedTransitions.length === 0) {
     return null;
@@ -126,9 +135,8 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     setAnchorEl(null);
   };
 
-  const handleTransition = (eventName: string, actions: readonly string[]) => {
+  const triggerTransition = (eventName: string, actions: readonly string[]) => {
     if (actions.includes('validateDraft')) {
-      handleClose();
       setValidationTransition(eventName);
     } else {
       commit({
@@ -141,6 +149,25 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         },
       });
     }
+  };
+
+  const handleTransition = (eventName: string, actions: readonly string[], comment?: string | null) => {
+    handleClose();
+    if (comment === 'allowed' || comment === 'required') {
+      setCommentValue('');
+      setCommentDialogTransition({ event: eventName, actions, comment });
+      return;
+    }
+    triggerTransition(eventName, actions);
+  };
+
+  const handleConfirmComment = () => {
+    if (!commentDialogTransition) return;
+    const { event, actions } = commentDialogTransition;
+    // comment value captured but not sent to backend yet
+    setCommentDialogTransition(null);
+    setCommentValue('');
+    triggerTransition(event, actions);
   };
 
   const handleValidateDraft = () => {
@@ -179,7 +206,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               <Button
                 key={transition.event}
                 variant="primary"
-                onClick={() => handleTransition(transition.event, transition.actions ?? [])}
+                onClick={() => handleTransition(transition.event, transition.actions ?? [], transition.comment)}
               >
                 {transition.event}
               </Button>
@@ -199,7 +226,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             {workflowInstance.allowedTransitions.map((transition) => (
               <MenuItem
                 key={transition.event}
-                onClick={() => handleTransition(transition.event, transition.actions ?? [])}
+                onClick={() => handleTransition(transition.event, transition.actions ?? [], transition.comment)}
               >
                 {transition.event}
               </MenuItem>
@@ -207,6 +234,49 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           </Menu>
         </>
       )}
+      {/* Comment dialog */}
+      <Dialog
+        open={Boolean(commentDialogTransition)}
+        slotProps={{ paper: { elevation: 1 } }}
+        keepMounted={false}
+        slots={{ transition: Transition }}
+        onClose={() => setCommentDialogTransition(null)}
+        title={t_i18n('Add a comment')}
+        size="small"
+      >
+        <DialogContentText sx={{ marginBottom: 2 }}>
+          {commentDialogTransition?.comment === 'required'
+            ? t_i18n('A comment is required to perform this transition.')
+            : t_i18n('You can optionally add a comment before performing this transition.')}
+        </DialogContentText>
+        <TextField
+          autoFocus
+          fullWidth
+          multiline
+          minRows={3}
+          label={t_i18n('Comment')}
+          value={commentValue}
+          onChange={(e) => setCommentValue(e.target.value)}
+          variant="outlined"
+          size="small"
+          required={commentDialogTransition?.comment === 'required'}
+        />
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={() => setCommentDialogTransition(null)}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={handleConfirmComment}
+            disabled={commentDialogTransition?.comment === 'required' && commentValue.trim() === '' && !canBypassMandatoryFields}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Validation dialog */}
       <Dialog
         open={Boolean(validationTransition)}
         slotProps={{ paper: { elevation: 1 } }}
