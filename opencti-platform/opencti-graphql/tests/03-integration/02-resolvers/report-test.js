@@ -226,7 +226,7 @@ describe('Report resolver standard behavior', () => {
   });
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(JSON.stringify(queryResult.data.reports), 'DEBUG REPORT TEST').toBe({});
+    expect(queryResult.data.reports.edges.length).toEqual(5);
   });
   it('should timeseries reports to be accurate', async () => {
     const queryResult = await queryAsAdmin({
