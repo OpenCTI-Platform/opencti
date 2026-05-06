@@ -258,7 +258,8 @@ describe('formSubmit', () => {
         authorized_members: expect.arrayContaining([
           expect.objectContaining({
             id: mockUser.id,
-            access_right: 'edit',
+            // Submitter is always upgraded to admin so they can manage their own draft.
+            access_right: 'admin',
             groups_restriction_ids: undefined,
           }),
         ]),

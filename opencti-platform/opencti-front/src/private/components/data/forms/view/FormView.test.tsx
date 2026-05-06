@@ -14,10 +14,9 @@ vi.mock('../../../common/form/AuthorizedMembersField', () => ({
 
 vi.mock('../../../common/form/CreatedByField', () => ({
   __esModule: true,
-  default: (props: { name?: string; label?: string; helpertext?: string }) => (
+  default: (props: { name?: string; label?: string }) => (
     <div data-testid="created-by-field">
       <label>{props.label}</label>
-      {props.helpertext && <span data-testid="created-by-helpertext">{props.helpertext}</span>}
     </div>
   ),
 }));
@@ -130,8 +129,11 @@ describe('FormView', () => {
     expect(screen.getByLabelText(/Draft name/i)).toBeTruthy();
   });
 
-  it('should NOT render draftName field when not enabled', async () => {
-    useGrantedSpy.mockReturnValue(true);
+  it('should NOT render draftName field when not editable and no bypass', async () => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      return true;
+    });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
     await resolveAndWait(relayEnv, makeMockForm({
       name: { enabled: false, isEditable: false, isRequired: false },
@@ -170,11 +172,14 @@ describe('FormView', () => {
     expect(screen.getByText(/Draft description/i)).toBeTruthy();
   });
 
-  it('should NOT render draftDescription when not enabled', async () => {
-    useGrantedSpy.mockReturnValue(true);
+  it('should NOT render draftDescription when not editable and no bypass', async () => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      return true;
+    });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
     await resolveAndWait(relayEnv, makeMockForm({
-      description: { enabled: false, isEditable: true, isRequired: false },
+      description: { enabled: false, isEditable: false, isRequired: false },
     }));
     expect(screen.queryByText(/Draft description/i)).toBeNull();
   });
@@ -188,11 +193,14 @@ describe('FormView', () => {
     expect(screen.getByTestId('assignee-field-draftObjectAssignee')).toBeTruthy();
   });
 
-  it('should NOT render ObjectAssigneeField when not enabled', async () => {
-    useGrantedSpy.mockReturnValue(true);
+  it('should NOT render ObjectAssigneeField when not editable and no bypass', async () => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      return true;
+    });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
     await resolveAndWait(relayEnv, makeMockForm({
-      objectAssignee: { enabled: false, isEditable: true, isRequired: false, defaults: [] },
+      objectAssignee: { enabled: false, isEditable: false, isRequired: false, defaults: [] },
     }));
     expect(screen.queryByTestId('assignee-field-draftObjectAssignee')).toBeNull();
   });
@@ -213,7 +221,8 @@ describe('FormView', () => {
       author: { type: 'main_entity_author', isEditable: true, isRequired: false },
     }));
     expect(screen.getByTestId('created-by-field')).toBeTruthy();
-    expect(screen.getByTestId('created-by-helpertext')).toBeTruthy();
+    // helpertext is rendered as a sibling <FormHelperText> for main_entity_author
+    expect(screen.getByText(/Reuse/i)).toBeTruthy();
   });
 
   it('should render CreatedByField without helpertext for static type', async () => {
@@ -223,7 +232,7 @@ describe('FormView', () => {
       author: { type: 'static', isEditable: true, isRequired: false, defaultValue: 'identity-1', defaultValueLabel: 'Org A' },
     }));
     expect(screen.getByTestId('created-by-field')).toBeTruthy();
-    expect(screen.queryByTestId('created-by-helpertext')).toBeNull();
+    expect(screen.queryByText(/Reuse/i)).toBeNull();
   });
 
   it('should NOT render CreatedByField when isEditable=false and user lacks BYPASS', async () => {

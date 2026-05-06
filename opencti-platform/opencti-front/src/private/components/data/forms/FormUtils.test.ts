@@ -167,7 +167,8 @@ describe('convertFormBuilderDataToSchema', () => {
       },
     });
     expect(schema.draftDefaults?.objectAssignee?.enabled).toBe(true);
-    expect(schema.draftDefaults?.objectAssignee?.isRequired).toBe(true);
+    // isRequired is false because isEditable is false — a non-editable field cannot be required
+    expect(schema.draftDefaults?.objectAssignee?.isRequired).toBe(false);
     expect(schema.draftDefaults?.objectAssignee?.defaults).toHaveLength(1);
   });
 
@@ -194,7 +195,7 @@ describe('convertFormBuilderDataToSchema', () => {
         author: {
           type: 'static',
           isEditable: false,
-          isRequired: true,
+          isRequired: true, // isRequired will be false in output since isEditable is false
           defaultValue: 'identity-99',
           defaultValueLabel: 'My Org',
           defaultValueType: 'Organization',
@@ -205,7 +206,8 @@ describe('convertFormBuilderDataToSchema', () => {
     expect(schema.draftDefaults?.author?.defaultValue).toBe('identity-99');
     expect(schema.draftDefaults?.author?.defaultValueLabel).toBe('My Org');
     expect(schema.draftDefaults?.author?.defaultValueType).toBe('Organization');
-    expect(schema.draftDefaults?.author?.isRequired).toBe(true);
+    // isRequired is false because isEditable is false — a non-editable field cannot be required
+    expect(schema.draftDefaults?.author?.isRequired).toBe(false);
   });
 
   it('should include main_entity_author type in schema', () => {
