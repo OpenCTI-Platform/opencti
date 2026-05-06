@@ -136,7 +136,6 @@ export const getAttackPatternsMatrix_v1 = async (context: AuthContext, user: Aut
 };
 
 export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: AuthUser) => {
-  logApp.info('[ATTACK PATTERN MATRIX] Using new algorithm');
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
@@ -144,13 +143,16 @@ export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: Aut
   };
 
   // 1. Load all data
+
   const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
   const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
   const allKillChainPhases = await fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
   const subTechniquesRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
 
   // 2. Pre-compute indexes
+
   const subTechniqueIds = new Set(subTechniquesRelations.map((s) => s.fromId));
+  // This map regroups sub attack patterns by the parent attack pattern
   const subTechniquesByParentId = new Map<string, { attack_pattern_id: string; name: string; description?: string }[]>();
   const searchTextPartsByParentId = new Map<string, string[]>();
   for (const s of subTechniquesRelations) {
@@ -165,6 +167,8 @@ export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: Aut
     }
   }
 
+  // This map regroups attack patterns by killchainphases
+  // sub attack patterns are ignored because they are managed differently (see first map above)
   const parentAPsByKcpId = new Map<string, typeof allAttackPatterns>();
   for (const ap of allAttackPatterns) {
     if (subTechniqueIds.has(ap.id)) continue;
@@ -178,8 +182,10 @@ export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: Aut
   }
 
   // 3. Build result
+
   const attackPatternsOfPhases = [];
   for (const kcp of allKillChainPhases) {
+    // Get attack patterns for this killchainphase using map #2
     const phaseAPs = parentAPsByKcpId.get(kcp.id) ?? [];
     if (phaseAPs.length === 0) continue;
     attackPatternsOfPhases.push({
@@ -192,6 +198,7 @@ export const getAttackPatternsMatrix_v2 = async (context: AuthContext, user: Aut
         name: ap.name,
         description: ap.description,
         x_mitre_id: ap.x_mitre_id,
+        // Add sub attack patterns using map #1
         subAttackPatterns: subTechniquesByParentId.get(ap.id) ?? [],
         subAttackPatternsSearchText: (searchTextPartsByParentId.get(ap.id) ?? []).join(' | '),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
