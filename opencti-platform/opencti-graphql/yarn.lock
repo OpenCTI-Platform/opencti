@@ -3125,9 +3125,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensearch-project/opensearch@npm:3.5.1":
-  version: 3.5.1
-  resolution: "@opensearch-project/opensearch@npm:3.5.1"
+"@opensearch-project/opensearch@npm:3.6.0":
+  version: 3.6.0
+  resolution: "@opensearch-project/opensearch@npm:3.6.0"
   dependencies:
     aws4: "npm:^1.11.0"
     debug: "npm:^4.3.1"
@@ -3135,7 +3135,7 @@ __metadata:
     json11: "npm:^2.0.0"
     ms: "npm:^2.1.3"
     secure-json-parse: "npm:^2.4.0"
-  checksum: 10c0/7b8ea322e32d310a124576212720536c0941086c7dbfc6675c121fbac306bbaced56e4921692522b1115433f50d382a09435300573b4fb6dd92ebae31b90ea10
+  checksum: 10c0/73194a70b92136e6059d2ab34c4a53302e0773f62a7cf52d6e03964481dcb2a914d8e44a12a870b7d4c3c2378b76a18e5dca36d76f2100ef69bf42d83a285c64
   languageName: node
   linkType: hard
 
@@ -10642,7 +10642,7 @@ __metadata:
     "@mistralai/mistralai": "npm:1.15.1"
     "@noble/ed25519": "npm:3.1.0"
     "@node-saml/passport-saml": "npm:5.1.0"
-    "@opensearch-project/opensearch": "npm:3.5.1"
+    "@opensearch-project/opensearch": "npm:3.6.0"
     "@opentelemetry/api": "npm:1.9.0"
     "@opentelemetry/api-metrics": "npm:0.33.0"
     "@opentelemetry/core": "npm:1.25.1"
