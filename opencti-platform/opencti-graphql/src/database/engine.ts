@@ -65,7 +65,6 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -94,7 +93,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -142,23 +141,14 @@ import {
   type AttributeDefinition,
   authorizedMembers,
   baseType,
-  booleanMapping,
-  dateMapping,
   entityType as entityTypeAttribute,
   id as idAttribute,
   internalId,
-  longStringFormats,
-  numericMapping,
-  shortMapping,
-  shortStringFormats,
   standardId,
-  textMapping,
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
-import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { rule_definitions } from '../rules/rules-definition';
+import { isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
@@ -195,6 +185,7 @@ import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
+import { engineMappingGenerator } from './engine-mapping-generator';
 import { isEsScriptFilterEnabled } from './engine-config';
 import { AbortError } from 'node-fetch';
 
@@ -1116,95 +1107,6 @@ const updateCoreSettings = async (): Promise<void> => {
   }
 };
 
-// Engine mapping generation on attributes definition
-const attributeMappingGenerator = (entityAttribute: AttributeDefinition): any => {
-  if (entityAttribute.type === 'string') {
-    if (shortStringFormats.includes(entityAttribute.format)) {
-      return shortMapping;
-    }
-    if (longStringFormats.includes(entityAttribute.format)) {
-      return textMapping;
-    }
-    throw UnsupportedError('Cant generated string mapping', { format: entityAttribute.format });
-  }
-  if (entityAttribute.type === 'date') {
-    return dateMapping;
-  }
-  if (entityAttribute.type === 'numeric') {
-    return numericMapping(entityAttribute.precision);
-  }
-  if (entityAttribute.type === 'boolean') {
-    return booleanMapping;
-  }
-  if (entityAttribute.type === 'object') {
-    // For flat object
-    if (entityAttribute.format === 'flat') {
-      return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
-    }
-    // For standard object
-    const properties: Record<string, any> = {};
-    for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
-      const mapping = entityAttribute.mappings[i];
-      properties[mapping.name] = attributeMappingGenerator(mapping);
-    }
-    const config: { dynamic: string; properties: any; type?: string } = { dynamic: 'strict', properties };
-    // Add nested option if needed
-    if (entityAttribute.format === 'nested') {
-      config.type = 'nested';
-    }
-    return config;
-  }
-  throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
-};
-const ruleMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
-  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
-  for (let attrIndex = 0; attrIndex < rule_definitions.length; attrIndex += 1) {
-    const rule = rule_definitions[attrIndex];
-    schemaProperties[`i_rule_${rule.id}`] = {
-      dynamic: 'strict',
-      properties: {
-        explanation: shortMapping,
-        dependencies: shortMapping,
-        hash: shortMapping,
-        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
-      },
-    };
-  }
-  return schemaProperties;
-};
-const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
-  const databaseRelationshipsName = [
-    STIX_SIGHTING_RELATIONSHIP,
-    ...STIX_CORE_RELATIONSHIPS,
-    ...INTERNAL_RELATIONSHIPS,
-    ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP),
-  ];
-  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
-  for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
-    const relName = databaseRelationshipsName[attrIndex];
-    schemaProperties[`rel_${relName}`] = {
-      dynamic: 'strict',
-      properties: {
-        internal_id: shortMapping,
-        inferred_id: shortMapping,
-      },
-    };
-  }
-  return schemaProperties;
-};
-const attributesMappingGenerator = (): Record<string, any> => {
-  const entityAttributes = schemaAttributesDefinition.getAllAttributes();
-  const schemaProperties: Record<string, any> = {};
-  for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
-    const entityAttribute = entityAttributes[attrIndex];
-    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute);
-  }
-  return schemaProperties;
-};
-
-export const engineMappingGenerator = (): Record<string, any> => {
-  return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
-};
 const computeIndexSettings = (rolloverAlias: string | null | undefined): any => {
   if (engine instanceof ElkClient) {
     // Rollover alias can be undefined for platform initialized <= 5.8
@@ -1512,7 +1414,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
   // Update core settings
   await updateCoreSettings();
   // Reset the templates
-  const mappingProperties = engineMappingGenerator();
+  const mappingProperties = engineMappingGenerator(engine);
   const templates = await elPlatformTemplates();
   for (let index = 0; index < templates.length; index += 1) {
     const template = templates[index];
@@ -1620,7 +1522,7 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES):
   await updateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
-  const mappingProperties = engineMappingGenerator();
+  const mappingProperties = engineMappingGenerator(engine);
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
     const createdIndex = await elCreateIndex(index, mappingProperties);
