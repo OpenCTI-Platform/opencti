@@ -88,6 +88,7 @@ import ko from 'ckeditor5/translations/ko.js';
 import zh from 'ckeditor5/translations/zh.js';
 
 const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {
+  licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE4MDgxNzkxOTksImp0aSI6IjBmZDRkMWNlLWRkNjUtNGU5YS1iZTk0LWZiMzQyNTkwODRiOCIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwiZmVhdHVyZXMiOlsiRFJVUCIsIkRPIiwiRlAiLCJTQyIsIlRPQyIsIlRQTCIsIlBPRSIsIkNDIiwiTUYiLCJTRUUiLCJFQ0giLCJFSVMiLCJMSCIsIkZPTyIsIkxUUyJdLCJ2YyI6ImYyMTBlMDIyIn0.bER1-19K1_ZPsLDHafMZSa8Qz8yQOy_Qfa69UYO3f9beKgLg6MypHIjUvlAwFsZHy9eyr8g4XbrHDpIYRVWb1A',
   htmlSupport: {
     allow: [
       { name: 'div', classes: true, styles: true },
