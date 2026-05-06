@@ -1,0 +1,76 @@
+type CustomField implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created: DateTime
+  modified: DateTime
+  # CustomField - mandatory attributes
+  name: String!
+  label: String!
+  field_type: String!    # 'integer' for now
+  entity_types: [String!]
+  mandatory: Boolean!
+  # Common optional
+  description: String
+  default_value: String  # serialized as string, parsed according to field_type
+  # Integer-specific
+  min_value: Int
+  max_value: Int
+}
+
+# Ordering
+enum CustomFieldsOrdering {
+  name
+  label
+  field_type
+  created
+  _score
+}
+
+# Relay connections
+type CustomFieldConnection {
+  pageInfo: PageInfo!
+  edges: [CustomFieldEdge!]!
+}
+type CustomFieldEdge {
+  cursor: String!
+  node: CustomField!
+}
+
+# Queries
+type Query {
+  customField(id: String!): CustomField @auth
+  customFields(
+    first: Int
+    after: ID
+    orderBy: CustomFieldsOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): CustomFieldConnection @auth
+}
+
+# Mutations
+input CustomFieldAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  label: String! @constraint(minLength: 2, format: "not-blank")
+  field_type: String!
+  entity_types: [String!]
+  mandatory: Boolean!
+  description: String
+  created: DateTime
+  # Common optional
+  default_value: String
+  # Integer-specific
+  min_value: Int
+  max_value: Int
+}
+
+type Mutation {
+  customFieldAdd(input: CustomFieldAddInput!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldFieldPatch(id: ID!, input: [EditInput!]!): CustomField @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}
+
