@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback } from 'react';
+import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback, useRef } from 'react';
 import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps } from '@mui/material';
 import { fieldToTextField } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
@@ -38,7 +38,10 @@ const TextField = (props: TextFieldProps) => {
     }
   }, [onChange, setFieldValue, name]);
 
-  const internalOnFocus = useCallback(() => {
+  const initialValueOnFocus = useRef<string | null>(null);
+
+  const internalOnFocus = useCallback((event: FocusEvent<HTMLInputElement>) => {
+    initialValueOnFocus.current = event.target.value;
     if (typeof onFocus === 'function') {
       onFocus(name);
     }
@@ -47,7 +50,7 @@ const TextField = (props: TextFieldProps) => {
   const internalOnBlur = useCallback((event: FocusEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setFieldTouched(name, true);
-    if (typeof onSubmit === 'function') {
+    if (typeof onSubmit === 'function' && value !== initialValueOnFocus.current) {
       onSubmit(name, value || '');
     }
   }, [onSubmit, setFieldTouched, name]);
