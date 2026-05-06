@@ -74,7 +74,7 @@ class MeterManager {
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
       valueType: ValueType.INT,
       description: 'Latency computing per query',
-      advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000] },
+      advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000, 10000, 20000, 30000] },
     });
     // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
