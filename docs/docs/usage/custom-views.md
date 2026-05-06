@@ -38,7 +38,7 @@ The default Custom View is displayed with a yellow icon.
 
 ## Creating a Custom View
 
-1. Navigate to **Settings > Customization > Custom Views**.
+1. Navigate to **Settings > Customization > Entity Type > Custom Views**.
 2. Click the **+** button (Add a custom view).
 3. Fill in the form:<br/>
     - **Name** *(required)* — minimum 2 characters, shown as the tab label, <br/>
