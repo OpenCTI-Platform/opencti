@@ -9,18 +9,18 @@ import useAttributes from '../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../components/i18n';
 import { indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
-import type { WidgetPerspective } from '../../../utils/widget/widget';
+import type { WidgetHost, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import Card from '../../../components/common/card/Card';
 
-const WidgetCreationPerspective = () => {
-  const { t_i18n } = useFormatter();
-  const { host, config, setStep, setConfigWidget } = useWidgetConfigContext();
-  const { type, dataSelection } = config.widget;
-
-  // Container and domain object have different filters for the perspective selection
-  const { containerTypes } = useAttributes();
-
+/**
+ * For fintel templates and custom views we want to pre-fill filters
+ */
+export const buildInitialFilters = (
+  containerTypes: string[],
+  host: WidgetHost,
+  perspective: WidgetPerspective,
+) => {
   const hostEntityType = host.kind === 'fintelTemplate'
     ? host.fintelEntityType
     : host.kind === 'custom-view'
@@ -31,42 +31,53 @@ const WidgetCreationPerspective = () => {
     ? containerTypes.includes(hostEntityType)
     : false;
 
-  const handleSelectPerspective = (perspective: WidgetPerspective) => {
-    let initialFilters = emptyFilterGroup;
-    // For fintel templates and custom views, we want to pre-fill filters
-    if (['fintelTemplate', 'custom-view'].includes(host.kind)) {
-      let initialFilterKey = 'objects';
-      let initialFilterValues: (object | string)[] = [SELF_ID];
+  let initialFilters = emptyFilterGroup;
+  if (['fintelTemplate', 'custom-view'].includes(host.kind)) {
+    let initialFilterKey = 'objects';
+    let initialFilterValues: (object | string)[] = [SELF_ID];
 
-      // Handle Non-Container Logic
-      if (!isContainer) {
-        if (perspective === 'entities') {
-          initialFilterKey = 'regardingOf';
-          initialFilterValues = [{ key: 'id', values: [SELF_ID] }];
-        } else if (perspective === 'relationships') {
-          initialFilterKey = host.kind === 'fintelTemplate'
-            ? 'fromId'
-            : host.kind === 'custom-view'
-              ? 'fromOrToId'
-              : '';
-        } else if (perspective === 'audits') {
-          initialFilterKey = host.kind === 'custom-view'
-            ? 'contextEntityId'
+    // Handle Non-Container Logic
+    if (!isContainer) {
+      if (perspective === 'entities') {
+        initialFilterKey = 'regardingOf';
+        initialFilterValues = [{ key: 'id', values: [SELF_ID] }];
+      } else if (perspective === 'relationships') {
+        initialFilterKey = host.kind === 'fintelTemplate'
+          ? 'fromId'
+          : host.kind === 'custom-view'
+            ? 'fromOrToId'
             : '';
-        }
+      } else if (perspective === 'audits') {
+        initialFilterKey = host.kind === 'custom-view'
+          ? 'contextEntityId'
+          : '';
       }
-      initialFilters = {
-        mode: 'and',
-        filters: [{
-          id: uuid(),
-          key: initialFilterKey,
-          values: initialFilterValues,
-          operator: 'eq',
-          mode: 'or',
-        }],
-        filterGroups: [],
-      };
     }
+    initialFilters = {
+      mode: 'and',
+      filters: [{
+        id: uuid(),
+        key: initialFilterKey,
+        values: initialFilterValues,
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+  }
+  return initialFilters;
+};
+
+const WidgetCreationPerspective = () => {
+  const { t_i18n } = useFormatter();
+  const { host, config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { type, dataSelection } = config.widget;
+
+  // Container and domain object have different filters for the perspective selection
+  const { containerTypes } = useAttributes();
+
+  const handleSelectPerspective = (perspective: WidgetPerspective) => {
+    const initialFilters = buildInitialFilters(containerTypes, host, perspective);
     const initialColumns = perspective === 'entities' || perspective === 'relationships'
       ? getDefaultWidgetColumns(perspective, host)
       : [];
