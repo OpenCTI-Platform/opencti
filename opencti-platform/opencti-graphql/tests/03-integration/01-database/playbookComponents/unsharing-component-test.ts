@@ -232,7 +232,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
 
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
 
-      expect(ext.granted_refs).toBeUndefined();
+      expect(ext.granted_refs).toStrictEqual([]);
 
       if (!ext.opencti_upsert_operations || !ext.opencti_upsert_operations[0]) {
         assert.fail('Upsert operation missing');
