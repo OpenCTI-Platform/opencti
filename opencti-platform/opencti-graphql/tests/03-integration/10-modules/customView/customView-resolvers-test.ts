@@ -14,7 +14,9 @@ import { fileToReadStream } from '../../../../src/database/file-storage';
 const READ_CUSTOM_VIEW_QUERY = gql`
   query CustomViewTest($id: ID!) {
     customView(id: $id) {
+      id
       manifest
+      name
     }
   }
 `;
@@ -148,6 +150,28 @@ const DELETE_CUSTOM_VIEW_QUERY = gql`
     mutation DeleteCustomViewQuery($id: ID!) {
         customViewDelete(id: $id)
     }
+`;
+
+const EXPORT_CUSTOM_VIEW_QUERY = gql`
+  query ExportCustomViewQuery($id: ID!) {
+    customView(id: $id) {
+      toConfigurationExport
+    }
+  }
+`;
+
+const IMPORT_CUSTOM_VIEW_QUERY = gql`
+  mutation ImportCustomViewQuery($targetEntityType: String!, $file: Upload!) {
+    customViewConfigurationImport(targetEntityType: $targetEntityType, file: $file) {
+      id
+      name
+      description
+      enabled
+      default
+      path
+      targetEntityType
+    }
+  }
 `;
 
 const createUploadFile = (filePath: string, fileName: string) => {
@@ -527,6 +551,53 @@ describe('CustomView resolvers', () => {
         nodes = listResult.data.customViews.edges.map((e: any) => e.node);
         expect(nodes.length).toBe(1);
         expect(nodes[0].id).toBe(firstElementId);
+      });
+
+      it('should export a custom view', async () => {
+        const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
+          query: READ_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+          },
+        });
+        const exportResult = await queryAsAdminWithSuccess({
+          query: EXPORT_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+          },
+        });
+        expect(typeof exportResult.data.customView.toConfigurationExport).toBe('string');
+        const parsedExport = JSON.parse(exportResult.data.customView.toConfigurationExport);
+        expect(parsedExport).toMatchObject({
+          type: 'custom-view',
+          openCTI_version: expect.stringMatching(/[0-9]{1}\.[0-9]{6}\.[0-9]{1}/),
+          configuration: {
+            name: result.data.customView.name,
+            manifest: result.data.customView.manifest,
+          },
+        });
+      });
+
+      it('should import a custom view', async () => {
+        const file = createUploadFile(
+          './tests/03-integration/10-modules/customView/data/',
+          'custom-view.json',
+        );
+        const result = await queryAsAdminWithSuccess({
+          query: IMPORT_CUSTOM_VIEW_QUERY,
+          variables: {
+            targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+            file,
+          },
+        });
+        expect(result.data.customViewConfigurationImport).toMatchObject({
+          id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+          name: 'A view to import',
+          enabled: false,
+          default: false,
+          path: `a-view-to-import-${result.data.customViewConfigurationImport.id.replaceAll('-', '')}`,
+          targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+        });
       });
     });
 
