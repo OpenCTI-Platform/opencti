@@ -33,6 +33,13 @@ vi.mock('../../../../utils/hooks/useGranted', () => ({
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 
+vi.mock('../../../../relay/environment', () => ({
+  MESSAGING$: {
+    notifySuccess: vi.fn(),
+    notifyError: vi.fn(),
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------

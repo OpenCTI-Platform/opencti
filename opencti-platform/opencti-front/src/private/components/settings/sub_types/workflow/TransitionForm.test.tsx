@@ -82,8 +82,6 @@ describe('TransitionForm – comment section', () => {
 
     await user.click(screen.getByRole('checkbox', { name: /enable comment/i }));
 
-    await user.click(screen.getByRole('button', { name: /submit/i }).parentElement!.closest('form')!);
-    // Trigger submit via form
     const form = document.querySelector('form')!;
     form.dispatchEvent(new Event('submit', { bubbles: true }));
 
