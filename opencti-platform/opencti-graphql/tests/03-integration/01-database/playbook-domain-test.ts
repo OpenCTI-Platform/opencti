@@ -3,25 +3,17 @@ import { findById, playbookDelete, playbookImport } from '../../../src/modules/p
 import * as fileToContent from '../../../src/utils/fileToContent';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER } from '../../utils/testQuery';
-import type { FileHandle } from 'fs/promises';
+import { open, type FileHandle } from 'fs/promises';
 import { ENTITY_TYPE_PLAYBOOK } from '../../../src/modules/playbook/playbook-types';
+import { join } from 'path';
 
 describe('playbook-domain', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('playbookImport', () => {
-    const parsedDataMock = {
-      openCTI_version: '6.9.0',
-      type: 'playbook',
-      configuration: {
-        name: 'test config',
-        description: '',
-        playbook_start: 'ce1413d0-d93b-45ae-9cda-24fea1ab67b7',
-        playbook_definition: '{"nodes":[{"id":"ce1413d0-d93b-45ae-9cda-24fea1ab67b7","name":"Listen knowledge events","position":{"x":0,"y":0},"component_id":"PLAYBOOK_INTERNAL_DATA_STREAM","configuration":"{\\"create\\":true,\\"update\\":true,\\"delete\\":false,\\"filters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"canEnrollManually\\":true}"},{"id":"01c5e873-df20-41db-805b-00ac26d0de88","name":"Apply predefined rule","position":{"x":0,"y":150},"component_id":"PLAYBOOK_RULE_COMPONENT","configuration":"{\\"rule\\":\\"resolve_container\\",\\"inferences\\":false}"},{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"actions\\":[],\\"all\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"container_type\\":\\"Feedback\\",\\"excludeMainElement\\":true}"},{"id":"2853a108-7d66-4904-aefa-67259308338a","name":"Send for ingestion","position":{"x":-100,"y":450},"component_id":"PLAYBOOK_INGESTION_COMPONENT","configuration":"{}"}],"links":[]}',
-      },
-    };
     const parsedDataOldVersionMock = { openCTI_version: '6.6.0', type: 'playbook', configuration: {} };
     const parsedDataWrongTypeMock = { openCTI_version: '7.260428.0', type: 'random', configuration: {} };
     const contextMock = { id: 'context' } as unknown as AuthContext;
@@ -48,18 +40,19 @@ describe('playbook-domain', () => {
     });
 
     it('should update correctly a playbook imported with the old configuration', async () => {
-      vi.spyOn(fileToContent, 'extractContentFrom').mockResolvedValue(parsedDataMock);
+      const filePath = join(__dirname, 'playbookComponents/data/imported-playbook-with-old-scope.json');
+      const fileHandle = open(filePath);
       const updatedPlaybookDefinition = '{"nodes":[{"id":"ce1413d0-d93b-45ae-9cda-24fea1ab67b7","name":"Listen knowledge events","position":{"x":0,"y":0},"component_id":"PLAYBOOK_INTERNAL_DATA_STREAM","configuration":"{\\"create\\":true,\\"update\\":true,\\"delete\\":false,\\"filters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"canEnrollManually\\":true}"},{"id":"01c5e873-df20-41db-805b-00ac26d0de88","name":"Apply predefined rule","position":{"x":0,"y":150},"component_id":"PLAYBOOK_RULE_COMPONENT","configuration":"{\\"rule\\":\\"resolve_container\\",\\"inferences\\":false}"},{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"actions\\":[],\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"container_type\\":\\"Feedback\\",\\"applyToElements\\":\\"all-except-main\\"}"},{"id":"2853a108-7d66-4904-aefa-67259308338a","name":"Send for ingestion","position":{"x":-100,"y":450},"component_id":"PLAYBOOK_INGESTION_COMPONENT","configuration":"{}"}],"links":[]}';
 
-      const importPlaybookId = await playbookImport(contextMock, ADMIN_USER, fileMock);
+      const importPlaybookId = await playbookImport(contextMock, ADMIN_USER, fileHandle);
       playbookCreatedIds.push(importPlaybookId);
 
       const playbook = await findById(contextMock, ADMIN_USER, importPlaybookId);
 
       expect(playbook).toBeDefined();
-      expect(playbook.name).toEqual(parsedDataMock.configuration.name);
+      expect(playbook.name).toEqual('test config');
       expect(playbook.playbook_definition).toEqual(updatedPlaybookDefinition);
-      expect(playbook.playbook_start).toEqual(parsedDataMock.configuration.playbook_start);
+      expect(playbook.playbook_start).toEqual('ce1413d0-d93b-45ae-9cda-24fea1ab67b7');
       expect(playbook.entity_type).toEqual(ENTITY_TYPE_PLAYBOOK);
       expect(playbook.id).toEqual(importPlaybookId);
     });
