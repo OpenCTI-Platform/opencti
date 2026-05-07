@@ -13,6 +13,7 @@ import {
 import type { ActivityStreamEvent, BaseEvent, SseEvent, StreamNotifEvent } from '../types/event';
 import { logApp } from '../config/conf';
 import { utcDate, utcEpochTime } from '../utils/format';
+import { lockResources } from '../lock/master-lock';
 
 export const STREAM_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.stream.exchange`;
 export const streamRouting = (streamName = LIVE_STREAM_NAME) => `${RABBIT_QUEUE_PREFIX}stream_routing_${streamName}`;
@@ -60,10 +61,17 @@ const initializeStreams = async () => {
   await registerStreamQueue(ACTIVITY_STREAM_NAME);
 };
 
+const RABBIT_PUSH_KEY = 'push_rabbit_stream_lock';
 const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const routingKey = streamRouting(LIVE_STREAM_NAME);
-  const rabbitMessage = buildStreamMessage(event);
-  await send(STREAM_EXCHANGE, routingKey, rabbitMessage);
+  let lock;
+  try {
+    lock = await lockResources([RABBIT_PUSH_KEY], { retryCount: -1 });
+    const rabbitMessage = buildStreamMessage(event);
+    await send(STREAM_EXCHANGE, routingKey, rabbitMessage);
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const rabbitQueueName = getRabbitMQStreamQueueName(streamName);
