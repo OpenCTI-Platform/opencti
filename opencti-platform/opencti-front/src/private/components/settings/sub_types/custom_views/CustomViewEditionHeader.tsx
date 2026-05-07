@@ -9,16 +9,18 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import IconButton from '@common/button/IconButton';
 import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
-import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
-import CustomViewFormDrawer from './CustomViewFormDrawer';
 import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
-import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
+import DashboardWidgetConfig from '../../../../../components/dashboard/DashboardWidgetConfig';
 import type { Widget, WidgetHost } from '../../../../../utils/widget/widget';
-import CustomViewMenu from './CustomViewMenu';
 import type { Theme } from '../../../../../components/Theme';
 import useCustomViewEdit from './useCustomViewEdit';
+import ExportButtons from '../../../../../components/ExportButtons';
+import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
+import { getCustomViewExportHandler } from './import-export/custom-view-export-utils';
+import CustomViewFormDrawer from './CustomViewFormDrawer';
+import CustomViewMenu from './CustomViewMenu';
 
 const headerFragment = graphql`
   fragment CustomViewEditionHeader_customView on CustomView {
@@ -46,6 +48,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
   const customView = useFragment(headerFragment, data);
   const theme = useTheme<Theme>();
   const [commitCustomViewMutation, mutating] = useCustomViewEdit();
+  const handleExport = getCustomViewExportHandler(customView);
   const customizationLink = '/dashboard/settings/customization/entity_types';
   const subTypeLink = `${customizationLink}/${customView.targetEntityType}/custom-views`;
   const breadcrumb = [
@@ -67,6 +70,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
       },
     });
   };
+
   return (
     <>
       <Breadcrumbs elements={breadcrumb} />
@@ -92,6 +96,14 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
               {customView.enabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>
           </Tooltip>
+          <ExportButtons
+            domElementId="container"
+            type="dashboard"
+            name={customView.name}
+            handleExportDashboard={handleExport}
+            exportToImage={false}
+            exportToPdf={false}
+          />
           <CustomViewMenu data={customView} />
           <DashboardWidgetConfig
             onComplete={onCreateWidget}
