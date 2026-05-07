@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Dialog from '@common/dialog/Dialog';
 import { ArrowRightAlt } from '@mui/icons-material';
-import { alpha } from '@mui/material';
+import { alpha, Stack } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -24,7 +24,6 @@ import ItemCreators from '../../../../components/ItemCreators';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { commitMutation } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
 import withRouter from '../../../../utils/compat_router/withRouter';
@@ -39,6 +38,7 @@ import { stixSightingRelationshipEditionFocus } from './StixSightingRelationship
 import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -354,7 +354,20 @@ class StixSightingRelationshipContainer extends Component {
                 </div>
               </Link>
               <Divider sx={{ my: 2 }} />
-              <div>
+              <Stack gap={2}>
+                <div>
+                  <Label>
+                    {t('Description')}
+                  </Label>
+                  <ExpandableMarkdown
+                    source={stixSightingRelationship.x_opencti_inferences !== null
+                      ? t('Inferred knowledge')
+                      : stixSightingRelationship.description
+                    }
+                    limit={400}
+                  />
+                </div>
+
                 <Grid container={true} spacing={2}>
                   <Grid item xs={6}>
                     <Label>
@@ -404,23 +417,11 @@ class StixSightingRelationshipContainer extends Component {
                         {t('Count')}
                       </Label>
                       {n(stixSightingRelationship.attribute_count)}
-                      <Label
-                        sx={{ marginTop: 2 }}
-                      >
-                        {t('Description')}
-                      </Label>
-                      <MarkdownDisplay
-                        content={stixSightingRelationship.x_opencti_inferences !== null
-                          ? t('Inferred knowledge')
-                          : stixSightingRelationship.description
-                        }
-                        remarkGfmPlugin={true}
-                        commonmark={true}
-                      />
+
                     </div>
                   </Grid>
                 </Grid>
-              </div>
+              </Stack>
             </Card>
           </Grid>
           <Grid item xs={6}>

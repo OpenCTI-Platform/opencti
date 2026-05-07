@@ -33,25 +33,21 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container spacing={2}>
-          <Grid item xs={hasImages ? 7 : 6}>
-            <Grid container spacing={2}>
-              {hasImages && (
-                <Grid item xs={4}>
-                  <ImageCarousel data={imagesCarousel} />
-                </Grid>
-              )}
-              <Grid item xs={hasImages ? 8 : 12}>
-                <Label>
-                  {t_i18n('Description')}
-                </Label>
-                <ExpandableMarkdown
-                  source={intrusionSet.description}
-                  limit={hasImages ? 400 : 600}
-                />
-              </Grid>
-            </Grid>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown
+              source={intrusionSet.description}
+              limit={hasImages ? 400 : 600}
+            />
           </Grid>
-          <Grid item xs={hasImages ? 5 : 6}>
+          {hasImages && (
+            <Grid item xs={4}>
+              <ImageCarousel data={imagesCarousel} />
+            </Grid>
+          )}
+          <Grid item xs={hasImages ? 8 : 12}>
             <IntrusionSetLocations intrusionSet={intrusionSet} />
             <Label
               sx={{ marginTop: 2 }}

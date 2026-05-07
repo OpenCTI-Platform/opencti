@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import { Tooltip, Typography } from '@mui/material';
+import { Stack, Tooltip, Typography } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Divider from '@mui/material/Divider';
@@ -24,7 +24,6 @@ import ItemCreators from '../../../../components/ItemCreators';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { commitMutation } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
 import withRouter from '../../../../utils/compat_router/withRouter';
@@ -45,6 +44,7 @@ import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsVi
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -377,8 +377,21 @@ class StixCoreRelationshipContainer extends Component {
                   </div>
                 </div>
               </Link>
-              <Divider style={{ marginTop: 30 }} />
-              <div style={{ padding: 15 }}>
+              <Divider style={{ marginTop: 30, marginBottom: 15 }} />
+              <Stack gap={2}>
+                <div>
+                  <Label>
+                    {t('Description')}
+                  </Label>
+                  <ExpandableMarkdown
+                    source={stixCoreRelationship.x_opencti_inferences !== null
+                      ? t('Inferred knowledge')
+                      : stixCoreRelationship.description
+                    }
+                    limit={400}
+                  />
+                </div>
+
                 <Grid container={true} spacing={2}>
                   <Grid item xs={6}>
                     <Label>
@@ -400,26 +413,13 @@ class StixCoreRelationshipContainer extends Component {
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
                     />
-                    <Label
-                      sx={{ marginTop: 2 }}
-                    >
-                      {t('Description')}
-                    </Label>
-                    <MarkdownDisplay
-                      content={stixCoreRelationship.x_opencti_inferences !== null
-                        ? t('Inferred knowledge')
-                        : stixCoreRelationship.description
-                      }
-                      remarkGfmPlugin={true}
-                      commonmark={true}
-                    />
                     <StixCoreObjectKillChainPhasesView
                       killChainPhases={stixCoreRelationship.killChainPhases}
                       displayIcon
                     />
                   </Grid>
                 </Grid>
-              </div>
+              </Stack>
             </Card>
           </Grid>
           <Grid item xs={6}>

@@ -93,6 +93,15 @@ const ThreatActorIndividualDetails: FunctionComponent<
   return (
     <Card title={t_i18n('Details')}>
       <Grid container={true} spacing={2}>
+        <Grid item xs={12}>
+          <Label>
+            {t_i18n('Description')}
+          </Label>
+          <ExpandableMarkdown
+            source={data.description}
+            limit={hasImages ? 400 : 600}
+          />
+        </Grid>
         <Grid item xs={hasImages ? 7 : 6}>
           <Grid container={true} spacing={2}>
             {hasImages && (
@@ -114,15 +123,6 @@ const ThreatActorIndividualDetails: FunctionComponent<
                   ))}
                 </Stack>
               </FieldOrEmpty>
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t_i18n('Description')}
-              </Label>
-              <ExpandableMarkdown
-                source={data.description}
-                limit={hasImages ? 400 : 600}
-              />
             </Grid>
           </Grid>
         </Grid>

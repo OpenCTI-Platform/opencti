@@ -19,6 +19,15 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown
+              source={securityPlatform.description}
+              limit={400}
+            />
+          </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Security platform type')}
@@ -28,15 +37,6 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
                 label={securityPlatform.security_platform_type}
               />
             </FieldOrEmpty>
-            <Label
-              sx={{ mt: 2 }}
-            >
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={securityPlatform.description}
-              limit={400}
-            />
           </Grid>
         </Grid>
       </Card>

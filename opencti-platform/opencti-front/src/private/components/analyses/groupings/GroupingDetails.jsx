@@ -51,12 +51,14 @@ const GroupingDetailsComponent = (props) => {
     <div style={{ height: '100%' }}>
       <Card title={t('Entity details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={6} ref={ref}>
+          <Grid item xs={12}>
             <Label>
               {t('Description')}
             </Label>
             <ExpandableMarkdown source={grouping.description} limit={400} />
-            <Label sx={{ marginTop: 2 }}>
+          </Grid>
+          <Grid item xs={6} ref={ref}>
+            <Label>
               {t('Context')}
             </Label>
             <Tag label={grouping.context} />

@@ -41,13 +41,27 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
 
   return (
     <Box sx={{ height: '100%' }} className="break">
-      <Card title={t_i18n('Details')}>
-        <Label>
-          {t_i18n('Indicator pattern')}
-        </Label>
-        <FieldOrEmpty source={indicator.pattern}>
-          <ExpandablePre source={indicator.pattern} limit={300} />
-        </FieldOrEmpty>
+      <Card title={t_i18n('Details')} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div>
+          <Label>
+            {t_i18n('Description')}
+          </Label>
+          <ExpandableMarkdown
+            source={indicator.description}
+            limit={400}
+            removeLinks
+          />
+        </div>
+        <div>
+
+          <Label>
+            {t_i18n('Indicator pattern')}
+          </Label>
+          <FieldOrEmpty source={indicator.pattern}>
+            <ExpandablePre source={indicator.pattern} limit={300} />
+          </FieldOrEmpty>
+        </div>
+
         <Grid container={true} spacing={2} sx={{ mt: 0 }}>
           <Grid item xs={6}>
             <Label>
@@ -98,16 +112,6 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 </>
               )}
             </Stack>
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={indicator.description}
-              limit={400}
-              removeLinks
-            />
           </Grid>
           <Grid item xs={6}>
             <Label>

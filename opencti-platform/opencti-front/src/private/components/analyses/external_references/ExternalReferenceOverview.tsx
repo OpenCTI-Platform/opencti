@@ -21,20 +21,20 @@ const ExternalReferenceOverviewComponent: FunctionComponent<
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Overview')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <Label>
-              {t_i18n('Source name')}
-            </Label>
-            {truncate(externalReference.source_name, 40)}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown
               source={externalReference.description}
               limit={400}
             />
+          </Grid>
+          <Grid item xs={6}>
+            <Label>
+              {t_i18n('Source name')}
+            </Label>
+            {truncate(externalReference.source_name, 40)}
           </Grid>
           <Grid item xs={6}>
             <Label>

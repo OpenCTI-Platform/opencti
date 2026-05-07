@@ -25,6 +25,15 @@ class ThreatActorGroupDetailsComponent extends Component {
     return (
       <Card title={t('Details')}>
         <Grid container={true} spacing={2}>
+          <Grid item xs={12}>
+            <Label>
+              {t('Description')}
+            </Label>
+            <ExpandableMarkdown
+              source={threatActorGroup.description}
+              limit={hasImages ? 400 : 600}
+            />
+          </Grid>
           <Grid item xs={hasImages ? 7 : 6}>
             <Grid container={true} spacing={2}>
               {hasImages && (
@@ -49,15 +58,6 @@ class ThreatActorGroupDetailsComponent extends Component {
                       )}
                   </Stack>
                 </FieldOrEmpty>
-                <Label
-                  sx={{ marginTop: 2 }}
-                >
-                  {t('Description')}
-                </Label>
-                <ExpandableMarkdown
-                  source={threatActorGroup.description}
-                  limit={hasImages ? 400 : 600}
-                />
               </Grid>
             </Grid>
           </Grid>

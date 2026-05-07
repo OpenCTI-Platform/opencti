@@ -38,6 +38,15 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown
+              source={organization.description}
+              limit={400}
+            />
+          </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Organization type')}
@@ -47,15 +56,6 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
                 label={organization.x_opencti_organization_type}
               />
             </FieldOrEmpty>
-            <Label
-              sx={{ mt: 2 }}
-            >
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={organization.description}
-              limit={400}
-            />
           </Grid>
           <Grid item xs={6}>
             <Label>
