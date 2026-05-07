@@ -33,6 +33,8 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+    display: 'flex',
+    alignItems: 'center',
   },
   itemIcon: {
     marginRight: 0,
