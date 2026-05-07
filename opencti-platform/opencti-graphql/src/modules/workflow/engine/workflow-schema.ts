@@ -27,8 +27,14 @@ export interface SerializedTransition {
   to: string; // ID of the destination StatusTemplate
   event: string;
   comment?: string;
+  /** @deprecated Use syncActions instead. Kept for backward compatibility. */
   actions?: ActionConfig[];
+  /** Phase 1: async background task actions. Run before syncActions. */
+  asyncActions?: ActionConfig[];
+  /** Phase 2: sync actions run after all asyncActions succeed (or immediately if none). */
+  syncActions?: ActionConfig[];
   conditions?: { filters: FilterGroup };
+  requiresOrganizationInput?: boolean;
 }
 
 /**
