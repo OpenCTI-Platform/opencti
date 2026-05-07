@@ -3,7 +3,7 @@ import { type FetchEventRangeOption, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME,
 import { rawRedisStreamClient } from '../redis-stream';
 import { rawRabbitMQStreamClient } from '../rabbitmq-stream';
 import { utcDate } from '../../utils/format';
-import { logApp } from '../../config/conf';
+import conf, { logApp } from '../../config/conf';
 
 const redisStreamClient: RawStreamClient = rawRedisStreamClient;
 const rabbitStreamClient: RawStreamClient = rawRabbitMQStreamClient;
@@ -18,7 +18,8 @@ const isRedisStreamFullyDeprecated = async (streamName = LIVE_STREAM_NAME) => {
   }
   const redisStreamInfo = await redisStreamClient.rawFetchStreamInfo(streamName);
   const redisFirstDate = utcDate(redisStreamInfo.firstEventDate);
-  const oneMonthAgo = utcDate().subtract(1, 'month');
+  const redisDeprecationDelay = conf.get('app:redis_stream_deprecation_days') || 0; // in days
+  const oneMonthAgo = utcDate().subtract(redisDeprecationDelay, 'days');
   redisStreamFullyDeprecated = redisStreamInfo.streamSize === 0 || redisFirstDate.isBefore(oneMonthAgo);
   return redisStreamFullyDeprecated;
 };
