@@ -568,16 +568,19 @@ const useSearchEntities = ({
           if (entityTypes.includes('User') && searchContext.elementType !== 'Playbook-Stix-Component') {
             unionSetEntities(key, [meEntity]);
           }
-          const membersSystems = (
-            (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers
-              ?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.name,
-            value: n?.node.id,
-            type: n?.node.entity_type,
-            group: n?.node.entity_type,
-          }));
-          unionSetEntities(key, membersSystems);
+          // system members are always users; only add them when the filter targets users
+          if (entityTypes.includes('User')) {
+            const membersSystems = (
+              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              group: n?.node.entity_type,
+            }));
+            unionSetEntities(key, membersSystems);
+          }
         });
     };
 

@@ -8,6 +8,7 @@ import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SETTINGS_SET_ACCESSES, S
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { validateFilterGroupForStreamOriginMatch } from '../../utils/filtering/filtering-stream-origin/stream-origin-filtering';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { TAXIIAPI } from '../../domain/user';
 import { validatePublicUserId } from './dataSharing-utils';
@@ -23,6 +24,10 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
     validateFilterGroupForStixMatch(JSON.parse(input.filters));
+  }
+  // origin filters can only target the stream event envelope (members_user/group/organization)
+  if (input.origin_filters) {
+    validateFilterGroupForStreamOriginMatch(JSON.parse(input.origin_filters));
   }
   if (input.stream_public && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to create a public stream collection');
@@ -72,6 +77,11 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
     validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
+  }
+  const originFiltersItem = input.find((item) => item.key === 'origin_filters');
+  if (originFiltersItem?.value?.[0]) {
+    // origin filters can only target the stream event envelope (members_user/group/organization)
+    validateFilterGroupForStreamOriginMatch(JSON.parse(originFiltersItem.value[0]));
   }
   const publicFields = ['stream_public', 'stream_public_user_id'];
   if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {

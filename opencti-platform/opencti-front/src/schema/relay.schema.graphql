@@ -16302,6 +16302,7 @@ type StreamCollection {
   name: String
   description: String
   filters: String
+  origin_filters: String
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String
@@ -16325,6 +16326,7 @@ input StreamCollectionAddInput {
   name: String!
   description: String
   filters: String
+  origin_filters: String
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String

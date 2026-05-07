@@ -9,6 +9,7 @@ export interface BasicStoreEntityStreamCollection extends BasicStoreEntity {
   name: string;
   description: string;
   filters: string;
+  origin_filters?: string | null;
   stream_public: boolean;
   stream_public_user_id?: string | null;
   stream_live: boolean;
@@ -19,6 +20,7 @@ export interface StoreEntityStreamCollection extends StoreEntity {
   name: string;
   description: string;
   filters: string;
+  origin_filters?: string | null;
   stream_public: boolean;
   stream_public_user_id?: string | null;
   stream_live: boolean;
@@ -28,6 +30,7 @@ export interface StixStreamCollection extends StixObject {
   name: string;
   description: string;
   filters: string;
+  origin_filters?: string | null;
   stream_public: boolean;
   stream_public_user_id?: string | null;
   stream_live: boolean;

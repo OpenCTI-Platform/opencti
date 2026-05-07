@@ -3254,7 +3254,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         ):
             recover_iso_date = self.connect_live_stream_recover_iso_date
         # Generate the stream URL
-        url = url + "/stream"
+        url = url.rstrip("/") + "/stream"
         if live_stream_id is not None:
             url = url + "/" + live_stream_id
         self.listen_stream = ListenStream(
