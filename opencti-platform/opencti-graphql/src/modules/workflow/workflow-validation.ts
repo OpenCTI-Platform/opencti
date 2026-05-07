@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import { ValidationError } from '../../config/errors';
-import { ActionDefinitions } from './registry/workflow-actions';
-import { storeLoadById, storeLoadByIds, fullEntitiesList } from '../../database/middleware-loader';
-import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
-import type { AuthContext, AuthUser } from '../../types/user';
-import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
-import type { WorkflowValidationError } from './types/workflow-types';
-import { isBasicObject } from '../../schema/stixCoreObject';
+import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
+import { isBasicObject } from '../../schema/stixCoreObject';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { ActionDefinitions } from './registry/workflow-actions';
+import type { WorkflowValidationError } from './types/workflow-types';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
 
 const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
 const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
@@ -47,9 +47,15 @@ export const workflowSerializedTransitionSchema = z.object({
   from: z.union([z.string().max(255), z.array(z.string().max(255))]).nullable(),
   to: z.string().max(255).nullable(),
   event: z.string().max(255),
+  /** @deprecated Use syncActions instead. Kept for backward compatibility. */
   actions: z.array(workflowActionConfigSchema).optional(),
+  /** Phase 1: async background task actions. Only action types with allowedModes: ['async'] are valid here. */
+  asyncActions: z.array(workflowActionConfigSchema).optional(),
+  /** Phase 2: sync actions run after all asyncActions succeed (or immediately if none). */
+  syncActions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
   comment: z.enum(['allowed', 'required', 'disabled']).optional(),
+  requiresOrganizationInput: z.boolean().optional(),
 });
 
 export const workflowDefinitionSchema = z.object({
@@ -227,9 +233,41 @@ export const validateWorkflowDefinitionData = async (
       }
     }
 
+    // Validate legacy actions[] (treated as syncActions for backward compat)
     if (transition.actions) {
       for (const action of transition.actions) {
-        validateAction(action, `transition ${transition.event}`);
+        validateAction(action, `transition ${transition.event} (actions)`);
+        if (action.type === 'validateDraft') {
+          hasValidateDraft = true;
+        }
+      }
+    }
+
+    // Validate asyncActions — enforce that the action type allows async-only execution
+    if (transition.asyncActions) {
+      for (const action of transition.asyncActions) {
+        const def = ActionDefinitions[action.type];
+        if (!def) {
+          throw ValidationError(`Side effect (action) type '${action.type}' doesn't exist`);
+        }
+        if (def.allowedModes && !def.allowedModes.includes('async')) {
+          throw ValidationError(`Action type '${action.type}' is not allowed in asyncActions (must support 'async' mode) in transition ${transition.event}`);
+        }
+        validateAction({ ...action, mode: 'async' }, `transition ${transition.event} (asyncActions)`);
+      }
+    }
+
+    // Validate syncActions — enforce that the action type allows sync execution
+    if (transition.syncActions) {
+      for (const action of transition.syncActions) {
+        const def = ActionDefinitions[action.type];
+        if (!def) {
+          throw ValidationError(`Side effect (action) type '${action.type}' doesn't exist`);
+        }
+        if (def.allowedModes && !def.allowedModes.includes('sync')) {
+          throw ValidationError(`Action type '${action.type}' is not allowed in syncActions (must support 'sync' mode) in transition ${transition.event}`);
+        }
+        validateAction({ ...action, mode: 'sync' }, `transition ${transition.event} (syncActions)`);
         if (action.type === 'validateDraft') {
           hasValidateDraft = true;
         }
