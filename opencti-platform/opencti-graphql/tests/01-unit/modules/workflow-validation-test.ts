@@ -158,3 +158,60 @@ describe('Workflow Validation', () => {
     await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow("Invalid filter operator 'invalid_op'");
   });
 });
+
+describe('Workflow Validation – transition comment field', () => {
+  it('should pass when transition has no comment (field is optional)', async () => {
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+    expect(result.transitions[0].comment).toBeUndefined();
+  });
+
+  it('should pass when transition has a valid comment (≤ 255 characters)', async () => {
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: 'Approved by manager' },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+    expect(result.transitions[0].comment).toBe('Approved by manager');
+  });
+
+  it('should pass when transition comment is exactly 255 characters', async () => {
+    const exactComment = 'a'.repeat(255);
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: exactComment },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+    expect(result.transitions[0].comment).toBe(exactComment);
+  });
+
+  it('should fail when transition comment exceeds 255 characters', async () => {
+    const longComment = 'a'.repeat(256);
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: longComment },
+      ],
+    };
+
+    await expect(
+      validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident'),
+    ).rejects.toThrow('Workflow definition schema validation failed');
+  });
+});
