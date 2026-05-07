@@ -155,7 +155,7 @@ export const findAllCustomViews = async (
   paginationOptions: Omit<QueryCustomViewsArgs, 'entityType'>,
 ) => {
   if (!isFeatureEnabled('CUSTOM_VIEW')) {
-    return emptyPaginationResult();
+    return emptyPaginationResult<BasicStoreEntityCustomView>();
   }
   const entityTypeFilterGroup = addFilter(
     undefined,
