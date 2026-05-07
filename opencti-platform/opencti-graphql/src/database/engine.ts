@@ -4703,14 +4703,28 @@ export const elIndexElements = async (
       const groupsOfElementsToUpdate = R.splitEvery(MAX_BULK_OPERATIONS, elementsToUpdate);
       for (let i = 0; i < groupsOfElementsToUpdate.length; i += 1) {
         const elementsBulk = groupsOfElementsToUpdate[i];
-        const bodyUpdate = elementsBulk.flatMap((doc: any) => [
-          { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-          R.dissoc('_index', doc.data),
-        ]);
-        if (bodyUpdate.length > 0) {
-          meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-          const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-          await Promise.all([bulkPromise]);
+        const elementsDenormLocks = elementsBulk.map((e) => 'denorm_rel_lock_' + (e._id ?? e.id));
+        let lock;
+        try {
+          lock = await lockResources(elementsDenormLocks);
+          const bodyUpdate = elementsBulk.flatMap((doc: any) => [
+            { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+            R.dissoc('_index', doc.data),
+          ]);
+          if (bodyUpdate.length > 0) {
+            meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
+            const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+            await Promise.all([bulkPromise]);
+          }
+        } catch (e: any) {
+          if (e.name === TYPE_LOCK_ERROR) {
+            throw LockTimeoutError({ participantIds: elementsDenormLocks });
+          }
+          throw e;
+        } finally {
+          if (lock) {
+            await lock.unlock();
+          }
         }
       }
     }
