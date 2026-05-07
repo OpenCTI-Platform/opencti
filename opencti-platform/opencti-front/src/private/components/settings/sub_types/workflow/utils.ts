@@ -22,7 +22,10 @@ export type Status = {
 export type Transition = {
   event: string;
   actions?: Action[];
+  asyncActions?: Action[];
+  syncActions?: Action[];
   conditions?: { filters: FilterGroup };
+  requiresOrganizationInput?: boolean;
 };
 
 export const NEW_EVENT_NAME = 'NEW_EVENT';
@@ -47,6 +50,7 @@ export enum WorkflowDataType {
 export enum WorkflowActionType {
   updateAuthorizedMembers = 'updateAuthorizedMembers',
   validateDraft = 'validateDraft',
+  asyncBulkAction = 'asyncBulkAction',
 }
 
 export const NODE_SIZE = { width: 160, height: 50 };
@@ -67,7 +71,21 @@ const formatActions = (actions: Action[] = []) => {
         mode,
       };
     }
-  });
+    if (type === 'asyncBulkAction') {
+      const p = params as { scope?: string; description?: string; actions?: unknown[]; failOnAnyError?: boolean } | undefined;
+      return {
+        type,
+        mode: 'async' as const,
+        params: {
+          scope: p?.scope ?? 'KNOWLEDGE',
+          description: p?.description,
+          actions: p?.actions ?? [],
+          failOnAnyError: p?.failOnAnyError ?? true,
+        },
+      };
+    }
+    return undefined;
+  }).filter(Boolean);
 };
 
 const transformToWorkflowDefinition = (
@@ -90,7 +108,7 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = {}, actions = [] } = node.data;
+      const { event, conditions = {}, actions = [], asyncActions = [], syncActions = [], requiresOrganizationInput = false } = node.data;
 
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
@@ -107,6 +125,9 @@ const transformToWorkflowDefinition = (
             event,
             conditions,
             actions: formatActions(actions),
+            asyncActions: formatActions(asyncActions),
+            syncActions: formatActions(syncActions),
+            requiresOrganizationInput,
           })),
         );
       }
@@ -117,6 +138,9 @@ const transformToWorkflowDefinition = (
         event,
         conditions,
         actions: formatActions(actions),
+        asyncActions: formatActions(asyncActions),
+        syncActions: formatActions(syncActions),
+        requiresOrganizationInput,
       }));
     }
     return [];
