@@ -133,3 +133,7 @@ html, body {
   border: 1px solid #273d5f;
   border-radius: 4.8px;
 }
+
+img.off-glb {
+  vertical-align: middle;
+}
