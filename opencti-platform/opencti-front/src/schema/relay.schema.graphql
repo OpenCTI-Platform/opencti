@@ -10405,7 +10405,10 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting
   workflowDefinitionDelete(entityType: String!): EntitySetting
-  triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult!
+  triggerWorkflowEvent(entityId: String!, eventName: String!, runtimeParams: JSON): WorkflowTriggerResult!
+  retryPendingWorkflowTransitionActions(entityId: String!): WorkflowTriggerResult!
+  clearWorkflowPendingState(entityId: String!): WorkflowInstance!
+  reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
@@ -10717,6 +10720,12 @@ enum WorkflowActionMode {
   async
 }
 
+enum WorkflowExecutionStatus {
+  pending
+  completed
+  error
+}
+
 type WorkflowActionConfig {
   type: String!
   params: JSON
@@ -10734,7 +10743,10 @@ type WorkflowSerializedTransition {
   to: String!
   event: String!
   actions: [WorkflowActionConfig!]
+  asyncActions: [WorkflowActionConfig!]
+  syncActions: [WorkflowActionConfig!]
   conditions: JSON
+  requiresOrganizationInput: Boolean
 }
 
 type WorkflowSchema {
@@ -10743,6 +10755,31 @@ type WorkflowSchema {
   initialState: String!
   states: [WorkflowSerializedState!]!
   transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowActionError {
+  timestamp: DateTime
+  message: String!
+  source: String
+}
+
+type WorkflowPendingAsyncAction {
+  id: ID!
+  workId: String!
+  type: String!
+  status: String!
+  processedCount: Int
+  expectedCount: Int
+  startedAt: DateTime
+  lastActivityAt: DateTime
+  errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+  event: String!
+  toState: String!
+  triggeredAt: DateTime!
+  asyncActions: [WorkflowPendingAsyncAction!]!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -10778,6 +10815,8 @@ type WorkflowTriggerResult {
   status: Status
   instance: WorkflowInstance
   entity: BasicObject
+  executionStatus: WorkflowExecutionStatus
+  pendingTransition: WorkflowPendingTransition
 }
 
 type WorkflowTransition {
@@ -10785,6 +10824,7 @@ type WorkflowTransition {
   toState: String!
   toStatus: Status
   actions: [String!]
+  requiresOrganizationInput: Boolean
 }
 
 type WorkflowInstance {
@@ -10792,6 +10832,9 @@ type WorkflowInstance {
   currentState: String!
   currentStatus: Status
   allowedTransitions: [WorkflowTransition!]!
+  pendingStatus: WorkflowExecutionStatus
+  pendingError: String
+  pendingTransition: WorkflowPendingTransition
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {
