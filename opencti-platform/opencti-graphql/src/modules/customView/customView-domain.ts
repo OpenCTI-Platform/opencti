@@ -33,6 +33,7 @@ import { convertDashboardManifestIds, exportDashboardWidget, importDashboardWidg
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
+import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
 
 /**
  * Exclusion list: entity types not capable of
@@ -123,6 +124,11 @@ const applyUniqueDefaultCustomViewConstraint = async (
   await Promise.all(promises);
 };
 
+const TELEMETRY = {
+  customViewCreated: addCustomViewCreatedCount,
+  customViewEnabled: addCustomViewEnabledCount,
+};
+
 export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) => {
   return `${slug}-${id.replaceAll('-', '')}`;
 };
@@ -206,6 +212,10 @@ export const addCustomView = async (
       }),
     },
   );
+  TELEMETRY.customViewCreated();
+  if (element.enabled) {
+    TELEMETRY.customViewEnabled();
+  }
   if (element.default) {
     // Unset the `default` fields for other CustomViews of the same
     // target_entity_type to enforce uniqueness constraint
@@ -227,6 +237,7 @@ export const editCustomView = async (
 ) => {
   const nameInput = input.find((i) => i.key === 'name');
   const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
+  const enabledFieldValue = input.find((i) => i.key === 'enabled')?.value?.[0];
   const element = await editInternalObject<StoreEntityCustomView>(
     context,
     user,
@@ -247,6 +258,9 @@ export const editCustomView = async (
       })),
     },
   );
+  if (enabledFieldValue) {
+    TELEMETRY.customViewEnabled();
+  }
   if (defaultFieldValue) {
     // Unset the `default` fields for other CustomViews of the same
     // target_entity_type to enforce uniqueness constraint
@@ -334,6 +348,10 @@ export async function duplicateCustomView(
       }),
     },
   );
+  TELEMETRY.customViewCreated();
+  if (duplicate.enabled) {
+    TELEMETRY.customViewEnabled();
+  }
   if (duplicate.default) {
     // Unset the `default` fields for other CustomViews of the same
     // target_entity_type to enforce uniqueness constraint
@@ -408,7 +426,7 @@ export const importCustomViewConfiguration = async (
     default: false,
     enabled: false,
   };
-  return createInternalObject<StoreEntityCustomView>(
+  const imported = await createInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewToCreate,
@@ -421,4 +439,6 @@ export const importCustomViewConfiguration = async (
       }),
     },
   );
+  TELEMETRY.customViewCreated();
+  return imported;
 };
