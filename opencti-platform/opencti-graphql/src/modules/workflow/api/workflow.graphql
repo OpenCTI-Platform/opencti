@@ -3,6 +3,12 @@ enum WorkflowActionMode {
   async
 }
 
+enum WorkflowExecutionStatus {
+  pending
+  completed
+  error
+}
+
 type WorkflowActionConfig {
     type: String!
     params: JSON
@@ -20,7 +26,10 @@ type WorkflowSerializedTransition {
     to: String!
     event: String!
     actions: [WorkflowActionConfig!]
+    asyncActions: [WorkflowActionConfig!]
+    syncActions: [WorkflowActionConfig!]
     conditions: JSON
+    requiresOrganizationInput: Boolean
 }
 
 type WorkflowSchema {
@@ -36,6 +45,31 @@ extend type EntitySetting {
     workflow_id: String
 }
 
+type WorkflowActionError {
+    timestamp: DateTime
+    message: String!
+    source: String
+}
+
+type WorkflowPendingAsyncAction {
+    id: ID!
+    workId: String!
+    type: String!
+    status: String!
+    processedCount: Int
+    expectedCount: Int
+    startedAt: DateTime
+    lastActivityAt: DateTime
+    errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+    event: String!
+    toState: String!
+    triggeredAt: DateTime!
+    asyncActions: [WorkflowPendingAsyncAction!]!
+}
+
 type WorkflowTriggerResult {
     success: Boolean!
     newState: String
@@ -43,6 +77,8 @@ type WorkflowTriggerResult {
     status: Status
     instance: WorkflowInstance
     entity: BasicObject
+    executionStatus: WorkflowExecutionStatus
+    pendingTransition: WorkflowPendingTransition
 }
 
 type WorkflowTransition {
@@ -50,6 +86,7 @@ type WorkflowTransition {
     toState: String!
     toStatus: Status
     actions: [String!]
+    requiresOrganizationInput: Boolean
 }
 
 type WorkflowInstance {
@@ -57,6 +94,9 @@ type WorkflowInstance {
     currentState: String!
     currentStatus: Status
     allowedTransitions: [WorkflowTransition!]!
+    pendingStatus: WorkflowExecutionStatus
+    pendingError: String
+    pendingTransition: WorkflowPendingTransition
 }
 
 extend type DraftWorkspace {
@@ -73,5 +113,8 @@ extend type Query {
 extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    triggerWorkflowEvent(entityId: String!, eventName: String!, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    retryPendingWorkflowTransitionActions(entityId: String!): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [SETTINGS])
+    reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 }
