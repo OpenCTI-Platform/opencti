@@ -13,6 +13,7 @@ const TransitionForm = () => {
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
   const hasUpdateAuthorizedMembers = values.actions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasValidateDraft = values.actions?.some((a) => a.type === WorkflowActionType.validateDraft);
+  const hasAsyncBulkAction = values.asyncActions?.some((a) => a.type === WorkflowActionType.asyncBulkAction);
 
   const commentMode: CommentModeType = values.comment ?? CommentMode.disabled;
   const enableComments = commentMode !== CommentMode.disabled;
@@ -38,6 +39,15 @@ const TransitionForm = () => {
     }
   };
 
+  const handleToggleAsyncBulkAction = (checked: boolean) => {
+    const currentAsync = values.asyncActions ?? [];
+    if (checked) {
+      setFieldValue('asyncActions', [...currentAsync, { type: WorkflowActionType.asyncBulkAction, mode: 'async', params: { scope: 'KNOWLEDGE', actions: [], failOnAnyError: true } }]);
+    } else {
+      setFieldValue('asyncActions', currentAsync.filter((a) => a.type !== WorkflowActionType.asyncBulkAction));
+    }
+  };
+
   return (
     <>
       <Field component={TextField} variant="standard" name="event" label={t_i18n('Transition name')} fullWidth />
@@ -51,7 +61,36 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('On transition actions')}
+          {t_i18n('Async actions (phase 1)')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={hasAsyncBulkAction}
+                onChange={(e) => handleToggleAsyncBulkAction(e.target.checked)}
+              />
+            )}
+            label={t_i18n('Async bulk action (background task)')}
+          />
+          {hasAsyncBulkAction && (
+            <FormControlLabel
+              sx={{ pl: 4 }}
+              control={(
+                <Switch
+                  checked={values.requiresOrganizationInput ?? false}
+                  onChange={(e) => setFieldValue('requiresOrganizationInput', e.target.checked)}
+                />
+              )}
+              label={t_i18n('Requires organization input at trigger time')}
+            />
+          )}
+        </Box>
+      </Box>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+        <Typography variant="h6">
+          {t_i18n('Sync actions (phase 2)')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
