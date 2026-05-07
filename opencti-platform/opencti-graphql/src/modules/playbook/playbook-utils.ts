@@ -25,6 +25,7 @@ import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remo
 import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from './components/security-coverage-component';
 import { PLAYBOOK_SHARING_COMPONENT } from './components/sharing-component';
 import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
+import { isCompatibleVersionWithMinimal } from '../../utils/version';
 
 export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -212,10 +213,21 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   return JSON.stringify({ ...config, filters: stringifiedFilters });
 };
 
-export const updateImportedPlaybookDefinitionScope = (playbookDefinition: any) => {
+/**
+ * Update the playbook definition nodes to the new scope format.
+ * If the version is compatible, the nodes configuration is updated to use applyToElements.
+ * If no definition is provided, return undefined.
+ *
+ * @param playbookDefinition Stringified playbook definition to migrate.
+ * @param version Version of the platform that exported the playbook.
+ * @returns Updated stringified playbook definition, or the original if version is not compatible.
+ */
+export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string | undefined, version: string) => {
+  const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260428.0'; // to update after merge of playbook scope feature
   if (!playbookDefinition) {
     return;
   }
+
   const listOfScopedPlaybookComponents = [
     PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.id,
     PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id,
@@ -227,30 +239,45 @@ export const updateImportedPlaybookDefinitionScope = (playbookDefinition: any) =
     PLAYBOOK_SHARING_COMPONENT.id,
     PLAYBOOK_UNSHARING_COMPONENT.id,
   ];
-  const parsedPlaybookDefinition = JSON.parse(playbookDefinition);
-  const playbookDefinitionNodes = parsedPlaybookDefinition.nodes;
-  for (let index = 0; index < playbookDefinitionNodes.length; index += 1) {
-    const playbookDefinitionNodeToParse = playbookDefinitionNodes[index];
-    const configuration = JSON.parse(playbookDefinitionNodeToParse.configuration);
-    const { all, excludeMainElement, ...restOfConfig } = configuration;
 
-    let finalConfig;
-    if (!listOfScopedPlaybookComponents.includes(playbookDefinitionNodeToParse.component_id)) {
-      finalConfig = configuration;
-    } else if (configuration?.applyToElements) {
-      finalConfig = restOfConfig;
-    } else if (all === true) {
-      if (excludeMainElement === true) {
-        finalConfig = { ...restOfConfig, applyToElements: playbookBundleElementsToApply.allExceptMain.value };
+  if (!isCompatibleVersionWithMinimal(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
+    const parsedPlaybookDefinition: ComponentDefinition = JSON.parse(playbookDefinition);
+
+    const updateNode = (node: NodeDefinition) => {
+      const configuration = JSON.parse(node.configuration);
+      const { all, excludeMainElement, ...restOfConfig } = configuration;
+
+      let finalConfig;
+
+      if (!listOfScopedPlaybookComponents.includes(node.component_id)) {
+        finalConfig = configuration;
+      } else if (configuration?.applyToElements) {
+        finalConfig = restOfConfig;
+      } else if (all === true) {
+        finalConfig = {
+          ...restOfConfig,
+          applyToElements: excludeMainElement
+            ? playbookBundleElementsToApply.allExceptMain.value
+            : playbookBundleElementsToApply.allElements.value,
+        };
       } else {
-        finalConfig = { ...restOfConfig, applyToElements: playbookBundleElementsToApply.allElements.value };
+        finalConfig = {
+          ...restOfConfig,
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        };
       }
-    } else {
-      finalConfig = { ...restOfConfig, applyToElements: playbookBundleElementsToApply.onlyMain.value };
-    }
 
-    playbookDefinitionNodeToParse.configuration = JSON.stringify(finalConfig);
+      return {
+        ...node,
+        configuration: JSON.stringify(finalConfig),
+      };
+    };
+    const nodes = parsedPlaybookDefinition.nodes.map((node: any) => updateNode(node));
+    const finalPlaybookDefinition = JSON.stringify({
+      ...parsedPlaybookDefinition,
+      nodes,
+    });
+    return finalPlaybookDefinition;
   }
-  const finalPlaybookDefinition = JSON.stringify({ ...parsedPlaybookDefinition, nodes: playbookDefinitionNodes });
-  return finalPlaybookDefinition;
+  return playbookDefinition;
 };

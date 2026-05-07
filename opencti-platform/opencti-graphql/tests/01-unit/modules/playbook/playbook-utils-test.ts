@@ -395,59 +395,75 @@ describe('Playbook utils unit tests', () => {
   });
 
   describe('Function: updateImportedPlaybookDefinitionScope()', () => {
-    it('should not update a component not listed in the listOfScopedPlaybookComponents even if all key is defined', () => {
-      const PLAYBOOK_DEFINITION_OUT_OF_LIST = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Manipulate knowledge","position":{"x":-100,"y":300},"component_id":"RANDOM_PLAYBOOK_COMPONENT","configuration":"{\\"actions\\":[],\\"all\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
-      const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_OUT_OF_LIST);
+    describe('with version older than MINIMAL_COMPATIBLE_SCOPE_VERSION', () => {
+      const oldVersionMock = '6.9.0';
 
-      expect(result).toEqual(PLAYBOOK_DEFINITION_OUT_OF_LIST);
-    });
+      it('should not update a component not listed in the listOfScopedPlaybookComponents even if all key is defined', () => {
+        const PLAYBOOK_DEFINITION_OUT_OF_LIST = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Manipulate knowledge","position":{"x":-100,"y":300},"component_id":"RANDOM_PLAYBOOK_COMPONENT","configuration":"{\\"actions\\":[],\\"all\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_OUT_OF_LIST, oldVersionMock);
 
-    describe('When component is in the list of updated components', () => {
-      it('should keep the applyToElements value if defined and remove all and excludeMainElement keys if defined', () => {
-        const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
-
-        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
-        const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
-
-        expect(result).toEqual(expectedResult);
+        expect(result).toEqual(PLAYBOOK_DEFINITION_OUT_OF_LIST);
       });
 
-      describe('When component has not applyToElements defined', () => {
-        it('should return applyToElements = all-except-main if all and excludeMainElement are true', () => {
-          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+      describe('When component is in the list of updated components', () => {
+        it('should keep the applyToElements value if defined and remove all and excludeMainElement keys if defined', () => {
+          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
 
-          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
-          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-except-main\\"}"}],"links":[]}';
-
-          expect(result).toEqual(expectedResult);
-        });
-
-        it('should return applyToElements = all-elements if all is true and excludeMainElement is false', () => {
-          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
-
-          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
-          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-elements\\"}"}],"links":[]}';
+          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
 
           expect(result).toEqual(expectedResult);
         });
 
-        it('should return applyToElements = only-main if all is false', () => {
-          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+        describe('When component has not applyToElements defined', () => {
+          it('should return applyToElements = all-except-main if all and excludeMainElement are true', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
 
-          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
-          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-except-main\\"}"}],"links":[]}';
 
-          expect(result).toEqual(expectedResult);
+            expect(result).toEqual(expectedResult);
+          });
+
+          it('should return applyToElements = all-elements if all is true and excludeMainElement is false', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-elements\\"}"}],"links":[]}';
+
+            expect(result).toEqual(expectedResult);
+          });
+
+          it('should return applyToElements = only-main if all is false', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+
+            expect(result).toEqual(expectedResult);
+          });
+
+          it('should return applyToElements = only-main if all is not defined', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+
+            expect(result).toEqual(expectedResult);
+          });
         });
+      });
+    });
 
-        it('should return applyToElements = only-main if all is not defined', () => {
-          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+    describe('with version newer than MINIMAL_COMPATIBLE_SCOPE_VERSION', () => {
+      const recentVersionMock = '8.260428.0';
 
-          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
-          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+      it('should not change playbook definition even if playbook is in the list and all and excludeMainElement are defined', () => {
+        const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
 
-          expect(result).toEqual(expectedResult);
-        });
+        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, recentVersionMock);
+
+        expect(result).toEqual(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
       });
     });
   });
