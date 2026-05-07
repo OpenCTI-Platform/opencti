@@ -18,6 +18,7 @@ import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/g
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { reportWorkflowAsyncActionResult } from '../modules/workflow/domain/workflow-async-completion';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
@@ -268,6 +269,22 @@ const updateWorkTaskToComplete = async (context, user, work) => {
   if (associatedTask) {
     const sourceScriptUpdateWork = 'ctx._source["work_completed"] = "true"';
     await elUpdate(associatedTask._index, associatedTaskId, { script: { source: sourceScriptUpdateWork, lang: 'painless' } });
+    // If this task was spawned by a workflow async action, report the result back to the workflow
+    if (associatedTask.workflow_action_id && associatedTask.workflow_instance_id) {
+      const workflowStatus = work.errors?.length > 0 ? 'failed' : 'success';
+      const workflowError = work.errors?.[0]?.message;
+      await reportWorkflowAsyncActionResult(
+        context,
+        user,
+        associatedTask.workflow_instance_id,
+        associatedTask.workflow_action_id,
+        workflowStatus,
+        workflowError,
+      ).catch((err) => {
+        // Non-fatal: log and continue — the admin can use clearWorkflowPendingState to recover
+        logApp.error('[work] Failed to report workflow async action result', { error: err?.message, associatedTaskId });
+      });
+    }
   } else {
     logApp.warn('The task associated to work cannot be found in database, task work status cannot be updated.', { associatedTaskId });
   }
