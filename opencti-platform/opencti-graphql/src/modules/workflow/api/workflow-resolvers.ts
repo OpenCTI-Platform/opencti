@@ -1,5 +1,6 @@
 import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
+import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import {
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
@@ -12,7 +13,6 @@ import {
   setWorkflowDefinition,
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
-import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 
 const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
 

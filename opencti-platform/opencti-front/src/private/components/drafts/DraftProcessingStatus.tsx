@@ -41,7 +41,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
       {isCurrentDraftProcessing && (
         <Tag
           color={theme.palette.designSystem.alert.warning.primary}
-          label={
+          label={(
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
               <span>{t_i18n('Processes currently running')}</span>
               <Box
@@ -60,7 +60,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
                 {currentDraftProcessingCount}
               </Box>
             </Box>
-          }
+          )}
           onClick={() => {
             forceRefetch();
             setDisplayProcesses(true);
