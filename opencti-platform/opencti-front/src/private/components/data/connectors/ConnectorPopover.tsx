@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
-import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
+import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkCancelMutation } from '@components/data/connectors/Connector';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import MoreVert from '@mui/icons-material/MoreVert';
@@ -46,7 +46,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
   const [commitDeleteConnector] = useApiMutation(connectorDeletionMutation);
-  const [commitClearWorks] = useApiMutation(connectorWorkDeleteMutation);
+  const [commitClearWorks] = useApiMutation(connectorWorkCancelMutation);
   const [commitResetState] = useApiMutation(connectorResetStateMutation);
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {

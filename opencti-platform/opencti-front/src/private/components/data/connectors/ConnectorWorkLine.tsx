@@ -19,7 +19,7 @@ import ConnectorWorksErrorLine from '@components/data/connectors/ConnectorWorksE
 import Drawer from '@components/common/drawer/Drawer';
 import { ConnectorWorks_data$data, State } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
 import parseWorkErrors, { ParsedWorkMessage } from '@components/data/connectors/parseWorkErrors';
-import { connectorWorksWorkDeletionMutation } from '@components/data/connectors/ConnectorWorks';
+import { connectorWorksWorkCancelMutation } from '@components/data/connectors/ConnectorWorks';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import TaskStatus from '../../../../components/TaskStatus';
@@ -46,7 +46,7 @@ const ConnectorWorkLine: FunctionComponent<
 > = ({ workId, workName, workStatus, workReceivedTime, workEndTime, workExpectedNumber, workProcessedNumber, workErrors, readOnly }) => {
   const { t_i18n, nsdt } = useFormatter();
 
-  const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
+  const [commit] = useApiMutation(connectorWorksWorkCancelMutation);
   const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
   const [errors, setErrors] = useState<ParsedWorkMessage[]>([]);
   const [criticals, setCriticals] = useState<ParsedWorkMessage[]>([]);

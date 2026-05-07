@@ -33,10 +33,10 @@ export const stixCoreObjectEnrichmentLinesQuery = graphql`
   }
 `;
 
-const stixCoreObjectEnrichmentLinesDeleteMutation = graphql`
-  mutation StixCoreObjectEnrichmentLinesDeleteMutation($workId: ID!) {
+const stixCoreObjectEnrichmentLinesCancelMutation = graphql`
+  mutation StixCoreObjectEnrichmentLinesCancelMutation($workId: ID!) {
     workEdit(id: $workId) {
-      delete
+      cancel
     }
   }
 `;
@@ -109,7 +109,7 @@ const StixCoreObjectEnrichment = ({
   };
   const deleteWork = (workId) => {
     commitMutation({
-      mutation: stixCoreObjectEnrichmentLinesDeleteMutation,
+      mutation: stixCoreObjectEnrichmentLinesCancelMutation,
       variables: { workId },
       onCompleted: () => relay.refetch({ id, entityType: stixCoreObject.entity_type }),
     });

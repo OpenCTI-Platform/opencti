@@ -81,9 +81,9 @@ export const connectorDeletionMutation = graphql`
   }
 `;
 
-export const connectorWorkDeleteMutation = graphql`
-  mutation ConnectorWorkDeleteMutation($connectorId: String!) {
-    workDelete(connectorId: $connectorId)
+export const connectorWorkCancelMutation = graphql`
+  mutation ConnectorWorkCancelMutation($connectorId: String!) {
+    workCancelForConnector(connectorId: $connectorId)
   }
 `;
 

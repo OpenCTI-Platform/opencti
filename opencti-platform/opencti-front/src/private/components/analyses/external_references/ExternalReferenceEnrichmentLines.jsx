@@ -33,10 +33,10 @@ export const externalReferenceEnrichmentLinesQuery = graphql`
   }
 `;
 
-const externalReferenceEnrichmentLinesDeleteMutation = graphql`
-  mutation ExternalReferenceEnrichmentLinesDeleteMutation($workId: ID!) {
+const externalReferenceEnrichmentLinesCancelMutation = graphql`
+  mutation ExternalReferenceEnrichmentLinesCancelMutation($workId: ID!) {
     workEdit(id: $workId) {
-      delete
+      cancel
     }
   }
 `;
@@ -112,7 +112,7 @@ const ExternalReferenceEnrichment = (props) => {
   };
   const deleteWork = (workId) => {
     commitMutation({
-      mutation: externalReferenceEnrichmentLinesDeleteMutation,
+      mutation: externalReferenceEnrichmentLinesCancelMutation,
       variables: { workId },
       onCompleted: () => relay.refetch({ id, entityType: externalReference.entity_type }),
     });

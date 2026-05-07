@@ -45,10 +45,10 @@ const styles = (theme) => ({
   },
 });
 
-const fileWorkDeleteMutation = graphql`
-  mutation FileWorkDeleteMutation($workId: ID!) {
+const fileWorkCancelMutation = graphql`
+  mutation FileWorkCancelMutation($workId: ID!) {
     workEdit(id: $workId) {
-      delete
+      cancel
     }
   }
 `;
@@ -78,7 +78,7 @@ const FileWorkComponent = (props) => {
 
   const deleteWork = () => {
     commitMutation({
-      mutation: fileWorkDeleteMutation,
+      mutation: fileWorkCancelMutation,
       variables: { workId },
       optimisticUpdater: (store) => {
         const fileStore = store.get(workId);

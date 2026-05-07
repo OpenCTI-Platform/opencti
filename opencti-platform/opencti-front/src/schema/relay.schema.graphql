@@ -9425,7 +9425,8 @@ type Query {
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
   work(id: ID!): Work
-  isWorkAlive(id: ID!): Boolean
+  isWorkAlive(id: ID!): Boolean @deprecated(reason: "Use isWorkCancelled (inverted semantics): closed/completed works are alive too.")
+  isWorkCancelled(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
@@ -9796,6 +9797,7 @@ type Subscription {
 }
 
 type WorkEditMutations {
+  cancel: ID!
   delete: ID!
   ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
@@ -10271,6 +10273,7 @@ type Mutation {
   synchronizerTest(input: SynchronizerAddInput): String
   workAdd(connectorId: String!, friendlyName: String, isMultiPartWork: Boolean = false): Work!
   workEdit(id: ID!): WorkEditMutations
+  workCancelForConnector(connectorId: String!): Boolean
   workDelete(connectorId: String!): Boolean
   deleteBackgroundTask(id: ID!): ID!
   listTaskAdd(input: ListTaskAddInput!): BackgroundTask!

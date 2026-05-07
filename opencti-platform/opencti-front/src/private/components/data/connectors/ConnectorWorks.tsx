@@ -13,10 +13,10 @@ import { ConnectorWorks_data$data } from './__generated__/ConnectorWorks_data.gr
 
 const interval$ = interval(FIVE_SECONDS);
 
-export const connectorWorksWorkDeletionMutation = graphql`
-  mutation ConnectorWorksWorkDeletionMutation($id: ID!) {
+export const connectorWorksWorkCancelMutation = graphql`
+  mutation ConnectorWorksWorkCancelMutation($id: ID!) {
     workEdit(id: $id) {
-      delete
+      cancel
     }
   }
 `;

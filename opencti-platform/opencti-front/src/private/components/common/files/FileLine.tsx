@@ -71,10 +71,10 @@ export const FileLineDeleteMutation = graphql`
   }
 `;
 
-const FileLineAskDeleteMutation = graphql`
-  mutation FileLineAskDeleteMutation($workId: ID!) {
+const FileLineAskCancelMutation = graphql`
+  mutation FileLineAskCancelMutation($workId: ID!) {
     workEdit(id: $workId) {
-      delete
+      cancel
     }
   }
 `;
@@ -222,7 +222,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const handleRemoveJob = (id: string | undefined) => {
     if (id) {
-      executeRemove(FileLineAskDeleteMutation, { workId: id });
+      executeRemove(FileLineAskCancelMutation, { workId: id });
     }
   };
 

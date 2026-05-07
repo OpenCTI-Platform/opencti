@@ -126,10 +126,10 @@ export const fileWorksQuery = graphql`
   }
 `;
 
-const importWorkDeleteMutation = graphql`
-  mutation ImportWorksDrawerDeleteMutation($workId: ID!) {
+const importWorkCancelMutation = graphql`
+  mutation ImportWorksDrawerCancelMutation($workId: ID!) {
     workEdit(id: $workId) {
-      delete
+      cancel
     }
   }
 `;
@@ -164,7 +164,7 @@ const FileWorksComponent = ({
   const deleteWork = (workId: string) => {
     commitMutation({
       ...defaultCommitMutation,
-      mutation: importWorkDeleteMutation,
+      mutation: importWorkCancelMutation,
       variables: { workId },
       onCompleted: () => {
         setDeleting(false);
