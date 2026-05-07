@@ -4,7 +4,7 @@
 
 Custom Views allow platform administrators to create **widget-based dashboards scoped to a specific entity type** and surface them as additional tabs directly on entity detail pages. Instead of navigating to a separate dashboard, analysts see contextual intelligence panels embedded right where they work.
 
-For example, a Custom View targeting `Malware` could display related campaigns, MITRE ATT&CK techniques, and victimology widgets — all appearing as a dedicated tab on every Malware entity page.
+For example, a Custom View targeting `Vulnerability` could display related campaigns, malware exploiting this vulnerability, and a timeline of related events — all appearing as a dedicated tab on every Vulnerability entity page.
 
 ---
 
@@ -12,10 +12,12 @@ For example, a Custom View targeting `Malware` could display related campaigns, 
 
 Custom Views appear to users as additional tabs when navigating to an entity detail page.
 
-* If multiple Custom Views are configured for that entity type, they are grouped under a single **"Custom Views"** tab.
+* If multiple Custom Views are configured for that entity type, they are grouped under a single **"Custom view"** tab.
 * If only one Custom View exists for that entity type, the tab uses the view's own display name directly.
 
 An administrator can mark a Custom View as **Default** — in that case, its tab is pinned in first position and becomes the landing page when opening any entity of that type.
+
+![Accessing Custom Views](assets/custom-views-access.png)
 
 ## Managing Custom Views
 
@@ -26,7 +28,7 @@ The settings page lists all existing Custom Views with the following columns:
 | Column | Description |
 |---|---|
 | **Name** | The display name of the Custom View |
-| **Description** | Optional description |
+| **Description** | An optional description |
 | **Status** | Whether the view is currently enabled (i.e. shown to users) or not |
 
 The default Custom View is displayed with a yellow icon.
@@ -76,16 +78,21 @@ However, it is also possible for a user to select a different filter and still a
 
 ### Preview mode
 
-While editing, a **Preview** toggle lets you see how the view will look when rendered on a real entity page, using sample data from an entity of the target type found in the platform.
+While editing, an entity selector lets you select an existing entity of the target type and see how the view will look when rendered on its page, using sample data found in the platform.
+Widgets relying on the **current entity** filter value show a **Preview data** tag in preview mode.
+
+![Preview mode](assets/custom-views-preview-mode.png)
 
 ### Enable / Disable a view
 
-Use the ![Enable](assets/custom-views-enable-icon.png){ .off-glb } ![Disable](assets/custom-views-disable-icon.png){ .off-glb } toggle to show or hide a view from entity pages without deleting it. Disabled views remain in the settings list but are not visible to regular users.
+Use the ![Enable](assets/custom-views-enable-icon.png){ .off-glb } ![Disable](assets/custom-views-disable-icon.png){ .off-glb } button to show or hide a view from entity pages without deleting it. Disabled views remain in the settings list but are not visible to regular users.
 This action is also accessible directly from the setting page list.
 
 ### Set a view as Default
 
-Marking a Custom View as **Default** causes it to replace the standard *Overview* tab as the first tab users land on when opening an entity of that type. Only one Custom View per entity type can be the default at a time.
+Marking a Custom View as **Default** in the **Update** panel causes it to replace the standard *Overview* tab as the first tab users land on when opening an entity of that type. Only one Custom View per entity type can be the default at a time.
+
+![Set as default](assets/custom-views-default.png)
 
 ### Duplicate a view
 
@@ -105,7 +112,7 @@ Custom Views can be shared across OpenCTI instances using JSON export/import.
 ### Export a Custom View
 
 1. Open the Custom View in the settings list.
-2. Click **Export configuration** (or use the action menu).
+2. Click on the **Export** button ![Export](assets/custom-views-export.png){ .off-glb }.
 3. A `.json` file is downloaded containing the view name and its full widget manifest.
 
 You can also export individual widgets from a Custom View using the **Export widget** action on each widget panel.
@@ -113,7 +120,7 @@ You can also export individual widgets from a Custom View using the **Export wid
 ### Import a Custom View
 
 1. Navigate to **Settings > Customization > Entity type > Custom Views**.
-2. Click **Import configuration**.
+2. Click on the **Import a custom view** button ![Import](assets/custom-views-import.png){ .off-glb }.
 3. Upload the `.json` file previously exported from another instance.
 4. The view is created in a **disabled** state. Review the configuration and enable it when ready.
 
@@ -123,7 +130,7 @@ You can also export individual widgets from a Custom View using the **Export wid
 ### Import a single widget into an existing Custom View
 
 1. Open the Custom View in edit mode.
-2. Use the **Import widget** action.
+2. Use the **Import widget** button.
 3. Upload a widget export file (`.json`).
 4. The widget is added to the view's layout.
 
