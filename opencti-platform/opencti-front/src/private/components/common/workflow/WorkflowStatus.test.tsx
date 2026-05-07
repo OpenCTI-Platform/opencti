@@ -89,7 +89,7 @@ describe('WorkflowStatus', () => {
 
   it('does not render a comment icon when lastHistoryEntry has no comment', () => {
     testRender(<WorkflowStatus data={makeDraft()} />);
-    expect(document.querySelector('[data-testid="ReviewsOutlinedIcon"]')).toBeNull();
+    expect(document.querySelector('[data-testid="CommentOutlinedIcon"]')).toBeNull();
   });
 
   it('renders a comment icon when lastHistoryEntry has a comment', () => {
@@ -103,7 +103,7 @@ describe('WorkflowStatus', () => {
       },
     });
     testRender(<WorkflowStatus data={draft} />);
-    expect(document.querySelector('[data-testid="ReviewsOutlinedIcon"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="CommentOutlinedIcon"]')).not.toBeNull();
   });
 });
 
@@ -231,7 +231,7 @@ describe('WorkflowTransitions', () => {
     expect(screen.getByText('Confirm').closest('button')).not.toBeDisabled();
   });
 
-  it('displays the character counter (0 / 5000) on dialog open', async () => {
+  it('displays the character counter (0 / 1000) on dialog open', async () => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',
@@ -243,7 +243,7 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    expect(await screen.findByText('0 / 5000')).toBeDefined();
+    expect(await screen.findByText('0 / 1000')).toBeDefined();
   });
 
   it('updates the character counter as the user types', async () => {
@@ -259,7 +259,7 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await user.type(await screen.findByLabelText(/Comment/), 'Hello');
-    expect(screen.getByText('5 / 5000')).toBeDefined();
+    expect(screen.getByText('5 / 1000')).toBeDefined();
   });
 
   it('calls commit with trimmed comment on Confirm', async () => {

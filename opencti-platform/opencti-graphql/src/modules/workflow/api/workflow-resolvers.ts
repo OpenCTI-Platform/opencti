@@ -10,7 +10,7 @@ import {
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
 
-const COMMENT_MAX_LENGTH = 5000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
+const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
 
 const workflowResolvers = {
   Query: {
