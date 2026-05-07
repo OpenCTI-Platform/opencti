@@ -9853,10 +9853,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:11.3.5, lru-cache@npm:^11.0.0, lru-cache@npm:^11.1.0":
-  version: 11.3.5
-  resolution: "lru-cache@npm:11.3.5"
-  checksum: 10c0/5b54ef7b88afb4bd25b7a778f1b2b1cde32d9770913e530da34ab203cf0442413bcaa6e372800cbab9562557a4480e4d8bf32e3a368bb5a91b12218eca085c66
+"lru-cache@npm:11.3.6":
+  version: 11.3.6
+  resolution: "lru-cache@npm:11.3.6"
+  checksum: 10c0/3afe3e3000e424c18b640dcea5776b5c1de8684b7dac9718d58792dff1a4692b38cc14e263cbb41bdab98ffcf5408f003b33133b179ce5d271284be72a3ff2a9
   languageName: node
   linkType: hard
 
@@ -9864,6 +9864,13 @@ __metadata:
   version: 10.4.3
   resolution: "lru-cache@npm:10.4.3"
   checksum: 10c0/ebd04fbca961e6c1d6c0af3799adcc966a1babe798f685bb84e6599266599cd95d94630b10262f5424539bc4640107e8a33aa28585374abf561d30d16f4b39fb
+  languageName: node
+  linkType: hard
+
+"lru-cache@npm:^11.0.0, lru-cache@npm:^11.1.0":
+  version: 11.3.5
+  resolution: "lru-cache@npm:11.3.5"
+  checksum: 10c0/5b54ef7b88afb4bd25b7a778f1b2b1cde32d9770913e530da34ab203cf0442413bcaa6e372800cbab9562557a4480e4d8bf32e3a368bb5a91b12218eca085c66
   languageName: node
   linkType: hard
 
@@ -10739,7 +10746,7 @@ __metadata:
     jsonpath-plus: "npm:10.4.0"
     jwt-decode: "npm:4.0.0"
     license-checker-rseidelsohn: "npm:4.4.2"
-    lru-cache: "npm:11.3.5"
+    lru-cache: "npm:11.3.6"
     luxon: "npm:3.7.2"
     marked: "npm:18.0.3"
     migrate: "npm:2.1.0"
