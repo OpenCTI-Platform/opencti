@@ -85,7 +85,7 @@ const TimeoutLock: React.FunctionComponent = () => {
     sessionLimit,
     idleCount: null,
     startDate: new Date(),
-    startDateEpoch: Date.now(),
+    startDateEpoch: Date.now() - 1000,
   });
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timeout | null>(null);
