@@ -47,7 +47,7 @@ interface FilterIconButtonContainerProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  context?: WidgetHost;
+  host?: WidgetHost;
   hasSavedFilters?: boolean;
   filterChipsParams: FilterChipsParameter;
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
@@ -74,7 +74,7 @@ const FilterIconButtonContainer: FunctionComponent<
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  context,
+  host,
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
@@ -264,6 +264,7 @@ const FilterIconButtonContainer: FunctionComponent<
                         redirection={redirection}
                         entityTypes={entityTypes}
                         filtersRestrictions={filtersRestrictions}
+                        host={host}
                       />
                     )
               }
@@ -318,6 +319,7 @@ const FilterIconButtonContainer: FunctionComponent<
                         chipColor={chipColor}
                         entityTypes={entityTypes}
                         filtersRestrictions={filtersRestrictions}
+                        host={host}
                       />
                     </Stack>
                   )}
@@ -373,7 +375,7 @@ const FilterIconButtonContainer: FunctionComponent<
           searchContext={searchContext}
           availableEntityTypes={availableEntityTypes}
           availableRelationshipTypes={availableRelationshipTypes}
-          context={context}
+          host={host}
         />
       )}
       {filters.filterGroups
