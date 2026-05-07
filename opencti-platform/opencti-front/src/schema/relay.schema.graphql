@@ -10814,31 +10814,6 @@ type WorkflowEntityRef {
   entity_type: String!
 }
 
-type WorkflowActionError {
-  timestamp: DateTime
-  message: String!
-  source: String
-}
-
-type WorkflowPendingAsyncAction {
-  id: ID!
-  workId: String!
-  type: String!
-  status: String!
-  processedCount: Int
-  expectedCount: Int
-  startedAt: DateTime
-  lastActivityAt: DateTime
-  errors: [WorkflowActionError!]
-}
-
-type WorkflowPendingTransition {
-  event: String!
-  toState: String!
-  triggeredAt: DateTime!
-  asyncActions: [WorkflowPendingAsyncAction!]!
-}
-
 type EntitySetting implements InternalObject & BasicObject {
   workflow_configuration: Boolean
   workflow_id: String
@@ -10871,6 +10846,31 @@ type WorkflowDefinitionMutationResult {
   target_type: String
   published: Boolean!
   errors: [WorkflowValidationError!]!
+}
+
+type WorkflowActionError {
+  timestamp: DateTime
+  message: String!
+  source: String
+}
+
+type WorkflowPendingAsyncAction {
+  id: ID!
+  workId: String!
+  type: String!
+  status: String!
+  processedCount: Int
+  expectedCount: Int
+  startedAt: DateTime
+  lastActivityAt: DateTime
+  errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+  event: String!
+  toState: String!
+  triggeredAt: DateTime!
+  asyncActions: [WorkflowPendingAsyncAction!]!
 }
 
 type WorkflowTriggerResult {
