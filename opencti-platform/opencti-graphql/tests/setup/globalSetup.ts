@@ -132,9 +132,11 @@ export async function setup() {
 
   // setup tests users
   if (!SKIP_CLEANUP_PLATFORM) {
+    const startTime = new Date().getTime();
     await waitPlatformIsAlive();
     logApp.info('[vitest-global-setup] Creating test users...');
     await createTestUsers();
+    logApp.info(`[vitest-global-setup] User setup done in ${new Date().getTime() - startTime} ms`);
   }
 }
 

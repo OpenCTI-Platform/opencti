@@ -1,6 +1,14 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import { v4 as uuid } from 'uuid';
-import { getConnectorQueueDetails, metrics, purgeConnectorQueues, pushToConnector, registerConnectorQueues, unregisterConnector } from '../../../src/database/rabbitmq';
+import {
+  getConnectorQueueDetails,
+  metrics,
+  purgeConnectorQueues,
+  pushToConnector,
+  rabbitMQIsAlive,
+  registerConnectorQueues,
+  unregisterConnector,
+} from '../../../src/database/rabbitmq';
 import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { RABBIT_QUEUE_PREFIX, waitInSec } from '../../../src/database/utils';
@@ -27,6 +35,10 @@ describe('Rabbit connector management', () => {
     } catch (e) {
       console.warn(`${e} : unregisterConnector failed in rabbitmq-test`);
     }
+  });
+
+  it('should rabbitMQIsAlive check without error', async () => {
+    await expect(rabbitMQIsAlive()).resolves.not.toThrow();
   });
 
   it('should register the connector', async () => {
