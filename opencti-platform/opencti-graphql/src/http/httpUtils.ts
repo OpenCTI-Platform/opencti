@@ -163,7 +163,7 @@ export const buildDefaultHelmetParameters = () => {
         connectSrc: buildConnectSrc(),
         objectSrc: buildObjectSrc(),
         frameAncestors: "'none'",
-        'upgrade-insecure-requests': isUnsecureHttpResourceAllowed() ? null : [],
+        upgradeInsecureRequests: isUnsecureHttpResourceAllowed() ? null : [],
       },
     },
     xFrameOptions: { action: 'deny' },
