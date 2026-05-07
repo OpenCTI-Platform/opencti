@@ -163,6 +163,10 @@ const baseOperationBuilder = (actionType, operations, element) => {
         attrKey = schemaRelationsRefDefinition
           .convertDatabaseNameToInputName(element.entity_type, action.context.field);
       }
+      // Dynamically transform description attrKey to x_opencti_description for observables
+      if (isStixCyberObservable(element.entity_type) && attrKey === 'description') {
+        attrKey = 'x_opencti_description';
+      }
       return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
     });
   }
