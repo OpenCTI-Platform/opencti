@@ -1,4 +1,4 @@
-import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../../types/event';
+import type { BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../../types/event';
 import { type FetchEventRangeOption, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamProcessor, type StreamProcessorOption } from './stream-utils';
 import { rawRedisStreamClient } from '../redis-stream';
 import { rawRabbitMQStreamClient } from '../rabbitmq-stream';
@@ -31,8 +31,8 @@ const initializeStreams = async () => {
 
 // region opencti data stream
 
-const rawPushToStream = async <T extends BaseEvent> (event: T) => {
-  await rabbitStreamClient.rawPushToStream<T>(event);
+const rawPushToStream = async <T extends BaseEvent> (event: T, streamName: string) => {
+  await rabbitStreamClient.rawPushToStream<T>(event, streamName);
 };
 
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
@@ -138,9 +138,6 @@ const rawFetchStreamEventsRangeFromEventId = async (
 };
 
 // region opencti notification stream
-const rawStoreNotificationEvent = async <T extends StreamNotifEvent> (event: T) => {
-  await rabbitStreamClient.rawStoreNotificationEvent<T>(event);
-};
 const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (start: Date, end: Date): Promise<Array<T>> => {
   if (await isRedisStreamFullyDeprecated(NOTIFICATION_STREAM_NAME)) {
     return rabbitStreamClient.rawFetchRangeNotifications<T>(start, end);
@@ -152,19 +149,11 @@ const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (start: Da
 };
 // endregion
 
-// region opencti audit stream
-const rawStoreActivityEvent = async (event: ActivityStreamEvent) => {
-  await rabbitStreamClient.rawStoreActivityEvent(event);
-};
-// endregion
-
 export const rawJoinedRedisRabbitStreamClient: RawStreamClient = {
   initializeStreams,
   rawPushToStream,
   rawFetchStreamInfo,
   rawCreateStreamProcessor,
   rawFetchStreamEventsRangeFromEventId,
-  rawStoreNotificationEvent,
   rawFetchRangeNotifications,
-  rawStoreActivityEvent,
 };

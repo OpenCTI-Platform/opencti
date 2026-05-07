@@ -10,7 +10,7 @@ import {
   type StreamProcessor,
   type StreamProcessorOption,
 } from './stream/stream-utils';
-import type { ActivityStreamEvent, BaseEvent, SseEvent, StreamNotifEvent } from '../types/event';
+import type { BaseEvent, SseEvent } from '../types/event';
 import { logApp } from '../config/conf';
 import { utcDate, utcEpochTime } from '../utils/format';
 import { lockResources } from '../lock/master-lock';
@@ -62,8 +62,8 @@ const initializeStreams = async () => {
 };
 
 const RABBIT_PUSH_KEY = 'push_rabbit_stream_lock';
-const rawPushToStream = async <T extends BaseEvent> (event: T) => {
-  const routingKey = streamRouting(LIVE_STREAM_NAME);
+const rawPushToStream = async <T extends BaseEvent> (event: T, streamName: string) => {
+  const routingKey = streamRouting(streamName);
   let lock;
   try {
     lock = await lockResources([RABBIT_PUSH_KEY], { retryCount: -1 });
@@ -259,11 +259,6 @@ const rawFetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
   rabbitMqConnection.close();
   return { lastEventId: `${lastTimestamp}-${currentTimestampCount}` };
 };
-const rawStoreNotificationEvent = async <T extends StreamNotifEvent> (event: T) => {
-  const routingKey = streamRouting(NOTIFICATION_STREAM_NAME);
-  const rabbitMessage = buildStreamMessage(event);
-  await send(STREAM_EXCHANGE, routingKey, rabbitMessage);
-};
 const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end: Date): Promise<Array<T>> => {
   const rabbitQueueName = getRabbitMQStreamQueueName(NOTIFICATION_STREAM_NAME);
 
@@ -304,11 +299,6 @@ const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end
   rabbitMqConnection.close();
   return rangeNotifications;
 };
-const rawStoreActivityEvent = async (event: ActivityStreamEvent) => {
-  const routingKey = streamRouting(ACTIVITY_STREAM_NAME);
-  const rabbitMessage = buildStreamMessage(event);
-  await send(STREAM_EXCHANGE, routingKey, rabbitMessage);
-};
 
 export const rawRabbitMQStreamClient: RawStreamClient = {
   initializeStreams,
@@ -316,7 +306,5 @@ export const rawRabbitMQStreamClient: RawStreamClient = {
   rawFetchStreamInfo,
   rawCreateStreamProcessor,
   rawFetchStreamEventsRangeFromEventId,
-  rawStoreNotificationEvent,
   rawFetchRangeNotifications,
-  rawStoreActivityEvent,
 };

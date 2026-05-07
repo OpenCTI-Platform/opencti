@@ -7,19 +7,7 @@ import type { StixCoreObject, StixObject } from '../../types/stix-2-1-common';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
 import { UnsupportedError } from '../../config/errors';
 import { INTERNAL_EXPORTABLE_TYPES } from '../../schema/stixCoreObject';
-import type {
-  ActivityStreamEvent,
-  BaseEvent,
-  Change,
-  DeleteEvent,
-  EventOpts,
-  MergeEvent,
-  SseEvent,
-  StreamDataEvent,
-  StreamNotifEvent,
-  UpdateEvent,
-  UpdateEventOpts,
-} from '../../types/event';
+import type { BaseEvent, Change, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEvent, UpdateEventOpts } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { booleanConf } from '../../config/conf';
 
@@ -61,7 +49,7 @@ export type StreamInfo = {
 
 export interface RawStreamClient {
   initializeStreams: () => Promise<void>;
-  rawPushToStream: <T extends BaseEvent> (event: T) => Promise<void>;
+  rawPushToStream: <T extends BaseEvent> (event: T, streamName: string) => Promise<void>;
   rawFetchStreamInfo: (streamName?: string) => Promise<StreamInfo>;
   rawCreateStreamProcessor: <T extends BaseEvent> (
     provider: string,
@@ -73,9 +61,7 @@ export interface RawStreamClient {
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
     opts?: FetchEventRangeOption,
   ) => Promise<{ lastEventId: string }>;
-  rawStoreNotificationEvent: <T extends StreamNotifEvent> (event: T) => Promise<void>;
   rawFetchRangeNotifications: <T extends StreamNotifEvent> (start: Date, end: Date) => Promise<Array<T>>;
-  rawStoreActivityEvent: (event: ActivityStreamEvent) => Promise<void>;
 }
 
 export const isStreamPublishable = (opts: EventOpts) => {
