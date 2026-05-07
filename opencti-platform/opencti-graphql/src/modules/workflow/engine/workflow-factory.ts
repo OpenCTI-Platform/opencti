@@ -155,10 +155,21 @@ export class WorkflowFactory {
     });
 
     schema.transitions.forEach((t) => {
+      // asyncActions (phase 1) — absent means no async effects
+      const asyncSideEffects = this.createSideEffects<TContext>(t.asyncActions);
+      // syncActions (phase 2) — fall back to legacy actions[] for backward compat
+      const syncSideEffects = this.createSideEffects<TContext>(t.syncActions ?? t.actions);
+      const allActionTypes = [
+        ...(t.asyncActions?.map((a) => a.type) || []),
+        ...(t.syncActions?.map((a) => a.type) || t.actions?.map((a) => a.type) || []),
+      ];
+
       definition.addTransition(t.from, t.to, t.event, {
         conditions: this.createConditions<TContext>(t.conditions),
-        onTransition: this.createSideEffects<TContext>(t.actions),
-        actionTypes: t.actions?.map((a) => a.type) || [],
+        asyncSideEffects,
+        onTransition: syncSideEffects,
+        actionTypes: allActionTypes,
+        requiresOrganizationInput: t.requiresOrganizationInput ?? false,
       });
     });
 

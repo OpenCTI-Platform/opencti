@@ -88,7 +88,21 @@ export class StateMachine<TContext extends Context = Context> {
       }
     }
 
-    // Execute transition side effects
+    // Phase 1: if the transition has async side effects, run them and suspend.
+    // State does NOT advance here — it advances only after all async tasks complete.
+    if (transition.asyncSideEffects && transition.asyncSideEffects.length > 0) {
+      this.context.pendingAsyncSlots = [];
+      for (const effect of transition.asyncSideEffects) {
+        await effect(this.context);
+      }
+      return {
+        success: true,
+        executionStatus: 'pending',
+        asyncActionSlots: this.context.pendingAsyncSlots,
+      };
+    }
+
+    // Phase 2 (or sync-only transition): run onTransition effects, advance state.
     if (transition.onTransition) {
       for (const effect of transition.onTransition) {
         await effect(this.context);
@@ -106,6 +120,6 @@ export class StateMachine<TContext extends Context = Context> {
       }
     }
 
-    return { success: true };
+    return { success: true, executionStatus: 'completed' };
   }
 }
