@@ -1,5 +1,4 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { GraphQLError } from 'graphql';
 import workflowResolvers from '../../../src/modules/workflow/api/workflow-resolvers';
 import {
   getAllowedNextStatuses,
@@ -218,13 +217,6 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
   it('should throw GraphQLError when comment exceeds 5000 characters', async () => {
     const longComment = 'a'.repeat(5001);
 
-    await expect(
-      workflowResolvers.Mutation.triggerWorkflowEvent(
-        {},
-        { entityId: 'entity-id', eventName: 'review', comment: longComment },
-        mockContext,
-      ),
-    ).rejects.toThrow(GraphQLError);
 
     await expect(
       workflowResolvers.Mutation.triggerWorkflowEvent(

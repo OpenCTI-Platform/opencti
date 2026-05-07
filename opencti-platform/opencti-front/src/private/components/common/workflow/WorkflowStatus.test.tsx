@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import WorkflowStatus, { WorkflowTransitions } from './WorkflowStatus';
 import testRender from '../../../../utils/tests/test-render';
+import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 
 // ---------------------------------------------------------------------------
 // Relay mocks
@@ -14,7 +15,7 @@ vi.mock('react-relay', async (importOriginal) => {
   return {
     ...actual,
     useFragment: (_fragment: unknown, data: unknown) => data,
-    useMutation: () => [mockCommit, false],
+    useMutation: () => [mockCommit, false] as const,
   };
 });
 
@@ -40,7 +41,7 @@ const makeStatus = (color = '#ff0000', name = 'In review') => ({
   template: { name, color },
 });
 
-const makeDraft = (overrides: Record<string, unknown> = {}) => ({
+const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key => ({
   id: 'draft-1',
   entity_id: 'entity-1',
   processingCount: 0,
@@ -52,7 +53,7 @@ const makeDraft = (overrides: Record<string, unknown> = {}) => ({
     allowedTransitions: [],
   },
   ...overrides,
-});
+} as unknown as WorkflowStatus_data$key);
 
 const makeTransition = (overrides: Record<string, unknown> = {}) => ({
   event: 'approve',
@@ -69,13 +70,13 @@ const makeTransition = (overrides: Record<string, unknown> = {}) => ({
 describe('WorkflowStatus', () => {
   it('renders null when workflowInstance is absent', () => {
     const { container } = testRender(
-      <WorkflowStatus data={makeDraft({ workflowInstance: null }) as any} />,
+      <WorkflowStatus data={makeDraft({ workflowInstance: null })} />,
     );
     expect(container.firstChild).toBeNull();
   });
 
   it('does not render a comment icon when lastHistoryEntry has no comment', () => {
-    testRender(<WorkflowStatus data={makeDraft() as any} />);
+    testRender(<WorkflowStatus data={makeDraft()} />);
     expect(document.querySelector('[data-testid="ReviewsOutlinedIcon"]')).toBeNull();
   });
 
@@ -89,7 +90,7 @@ describe('WorkflowStatus', () => {
         allowedTransitions: [],
       },
     });
-    testRender(<WorkflowStatus data={draft as any} />);
+    testRender(<WorkflowStatus data={draft} />);
     expect(document.querySelector('[data-testid="ReviewsOutlinedIcon"]')).not.toBeNull();
   });
 });
@@ -104,14 +105,14 @@ describe('WorkflowTransitions', () => {
 
   it('renders null when workflowInstance is absent', () => {
     const { container } = testRender(
-      <WorkflowTransitions data={makeDraft({ workflowInstance: null }) as any} />,
+      <WorkflowTransitions data={makeDraft({ workflowInstance: null })} />,
     );
     expect(container.firstChild).toBeNull();
   });
 
   it('renders null when allowedTransitions is empty', () => {
     const { container } = testRender(
-      <WorkflowTransitions data={makeDraft() as any} />,
+      <WorkflowTransitions data={makeDraft()} />,
     );
     expect(container.firstChild).toBeNull();
   });
@@ -129,7 +130,7 @@ describe('WorkflowTransitions', () => {
         ],
       },
     });
-    testRender(<WorkflowTransitions data={draft as any} />);
+    testRender(<WorkflowTransitions data={draft} />);
     expect(screen.getByText('approve')).toBeDefined();
     expect(screen.getByText('reject')).toBeDefined();
   });
@@ -148,7 +149,7 @@ describe('WorkflowTransitions', () => {
         ],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('Next status'));
     expect(await screen.findByText('approve')).toBeDefined();
     expect(await screen.findByText('reject')).toBeDefined();
@@ -165,7 +166,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: null })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(mockCommit).toHaveBeenCalledOnce();
   });
@@ -180,7 +181,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(await screen.findByText('You can optionally add a comment before changing the status.')).toBeDefined();
     expect(screen.getByText('Confirm').closest('button')).not.toBeDisabled();
@@ -196,7 +197,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'required' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(await screen.findByText('A comment is required before changing the status.')).toBeDefined();
     expect(screen.getByText('Confirm').closest('button')).toBeDisabled();
@@ -212,7 +213,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'required' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await user.type(await screen.findByLabelText('Comment'), 'My mandatory comment');
     expect(screen.getByText('Confirm').closest('button')).not.toBeDisabled();
@@ -228,7 +229,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(await screen.findByText('0 / 5000')).toBeDefined();
   });
@@ -243,7 +244,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await user.type(await screen.findByLabelText('Comment'), 'Hello');
     expect(screen.getByText('5 / 5000')).toBeDefined();
@@ -259,7 +260,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await user.type(await screen.findByLabelText('Comment'), '  my comment  ');
     await user.click(screen.getByText('Confirm'));
@@ -279,13 +280,12 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await screen.findByLabelText('Comment');
     await user.click(screen.getByText('Confirm'));
     await waitFor(() => {
       expect(mockCommit).toHaveBeenCalledOnce();
-      // empty string → trim → falsy → undefined in triggerTransition → null in commit variables
       expect(mockCommit.mock.calls[0][0].variables.comment).toBe(null);
     });
   });
@@ -300,7 +300,7 @@ describe('WorkflowTransitions', () => {
         allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
       },
     });
-    const { user } = testRender(<WorkflowTransitions data={draft as any} />);
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     await screen.findByText('Confirm');
     await user.click(screen.getByText('Cancel'));
@@ -308,4 +308,3 @@ describe('WorkflowTransitions', () => {
     expect(mockCommit).not.toHaveBeenCalled();
   });
 });
-

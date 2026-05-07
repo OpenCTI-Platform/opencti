@@ -6,6 +6,7 @@ import TransitionForm from './TransitionForm';
 import testRender from '../../../../../utils/tests/test-render';
 import { WorkflowActionType } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
+import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
 // ---------------------------------------------------------------------------
 // Mock heavy sub-components with no relevance to the tested logic
@@ -268,7 +269,8 @@ describe('TransitionForm – rendering', () => {
   });
 
   it('renders WorkflowConditionFilters when conditions are defined', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [], conditions: { filters: {} as any } });
+    const emptyFilterGroup: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
+    renderForm({ event: 'approve', comment: 'disable', actions: [], conditions: { filters: emptyFilterGroup } });
     expect(screen.getByTestId('workflow-condition-filters')).toBeDefined();
   });
 
@@ -282,4 +284,3 @@ describe('TransitionForm – rendering', () => {
     expect(screen.getByTestId('workflow-field-list')).toBeDefined();
   });
 });
-
