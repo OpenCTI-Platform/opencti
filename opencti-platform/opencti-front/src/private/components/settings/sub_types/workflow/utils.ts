@@ -72,7 +72,7 @@ const formatActions = (actions: Action[] = []) => {
       };
     }
     if (type === 'shareWithOrganizations') {
-      const orgIds = ((params as any)?.organizations ?? []).map((o: any) => (typeof o === 'string' ? o : o.value));
+      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
       return {
         type: 'asyncBulkAction',
         mode: 'async' as const,
@@ -84,7 +84,7 @@ const formatActions = (actions: Action[] = []) => {
       };
     }
     if (type === 'unshareFromOrganizations') {
-      const orgIds = ((params as any)?.organizations ?? []).map((o: any) => (typeof o === 'string' ? o : o.value));
+      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
       return {
         type: 'asyncBulkAction',
         mode: 'async' as const,
@@ -124,7 +124,7 @@ const transformToWorkflowDefinition = (
       // requiresOrganizationInput is true when a share/unshare action has no pre-filled orgs
       const requiresOrganizationInput = asyncActions.some((a: Action) =>
         (a.type === WorkflowActionType.shareWithOrganizations || a.type === WorkflowActionType.unshareFromOrganizations)
-        && !((a.params as any)?.organizations?.length),
+        && !((a.params as { organizations?: unknown[] })?.organizations?.length),
       );
 
       // Find ALL incoming edges (From Status -> This Transition)

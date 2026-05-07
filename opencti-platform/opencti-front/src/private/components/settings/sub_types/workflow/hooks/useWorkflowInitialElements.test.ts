@@ -81,7 +81,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should return empty arrays if workflowDefinition is null', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(null, null, null),
+      useWorkflowInitialElements(null, null, null, null),
     );
 
     expect(result.current.initialNodes).toEqual([]);
@@ -90,7 +90,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform states into status nodes', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null),
     );
 
     const statusNodes = result.current.initialNodes.filter(
@@ -112,7 +112,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform transitions into one node and two edges', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null),
     );
 
     const transitionNodes = result.current.initialNodes.filter(
@@ -133,7 +133,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should enrich authorized members actions with member data', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null),
     );
 
     const node = result.current.initialNodes.find((n: Node) => n.id === 'status-open');
@@ -155,7 +155,7 @@ describe('useWorkflowInitialElements', () => {
 
     const { result, rerender } = renderHook(
       ({ def }: HookProps) =>
-        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers),
+        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers, null),
       { initialProps: { def: mockWorkflowDefinition } },
     );
 

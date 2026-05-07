@@ -29,9 +29,9 @@ export type Event = string;
  * A slot tracking one async background action spawned during a pending transition.
  */
 export interface AsyncActionSlot {
-  id: string;        // UUID generated at trigger time; also stored on the BackgroundTask
-  workId: string;    // The Work entity id for live progress lookup
-  type: string;      // e.g. 'asyncBulkAction'
+  id: string; // UUID generated at trigger time; also stored on the BackgroundTask
+  workId: string; // The Work entity id for live progress lookup
+  type: string; // e.g. 'asyncBulkAction'
   status: 'pending' | 'success' | 'failed';
 }
 
@@ -42,7 +42,7 @@ export interface WorkflowPendingTransition {
   event: string;
   toState: string;
   triggeredBy: string;
-  triggeredAt: string;  // ISO 8601
+  triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];

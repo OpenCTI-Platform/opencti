@@ -26,7 +26,7 @@ export const useWorkflowInitialElements = (
   workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'],
   statusTemplatesEdges: SubTypeWorkflowQuery$data['statusTemplates'],
   membersEdges: SubTypeWorkflowQuery$data['members'],
-  organizationsEdges: SubTypeWorkflowQuery$data['organizations'],
+  organizationsEdges: SubTypeWorkflowQuery$data['organizations'] | null,
 ) => {
   const theme = useTheme<Theme>();
 
@@ -61,8 +61,8 @@ export const useWorkflowInitialElements = (
         }
         if (action.type === 'asyncBulkAction') {
           // Reverse-map backend asyncBulkAction → frontend shareWithOrganizations / unshareFromOrganizations
-          const innerType = (action?.params as any)?.actions?.[0]?.type;
-          const orgIds: string[] = (action?.params as any)?.actions?.[0]?.context?.values ?? [];
+          const innerType = (action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] })?.actions?.[0]?.type;
+          const orgIds: string[] = (action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] })?.actions?.[0]?.context?.values ?? [];
           const frontendType = innerType === 'UNSHARE' ? 'unshareFromOrganizations' : 'shareWithOrganizations';
           return {
             type: frontendType,
@@ -95,8 +95,8 @@ export const useWorkflowInitialElements = (
           event,
           conditions,
           actions: parseActions(actions),
-          asyncActions: parseActions((asyncActions ?? []) as any),
-          syncActions: parseActions((syncActions ?? []) as any),
+          asyncActions: parseActions((asyncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
+          syncActions: parseActions((syncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
         },
         position: { x: 0, y: 0 },
       }));

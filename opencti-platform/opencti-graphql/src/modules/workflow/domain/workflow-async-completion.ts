@@ -12,7 +12,7 @@ import { storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
 import { ActionRegistry } from '../registry/workflow-actions';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE, type AsyncActionSlot, type WorkflowPendingTransition } from '../types/workflow-types';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE, type WorkflowPendingTransition } from '../types/workflow-types';
 
 /**
  * Called when a background task associated with a workflow async action completes.
@@ -38,7 +38,7 @@ export const reportWorkflowAsyncActionResult = async (
     return;
   }
 
-  let pendingTransition: WorkflowPendingTransition | null = null;
+  let pendingTransition: WorkflowPendingTransition | null;
   try {
     pendingTransition = typeof instanceEntity.pendingTransition === 'string'
       ? JSON.parse(instanceEntity.pendingTransition)
@@ -117,7 +117,11 @@ export const reportWorkflowAsyncActionResult = async (
 
   // All phases complete — advance state and clear pending
   const history = (() => {
-    try { return JSON.parse(instanceEntity.history || '[]'); } catch { return []; }
+    try {
+      return JSON.parse(instanceEntity.history || '[]');
+    } catch {
+      return [];
+    }
   })();
   history.push({
     state: pendingTransition.toState,
