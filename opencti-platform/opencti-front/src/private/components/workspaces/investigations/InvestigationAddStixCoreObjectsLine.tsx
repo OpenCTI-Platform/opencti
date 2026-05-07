@@ -295,6 +295,9 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
             }
           }
         }
+        ... on SecurityCoverage {
+          name
+        }
         ... on StixFile {
           observableName: name
         }
