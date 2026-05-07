@@ -16,7 +16,7 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
 import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
-import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
+import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
@@ -25,6 +25,7 @@ import { AppDataProvider } from '../utils/hooks/useAppData';
 import { ExportThemeProvider } from '../utils/ExportThemeContext';
 import { TOP_BANNER_HEIGHT } from '../components/TopBanner';
 import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
+import { CustomViewsPreloadedDataContextProvider } from './components/custom_views/CustomViewsPreloadedDataContext';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -292,7 +293,7 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    ...useCustomViews_data
+    ...useCustomViews_data @alias(as: "customViews")
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {
         node {
@@ -413,11 +414,10 @@ const computeBannerSettings = (settings: RootSettings$data) => {
   };
 };
 interface RootComponentProps {
-  queryRef: PreloadedQuery<RootPrivateQuery>;
+  queryData: RootPrivateQuery$data;
 }
 
-const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
-  const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
+const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => {
   const {
     me: meFragment,
     settings: settingsFragment,
@@ -527,13 +527,26 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   );
 };
 
+interface PrivateRootPreloadedQueryDataProps {
+  queryRef: PreloadedQuery<RootPrivateQuery>;
+};
+
+const PrivateRootPreloadedQueryData = ({ queryRef }: PrivateRootPreloadedQueryDataProps) => {
+  const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
+  return (
+    <CustomViewsPreloadedDataContextProvider customViews={queryData.customViews}>
+      <RootComponent queryData={queryData} />
+    </CustomViewsPreloadedDataContextProvider>
+  );
+};
+
 const Root = () => {
   const queryRef = useQueryLoading<RootPrivateQuery>(rootPrivateQuery, {});
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader />}>
-          <RootComponent queryRef={queryRef} />
+          <PrivateRootPreloadedQueryData queryRef={queryRef} />
         </React.Suspense>
       )}
     </>

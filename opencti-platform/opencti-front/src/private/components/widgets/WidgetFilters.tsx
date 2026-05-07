@@ -118,7 +118,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Domain-Object',
             'Stix-Cyber-Observable',
           ]}
-          context={host}
+          host={host}
         />
 
         {isFilterGroupNotEmpty(filtersDynamicTo)
@@ -138,7 +138,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Domain-Object',
             'Stix-Cyber-Observable',
           ]}
-          context={host}
+          host={host}
         />
 
         {isFilterGroupNotEmpty(filters) && perspective === 'relationships' && (
@@ -152,7 +152,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           searchContext={searchContext}
           availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
           entityTypes={searchContext.entityTypes}
-          context={host}
+          host={host}
         />
       </Box>
     </>

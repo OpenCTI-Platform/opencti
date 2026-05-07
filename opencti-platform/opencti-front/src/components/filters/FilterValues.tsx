@@ -16,6 +16,7 @@ import useSchema from '../../utils/hooks/useSchema';
 import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
+import type { WidgetHost } from '../../utils/widget/widget';
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -31,6 +32,7 @@ interface FilterValuesProps {
   noLabelDisplay?: boolean;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
+  host?: WidgetHost;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -47,6 +49,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   noLabelDisplay,
   entityTypes,
   filtersRestrictions,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -151,6 +154,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   value={value}
                   filterDefinition={filterDefinition}
                   filterOperator={filterOperator}
+                  host={host}
                 />
                 <span>
                   {last(filterValues) === id ? ']' : ', '}
@@ -167,6 +171,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   value={value}
                   filterDefinition={filterDefinition}
                   filterOperator={filterOperator}
+                  host={host}
                 />
                 {last(filterValues) !== id && isRegardingOfFilter
                   && (
@@ -265,6 +270,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         parentFilter={currentFilter}
                         currentFilter={val}
                         filtersRepresentativesMap={filtersRepresentativesMap}
+                        host={host}
                       />
                     )}
                   >
@@ -281,6 +287,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         filtersRepresentativesMap={filtersRepresentativesMap}
                         redirection
                         noLabelDisplay={true}
+                        host={host}
                       />
                     </Box>
                   </Tooltip>
