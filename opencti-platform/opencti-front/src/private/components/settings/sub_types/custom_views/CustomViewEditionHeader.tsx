@@ -92,7 +92,13 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
         />
         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 1 }}>
           <Tooltip title={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}>
-            <IconButton variant="secondary" size="default" disabled={mutating} onClick={handleToggleEnabled}>
+            <IconButton
+              variant="secondary"
+              size="default"
+              disabled={mutating}
+              onClick={handleToggleEnabled}
+              aria-label={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}
+            >
               {customView.enabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>
           </Tooltip>

@@ -32,6 +32,7 @@ const CustomViewsSettings = () => {
           <>
             <Tooltip title={t_i18n('Create a new custom view')}>
               <IconButton
+                aria-label={t_i18n('Create a new custom view')}
                 onClick={() => setDrawerOpen(true)}
                 size="small"
               >
