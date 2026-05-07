@@ -34,12 +34,16 @@ vi.mock('../../../../utils/hooks/useGranted', () => ({
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 
-vi.mock('../../../../relay/environment', () => ({
-  MESSAGING$: {
-    notifySuccess: vi.fn(),
-    notifyError: vi.fn(),
-  },
-}));
+vi.mock('../../../../relay/environment', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../relay/environment')>();
+  return {
+    ...actual,
+    MESSAGING$: {
+      notifySuccess: vi.fn(),
+      notifyError: vi.fn(),
+    },
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Fixtures
