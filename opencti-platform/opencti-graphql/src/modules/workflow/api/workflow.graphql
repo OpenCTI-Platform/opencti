@@ -68,6 +68,7 @@ type WorkflowPendingTransition {
     toState: String!
     triggeredAt: DateTime!
     asyncActions: [WorkflowPendingAsyncAction!]!
+    syncActions: [WorkflowActionConfig!]
 }
 
 type WorkflowTriggerResult {

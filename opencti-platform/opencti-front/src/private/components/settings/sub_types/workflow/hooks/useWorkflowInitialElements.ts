@@ -26,6 +26,7 @@ export const useWorkflowInitialElements = (
   workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'],
   statusTemplatesEdges: SubTypeWorkflowQuery$data['statusTemplates'],
   membersEdges: SubTypeWorkflowQuery$data['members'],
+  organizationsEdges: SubTypeWorkflowQuery$data['organizations'],
 ) => {
   const theme = useTheme<Theme>();
 
@@ -34,6 +35,7 @@ export const useWorkflowInitialElements = (
 
     const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
     const members = convertEdgesToObject(membersEdges);
+    const organizations = convertEdgesToObject(organizationsEdges);
 
     // Populate authorized members
     const parseActions = (actions?: ReadonlyArray<ReadOnlyAction> | null): Action[] => {
@@ -65,7 +67,7 @@ export const useWorkflowInitialElements = (
           return {
             type: frontendType,
             mode: action.mode,
-            params: { organizations: orgIds.map((id) => ({ value: id, label: id })) },
+            params: { organizations: orgIds.map((id) => ({ value: id, label: organizations[id]?.name ?? id })) },
           } as Action;
         }
         return { ...action } as Action;

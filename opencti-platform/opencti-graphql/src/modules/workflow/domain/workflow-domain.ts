@@ -10,6 +10,8 @@ import { generateInternalId } from '../../../schema/identifier';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { WorkflowFactory } from '../engine/workflow-factory';
+import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
+import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import {
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
@@ -220,16 +222,30 @@ export const getWorkflowInstance = async (
         ? JSON.parse(instanceEntity.pendingTransition)
         : instanceEntity.pendingTransition;
 
-      // Enrich each slot with live Work entity data (no work.js import — generic loader)
+      // Enrich each slot with live BackgroundTask + Work entity data
       const enrichedSlots = await Promise.all(
         raw.asyncActions.map(async (slot) => {
           if (!slot.workId) return slot;
-          const workEntity = await storeLoadById<any>(context, user, slot.workId, 'Work').catch(() => null);
+          const workEntity = await storeLoadById<any>(context, user, slot.workId, 'Work', { indices: [READ_INDEX_HISTORY] }).catch(() => null);
           if (!workEntity) return slot;
+          // The BackgroundTask has task_expected_number (set at creation = ids.length)
+          // and task_processed_number (updated per iteration by the task manager).
+          // These are more reliable than Work's import_expected_number (which starts at 0
+          // in Redis and is only updated in ES after the task manager runs).
+          let processedCount = 0;
+          let expectedCount = 0;
+          const backgroundTaskId = workEntity.background_task_id;
+          if (backgroundTaskId) {
+            const bgTask = await storeLoadById<any>(context, user, backgroundTaskId, 'BackgroundTask').catch(() => null);
+            if (bgTask) {
+              expectedCount = bgTask.task_expected_number ?? 0;
+              processedCount = bgTask.task_processed_number ?? 0;
+            }
+          }
           return {
             ...slot,
-            processedCount: workEntity.completed_number ?? 0,
-            expectedCount: workEntity.import_expected_number ?? 0,
+            processedCount,
+            expectedCount,
             startedAt: workEntity.received_time ?? null,
             lastActivityAt: workEntity.updated_at ?? null,
             errors: (workEntity.errors ?? []).slice(0, 100),
@@ -367,7 +383,31 @@ export const triggerWorkflowEvent = async (
     const currentStateId = instanceEntity.currentState;
     const definition = WorkflowFactory.createDefinition(definitionData);
 
-    // 4. Inject createListTask and instance metadata into context for asyncBulkAction
+    // 4. Inject createListTask and instance metadata into context for asyncBulkAction.
+    // When the workflow entity is a DraftWorkspace, pre-query only the STIX entities that
+    // belong to this specific draft (using the dedicated draft index + draft_ids filter).
+    const draftEntityIds: string[] = [];
+    if ((entity as any).entity_type === 'DraftWorkspace') {
+      const draftId = (entity as any).internal_id;
+      const draftCtx = { ...executionContext, draft_context: draftId };
+      const draftFilter = {
+        mode: FilterMode.And,
+        filters: [{ key: ['draft_ids'], values: [draftId] }],
+        filterGroups: [],
+      };
+      const draftItems = await fullEntitiesList<any>(draftCtx, executionUser, ['Stix-Core-Object'], {
+        indices: [READ_INDEX_DRAFT_OBJECTS],
+        filters: draftFilter,
+      });
+      // Exclude update_linked entities — these are entities indirectly pulled into the draft
+      // (e.g. organizations referenced by new sharing relations) and should not be targeted
+      // by subsequent async actions like org sharing/unsharing.
+      draftEntityIds.push(...draftItems
+        .filter((item: any) => item.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE_LINKED)
+        .map((item: any) => item.internal_id)
+        .filter(Boolean));
+    }
+
     const workflowContext = {
       entity,
       user: executionUser,
@@ -375,6 +415,7 @@ export const triggerWorkflowEvent = async (
       runtimeParams,
       __createListTask: createListTask,
       __workflowInstanceId: instanceEntity.internal_id || instanceEntity.id,
+      __draftEntityIds: draftEntityIds,
     };
 
     // 5. Create instance and trigger the event
@@ -389,27 +430,24 @@ export const triggerWorkflowEvent = async (
 
     // 6a. Async transition: persist pendingTransition, do NOT advance state
     if (result.executionStatus === 'pending' && result.asyncActionSlots && result.asyncActionSlots.length > 0) {
-      // Build canonical slots with stable UUIDs (the action pushed task.id as a temp id)
-      const rawSlots: AsyncActionSlot[] = result.asyncActionSlots.map((rawSlot: any) => {
-        const slotId = generateInternalId();
-        return {
-          id: slotId,
-          workId: rawSlot.workId,
-          type: rawSlot.type,
-          status: 'pending' as const,
-        };
-      });
+      // The action already generated stable slot IDs (identical to workflow_action_id on the BackgroundTask)
+      const rawSlots: AsyncActionSlot[] = result.asyncActionSlots.map((rawSlot: any) => ({
+        id: rawSlot.id,
+        workId: rawSlot.workId,
+        type: rawSlot.type,
+        status: 'pending' as const,
+      }));
 
-      // Get the serialized transition to persist its syncActions for phase-2 execution
-      const serializedTransitions: WorkflowActionConfig[] = definitionData.transitions
-        ?.find((t: any) => {
-          const fromStates = Array.isArray(t.from) ? t.from : [t.from];
-          return fromStates.includes(currentStateId) && t.event === eventName;
-        })?.syncActions ?? definitionData.transitions
-        ?.find((t: any) => {
-          const fromStates = Array.isArray(t.from) ? t.from : [t.from];
-          return fromStates.includes(currentStateId) && t.event === eventName;
-        })?.actions ?? [];
+      // Get the serialized transition to persist its syncActions for phase-2 execution.
+      // Use length check instead of ?? because the frontend always serializes syncActions as [] (empty array),
+      // which is truthy and would prevent the fallback to the legacy actions[] field.
+      const targetTransitionForSync = definitionData.transitions?.find((t: any) => {
+        const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+        return fromStates.includes(currentStateId) && t.event === eventName;
+      });
+      const serializedTransitions: WorkflowActionConfig[] = (targetTransitionForSync?.syncActions?.length
+        ? targetTransitionForSync.syncActions
+        : null) ?? targetTransitionForSync?.actions ?? [];
 
       const targetTransition = definitionData.transitions?.find((t: any) => {
         const fromStates = Array.isArray(t.from) ? t.from : [t.from];
