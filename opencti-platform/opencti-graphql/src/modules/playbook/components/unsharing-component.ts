@@ -57,18 +57,20 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
       if (all || element.id === dataInstanceId) {
         const currentElementGrantedRefs = element.extensions[STIX_EXT_OCTI].granted_refs ?? [];
         const newGrantedRefs = currentElementGrantedRefs.filter((o) => !organizationIds.includes(o));
-        const patchValue = {
-          op: EditOperation.Replace,
-          path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
-          value: newGrantedRefs,
-        };
-        const patchOperation = {
-          operation: EditOperation.Remove,
-          key: INPUT_GRANTED_REFS,
-          value: organizationIds,
-        };
-        applyOperationFieldPatch(element, [patchOperation]);
-        patchOperations.push(patchValue);
+        if (currentElementGrantedRefs.length !== newGrantedRefs.length) {
+          const patchValue = {
+            op: EditOperation.Replace,
+            path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
+            value: newGrantedRefs,
+          };
+          const patchOperation = {
+            operation: EditOperation.Remove,
+            key: INPUT_GRANTED_REFS,
+            value: organizationIds,
+          };
+          applyOperationFieldPatch(element, [patchOperation]);
+          patchOperations.push(patchValue);
+        }
       }
     }
     if (patchOperations.length > 0) {
