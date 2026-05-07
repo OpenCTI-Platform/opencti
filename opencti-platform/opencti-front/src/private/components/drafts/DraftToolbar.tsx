@@ -7,9 +7,10 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { Theme } from '../../../components/Theme';
 import DraftProcessingStatus from './DraftProcessingStatus';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
+import type { LoadQueryOptions } from 'react-relay';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import DraftExit from './DraftExit';
-import { THIRTY_SECONDS } from '../../../utils/Time';
+import { FIVE_SECONDS, THIRTY_SECONDS } from '../../../utils/Time';
 import useInterval from '../../../utils/hooks/useInterval';
 import DraftAuthorizedMembers from './DraftAuthorizedMembers';
 import WorkflowStatus, { WorkflowTransitions } from '../common/workflow/WorkflowStatus';
@@ -19,6 +20,9 @@ import { DraftToolbarFragment$key } from '@components/drafts/__generated__/Draft
 const draftFragment = graphql`
   fragment DraftToolbarFragment on DraftWorkspace {
     name
+    workflowInstance {
+      pendingStatus
+    }
     ...DraftExitFragment
     ...DraftAuthorizedMembersFragment
     ...WorkflowStatus_data
@@ -35,12 +39,14 @@ const draftQuery = graphql`
 
 interface DraftToolbarComponentProps {
   queryRef: PreloadedQuery<DraftToolbarQuery>;
-  refetch: () => void;
+  loadQuery: (variables: { id: string }, options?: LoadQueryOptions) => void;
+  draftId: string;
 }
 
 const DraftToolbarComponent = ({
   queryRef,
-  refetch,
+  loadQuery,
+  draftId,
 }: DraftToolbarComponentProps) => {
   const theme = useTheme<Theme>();
 
@@ -48,6 +54,14 @@ const DraftToolbarComponent = ({
   if (!draftWorkspace) return (<ErrorNotFound />);
 
   const draft = useFragment<DraftToolbarFragment$key>(draftFragment, draftWorkspace);
+
+  const isPending = draft.workflowInstance?.pendingStatus === 'pending';
+  useInterval(
+    () => {
+      loadQuery({ id: draftId }, { fetchPolicy: 'store-and-network' });
+    },
+    isPending ? FIVE_SECONDS : THIRTY_SECONDS,
+  );
 
   return (
     <Stack
@@ -67,7 +81,7 @@ const DraftToolbarComponent = ({
       >
         {draft.name}
       </Typography>
-      <DraftProcessingStatus forceRefetch={refetch} />
+      <DraftProcessingStatus forceRefetch={() => loadQuery({ id: draftId })} />
 
       <div style={{ flex: 1 }} />
 
@@ -89,21 +103,12 @@ const DraftToolbarWrapper = ({ draftId }: DraftToolbarWrapperProps) => {
     { id: draftId },
   );
 
-  useInterval(
-    () => {
-      loadQuery(
-        { id: draftId },
-        { fetchPolicy: 'store-and-network' },
-      );
-    },
-    THIRTY_SECONDS,
-  );
-
   return queryRef && (
     <Suspense>
       <DraftToolbarComponent
         queryRef={queryRef}
-        refetch={() => loadQuery({ id: draftId })}
+        loadQuery={loadQuery}
+        draftId={draftId}
       />
     </Suspense>
   );
