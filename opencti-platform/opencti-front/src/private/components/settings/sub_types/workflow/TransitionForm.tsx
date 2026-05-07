@@ -7,13 +7,17 @@ import { FormControlLabel, Icon, Switch, Typography, Box } from '@mui/material';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { FlagOutlined } from '@mui/icons-material';
 import WorkflowConditionFilters from './WorkflowConditionFilters';
+import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
 
 const TransitionForm = () => {
   const { t_i18n } = useFormatter();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
   const hasUpdateAuthorizedMembers = values.actions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasValidateDraft = values.actions?.some((a) => a.type === WorkflowActionType.validateDraft);
-  const hasAsyncBulkAction = values.asyncActions?.some((a) => a.type === WorkflowActionType.asyncBulkAction);
+  const hasShare = values.asyncActions?.some((a) => a.type === WorkflowActionType.shareWithOrganizations);
+  const hasUnshare = values.asyncActions?.some((a) => a.type === WorkflowActionType.unshareFromOrganizations);
+  const shareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.shareWithOrganizations) ?? -1;
+  const unshareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.unshareFromOrganizations) ?? -1;
 
   const handleToggleAction = (actionType: WorkflowActionType, checked: boolean) => {
     const currentActions = values.actions ?? [];
@@ -27,12 +31,12 @@ const TransitionForm = () => {
     }
   };
 
-  const handleToggleAsyncBulkAction = (checked: boolean) => {
+  const handleToggleAsyncAction = (actionType: WorkflowActionType, checked: boolean) => {
     const currentAsync = values.asyncActions ?? [];
     if (checked) {
-      setFieldValue('asyncActions', [...currentAsync, { type: WorkflowActionType.asyncBulkAction, mode: 'async', params: { scope: 'KNOWLEDGE', actions: [], failOnAnyError: true } }]);
+      setFieldValue('asyncActions', [...currentAsync, { type: actionType, params: { organizations: [] } }]);
     } else {
-      setFieldValue('asyncActions', currentAsync.filter((a) => a.type !== WorkflowActionType.asyncBulkAction));
+      setFieldValue('asyncActions', currentAsync.filter((a) => a.type !== actionType));
     }
   };
 
@@ -49,36 +53,57 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Async actions (phase 1)')}
+          {t_i18n('Background tasks')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
             control={(
               <Switch
-                checked={hasAsyncBulkAction}
-                onChange={(e) => handleToggleAsyncBulkAction(e.target.checked)}
+                checked={hasShare}
+                onChange={(e) => handleToggleAsyncAction(WorkflowActionType.shareWithOrganizations, e.target.checked)}
               />
             )}
-            label={t_i18n('Async bulk action (background task)')}
+            label={t_i18n('Share with organizations')}
           />
-          {hasAsyncBulkAction && (
-            <FormControlLabel
-              sx={{ pl: 4 }}
-              control={(
-                <Switch
-                  checked={values.requiresOrganizationInput ?? false}
-                  onChange={(e) => setFieldValue('requiresOrganizationInput', e.target.checked)}
-                />
-              )}
-              label={t_i18n('Requires organization input at trigger time')}
-            />
+          {hasShare && (
+            <Box sx={{ pl: 4, pb: 1 }}>
+              <ObjectOrganizationField
+                name={`asyncActions.${shareIdx}.params.organizations`}
+                label="Organizations (empty = ask at trigger time)"
+                outlined={false}
+                multiple={true}
+                style={{ width: '100%' }}
+                alert={false}
+              />
+            </Box>
+          )}
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={hasUnshare}
+                onChange={(e) => handleToggleAsyncAction(WorkflowActionType.unshareFromOrganizations, e.target.checked)}
+              />
+            )}
+            label={t_i18n('Unshare from organizations')}
+          />
+          {hasUnshare && (
+            <Box sx={{ pl: 4, pb: 1 }}>
+              <ObjectOrganizationField
+                name={`asyncActions.${unshareIdx}.params.organizations`}
+                label="Organizations (empty = ask at trigger time)"
+                outlined={false}
+                multiple={true}
+                style={{ width: '100%' }}
+                alert={false}
+              />
+            </Box>
           )}
         </Box>
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Sync actions (phase 2)')}
+          {t_i18n('Immediate actions')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel

@@ -57,7 +57,18 @@ export const useWorkflowInitialElements = (
             },
           };
         }
-        return action as Action;
+        if (action.type === 'asyncBulkAction') {
+          // Reverse-map backend asyncBulkAction → frontend shareWithOrganizations / unshareFromOrganizations
+          const innerType = (action?.params as any)?.actions?.[0]?.type;
+          const orgIds: string[] = (action?.params as any)?.actions?.[0]?.context?.values ?? [];
+          const frontendType = innerType === 'UNSHARE' ? 'unshareFromOrganizations' : 'shareWithOrganizations';
+          return {
+            type: frontendType,
+            mode: action.mode,
+            params: { organizations: orgIds.map((id) => ({ value: id, label: id })) },
+          } as Action;
+        }
+        return { ...action } as Action;
       });
     };
 
@@ -75,13 +86,15 @@ export const useWorkflowInitialElements = (
 
     // 2. Map transitions to transition nodes
     const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, actions = [] }) => ({
+      .map(({ from, to, event, conditions = {}, actions = [], asyncActions = [], syncActions = [] }) => ({
         id: `${WorkflowNodeType.transition}-${from}-${to}`,
         type: WorkflowNodeType.transition,
         data: {
           event,
           conditions,
           actions: parseActions(actions),
+          asyncActions: parseActions((asyncActions ?? []) as any),
+          syncActions: parseActions((syncActions ?? []) as any),
         },
         position: { x: 0, y: 0 },
       }));

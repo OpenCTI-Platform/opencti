@@ -60,15 +60,16 @@ const TransitionNode = ({ data, id }: NodeProps) => {
     const filterGroupCount = data.conditions?.filters?.filterGroups?.length ?? 0;
     const totalConditions = filterCount + filterGroupCount;
     const hasConditions = totalConditions > 0;
-    const hasActions = data.actions?.length > 0;
+    const totalActions = (data.actions?.length ?? 0) + (data.asyncActions?.length ?? 0);
+    const hasActions = totalActions > 0;
     return (
       <>
         {hasConditions && `${totalConditions} ${t_i18n('conditions')}`}
         {hasConditions && hasActions && ' | '}
-        {hasActions && `${data.actions?.length} ${t_i18n('actions')}`}
+        {hasActions && `${totalActions} ${t_i18n('actions')}`}
       </>
     );
-  }, [data.conditions, data.actions]);
+  }, [data.conditions, data.actions, data.asyncActions]);
 
   const hexagonPath = generatePath([
     [0, innerHeight / 2],

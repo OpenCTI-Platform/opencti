@@ -25,7 +25,6 @@ export type Transition = {
   asyncActions?: Action[];
   syncActions?: Action[];
   conditions?: { filters: FilterGroup };
-  requiresOrganizationInput?: boolean;
 };
 
 export const NEW_EVENT_NAME = 'NEW_EVENT';
@@ -50,7 +49,8 @@ export enum WorkflowDataType {
 export enum WorkflowActionType {
   updateAuthorizedMembers = 'updateAuthorizedMembers',
   validateDraft = 'validateDraft',
-  asyncBulkAction = 'asyncBulkAction',
+  shareWithOrganizations = 'shareWithOrganizations',
+  unshareFromOrganizations = 'unshareFromOrganizations',
 }
 
 export const NODE_SIZE = { width: 160, height: 50 };
@@ -71,16 +71,27 @@ const formatActions = (actions: Action[] = []) => {
         mode,
       };
     }
-    if (type === 'asyncBulkAction') {
-      const p = params as { scope?: string; description?: string; actions?: unknown[]; failOnAnyError?: boolean } | undefined;
+    if (type === 'shareWithOrganizations') {
+      const orgIds = ((params as any)?.organizations ?? []).map((o: any) => (typeof o === 'string' ? o : o.value));
       return {
-        type,
+        type: 'asyncBulkAction',
         mode: 'async' as const,
         params: {
-          scope: p?.scope ?? 'KNOWLEDGE',
-          description: p?.description,
-          actions: p?.actions ?? [],
-          failOnAnyError: p?.failOnAnyError ?? true,
+          scope: 'KNOWLEDGE',
+          actions: [{ type: 'SHARE', context: { values: orgIds } }],
+          failOnAnyError: true,
+        },
+      };
+    }
+    if (type === 'unshareFromOrganizations') {
+      const orgIds = ((params as any)?.organizations ?? []).map((o: any) => (typeof o === 'string' ? o : o.value));
+      return {
+        type: 'asyncBulkAction',
+        mode: 'async' as const,
+        params: {
+          scope: 'KNOWLEDGE',
+          actions: [{ type: 'UNSHARE', context: { values: orgIds } }],
+          failOnAnyError: true,
         },
       };
     }
@@ -108,7 +119,13 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = {}, actions = [], asyncActions = [], syncActions = [], requiresOrganizationInput = false } = node.data;
+      const { event, conditions = {}, actions = [], asyncActions = [], syncActions = [] } = node.data;
+
+      // requiresOrganizationInput is true when a share/unshare action has no pre-filled orgs
+      const requiresOrganizationInput = asyncActions.some((a: Action) =>
+        (a.type === WorkflowActionType.shareWithOrganizations || a.type === WorkflowActionType.unshareFromOrganizations)
+        && !((a.params as any)?.organizations?.length),
+      );
 
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);

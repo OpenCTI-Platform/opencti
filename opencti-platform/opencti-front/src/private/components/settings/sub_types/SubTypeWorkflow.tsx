@@ -35,6 +35,17 @@ export const workflowQuery = graphql`
           mode
           params
         }
+        asyncActions {
+          type
+          mode
+          params
+        }
+        syncActions {
+          type
+          mode
+          params
+        }
+        requiresOrganizationInput
         conditions
       }
     }

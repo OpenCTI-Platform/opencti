@@ -68,6 +68,9 @@ describe('useWorkflowInitialElements', () => {
         event: 'close_event',
         conditions: {},
         actions: [],
+        asyncActions: [],
+        syncActions: [],
+        requiresOrganizationInput: false,
       },
     ],
   };
@@ -162,7 +165,7 @@ describe('useWorkflowInitialElements', () => {
     expect(result.current).toBe(firstResult);
 
     const newDef: SubTypeWorkflowQuery$data['workflowDefinition'] = {
-      ...mockWorkflowDefinition,
+      ...mockWorkflowDefinition!,
       states: [],
     };
     rerender({ def: newDef });

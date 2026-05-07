@@ -62,146 +62,117 @@ const layoutAlgorithm = async (nodes: Node[], edges: Edge[], options = { directi
 
   for (const node of nodes) {
     const nodeWithPosition = { ...node, ...node.position };
-
     initialNodes.push(nodeWithPosition);
     maxNodeWidth = Math.max(maxNodeWidth, node.width ?? 0);
     maxNodeHeight = Math.max(maxNodeHeight, node.height ?? 0);
   }
 
-  // When the layout is horizontal, we swap the width and height measurements we
-  // pass to the layout algorithm so things stay spaced out nicely. By adding the
-  // amount of spacing to each size we can fake padding between nodes.
   const nodeSize = [maxNodeWidth + options.spacing[0], maxNodeHeight + options.spacing[1]];
   layout.nodeSize(nodeSize as [number, number]);
 
-  const getParentId = (node: Node) => {
-    if (node.id === rootNode.id) {
-      return undefined;
-    }
-
+  // --- Step 1: Build candidate parent map (first incoming edge wins) ---
+  const candidateParent = new Map<string, string>();
+  const allIds = new Set(initialNodes.map((n) => n.id));
+  for (const node of initialNodes) {
     const incomers = getIncomers(node, nodes, edges);
+    const parentId = incomers[0]?.id;
+    candidateParent.set(node.id, parentId && allIds.has(parentId) ? parentId : rootNode.id);
+  }
 
-    // If there are no incoming edges, we say this node is connected to the fake
-    // root node to prevent having multiple root nodes in the layout. If there
-    // are multiple incoming edges, only the first one will be used!
-    return incomers[0]?.id || rootNode.id;
-  };
+  // --- Step 2: DFS cycle detection — redirect back-edges to rootNode ---
+  // Tri-color marking: 0 = unvisited, 1 = in-stack, 2 = done
+  const color = new Map<string, number>();
+  const safeParent = new Map<string, string | undefined>(candidateParent);
 
-  const hierarchy = stratify<NodeWithPosition>()
-    .id((d) => d.id)
-    .parentId(getParentId)([rootNode, ...initialNodes]);
-
-  // First pass: Build a temporary hierarchy to identify backward transitions
-  const tempRoot = layout(hierarchy);
-  const tempLayoutNodes = new Map<string, HierarchyPointNode<NodeWithPosition>>();
-  tempRoot.each((node) => {
-    tempLayoutNodes.set(node.id!, node);
-  });
-
-  // Helper function to check if targetNode is an ancestor of sourceNode
-  const isAncestor = (targetNodeId: string, sourceNodeId: string, layoutMap: Map<string, HierarchyPointNode<NodeWithPosition>>): boolean => {
-    const sourceHierarchyNode = layoutMap.get(sourceNodeId);
-    if (!sourceHierarchyNode) return false;
-
-    let current = sourceHierarchyNode.parent;
-    while (current) {
-      if (current.id === targetNodeId) return true;
-      current = current.parent;
+  const dfs = (nodeId: string) => {
+    color.set(nodeId, 1);
+    for (const [childId, parentId] of Array.from(safeParent.entries())) {
+      if (parentId === nodeId) {
+        const childColor = color.get(childId) ?? 0;
+        if (childColor === 1) {
+          // Back-edge: redirect child to rootNode to break the cycle
+          safeParent.set(childId, rootNode.id);
+        } else if (childColor === 0) {
+          dfs(childId);
+        }
+      }
     }
-    return false;
+    color.set(nodeId, 2);
   };
 
-  // Identify backward transitions (transitions whose target is an ancestor of their source)
+  // Start DFS from rootNode and any nodes that are children of rootNode
+  dfs(rootNode.id);
+  for (const node of initialNodes) {
+    if ((color.get(node.id) ?? 0) === 0) {
+      dfs(node.id);
+    }
+  }
+
+  // --- Step 3: Identify back-edge transition nodes (backward transitions) ---
+  // A transition node is "backward" if its safe parent was remapped away from its original candidate
   const backwardTransitions = new Set<string>();
   for (const node of initialNodes) {
     if (node.type === 'transition') {
-      const outgoingEdge = edges.find((edge) => edge.source === node.id);
-      const incomingEdge = edges.find((edge) => edge.target === node.id);
-
-      if (outgoingEdge && incomingEdge) {
-        const sourceStatusId = incomingEdge.source;
-        const targetStatusId = outgoingEdge.target;
-
-        // Check if this is a backward transition
-        if (isAncestor(targetStatusId, sourceStatusId, tempLayoutNodes)) {
-          backwardTransitions.add(node.id);
-        }
+      if (safeParent.get(node.id) !== candidateParent.get(node.id)) {
+        backwardTransitions.add(node.id);
       }
     }
   }
 
-  // Second pass: Build hierarchy excluding backward transitions
-  // This ensures D3 only spaces forward transitions horizontally
-  const forwardNodes = initialNodes.filter((node) => !backwardTransitions.has(node.id));
-  const forwardHierarchy = stratify<NodeWithPosition>()
+  // --- Step 4: Build cycle-free hierarchy for D3 (exclude backward transition nodes) ---
+  const forwardNodes = initialNodes.filter((n) => !backwardTransitions.has(n.id));
+
+  const getSafeParentId = (node: Node) => {
+    if (node.id === rootNode.id) return undefined;
+    return safeParent.get(node.id) ?? rootNode.id;
+  };
+
+  const hierarchy = stratify<NodeWithPosition>()
     .id((d) => d.id)
-    .parentId(getParentId)([rootNode, ...forwardNodes]);
+    .parentId(getSafeParentId)([rootNode, ...forwardNodes]);
 
-  // Apply layout to the filtered hierarchy
-  const root = layout(forwardHierarchy);
+  const root = layout(hierarchy);
   const layoutNodes = new Map<string, HierarchyPointNode<NodeWithPosition>>();
-  root.each((node) => {
-    layoutNodes.set(node.id!, node);
-  });
+  root.each((node) => layoutNodes.set(node.id!, node));
 
+  // --- Step 5: Position all nodes ---
   const nextNodes = nodes.map((node) => {
-    // Handle backward transitions separately - position them at midpoint
     if (backwardTransitions.has(node.id)) {
+      // Position backward transition at midpoint between its source and target status nodes
       const outgoingEdge = edges.find((edge) => edge.source === node.id);
       const incomingEdge = edges.find((edge) => edge.target === node.id);
 
       if (outgoingEdge && incomingEdge) {
-        const sourceStatusId = incomingEdge.source;
-        const targetStatusId = outgoingEdge.target;
-
-        const sourcePos = layoutNodes.get(sourceStatusId);
-        const targetPos = layoutNodes.get(targetStatusId);
+        const sourcePos = layoutNodes.get(incomingEdge.source);
+        const targetPos = layoutNodes.get(outgoingEdge.target);
 
         if (sourcePos && targetPos) {
-          // Determine if source is in left or right branch by comparing to root
           const rootX = root.x;
           const isLeftBranch = sourcePos.x < rootX;
-
-          // Alternate positioning: left branch gets negative offset, right branch gets positive
-          const horizontalOffset = isLeftBranch
-            ? -NODE_SIZE.width * 2
-            : NODE_SIZE.width * 2;
-
-          // Position the transition node in the middle between source and target
-          const position = {
-            x: ((sourcePos.x + targetPos.x) / 2) + horizontalOffset,
-            y: (sourcePos.y + targetPos.y) / 2,
-          };
-
-          const offsetPosition = {
-            x: position.x - (node.width ?? 0) / 2,
-            y: position.y - (node.height ?? 0) / 2,
-          };
+          const horizontalOffset = isLeftBranch ? -NODE_SIZE.width * 2 : NODE_SIZE.width * 2;
 
           return {
             ...node,
-            position: offsetPosition,
+            position: {
+              x: ((sourcePos.x + targetPos.x) / 2) + horizontalOffset - (node.width ?? 0) / 2,
+              y: (sourcePos.y + targetPos.y) / 2 - (node.height ?? 0) / 2,
+            },
           };
         }
       }
     }
 
-    // For all other nodes (forward transitions and status nodes), use D3 layout
     const layoutNode = layoutNodes.get(node.id);
     if (layoutNode) {
-      const { x, y } = layoutNode;
-      const offsetPosition = {
-        x: x - (node.width ?? 0) / 2,
-        y: y - (node.height ?? 0) / 2,
-      };
-
       return {
         ...node,
-        position: offsetPosition,
+        position: {
+          x: layoutNode.x - (node.width ?? 0) / 2,
+          y: layoutNode.y - (node.height ?? 0) / 2,
+        },
       };
     }
 
-    // Fallback - should not happen
     return node;
   });
 

@@ -10757,31 +10757,6 @@ type WorkflowSchema {
   transitions: [WorkflowSerializedTransition!]!
 }
 
-type WorkflowActionError {
-  timestamp: DateTime
-  message: String!
-  source: String
-}
-
-type WorkflowPendingAsyncAction {
-  id: ID!
-  workId: String!
-  type: String!
-  status: String!
-  processedCount: Int
-  expectedCount: Int
-  startedAt: DateTime
-  lastActivityAt: DateTime
-  errors: [WorkflowActionError!]
-}
-
-type WorkflowPendingTransition {
-  event: String!
-  toState: String!
-  triggeredAt: DateTime!
-  asyncActions: [WorkflowPendingAsyncAction!]!
-}
-
 type EntitySetting implements InternalObject & BasicObject {
   workflow_configuration: Boolean
   workflow_id: String
@@ -10806,6 +10781,31 @@ type EntitySetting implements InternalObject & BasicObject {
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
+}
+
+type WorkflowActionError {
+  timestamp: DateTime
+  message: String!
+  source: String
+}
+
+type WorkflowPendingAsyncAction {
+  id: ID!
+  workId: String!
+  type: String!
+  status: String!
+  processedCount: Int
+  expectedCount: Int
+  startedAt: DateTime
+  lastActivityAt: DateTime
+  errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+  event: String!
+  toState: String!
+  triggeredAt: DateTime!
+  asyncActions: [WorkflowPendingAsyncAction!]!
 }
 
 type WorkflowTriggerResult {
