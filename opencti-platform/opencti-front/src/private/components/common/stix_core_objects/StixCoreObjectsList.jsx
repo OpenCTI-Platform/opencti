@@ -8,6 +8,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
@@ -425,9 +427,15 @@ const StixCoreObjectsList = ({
   widgetId,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
-  const selection = dataSelection[0];
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    host,
+  });
+  const selection = resolvedDataSelection[0];
   const columns = selection.columns ?? getDefaultWidgetColumns('entities');
   const dataSelectionTypes = ['Stix-Core-Object'];
 
@@ -448,40 +456,47 @@ const StixCoreObjectsList = ({
       title={parameters.title ?? title ?? t_i18n('Entities list')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        <QueryRenderer
-          query={stixCoreObjectsListQuery}
-          variables={{
-            types: dataSelectionTypes,
-            first: selection.number ?? 10,
-            orderBy: sortBy,
-            orderMode: selection.sort_mode ?? 'asc',
-            filters,
-          }}
-          render={({ props }) => {
-            if (
-              props
-              && props.stixCoreObjects
-              && props.stixCoreObjects.edges.length > 0
-            ) {
-              const data = props.stixCoreObjects.edges;
-              return (
-                <WidgetListCoreObjects
-                  data={data}
-                  rootRef={rootRef.current ?? undefined}
-                  widgetId={widgetId}
-                  pageSize={selection.number ?? 10}
-                  columns={columns}
+        {
+          isMissingHostEntity
+            ? <WidgetNoHostEntity host={host} />
+            : (
+                <QueryRenderer
+                  query={stixCoreObjectsListQuery}
+                  variables={{
+                    types: dataSelectionTypes,
+                    first: selection.number ?? 10,
+                    orderBy: sortBy,
+                    orderMode: selection.sort_mode ?? 'asc',
+                    filters,
+                  }}
+                  render={({ props }) => {
+                    if (
+                      props
+                      && props.stixCoreObjects
+                      && props.stixCoreObjects.edges.length > 0
+                    ) {
+                      const data = props.stixCoreObjects.edges;
+                      return (
+                        <WidgetListCoreObjects
+                          data={data}
+                          rootRef={rootRef.current ?? undefined}
+                          widgetId={widgetId}
+                          pageSize={selection.number ?? 10}
+                          columns={columns}
+                        />
+                      );
+                    }
+                    if (props) {
+                      return <WidgetNoData />;
+                    }
+                    return <Loader variant={LoaderVariant.inElement} />;
+                  }}
                 />
-              );
-            }
-            if (props) {
-              return <WidgetNoData />;
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
+              )
+        }
       </div>
     </WidgetContainer>
   );

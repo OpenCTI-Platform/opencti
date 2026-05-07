@@ -135,7 +135,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
         redirectToContent={true}
       />
       <StixDomainObjectMain
-        entityType="Feedback"
+        entity={feedbackData}
         basePath={basePath}
         pages={{
           overview: (

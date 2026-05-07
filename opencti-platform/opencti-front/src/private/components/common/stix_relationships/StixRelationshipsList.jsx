@@ -8,6 +8,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 export const stixRelationshipsListSearchQuery = graphql`
   query StixRelationshipsListSearchQuery(
@@ -4517,13 +4519,22 @@ const StixRelationshipsList = ({
   widgetId,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    host,
+  });
   const renderContent = () => {
-    if (!dataSelection) {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+    if (!resolvedDataSelection) {
       return 'No data selection';
     }
-    const selection = dataSelection[0];
+    const selection = resolvedDataSelection[0];
     const columns = selection.columns ?? getDefaultWidgetColumns('relationships');
 
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -4577,6 +4588,7 @@ const StixRelationshipsList = ({
       title={parameters.title ?? t_i18n('Relationships list')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildFiltersAndOptionsForWidgets,
+  buildFiltersForCustomView,
   emptyFilterGroup,
   findFiltersFromKeys,
   formatFiltersInPirContext,
@@ -895,5 +896,211 @@ describe('isFilterGroupFormatCorrect', () => {
   it('should return false when filters or filterGroups is not an array', () => {
     expect(isFilterGroupFormatCorrect({ mode: 'and', filters: 'bad', filterGroups: [] })).toBe(false);
     expect(isFilterGroupFormatCorrect({ mode: 'and', filters: [], filterGroups: {} })).toBe(false);
+  });
+});
+
+describe('buildFiltersForCustomView', () => {
+  it('returns null when null input', () => {
+    expect(buildFiltersForCustomView(null)).toBe(null);
+  });
+
+  it('returns undefined when undefined input', () => {
+    expect(buildFiltersForCustomView(undefined)).toBe(undefined);
+  });
+
+  it('does not touch filter object when no changes are made', () => {
+    const entityId = 'the-entity-id';
+    const filterObject = {
+      mode: 'and',
+      filters: [{
+        id: '0d135be3-2878-441a-a222-0499108e7f7f',
+        key: 'regardingOf',
+        values: [{
+          key: 'id',
+          values: [entityId],
+        }],
+        operator: 'eq',
+        mode: 'or',
+      }, {
+        id: 'cc9af5a6-77a8-4b71-99bc-26d67e90fb78',
+        key: 'dynamicRegardingOf',
+        values: [{
+          key: 'dynamic',
+          values: [{
+            mode: 'and',
+            filters: [{
+              // Not sure this is a valid case but we still want to test
+              // that we replace values deeply nested
+              key: 'regardingOf',
+              values: [{
+                key: 'id',
+                values: [entityId],
+              }],
+            }],
+          }],
+        }],
+      }],
+      filterGroups: [{
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          id: '0d135be3-2878-441a-a222-0499108e7f7f',
+          key: 'regardingOf',
+          values: [{
+            key: 'id',
+            values: [entityId],
+          }],
+          operator: 'eq',
+          mode: 'or',
+        }, {
+          id: 'cc9af5a6-77a8-4b71-99bc-26d67e90fb78',
+          key: 'dynamicRegardingOf',
+          values: [{
+            key: 'dynamic',
+            values: [{
+              mode: 'and',
+              filters: [{
+                // Not sure this is a valid case but we still want to test
+                // that we replace values deeply nested
+                key: 'regardingOf',
+                values: [{
+                  key: 'id',
+                  values: [entityId],
+                }],
+              }],
+            }],
+          }],
+        }],
+      }],
+    };
+    expect(buildFiltersForCustomView(filterObject)).toStrictEqual(filterObject);
+  });
+
+  it('replaces occurences of SELF_ID everywhere in the filter structure with given entityId', () => {
+    expect(buildFiltersForCustomView({
+      mode: 'and',
+      filters: [{
+        id: '0d135be3-2878-441a-a222-0499108e7f7f',
+        key: 'regardingOf',
+        values: [{
+          key: 'id',
+          values: ['SELF_ID'],
+        }],
+        operator: 'eq',
+        mode: 'or',
+      }, {
+        id: 'cc9af5a6-77a8-4b71-99bc-26d67e90fb78',
+        key: 'dynamicRegardingOf',
+        values: [{
+          key: 'dynamic',
+          values: [{
+            mode: 'and',
+            filters: [{
+              // Not sure this is a valid case but we still want to test
+              // that we replace values deeply nested
+              key: 'regardingOf',
+              values: [{
+                key: 'id',
+                values: ['SELF_ID'],
+              }],
+            }],
+          }],
+        }],
+      }],
+      filterGroups: [{
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          id: '0d135be3-2878-441a-a222-0499108e7f7f',
+          key: 'regardingOf',
+          values: [{
+            key: 'id',
+            values: ['SELF_ID'],
+          }],
+          operator: 'eq',
+          mode: 'or',
+        }, {
+          id: 'cc9af5a6-77a8-4b71-99bc-26d67e90fb78',
+          key: 'dynamicRegardingOf',
+          values: [{
+            key: 'dynamic',
+            values: [{
+              mode: 'and',
+              filters: [{
+                // Not sure this is a valid case but we still want to test
+                // that we replace values deeply nested
+                key: 'regardingOf',
+                values: [{
+                  key: 'id',
+                  values: ['SELF_ID'],
+                }],
+              }],
+            }],
+          }],
+        }],
+      }],
+    }, 'the-entity-id')).toStrictEqual({
+      mode: 'and',
+      filters: [{
+        id: '0d135be3-2878-441a-a222-0499108e7f7f',
+        key: 'regardingOf',
+        values: [{
+          key: 'id',
+          values: ['the-entity-id'],
+        }],
+        operator: 'eq',
+        mode: 'or',
+      }, {
+        id: 'cc9af5a6-77a8-4b71-99bc-26d67e90fb78',
+        key: 'dynamicRegardingOf',
+        values: [{
+          key: 'dynamic',
+          values: [{
+            mode: 'and',
+            filters: [{
+              // Not sure this is a valid case but we still want to test
+              // that we replace values deeply nested
+              key: 'regardingOf',
+              values: [{
+                key: 'id',
+                values: ['the-entity-id'],
+              }],
+            }],
+          }],
+        }],
+      }],
+      filterGroups: [{
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          id: '0d135be3-2878-441a-a222-0499108e7f7f',
+          key: 'regardingOf',
+          values: [{
+            key: 'id',
+            values: ['the-entity-id'],
+          }],
+          operator: 'eq',
+          mode: 'or',
+        }, {
+          id: 'cc9af5a6-77a8-4b71-99bc-26d67e90fb78',
+          key: 'dynamicRegardingOf',
+          values: [{
+            key: 'dynamic',
+            values: [{
+              mode: 'and',
+              filters: [{
+                // Not sure this is a valid case but we still want to test
+                // that we replace values deeply nested
+                key: 'regardingOf',
+                values: [{
+                  key: 'id',
+                  values: ['the-entity-id'],
+                }],
+              }],
+            }],
+          }],
+        }],
+      }],
+    });
   });
 });

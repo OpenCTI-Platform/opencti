@@ -29,6 +29,7 @@ import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import useAttributes from '../../utils/hooks/useAttributes';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
+import type { WidgetHost } from '../../utils/widget/widget';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import BasicFilterInput from './BasicFilterInput';
@@ -50,7 +51,7 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  fintelTemplatesContext?: boolean;
+  context?: WidgetHost;
 }
 
 export interface FilterChipsParameter {
@@ -102,7 +103,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
-  fintelTemplatesContext,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -247,9 +248,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
 
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
-    const shouldAddSelfId = fintelTemplatesContext
+    const shouldAddSelfIdInFintelTemplates = context?.kind === 'fintelTemplate'
       && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'))
       && (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) => completedTypesWithFintelTemplates.includes(type));
+    const shouldAddSelfIdInCustomViews = context?.kind === 'custom-view'
+      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'));
+    const shouldAddSelfId = shouldAddSelfIdInFintelTemplates || shouldAddSelfIdInCustomViews;
 
     const getOptions = shouldAddSelfId
       ? [

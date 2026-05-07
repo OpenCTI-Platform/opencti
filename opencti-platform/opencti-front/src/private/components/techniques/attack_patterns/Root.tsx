@@ -161,7 +161,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              entityType="Attack-Pattern"
+              entity={attackPattern}
               basePath={basePath}
               pages={{
                 overview:

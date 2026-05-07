@@ -6,7 +6,7 @@ import CustomViewRedirector from '@components/custom_views/CustomViewRedirector'
 import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixDomainObjectMainProps {
-  entityType: string;
+  entity: { id: string; entity_type: string };
   basePath: string;
   /** The overview page is mandatory **/
   pages: { overview: ReactNode } & Partial<Omit<Record<StixDomainObjectTabsBoxTab, ReactNode>, 'overview'>>;
@@ -15,7 +15,7 @@ interface StixDomainObjectMainProps {
 }
 
 const StixDomainObjectMain = ({
-  entityType,
+  entity,
   basePath,
   extraActions,
   pages,
@@ -27,7 +27,7 @@ const StixDomainObjectMain = ({
   return (
     <>
       <StixDomainObjectTabsBox
-        entityType={entityType}
+        entityType={entity.entity_type}
         basePath={basePath}
         tabs={tabs}
         extraActions={extraActions}
@@ -67,7 +67,7 @@ const StixDomainObjectMain = ({
           element={isCustomViewFeatureEnabled
             ? (
                 <CustomViewRedirector
-                  entityType={entityType}
+                  entity={entity}
                   Fallback={<ErrorNotFound />}
                   indexFallback={<Navigate to="overview" replace />}
                 />

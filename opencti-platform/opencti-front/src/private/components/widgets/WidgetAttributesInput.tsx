@@ -163,7 +163,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { config, fintelEntityType, fintelEditorValue } = useWidgetConfigContext();
+  const { config, host } = useWidgetConfigContext();
   const { isVarNameAlreadyUsed } = useWidgetConfigValidateForm();
 
   const deletion = useDeletion({});
@@ -173,7 +173,11 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
     widgetAttributesInputInstanceQuery,
     queryRef,
   );
-  const entityType = stixCoreObject?.entity_type ?? fintelEntityType;
+  const entityType = stixCoreObject?.entity_type ?? (
+    host.kind === 'fintelTemplate'
+      ? host.fintelEntityType
+      : undefined
+  );
 
   const specificAttributesOfType = attributesByEntityType.get(entityType ?? '') ?? [];
   const availableAttributes: { attribute: string; label: string }[] = stixCoreObjectsAvailableAttributesColumns
@@ -185,7 +189,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
   };
 
   const isWidgetUsedInTemplate = (widgetVarName: string) => {
-    return widgetVarName !== '' && !!fintelEditorValue?.includes(`$${widgetVarName}`);
+    return widgetVarName !== '' && host.kind === 'fintelTemplate' && !!host.fintelEditorValue?.includes(`$${widgetVarName}`);
   };
 
   const attributesValidation = Yup.object({
