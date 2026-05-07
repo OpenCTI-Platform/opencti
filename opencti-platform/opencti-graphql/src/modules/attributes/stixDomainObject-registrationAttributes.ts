@@ -359,7 +359,7 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, [
     name: 'custom_field_values',
     label: 'Custom field values',
     type: 'object',
-    format: 'standard',
+    format: 'nested',
     mandatoryType: 'no',
     editDefault: false,
     multiple: true,

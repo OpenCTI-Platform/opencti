@@ -2426,9 +2426,14 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 },
               });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+              // For custom_field_values nested filters only: use the original value (not the
+              // stringified version) to preserve numeric types. The int_value field is mapped
+              // with { coerce: false } which rejects string range values in ES queries.
+              // All other nested filters pass string values from GraphQL, so rangeValue === nestedSearchValue for them.
+              const rangeValue = parentKey === 'custom_field_values' ? nestedValues[i] : nestedSearchValue;
               nestedShould.push({
                 range: {
-                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue },
+                  [nestedFieldKey]: { [nestedOperator]: rangeValue },
                 },
               });
             } else { // nestedOperator = 'eq'

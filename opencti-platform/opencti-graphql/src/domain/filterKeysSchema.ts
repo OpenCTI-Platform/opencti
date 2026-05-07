@@ -23,6 +23,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  CUSTOM_FIELD_VALUE_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -334,6 +335,15 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       filterKey: IS_INFERRED_FILTER,
       type: 'boolean',
       label: 'Is inferred',
+      multiple: false,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+    });
+    // custom field values filter (nested query on custom_field_values array)
+    filterDefinitionsMap.set(CUSTOM_FIELD_VALUE_FILTER, {
+      filterKey: CUSTOM_FIELD_VALUE_FILTER,
+      type: 'nested',
+      label: 'Custom field value',
       multiple: false,
       subEntityTypes,
       elementsForFilterValuesSearch: [],

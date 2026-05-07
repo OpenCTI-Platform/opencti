@@ -5,6 +5,9 @@ import {
   BULK_SEARCH_KEYWORDS_FILTER,
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
+  CUSTOM_FIELD_INT_VALUE_SUBFILTER,
+  CUSTOM_FIELD_NAME_SUBFILTER,
+  CUSTOM_FIELD_VALUE_FILTER,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -556,6 +559,62 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
   return { newFilter, newFilterGroup: undefined };
 };
 
+const adaptFilterToCustomFieldValueFilterKey = (filter: Filter) => {
+  const fieldNameSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_NAME_SUBFILTER);
+  const fieldName = fieldNameSubFilter?.values?.[0];
+  if (!fieldName) {
+    throw FunctionalError('customFieldValue filter requires a field_name subfilter', { filter });
+  }
+  const valueSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_INT_VALUE_SUBFILTER);
+  if (!valueSubFilter) {
+    throw FunctionalError('customFieldValue filter requires an int_value subfilter', { filter });
+  }
+
+  // IMPORTANT: valueSubFilter.operator comes from inside an Any-typed GraphQL field.
+  // Enum values inside Any are NOT deserialized by GraphQL → always arrive as null.
+  // We therefore use filter.operator (the top-level Filter.operator, properly typed) instead.
+  // The GraphQL query must pass the comparison operator at the Filter level, e.g.:
+  //   { key: ["customFieldValue"], operator: gt, values: [
+  //       { key: "field_name", values: ["x_opencti_priority"] },
+  //       { key: "int_value",  values: ["1"] }
+  //     ]
+  //   }
+  const intOperator: string = filter.operator ?? FilterOperator.Eq;
+
+  // int_value is a numeric ES field mapped with { coerce: false }.
+  // Parse string values from GraphQL to actual numbers so ES receives proper numeric types.
+  // For 'eq': use gte+lte (same value) because the 'eq' path in buildLocalMustFilter uses
+  // multi_match + .keyword which does not exist on numeric fields → 0 results.
+  const parsedValues: (number | string)[] = valueSubFilter.values.map((v: any) => {
+    const num = Number(v);
+    return Number.isFinite(num) ? num : v;
+  });
+
+  const buildIntValueNestedClauses = () => {
+    if (intOperator === FilterOperator.Eq) {
+      return [
+        { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: FilterOperator.Gte },
+        { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: FilterOperator.Lte },
+      ];
+    }
+    // gt, gte, lt, lte → range query with numeric values (coerce:false safe).
+    // not_eq → known limitation, passes through.
+    return [
+      { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: intOperator },
+    ];
+  };
+
+  const newFilter = {
+    key: ['custom_field_values'],
+    values: [],
+    nested: [
+      { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
+      ...buildIntValueNestedClauses(),
+    ],
+  };
+  return { newFilter };
+};
+
 const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
   const { operator, mode, values } = filter;
   let newFilter;
@@ -825,6 +884,10 @@ export const completeSpecialFilterKeys = async (
       }
       if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {
         const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
+        finalFilters.push(newFilter);
+      }
+      if (filterKey === CUSTOM_FIELD_VALUE_FILTER) {
+        const { newFilter } = adaptFilterToCustomFieldValueFilterKey(filter);
         finalFilters.push(newFilter);
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
