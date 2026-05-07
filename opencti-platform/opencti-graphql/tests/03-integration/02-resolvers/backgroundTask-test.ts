@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
-import { deleteWork } from '../../../src/domain/work';
+import { cancelWork } from '../../../src/domain/work';
 import { ADMIN_USER, queryInitPlatformAsAdmin, testContext } from '../../utils/testQuery';
 import { getBestBackgroundConnectorId } from '../../../src/database/rabbitmq';
 import { createWorkForBackgroundTask } from '../../../src/domain/backgroundTask-common';
@@ -19,11 +19,11 @@ describe('Background task graphQL API permission checks', () => {
     });
   });
 });
-describe('Verify deleted works', () => {
-  it('should request on deleted work be rejected with reason WORK_NOT_ALIVE.', async () => {
+describe('Verify cancelled works', () => {
+  it('should request on cancelled work be rejected with reason WORK_CANCELLED.', async () => {
     const backgroundTaskConnectorId = await getBestBackgroundConnectorId(testContext, ADMIN_USER);
     const work = await createWorkForBackgroundTask(testContext, 'fake_id', backgroundTaskConnectorId);
-    await deleteWork(testContext, ADMIN_USER, work?.id);
+    await cancelWork(testContext, ADMIN_USER, work?.id);
 
     let error: any;
     try {
@@ -31,6 +31,6 @@ describe('Verify deleted works', () => {
     } catch (err) {
       error = err;
     }
-    expect(error?.response.data.errors[0].name).toEqual('WORK_NOT_ALIVE');
+    expect(error?.response.data.errors[0].name).toEqual('WORK_CANCELLED');
   });
 });

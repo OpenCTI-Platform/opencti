@@ -35,12 +35,15 @@ import {
 } from '../domain/connector';
 import {
   addDraftContext,
+  cancelWork,
+  cancelWorksForConnector,
   createWork,
   deleteWork,
   deleteWorkForConnector,
   findById,
   findWorkPaginated,
   isWorkAlive,
+  isWorkCancelled,
   pingWork,
   reportExpectation,
   updateExpectationsNumber,
@@ -89,6 +92,7 @@ const connectorResolvers = {
     works: (_, args, context) => findWorkPaginated(context, context.user, args),
     work: (_, { id }, context) => findById(context, context.user, id),
     isWorkAlive: (_, { id }, context) => isWorkAlive(context, context.user, id),
+    isWorkCancelled: (_, { id }, context) => isWorkCancelled(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id, true),
     synchronizerAddInputFromImport: (_, { file }) => syncAddInputFromImport(file),
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
@@ -186,6 +190,7 @@ const connectorResolvers = {
       });
     },
     workEdit: (_, { id }, context) => ({
+      cancel: () => cancelWork(context, context.user, id),
       delete: () => deleteWork(context, context.user, id),
       ping: () => pingWork(context, context.user, id),
       reportExpectation: ({ error }) => reportExpectation(context, context.user, id, error),
@@ -194,6 +199,7 @@ const connectorResolvers = {
       toReceived: ({ message }) => updateReceivedTime(context, context.user, id, message),
       toProcessed: ({ message, inError }) => updateProcessedTime(context, context.user, id, message, inError),
     }),
+    workCancelForConnector: (_, { connectorId }, context) => cancelWorksForConnector(context, context.user, connectorId),
     workDelete: (_, { connectorId }, context) => deleteWorkForConnector(context, context.user, connectorId),
     // Sync part
     synchronizerAdd: (_, { input }, context) => registerSync(context, context.user, input),

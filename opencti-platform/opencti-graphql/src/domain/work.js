@@ -8,6 +8,8 @@ import {
   redisGetWork,
   redisGetWorkCompletionState,
   redisInitializeWork,
+  redisIsWorkCancelled,
+  redisMarkWorkAsCancelled,
   redisMarkWorkAsProcessed,
   redisUpdateActionExpectation,
   redisUpdateWorkFigures,
@@ -53,6 +55,10 @@ export const findById = (context, user, workId) => {
 export const isWorkAlive = async (_context, _user, workId) => {
   const redisWork = await redisGetWork(workId);
   return redisWork?.is_initialized === 'true';
+};
+
+export const isWorkCancelled = async (_context, _user, workId) => {
+  return redisIsWorkCancelled(workId);
 };
 
 export const findWorkPaginated = (context, user, args = {}) => {
@@ -208,6 +214,68 @@ export const deleteWorkForSource = async (sourceId) => {
     throw DatabaseError('[SEARCH] Error deleting all works ', { sourceId, cause: err });
   });
 };
+
+export const cancelWork = async (context, user, workId) => {
+  const work = await loadWorkById(context, user, workId);
+  if (!work) {
+    return workId;
+  }
+  await redisMarkWorkAsCancelled(workId);
+  logApp.info('Work cancelled marker set', { workId });
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'cancel',
+    event_access: 'administration',
+    message: `cancels Connector Work \`${work.name}\``,
+    context_data: { id: workId, entity_type: ENTITY_TYPE_WORK, input: work },
+  });
+  await deleteWorksRaw([work]);
+  return workId;
+};
+
+/**
+ * Cancel every in-flight Work belonging to a connector (UI explicit only,
+ * "clear all works" button on a connector page).
+ * Wired to: workCancelForConnector(connectorId)
+ *
+ * Tombstones each work, publishes a single `cancel` user action, then
+ * delegates to `deleteWorkForConnector` for storage cleanup. Connector
+ * deletion does NOT use this path (it uses `deleteWorkForConnector`
+ * directly to preserve the original silent-cleanup behavior).
+ */
+export const cancelWorksForConnector = async (context, user, connectorId) => {
+  let connector;
+  if (connectorId === IMPORT_CSV_CONNECTOR_ID) {
+    connector = IMPORT_CSV_CONNECTOR;
+  } else if (connectorId === DRAFT_VALIDATION_CONNECTOR_ID) {
+    connector = DRAFT_VALIDATION_CONNECTOR;
+  } else {
+    connector = await elLoadById(context, user, connectorId, { type: ENTITY_TYPE_CONNECTOR });
+  }
+  if (!connector) {
+    throw AlreadyDeletedError({ connectorId });
+  }
+  // Tombstone every existing in-flight work for the connector before any
+  // storage mutation so concurrent worker traffic is rejected immediately.
+  let toMark = await worksForConnector(context, user, connectorId, { first: 500 });
+  while (toMark.length > 0) {
+    await Promise.all(toMark.map((w) => redisMarkWorkAsCancelled(w.internal_id)));
+    toMark.forEach((w) => logApp.info('Work cancelled marker set', { workId: w.internal_id, connectorId }));
+    await deleteWorksRaw(toMark);
+    toMark = await worksForConnector(context, user, connectorId, { first: 500 });
+  }
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'cancel',
+    event_access: 'administration',
+    message: `cancels \`all works\` for connector \`${connector.name}\``,
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: { id: connectorId } },
+  });
+  return true;
+};
+// endregion
 
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work

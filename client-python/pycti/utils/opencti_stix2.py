@@ -53,6 +53,11 @@ ERROR_TYPE_LOCK = "LOCK_ERROR"
 ERROR_TYPE_MISSING_REFERENCE = "MISSING_REFERENCE_ERROR"
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
+ERROR_TYPE_WORK_CANCELLED = "WORK_CANCELLED"
+# Legacy alias of ERROR_TYPE_WORK_CANCELLED. Kept so this client can still
+# detect the rejection when running against an older OpenCTI server that
+# emits the previous WORK_NOT_ALIVE code. Remove once support for those
+# servers is dropped.
 ERROR_TYPE_WORK_NOT_ALIVE = "WORK_NOT_ALIVE"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
@@ -3572,10 +3577,13 @@ class OpenCTIStix2:
                             },
                         )
                     return None
-                # A work not alive error occurs
-                elif ERROR_TYPE_WORK_NOT_ALIVE in error_msg:
+                # A work cancelled error occurs
+                elif (
+                    ERROR_TYPE_WORK_CANCELLED in error_msg
+                    or ERROR_TYPE_WORK_NOT_ALIVE in error_msg
+                ):
                     worker_logger.info(
-                        "Message skipped because work is no longer alive",
+                        "Message skipped because work has been cancelled",
                     )
                     return None
                 # Platform does not know what to do and raises an error:

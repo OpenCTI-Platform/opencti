@@ -192,8 +192,8 @@ export const DraftLockedError = (data) => error(DRAFT_LOCKED_ERROR, 'Draft is in
   ...data,
 });
 
-export const WORK_NOT_ALIVE_ERROR = 'WORK_NOT_ALIVE';
-export const WorkNotALiveError = () => error(WORK_NOT_ALIVE_ERROR, 'Work is no longer alive, no request can be done within the context of this work', {
+export const WORK_CANCELLED_ERROR = 'WORK_CANCELLED';
+export const WorkCancelledError = () => error(WORK_CANCELLED_ERROR, 'Work has been cancelled, no request can be done within the context of this work', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,
 });

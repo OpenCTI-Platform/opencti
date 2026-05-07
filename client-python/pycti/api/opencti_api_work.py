@@ -140,7 +140,7 @@ class OpenCTIApiWork:
                 )
             except Exception:
                 error_msg = traceback.format_exc()
-                if "WORK_NOT_ALIVE" in error_msg:
+                if "WORK_CANCELLED" in error_msg or "WORK_NOT_ALIVE" in error_msg:
                     self.api.app_logger.info(
                         "Work no longer exists",
                         {"work_id": work_id},
@@ -273,6 +273,64 @@ class OpenCTIApiWork:
         )
         return work["data"]
 
+    def cancel(self, **kwargs):
+        """Explicitly cancel a work (UI-driven semantic).
+
+        Calls the server-side ``workEdit(id).cancel`` mutation. This sets a
+        sliding-TTL Redis cancellation tombstone on the work so any
+        in-flight worker bundle carrying this workId is rejected by the
+        server with WORK_CANCELLED, then performs the regular silent
+        delete.
+
+        Use this when you need to actively abort a work and stop downstream
+        ingestion. For a plain storage delete that lets ongoing processing
+        finish, use :meth:`delete`.
+
+        :param id: the work id
+        :type id: str
+        :return: the response data
+        :rtype: dict or None
+        """
+        work_id = kwargs.get("id", None)
+        if work_id is None:
+            self.api.admin_logger.error(
+                "[opencti_work] Cannot cancel work, missing parameter: id"
+            )
+            return None
+        query = """
+        mutation ConnectorWorkCancelMutation($workId: ID!) {
+            workEdit(id: $workId) {
+                cancel
+            }
+        }"""
+        work = self.api.query(
+            query,
+            {"workId": work_id},
+        )
+        return work["data"]
+
+    def cancel_works_for_connector(self, connector_id: str):
+        """Explicitly cancel every in-flight work of a connector.
+
+        Tombstones each work (rejecting any concurrent worker traffic with
+        WORK_CANCELLED) then deletes them. Used for the "clear all works"
+        action on a connector page.
+
+        For a plain bulk delete that does not reject in-flight processing,
+        use the connector-side cleanup instead.
+
+        :param connector_id: the connector id
+        :type connector_id: str
+        :return: the response data
+        :rtype: dict or None
+        """
+        query = """
+        mutation ConnectorWorksCancelForConnectorMutation($connectorId: String!) {
+            workCancelForConnector(connectorId: $connectorId)
+        }"""
+        result = self.api.query(query, {"connectorId": connector_id})
+        return result["data"]
+
     def wait_for_work_to_finish(self, work_id: str):
         """Wait for a work to finish.
 
@@ -343,6 +401,11 @@ class OpenCTIApiWork:
     def get_is_work_alive(self, work_id: str) -> bool:
         """Check if a work is alive.
 
+        .. deprecated::
+            Use :meth:`get_is_work_cancelled` instead. The server-side
+            ``isWorkAlive`` field is deprecated; closed/completed works are
+            considered alive too. Use the explicit cancellation check.
+
         :param work_id: the work id
         :type work_id: str
         :return: whether the work is alive
@@ -355,6 +418,27 @@ class OpenCTIApiWork:
         """
         result = self.api.query(query, {"id": work_id}, True)
         return result["data"]["isWorkAlive"]
+
+    def get_is_work_cancelled(self, work_id: str) -> bool:
+        """Check if a work has been explicitly cancelled (user-initiated delete).
+
+        Unlike :meth:`get_is_work_alive`, this does not return ``True`` for
+        works that have naturally completed/closed: only cancelled works are
+        reported as cancelled. Backed by a sliding-TTL Redis tombstone on
+        the server side.
+
+        :param work_id: the work id
+        :type work_id: str
+        :return: whether the work has been cancelled
+        :rtype: bool
+        """
+        query = """
+        query WorkCancelledQuery($id: ID!) {
+            isWorkCancelled(id: $id)
+        }
+        """
+        result = self.api.query(query, {"id": work_id}, True)
+        return bool(result["data"]["isWorkCancelled"])
 
     def get_connector_works(self, connector_id: str) -> List[Dict]:
         """Get all works for a connector.

@@ -17281,6 +17281,7 @@ export type Mutation = {
   vulnerabilityAdd?: Maybe<Vulnerability>;
   vulnerabilityEdit?: Maybe<VulnerabilityEditMutations>;
   workAdd: Work;
+  workCancelForConnector?: Maybe<Scalars['Boolean']['output']>;
   workDelete?: Maybe<Scalars['Boolean']['output']>;
   workEdit?: Maybe<WorkEditMutations>;
   workspaceAdd?: Maybe<Workspace>;
@@ -19869,6 +19870,11 @@ export type MutationWorkAddArgs = {
   connectorId: Scalars['String']['input'];
   friendlyName?: InputMaybe<Scalars['String']['input']>;
   isMultiPartWork?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type MutationWorkCancelForConnectorArgs = {
+  connectorId: Scalars['String']['input'];
 };
 
 
@@ -24177,7 +24183,9 @@ export type Query = {
   ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
+  /** @deprecated Use isWorkCancelled (inverted semantics): closed/completed works are alive too. */
   isWorkAlive?: Maybe<Scalars['Boolean']['output']>;
+  isWorkCancelled?: Maybe<Scalars['Boolean']['output']>;
   jsonMapper?: Maybe<JsonMapper>;
   jsonMappers?: Maybe<JsonMapperConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
@@ -25534,6 +25542,11 @@ export type QueryIntrusionSetsArgs = {
 
 
 export type QueryIsWorkAliveArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryIsWorkCancelledArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -37483,6 +37496,7 @@ export type WorkEditMutations = {
   __typename?: 'WorkEditMutations';
   addDraftContext: Scalars['ID']['output'];
   addExpectations: Scalars['ID']['output'];
+  cancel: Scalars['ID']['output'];
   delete: Scalars['ID']['output'];
   ping: Scalars['ID']['output'];
   reportExpectation: Scalars['ID']['output'];
@@ -46954,6 +46968,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   vulnerabilityAdd?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<MutationVulnerabilityAddArgs, 'input'>>;
   vulnerabilityEdit?: Resolver<Maybe<ResolversTypes['VulnerabilityEditMutations']>, ParentType, ContextType, RequireFields<MutationVulnerabilityEditArgs, 'id'>>;
   workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId' | 'isMultiPartWork'>>;
+  workCancelForConnector?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkCancelForConnectorArgs, 'connectorId'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
@@ -48479,6 +48494,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
   isWorkAlive?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryIsWorkAliveArgs, 'id'>>;
+  isWorkCancelled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryIsWorkCancelledArgs, 'id'>>;
   jsonMapper?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<QueryJsonMapperArgs, 'id'>>;
   jsonMappers?: Resolver<Maybe<ResolversTypes['JsonMapperConnection']>, ParentType, ContextType, Partial<QueryJsonMappersArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
@@ -52012,6 +52028,7 @@ export type WorkEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 export type WorkEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkEditMutations'] = ResolversParentTypes['WorkEditMutations']> = ResolversObject<{
   addDraftContext?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsAddDraftContextArgs>>;
   addExpectations?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsAddExpectationsArgs>>;
+  cancel?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   delete?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ping?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   reportExpectation?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsReportExpectationArgs>>;

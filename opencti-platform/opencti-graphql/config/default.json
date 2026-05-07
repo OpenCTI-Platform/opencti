@@ -365,7 +365,8 @@
     "ca": [],
     "port": 6379,
     "host_ip_family": 4,
-    "trimming": 2000000
+    "trimming": 2000000,
+    "work_cancel_ttl": 3600
   },
   "elasticsearch": {
     "index_prefix": "opencti",

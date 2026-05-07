@@ -14844,7 +14844,8 @@ type Query {
   connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment! @auth(for: [MODULES_MODMANAGE])
   work(id: ID!): Work @auth(for: [MODULES])
-  isWorkAlive(id: ID!): Boolean @auth(for: [MODULES])
+  isWorkAlive(id: ID!): Boolean @auth(for: [MODULES]) @deprecated(reason: "Use isWorkCancelled (inverted semantics): closed/completed works are alive too.")
+  isWorkCancelled(id: ID!): Boolean @auth(for: [MODULES])
   works(
     first: Int
     after: ID
@@ -15941,6 +15942,7 @@ type Subscription {
 ###### INTERNAL
 
 type WorkEditMutations {
+  cancel: ID!
   delete: ID!
   ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
@@ -16415,6 +16417,7 @@ type Mutation {
   ### WORK
   workAdd(connectorId: String!, friendlyName: String, isMultiPartWork: Boolean = false): Work! @auth(for: [CONNECTORAPI, MODULES_MODMANAGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   workEdit(id: ID!): WorkEditMutations @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
+  workCancelForConnector(connectorId: String!): Boolean @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
   workDelete(connectorId: String!): Boolean @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
 
   ### TASK

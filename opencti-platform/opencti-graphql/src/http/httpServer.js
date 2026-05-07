@@ -18,14 +18,14 @@ import createApolloServer from '../graphql/graphql';
 import { applicationSession } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { userEditField } from '../domain/user';
-import { DraftLockedError, ForbiddenAccess, WorkNotALiveError } from '../config/errors';
+import { DraftLockedError, ForbiddenAccess, WorkCancelledError } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
-import { isWorkAlive } from '../domain/work';
+import { isWorkCancelled } from '../domain/work';
 import { buildRateLimiterOptions } from './httpUtils';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -145,11 +145,13 @@ const createHttpServer = async () => {
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
         const executeContext = await createAuthenticatedContext(req, res, 'api');
-        // When context is related to a work, we need to check work status
+        // When context is related to a work, reject only if it has been
+        // explicitly cancelled (user-initiated delete). Closed/completed works
+        // must keep accepting late worker traffic.
         if (executeContext.workId) {
-          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
-          if (!workStillAlive) {
-            throw WorkNotALiveError();
+          const workCancelled = await isWorkCancelled(executeContext, executeContext.user, executeContext.workId);
+          if (workCancelled) {
+            throw WorkCancelledError();
           }
         }
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft

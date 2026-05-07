@@ -479,9 +479,32 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 // endregion
 
 // region work handling
+// Sliding TTL (in seconds) for the per-work cancellation tombstone.
+// Refreshed atomically on every read via GETEX. Default: 1 hour.
+const WORK_CANCEL_TTL = conf.get('redis:work_cancel_ttl') ?? 3600;
+const workCancelKey = (workId: string) => `work:cancel:${workId}`;
+
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
   const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
   return Promise.all(ids.map((id) => getClientBase().del(id)));
+};
+/**
+ * Mark a work as cancelled by writing a short-lived tombstone in Redis.
+ * The tombstone TTL is sliding: each read via redisIsWorkCancelled refreshes it.
+ * This is used to reject incoming requests targeting a cancelled work, while
+ * still allowing late worker traffic for naturally completed/closed works.
+ */
+export const redisMarkWorkAsCancelled = async (workId: string) => {
+  await getClientBase().set(workCancelKey(workId), '1', 'EX', WORK_CANCEL_TTL);
+};
+/**
+ * Atomically check whether a work has been cancelled and, if so, refresh
+ * its tombstone TTL (sliding window). Single Redis round-trip via GETEX.
+ * Requires Redis >= 6.2.
+ */
+export const redisIsWorkCancelled = async (workId: string): Promise<boolean> => {
+  const value = await getClientBase().getex(workCancelKey(workId), 'EX', WORK_CANCEL_TTL);
+  return value !== null;
 };
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
