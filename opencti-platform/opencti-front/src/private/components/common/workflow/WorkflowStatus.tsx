@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import { Alert, AlertTitle, Box, Chip, DialogActions, DialogContentText, Divider, LinearProgress, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
 import { ArrowDropDownOutlined, ErrorOutline, Refresh, LockOpenOutlined, CommentOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -45,6 +45,9 @@ export const workflowStatusFragment = graphql`
         event
         toState
         triggeredAt
+        syncActions {
+          type
+        }
         asyncActions {
           id
           type
@@ -220,14 +223,41 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   const [commitRetry, retrying] = useMutation<WorkflowStatusRetryMutation>(workflowStatusRetryMutation);
   const [commitClear, clearing] = useMutation<WorkflowStatusClearMutation>(workflowStatusClearMutation);
 
-  if (!draft.workflowInstance) {
+  const workflowInstance = draft.workflowInstance;
+  const isPending = workflowInstance?.pendingStatus === 'pending';
+  const pendingTransition = workflowInstance?.pendingTransition ?? null;
+
+  // Track prev isPending to detect when a background transition completes.
+  // When isPending goes false and the previous pendingTransition had validateDraft in syncActions,
+  // automatically exit the draft (mirrors what fireTransition does for sync-only completions).
+  const prevIsPendingRef = useRef<boolean>(isPending);
+  const prevSyncActionsRef = useRef<readonly { type: string }[] | null>(pendingTransition?.syncActions ?? null);
+  useEffect(() => {
+    const wasJustPending = prevIsPendingRef.current && !isPending;
+    if (wasJustPending) {
+      const hadValidateDraft = prevSyncActionsRef.current?.some((a) => a.type === 'validateDraft');
+      if (hadValidateDraft) {
+        MESSAGING$.notifySuccess(t_i18n('Draft validated successfully'));
+        exitDraft({
+          onCompleted: () => {
+            if (draft.entity_id) {
+              navigate(`/dashboard/id/${draft.entity_id}`);
+            } else {
+              navigate('/dashboard/data/import/draft');
+            }
+          },
+        });
+      }
+    }
+    prevIsPendingRef.current = isPending;
+    prevSyncActionsRef.current = pendingTransition?.syncActions ?? null;
+  });
+
+  if (!workflowInstance) {
     return null;
   }
 
-  const { workflowInstance } = draft;
-  const isPending = workflowInstance.pendingStatus === 'pending';
   const isError = workflowInstance.pendingStatus === 'error';
-  const pendingTransition = workflowInstance.pendingTransition;
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -341,31 +371,21 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   // Pending state UI
   if (isPending && pendingTransition) {
+    const totalExpected = pendingTransition.asyncActions.reduce((sum, s) => sum + (s.expectedCount ?? 0), 0);
+    const totalProcessed = pendingTransition.asyncActions.reduce((sum, s) => sum + (s.processedCount ?? 0), 0);
     return (
       <>
         <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 200 }}>
-          <Typography variant="caption" color="text.secondary">
-            {t_i18n('Transition in progress')}: <strong>{pendingTransition.event}</strong>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="caption" noWrap>
+            {pendingTransition.event}
           </Typography>
-          {pendingTransition.asyncActions.map((slot) => {
-            const processed = slot.processedCount ?? 0;
-            const expected = slot.expectedCount ?? 0;
-            const progress = expected > 0 ? (processed / expected) * 100 : 0;
-            return (
-              <Box key={slot.id} sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip
-                    size="small"
-                    label={slot.status}
-                    color={slot.status === 'success' ? 'success' : slot.status === 'failed' ? 'error' : 'default'}
-                  />
-                  <Typography variant="caption">{processed} / {expected} entities</Typography>
-                </Box>
-                <LinearProgress variant={expected > 0 ? 'determinate' : 'indeterminate'} value={progress} sx={{ borderRadius: 1 }} />
-              </Box>
-            );
-          })}
+          {totalExpected > 0 && (
+            <Typography variant="caption" color="text.secondary" noWrap>
+              {totalProcessed} / {totalExpected}
+            </Typography>
+          )}
+          <CircularProgress size={14} thickness={5} />
         </Box>
       </>
     );

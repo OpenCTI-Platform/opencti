@@ -37987,6 +37987,7 @@ export type WorkflowPendingTransition = {
   __typename?: 'WorkflowPendingTransition';
   asyncActions: Array<WorkflowPendingAsyncAction>;
   event: Scalars['String']['output'];
+  syncActions?: Maybe<Array<WorkflowActionConfig>>;
   toState: Scalars['String']['output'];
   triggeredAt: Scalars['DateTime']['output'];
 };
@@ -52809,6 +52810,7 @@ export type WorkflowPendingAsyncActionResolvers<ContextType = any, ParentType ex
 export type WorkflowPendingTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowPendingTransition'] = ResolversParentTypes['WorkflowPendingTransition']> = ResolversObject<{
   asyncActions?: Resolver<Array<ResolversTypes['WorkflowPendingAsyncAction']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  syncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   toState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   triggeredAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
