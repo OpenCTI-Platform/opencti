@@ -14,6 +14,8 @@ import Transition from '../../../../components/Transition';
 import Dialog from '@common/dialog/Dialog';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 
+const COMMENT_MAX_LENGTH = 5000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-graphql/src/modules/workflow/api/workflow-resolvers.ts
+
 export const workflowStatusFragment = graphql`
   fragment WorkflowStatus_data on DraftWorkspace {
     id
@@ -253,7 +255,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         slots={{ transition: Transition }}
         onClose={() => setCommentDialogTransition(null)}
         title={t_i18n('Add a comment')}
-        size="small"
+        size="large"
       >
         <DialogContentText sx={{ marginBottom: 2 }}>
           {commentDialogTransition?.comment === 'required'
@@ -271,6 +273,8 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           variant="outlined"
           size="small"
           required={commentDialogTransition?.comment === 'required'}
+          slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
+          helperText={`${commentValue.length} / ${COMMENT_MAX_LENGTH}`}
         />
         <DialogActions>
           <Button

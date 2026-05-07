@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
 import {
   deleteWorkflowDefinition,
@@ -8,6 +9,8 @@ import {
   setWorkflowDefinition,
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
+
+const COMMENT_MAX_LENGTH = 5000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
 
 const workflowResolvers = {
   Query: {
@@ -32,8 +35,12 @@ const workflowResolvers = {
     workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
     },
-    triggerWorkflowEvent: (_: any, { entityId, eventName, comment }: { entityId: string; eventName: string; comment?: string }, context: AuthContext) => {
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName, comment);
+    triggerWorkflowEvent: (_: any, { entityId, eventName, comment }: { entityId: string; eventName: string; comment?: string | null }, context: AuthContext) => {
+      const normalizedComment = comment?.trim() ?? undefined;
+      if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
+        throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+      }
+      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment);
     },
   },
   WorkflowInstance: {
@@ -43,7 +50,7 @@ const workflowResolvers = {
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
-      return [...history].sort((a, b) => a.timestamp.localeCompare(b.timestamp)).at(-1) ?? null;
+      return history.length > 0 ? history[history.length - 1] : null;
     },
   },
   WorkflowTransition: {
