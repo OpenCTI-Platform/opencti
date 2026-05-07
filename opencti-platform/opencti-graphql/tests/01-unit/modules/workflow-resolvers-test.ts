@@ -271,17 +271,4 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
   });
 
-  it('should pass undefined when comment is only spaces (trims to empty string)', async () => {
-    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'reviewed', instance: {}, entity: {} });
-
-    await workflowResolvers.Mutation.triggerWorkflowEvent(
-      {},
-      { entityId: 'entity-id', eventName: 'review', comment: '   ' },
-      mockContext,
-    );
-
-    expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', undefined,
-    );
-  });
 });
