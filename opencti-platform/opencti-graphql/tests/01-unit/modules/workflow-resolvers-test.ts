@@ -214,17 +214,16 @@ describe('Query.allowedNextStatuses resolver', () => {
 // ---------------------------------------------------------------------------
 
 describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => {
-  it('should throw GraphQLError when comment exceeds 5000 characters', async () => {
+  it('should throw GraphQLError when comment exceeds 5000 characters', () => {
     const longComment = 'a'.repeat(5001);
 
-
-    await expect(
+    expect(() =>
       workflowResolvers.Mutation.triggerWorkflowEvent(
         {},
         { entityId: 'entity-id', eventName: 'review', comment: longComment },
         mockContext,
       ),
-    ).rejects.toThrow('Comment exceeds maximum allowed length of 5000 characters.');
+    ).toThrow('Comment exceeds maximum allowed length of 5000 characters.');
   });
 
   it('should NOT throw when comment is exactly 5000 characters', async () => {
