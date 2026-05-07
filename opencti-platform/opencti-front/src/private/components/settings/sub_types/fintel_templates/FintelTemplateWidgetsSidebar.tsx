@@ -221,6 +221,12 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       zIndex: theme.zIndex.appBar - 1,
     },
   };
+  const context = useMemo(() => ({
+    kind: 'fintelTemplate' as const,
+    fintelWidgets: fintel_template_widgets as FintelTemplateWidget[],
+    fintelEntityType: subTypeId ?? '',
+    fintelEditorValue: editorValue ?? '',
+  }), [fintel_template_widgets, subTypeId, editorValue]);
 
   return (
     <>
@@ -243,10 +249,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         onComplete={handleUpsertWidget}
         widget={selectedWidget?.widget}
         disabledSteps={[0]}
-        context="fintelTemplate"
-        fintelWidgets={fintel_template_widgets as FintelTemplateWidget[]}
-        fintelEntityType={subTypeId}
-        fintelEditorValue={editorValue ?? ''}
+        host={context}
         initialVariableName={selectedWidget?.variable_name}
       />
 

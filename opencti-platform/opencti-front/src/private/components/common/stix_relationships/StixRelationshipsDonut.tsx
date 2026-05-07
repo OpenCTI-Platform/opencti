@@ -9,7 +9,9 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 export const stixRelationshipsDonutsDistributionQuery = graphql`
   query StixRelationshipsDonutDistributionQuery(
@@ -114,6 +116,7 @@ interface StixRelationshipsDonutProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;
+  host?: WidgetHost;
 }
 
 const StixRelationshipsDonut = ({
@@ -126,15 +129,24 @@ const StixRelationshipsDonut = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    host,
+  });
 
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     let selection;
     let filtersAndOptions;
-    if (dataSelection) {
-      selection = dataSelection[0];
+    if (resolvedDataSelection) {
+      selection = resolvedDataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
     const finalField = selection?.attribute || field || 'entity_type';
@@ -186,6 +198,7 @@ const StixRelationshipsDonut = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

@@ -8,6 +8,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixCoreObjectsMultiHeatMapTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiHeatMapTimeSeriesQuery(
@@ -38,12 +40,18 @@ const StixCoreObjectsMultiHeatMap = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    host,
+  });
 
   const timeSeriesParameters = useMemo(() => {
-    return dataSelection.map((selection) => {
+    return resolvedDataSelection.map((selection) => {
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
@@ -53,7 +61,7 @@ const StixCoreObjectsMultiHeatMap = ({
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
-  }, [dataSelection]);
+  }, [resolvedDataSelection]);
 
   const fallbackDates = useMemo(() => ({
     start: monthsAgo(12),
@@ -68,13 +76,16 @@ const StixCoreObjectsMultiHeatMap = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
 
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiHeatMapTimeSeriesQuery}
         variables={variables}
         render={({ props }) => {
           if (props && props.stixCoreObjectsMultiTimeSeries) {
-            const chartData = dataSelection
+            const chartData = resolvedDataSelection
               .map((selection, i) => ({
                 name: selection.label || t_i18n('Number of entities'),
                 data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
@@ -117,6 +128,7 @@ const StixCoreObjectsMultiHeatMap = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

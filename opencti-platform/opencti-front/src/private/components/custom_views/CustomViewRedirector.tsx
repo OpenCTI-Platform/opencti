@@ -6,16 +6,20 @@ import type { CustomView as CustomViewType } from './CustomViews-types';
 import SlugRedirectHandler, { type SlugRedirectHandlerPageInfo } from '../../../components/SlugRedirectHandler';
 
 interface CustomViewRedirectorProps {
-  entityType: string;
+  entity: { id: string; entity_type: string };
   Fallback: ReactNode;
   indexFallback: ReactNode;
 }
 
-const renderMatch = (info: SlugRedirectHandlerPageInfo) =>
-  <CustomView customViewId={(info as CustomViewType).id} />;
+const renderMatch = (entity: { id: string; entity_type: string }) => {
+  // eslint-disable-next-line react/display-name
+  return (info: SlugRedirectHandlerPageInfo) => {
+    return <CustomView customViewId={(info as CustomViewType).id} entityId={entity.id} entityType={entity.entity_type} />;
+  };
+};
 
-const CustomViewRedirector = ({ entityType, Fallback, indexFallback }: CustomViewRedirectorProps) => {
-  const { customViews } = useCustomViews(entityType);
+const CustomViewRedirector = ({ entity, Fallback, indexFallback }: CustomViewRedirectorProps) => {
+  const { customViews } = useCustomViews(entity.entity_type);
   const pagesInfo = useMemo(() => customViews.reduce(
     (acc, customViewInfo) => ({
       ...acc,
@@ -32,7 +36,7 @@ const CustomViewRedirector = ({ entityType, Fallback, indexFallback }: CustomVie
   }
   return (
     <SlugRedirectHandler
-      renderMatch={renderMatch}
+      renderMatch={renderMatch(entity)}
       NoMatch={Fallback}
       pagesInfo={pagesInfo}
     />

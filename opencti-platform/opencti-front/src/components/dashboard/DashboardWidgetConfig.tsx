@@ -4,16 +4,17 @@ import MenuItem from '@mui/material/MenuItem';
 import VisuallyHiddenInput from '../../private/components/common/VisuallyHiddenInput';
 import WidgetConfig from '../../private/components/widgets/WidgetConfig';
 import { useFormatter } from '../i18n';
-import type { Widget } from '../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../utils/widget/widget';
 
-type WorkspaceWidgetConfigProps = {
+type DashboardWidgetConfigProps = {
   handleImportWidget: (widgetFile: File) => void;
   widget?: Widget;
   onComplete: (value: Widget, variableName?: string) => void;
   closeMenu?: () => void;
+  host: WidgetHost;
 };
 
-const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget }: WorkspaceWidgetConfigProps) => {
+const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget, host }: DashboardWidgetConfigProps) => {
   const { t_i18n } = useFormatter();
   const [isWidgetConfigOpen, setIsWidgetConfigOpen] = useState<boolean>(false);
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null);
@@ -71,7 +72,7 @@ const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
         widget={widget}
         onClose={handleCloseWidgetConfig}
         open={isWidgetConfigOpen}
-        context="workspace"
+        host={host}
       />
     </>
   );

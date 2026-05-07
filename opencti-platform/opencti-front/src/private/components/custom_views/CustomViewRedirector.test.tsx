@@ -42,7 +42,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+            <CustomViewRedirector entity={{ entity_type: 'Intrusion-Set', id }} Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -54,9 +54,10 @@ describe('CustomViewRedirector', () => {
   });
 
   it('renders fallback when no match', () => {
+    const id = 'dc60eb35-a670-4b49-804e-ef38e3655392';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
       allCustomViews: [{
-        id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
+        id,
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
@@ -69,7 +70,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+            <CustomViewRedirector entity={{ entity_type: 'Intrusion-Set', id }} Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -81,9 +82,10 @@ describe('CustomViewRedirector', () => {
   });
 
   it('renders fallback when no match because wrong entity type', () => {
+    const id = 'dc60eb35-a670-4b49-804e-ef38e3655392';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
       allCustomViews: [{
-        id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
+        id,
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
@@ -96,7 +98,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Case-Rft" Fallback="Not matched" indexFallback="Index fallback" />
+            <CustomViewRedirector entity={{ entity_type: 'Case-Rft', id }} Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -124,7 +126,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+            <CustomViewRedirector entity={{ entity_type: 'Intrusion-Set', id }} Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -158,7 +160,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+            <CustomViewRedirector entity={{ entity_type: 'Intrusion-Set', id: defaultCustomViewId }} Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -170,9 +172,10 @@ describe('CustomViewRedirector', () => {
   });
 
   it('renders indexFallback when on index and there is no default view', () => {
+    const id = 'c1ed490c-bb1b-44c5-9e38-46574ed87bd0';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
       allCustomViews: [{
-        id: 'c1ed490c-bb1b-44c5-9e38-46574ed87bd0',
+        id,
         name: 'My other custom view',
         path: 'my-other-custom-view-c1ed490cbb1b44c59e3846574ed87bd0',
         targetEntityType: 'Intrusion-Set',
@@ -185,7 +188,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+            <CustomViewRedirector entity={{ entity_type: 'Intrusion-Set', id }} Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,

@@ -131,7 +131,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
-            entityType="Infrastructure"
+            entity={infrastructure}
             basePath={basePath}
             pages={{
               overview: <Infrastructure data={infrastructure} />,

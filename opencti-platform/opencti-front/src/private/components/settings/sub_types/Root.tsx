@@ -68,7 +68,7 @@ const RootSubType = () => {
         />
         <Route
           path={`/${SUBTYPE_TAB_CUSTOM_VIEWS}/:customViewId`}
-          element={<CustomViewEdition />}
+          element={<CustomViewEdition entityType={subTypeId} />}
         />
         <Route path="*" element={<ErrorNotFound />} />
       </Routes>

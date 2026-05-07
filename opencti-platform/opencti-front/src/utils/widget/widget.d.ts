@@ -1,7 +1,22 @@
 import type { GqlFilterGroup } from '../utils/filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
+import type { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
+import { ReactNode } from 'react';
 
-export type WidgetContext = 'workspace' | 'fintelTemplate';
+export type WidgetHost = {
+  kind: 'workspace';
+} | {
+  kind: 'fintelTemplate';
+  fintelWidgets: FintelTemplateWidget[];
+  fintelEntityType: string;
+  fintelEditorValue: string;
+} | {
+  kind: 'custom-view';
+  customViewTargetEntityType: string;
+  customViewTargetEntityId?: string;
+  previewMode?: boolean;
+  missingHostEntityFiller?: ReactNode;
+};
 
 export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 

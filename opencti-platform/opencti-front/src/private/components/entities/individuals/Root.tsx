@@ -199,7 +199,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              entityType="Individual"
+              entity={individual}
               basePath={basePath}
               pages={{
                 overview: (

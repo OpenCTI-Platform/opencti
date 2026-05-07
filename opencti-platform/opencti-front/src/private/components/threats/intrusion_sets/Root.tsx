@@ -180,7 +180,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              entityType="Intrusion-Set"
+              entity={intrusionSet}
               basePath={basePath}
               pages={{
                 overview:

@@ -9,7 +9,9 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import { resolveLink } from '../../../../utils/Entity';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixCoreObjectsTimelineQuery = graphql`
   query StixCoreObjectsTimelineQuery(
@@ -72,6 +74,7 @@ interface StixCoreObjectsTimelineProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;
+  host?: WidgetHost;
 }
 
 const StixCoreObjectsTimeline = ({
@@ -82,10 +85,19 @@ const StixCoreObjectsTimeline = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    host,
+  });
   const renderContent = () => {
-    const selection = dataSelection[0];
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+    const selection = resolvedDataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
@@ -132,6 +144,7 @@ const StixCoreObjectsTimeline = ({
       title={parameters.title ?? t_i18n('Entities list')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

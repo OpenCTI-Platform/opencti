@@ -9,6 +9,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixCoreObjectsDistributionListDistributionQuery = graphql`
   query StixCoreObjectsDistributionListDistributionQuery(
@@ -90,11 +92,20 @@ const StixCoreObjectsDistributionList = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    host,
+  });
   const renderContent = () => {
-    const selection = dataSelection[0];
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+    const selection = resolvedDataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
     const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
 
@@ -153,6 +164,7 @@ const StixCoreObjectsDistributionList = ({
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

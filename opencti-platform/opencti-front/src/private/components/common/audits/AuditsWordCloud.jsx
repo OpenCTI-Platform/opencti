@@ -24,6 +24,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const auditsWordCloudDistributionQuery = graphql`
   query AuditsWordCloudDistributionQuery(
@@ -86,11 +88,20 @@ const AuditsWordCloud = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    host,
+  });
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -110,7 +121,7 @@ const AuditsWordCloud = ({
         </div>
       );
     }
-    const selection = dataSelection[0];
+    const selection = resolvedDataSelection[0];
     const variables = {
       types: ['History', 'Activity'],
       field: selection.attribute,
@@ -152,6 +163,7 @@ const AuditsWordCloud = ({
       title={parameters.title ?? t_i18n('Distribution of history')}
       variant={variant}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>
@@ -165,6 +177,7 @@ AuditsWordCloud.propTypes = {
   endDate: PropTypes.string,
   dataSelection: PropTypes.array,
   parameters: PropTypes.object,
+  host: PropTypes.object,
 };
 
 export default AuditsWordCloud;

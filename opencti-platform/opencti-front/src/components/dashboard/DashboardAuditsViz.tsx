@@ -13,20 +13,21 @@ import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
-import type { Widget } from '../../utils/widget/widget';
-import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../utils/filters/filtersUtils';
+import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardAuditsVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: DashboardConfig;
+  host?: WidgetHost;
 }
 
 const DashboardAuditsViz = ({
   widget,
   popover,
   config,
+  host,
 }: DashboardAuditsVizProps) => {
   const startDate = config.relativeDate
     ? computerRelativeDate(config.relativeDate)
@@ -36,19 +37,6 @@ const DashboardAuditsViz = ({
     ? formatDate(dayStartDate(null, false))
     : config.endDate;
 
-  let mainEntityTypes = ['Stix-Core-Object'];
-  if (widget.perspective === 'relationships') {
-    mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
-  } else if (widget.perspective === 'audits') {
-    mainEntityTypes = ['History'];
-  }
-  const dataSelection = widget.dataSelection.map((data) => ({
-    ...data,
-    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
-    dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
-    dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
-  }));
-
   switch (widget.type) {
     case 'number':
       return (
@@ -57,154 +45,167 @@ const DashboardAuditsViz = ({
           height={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'list':
       return (
         <AuditsList
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'distribution-list':
       return (
         <AuditsDistributionList
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'vertical-bar':
       return (
         <AuditsMultiVerticalBars
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'line':
       return (
         <AuditsMultiLineChart
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'area':
       return (
         <AuditsMultiAreaChart
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'donut':
       return (
         <AuditsDonut
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'polar-area':
       return (
         <AuditsPolarArea
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'horizontal-bar':
       return (
         <AuditsHorizontalBars
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'radar':
       return (
         <AuditsRadar
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'heatmap':
       return (
         <AuditsMultiHeatMap
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'tree':
       return (
         <AuditsTreeMap
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     case 'wordcloud':
       return (
         <AuditsWordCloud
-          variant={undefined} // because calling js component in ts
+          variant={undefined}
           endDate={endDate}
           startDate={startDate}
-          dataSelection={dataSelection}
+          dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
+          host={host}
         />
       );
     default:
