@@ -343,7 +343,7 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Observables',
           iconType: 'Stix-Cyber-Observable',
           path: 'observables',
-          count: sumEntitiesByKeys(distributions.related, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
+          count: sumEntitiesByKeys(distributions.coreObjects, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
         },
         {
           label: 'Infrastructures',
