@@ -112,7 +112,7 @@ You can also export individual widgets from a Custom View using the **Export wid
 
 ### Import a Custom View
 
-1. Navigate to **Settings > Customization > Custom Views**.
+1. Navigate to **Settings > Customization > Entity type > Custom Views**.
 2. Click **Import configuration**.
 3. Upload the `.json` file previously exported from another instance.
 4. The view is created in a **disabled** state. Review the configuration and enable it when ready.
