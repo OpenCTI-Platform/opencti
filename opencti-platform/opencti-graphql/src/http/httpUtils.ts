@@ -135,6 +135,7 @@ export const buildPublicHelmetParameters = () => {
         objectSrc: buildObjectSrc(),
         frameSrc: allowedFrameSrc,
         frameAncestors: frameAncestorDomains,
+        upgradeInsecureRequests: isUnsecureHttpResourceAllowed() ? null : [],
       },
     },
     // false means disable the header when frame-ancestors allows external domains
@@ -162,6 +163,7 @@ export const buildDefaultHelmetParameters = () => {
         connectSrc: buildConnectSrc(),
         objectSrc: buildObjectSrc(),
         frameAncestors: "'none'",
+        upgradeInsecureRequests: isUnsecureHttpResourceAllowed() ? null : [],
       },
     },
     xFrameOptions: { action: 'deny' },

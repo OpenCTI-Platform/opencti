@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters, buildRateLimiterOptions } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
-import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs } from '../../../src/http/httpConfig';
+import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
 
 describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('encodeOidcState', () => {
@@ -86,6 +86,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrc: ["'self'", "'unsafe-inline'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
+          upgradeInsecureRequests: [],
         },
         useDefaults: true,
       },
@@ -112,6 +113,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrc: ["'self'", "'unsafe-inline'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
+          upgradeInsecureRequests: [],
         },
         useDefaults: true,
       },
@@ -129,7 +131,6 @@ describe('buildHelmetParameters coverage', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(true);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(true);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('https://myctidomain.com');
-
     const publicHelmetParam = buildPublicHelmetParameters();
     expect(publicHelmetParam).toStrictEqual({
       contentSecurityPolicy: {
@@ -145,6 +146,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
+          upgradeInsecureRequests: null,
         },
         useDefaults: true,
       },
@@ -171,6 +173,7 @@ describe('buildHelmetParameters coverage', () => {
           scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
+          upgradeInsecureRequests: null,
         },
         useDefaults: true,
       },
