@@ -125,6 +125,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           startDate={undefined}
           endDate={undefined}
           popover={undefined}
+          host={undefined}
         />
       </Card>
     </div>

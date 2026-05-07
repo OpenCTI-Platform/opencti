@@ -212,6 +212,8 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
+export const customViewsWidgetVisualizationTypes = workspacesWidgetVisualizationTypes;
+
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
 
 export const getCurrentCategory = (type: string | null) => {

@@ -145,7 +145,7 @@ const RootGrouping = () => {
                     enableEnrollPlaybook={true}
                   />
                   <StixDomainObjectMain
-                    entityType="Grouping"
+                    entity={grouping}
                     basePath={basePath}
                     pages={{
                       overview:

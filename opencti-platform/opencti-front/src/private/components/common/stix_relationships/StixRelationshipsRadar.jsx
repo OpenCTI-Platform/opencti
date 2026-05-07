@@ -7,6 +7,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixRelationshipsRadarsDistributionQuery = graphql`
   query StixRelationshipsRadarDistributionQuery(
@@ -111,15 +113,24 @@ const StixRelationshipsRadar = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    host,
+  });
 
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     let selection = {};
     let filtersAndOptions;
-    if (dataSelection) {
-      selection = dataSelection[0];
+    if (resolvedDataSelection) {
+      selection = resolvedDataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
     const finalField = selection.attribute || field || 'entity_type';
@@ -170,6 +181,7 @@ const StixRelationshipsRadar = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

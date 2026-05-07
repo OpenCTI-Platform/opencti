@@ -163,7 +163,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              entityType="Country"
+              entity={country}
               basePath={basePath}
               pages={{
                 overview: <Country countryData={country} />,

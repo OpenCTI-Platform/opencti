@@ -70,6 +70,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
             endDate={null}
             withoutTitle
             popover={undefined}
+            host={undefined}
           />
         </Card>
       </Grid>
