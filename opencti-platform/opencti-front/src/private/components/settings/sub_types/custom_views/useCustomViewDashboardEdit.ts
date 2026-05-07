@@ -91,6 +91,11 @@ const useCustomViewDashboardEdit = ({ customView }: {
         }],
       },
       updater: (store, data) => {
+        // Set the modified manifest in local Relay store
+        // as we have an optim to avoid requerying the manifest
+        // (see commitSaveLayoutMutation) but we want to avoid
+        // displaying the previous layout when re-rendering the
+        // same custom view even for a fraction of a second.
         if (data?.customViewEdit?.id) {
           const record = store.get(data.customViewEdit.id);
           if (record) {
