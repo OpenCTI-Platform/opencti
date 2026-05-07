@@ -10,10 +10,11 @@ import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_dat
 // ---------------------------------------------------------------------------
 const mockCommit = vi.fn();
 
-vi.mock(import('react-relay'), async (importOriginal) => {
-  const actual = await importOriginal();
+vi.mock('react-relay', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-relay')>();
   return {
     ...actual,
+    createFragmentContainer: (component: React.ComponentType) => component,
     useFragment: (_fragment: unknown, data: unknown) => data,
     useMutation: () => [mockCommit, false] as const,
   };
