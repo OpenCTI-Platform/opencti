@@ -10,6 +10,7 @@ import type { CustomViewsSettingsDataTablePaginationQuery } from './__generated_
 import type { CustomViewsSettingsDataTable_data$data } from './__generated__/CustomViewsSettingsDataTable_data.graphql';
 import type { CustomViewsSettingsDataTable_node$data } from './__generated__/CustomViewsSettingsDataTable_node.graphql';
 import CustomViewPopover from './CustomViewPopover';
+import { Tooltip } from '@mui/material';
 
 interface CustomViewsSettingsDataTableProps {
   targetType: string;
@@ -156,12 +157,14 @@ const CustomViewsSettingsDataTable = ({
       actions={(row) => <CustomViewPopover data={row} paginationOptions={queryPaginationOptions} />}
       icon={
         ({ default: def }) => (
-          <Insights sx={{
-            color: def
-              ? 'designSystem.tertiary.yellow.400'
-              : 'designSystem.tertiary.blue.500',
-          }}
-          />
+          <Tooltip title={t_i18n('Default')}>
+            <Insights sx={{
+              color: def
+                ? 'designSystem.tertiary.yellow.400'
+                : 'designSystem.tertiary.blue.500',
+            }}
+            />
+          </Tooltip>
         )
       }
     />
