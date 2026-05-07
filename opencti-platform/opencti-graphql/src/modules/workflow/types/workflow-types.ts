@@ -26,12 +26,37 @@ export type State = string;
 export type Event = string;
 
 /**
+ * A slot tracking one async background action spawned during a pending transition.
+ */
+export interface AsyncActionSlot {
+  id: string;        // UUID generated at trigger time; also stored on the BackgroundTask
+  workId: string;    // The Work entity id for live progress lookup
+  type: string;      // e.g. 'asyncBulkAction'
+  status: 'pending' | 'success' | 'failed';
+}
+
+/**
+ * The full pending-transition record persisted on WorkflowInstance while async tasks run.
+ */
+export interface WorkflowPendingTransition {
+  event: string;
+  toState: string;
+  triggeredBy: string;
+  triggeredAt: string;  // ISO 8601
+  runtimeParams: Record<string, unknown>;
+  asyncActions: AsyncActionSlot[];
+  syncActions: WorkflowActionConfig[];
+}
+
+/**
  * Information available during workflow execution (conditions and side effects).
  */
 export interface Context {
   user?: any;
   entity?: any;
   context?: any;
+  /** Mutable accumulator: asyncBulkAction pushes slots here; engine reads them after phase 1. */
+  pendingAsyncSlots?: AsyncActionSlot[];
   [key: string]: any;
 }
 
@@ -57,8 +82,12 @@ export interface Transition<TContext extends Context = Context> {
   to: State;
   event: Event;
   conditions?: ConditionValidator<TContext>[];
+  /** Phase 1: async effects (background tasks). State does NOT advance until all succeed. */
+  asyncSideEffects?: SideEffect<TContext>[];
+  /** Phase 2: sync effects run after all async succeed (or immediately if no async). */
   onTransition?: SideEffect<TContext>[];
   actionTypes?: string[];
+  requiresOrganizationInput?: boolean;
 }
 
 /**
@@ -93,6 +122,9 @@ export interface TriggerResult {
   status?: any;
   instance?: any;
   entity?: any;
+  /** Present when the transition spawned async background tasks. */
+  executionStatus?: 'pending' | 'completed' | 'error';
+  asyncActionSlots?: AsyncActionSlot[];
 }
 
 /**
@@ -121,8 +153,14 @@ export interface WorkflowSerializedTransition {
   from: string | string[];
   to: string;
   event: string;
+  /** @deprecated Use syncActions instead. Kept for backward compatibility. */
   actions?: WorkflowActionConfig[];
+  /** Phase 1: async background task actions. Run before syncActions. */
+  asyncActions?: WorkflowActionConfig[];
+  /** Phase 2: sync actions. Run after all asyncActions succeed (or immediately if no asyncActions). */
+  syncActions?: WorkflowActionConfig[];
   conditions?: FilterGroup;
+  requiresOrganizationInput?: boolean;
 }
 
 export interface WorkflowDefinitionData {
