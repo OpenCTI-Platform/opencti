@@ -227,7 +227,7 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    await user.type(await screen.findByLabelText('Comment'), 'My mandatory comment');
+    await user.type(await screen.findByLabelText(/Comment/), 'My mandatory comment');
     expect(screen.getByText('Confirm').closest('button')).not.toBeDisabled();
   });
 
@@ -258,7 +258,7 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    await user.type(await screen.findByLabelText('Comment'), 'Hello');
+    await user.type(await screen.findByLabelText(/Comment/), 'Hello');
     expect(screen.getByText('5 / 5000')).toBeDefined();
   });
 
@@ -274,7 +274,7 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    await user.type(await screen.findByLabelText('Comment'), '  my comment  ');
+    await user.type(await screen.findByLabelText(/Comment/), '  my comment  ');
     await user.click(screen.getByText('Confirm'));
     await waitFor(() => {
       expect(mockCommit).toHaveBeenCalledOnce();
@@ -294,7 +294,7 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    await screen.findByLabelText('Comment');
+    await screen.findByLabelText(/Comment/);
     await user.click(screen.getByText('Confirm'));
     await waitFor(() => {
       expect(mockCommit).toHaveBeenCalledOnce();
@@ -314,8 +314,12 @@ describe('WorkflowTransitions', () => {
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
-    await screen.findByText('Confirm');
-    await user.click(screen.getByText('Cancel'));
+    const confirmButton = await screen.findByText('Confirm');
+    // Click the Cancel button that is in the same dialog as the Confirm button
+    const cancelButton = confirmButton.closest('[role="dialog"]')
+      ? confirmButton.closest('[role="dialog"]')!.querySelector('button[type="button"]')
+      : screen.getAllByText('Cancel')[0];
+    await user.click(cancelButton as HTMLElement);
     await waitFor(() => expect(screen.queryByText('Confirm')).toBeNull());
     expect(mockCommit).not.toHaveBeenCalled();
   });
