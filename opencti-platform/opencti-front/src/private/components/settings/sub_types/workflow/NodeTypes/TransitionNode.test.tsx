@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import TransitionNode from './TransitionNode';
 import testRender from '../../../../../../utils/tests/test-render';
-import type { Edge, NodeProps } from 'reactflow';
+import type { Edge, NodeProps, Position } from 'reactflow';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -47,8 +47,8 @@ const makeProps = (dataOverrides: Record<string, unknown> = {}, id = 'transition
   zIndex: 0,
   isConnectable: true,
   dragging: false,
-  sourcePosition: 'bottom' as any,
-  targetPosition: 'top' as any,
+  sourcePosition: 'bottom' as Position,
+  targetPosition: 'top' as Position,
 });
 
 beforeEach(() => {
