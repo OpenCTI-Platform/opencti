@@ -8,6 +8,7 @@ import { isNotEmptyField } from '../../../../../utils/utils';
 export const JsonFormArrayRenderer = (props: ControlProps) => {
   const {
     data,
+    description,
     handleChange,
     path,
     label,
@@ -18,18 +19,25 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
   const { t_i18n } = useFormatter();
 
   // Convert null to empty array for component state
-  const currentValues = data || [];
+  const currentValues = Array.isArray(data) ? data : [];
   const [inputValue, setInputValue] = useState('');
 
+  const normalizeValues = useCallback((values: string[]) => {
+    const splitAndTrimmedValues = values
+      .flatMap((value) => value.split(','))
+      .map((value) => value.trim())
+      .filter((value) => isNotEmptyField(value));
+
+    return Array.from(new Set(splitAndTrimmedValues));
+  }, []);
+
   const handleValuesChange = useCallback((event: React.SyntheticEvent, newValues: string[]) => {
-    const cleanValues = newValues
-      .filter((value) => isNotEmptyField(value))
-      .filter((value, index, arr) => arr.indexOf(value) === index);
+    const cleanValues = normalizeValues(newValues);
 
     const finalValue = cleanValues.length === 0 && schema.default === null ? null : cleanValues;
 
     handleChange(path, finalValue);
-  }, [handleChange, path, schema.default]);
+  }, [handleChange, normalizeValues, path, schema.default]);
 
   const handleInputChange = useCallback((event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue);
@@ -38,21 +46,21 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && inputValue.trim()) {
       event.preventDefault();
-      const newValue = inputValue.trim();
+      const parsedValues = normalizeValues([inputValue]);
+      const newValues = normalizeValues([...currentValues, ...parsedValues]);
 
-      if (!currentValues.includes(newValue)) {
-        const newValues = [...currentValues, newValue];
+      if (newValues.length !== currentValues.length) {
         handleValuesChange(event, newValues);
       }
 
       setInputValue('');
     }
-  }, [inputValue, currentValues, handleValuesChange]);
+  }, [inputValue, normalizeValues, currentValues, handleValuesChange]);
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography component="label" variant="subtitle2" sx={{ fontSize: '10px' }}>{label}</Typography>
-
+      <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>{label}</Typography>
+      <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>{description}</Typography>
       <Autocomplete
         multiple
         freeSolo
