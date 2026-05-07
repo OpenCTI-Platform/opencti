@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { GraphQLError } from 'graphql';
 import workflowResolvers from '../../../src/modules/workflow/api/workflow-resolvers';
 import {
+  getAllowedNextStatuses,
   getAllowedTransitions,
   triggerWorkflowEvent,
 } from '../../../src/modules/workflow/domain/workflow-domain';
@@ -181,4 +183,114 @@ describe('WorkflowTriggerResult resolver – status field', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Query.allowedNextStatuses
+// ---------------------------------------------------------------------------
 
+describe('Query.allowedNextStatuses resolver', () => {
+  it('should delegate to getAllowedNextStatuses and return the result', async () => {
+    const mockStatuses = [
+      { id: 'status-2', template_id: 'status-2' },
+      { id: 'status-3', template_id: 'status-3' },
+    ];
+    (getAllowedNextStatuses as any).mockResolvedValue(mockStatuses);
+
+    const result = await workflowResolvers.Query.allowedNextStatuses({}, { entityId: 'entity-id' }, mockContext);
+
+    expect(getAllowedNextStatuses).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id');
+    expect(result).toEqual(mockStatuses);
+  });
+
+  it('should return an empty array when no next statuses are available', async () => {
+    (getAllowedNextStatuses as any).mockResolvedValue([]);
+
+    const result = await workflowResolvers.Query.allowedNextStatuses({}, { entityId: 'entity-id' }, mockContext);
+
+    expect(result).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mutation.triggerWorkflowEvent – comment validation and normalization
+// ---------------------------------------------------------------------------
+
+describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => {
+  it('should throw GraphQLError when comment exceeds 5000 characters', async () => {
+    const longComment = 'a'.repeat(5001);
+
+    await expect(
+      workflowResolvers.Mutation.triggerWorkflowEvent(
+        {},
+        { entityId: 'entity-id', eventName: 'review', comment: longComment },
+        mockContext,
+      ),
+    ).rejects.toThrow(GraphQLError);
+
+    await expect(
+      workflowResolvers.Mutation.triggerWorkflowEvent(
+        {},
+        { entityId: 'entity-id', eventName: 'review', comment: longComment },
+        mockContext,
+      ),
+    ).rejects.toThrow('Comment exceeds maximum allowed length of 5000 characters.');
+  });
+
+  it('should NOT throw when comment is exactly 5000 characters', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'reviewed', instance: {}, entity: {} });
+    const exactComment = 'a'.repeat(5000);
+
+    await expect(
+      workflowResolvers.Mutation.triggerWorkflowEvent(
+        {},
+        { entityId: 'entity-id', eventName: 'review', comment: exactComment },
+        mockContext,
+      ),
+    ).resolves.not.toThrow();
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(
+      mockContext, mockContext.user, 'entity-id', 'review', exactComment,
+    );
+  });
+
+  it('should trim the comment before passing it to the domain', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'reviewed', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'review', comment: '  trimmed comment  ' },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(
+      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment',
+    );
+  });
+
+  it('should convert null comment to undefined before passing to the domain', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'reviewed', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'review', comment: null },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(
+      mockContext, mockContext.user, 'entity-id', 'review', undefined,
+    );
+  });
+
+  it('should pass undefined when comment is only spaces (trims to empty string)', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'reviewed', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'review', comment: '   ' },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(
+      mockContext, mockContext.user, 'entity-id', 'review', undefined,
+    );
+  });
+});
