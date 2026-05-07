@@ -1,4 +1,4 @@
-import { convertGroupingToStix_2_1 } from './grouping-converter';
+import { convertGroupingToStix_2_0, convertGroupingToStix_2_1 } from './grouping-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
@@ -6,9 +6,9 @@ import { authorizedMembers, authorizedMembersActivationDate } from '../../schema
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 
-import { ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrouping } from './grouping-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING, type Stix2Grouping, type StixGrouping, type StoreEntityGrouping } from './grouping-types';
 
-const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> = {
+const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping, Stix2Grouping> = {
   type: {
     id: 'groupings',
     name: ENTITY_TYPE_CONTAINER_GROUPING,
@@ -53,6 +53,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     return stix.name;
   },
   converter_2_1: convertGroupingToStix_2_1,
+  converter_2_0: convertGroupingToStix_2_0,
 };
 
 registerDefinition(GROUPING_DEFINITION);
