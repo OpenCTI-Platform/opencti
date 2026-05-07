@@ -127,11 +127,7 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
   const indexedVocab = R.indexBy(R.prop('name'), vocabs);
   const lowerCasedVocab = R.indexBy((o) => o.name?.toLowerCase(), vocabs);
   const findOpinionVocab = (opinionName) => {
-    const vocab = indexedVocab[opinionName] || lowerCasedVocab[opinionName.toLowerCase()];
-    if (!vocab) {
-      throw new Error(`The opinion ${opinionName} does not exist in the vocabulary`);
-    }
-    return vocab;
+    return indexedVocab[opinionName] || lowerCasedVocab[opinionName.toLowerCase()];
   };
   const filtersForObjects = {
     mode: 'and',
