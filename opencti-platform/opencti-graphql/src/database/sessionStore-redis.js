@@ -3,6 +3,7 @@ import { LRUCache } from 'lru-cache';
 import AsyncLock from 'async-lock';
 import { clearSessions, extendSession, getSession, getSessionKeys, getSessions, getSessionTtl, killSession, setSession } from './redis';
 import { logApp } from '../config/conf';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const { Store } = session;
 
@@ -50,7 +51,8 @@ class RedisStore extends Store {
   touch(sid, sess, cb = noop) {
     const key = this.prefix + sid;
     const { touchCache } = this;
-    const sessionExtender = (done) => {
+    const sessionExtender = async (done) => {
+      await this._cleanUpSessions();
       const cachedTouch = touchCache.has(`touch-${key}`);
       if (cachedTouch) {
         return done(null, 'OK');
@@ -98,6 +100,22 @@ class RedisStore extends Store {
       return cb(null, keys);
     });
   }
+
+  _cleanUpSessions = async () => {
+    const sessions = await getSessions();
+    for (const session of sessions) {
+      if (session.redis_key_ttl <= 0) {
+        await this.destroy(session.redis_key_id);
+        await publishUserAction({
+          user: { ...session.user, origin: { socket: 'query', user_id: session.user.id } },
+          event_type: 'authentication',
+          event_access: 'administration',
+          event_scope: 'logout',
+          context_data: undefined,
+        });
+      }
+    }
+  };
 }
 
 export default RedisStore;
