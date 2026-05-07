@@ -16,7 +16,7 @@ class RedisStore extends Store {
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
     // ttl < 2mins, divide by 10 to have a more frequent touch, otherwise touch every 2 mins
-    this.touchCache = new LRUCache({ ttl: Math.min(options.ttl / 10, 120000), max: 1000 });
+    this.touchCache = new LRUCache({ ttl: options.ttl < 120000 ? options.ttl / 10 : 120000, max: 1000 });
     this.locker = new AsyncLock();
   }
 
