@@ -11,7 +11,7 @@ import {
   type StreamProcessorOption,
 } from './stream/stream-utils';
 import type { BaseEvent, SseEvent } from '../types/event';
-import { logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { utcDate, utcEpochTime } from '../utils/format';
 import { lockResources } from '../lock/master-lock';
 
@@ -36,6 +36,9 @@ const registerStreamQueue = async (streamName: string) => {
     await assertExchange(STREAM_EXCHANGE, 'direct', { durable: true });
     // 02. Ensure listen queue exists
     const assertStreamQueue = util.promisify(channel.assertQueue).bind(channel);
+    const maxLengthBytes = conf.get('rabbitmq:stream_max_length_bytes') || 20 * 1000 * 1000 * 1000; // 20GB default, RabbitMQ stream max size
+    const maxAge = conf.get('rabbitmq:stream_max_age') || '1M'; // 1 month default, valid units: Y, M, D, h, m, s
+    const maxSegmentSizeBytes = conf.get('rabbitmq:stream_max_segment_size_bytes') || 100000000; // 100MB default, max segment file size on disk, MUST BE SET AT QUEUE DECLARATION
     await assertStreamQueue(streamQueue, {
       exclusive: false,
       durable: true,
@@ -43,9 +46,9 @@ const registerStreamQueue = async (streamName: string) => {
       arguments: {
         name: streamName,
         'x-queue-type': 'stream',
-        'x-max-length-bytes': 20000000000, // in bytes, can be declared as policy (?)
-        'x-max-age': '1M', // valid units: Y, M, D, h, m, s, can be declared as policy (?)
-        'x-stream-max-segment-size-bytes': 100000000, // max segment file size on disk, MUST BE SET AT QUEUE DECLARATION
+        'x-max-length-bytes': maxLengthBytes,
+        'x-max-age': maxAge,
+        'x-stream-max-segment-size-bytes': maxSegmentSizeBytes,
       },
     });
     // 03. bind queue for each connector scope
