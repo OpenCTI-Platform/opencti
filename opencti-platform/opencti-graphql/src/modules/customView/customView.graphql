@@ -16,6 +16,7 @@ type CustomView implements InternalObject & BasicObject {
     enabled: Boolean!
     default: Boolean!
     toWidgetExport(widgetId: ID!): String! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+    toConfigurationExport: String! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
 
 type CustomViewsEdge {
@@ -82,5 +83,6 @@ type Mutation {
     customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewDuplicate(input: CustomViewDuplicateInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewDelete(id: ID!): ID! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewConfigurationImport(targetEntityType: String!, file: Upload!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
 

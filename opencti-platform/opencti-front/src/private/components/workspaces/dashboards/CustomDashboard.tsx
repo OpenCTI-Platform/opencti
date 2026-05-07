@@ -8,10 +8,12 @@ import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../.
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
+import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
+import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -59,6 +61,14 @@ const dashboardFragment = graphql`
   }
 `;
 
+const dashboardExportQuery = graphql`
+    query CustomDashboardExportQuery($id: String!) {
+        workspace(id: $id) {
+            toConfigurationExport
+        }
+    }
+`;
+
 const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
   const data = await fetchQuery(dashboardExportWidgetQuery, { id, widgetId: widget.id })
     .toPromise() as CustomDashboardWidgetExportQuery$data;
@@ -67,6 +77,15 @@ const onExportWidget = async (id: string, widget: { id: string; type: string }) 
     return null;
   }
   return data.workspace.toWidgetExport;
+};
+
+const onExport = async (id: string) => {
+  const data = await fetchQuery(dashboardExportQuery, { id })
+    .toPromise() as CustomDashboardExportQuery$data;
+  if (!data.workspace) {
+    return null;
+  }
+  return data.workspace.toConfigurationExport;
 };
 
 interface CustomDashboardProps {
@@ -120,8 +139,14 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     });
   };
 
-  const helpers = useDashboard({ entity: workspace, onSave, onImportWidget, onExportWidget });
+  const helpers = useDashboard({
+    entity: workspace,
+    onSave,
+    onImportWidget,
+    onExportWidget,
+  });
   const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
+  const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
   return (
     <Stack gap={2}>
       {!noToolbar && (
@@ -129,6 +154,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
           <WorkspaceHeader
             handleAddWidget={handleAddWidget}
             handleImportWidget={handleImportWidget}
+            handleExport={handleExport}
             data={workspace}
             variant="dashboard"
           />

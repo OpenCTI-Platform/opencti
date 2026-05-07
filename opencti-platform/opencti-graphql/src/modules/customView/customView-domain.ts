@@ -1,6 +1,8 @@
+import type { FileHandle } from 'fs/promises';
+import pjson from '../../../package.json';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
+import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type CustomViewExport, type StoreEntityCustomView } from './customView-types';
 import {
   type QueryCustomViewsArgs,
   type CustomViewAddInput,
@@ -27,9 +29,10 @@ import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { FunctionalError } from '../../config/errors';
-import { exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+import { convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
+import { extractContentFrom } from '../../utils/fileToContent';
 
 /**
  * Exclusion list: entity types not capable of
@@ -353,6 +356,62 @@ export const deleteCustomView = async (
     context,
     user,
     customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (element) => ({
+        ...element,
+        manifest: '[sanitized]',
+      }),
+    },
+  );
+};
+
+export const exportCustomView = async (
+  context: AuthContext,
+  user: AuthUser,
+  customView: BasicStoreEntityCustomView,
+) => {
+  const generatedManifest = await convertDashboardManifestIds(context, user, customView.manifest ?? '', 'internal');
+  const exportConfigration: CustomViewExport = {
+    openCTI_version: pjson.version,
+    type: 'custom-view',
+    configuration: {
+      name: customView.name,
+      manifest: generatedManifest,
+    },
+  };
+  return JSON.stringify(exportConfigration);
+};
+
+export const importCustomViewConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetEntityType: string,
+  file: Promise<FileHandle>,
+) => {
+  if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
+    throw FunctionalError(
+      'Custom views cannot be created for given entity type', {
+        entityType: targetEntityType,
+      });
+  }
+  const parsedData: CustomViewExport = await extractContentFrom(file);
+  const { manifest } = parsedData.configuration;
+  // Manifest ids must be rewritten for filters
+  const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
+  const customViewToCreate = {
+    name: parsedData.configuration.name,
+    manifest: generatedManifest,
+    target_entity_type: targetEntityType,
+    slug: slugify(parsedData.configuration.name),
+    default: false,
+    enabled: false,
+  };
+  return createInternalObject<StoreEntityCustomView>(
+    context,
+    user,
+    customViewToCreate,
     ENTITY_TYPE_CUSTOM_VIEW,
     {
       auditLogEnabled: true,

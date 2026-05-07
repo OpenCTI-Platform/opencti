@@ -22,3 +22,8 @@ export interface DashboardLike {
   id: string;
   manifest: string | undefined | null;
 }
+
+export interface ExportableDashboardLike {
+  id: string;
+  name: string;
+}

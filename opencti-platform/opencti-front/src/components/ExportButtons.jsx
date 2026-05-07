@@ -165,6 +165,8 @@ class ExportButtons extends Component {
       handleExportDashboard,
       investigationAddFromContainer,
       navigate,
+      exportToImage = true,
+      exportToPdf = true,
     } = this.props;
     return (
       <UserContext.Consumer>
@@ -176,20 +178,24 @@ class ExportButtons extends Component {
               id="export-buttons"
               style={{ display: 'flex', gap: '8px' }}
             >
-              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-                <Tooltip title={t('Export to image')}>
-                  <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image">
-                    <ImageOutlined fontSize="small" color="primary" />
-                  </ToggleButton>
-                </Tooltip>
-              </Security>
-              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-                <Tooltip title={t('Export to PDF')}>
-                  <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF">
-                    <FilePdfBox fontSize="small" color="primary" />
-                  </ToggleButton>
-                </Tooltip>
-              </Security>
+              {exportToImage && (
+                <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                  <Tooltip title={t('Export to image')}>
+                    <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image">
+                      <ImageOutlined fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                </Security>
+              )}
+              {exportToPdf && (
+                <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                  <Tooltip title={t('Export to PDF')}>
+                    <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF">
+                      <FilePdfBox fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                </Security>
+              )}
               {type === 'dashboard' && handleExportDashboard && (
                 <Tooltip title={t('Export')}>
                   <ToggleButton
@@ -216,7 +222,7 @@ class ExportButtons extends Component {
                   </ToggleButton>
                 </Tooltip>
               )}
-              {type === 'investigation' && (
+              {type === 'investigation' && handleDownloadAsStixReport && (
                 <Tooltip title={t('Download as STIX report')}>
                   <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value="Download-as-STIX-report">
                     <GetAppOutlined fontSize="small" color="primary" />

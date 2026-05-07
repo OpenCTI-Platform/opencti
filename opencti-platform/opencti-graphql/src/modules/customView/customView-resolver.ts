@@ -10,6 +10,8 @@ import {
   exportCustomViewWidget,
   duplicateCustomView,
   deleteCustomView,
+  exportCustomView,
+  importCustomViewConfiguration,
 } from './customView-domain';
 
 const customViewResolver: Resolvers = {
@@ -40,6 +42,9 @@ const customViewResolver: Resolvers = {
     default: (customView) => {
       return Boolean(customView.default);
     },
+    toConfigurationExport: (customView, _, context) => {
+      return exportCustomView(context, context.user, customView);
+    },
   },
   Mutation: {
     customViewAdd: (_, { input }, context) => {
@@ -56,6 +61,9 @@ const customViewResolver: Resolvers = {
     },
     customViewDelete: (_, { id }, context) => {
       return deleteCustomView(context, context.user, id);
+    },
+    customViewConfigurationImport: (_, { targetEntityType, file }, context) => {
+      return importCustomViewConfiguration(context, context.user, targetEntityType, file);
     },
   },
 };

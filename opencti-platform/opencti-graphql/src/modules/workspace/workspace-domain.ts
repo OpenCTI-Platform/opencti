@@ -24,15 +24,13 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
-import { buildPagination, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
-import { convertWidgetsIds } from './workspace-utils';
-import { fromB64, toB64 } from '../../utils/base64';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
-import { checkDashboardConfigurationImport, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -286,27 +284,11 @@ export const workspaceEditContext = async (
   );
 };
 
-// region workspace ids converter_2_1
-// Export => Dashboard filter ids must be converted to standard id
-// Import => Dashboards filter ids must be converted back to internal id
-const convertWorkspaceManifestIds = async (context: AuthContext, user: AuthUser, manifest: string, from: 'internal' | 'stix'): Promise<string> => {
-  const parsedManifest = fromB64(manifest ?? '{}');
-  // Regeneration for dashboards
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
-    const { widgets } = parsedManifest;
-    const widgetDefinitions = Object.values(widgets);
-    await convertWidgetsIds(context, user, widgetDefinitions, from);
-    return toB64(parsedManifest) as string;
-  }
-  return manifest;
-};
-// endregion
-
 export const generateWorkspaceExportConfiguration = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace) => {
   if (workspace.type !== 'dashboard') {
     throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
   }
-  const generatedManifest = await convertWorkspaceManifestIds(context, user, workspace.manifest, 'internal');
+  const generatedManifest = await convertDashboardManifestIds(context, user, workspace.manifest, 'internal');
   const exportConfigration = {
     openCTI_version: pjson.version,
     type: 'dashboard',
@@ -335,7 +317,7 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const { manifest } = parsedData.configuration;
   // Manifest ids must be rewritten for filters
-  const generatedManifest = await convertWorkspaceManifestIds(context, user, manifest, 'stix');
+  const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
   const mappedData = {
     type: parsedData.type,
     openCTI_version: parsedData.openCTI_version,

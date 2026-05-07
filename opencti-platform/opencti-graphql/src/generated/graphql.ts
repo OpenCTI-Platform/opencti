@@ -6449,6 +6449,7 @@ export type CustomView = BasicObject & InternalObject & {
   slug: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   targetEntityType: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
   toWidgetExport: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -16960,6 +16961,7 @@ export type Mutation = {
   csvMapperFieldPatch?: Maybe<CsvMapper>;
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   customViewAdd: CustomView;
+  customViewConfigurationImport: CustomView;
   customViewDelete: Scalars['ID']['output'];
   customViewDuplicate?: Maybe<CustomView>;
   customViewEdit?: Maybe<CustomView>;
@@ -17780,6 +17782,12 @@ export type MutationCsvMapperTestArgs = {
 
 export type MutationCustomViewAddArgs = {
   input: CustomViewAddInput;
+};
+
+
+export type MutationCustomViewConfigurationImportArgs = {
+  file: Scalars['Upload']['input'];
+  targetEntityType: Scalars['String']['input'];
 };
 
 
@@ -43042,6 +43050,7 @@ export type CustomViewResolvers<ContextType = any, ParentType extends ResolversP
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   targetEntityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toWidgetExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<CustomViewToWidgetExportArgs, 'widgetId'>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -46721,6 +46730,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
   customViewAdd?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewAddArgs, 'input'>>;
+  customViewConfigurationImport?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewConfigurationImportArgs, 'file' | 'targetEntityType'>>;
   customViewDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationCustomViewDeleteArgs, 'id'>>;
   customViewDuplicate?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewDuplicateArgs, 'input'>>;
   customViewEdit?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewEditArgs, 'id' | 'input'>>;

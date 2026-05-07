@@ -2174,6 +2174,7 @@
   "Import | Import | Data": "가져오기 | 가져오기 | 데이터",
   "Import a CSV Feed": "CSV 피드 가져오기",
   "Import a CSV mapper": "CSV 매퍼 가져오기",
+  "Import a custom view": "사용자 지정 뷰 가져오기",
   "Import a JSON mapper": "JSON 매퍼 가져오기",
   "Import a RSS Feed": "RSS 피드 가져오기",
   "Import a Taxii Feed": "택시 피드 가져오기",

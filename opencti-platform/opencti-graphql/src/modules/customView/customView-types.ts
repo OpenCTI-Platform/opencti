@@ -41,3 +41,12 @@ export interface StixCustomView extends StixObject {
   };
 }
 // endregion
+
+export interface CustomViewExport {
+  openCTI_version: string;
+  type: 'custom-view';
+  configuration: {
+    name: string;
+    manifest: string;
+  };
+}

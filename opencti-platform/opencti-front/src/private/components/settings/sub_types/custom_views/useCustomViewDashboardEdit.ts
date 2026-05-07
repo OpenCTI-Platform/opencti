@@ -12,6 +12,7 @@ export const customViewQuery = graphql`
   query useCustomViewDashboardEdit_Query($id: ID!) {
     customView(id: $id) {
       id
+      name
       manifest
       ...CustomViewEditionHeader_customView
     }

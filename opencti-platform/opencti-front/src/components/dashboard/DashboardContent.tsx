@@ -6,12 +6,12 @@ import DashboardViz from './DashboardViz';
 import type { DashboardLike } from './dashboard-types';
 import type { WidgetHost } from '../../utils/widget/widget';
 
-interface DashboardContentProps {
-  entity: DashboardLike;
-  isEditable: boolean;
+type DashboardContentProps = {
   helpers: ReturnType<typeof useDashboard>;
   host: WidgetHost;
-}
+  entity: DashboardLike;
+  isEditable: boolean;
+};
 
 const DashboardContent = ({
   entity,
