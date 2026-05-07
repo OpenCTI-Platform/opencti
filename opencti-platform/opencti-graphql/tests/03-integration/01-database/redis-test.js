@@ -8,12 +8,12 @@ import {
   fetchEditContext,
   getLastPlaybookExecutions,
   getRedisVersion,
-  initializeRedisClients,
   lockResource,
   PLAYBOOK_EXECUTIONS_MAX_LENGTH,
   redisClearTelemetry,
   redisGetForgotPasswordOtp,
   redisGetTelemetry,
+  redisInit,
   redisPlaybookUpdate,
   redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
@@ -29,7 +29,7 @@ describe('Redis basic and utils', () => {
   });
 
   it('should initializeRedisClients initializes without error', async () => {
-    await expect(initializeRedisClients()).resolves.not.toThrow();
+    await expect(redisInit()).resolves.not.toThrow();
   });
 
   it('should redis telemetry add, get and clean work', async () => {
