@@ -224,8 +224,8 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
  */
 export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string | undefined, version: string) => {
   const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260428.0'; // to update after merge of playbook scope feature
-  if (!playbookDefinition) {
-    return;
+  if (!playbookDefinition || isCompatibleVersionWithMinimal(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
+    return playbookDefinition;
   }
 
   const listOfScopedPlaybookComponents = [
@@ -240,44 +240,41 @@ export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string
     PLAYBOOK_UNSHARING_COMPONENT.id,
   ];
 
-  if (!isCompatibleVersionWithMinimal(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
-    const parsedPlaybookDefinition: ComponentDefinition = JSON.parse(playbookDefinition);
+  const parsedPlaybookDefinition: ComponentDefinition = JSON.parse(playbookDefinition);
 
-    const updateNode = (node: NodeDefinition) => {
-      const configuration = JSON.parse(node.configuration);
-      const { all, excludeMainElement, ...restOfConfig } = configuration;
+  const updateNode = (node: NodeDefinition) => {
+    const configuration = JSON.parse(node.configuration);
+    const { all, excludeMainElement, ...restOfConfig } = configuration;
 
-      let finalConfig;
+    let finalConfig;
 
-      if (!listOfScopedPlaybookComponents.includes(node.component_id)) {
-        finalConfig = configuration;
-      } else if (configuration?.applyToElements) {
-        finalConfig = restOfConfig;
-      } else if (all === true) {
-        finalConfig = {
-          ...restOfConfig,
-          applyToElements: excludeMainElement
-            ? playbookBundleElementsToApply.allExceptMain.value
-            : playbookBundleElementsToApply.allElements.value,
-        };
-      } else {
-        finalConfig = {
-          ...restOfConfig,
-          applyToElements: playbookBundleElementsToApply.onlyMain.value,
-        };
-      }
-
-      return {
-        ...node,
-        configuration: JSON.stringify(finalConfig),
+    if (!listOfScopedPlaybookComponents.includes(node.component_id)) {
+      finalConfig = configuration;
+    } else if (configuration?.applyToElements) {
+      finalConfig = restOfConfig;
+    } else if (all === true) {
+      finalConfig = {
+        ...restOfConfig,
+        applyToElements: excludeMainElement
+          ? playbookBundleElementsToApply.allExceptMain.value
+          : playbookBundleElementsToApply.allElements.value,
       };
+    } else {
+      finalConfig = {
+        ...restOfConfig,
+        applyToElements: playbookBundleElementsToApply.onlyMain.value,
+      };
+    }
+
+    return {
+      ...node,
+      configuration: JSON.stringify(finalConfig),
     };
-    const nodes = parsedPlaybookDefinition.nodes.map((node: any) => updateNode(node));
-    const finalPlaybookDefinition = JSON.stringify({
-      ...parsedPlaybookDefinition,
-      nodes,
-    });
-    return finalPlaybookDefinition;
-  }
-  return playbookDefinition;
+  };
+  const nodes = parsedPlaybookDefinition.nodes.map((node: any) => updateNode(node));
+  const finalPlaybookDefinition = JSON.stringify({
+    ...parsedPlaybookDefinition,
+    nodes,
+  });
+  return finalPlaybookDefinition;
 };
