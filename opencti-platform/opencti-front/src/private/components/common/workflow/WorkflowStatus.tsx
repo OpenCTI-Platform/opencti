@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import { Alert, AlertTitle, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip } from '@mui/material';
-import { ArrowDropDownOutlined, ReviewsOutlined } from '@mui/icons-material';
+import { ArrowDropDownOutlined, CommentOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
 import Button from '../../../../components/common/button/Button';
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
@@ -14,7 +14,7 @@ import Transition from '../../../../components/Transition';
 import Dialog from '@common/dialog/Dialog';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 
-const COMMENT_MAX_LENGTH = 5000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-graphql/src/modules/workflow/api/workflow-resolvers.ts
+const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-graphql/src/modules/workflow/api/workflow-resolvers.ts
 
 export const workflowStatusFragment = graphql`
   fragment WorkflowStatus_data on DraftWorkspace {
@@ -109,7 +109,7 @@ const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) =
     <>
       {lastComment && (
         <Tooltip title={lastComment} arrow>
-          <ReviewsOutlined fontSize="small" sx={{ marginRight: 0.5, color: 'text.secondary' }} />
+          <CommentOutlined fontSize="small" sx={{ marginRight: 0.5, color: 'text.secondary' }} />
         </Tooltip>
       )}
       <ItemStatus status={currentStatus} />
