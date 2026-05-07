@@ -13,8 +13,8 @@ describe('NotionLikeRedirector', () => {
           element={(
             <SlugRedirectHandler
               pagesInfo={{
-                '6e007ff3e3df41c6bfa016862be6cd4d': {
-                  path: 'some-path-6e007ff3e3df41c6bfa016862be6cd4d',
+                '6e007ff3-e3df-41c6-bfa0-16862be6cd4d': {
+                  path: 'some-path-6e007ff3-e3df-41c6-bfa0-16862be6cd4d',
                 },
               }}
               renderMatch={() => 'Yes'}
@@ -24,7 +24,7 @@ describe('NotionLikeRedirector', () => {
         />
       </Routes>,
       {
-        route: 'some-path-6e007ff3e3df41c6bfa016862be6cd4d',
+        route: 'some-path-6e007ff3-e3df-41c6-bfa0-16862be6cd4d',
       },
     );
     expect(screen.getByText('Yes')).toBeInTheDocument();
@@ -38,8 +38,8 @@ describe('NotionLikeRedirector', () => {
           element={(
             <SlugRedirectHandler
               pagesInfo={{
-                '6e007ff3e3df41c6bfa016862be6cd4d': {
-                  path: 'some-path-6e007ff3e3df41c6bfa016862be6cd4d',
+                '6e007ff3-e3df-41c6-bfa0-16862be6cd4d': {
+                  path: 'some-path-6e007ff3-e3df-41c6-bfa0-16862be6cd4d',
                 },
               }}
               renderMatch={() => 'Yes'}
@@ -49,7 +49,7 @@ describe('NotionLikeRedirector', () => {
         />
       </Routes>,
       {
-        route: 'old-slug-6e007ff3e3df41c6bfa016862be6cd4d',
+        route: 'old-slug-6e007ff3-e3df-41c6-bfa0-16862be6cd4d',
       },
     );
     expect(screen.getByText('Yes')).toBeInTheDocument();
@@ -63,8 +63,8 @@ describe('NotionLikeRedirector', () => {
           element={(
             <SlugRedirectHandler
               pagesInfo={{
-                '6e007ff3e3df41c6bfa016862be6cd4d': {
-                  path: 'some-path-6e007ff3e3df41c6bfa016862be6cd4d',
+                '6e007ff3-e3df-41c6-bfa0-16862be6cd4d': {
+                  path: 'some-path-6e007ff3-e3df-41c6-bfa0-16862be6cd4d',
                 },
               }}
               renderMatch={() => 'Yes'}
@@ -74,7 +74,7 @@ describe('NotionLikeRedirector', () => {
         />
       </Routes>,
       {
-        route: 'some-path-164a91d4fd574484b29a9c1b3da487eb',
+        route: 'some-path-164a91d4-fd57-4484-b29a-9c1b3da487eb',
       },
     );
     expect(screen.getByText('No')).toBeInTheDocument();

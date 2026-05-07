@@ -1,4 +1,4 @@
-import React, { CSSProperties, FocusEvent, useState } from 'react';
+import React, { CSSProperties, FocusEvent, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
 import { FieldInputProps, FormikProps, useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
@@ -46,6 +46,8 @@ const MarkdownField = (props: MarkdownFieldProps) => {
   const [field, meta] = useField(name);
   const { fullyActive } = useAI();
 
+  const initialValueOnFocus = useRef<string | null>(null);
+
   const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
     const { nodeName } = (event.relatedTarget as HTMLElement) || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
@@ -53,15 +55,19 @@ const MarkdownField = (props: MarkdownFieldProps) => {
         onFocus(name);
       }
     }
+    if (initialValueOnFocus.current === null) {
+      initialValueOnFocus.current = field.value ?? '';
+    }
   };
 
   const internalOnBlur = (event: FocusEvent<HTMLDivElement>) => {
     const isClickOutsideCurrentField = !event.currentTarget.contains(event.relatedTarget);
     if (isClickOutsideCurrentField) {
       setFieldTouched(name, true);
-      if (typeof onSubmit === 'function') {
+      if (typeof onSubmit === 'function' && field.value !== initialValueOnFocus.current) {
         onSubmit(name, field.value || '');
       }
+      initialValueOnFocus.current = null;
     }
   };
 

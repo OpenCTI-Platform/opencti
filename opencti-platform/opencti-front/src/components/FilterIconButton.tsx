@@ -29,7 +29,7 @@ export interface FilterIconButtonProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  context?: WidgetHost;
+  host?: WidgetHost;
   hasSavedFilters?: boolean;
 }
 
@@ -58,7 +58,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  context,
+  host,
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
@@ -93,7 +93,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
-            context={context}
+            host={host}
             hasSavedFilters={hasSavedFilters}
             filterChipsParams={filterChipsParams}
             setFilterChipsParams={setFilterChipsParams}
@@ -132,7 +132,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  context,
+  host,
   hasSavedFilters,
 }) => {
   const hasRenderedRef = useRef(false);
@@ -173,7 +173,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         searchContext={searchContext}
         availableEntityTypes={availableEntityTypes}
         availableRelationshipTypes={availableRelationshipTypes}
-        context={context}
+        host={host}
         hasSavedFilters={hasSavedFilters}
         filterChipsParams={filterChipsParams}
         setFilterChipsParams={setFilterChipsParams}

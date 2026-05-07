@@ -51,7 +51,7 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  context?: WidgetHost;
+  host?: WidgetHost;
 }
 
 export interface FilterChipsParameter {
@@ -103,7 +103,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
-  context,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -248,10 +248,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
 
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
-    const shouldAddSelfIdInFintelTemplates = context?.kind === 'fintelTemplate'
+    const shouldAddSelfIdInFintelTemplates = host?.kind === 'fintelTemplate'
       && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'))
       && (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) => completedTypesWithFintelTemplates.includes(type));
-    const shouldAddSelfIdInCustomViews = context?.kind === 'custom-view'
+    const shouldAddSelfIdInCustomViews = host?.kind === 'custom-view'
       && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'));
     const shouldAddSelfId = shouldAddSelfIdInFintelTemplates || shouldAddSelfIdInCustomViews;
 

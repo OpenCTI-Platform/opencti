@@ -8,6 +8,7 @@ import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
 import { FilterDefinition } from '../utils/hooks/useAuth';
 import useAttributes from '../utils/hooks/useAttributes';
+import type { WidgetHost } from '../utils/widget/widget';
 
 export const filterValuesContentQuery = graphql`
     query FilterValuesContentQuery($filters: FilterGroup!, $isMeValueForbidden: Boolean) {
@@ -27,11 +28,12 @@ interface FilterValuesContentProps {
   value?: string | null;
   filterDefinition?: FilterDefinition;
   filterOperator?: string;
+  host?: WidgetHost;
 }
 
 const FilterValuesContent: FunctionComponent<
   FilterValuesContentProps
-> = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator }) => {
+> = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator, host }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes } = useAttributes();
   const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
@@ -49,6 +51,11 @@ const FilterValuesContent: FunctionComponent<
     );
   }
   if (displayedValue === SELF_ID_VALUE) {
+    const tooltipMessage = host?.kind === 'fintelTemplate'
+      ? t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the entity in which the template is used.')
+      : host?.kind === 'custom-view'
+        ? t_i18n('Current entity refers to the entity in which the users will view the Custom View. Removing this filter means you will lose the context of the entity in which the Custom View is viewed.')
+        : undefined;
     displayedValue = (
       <Stack
         direction="row"
@@ -56,11 +63,11 @@ const FilterValuesContent: FunctionComponent<
         gap={0.5}
       >
         <span>{displayedValue}</span>
-        <Tooltip
-          title={t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the entity in which the template is used.')}
-        >
-          <InformationOutline color="primary" fontSize="small" />
-        </Tooltip>
+        {tooltipMessage && (
+          <Tooltip title={tooltipMessage}>
+            <InformationOutline color="primary" fontSize="small" />
+          </Tooltip>
+        )}
       </Stack>
     );
   }
