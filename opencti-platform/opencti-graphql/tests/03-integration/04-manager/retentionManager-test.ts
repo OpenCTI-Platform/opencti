@@ -18,7 +18,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '.
 import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
 import { ENTITY_TYPE_ACTIVITY } from '../../../src/schema/internalObject';
 import { BASE_TYPE_ENTITY } from '../../../src/schema/general';
-import { generateInternalId, generateStandardId } from '../../../src/schema/identifier';
+import { generateInternalId } from '../../../src/schema/identifier';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -478,7 +478,7 @@ describe('Retention Manager tests ', () => {
     const activityDate = utcDate().subtract(5, 'minutes').toDate();
     const activityEntry = {
       internal_id: activityId,
-      standard_id: generateStandardId(ENTITY_TYPE_ACTIVITY, { internal_id: activityId }),
+      standard_id: activityId,
       base_type: BASE_TYPE_ENTITY,
       entity_type: ENTITY_TYPE_ACTIVITY,
       event_type: 'mutation',
@@ -509,7 +509,7 @@ describe('Retention Manager tests ', () => {
     const activityDate = utcDate().subtract(5, 'minutes').toDate();
     const activityEntry = {
       internal_id: activityId,
-      standard_id: generateStandardId(ENTITY_TYPE_ACTIVITY, { internal_id: activityId }),
+      standard_id: activityId,
       base_type: BASE_TYPE_ENTITY,
       entity_type: ENTITY_TYPE_ACTIVITY,
       event_type: 'authentication',
