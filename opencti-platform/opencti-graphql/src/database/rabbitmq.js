@@ -676,7 +676,7 @@ export const unregisterExchanges = async () => {
 
 export const rabbitMQIsAlive = async () => {
   logApp.info('[CHECK] Checking if RabbitMq is available');
-  const assertExchangeResult = amqpExecute(async (channel) => {
+  const assertExchangeResult = await amqpExecute(async (channel) => {
     const assertExchange = util.promisify(channel.assertExchange).bind(channel);
     return assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
   }).catch(

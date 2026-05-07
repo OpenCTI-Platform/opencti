@@ -1,4 +1,4 @@
-import { describe, it, vi, expect } from 'vitest';
+import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest';
 import * as engineMock from '../../src/database/engine';
 import { checkSystemDependencies } from '../../src/boot-utils';
 import * as fileStorageMock from '../../src/database/raw-file-storage';
@@ -8,7 +8,15 @@ import * as SMTPMock from '../../src/database/smtp';
 import * as pythonMock from '../../src/python/pythonBridge';
 
 describe('Initialization unit test', () => {
-  it('should all dependencies be checked', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should all dependencies be verified without errors', async () => {
     // It's not only doing check but also init.
     // We don't want to init twice (see globalSetup.js) so Mocking them
     vi.spyOn(engineMock, 'searchEngineInit').mockResolvedValue(true);
@@ -21,9 +29,7 @@ describe('Initialization unit test', () => {
     expect(initResult).toBeTruthy();
   });
 
-  it('should one dependency check throwing exception be rethrow', async () => {
-    // It's not only doing check but also init.
-    // We don't want to init twice (see globalSetup.js) so Mocking them
+  it('should storageInit check throwing exception be rethrow and stop', async () => {
     vi.spyOn(engineMock, 'searchEngineInit').mockResolvedValue(true);
     vi.spyOn(fileStorageMock, 'storageInit').mockRejectedValue('Storage error for testing purpose');
     vi.spyOn(rabbitMqMock, 'rabbitMQIsAlive').mockResolvedValue(true);

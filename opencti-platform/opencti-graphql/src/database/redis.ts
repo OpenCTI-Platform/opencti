@@ -309,7 +309,7 @@ export const redisIsAlive = async () => {
   }
 };
 export const redisInit = async () => {
-  logApp.info('[CHECK] Checking if Search engine is available');
+  logApp.info('[CHECK] Checking if Redis is available');
   try {
     await initializeRedisClients();
     await redisIsAlive();
