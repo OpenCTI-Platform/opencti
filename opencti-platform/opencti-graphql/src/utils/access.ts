@@ -678,12 +678,13 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
-
-  if (isServiceAccountUser(user)) {
+  // Service accounts respect explicit admin rights; otherwise fallback to "edit" to allow read/write access on restricted elements
+  const userAccessRight = getExplicitUserAccessRight(user, element);
+  if ((!userAccessRight || userAccessRight != MEMBER_ACCESS_RIGHT_ADMIN) && isServiceAccountUser(user)) {
     return MEMBER_ACCESS_RIGHT_EDIT;
   }
 
-  return getExplicitUserAccessRight(user, element);
+  return userAccessRight;
 };
 
 export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
