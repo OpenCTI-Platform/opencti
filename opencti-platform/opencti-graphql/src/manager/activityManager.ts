@@ -80,9 +80,9 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
   }
 };
 
-export const buildActivityHistoryElements = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
+const historyIndexing = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
   const markingDefinitions = await getEntitiesMapFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return events.filter((e) => !e.data.prevent_indexing)
+  const historyElements = events.filter((e) => !e.data.prevent_indexing)
     .map((event: SseEvent<ActivityStreamEvent>) => {
       const [time] = event.id.split('-');
       const eventDate = utcDate(parseInt(time, 10)).toISOString();
@@ -114,10 +114,6 @@ export const buildActivityHistoryElements = async (context: AuthContext, events:
         'rel_granted.internal_id': event.data.data.granted_refs_ids,
       };
     });
-};
-
-const historyIndexing = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
-  const historyElements = await buildActivityHistoryElements(context, events);
   // Bulk the history data insertions
   return elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, historyElements);
 };
