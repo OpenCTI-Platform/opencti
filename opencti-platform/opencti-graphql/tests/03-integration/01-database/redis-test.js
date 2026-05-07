@@ -8,6 +8,7 @@ import {
   fetchEditContext,
   getLastPlaybookExecutions,
   getRedisVersion,
+  initializeRedisClients,
   lockResource,
   PLAYBOOK_EXECUTIONS_MAX_LENGTH,
   redisClearTelemetry,
@@ -25,6 +26,10 @@ describe('Redis basic and utils', () => {
     // Just wait one second to let redis client initialize
     const redisVersion = await getRedisVersion();
     expect(redisVersion).toMatch(/^7|8\./g);
+  });
+
+  it('should initializeRedisClients initializes without error', async () => {
+    await expect(initializeRedisClients()).resolves.not.toThrow();
   });
 
   it('should redis telemetry add, get and clean work', async () => {
