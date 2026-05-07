@@ -6,15 +6,27 @@ import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
+import { generateInternalId } from '../../../schema/identifier';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
+import { createListTask } from '../../../domain/backgroundTask-common';
 import { WorkflowFactory } from '../engine/workflow-factory';
-import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from '../types/workflow-types';
-
+import {
+  ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ENTITY_TYPE_WORKFLOW_INSTANCE,
+  type AsyncActionSlot,
+  type TriggerResult,
+  type WorkflowActionConfig,
+  type WorkflowPendingTransition,
+} from '../types/workflow-types';
 import { validateWorkflowDefinitionData } from '../workflow-validation';
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
   history: string;
+  pendingStatus?: string | null;
+  pendingError?: string | null;
+  pendingTransition?: string | null;
+  entity_id: string;
 }
 
 const getWorkflowConfig = async (context: AuthContext, user: AuthUser, targetType: string) => {
@@ -175,7 +187,7 @@ export const deleteWorkflowDefinition = async (
 };
 
 /**
- * Get workflow instance for an entity.
+ * Get workflow instance for an entity, with live pending transition data.
  */
 export const getWorkflowInstance = async (
   context: AuthContext,
@@ -199,12 +211,47 @@ export const getWorkflowInstance = async (
 
   const allowedTransitions = await getAllowedTransitions(context, user, entityId);
   const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
+
+  // Parse pending transition and enrich with live Work data
+  let pendingTransitionData: WorkflowPendingTransition | null = null;
+  if (instanceEntity?.pendingTransition) {
+    try {
+      const raw: WorkflowPendingTransition = typeof instanceEntity.pendingTransition === 'string'
+        ? JSON.parse(instanceEntity.pendingTransition)
+        : instanceEntity.pendingTransition;
+
+      // Enrich each slot with live Work entity data (no work.js import — generic loader)
+      const enrichedSlots = await Promise.all(
+        raw.asyncActions.map(async (slot) => {
+          if (!slot.workId) return slot;
+          const workEntity = await storeLoadById<any>(context, user, slot.workId, 'Work').catch(() => null);
+          if (!workEntity) return slot;
+          return {
+            ...slot,
+            processedCount: workEntity.completed_number ?? 0,
+            expectedCount: workEntity.import_expected_number ?? 0,
+            startedAt: workEntity.received_time ?? null,
+            lastActivityAt: workEntity.updated_at ?? null,
+            errors: (workEntity.errors ?? []).slice(0, 100),
+            workStatus: workEntity.status ?? null,
+          };
+        }),
+      );
+      pendingTransitionData = { ...raw, asyncActions: enrichedSlots };
+    } catch {
+      // Malformed JSON — surface as null, admin can use clearWorkflowPendingState
+    }
+  }
+
   return {
     id,
     internal_id: id,
     __typename: 'WorkflowInstance',
     currentState: currentState || '',
     allowedTransitions,
+    pendingStatus: instanceEntity?.pendingStatus ?? null,
+    pendingError: instanceEntity?.pendingError ?? null,
+    pendingTransition: pendingTransitionData,
   };
 };
 
@@ -245,6 +292,7 @@ export const getAllowedTransitions = async (
       event: transition.event,
       toState: transition.to,
       actions: transition.actionTypes || [],
+      requiresOrganizationInput: transition.requiresOrganizationInput ?? false,
     };
   });
 
@@ -271,6 +319,7 @@ export const getAllowedNextStatuses = async (
  * @param user The auth user
  * @param entityId The ID of the entity to trigger the event on
  * @param eventName The name of the event to trigger
+ * @param runtimeParams Optional runtime parameters (e.g. organizationIds for share actions). Persisted for retry.
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
 export const triggerWorkflowEvent = async (
@@ -278,6 +327,7 @@ export const triggerWorkflowEvent = async (
   user: AuthUser,
   entityId: string,
   eventName: string,
+  runtimeParams: Record<string, unknown> = {},
 ): Promise<TriggerResult> => {
   // 1. Fetch the entity
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
@@ -300,48 +350,118 @@ export const triggerWorkflowEvent = async (
     const executionContext = bypassDraftContext(context);
     const executionUser = executionContext.user!;
 
-    const workflowContext = {
-      entity,
-      user: executionUser,
-      context: executionContext,
-    };
-
     const effectiveEntityId = entity.internal_id || entity.id;
     let instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
     if (!instanceEntity) {
       instanceEntity = await initializeWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
     }
-    const currentStateId = instanceEntity.currentState;
 
+    // 3. Lock check: reject new events while a transition is already pending
+    if (instanceEntity.pendingStatus === 'pending') {
+      return {
+        success: false,
+        reason: 'A workflow transition is already pending for this entity. Wait for it to complete, retry the failed action, or ask an admin to clear the pending state.',
+      };
+    }
+
+    const currentStateId = instanceEntity.currentState;
     const definition = WorkflowFactory.createDefinition(definitionData);
 
-    // 5. Create instance and Trigger the event
+    // 4. Inject createListTask and instance metadata into context for asyncBulkAction
+    const workflowContext = {
+      entity,
+      user: executionUser,
+      context: executionContext,
+      runtimeParams,
+      __createListTask: createListTask,
+      __workflowInstanceId: instanceEntity.internal_id || instanceEntity.id,
+    };
+
+    // 5. Create instance and trigger the event
     const instance = WorkflowFactory.getInstance(definitionData, definition, currentStateId || '', workflowContext);
     const result = await instance.trigger(eventName);
 
-    // 6. If successful, update the database
-    if (result.success && instanceEntity) {
-      const newState = instance.getCurrentState();
+    if (!result.success) {
+      return { ...result, entity };
+    }
 
-      // Update the instance entity
-      const history = JSON.parse(instanceEntity.history || '[]');
-      history.push({
-        state: newState,
-        user_id: user.id,
-        timestamp: new Date().toISOString(),
-        event: eventName,
+    const instanceId = instanceEntity.internal_id || instanceEntity.id;
+
+    // 6a. Async transition: persist pendingTransition, do NOT advance state
+    if (result.executionStatus === 'pending' && result.asyncActionSlots && result.asyncActionSlots.length > 0) {
+      // Build canonical slots with stable UUIDs (the action pushed task.id as a temp id)
+      const rawSlots: AsyncActionSlot[] = result.asyncActionSlots.map((rawSlot: any) => {
+        const slotId = generateInternalId();
+        return {
+          id: slotId,
+          workId: rawSlot.workId,
+          type: rawSlot.type,
+          status: 'pending' as const,
+        };
       });
-      const instanceId = instanceEntity.internal_id || instanceEntity.id;
+
+      // Get the serialized transition to persist its syncActions for phase-2 execution
+      const serializedTransitions: WorkflowActionConfig[] = definitionData.transitions
+        ?.find((t: any) => {
+          const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+          return fromStates.includes(currentStateId) && t.event === eventName;
+        })?.syncActions ?? definitionData.transitions
+        ?.find((t: any) => {
+          const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+          return fromStates.includes(currentStateId) && t.event === eventName;
+        })?.actions ?? [];
+
+      const targetTransition = definitionData.transitions?.find((t: any) => {
+        const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+        return fromStates.includes(currentStateId) && t.event === eventName;
+      });
+
+      const pendingTransition: WorkflowPendingTransition = {
+        event: eventName,
+        toState: targetTransition?.to ?? instance.getCurrentState(),
+        triggeredBy: user.id,
+        triggeredAt: new Date().toISOString(),
+        runtimeParams,
+        asyncActions: rawSlots,
+        syncActions: serializedTransitions,
+      };
+
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-        { key: 'currentState', value: [newState] },
-        { key: 'history', value: [JSON.stringify(history)] },
+        { key: 'pendingStatus', value: ['pending'] },
+        { key: 'pendingError', value: [null] },
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       ]);
 
       const workflowInstance = await getWorkflowInstance(context, user, entityId);
-      return { success: true, newState, instance: workflowInstance, entity };
+      return {
+        success: true,
+        executionStatus: 'pending',
+        instance: workflowInstance,
+        entity,
+      };
     }
 
-    return { ...result, entity };
+    // 6b. Sync-only transition: state already advanced by engine — persist the new state
+    const newState = instance.getCurrentState();
+    let history: any[];
+    try {
+      history = JSON.parse(instanceEntity.history || '[]');
+    } catch {
+      history = [];
+    }
+    history.push({
+      state: newState,
+      user_id: user.id,
+      timestamp: new Date().toISOString(),
+      event: eventName,
+    });
+    await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'currentState', value: [newState] },
+      { key: 'history', value: [JSON.stringify(history)] },
+    ]);
+
+    const workflowInstance = await getWorkflowInstance(context, user, entityId);
+    return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';
     return {
@@ -370,4 +490,122 @@ export const isStatusTemplateUsedInWorkflows = async (
     }
   }
   return false;
+};
+
+/**
+ * Re-enqueue only the failed async action slots of a pending transition.
+ * Available when pendingStatus = 'error'. Reuses stored runtimeParams — no user re-prompt.
+ */
+export const retryPendingWorkflowTransitionActions = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+): Promise<TriggerResult> => {
+  const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
+  if (!entity) throw FunctionalError('Entity not found', { entityId });
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+  const effectiveEntityId = entity.internal_id || entity.id;
+  const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
+
+  if (!instanceEntity) throw FunctionalError('No workflow instance found for entity', { entityId });
+  if (instanceEntity.pendingStatus !== 'error') {
+    return { success: false, reason: 'Retry is only available when pendingStatus is "error"' };
+  }
+
+  let pendingTransition: WorkflowPendingTransition;
+  try {
+    pendingTransition = typeof instanceEntity.pendingTransition === 'string'
+      ? JSON.parse(instanceEntity.pendingTransition)
+      : instanceEntity.pendingTransition;
+  } catch {
+    throw FunctionalError('pendingTransition is malformed; use clearWorkflowPendingState to reset');
+  }
+
+  const updatedSlots: AsyncActionSlot[] = [];
+
+  for (const slot of pendingTransition.asyncActions) {
+    if (slot.status !== 'failed') {
+      updatedSlots.push(slot); // success/pending slots pass through unchanged
+      continue;
+    }
+
+    // Re-enqueue the failed task with new UUIDs (old task remains but is orphaned)
+    const newSlotId = generateInternalId();
+    const task = await createListTask(executionContext, executionUser, {
+      scope: 'KNOWLEDGE',
+      description: `Workflow retry: ${pendingTransition.event}`,
+      actions: [],
+      ids: [effectiveEntityId],
+      workflow_instance_id: instanceEntity.internal_id || instanceEntity.id,
+      workflow_action_id: newSlotId,
+    });
+
+    updatedSlots.push({
+      id: newSlotId,
+      workId: task.work_id ?? '',
+      type: slot.type,
+      status: 'pending',
+    });
+  }
+
+  const updatedPendingTransition: WorkflowPendingTransition = {
+    ...pendingTransition,
+    asyncActions: updatedSlots,
+  };
+
+  const instanceId = instanceEntity.internal_id || instanceEntity.id;
+  await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+    { key: 'pendingStatus', value: ['pending'] },
+    { key: 'pendingError', value: [null] },
+    { key: 'pendingTransition', value: [JSON.stringify(updatedPendingTransition)] },
+  ]);
+
+  const workflowInstance = await getWorkflowInstance(context, user, entityId);
+  return { success: true, executionStatus: 'pending', instance: workflowInstance, entity };
+};
+
+/**
+ * Admin escape hatch: force-clear the pending state of a workflow instance.
+ * Leaves currentState unchanged. Logs the intervention in history for audit.
+ * Any still-running background tasks become orphaned (admin's conscious decision).
+ */
+export const clearWorkflowPendingState = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+): Promise<any> => {
+  const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
+  if (!entity) throw FunctionalError('Entity not found', { entityId });
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+  const effectiveEntityId = entity.internal_id || entity.id;
+  const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
+  if (!instanceEntity) throw FunctionalError('No workflow instance found for entity', { entityId });
+
+  let historyArr: any[];
+  try {
+    historyArr = JSON.parse(instanceEntity.history || '[]');
+  } catch {
+    historyArr = [];
+  }
+  historyArr.push({
+    state: instanceEntity.currentState,
+    user_id: user.id,
+    timestamp: new Date().toISOString(),
+    event: 'admin_clear_pending_state',
+    note: 'Admin force-cleared pending workflow transition state',
+  });
+
+  const instanceId = instanceEntity.internal_id || instanceEntity.id;
+  await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+    { key: 'pendingStatus', value: [null] },
+    { key: 'pendingError', value: [null] },
+    { key: 'pendingTransition', value: [null] },
+    { key: 'history', value: [JSON.stringify(historyArr)] },
+  ]);
+
+  return getWorkflowInstance(context, user, entityId);
 };
