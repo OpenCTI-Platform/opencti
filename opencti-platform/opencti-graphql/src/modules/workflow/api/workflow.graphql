@@ -107,7 +107,6 @@ extend type DraftWorkspace {
 extend type Query {
     workflowDefinition(entityType: String!): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
-    allowedNextStatuses(entityId: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
