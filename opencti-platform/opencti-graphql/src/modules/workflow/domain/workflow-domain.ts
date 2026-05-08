@@ -552,13 +552,20 @@ export const retryPendingWorkflowTransitionActions = async (
       continue;
     }
 
-    // Re-enqueue the failed task with new UUIDs (old task remains but is orphaned)
+    if (!slot.taskInput) {
+      throw FunctionalError('Cannot retry: slot is missing taskInput. Use clearWorkflowPendingState to unblock.', { slotId: slot.id });
+    }
+
+    // Re-enqueue the failed task with a new slot ID (old task remains but is orphaned)
     const newSlotId = generateInternalId();
-    const task = await createListTask(executionContext, executionUser, {
-      scope: 'KNOWLEDGE',
-      description: `Workflow retry: ${pendingTransition.event}`,
-      actions: [],
-      ids: [effectiveEntityId],
+    const { scope, description, actions, ids, draftContext } = slot.taskInput;
+    const taskContext = draftContext ? { ...executionContext, draft_context: draftContext } : executionContext;
+
+    const task = await createListTask(taskContext, executionUser, {
+      scope,
+      description: description ?? `Workflow retry: ${pendingTransition.event}`,
+      actions,
+      ids,
       workflow_instance_id: instanceEntity.internal_id || instanceEntity.id,
       workflow_action_id: newSlotId,
     });
@@ -568,6 +575,7 @@ export const retryPendingWorkflowTransitionActions = async (
       workId: task.work_id ?? '',
       type: slot.type,
       status: 'pending',
+      taskInput: slot.taskInput,
     });
   }
 

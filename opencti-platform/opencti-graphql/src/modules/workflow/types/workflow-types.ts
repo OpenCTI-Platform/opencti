@@ -26,6 +26,17 @@ export type State = string;
 export type Event = string;
 
 /**
+ * The task input stored on a slot so it can be replayed on retry.
+ */
+export interface AsyncActionSlotTaskInput {
+  scope: string;
+  description?: string;
+  actions: WorkflowActionConfig[];
+  ids: string[];
+  draftContext?: string; // set when the task ran in a DraftWorkspace context
+}
+
+/**
  * A slot tracking one async background action spawned during a pending transition.
  */
 export interface AsyncActionSlot {
@@ -33,6 +44,7 @@ export interface AsyncActionSlot {
   workId: string; // The Work entity id for live progress lookup
   type: string; // e.g. 'asyncBulkAction'
   status: 'pending' | 'success' | 'failed';
+  taskInput?: AsyncActionSlotTaskInput; // stored at creation time so retry can replay the task
 }
 
 /**
