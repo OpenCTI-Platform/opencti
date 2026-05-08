@@ -127,16 +127,7 @@ export class WorkflowFactory {
       }
 
       return async (ctx: TContext) => {
-        if (config.mode === 'async') {
-          // Fire and forget
-          Promise.resolve(actionFn(ctx, config.params)).catch((err: any) =>
-
-            console.error(`Async action '${config.type}' failed`, err),
-          );
-        } else {
-          // Await completion
-          await actionFn(ctx, config.params);
-        }
+        await actionFn(ctx, config.params);
       };
     });
   }
@@ -155,11 +146,25 @@ export class WorkflowFactory {
     });
 
     schema.transitions.forEach((t) => {
+      // asyncActions (phase 1) — absent means no async effects
+      const asyncSideEffects = this.createSideEffects<TContext>(t.asyncActions);
+      // syncActions (phase 2) — fall back to legacy actions[] for backward compat
+      // Use length check instead of ?? because the frontend always serializes syncActions as [] (empty array),
+      // which is truthy and would prevent the fallback to actions[]
+      const resolvedSyncActions = (t.syncActions?.length ? t.syncActions : null) ?? t.actions;
+      const syncSideEffects = this.createSideEffects<TContext>(resolvedSyncActions);
+      const allActionTypes = [
+        ...(t.asyncActions?.map((a) => a.type) || []),
+        ...(resolvedSyncActions?.map((a) => a.type) || []),
+      ];
+
       definition.addTransition(t.from, t.to, t.event, {
         comment: t.comment,
         conditions: this.createConditions<TContext>(t.conditions),
-        onTransition: this.createSideEffects<TContext>(t.actions),
-        actionTypes: t.actions?.map((a) => a.type) || [],
+        asyncSideEffects,
+        onTransition: syncSideEffects,
+        actionTypes: allActionTypes,
+        requiresOrganizationInput: t.requiresOrganizationInput ?? false,
       });
     });
 

@@ -400,7 +400,7 @@ const authorizedMembersForTask = (user, scope) => {
 };
 
 export const createListTask = async (context, user, input) => {
-  const { actions, ids, scope } = input;
+  const { actions, ids, scope, workflow_instance_id, workflow_action_id } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
   const task = await createDefaultTask(context, user, input, TASK_TYPE_LIST, ids.length, scope);
   const listTask = {
@@ -408,6 +408,9 @@ export const createListTask = async (context, user, input) => {
     actions,
     task_ids: ids,
     draft_context: getDraftContext(context, user),
+    // Optional workflow linkage: set when this task is spawned as part of a workflow async action
+    ...(workflow_instance_id ? { workflow_instance_id } : {}),
+    ...(workflow_action_id ? { workflow_action_id } : {}),
   };
   await publishUserAction({
     user,

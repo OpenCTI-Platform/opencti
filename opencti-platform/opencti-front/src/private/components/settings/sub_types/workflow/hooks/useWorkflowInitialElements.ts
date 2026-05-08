@@ -26,6 +26,7 @@ export const useWorkflowInitialElements = (
   workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'],
   statusTemplatesEdges: SubTypeWorkflowQuery$data['statusTemplates'],
   membersEdges: SubTypeWorkflowQuery$data['members'],
+  organizationsEdges: SubTypeWorkflowQuery$data['organizations'] | null,
 ) => {
   const theme = useTheme<Theme>();
 
@@ -34,6 +35,7 @@ export const useWorkflowInitialElements = (
 
     const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
     const members = convertEdgesToObject(membersEdges);
+    const organizations = convertEdgesToObject(organizationsEdges);
 
     // Populate authorized members
     const parseActions = (actions?: ReadonlyArray<ReadOnlyAction> | null): Action[] => {
@@ -57,7 +59,18 @@ export const useWorkflowInitialElements = (
             },
           };
         }
-        return action as Action;
+        if (action.type === 'asyncBulkAction') {
+          // Reverse-map backend asyncBulkAction → frontend shareWithOrganizations / unshareFromOrganizations
+          const innerType = (action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] })?.actions?.[0]?.type;
+          const orgIds: string[] = (action?.params as { actions?: { type?: string; context?: { values?: string[] } }[] })?.actions?.[0]?.context?.values ?? [];
+          const frontendType = innerType === 'UNSHARE' ? 'unshareFromOrganizations' : 'shareWithOrganizations';
+          return {
+            type: frontendType,
+            mode: action.mode,
+            params: { organizations: orgIds.map((id) => ({ value: id, label: organizations[id]?.name ?? id })) },
+          } as Action;
+        }
+        return { ...action } as Action;
       });
     };
 
@@ -75,7 +88,7 @@ export const useWorkflowInitialElements = (
 
     // 2. Map transitions to transition nodes
     const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, actions = [], comment }) => ({
+      .map(({ from, to, event, conditions = {}, actions = [], comment, asyncActions = [], syncActions = [] }) => ({
         id: `${WorkflowNodeType.transition}-${from}-${to}`,
         type: WorkflowNodeType.transition,
         data: {
@@ -83,6 +96,8 @@ export const useWorkflowInitialElements = (
           conditions,
           actions: parseActions(actions),
           comment: (comment ?? 'disable') as CommentMode,
+          asyncActions: parseActions((asyncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
+          syncActions: parseActions((syncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
         },
         position: { x: 0, y: 0 },
       }));

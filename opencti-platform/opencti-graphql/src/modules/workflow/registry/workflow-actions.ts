@@ -1,6 +1,7 @@
 import { logApp } from '../../../config/conf';
 import { draftWorkspaceEditAuthorizedMembers, validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
-import type { Context } from '../types/workflow-types';
+import type { AsyncActionSlot, AsyncActionSlotTaskInput, Context } from '../types/workflow-types';
+import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
 
 export type ActionFunction<TContext extends Context = Context> = (executionContext: TContext, params?: any) => Promise<void> | void;
@@ -8,8 +9,22 @@ export type ActionFunction<TContext extends Context = Context> = (executionConte
 export interface ActionDefinition {
   fn: ActionFunction;
   paramsSchema?: z.ZodTypeAny;
+  /** Execution positions this action type is allowed in. Omit to allow both. */
   allowedModes?: ('sync' | 'async')[];
 }
+
+// Zod schema for an individual background task action step (mirrors BackgroundTask actions[])
+const bulkTaskActionSchema = z.object({
+  type: z.string(),
+  context: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const asyncBulkActionParamsSchema = z.object({
+  scope: z.string(),
+  description: z.string().optional(),
+  actions: z.array(bulkTaskActionSchema).min(1),
+  failOnAnyError: z.boolean().optional(),
+});
 
 export const ActionRegistry: Record<string, ActionFunction> = {
   // actions examples:
@@ -23,6 +38,68 @@ export const ActionRegistry: Record<string, ActionFunction> = {
   updateAuthorizedMembers: async (executionContext, params) => {
     const { entity, user, context } = executionContext;
     await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, params?.authorized_members);
+  },
+  /**
+   * asyncBulkAction: spawns a BackgroundTask + Work via createListTask.
+   * The slot is pushed onto ctx.pendingAsyncSlots (mutable accumulator).
+   * createListTask is injected at trigger time via ctx.__createListTask to avoid
+   * a direct import cycle between the registry and backgroundTask-common.js.
+   */
+  asyncBulkAction: async (executionContext, params) => {
+    const { entity, user, context, pendingAsyncSlots, __createListTask, __workflowInstanceId, __draftEntityIds } = executionContext as any;
+    if (typeof __createListTask !== 'function') {
+      logApp.error('[asyncBulkAction] __createListTask not injected into context — action skipped');
+      return;
+    }
+
+    const { scope, description, actions, failOnAnyError = true } = params ?? {};
+
+    const isDraft = entity?.entity_type === 'DraftWorkspace';
+    const draftEntityIds: string[] = __draftEntityIds ?? [];
+
+    // Resolve entity IDs:
+    // - DraftWorkspace with pre-queried contents → use those STIX entity IDs
+    // - DraftWorkspace linked to a specific entity (entity_id set) → use that ID
+    // - Any other entity → use its own ID
+    const fallbackId = (isDraft && entity?.entity_id) ? entity.entity_id : entity?.id;
+    const ids: string[] = (isDraft && draftEntityIds.length > 0) ? draftEntityIds : (fallbackId ? [fallbackId] : []);
+
+    // When targeting a DraftWorkspace, run the task in the draft context
+    // so internalFindByIds can locate the entities (they live in the draft index).
+    const taskContext = isDraft ? { ...context, draft_context: entity.internal_id } : context;
+
+    // Generate the slot ID here so it can be stored on the BackgroundTask as workflow_action_id.
+    // work.js checks for this field to call reportWorkflowAsyncActionResult on completion.
+    const slotId = generateInternalId();
+
+    const task = await __createListTask(taskContext, user, {
+      scope,
+      description: description ?? 'Workflow async bulk action',
+      actions,
+      ids,
+      workflow_instance_id: __workflowInstanceId,
+      workflow_action_id: slotId,
+    });
+
+    const taskInput: AsyncActionSlotTaskInput = {
+      scope,
+      description,
+      actions,
+      ids,
+      ...(isDraft ? { draftContext: entity.internal_id } : {}),
+    };
+
+    const slot: AsyncActionSlot = {
+      id: slotId,
+      workId: task.work_id ?? '',
+      type: 'asyncBulkAction',
+      status: 'pending',
+      taskInput,
+    };
+
+    if (Array.isArray(pendingAsyncSlots)) {
+      pendingAsyncSlots.push({ ...slot, _failOnAnyError: failOnAnyError });
+    }
   },
 };
 
@@ -46,5 +123,10 @@ export const ActionDefinitions: Record<string, ActionDefinition> = {
       })).optional(),
     }).optional(),
     allowedModes: ['sync', 'async'],
+  },
+  asyncBulkAction: {
+    fn: ActionRegistry.asyncBulkAction,
+    paramsSchema: asyncBulkActionParamsSchema,
+    allowedModes: ['async'], // Only valid in asyncActions[], never in syncActions[]
   },
 };

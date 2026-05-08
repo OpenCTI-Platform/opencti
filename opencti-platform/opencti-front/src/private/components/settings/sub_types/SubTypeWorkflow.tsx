@@ -35,6 +35,17 @@ export const workflowQuery = graphql`
           mode
           params
         }
+        asyncActions {
+          type
+          mode
+          params
+        }
+        syncActions {
+          type
+          mode
+          params
+        }
+        requiresOrganizationInput
         conditions
         comment
       }
@@ -44,6 +55,14 @@ export const workflowQuery = graphql`
         node {
           id
           entity_type
+          name
+        }
+      }
+    }
+    organizations(search: "", first: 200) {
+      edges {
+        node {
+          id
           name
         }
       }
