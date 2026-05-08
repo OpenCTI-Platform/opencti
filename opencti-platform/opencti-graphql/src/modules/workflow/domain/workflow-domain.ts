@@ -308,7 +308,8 @@ export const getAllowedTransitions = async (
       event: transition.event,
       toState: transition.to,
       actions: transition.actionTypes || [],
-      requiresOrganizationInput: transition.requiresOrganizationInput ?? false,
+      requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
+      requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
     };
   });
 

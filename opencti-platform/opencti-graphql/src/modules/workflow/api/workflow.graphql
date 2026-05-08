@@ -29,7 +29,6 @@ type WorkflowSerializedTransition {
     asyncActions: [WorkflowActionConfig!]
     syncActions: [WorkflowActionConfig!]
     conditions: JSON
-    requiresOrganizationInput: Boolean
 }
 
 type WorkflowSchema {
@@ -87,7 +86,8 @@ type WorkflowTransition {
     toState: String!
     toStatus: Status
     actions: [String!]
-    requiresOrganizationInput: Boolean
+    requiresShareOrganizationInput: Boolean
+    requiresUnshareOrganizationInput: Boolean
 }
 
 type WorkflowInstance {

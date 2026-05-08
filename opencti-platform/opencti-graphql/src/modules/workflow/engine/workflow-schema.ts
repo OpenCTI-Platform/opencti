@@ -33,7 +33,6 @@ export interface SerializedTransition {
   /** Phase 2: sync actions run after all asyncActions succeed (or immediately if none). */
   syncActions?: ActionConfig[];
   conditions?: { filters: FilterGroup };
-  requiresOrganizationInput?: boolean;
 }
 
 /**

@@ -44,7 +44,8 @@ export class WorkflowDefinition<TContext extends Context = Context> {
       asyncSideEffects?: SideEffect<TContext>[];
       onTransition?: SideEffect<TContext>[];
       actionTypes?: string[];
-      requiresOrganizationInput?: boolean;
+      requiresShareOrganizationInput?: boolean;
+      requiresUnshareOrganizationInput?: boolean;
     },
   ) {
     // Ensure states exist
@@ -59,7 +60,8 @@ export class WorkflowDefinition<TContext extends Context = Context> {
       asyncSideEffects: options?.asyncSideEffects || [],
       onTransition: options?.onTransition || [],
       actionTypes: options?.actionTypes || [],
-      requiresOrganizationInput: options?.requiresOrganizationInput ?? false,
+      requiresShareOrganizationInput: options?.requiresShareOrganizationInput ?? false,
+      requiresUnshareOrganizationInput: options?.requiresUnshareOrganizationInput ?? false,
     });
     return this;
   }

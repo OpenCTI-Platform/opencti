@@ -121,12 +121,6 @@ const transformToWorkflowDefinition = (
     if (node.type === WorkflowNodeType.transition) {
       const { event, conditions = {}, actions = [], asyncActions = [], syncActions = [] } = node.data;
 
-      // requiresOrganizationInput is true when a share/unshare action has no pre-filled orgs
-      const requiresOrganizationInput = asyncActions.some((a: Action) =>
-        (a.type === WorkflowActionType.shareWithOrganizations || a.type === WorkflowActionType.unshareFromOrganizations)
-        && !((a.params as { organizations?: unknown[] })?.organizations?.length),
-      );
-
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
       // Find ALL outgoing edges (This Transition -> To Status)
@@ -144,7 +138,6 @@ const transformToWorkflowDefinition = (
             actions: formatActions(actions),
             asyncActions: formatActions(asyncActions),
             syncActions: formatActions(syncActions),
-            requiresOrganizationInput,
           })),
         );
       }
@@ -157,7 +150,6 @@ const transformToWorkflowDefinition = (
         actions: formatActions(actions),
         asyncActions: formatActions(asyncActions),
         syncActions: formatActions(syncActions),
-        requiresOrganizationInput,
       }));
     }
     return [];

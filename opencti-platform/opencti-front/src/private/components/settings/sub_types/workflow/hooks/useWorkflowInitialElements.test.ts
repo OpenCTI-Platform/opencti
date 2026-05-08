@@ -70,7 +70,6 @@ describe('useWorkflowInitialElements', () => {
         actions: [],
         asyncActions: [],
         syncActions: [],
-        requiresOrganizationInput: false,
       },
     ],
   };
