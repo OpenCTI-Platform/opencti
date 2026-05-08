@@ -158,13 +158,24 @@ export class WorkflowFactory {
         ...(resolvedSyncActions?.map((a) => a.type) || []),
       ];
 
+      // Compute org-input requirements from asyncAction params — more reliable than the stored boolean.
+      const requiresShareOrganizationInput = (t.asyncActions ?? []).some((a) =>
+        a.type === 'asyncBulkAction'
+        && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'SHARE' && !ia.context?.values?.length),
+      );
+      const requiresUnshareOrganizationInput = (t.asyncActions ?? []).some((a) =>
+        a.type === 'asyncBulkAction'
+        && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'UNSHARE' && !ia.context?.values?.length),
+      );
+
       definition.addTransition(t.from, t.to, t.event, {
         comment: t.comment,
         conditions: this.createConditions<TContext>(t.conditions),
         asyncSideEffects,
         onTransition: syncSideEffects,
         actionTypes: allActionTypes,
-        requiresOrganizationInput: t.requiresOrganizationInput ?? false,
+        requiresShareOrganizationInput,
+        requiresUnshareOrganizationInput,
       });
     });
 

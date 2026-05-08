@@ -1,7 +1,7 @@
-import type { Node, Edge } from 'reactflow';
-import { SubTypeWorkflowQuery$data, WorkflowActionMode } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import type { Edge, Node } from 'reactflow';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import { SubTypeWorkflowQuery$data, WorkflowActionMode } from '../__generated__/SubTypeWorkflowQuery.graphql';
 
 export type Condition = { field: string; operator: string; value: string }
   | { type: string };
@@ -124,12 +124,6 @@ const transformToWorkflowDefinition = (
     if (node.type === WorkflowNodeType.transition) {
       const { event, conditions = {}, actions = [], comment, asyncActions = [], syncActions = [] } = node.data;
 
-      // requiresOrganizationInput is true when a share/unshare action has no pre-filled orgs
-      const requiresOrganizationInput = asyncActions.some((a: Action) =>
-        (a.type === WorkflowActionType.shareWithOrganizations || a.type === WorkflowActionType.unshareFromOrganizations)
-        && !((a.params as { organizations?: unknown[] })?.organizations?.length),
-      );
-
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
       // Find ALL outgoing edges (This Transition -> To Status)
@@ -148,7 +142,6 @@ const transformToWorkflowDefinition = (
             comment,
             asyncActions: formatActions(asyncActions),
             syncActions: formatActions(syncActions),
-            requiresOrganizationInput,
           })),
         );
       }
@@ -159,10 +152,9 @@ const transformToWorkflowDefinition = (
         event,
         conditions,
         actions: formatActions(actions),
-          comment,
-          asyncActions: formatActions(asyncActions),
-          syncActions: formatActions(syncActions),
-          requiresOrganizationInput,
+        comment,
+        asyncActions: formatActions(asyncActions),
+        syncActions: formatActions(syncActions),
       }));
     }
     return [];
@@ -186,7 +178,7 @@ const isElementStatus = (selectedElement: Node) => (selectedElement?.type === Wo
 const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.placeholder);
 
 export {
-  transformToWorkflowDefinition,
   isElementStatus,
-  isNewElementStatus,
+  isNewElementStatus, transformToWorkflowDefinition
 };
+

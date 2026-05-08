@@ -30,7 +30,6 @@ type WorkflowSerializedTransition {
     syncActions: [WorkflowActionConfig!]
     conditions: JSON
     comment: String
-    requiresOrganizationInput: Boolean
 }
 
 type WorkflowSchema {
@@ -89,7 +88,8 @@ type WorkflowTransition {
     toStatus: Status
     comment: String
     actions: [String!]
-    requiresOrganizationInput: Boolean
+    requiresShareOrganizationInput: Boolean
+    requiresUnshareOrganizationInput: Boolean
 }
 
 type WorkflowLastHistoryEntry {

@@ -54,7 +54,6 @@ export const workflowSerializedTransitionSchema = z.object({
   /** Phase 2: sync actions run after all asyncActions succeed (or immediately if none). */
   syncActions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
-  requiresOrganizationInput: z.boolean().optional(),
 });
 
 export const workflowDefinitionSchema = z.object({
