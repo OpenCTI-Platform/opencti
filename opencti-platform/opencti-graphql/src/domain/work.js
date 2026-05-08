@@ -51,8 +51,12 @@ export const findById = (context, user, workId) => {
 };
 
 export const isWorkAlive = async (_context, _user, workId) => {
-  const redisWork = await redisGetWork(workId);
-  return redisWork?.is_initialized === 'true';
+  // check work alive only for background-task. e.g. connectors works must not be discarded
+  if (workId.startsWith('background-task')) {
+    const redisWork = await redisGetWork(workId);
+    return redisWork?.is_initialized === 'true';
+  }
+  return true;
 };
 
 export const findWorkPaginated = (context, user, args = {}) => {
