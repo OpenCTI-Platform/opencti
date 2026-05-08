@@ -221,7 +221,7 @@
   },
   "resolutions": {
     "@filigran/chatbot/lodash": "4.18.1",
-    "@filigran/chatbot/uuid": "13.0.1",
+    "@filigran/chatbot/uuid": "14.0.0",
     "@types/pdfmake": "0.3.2",
     "axios": "1.16.0",
     "cookie": "1.1.1",
