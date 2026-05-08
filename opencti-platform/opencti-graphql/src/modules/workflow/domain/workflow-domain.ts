@@ -697,14 +697,9 @@ export const triggerWorkflowEvent = async (
         ? targetTransitionForSync.syncActions
         : null) ?? targetTransitionForSync?.actions ?? [];
 
-      const targetTransition = definitionData.transitions?.find((t: any) => {
-        const fromStates = Array.isArray(t.from) ? t.from : [t.from];
-        return fromStates.includes(currentStateId) && t.event === eventName;
-      });
-
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
-        toState: targetTransition?.to ?? instance.getCurrentState(),
+        toState: targetTransitionForSync?.to ?? instance.getCurrentState(),
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
