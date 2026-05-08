@@ -5584,12 +5584,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:1.0.4":
-  version: 1.0.4
-  resolution: "amqplib@npm:1.0.4"
+"amqplib@npm:1.0.5":
+  version: 1.0.5
+  resolution: "amqplib@npm:1.0.5"
   dependencies:
     buffer-more-ints: "npm:~1.0.0"
-  checksum: 10c0/18f594122444667a0072f1e48a77b110f46e01b75de1505aadc68d41b6f72afdefe970637ee79f1089bb0103250713c927c417802f5ea8826202817db52ed0c5
+  checksum: 10c0/777596f039823ad65ff03e75f80ceeaf87aae4270d55b8b863ce8a29148939b28f544b2db63addf56f32bc42937af9d16fe8f53c14e25b7cf23d245bc1fc8712
   languageName: node
   linkType: hard
 
@@ -10689,7 +10689,7 @@ __metadata:
     ae-cvss-calculator: "npm:1.0.12"
     ajv: "npm:8.20.0"
     ajv-formats: "npm:3.0.1"
-    amqplib: "npm:1.0.4"
+    amqplib: "npm:1.0.5"
     antlr4: "npm:4.13.2"
     archiver: "npm:7.0.1"
     archiver-zip-encrypted: "npm:2.0.0"
