@@ -54,6 +54,9 @@ describe('Workflow utils', () => {
       event: 'start',
       conditions: {},
       actions: [],
+      asyncActions: [],
+      syncActions: [],
+      requiresOrganizationInput: false,
     });
   });
 
@@ -73,6 +76,9 @@ describe('Workflow utils', () => {
       event: 'end',
       conditions: {},
       actions: [],
+      asyncActions: [],
+      syncActions: [],
+      requiresOrganizationInput: false,
     });
   });
 
