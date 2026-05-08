@@ -556,7 +556,8 @@ export const getAllowedTransitions = async (
       toState: transition.to,
       comment: transition.comment,
       actions: transition.actionTypes || [],
-      requiresOrganizationInput: transition.requiresOrganizationInput ?? false,
+      requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
+      requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
     };
   });
 

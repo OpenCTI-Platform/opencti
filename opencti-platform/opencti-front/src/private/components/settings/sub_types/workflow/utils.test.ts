@@ -56,7 +56,6 @@ describe('Workflow utils', () => {
       actions: [],
       asyncActions: [],
       syncActions: [],
-      requiresOrganizationInput: false,
     });
   });
 
@@ -78,7 +77,6 @@ describe('Workflow utils', () => {
       actions: [],
       asyncActions: [],
       syncActions: [],
-      requiresOrganizationInput: false,
     });
   });
 

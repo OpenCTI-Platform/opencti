@@ -54,7 +54,6 @@ export const workflowQuery = graphql`
           mode
           params
         }
-        requiresOrganizationInput
         conditions
         comment
       }

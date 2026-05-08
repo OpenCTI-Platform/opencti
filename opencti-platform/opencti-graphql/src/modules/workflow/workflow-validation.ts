@@ -55,7 +55,6 @@ export const workflowSerializedTransitionSchema = z.object({
   syncActions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
   comment: z.enum(['allowed', 'required', 'disabled']).optional(),
-  requiresOrganizationInput: z.boolean().optional(),
 });
 
 export const workflowDefinitionSchema = z.object({

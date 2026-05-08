@@ -84,7 +84,8 @@ const workflowResolvers = {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
     comment: (transition: any) => transition.comment ?? null,
     actions: (transition: any) => transition.actions ?? [],
-    requiresOrganizationInput: (transition: any) => transition.requiresOrganizationInput ?? false,
+    requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
+    requiresUnshareOrganizationInput: (transition: any) => transition.requiresUnshareOrganizationInput ?? false,
   },
   WorkflowPendingAsyncAction: {
     id: (slot: any) => slot.id,

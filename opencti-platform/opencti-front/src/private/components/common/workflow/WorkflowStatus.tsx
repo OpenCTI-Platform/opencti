@@ -39,6 +39,7 @@ export const workflowStatusFragment = graphql`
       }
       lastHistoryEntry {
         comment
+      }  
       pendingStatus
       pendingError
       pendingTransition {
@@ -64,7 +65,8 @@ export const workflowStatusFragment = graphql`
         toState
         actions
         comment
-        requiresOrganizationInput
+        requiresShareOrganizationInput
+        requiresUnshareOrganizationInput
         toStatus {
           id
           template {
@@ -116,7 +118,8 @@ mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, 
           toState
           actions
           comment
-          requiresOrganizationInput
+          requiresShareOrganizationInput
+          requiresUnshareOrganizationInput
           toStatus {
             id
             template {
@@ -206,7 +209,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [validationTransition, setValidationTransition] = useState<string | null>(null);
+  const [validationTransition, setValidationTransition] = useState<{ event: string; actions: readonly string[]; runtimeParams?: Record<string, unknown> } | null>(null);
   const [commentDialogTransition, setCommentDialogTransition] = useState<{
     event: string;
     actions: readonly string[];
@@ -217,7 +220,12 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   const draft = useFragment(workflowStatusFragment, data);
   const { exitDraft } = useSwitchDraft();
   const canBypassMandatoryFields = useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS]);
-  const [orgPickerTransition, setOrgPickerTransition] = useState<{ event: string; actions: readonly string[] } | null>(null);
+  const [orgPickerTransition, setOrgPickerTransition] = useState<{
+    event: string;
+    actions: readonly string[];
+    requiresShareOrg: boolean;
+    requiresUnshareOrg: boolean;
+  } | null>(null);
 
   const [commit, approving] = useMutation<WorkflowStatusTriggerMutation>(workflowStatusTriggerMutation);
   const [commitRetry, retrying] = useMutation<WorkflowStatusRetryMutation>(workflowStatusRetryMutation);
@@ -299,11 +307,16 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     });
   };
 
-  const showValidationDialogOrFireTransition = (eventName: string, actions: readonly string[], comment?: string) => {
+  const showValidationDialogOrFireTransition = (
+    eventName: string,
+    actions: readonly string[],
+    comment?: string,
+    runtimeParams?: Record<string, unknown>,
+  ) => {
     if (actions.includes('validateDraft')) {
-      setValidationTransition(eventName);
+      setValidationTransition({ event: eventName, actions, runtimeParams });
     } else {
-      fireTransition(eventName, actions, undefined, comment);
+      fireTransition(eventName, actions, runtimeParams, comment);
     }
   };
 
@@ -311,11 +324,18 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     eventName: string,
     actions: readonly string[],
     comment?: string | null,
-    requiresOrganizationInput?: boolean | null,
+    requiresShareOrg?: boolean | null,
+    requiresUnshareOrg?: boolean | null,
   ) => {
     handleClose();
-    if (requiresOrganizationInput) {
-      setOrgPickerTransition({ event: eventName, actions });
+    const needsOrgInput = requiresShareOrg || requiresUnshareOrg;
+    if (needsOrgInput) {
+      setOrgPickerTransition({
+        event: eventName,
+        actions,
+        requiresShareOrg: !!requiresShareOrg,
+        requiresUnshareOrg: !!requiresUnshareOrg,
+      });
       return;
     }
     if (comment === CommentMode.allowed || comment === CommentMode.required) {
@@ -336,16 +356,28 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   const handleValidateDraft = () => {
     if (validationTransition) {
-      fireTransition(validationTransition, ['validateDraft']);
+      fireTransition(validationTransition.event, validationTransition.actions, validationTransition.runtimeParams);
       setValidationTransition(null);
     }
   };
 
-  const handleOrgPickerSubmit = (values: { organizations: Array<{ value: string }> }) => {
+  const handleOrgPickerSubmit = (
+    values: { shareOrganizations: Array<{ value: string }>; unshareOrganizations: Array<{ value: string }> },
+    { resetForm }: { resetForm: () => void },
+  ) => {
     if (orgPickerTransition) {
-      const organizationIds = values.organizations.map((o) => o.value);
-      fireTransition(orgPickerTransition.event, orgPickerTransition.actions, { organizationIds });
+      const rp: Record<string, string[]> = {};
+      if (orgPickerTransition.requiresShareOrg) rp.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
+      if (orgPickerTransition.requiresUnshareOrg) rp.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
+      const { event, actions } = orgPickerTransition;
       setOrgPickerTransition(null);
+      resetForm();
+      // If this transition also validates the draft, chain to the confirmation dialog.
+      if (actions.includes('validateDraft')) {
+        setValidationTransition({ event, actions, runtimeParams: rp });
+      } else {
+        fireTransition(event, actions, rp);
+      }
     }
   };
 
@@ -443,7 +475,13 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             <Button
               key={transition.event}
               variant="primary"
-              onClick={() => handleTransition(transition.event, transition.actions ?? [], transition.comment, transition.requiresOrganizationInput)}
+              onClick={() => handleTransition(
+                transition.event,
+                transition.actions ?? [],
+                transition.comment,
+                transition.requiresShareOrganizationInput,
+                transition.requiresUnshareOrganizationInput,
+              )}
               disabled={approving}
             >
               {transition.event}
@@ -464,7 +502,13 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             {workflowInstance.allowedTransitions.map((transition) => (
               <MenuItem
                 key={transition.event}
-                onClick={() => handleTransition(transition.event, transition.actions ?? [], transition.comment, transition.requiresOrganizationInput)}
+                onClick={() => handleTransition(
+                  transition.event,
+                  transition.actions ?? [],
+                  transition.comment,
+                  transition.requiresShareOrganizationInput,
+                  transition.requiresUnshareOrganizationInput,
+                )}
               >
                 {transition.event}
               </MenuItem>
@@ -520,7 +564,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
       <Dialog
         open={Boolean(validationTransition)}
         slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
+        keepMounted={false}
         slots={{ transition: Transition }}
         onClose={() => setValidationTransition(null)}
         title={t_i18n('Are you sure?')}
@@ -554,8 +598,14 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
       {/* Organization picker dialog for transitions requiring org input */}
       <Formik
-        initialValues={{ organizations: [] as Array<{ value: string; label: string }> }}
-        validationSchema={Yup.object({ organizations: Yup.array().min(1, t_i18n('At least one organization is required')) })}
+        initialValues={{
+          shareOrganizations: [] as Array<{ value: string; label: string }>,
+          unshareOrganizations: [] as Array<{ value: string; label: string }>,
+        }}
+        validationSchema={Yup.object({
+          shareOrganizations: Yup.array(),
+          unshareOrganizations: Yup.array(),
+        })}
         onSubmit={handleOrgPickerSubmit}
         enableReinitialize
       >
@@ -573,15 +623,32 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             size="small"
           >
             <Form>
-              <DialogContentText sx={{ mb: 2 }}>
-                {t_i18n('Select the organizations to share the draft content with during this transition.')}
-              </DialogContentText>
-              <ObjectOrganizationField
-                name="organizations"
-                label={t_i18n('Organizations')}
-                multiple={true}
-                style={{ width: '100%' }}
-              />
+              {orgPickerTransition?.requiresShareOrg && (
+                <>
+                  <DialogContentText sx={{ mb: 2 }}>
+                    {t_i18n('Select the organizations to share the draft content with during this transition.')}
+                  </DialogContentText>
+                  <ObjectOrganizationField
+                    name="shareOrganizations"
+                    label={t_i18n('Organizations to share with')}
+                    multiple={true}
+                    style={{ width: '100%' }}
+                  />
+                </>
+              )}
+              {orgPickerTransition?.requiresUnshareOrg && (
+                <>
+                  <DialogContentText sx={{ mb: 2, mt: orgPickerTransition?.requiresShareOrg ? 2 : 0 }}>
+                    {t_i18n('Select the organizations to unshare the draft content from during this transition.')}
+                  </DialogContentText>
+                  <ObjectOrganizationField
+                    name="unshareOrganizations"
+                    label={t_i18n('Organizations to unshare from')}
+                    multiple={true}
+                    style={{ width: '100%' }}
+                  />
+                </>
+              )}
               <DialogActions>
                 <Button
                   variant="secondary"

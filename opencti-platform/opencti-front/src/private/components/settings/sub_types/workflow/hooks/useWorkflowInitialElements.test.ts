@@ -73,7 +73,6 @@ describe('useWorkflowInitialElements', () => {
         comment: null,
         asyncActions: [],
         syncActions: [],
-        requiresOrganizationInput: false,
       },
     ],
   };

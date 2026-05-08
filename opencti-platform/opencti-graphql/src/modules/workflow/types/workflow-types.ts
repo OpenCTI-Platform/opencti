@@ -100,7 +100,8 @@ export interface Transition<TContext extends Context = Context> {
   /** Phase 2: sync effects run after all async succeed (or immediately if no async). */
   onTransition?: SideEffect<TContext>[];
   actionTypes?: string[];
-  requiresOrganizationInput?: boolean;
+  requiresShareOrganizationInput?: boolean;
+  requiresUnshareOrganizationInput?: boolean;
 }
 
 /**
@@ -183,7 +184,6 @@ export interface WorkflowSerializedTransition {
   /** Phase 2: sync actions. Run after all asyncActions succeed (or immediately if no asyncActions). */
   syncActions?: WorkflowActionConfig[];
   conditions?: FilterGroup;
-  requiresOrganizationInput?: boolean;
 }
 
 export interface WorkflowDefinitionData {

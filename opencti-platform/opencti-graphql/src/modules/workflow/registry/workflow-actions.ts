@@ -52,7 +52,22 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       return;
     }
 
-    const { scope, description, actions, failOnAnyError = true } = params ?? {};
+    const { scope, description, failOnAnyError = true } = params ?? {};
+    const runtimeParams: Record<string, unknown> = (executionContext as any).runtimeParams ?? {};
+
+    // Inject org IDs from runtimeParams into actions that have empty context.values.
+    // This handles transitions where orgs are collected at trigger time (not pre-filled in definition).
+    const actions = ((params?.actions ?? []) as any[]).map((a: any) => {
+      if (a.type === 'SHARE' && !a.context?.values?.length) {
+        const orgIds: string[] = (runtimeParams.shareOrganizationIds as string[]) ?? (runtimeParams.organizationIds as string[]) ?? [];
+        if (orgIds.length > 0) return { ...a, context: { ...a.context, values: orgIds } };
+      }
+      if (a.type === 'UNSHARE' && !a.context?.values?.length) {
+        const orgIds: string[] = (runtimeParams.unshareOrganizationIds as string[]) ?? (runtimeParams.organizationIds as string[]) ?? [];
+        if (orgIds.length > 0) return { ...a, context: { ...a.context, values: orgIds } };
+      }
+      return a;
+    });
 
     const isDraft = entity?.entity_type === 'DraftWorkspace';
     const draftEntityIds: string[] = __draftEntityIds ?? [];
