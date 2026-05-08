@@ -123,6 +123,11 @@ const TransitionNode = ({ data, id }: NodeProps) => {
               <li>
                 {conditionAndActions}
               </li>
+              {data.comment && data.comment !== 'disable' && (
+                <li>
+                  {data.comment === 'required' ? t_i18n('comment required') : t_i18n('comment allowed')}
+                </li>
+              )}
             </ul>
           </div>
         </foreignObject>

@@ -5,7 +5,7 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { AuthorizedMembers, authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
 import { Connection, getNodes } from '../../../../../../utils/connection';
-import { Action, WorkflowNodeType } from '../utils';
+import { Action, CommentMode, WorkflowNodeType } from '../utils';
 
 type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onEnter']>[0]
   | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onExit']>[0]
@@ -75,13 +75,14 @@ export const useWorkflowInitialElements = (
 
     // 2. Map transitions to transition nodes
     const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, actions = [] }) => ({
+      .map(({ from, to, event, conditions = {}, actions = [], comment }) => ({
         id: `${WorkflowNodeType.transition}-${from}-${to}`,
         type: WorkflowNodeType.transition,
         data: {
           event,
           conditions,
           actions: parseActions(actions),
+          comment: (comment ?? 'disable') as CommentMode,
         },
         position: { x: 0, y: 0 },
       }));

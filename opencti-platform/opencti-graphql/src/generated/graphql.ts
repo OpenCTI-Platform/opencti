@@ -19732,6 +19732,7 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 
 
 export type MutationTriggerWorkflowEventArgs = {
+  comment?: InputMaybe<Scalars['String']['input']>;
   entityId: Scalars['String']['input'];
   eventName: Scalars['String']['input'];
 };
@@ -37599,6 +37600,16 @@ export type WorkflowInstance = {
   currentState: Scalars['String']['output'];
   currentStatus?: Maybe<Status>;
   id: Scalars['ID']['output'];
+  lastHistoryEntry?: Maybe<WorkflowLastHistoryEntry>;
+};
+
+export type WorkflowLastHistoryEntry = {
+  __typename?: 'WorkflowLastHistoryEntry';
+  comment?: Maybe<Scalars['String']['output']>;
+  event: Scalars['String']['output'];
+  state: Scalars['String']['output'];
+  timestamp: Scalars['String']['output'];
+  user_id: Scalars['String']['output'];
 };
 
 export type WorkflowSchema = {
@@ -37620,6 +37631,7 @@ export type WorkflowSerializedState = {
 export type WorkflowSerializedTransition = {
   __typename?: 'WorkflowSerializedTransition';
   actions?: Maybe<Array<WorkflowActionConfig>>;
+  comment?: Maybe<Scalars['String']['output']>;
   conditions?: Maybe<Scalars['JSON']['output']>;
   event: Scalars['String']['output'];
   from: Scalars['String']['output'];
@@ -37629,6 +37641,7 @@ export type WorkflowSerializedTransition = {
 export type WorkflowTransition = {
   __typename?: 'WorkflowTransition';
   actions?: Maybe<Array<Scalars['String']['output']>>;
+  comment?: Maybe<Scalars['String']['output']>;
   event: Scalars['String']['output'];
   toState: Scalars['String']['output'];
   toStatus?: Maybe<Status>;
@@ -39968,6 +39981,7 @@ export type ResolversTypes = ResolversObject<{
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
   WorkflowActionMode: WorkflowActionMode;
   WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
   WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
   WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
   WorkflowSerializedTransition: ResolverTypeWrapper<WorkflowSerializedTransition>;
@@ -40926,6 +40940,7 @@ export type ResolversParentTypes = ResolversObject<{
   WorkTracking: WorkTracking;
   WorkflowActionConfig: WorkflowActionConfig;
   WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowLastHistoryEntry: WorkflowLastHistoryEntry;
   WorkflowSchema: WorkflowSchema;
   WorkflowSerializedState: WorkflowSerializedState;
   WorkflowSerializedTransition: WorkflowSerializedTransition;
@@ -52175,6 +52190,15 @@ export type WorkflowInstanceResolvers<ContextType = any, ParentType extends Reso
   currentState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   currentStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  lastHistoryEntry?: Resolver<Maybe<ResolversTypes['WorkflowLastHistoryEntry']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowLastHistoryEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowLastHistoryEntry'] = ResolversParentTypes['WorkflowLastHistoryEntry']> = ResolversObject<{
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type WorkflowSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSchema'] = ResolversParentTypes['WorkflowSchema']> = ResolversObject<{
@@ -52193,6 +52217,7 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   conditions?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52201,6 +52226,7 @@ export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType 
 
 export type WorkflowTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTransition'] = ResolversParentTypes['WorkflowTransition']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
@@ -53024,6 +53050,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkTracking?: WorkTrackingResolvers<ContextType>;
   WorkflowActionConfig?: WorkflowActionConfigResolvers<ContextType>;
   WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;
+  WorkflowLastHistoryEntry?: WorkflowLastHistoryEntryResolvers<ContextType>;
   WorkflowSchema?: WorkflowSchemaResolvers<ContextType>;
   WorkflowSerializedState?: WorkflowSerializedStateResolvers<ContextType>;
   WorkflowSerializedTransition?: WorkflowSerializedTransitionResolvers<ContextType>;
