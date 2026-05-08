@@ -50,9 +50,15 @@ export const findById = (context, user, workId) => {
   return loadWorkById(context, user, workId);
 };
 
-export const isWorkAlive = async (_context, _user, workId) => {
+export const isWorkAlive = async (context, user, workId) => {
+  // if work exists in Redis not need to check elastic
   const redisWork = await redisGetWork(workId);
-  return redisWork?.is_initialized === 'true';
+  if (redisWork?.is_initialized === 'true') {
+    return true;
+  }
+
+  // if work has been deleted from Redis, check in Elastic to be able to process late messages that arrives when works is already completed
+  return Boolean(await findById(context, user, workId));
 };
 
 export const findWorkPaginated = (context, user, args = {}) => {
