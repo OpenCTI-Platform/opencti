@@ -201,7 +201,7 @@
     "eslint-plugin-react": "7.37.5",
     "express": "5.2.1",
     "globals": "17.5.0",
-    "http-proxy-middleware": "3.0.5",
+    "http-proxy-middleware": "4.0.0",
     "i18n-auto-translation": "2.2.3",
     "jsdom": "29.1.1",
     "license-checker-rseidelsohn": "4.4.2",
