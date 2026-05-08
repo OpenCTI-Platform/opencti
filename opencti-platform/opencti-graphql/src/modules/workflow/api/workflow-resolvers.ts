@@ -4,7 +4,6 @@ import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-comple
 import {
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
-  getAllowedNextStatuses,
   getAllowedTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
@@ -23,9 +22,6 @@ const workflowResolvers = {
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
-    },
-    allowedNextStatuses: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
-      return getAllowedNextStatuses(context, context.user!, entityId);
     },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);

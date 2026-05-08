@@ -564,18 +564,6 @@ export const getAllowedTransitions = async (
 };
 
 /**
- * Get allowed next statuses for an entity.
- */
-export const getAllowedNextStatuses = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityId: string,
-): Promise<string[]> => {
-  const transitions = await getAllowedTransitions(context, user, entityId);
-  return transitions.map((transition) => transition.toState).filter((status) => status !== null && status !== undefined);
-};
-
-/**
  * Trigger a workflow event on an entity.
  * This is the main entry point for the backend logic.
  *
