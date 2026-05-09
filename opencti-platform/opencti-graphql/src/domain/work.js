@@ -261,12 +261,19 @@ const updateWorkTaskToComplete = async (context, user, work) => {
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   const { isComplete, total } = await redisUpdateWorkFigures(workId);
-  // Ensure that work hasn't been deleted in the meantime
+
+  // Important: isWorkAlive is intentionally checked *after* redisUpdateWorkFigures, not before.
+  // If we checked liveness upfront and the work closed between that check and the figures update,
+  // redisUpdateWorkFigures would recreate the Redis key, potentially leaving it orphaned indefinitely
+  // (i.e. if no subsequent reportExpectation/updateExpectationsNumber call would have permitted cleaning it up).
+  // By checking liveness after the update, we guarantee Redis stays consistent:
+  // any key recreated by redisUpdateWorkFigures is immediately removed if the work is no longer alive.
   const workAlive = await isWorkAlive(context, user, workId);
   if (!workAlive) {
-    await redisDeleteWorks(workId);
+    await redisDeleteWorks([workId]);
     return workId;
   }
+
   if (isComplete || errorData) {
     const params = { now: timestamp };
     let sourceScript = '';
@@ -307,21 +314,33 @@ export const reportExpectation = async (context, user, workId, errorData) => {
  * @returns {Promise<string>}
  */
 export const updateExpectationsNumber = async (context, user, workId, expectations) => {
+  await redisUpdateActionExpectation(user, workId, expectations);
+
+  // Important: isWorkAlive is intentionally checked *after* redisUpdateActionExpectation, not before.
+  // If we checked liveness upfront and the work closed between that check and the figures update,
+  // redisUpdateActionExpectation would recreate the Redis key, potentially leaving it orphaned indefinitely
+  // (i.e. if no subsequent reportExpectation/updateExpectationsNumber call would have permitted cleaning it up).
+  // By checking liveness after the update, we guarantee Redis stays consistent:
+  // any key recreated by redisUpdateActionExpectation is immediately removed if the work is no longer alive.
+  // Ensure that work hasn't been deleted in the meantime in case of race condition
+  const workAlive = await isWorkAlive(context, user, workId);
+  if (!workAlive) {
+    await redisDeleteWorks([workId]);
+    logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
+    return workId;
+  }
+
   const currentWork = await loadWorkById(context, user, workId);
   if (!currentWork) { // work is no longer exists
     logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
     return workId;
   }
+
   const params = { updated_at: now(), import_expected_number: expectations };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
   await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
-  await redisUpdateActionExpectation(user, workId, expectations);
-  // Ensure that work hasn't been deleted in the meantime in case of race condition
-  const workAlive = await isWorkAlive(context, user, workId);
-  if (!workAlive) {
-    await redisDeleteWorks(workId);
-  }
+
   return workId;
 };
 

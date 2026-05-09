@@ -466,8 +466,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 
 // region work handling
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
-  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
-  return Promise.all(ids.map((id) => getClientBase().del(id)));
+  return Promise.all(internalIds.map((id) => getClientBase().del(id)));
 };
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
