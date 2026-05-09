@@ -7850,14 +7850,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-rate-limit@npm:8.5.0":
-  version: 8.5.0
-  resolution: "express-rate-limit@npm:8.5.0"
+"express-rate-limit@npm:8.5.1":
+  version: 8.5.1
+  resolution: "express-rate-limit@npm:8.5.1"
   dependencies:
-    ip-address: "npm:10.1.0"
+    ip-address: "npm:^10.2.0"
   peerDependencies:
     express: ">= 4.11"
-  checksum: 10c0/242ac614854493ef0ae0d32cf3951e06553cd2030bdd2517c89a7e77a48766efcbd6f6bdc2b02c3a5da45f8f988b7c9fd30b41d1d959732a230985fd96ad7485
+  checksum: 10c0/bcd89bb916376f38858b2623cc486bc9a91124ff3c7dee038fafc4c03949db72b0ddc796ade17cc43af3f16af314b689dd3c6557996d8e007791151335b0f7f7
   languageName: node
   linkType: hard
 
@@ -8872,10 +8872,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ip-address@npm:10.1.0":
-  version: 10.1.0
-  resolution: "ip-address@npm:10.1.0"
-  checksum: 10c0/0103516cfa93f6433b3bd7333fa876eb21263912329bfa47010af5e16934eeeff86f3d2ae700a3744a137839ddfad62b900c7a445607884a49b5d1e32a3d7566
+"ip-address@npm:^10.2.0":
+  version: 10.2.0
+  resolution: "ip-address@npm:10.2.0"
+  checksum: 10c0/5a00aada6e922c9c69dfc800ed5d0fa3348675ebdeed0e1575f503f27ca385b5f534363c9af7ad1daf64c1f1409388cdd3cc2e9b9b0fe1c924a431378d55075a
   languageName: node
   linkType: hard
 
@@ -10735,7 +10735,7 @@ __metadata:
     eventsource: "npm:2.0.2"
     eventsource-parser: "npm:3.0.8"
     express: "npm:5.2.1"
-    express-rate-limit: "npm:8.5.0"
+    express-rate-limit: "npm:8.5.1"
     express-session: "npm:1.19.0"
     fast-json-patch: "npm:3.1.1"
     file-type: "npm:21.3.4"
