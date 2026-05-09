@@ -2,7 +2,7 @@ import { loadAssignees, loadCreators, loadParticipants } from '../../database/me
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import type { Resolvers, StixRefRelationshipAddInput } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { getWorkflowInstance } from '../workflow/domain/workflow-domain';
+import { getWorkflowInstance, initializeEntityWorkflow } from '../workflow/domain/workflow-domain';
 import {
   addDraftWorkspace,
   deleteDraftWorkspace,
@@ -56,8 +56,10 @@ const draftWorkspaceResolvers: Resolvers = {
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
   },
   Mutation: {
-    draftWorkspaceAdd: (_, { input }, context) => {
-      return addDraftWorkspace(context, context.user, input);
+    draftWorkspaceAdd: async (_, { input }, context) => {
+      const draft = await addDraftWorkspace(context, context.user, input);
+      await initializeEntityWorkflow(context, context.user, draft);
+      return draft;
     },
     draftWorkspaceEdit: (_, { id }, context): any => ({
       relationAdd: ({ input }: { input: StixRefRelationshipAddInput }) => draftWorkspaceAddRelation(context, context.user, id, input),
