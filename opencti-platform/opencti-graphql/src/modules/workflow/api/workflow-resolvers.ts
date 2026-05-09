@@ -73,6 +73,9 @@ const workflowResolvers = {
     pendingError: (instance: any) => instance.pendingError ?? null,
     pendingTransition: (instance: any) => instance.pendingTransition ?? null,
   },
+  WorkflowSerializedTransition: {
+    from: (transition: any) => (Array.isArray(transition.from) ? transition.from : [transition.from]),
+  },
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
     comment: (transition: any) => transition.comment ?? null,

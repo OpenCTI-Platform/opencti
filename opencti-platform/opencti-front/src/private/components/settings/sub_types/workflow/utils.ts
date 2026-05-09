@@ -129,33 +129,31 @@ const transformToWorkflowDefinition = (
       // Find ALL outgoing edges (This Transition -> To Status)
       const outgoingEdges = edges.filter((e) => e.source === node.id);
 
-      // Create a transition entry for every possible path through this node
-      // This handles: Multiple Sources -> 1 Transition -> Multiple Targets
-      if (outgoingEdges.length > 0) {
-        return incomingEdges.flatMap((inEdge) =>
-          outgoingEdges.map((outEdge) => ({
-            from: nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id,
-            to: nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null,
-            event,
-            conditions,
-            actions: formatActions(actions),
-            comment,
-            asyncActions: formatActions(asyncActions),
-            syncActions: formatActions(syncActions),
-          })),
-        );
-      }
-      // Multiple Sources -> 1 Transition -> (no target)
-      return incomingEdges.map((inEdge) => ({
-        from: nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id,
-        to: null as string | null,
+      // Collect all source state IDs into a single from array
+      const fromStates = incomingEdges
+        .map((inEdge) => nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id)
+        .filter(Boolean) as string[];
+      const from = fromStates.length === 1 ? fromStates[0] : fromStates;
+
+      const transitionBase = {
+        from,
         event,
         conditions,
         actions: formatActions(actions),
         comment,
         asyncActions: formatActions(asyncActions),
         syncActions: formatActions(syncActions),
-      }));
+      };
+
+      // This handles: Multiple Sources -> 1 Transition -> Multiple Targets
+      if (outgoingEdges.length > 0) {
+        return outgoingEdges.map((outEdge) => ({
+          ...transitionBase,
+          to: nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null,
+        }));
+      }
+      // Multiple Sources -> 1 Transition -> (no target)
+      return [{ ...transitionBase, to: null as string | null }];
     }
     return [];
   });
