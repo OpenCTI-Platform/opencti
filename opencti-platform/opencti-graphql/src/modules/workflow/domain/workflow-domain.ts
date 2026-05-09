@@ -103,6 +103,41 @@ const initializeWorkflowInstance = async (
 };
 
 /**
+ * Find the existing workflow instance for an entity, or create one and fire the
+ * onEnter hooks of the initial state (sync only). Shared by triggerWorkflowEvent
+ * and initializeEntityWorkflow so initialization is never duplicated.
+ */
+const ensureWorkflowInstance = async (
+  executionContext: AuthContext,
+  executionUser: AuthUser,
+  entity: any,
+  entitySetting: any,
+  definitionData: any,
+): Promise<WorkflowInstanceStoreEntity> => {
+  const effectiveEntityId = entity.internal_id || entity.id;
+  const existing = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
+  if (existing) return existing;
+
+  const instanceEntity = await initializeWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+
+  // Run onEnter of the initial state (sync only for now)
+  const definition = WorkflowFactory.createDefinition(definitionData);
+  const workflowContext = {
+    entity,
+    user: executionUser,
+    context: executionContext,
+    runtimeParams: {},
+    __createListTask: createListTask,
+    __workflowInstanceId: instanceEntity.internal_id || instanceEntity.id,
+    __draftEntityIds: [],
+  };
+  const instance = WorkflowFactory.getInstance(definitionData, definition, definitionData.initialState, workflowContext);
+  await instance.start();
+
+  return instanceEntity;
+};
+
+/**
  * Get workflow definition for an entity type.
  */
 export const getWorkflowDefinition = async (
@@ -359,11 +394,7 @@ export const triggerWorkflowEvent = async (
     const executionContext = bypassDraftContext(context);
     const executionUser = executionContext.user!;
 
-    const effectiveEntityId = entity.internal_id || entity.id;
-    let instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
-    if (!instanceEntity) {
-      instanceEntity = await initializeWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
-    }
+    const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
 
     // 3. Lock check: reject new events while a transition is already pending
     if (instanceEntity.pendingStatus === 'pending') {
@@ -496,6 +527,24 @@ export const triggerWorkflowEvent = async (
       reason: `Workflow execution failed: ${reason}`,
     };
   }
+};
+
+/**
+ * Initialize the workflow instance for a newly created entity and fire the
+ * onEnter hooks of the initial state. No-op if no workflow is configured for
+ * the entity type or if an instance already exists.
+ */
+export const initializeEntityWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+  entity: any,
+): Promise<void> => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+  const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
+  const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
+  if (!definitionData) return;
+  await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
 };
 
 export const isStatusTemplateUsedInWorkflows = async (

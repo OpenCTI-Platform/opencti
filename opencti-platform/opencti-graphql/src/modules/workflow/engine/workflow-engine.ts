@@ -48,6 +48,20 @@ export class StateMachine<TContext extends Context = Context> {
   }
 
   /**
+   * Executes the onEnter hooks of the initial (current) state.
+   * Call once after construction to fire entry actions on the starting state.
+   * Only sync actions are supported; async onEnter is not yet implemented.
+   */
+  public async start(): Promise<void> {
+    const initialStateDef = this.definition.getStateDefinition(this.currentState);
+    if (initialStateDef?.onEnter) {
+      for (const hook of initialStateDef.onEnter) {
+        await hook(this.context);
+      }
+    }
+  }
+
+  /**
    * Attempts to transition to a new state by triggering an event.
    * This involves:
    * 1. Validating guard conditions.
