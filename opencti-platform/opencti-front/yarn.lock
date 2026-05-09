@@ -12826,7 +12826,7 @@ __metadata:
     monaco-editor: "npm:0.52.2"
     monaco-graphql: "npm:1.7.3"
     monocart-reporter: "npm:2.10.1"
-    pdfmake: "npm:0.3.7"
+    pdfmake: "npm:0.3.8"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.32.0"
@@ -13149,14 +13149,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.3.7":
-  version: 0.3.7
-  resolution: "pdfmake@npm:0.3.7"
+"pdfmake@npm:0.3.8":
+  version: 0.3.8
+  resolution: "pdfmake@npm:0.3.8"
   dependencies:
     linebreak: "npm:^1.1.0"
     pdfkit: "npm:^0.18.0"
     xmldoc: "npm:^2.0.3"
-  checksum: 10c0/3a29401180f09ce09a884a9eb4b88e43d7f0965fb8ebb7ff528bd2bf8676903dbfd4267d3a728bcd09bdeb53a61a2475904a988873a61e738a80ae1eeaeb828f
+  checksum: 10c0/a448f3597fabf49fea78b7f5be962e93b08dc47c2867a47504654e13b6963438e7839a1f4453e385ddb6c11bd06a07b0a7251e7c89cc9d9f65f0bf33f0867ba7
   languageName: node
   linkType: hard
 
