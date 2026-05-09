@@ -94,29 +94,34 @@ export const useWorkflowInitialElements = (
 
     // 2. Map transitions to transition nodes
     const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => ({
-        id: `${WorkflowNodeType.transition}-${from}-${to}`,
-        type: WorkflowNodeType.transition,
-        data: {
-          event,
-          conditions,
-          comment: (comment ?? CommentMode.disabled) as CommentModeType,
-          asyncActions: parseActions((asyncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
-          syncActions: parseActions((syncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
-        },
-        position: { x: 0, y: 0 },
-      }));
+      .map(({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => {
+        const fromIds = (Array.isArray(from) ? from : [from]).join(',');
+        return {
+          id: `${WorkflowNodeType.transition}-${fromIds}-${to}`,
+          type: WorkflowNodeType.transition,
+          data: {
+            event,
+            conditions,
+            comment: (comment ?? CommentMode.disabled) as CommentModeType,
+            asyncActions: parseActions((asyncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
+            syncActions: parseActions((syncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
+          },
+          position: { x: 0, y: 0 },
+        };
+      });
 
     // 3. Map transitions to edges
     const transitionEdges: Edge[] = workflowDefinition.transitions.flatMap((transition) => {
-      const transitionId = `${WorkflowNodeType.transition}-${transition.from}-${transition.to}`;
+      const fromArray = Array.isArray(transition.from) ? transition.from : [transition.from];
+      const fromIds = fromArray.join(',');
+      const transitionId = `${WorkflowNodeType.transition}-${fromIds}-${transition.to}`;
       return [
-        {
-          id: `e-${transition.from}->${transitionId}`,
+        ...fromArray.map((fromState) => ({
+          id: `e-${fromState}->${transitionId}`,
           type: WorkflowNodeType.transition,
-          source: transition.from,
+          source: fromState,
           target: transitionId,
-        },
+        })),
         {
           id: `e-${transitionId}->${transition.to}`,
           type: WorkflowNodeType.transition,
