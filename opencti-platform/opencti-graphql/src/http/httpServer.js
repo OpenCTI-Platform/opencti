@@ -138,7 +138,13 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
-  app.use(graphqlUploadExpress());
+  app.use((req, res, next) => {
+    // Skip graphql-upload for chatbot routes (they handle multipart themselves via Busboy)
+    if (req.path.startsWith(`${basePath}/chatbot/`)) {
+      return next();
+    }
+    return graphqlUploadExpress()(req, res, next);
+  });
   app.use(
     `${basePath}/graphql`,
     cors({ origin: basePath }),

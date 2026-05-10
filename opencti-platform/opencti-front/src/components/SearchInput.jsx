@@ -297,13 +297,13 @@ const SearchInput = (props) => {
     if (newMode === null) return; // MUI sends null when clicking the already-selected button
     if (newMode === MODE_SEARCH) {
       setMode(newMode);
-      // Navigate to advanced search screen (even if empty)
-      if (typeof onSubmit === 'function') {
-        onSubmit(searchValue || '', false, undefined);
+      // Execute search immediately with current value
+      if (searchValue && typeof onSubmit === 'function') {
+        onSubmit(searchValue, false, undefined);
       }
     } else if (newMode === MODE_BULK) {
       setMode(newMode);
-      // Navigate to bulk search screen (even if empty)
+      // Navigate to bulk with current value
       const encoded = encodeURIComponent(searchValue || '');
       navigate(`/dashboard/search_bulk${searchValue ? `?q=${encoded}` : ''}`);
     }

@@ -90,6 +90,7 @@ class OpenCTIConnector:
         auto_update: bool,
         enrichment_resolution: str,
         listen_callback_uri=None,
+        xtm_one_intent=None,
     ):
         """Initialize the OpenCTIConnector instance.
 
@@ -129,6 +130,7 @@ class OpenCTIConnector:
         self.only_contextual = only_contextual
         self.playbook_compatible = playbook_compatible
         self.listen_callback_uri = listen_callback_uri
+        self.xtm_one_intent = xtm_one_intent
 
     def to_input(self) -> dict:
         """Convert connector configuration to API input format.
@@ -155,5 +157,6 @@ class OpenCTIConnector:
                 "only_contextual": self.only_contextual,
                 "playbook_compatible": self.playbook_compatible,
                 "listen_callback_uri": self.listen_callback_uri,
+                **({"xtm_one_intent": self.xtm_one_intent} if self.xtm_one_intent else {}),
             }
         }

@@ -18,6 +18,7 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
+import { getDiscoveredIntentCatalog } from '../modules/xtm/one/xtm-one';
 import {
   allFilesForPaths,
   deleteDocumentIndex,
@@ -521,7 +522,23 @@ export const uploadJobImport = async (
     };
     const pushMessage = (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
       const { connector } = data;
-      const message = buildConnectorMessage(data, configuration);
+      let connectorConfiguration = configuration;
+      // In auto mode, if the connector declares an xtm_one_intent and no agent_slug
+      // is already in the configuration, inject the default agent slug from the intent catalog
+      if (connector.xtm_one_intent) {
+        const existingConfig = connectorConfiguration ? JSON.parse(connectorConfiguration) : {};
+        if (!existingConfig.agent_slug) {
+          const catalog = getDiscoveredIntentCatalog();
+          const intentEntry = catalog.find((entry) => entry.intent === connector.xtm_one_intent);
+          if (intentEntry && intentEntry.agents.length > 0) {
+            const defaultAgent = intentEntry.agents.find((a) => a.is_default && a.enabled) ?? intentEntry.agents.find((a) => a.enabled);
+            if (defaultAgent?.agent_slug) {
+              connectorConfiguration = JSON.stringify({ ...existingConfig, agent_slug: defaultAgent.agent_slug });
+            }
+          }
+        }
+      }
+      const message = buildConnectorMessage(data, connectorConfiguration);
       return pushToConnector(connector.internal_id, message);
     };
     await Promise.all(actionList.map((data) => pushMessage(data)));

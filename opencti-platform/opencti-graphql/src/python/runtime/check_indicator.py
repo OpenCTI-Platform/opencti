@@ -3,7 +3,7 @@ import sys
 import eql
 import yara
 from parsuricata import parse_rules
-from sigma.collection import SigmaCollection
+# from sigma.collection import SigmaCollection
 from snort.snort_parser import Parser
 from stix2patterns.validator import run_validator
 from utils.runtime_utils import return_data
@@ -28,13 +28,13 @@ def check_indicator(pattern_type, indicator_value):  # pylint: disable=too-many-
             result = False
         return {"status": "success", "data": result}
 
-    if pattern_type == "sigma":
-        try:
-            SigmaCollection.from_yaml(indicator_value)
-            result = True
-        except:  # pylint: disable=bare-except
-            result = False
-        return {"status": "success", "data": result}
+    # if pattern_type == "sigma":
+    #     try:
+    #         SigmaCollection.from_yaml(indicator_value)
+    #         result = True
+    #     except:  # pylint: disable=bare-except
+    #         result = False
+    #     return {"status": "success", "data": result}
 
     if pattern_type == "snort":
         try:

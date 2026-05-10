@@ -11,7 +11,7 @@ import ManageImportConnectorMessage from '@components/data/import/ManageImportCo
 import DialogActions from '@mui/material/DialogActions';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import SelectField from '../../../../components/fields/SelectField';
@@ -28,6 +28,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { AgentOption, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
 
 interface LaunchImportDialogProps {
   file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
@@ -56,6 +57,41 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = React.useState(false);
+  const [availableAgents, setAvailableAgents] = useState<AgentOption[]>([]);
+  // Track which intents have no agents (pre-fetched for all XTM One connectors)
+  const [intentAgentCounts, setIntentAgentCounts] = useState<Record<string, number>>({});
+
+  // Pre-fetch agent counts for all XTM One connectors to disable those with no agents
+  useEffect(() => {
+    const intents = new Set<string>();
+    connectors?.forEach((c) => {
+      if (c?.xtm_one_intent) intents.add(c.xtm_one_intent);
+    });
+    intents.forEach((intent) => {
+      fetchAgentsForIntent(intent).then((agents) => {
+        setIntentAgentCounts((prev) => ({ ...prev, [intent]: agents.length }));
+      });
+    });
+  }, [connectors]);
+
+  // Fetch agents when a connector with xtm_one_intent is selected
+  // Also stores a pending pre-select slug to apply once inside Formik render
+  const [pendingAgentConfig, setPendingAgentConfig] = useState<string>('');
+  useEffect(() => {
+    const intent = selectedConnector?.xtm_one_intent;
+    if (intent) {
+      fetchAgentsForIntent(intent).then((agents) => {
+        setAvailableAgents(agents);
+        // Pre-select first agent
+        if (agents.length > 0) {
+          setPendingAgentConfig(JSON.stringify({ agent_slug: agents[0].slug }));
+        }
+      });
+    } else {
+      setAvailableAgents([]);
+      setPendingAgentConfig('');
+    }
+  }, [selectedConnector]);
 
   const handleSetCsvMapper = (_: UIEvent, csvMapper: string) => {
     try {
@@ -102,6 +138,9 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         config = JSON.stringify(parsedConfig);
       }
     }
+
+    // For XTM One connectors, the configuration already contains the agent_slug JSON
+    // (set by the handleAgentSelect handler below)
 
     commitMutation({
       ...defaultCommitMutation,
@@ -187,6 +226,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
     && selectedConnector?.configurations?.length === 0;
 
+  // XTM One connector requires agent selection when agents are available
+  const requiresAgentSelection = !!selectedConnector?.xtm_one_intent
+    && availableAgents.length > 0;
+
   const draftInitialValues = useDefaultValues<Omit<DraftAddInput, 'name'>>(DRAFTWORKSPACE_TYPE, {
     description: '',
     objectAssignee: [],
@@ -205,11 +248,19 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         objectMarking: [],
         ...draftInitialValues,
       }}
-      validationSchema={importValidation(!!selectedConnector?.configurations)}
+      validationSchema={importValidation(!!selectedConnector?.configurations || requiresAgentSelection)}
       onSubmit={onSubmitImport}
       onReset={onClose}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid, values }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid, values }) => {
+        // Apply pending agent config when agents are pre-selected
+        if (pendingAgentConfig && values.configuration !== pendingAgentConfig) {
+          setTimeout(() => {
+            setFieldValue('configuration', pendingAgentConfig);
+            setPendingAgentConfig('');
+          }, 0);
+        }
+        return (
         <Form>
           <Dialog
             open={open}
@@ -230,17 +281,35 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                 const disabled = !file
                   || (connector?.connector_scope && connector?.connector_scope?.length > 0
                     && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
+                const noAgents = !!connector?.xtm_one_intent && (intentAgentCounts[connector.xtm_one_intent] ?? -1) === 0;
                 return (
                   <MenuItem
                     key={connector?.id}
                     value={connector?.id}
-                    disabled={disabled || !connector?.active}
+                    disabled={disabled || !connector?.active || noAgents}
                   >
                     {connector?.name}
+                    {noAgents ? ` (${t_i18n('No XTM One agent available')})` : ''}
                   </MenuItem>
                 );
               })}
             </Field>
+            {selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="configuration"
+                label={t_i18n('XTM One agent')}
+                fullWidth={true}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+              >
+                {availableAgents.map((agent) => (
+                  <MenuItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
+                    {agent.name}
+                  </MenuItem>
+                ))}
+              </Field>
+            )}
             {!isDraftContext && (
               <Field
                 component={SelectField}
@@ -340,7 +409,8 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
             </DialogActions>
           </Dialog>
         </Form>
-      )}
+        );
+      }}
     </Formik>
   );
 };

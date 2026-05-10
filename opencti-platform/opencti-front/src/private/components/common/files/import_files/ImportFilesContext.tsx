@@ -19,6 +19,7 @@ export const importFilesQuery = graphql`
       only_contextual
       connector_scope
       updated_at
+      xtm_one_intent
       configurations {
         id
         name

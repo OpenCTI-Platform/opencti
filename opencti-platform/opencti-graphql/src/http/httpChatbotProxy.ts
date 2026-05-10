@@ -1,6 +1,8 @@
 import axios from 'axios';
 import type Express from 'express';
 import nconf from 'nconf';
+import Busboy from 'busboy';
+import FormData from 'form-data';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getEntityFromCache } from '../database/cache';
 import { CguStatus } from '../generated/graphql';
@@ -15,6 +17,47 @@ import { issueXtmJwt } from '../domain/xtm-auth';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
+
+// Default timeout for non-streaming XTM One HTTP calls (2 minutes).
+// Streaming endpoints use timeout: 0 (no timeout) since the connection stays open.
+const DEFAULT_XTM_TIMEOUT = 2 * 60 * 1000;
+// Extended timeout for multipart file-based agent calls (10 minutes).
+// File upload and analysis can take significantly longer than text-based calls.
+const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000;
+
+// ── Multipart parsing helper ────────────────────────────────────────────
+
+interface ParsedMultipart {
+  files: { fieldname: string; filename: string; encoding: string; mimetype: string; data: Buffer }[];
+  fields: Record<string, string>;
+}
+
+const parseMultipart = (req: Express.Request): Promise<ParsedMultipart> => {
+  return new Promise((resolve, reject) => {
+    const busboy = Busboy({ headers: req.headers, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB limit
+    const files: ParsedMultipart['files'] = [];
+    const fields: Record<string, string> = {};
+    let truncated = false;
+    busboy.on('file', (fieldname: string, stream: NodeJS.ReadableStream & { truncated?: boolean }, info: { filename: string; encoding: string; mimeType: string }) => {
+      const chunks: Buffer[] = [];
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      stream.on('limit', () => truncated = true);
+      stream.on('end', () => {
+        files.push({ fieldname, filename: info.filename, encoding: info.encoding, mimetype: info.mimeType, data: Buffer.concat(chunks) });
+      });
+    });
+    busboy.on('field', (name: string, value: string) => fields[name] = value);
+    busboy.on('finish', () => {
+      if (truncated) {
+        reject(new Error('File exceeds maximum size limit (50MB)'));
+      } else {
+        resolve({ files, fields });
+      }
+    });
+    busboy.on('error', (err: Error) => reject(err));
+    req.pipe(busboy);
+  });
+};
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -100,7 +143,6 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
-
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/sessions`;
     const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const response = await axios.post(url, req.body, {
@@ -108,9 +150,8 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
         Authorization: `Bearer ${jwt}`,
         'Content-Type': 'application/json',
       },
-      timeout: 15000,
+      timeout: DEFAULT_XTM_TIMEOUT,
     });
-
     res.json(response.data);
   } catch (e: unknown) {
     logApp.error('Error in chatbot session', { cause: e });
@@ -228,45 +269,105 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
 };
 
 // ── POST /chatbot/agent ─────────────────────────────────────────────────
-// Non-streaming agent call: sends a message, waits for the full response,
-// and returns only the content string.
-// Body: { agent_slug, content }
+// Non-streaming agent call.
+// Accepts two Content-Type modes:
+//   1. application/json — text-based: { agent_slug, content }
+//   2. multipart/form-data — file-based: files[] + agent_slug field
+// In multipart mode, files are proxied to XTM One and a STIX bundle is returned.
 
 export const postAgentMessage = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
 
-    const { agent_slug, content } = req.body || {};
-    if (!agent_slug || !content) {
-      res.status(400).json({ error: 'agent_slug and content are required' });
-      return;
-    }
-
-    const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
+    const isMultipart = (req.headers['content-type'] ?? '').includes('multipart/form-data');
+    const messageUri = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
     const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
-    const response = await axios.post(url, {
-      agent_slug,
-      content,
-      stream: false,
-    }, {
-      headers: {
+
+    if (isMultipart) {
+      // File-based mode: 3-step flow via XTM One chat API
+      // 1. Parse incoming multipart
+      const { files, fields } = await parseMultipart(req);
+      const agentSlug = fields.agent_slug;
+      const messageContent = fields.content;
+      if (!agentSlug || !messageContent || files.length === 0) {
+        res.status(400).json({ error: 'agent_slug, content fields and at least one file are required' });
+        return;
+      }
+      const authHeaders = {
         Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
         'X-Platform-URL': getChatbotUrl(req),
         'X-Platform-Product': 'opencti',
         'X-Platform-Version': PLATFORM_VERSION,
-      },
-      timeout: 120000, // 2 min for non-streaming agent response
-    });
-
-    // XTM One returns { message_id, content } for non-streaming requests
-    res.json({ content: response.data?.content ?? '', status: 'success' });
+      };
+      // 2. Create a session with the agent
+      const sessionUri = `${XTM_ONE_URL}/api/v1/platform/chat/sessions`;
+      const sessionRes = await axios.post(sessionUri, { agent_slug: agentSlug }, {
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        timeout: DEFAULT_XTM_TIMEOUT,
+      });
+      const conversationId = sessionRes.data?.conversation_id;
+      if (!conversationId) {
+        res.status(502).json({ error: 'Failed to create XTM One session' });
+        return;
+      }
+      // 3. Upload each file to the conversation (create_message=false to get file_ids)
+      const fileIds: string[] = [];
+      for (const file of files) {
+        const form = new FormData();
+        form.append('file', file.data, { filename: file.filename, contentType: file.mimetype });
+        const uploadUri = `${XTM_ONE_URL}/api/v1/chat/conversations/${conversationId}/upload?create_message=false`;
+        const uploadRes = await axios.post(uploadUri, form, {
+          headers: { ...authHeaders, ...form.getHeaders() },
+          timeout: MULTIPART_XTM_TIMEOUT,
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        });
+        if (uploadRes.data?.file_id) {
+          fileIds.push(uploadRes.data.file_id);
+        }
+      }
+      if (fileIds.length === 0) {
+        res.status(502).json({ error: 'Failed to upload files to XTM One' });
+        return;
+      }
+      // 4. Send message with file_ids to trigger extraction
+      const conversationUri = `${XTM_ONE_URL}/api/v1/chat/conversations/${conversationId}/messages`;
+      const messageRes = await axios.post(conversationUri, { content: messageContent, file_ids: fileIds }, {
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        timeout: MULTIPART_XTM_TIMEOUT,
+      });
+      // Return the response from XTM One
+      res.json(messageRes.data);
+    } else {
+      // Text-based mode
+      const { agent_slug, content } = req.body || {};
+      if (!agent_slug || !content) {
+        res.status(400).json({ error: 'agent_slug and content are required' });
+        return;
+      }
+      const response = await axios.post(messageUri, { agent_slug, content, stream: false }, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+          'X-Platform-URL': getChatbotUrl(req),
+          'X-Platform-Product': 'opencti',
+          'X-Platform-Version': PLATFORM_VERSION,
+        },
+        timeout: DEFAULT_XTM_TIMEOUT,
+      });
+      // XTM One returns { message_id, content } for non-streaming requests
+      res.json({ content: response.data?.content ?? '', status: 'success' });
+    }
   } catch (e: unknown) {
     logApp.error('Error in agent message proxy', { cause: e });
     const { message } = e as Error;
-    if (axios.isAxiosError(e) && e.response) {
-      const detail = e.response.data?.detail ?? message;
+    if (message?.includes('maximum size limit')) {
+      res.status(413).json({ error: message });
+    } else if (axios.isAxiosError(e) && e.response) {
+      const responseData = e.response.data;
+      logApp.error('XTM One error response', { status: e.response.status, data: JSON.stringify(responseData) });
+      const detail = responseData?.detail ?? responseData?.message ?? message;
       setCookieError(res, message);
       res.status(200).json({ content: '', status: 'error', error: detail, code: e.response.status });
     } else {

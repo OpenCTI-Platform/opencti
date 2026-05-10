@@ -51,6 +51,7 @@ export const fileWorksQuery = graphql`
       active
       connector_scope
       updated_at
+      xtm_one_intent
       configurations {
         id
         name,

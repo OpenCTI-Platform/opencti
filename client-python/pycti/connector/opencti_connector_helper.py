@@ -723,6 +723,9 @@ class ListenQueue(threading.Thread):
                 self.helper.api.work.to_received(
                     work_id, "Connector ready to process the operation"
                 )
+            # Inject configuration into event_data if present
+            if "configuration" in json_data:
+                event_data["configuration"] = json_data["configuration"]
             # Send the enriched to the callback
             message = self.callback(event_data)
             if work_id:
@@ -2216,6 +2219,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=False,
         )
+        self.connect_xtm_one_intent = get_config_variable(
+            "CONNECTOR_XTM_ONE_INTENT",
+            ["connector", "xtm_one_intent"],
+            config,
+            default=None,
+        )
         self.log_level = get_config_variable(
             "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config, default="ERROR"
         ).upper()
@@ -2387,6 +2396,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 if self.listen_protocol == "API"
                 else None
             ),
+            xtm_one_intent=self.connect_xtm_one_intent,
         )
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_logger.info(
@@ -3618,6 +3628,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     entity_id=entity_id,
                     file_markings=file_markings,
                 )
+                # Signal work completion through the expectation system
+                if work_id:
+                    self.api.work.add_expectations(work_id, 1)
+                    self.api.work.report_expectation(work_id, None)
                 return []
             elif validation_mode == "draft" and not draft_id:
                 draft_id = self.api.create_draft(
