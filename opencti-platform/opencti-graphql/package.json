@@ -207,15 +207,15 @@
     "esbuild": "0.28.0",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
-    "eslint": "10.2.1",
+    "eslint": "10.3.0",
     "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "2.0.0",
-    "globals": "17.5.0",
+    "globals": "17.6.0",
     "graphql-tag": "2.12.6",
     "license-checker-rseidelsohn": "4.4.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.59.1",
+    "typescript-eslint": "8.59.2",
     "vitest": "3.2.4"
   },
   "resolutions": {
