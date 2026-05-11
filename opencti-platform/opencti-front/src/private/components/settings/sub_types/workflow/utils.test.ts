@@ -108,6 +108,28 @@ describe('Workflow utils', () => {
     expect(result.states[0].onExit).toEqual([{ type: 'validateDraft' }]);
   });
 
+  it('should fan out multiple-source transitions into one entry per source state', () => {
+    const nodes: Node[] = [
+      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
+      { id: 'state-2', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-2' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
+      { id: 'state-reject', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-reject' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
+      { id: 'trans-reject', type: WorkflowNodeType.transition, data: { event: 'reject', conditions: {}, actions: [], asyncActions: [], syncActions: [] }, position: { x: 0, y: 0 } },
+    ];
+    const edges: Edge[] = [
+      // Both state-1 and state-2 feed into the same "reject" transition node
+      { id: 'e1', source: 'state-1', target: 'trans-reject', type: 'smoothstep' },
+      { id: 'e2', source: 'state-2', target: 'trans-reject', type: 'smoothstep' },
+      { id: 'e3', source: 'trans-reject', target: 'state-reject', type: 'smoothstep' },
+    ];
+    const result = transformToWorkflowDefinition(nodes, edges, mockWorkflowDefinition);
+    // Must produce two separate transitions rather than one with from: ['state-1', 'state-2']
+    expect(result.transitions).toHaveLength(2);
+    expect(result.transitions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'state-1', to: 'state-reject', event: 'reject' }),
+      expect.objectContaining({ from: 'state-2', to: 'state-reject', event: 'reject' }),
+    ]));
+  });
+
   it('should correctly identify element types', () => {
     const statusNode: Node = { id: '1', type: WorkflowNodeType.status, data: {}, position: { x: 0, y: 0 } };
     const placeholderNode: Node = { id: '2', type: WorkflowNodeType.placeholder, data: {}, position: { x: 0, y: 0 } };
