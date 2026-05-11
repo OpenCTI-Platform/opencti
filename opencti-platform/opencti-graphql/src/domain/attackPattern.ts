@@ -68,68 +68,76 @@ export const dataComponentsPaginated = async (context: AuthContext, user: AuthUs
 };
 
 export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUser) => {
-  const attackPatternsOfPhases = [];
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] },
   };
+
+  // 1. Load all data
+
   const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
   const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
   const allKillChainPhases = await fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
   const subTechniquesRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
-  for (let index = 0; index < allKillChainPhases.length; index += 1) {
-    const killChainPhase = allKillChainPhases[index];
-    const phaseAttackPatterns = allAttackPatterns
-      .filter((a) => {
-        // filter sub attack patterns
-        const isSub = subTechniquesRelations.some((s) => s.fromId === a.id);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return !isSub && a[RELATION_KILL_CHAIN_PHASE] && a[RELATION_KILL_CHAIN_PHASE].includes(killChainPhase.id);
-      })
-      .map((attackPattern) => {
-        const subAttackPatterns: { attack_pattern_id: string; name: string; description?: string }[] = [];
-        let subAttackPatternsSearchText: string = '';
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        if (attackPattern[RELATION_SUBTECHNIQUE_OF]) {
-          const subAttackPatternsFromRelation = subTechniquesRelations.filter((s) => s.toId === attackPattern.id);
-          if (subAttackPatternsFromRelation.length > 0) {
-            subAttackPatternsFromRelation.forEach((s) => {
-              const subAttackPattern = allAttackPatternsById.get(s.fromId);
-              if (subAttackPattern) {
-                subAttackPatterns.push({
-                  attack_pattern_id: subAttackPattern.id,
-                  name: subAttackPattern.name,
-                  description: subAttackPattern.description,
-                });
-                subAttackPatternsSearchText += `${subAttackPattern.x_mitre_id} ${subAttackPattern.name} ${subAttackPattern.description} | `;
-              }
-            });
-          }
-        }
-        return {
-          attack_pattern_id: attackPattern.id,
-          name: attackPattern.name,
-          description: attackPattern.description,
-          x_mitre_id: attackPattern.x_mitre_id,
-          subAttackPatterns,
-          subAttackPatternsSearchText,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          killChainPhasesIds: [...attackPattern[RELATION_KILL_CHAIN_PHASE]],
-        };
-      });
-    if (phaseAttackPatterns.length > 0) {
-      attackPatternsOfPhases.push({
-        kill_chain_id: killChainPhase.id,
-        kill_chain_name: killChainPhase.kill_chain_name,
-        phase_name: killChainPhase.phase_name,
-        x_opencti_order: killChainPhase.x_opencti_order,
-        attackPatterns: phaseAttackPatterns,
-      });
+
+  // 2. Pre-compute indexes
+
+  const subTechniqueIds = new Set(subTechniquesRelations.map((s) => s.fromId));
+  // This map regroups sub attack patterns by the parent attack pattern
+  const subTechniquesByParentId = new Map<string, { attack_pattern_id: string; name: string; description?: string }[]>();
+  const searchTextPartsByParentId = new Map<string, string[]>();
+  for (const s of subTechniquesRelations) {
+    const subAP = allAttackPatternsById.get(s.fromId);
+    if (subAP) {
+      if (!subTechniquesByParentId.has(s.toId)) {
+        subTechniquesByParentId.set(s.toId, []);
+        searchTextPartsByParentId.set(s.toId, []);
+      }
+      subTechniquesByParentId.get(s.toId)!.push({ attack_pattern_id: subAP.id, name: subAP.name, description: subAP.description });
+      searchTextPartsByParentId.get(s.toId)!.push(`${subAP.x_mitre_id} ${subAP.name} ${subAP.description}`);
     }
+  }
+
+  // This map regroups attack patterns by killchainphases
+  // sub attack patterns are ignored because they are managed differently (see first map above)
+  const parentAPsByKcpId = new Map<string, typeof allAttackPatterns>();
+  for (const ap of allAttackPatterns) {
+    if (subTechniqueIds.has(ap.id)) continue;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const kcpIds: string[] = ap[RELATION_KILL_CHAIN_PHASE] ?? [];
+    for (const kcpId of kcpIds) {
+      if (!parentAPsByKcpId.has(kcpId)) parentAPsByKcpId.set(kcpId, []);
+      parentAPsByKcpId.get(kcpId)!.push(ap);
+    }
+  }
+
+  // 3. Build result
+
+  const attackPatternsOfPhases = [];
+  for (const kcp of allKillChainPhases) {
+    // Get attack patterns for this killchainphase using map #2
+    const phaseAPs = parentAPsByKcpId.get(kcp.id) ?? [];
+    if (phaseAPs.length === 0) continue;
+    attackPatternsOfPhases.push({
+      kill_chain_id: kcp.id,
+      kill_chain_name: kcp.kill_chain_name,
+      phase_name: kcp.phase_name,
+      x_opencti_order: kcp.x_opencti_order,
+      attackPatterns: phaseAPs.map((ap) => ({
+        attack_pattern_id: ap.id,
+        name: ap.name,
+        description: ap.description,
+        x_mitre_id: ap.x_mitre_id,
+        // Add sub attack patterns using map #1
+        subAttackPatterns: subTechniquesByParentId.get(ap.id) ?? [],
+        subAttackPatternsSearchText: (searchTextPartsByParentId.get(ap.id) ?? []).join(' | '),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        killChainPhasesIds: [...ap[RELATION_KILL_CHAIN_PHASE]],
+      })),
+    });
   }
   return { attackPatternsOfPhases };
 };
