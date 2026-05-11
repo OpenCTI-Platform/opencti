@@ -79,6 +79,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
     chartDecayReactionPoints = decayRule.decay_points.map((point) => point);
   }
 
+  const decayFilters = decayRule?.decay_filters ? JSON.parse(decayRule.decay_filters) : null;
+
   return (
     <div style={{
       margin: 0,
@@ -141,7 +143,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                       },
                     }}
                   >
-                    <FilterIconButton filters={JSON.parse(decayRule.decay_filters)} />
+                    <FilterIconButton filters={decayFilters} />
                   </Box>
                 </FieldOrEmpty>
               </Grid>
