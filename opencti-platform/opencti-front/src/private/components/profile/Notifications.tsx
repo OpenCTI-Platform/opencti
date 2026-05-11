@@ -3,7 +3,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useMatch, useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -63,7 +63,7 @@ const Notifications: FunctionComponent = () => {
     ? liveNotificationsCount
     : (data.myUnreadNotificationsCount ?? 0);
 
-  const activeTab = location.pathname.endsWith('news-feed') ? 'news-feed' : 'alerts';
+  const activeTab = useMatch('/dashboard/profile/notifications/news-feed') ? 'news-feed' : 'alerts';
 
   const handleTabChange = (_: React.SyntheticEvent, value: string) => {
     navigate(value);
