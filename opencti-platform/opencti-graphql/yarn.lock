@@ -10744,7 +10744,7 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.1.0"
-    semver: "npm:7.7.4"
+    semver: "npm:7.8.0"
     set-interval-async: "npm:3.0.3"
     source-map: "npm:0.7.6"
     tough-cookie: "npm:6.0.1"
@@ -11824,12 +11824,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:2 || 3 || 4 || 5 || 6 || 7, semver@npm:7.7.4, semver@npm:^7.3.5, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.7.1, semver@npm:^7.7.3":
+"semver@npm:2 || 3 || 4 || 5 || 6 || 7, semver@npm:^7.3.5, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.7.1, semver@npm:^7.7.3":
   version: 7.7.4
   resolution: "semver@npm:7.7.4"
   bin:
     semver: bin/semver.js
   checksum: 10c0/5215ad0234e2845d4ea5bb9d836d42b03499546ddafb12075566899fc617f68794bb6f146076b6881d755de17d6c6cc73372555879ec7dce2c2feee947866ad2
+  languageName: node
+  linkType: hard
+
+"semver@npm:7.8.0":
+  version: 7.8.0
+  resolution: "semver@npm:7.8.0"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/8f096ca9b80ffd47b308d03f9ce8c873e27e2983f36023c559cdc92c51e8433fc23ebbfe57ec9623fc155636a6961ee989501099841ae4bb1babc8d2b3f048cd
   languageName: node
   linkType: hard
 
