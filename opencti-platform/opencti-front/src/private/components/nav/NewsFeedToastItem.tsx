@@ -10,7 +10,7 @@ export interface NewsFeedToastData {
   id: string;
   title: string;
   news_feed_type: string;
-  metadata: ReadonlyArray<{ readonly key: string; readonly value: string | null | undefined } | null> | null | undefined;
+  metadata: { key: string; readonly value: string | null | undefined }[];
 }
 
 const NEWS_FEED_ICON_MAP: Record<string, React.ElementType> = {

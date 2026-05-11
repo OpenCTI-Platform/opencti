@@ -37,8 +37,7 @@ const NewsFeedToastManager: FunctionComponent = () => {
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const isEnabled = isXTMHubAccessible && isNewsFeedFeatureEnabled && !isAllNewsFeedUnsubscribed;
 
-  const handleNewsFeedItem = useCallback((payload: unknown) => {
-    const data = payload as { newsFeedItem?: { id: string; title: string; news_feed_type: string; metadata: NewsFeedToastData['metadata'] } } | null | undefined;
+  const handleNewsFeedItem = useCallback((data: { newsFeedItem?: NewsFeedToastData }) => {
     if (!data?.newsFeedItem) return;
     const { id, title, news_feed_type, metadata } = data.newsFeedItem;
     setToasts((prev) => {

@@ -3,7 +3,7 @@ import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsF
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
 import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
 import { InsertChartOutlined, OpenInNewOutlined } from '@mui/icons-material';
-import React, { FunctionComponent, Suspense, useCallback, useContext, useMemo } from 'react';
+import React, { FunctionComponent, Suspense, useCallback, useMemo } from 'react';
 import { graphql, PreloadedQuery, useSubscription } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Tag from '../../../components/common/tag/Tag';
@@ -14,7 +14,7 @@ import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
-import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
