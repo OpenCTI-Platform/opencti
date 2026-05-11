@@ -16,6 +16,8 @@ export interface BasicStoreEntityCustomFieldDefinition extends BasicStoreEntity 
   // Integer-specific
   min_value?: number;
   max_value?: number;
+  // Select-specific
+  select_options?: string[];
 }
 
 export interface StoreEntityCustomFieldDefinition extends StoreEntity {
@@ -28,6 +30,8 @@ export interface StoreEntityCustomFieldDefinition extends StoreEntity {
   default_value?: string;
   min_value?: number;
   max_value?: number;
+  // Select-specific
+  select_options?: string[];
 }
 
 export interface StixCustomFieldDefinition extends StixObject {
@@ -40,6 +44,8 @@ export interface StixCustomFieldDefinition extends StixObject {
   default_value?: string;
   min_value?: number;
   max_value?: number;
+  // Select-specific
+  select_options?: string[];
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

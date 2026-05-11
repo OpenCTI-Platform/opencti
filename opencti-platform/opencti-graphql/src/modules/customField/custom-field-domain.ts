@@ -24,6 +24,8 @@ interface CustomFieldDefinitionAddInput {
   // Integer-specific
   min_value?: number | null;
   max_value?: number | null;
+  // Select-specific
+  select_options?: string[] | null;
 }
 
 export const findById: DomainFindById<BasicStoreEntityCustomFieldDefinition> = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {

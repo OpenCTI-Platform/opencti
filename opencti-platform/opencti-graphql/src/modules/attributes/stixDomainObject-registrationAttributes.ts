@@ -369,6 +369,8 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, [
       { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
       { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
       { name: 'int_value', label: 'Integer value', type: 'numeric', precision: 'integer', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'string_value', label: 'String value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'select_value', label: 'Select value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     ],
   },
 ]);

@@ -22,10 +22,13 @@ const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFiel
     { name: 'field_type', label: 'Field type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'entity_types', label: 'Entity types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { name: 'mandatory', label: 'Mandatory', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    // Integer-specific
+    // Common optional
     { name: 'default_value', label: 'Default value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    // Integer-specific
     { name: 'min_value', label: 'Min value', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'max_value', label: 'Max value', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    // Select-specific
+    { name: 'select_options', label: 'Select options', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: false },
   ],
   relations: [],
   relationsRefs: [],

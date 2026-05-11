@@ -7,6 +7,8 @@ import {
   COMPUTED_RELIABILITY_FILTER,
   CUSTOM_FIELD_INT_VALUE_SUBFILTER,
   CUSTOM_FIELD_NAME_SUBFILTER,
+  CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
+  CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
   CUSTOM_FIELD_VALUE_FILTER,
   ID_SUBFILTER,
   IDS_FILTER,
@@ -560,59 +562,107 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
 };
 
 const adaptFilterToCustomFieldValueFilterKey = (filter: Filter) => {
+  const { values, operator, mode = FilterMode.Or } = filter;
+  const op: string = operator ?? FilterOperator.Eq;
+
+  // --- New encoded-string format: each value is "fieldName|subKey|value" ---
+  // (used by the standard filter bar via useSearchEntities)
+  if (values.length > 0 && typeof values[0] === 'string' && (values[0] as string).includes('|')) {
+    const nestedFilters = values.flatMap((encodedValue: any) => {
+      const parts = (encodedValue as string).split('|');
+      if (parts.length !== 3) return [];
+      const [fieldName, subKey, subValue] = parts;
+      return [{
+        key: ['custom_field_values'],
+        values: [],
+        nested: [
+          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
+          { key: subKey, values: [subValue], operator: op },
+        ],
+      }];
+    });
+    if (nestedFilters.length === 0) {
+      throw FunctionalError('customFieldValue filter has no valid encoded values', { filter });
+    }
+    if (nestedFilters.length === 1) {
+      return { newFilter: nestedFilters[0], newFilterGroup: undefined };
+    }
+    return {
+      newFilter: undefined,
+      newFilterGroup: {
+        mode: mode ?? FilterMode.Or,
+        filters: nestedFilters,
+        filterGroups: [],
+      },
+    };
+  }
+
+  // --- Legacy nested-object format (backward compat) ---
   const fieldNameSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_NAME_SUBFILTER);
   const fieldName = fieldNameSubFilter?.values?.[0];
   if (!fieldName) {
     throw FunctionalError('customFieldValue filter requires a field_name subfilter', { filter });
   }
-  const valueSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_INT_VALUE_SUBFILTER);
-  if (!valueSubFilter) {
-    throw FunctionalError('customFieldValue filter requires an int_value subfilter', { filter });
+
+  // --- integer ---
+  const intSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_INT_VALUE_SUBFILTER);
+  if (intSubFilter) {
+    const parsedValues: (number | string)[] = intSubFilter.values.map((v: any) => {
+      const num = Number(v);
+      return Number.isFinite(num) ? num : v;
+    });
+    const intNestedClauses = op === FilterOperator.Eq
+      ? [
+          { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: FilterOperator.Gte },
+          { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: FilterOperator.Lte },
+        ]
+      : [{ key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: op }];
+    return {
+      newFilter: {
+        key: ['custom_field_values'],
+        values: [],
+        nested: [
+          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
+          ...intNestedClauses,
+        ],
+      },
+      newFilterGroup: undefined,
+    };
   }
 
-  // IMPORTANT: valueSubFilter.operator comes from inside an Any-typed GraphQL field.
-  // Enum values inside Any are NOT deserialized by GraphQL → always arrive as null.
-  // We therefore use filter.operator (the top-level Filter.operator, properly typed) instead.
-  // The GraphQL query must pass the comparison operator at the Filter level, e.g.:
-  //   { key: ["customFieldValue"], operator: gt, values: [
-  //       { key: "field_name", values: ["x_opencti_priority"] },
-  //       { key: "int_value",  values: ["1"] }
-  //     ]
-  //   }
-  const intOperator: string = filter.operator ?? FilterOperator.Eq;
+  // --- string ---
+  const stringSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_STRING_VALUE_SUBFILTER);
+  if (stringSubFilter) {
+    return {
+      newFilter: {
+        key: ['custom_field_values'],
+        values: [],
+        nested: [
+          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
+          { key: CUSTOM_FIELD_STRING_VALUE_SUBFILTER, values: stringSubFilter.values, operator: op },
+        ],
+      },
+      newFilterGroup: undefined,
+    };
+  }
 
-  // int_value is a numeric ES field mapped with { coerce: false }.
-  // Parse string values from GraphQL to actual numbers so ES receives proper numeric types.
-  // For 'eq': use gte+lte (same value) because the 'eq' path in buildLocalMustFilter uses
-  // multi_match + .keyword which does not exist on numeric fields → 0 results.
-  const parsedValues: (number | string)[] = valueSubFilter.values.map((v: any) => {
-    const num = Number(v);
-    return Number.isFinite(num) ? num : v;
-  });
+  // --- select ---
+  const selectSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_SELECT_VALUE_SUBFILTER);
+  if (selectSubFilter) {
+    return {
+      newFilter: {
+        key: ['custom_field_values'],
+        values: [],
+        nested: [
+          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
+          { key: CUSTOM_FIELD_SELECT_VALUE_SUBFILTER, values: selectSubFilter.values, operator: op },
+        ],
+      },
+      newFilterGroup: undefined,
+    };
+  }
 
-  const buildIntValueNestedClauses = () => {
-    if (intOperator === FilterOperator.Eq) {
-      return [
-        { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: FilterOperator.Gte },
-        { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: FilterOperator.Lte },
-      ];
-    }
-    // gt, gte, lt, lte → range query with numeric values (coerce:false safe).
-    // not_eq → known limitation, passes through.
-    return [
-      { key: CUSTOM_FIELD_INT_VALUE_SUBFILTER, values: parsedValues, operator: intOperator },
-    ];
-  };
-
-  const newFilter = {
-    key: ['custom_field_values'],
-    values: [],
-    nested: [
-      { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
-      ...buildIntValueNestedClauses(),
-    ],
-  };
-  return { newFilter };
+  throw FunctionalError('customFieldValue filter requires an int_value, string_value or select_value subfilter', { filter });
 };
 
 const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
@@ -887,8 +937,13 @@ export const completeSpecialFilterKeys = async (
         finalFilters.push(newFilter);
       }
       if (filterKey === CUSTOM_FIELD_VALUE_FILTER) {
-        const { newFilter } = adaptFilterToCustomFieldValueFilterKey(filter);
-        finalFilters.push(newFilter);
+        const { newFilter, newFilterGroup } = adaptFilterToCustomFieldValueFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
         const { newFilter, newFilterGroup } = adaptFilterToServiceAccountFilterKey(filter);
@@ -917,29 +972,17 @@ export const completeSpecialFilterKeys = async (
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }
       const definition = schemaAttributesDefinition.getAttributeByName(key[0]) as ComplexAttribute;
-      if (definition.format === 'standard') {
-        finalFilterGroups.push({
-          mode: filter.mode ?? FilterMode.And,
-          filters: filter.values.map((v) => {
-            const filterKeys = Array.isArray(v.key) ? v.key : [v.key];
-            return { ...v, key: filterKeys.map((k: any) => `${k}.${v.key}`) };
-          }),
-          filterGroups: [],
-        });
-      } else if (definition.format === 'nested') {
-        finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });
+      if (definition?.multiple) {
+        // in case of array attribute, we need to build a nested query
+        const nested = [{ key: 'value', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: [key[0]], nested, mode: filter.mode, values: [] });
       } else {
-        throw UnsupportedError('Object attribute format is not filterable', { format: definition.format });
+        // in case of single value attribute, nothing special to do
+        finalFilters.push(filter);
       }
     } else {
-      // not a special case, leave the filter unchanged
-      // Of special case but in a multi keys filter but is currently not supported
       finalFilters.push(filter);
     }
   }
-  return {
-    ...inputFilters,
-    filters: finalFilters,
-    filterGroups: finalFilterGroups,
-  };
+  return { mode: inputFilters.mode, filters: finalFilters, filterGroups: finalFilterGroups };
 };

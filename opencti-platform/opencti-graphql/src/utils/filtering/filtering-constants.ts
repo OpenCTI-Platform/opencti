@@ -112,6 +112,8 @@ export const PIR_IDS_SUBFILTER = 'pir_ids';
 export const CUSTOM_FIELD_VALUE_FILTER = 'customFieldValue';
 export const CUSTOM_FIELD_NAME_SUBFILTER = 'field_name';
 export const CUSTOM_FIELD_INT_VALUE_SUBFILTER = 'int_value';
+export const CUSTOM_FIELD_STRING_VALUE_SUBFILTER = 'string_value';
+export const CUSTOM_FIELD_SELECT_VALUE_SUBFILTER = 'select_value';
 
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';

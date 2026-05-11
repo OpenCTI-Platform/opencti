@@ -1,8 +1,10 @@
 # Value of a CustomFieldDefinition on a specific entity instance
 type CustomFieldValue {
-  field_id:   ID!      # id of the CustomFieldDefinition
-  field_name: String!  # ex: "x_opencti_priority"
-  int_value:  Int      # value for field_type = integer
+  field_id:     ID!      # id of the CustomFieldDefinition
+  field_name:   String!  # ex: "x_opencti_priority"
+  int_value:    Int      # value for field_type = integer
+  string_value: String   # value for field_type = string
+  select_value: String   # value for field_type = select
 }
 
 type CustomFieldDefinition implements InternalObject & BasicObject {
@@ -16,7 +18,7 @@ type CustomFieldDefinition implements InternalObject & BasicObject {
   # CustomFieldDefinition - mandatory attributes
   name: String!
   label: String!
-  field_type: String!    # 'integer' for now
+  field_type: String!    # 'integer' | 'string' | 'select'
   entity_types: [String!]
   mandatory: Boolean!
   # Common optional
@@ -25,6 +27,8 @@ type CustomFieldDefinition implements InternalObject & BasicObject {
   # Integer-specific
   min_value: Int
   max_value: Int
+  # Select-specific
+  select_options: [String!]
 }
 
 # Ordering
@@ -73,6 +77,8 @@ input CustomFieldDefinitionAddInput {
   # Integer-specific
   min_value: Int
   max_value: Int
+  # Select-specific
+  select_options: [String!]
 }
 
 type Mutation {

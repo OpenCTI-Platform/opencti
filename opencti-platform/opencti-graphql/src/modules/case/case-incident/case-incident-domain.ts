@@ -67,7 +67,13 @@ export const setCaseIncidentCustomFieldValue = async (context: AuthContext, user
   if (!definition.entity_types?.includes(ENTITY_TYPE_CONTAINER_CASE_INCIDENT)) {
     throw FunctionalError('This custom field is not applicable to Case-Incident', { fieldId });
   }
-  // Validate integer constraints
+  // Load current entity to get existing custom_field_values
+  const caseIncident = await storeLoadById<BasicStoreEntityCaseIncident>(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+  if (!caseIncident) throw FunctionalError('CaseIncident not found', { caseIncidentId });
+  const existing: Array<{ field_id: string; field_name: string; int_value?: number; string_value?: string; select_value?: string }> = (caseIncident as any).custom_field_values ?? [];
+  const fieldName = `x_opencti_${definition.name}`;
+  // Validate and build the new entry based on field_type
+  let newEntry: { field_id: string; field_name: string; int_value?: number; string_value?: string; select_value?: string };
   if (definition.field_type === 'integer') {
     const intVal = parseInt(value, 10);
     if (Number.isNaN(intVal)) throw FunctionalError('Value must be an integer', { value });
@@ -77,15 +83,17 @@ export const setCaseIncidentCustomFieldValue = async (context: AuthContext, user
     if (definition.max_value !== undefined && definition.max_value !== null && intVal > definition.max_value) {
       throw FunctionalError(`Value ${intVal} exceeds max_value ${definition.max_value}`);
     }
+    newEntry = { field_id: fieldId, field_name: fieldName, int_value: intVal };
+  } else if (definition.field_type === 'string') {
+    newEntry = { field_id: fieldId, field_name: fieldName, string_value: value };
+  } else if (definition.field_type === 'select') {
+    if (definition.select_options && definition.select_options.length > 0 && !definition.select_options.includes(value)) {
+      throw FunctionalError(`Value "${value}" is not a valid option. Allowed: ${definition.select_options.join(', ')}`);
+    }
+    newEntry = { field_id: fieldId, field_name: fieldName, select_value: value };
+  } else {
+    throw FunctionalError(`Unsupported field_type: ${definition.field_type}`, { field_type: definition.field_type });
   }
-  // Load current entity to get existing custom_field_values
-  const caseIncident = await storeLoadById<BasicStoreEntityCaseIncident>(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
-  if (!caseIncident) throw FunctionalError('CaseIncident not found', { caseIncidentId });
-  const existing: Array<{ field_id: string; field_name: string; int_value?: number }> = (caseIncident as any).custom_field_values ?? [];
-  const fieldName = `x_opencti_${definition.name}`;
-  const newEntry = definition.field_type === 'integer'
-    ? { field_id: fieldId, field_name: fieldName, int_value: parseInt(value, 10) }
-    : { field_id: fieldId, field_name: fieldName };
   const updated = [...existing.filter((v) => v.field_id !== fieldId), newEntry];
   const { element } = await updateAttribute(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT, [
     { key: 'custom_field_values', value: updated, operation: EditOperation.Replace },
