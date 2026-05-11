@@ -4,7 +4,7 @@ All new domain entities must be created in `src/modules/<entity-name>/`.
 This is a strict departure from the old scattered structure (resolvers/, domain/, schema/ folders).
 
 **A module MUST contain:**
-1.  **Schema** (`.graphql`): Defines the API model.
+1.  **Schema** (`<entity-name>.graphql`): Defines the API model.
 2.  **Resolvers** (`-resolver.ts`): Bridges GraphQL to Domain.
 3.  **Domain** (`-domain.ts`): Contains business logic.
 4.  **Types** (`-types.ts`): TypeScript definitions.
