@@ -454,8 +454,8 @@ const useGraphInteractions = () => {
     }
     setGraphData((oldData) => {
       let newGraphData = oldData;
-      // If the from or the to of the link is a relationship and is not already in the graph nodes
-      // add it as a node so the link can be drawn properly.
+      // If the from or the to of the link to add is a relationship displayed as a link
+      // add it as a node so the link to add can be drawn properly.
       if (data.from?.relationship_type) {
         newGraphData = buildGraphDataAfterRelationshipLinkToNodeConversion(newGraphData, rawObjects, rawPositions, data.from);
       }

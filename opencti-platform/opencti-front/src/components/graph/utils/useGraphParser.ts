@@ -339,7 +339,10 @@ const useGraphParser = () => {
     relObj: NonNullable<ObjectToParse['from']>,
   ) => {
     const nodeIds = previousGraphData?.nodes.map((n) => n.id) ?? [];
+
+    // nothing to do if the object to transform is not a relationship
     if (!relObj.relationship_type) return previousGraphData;
+    // nothing to do if the object to transform is already in the graph nodes (= if the relationship to transform is not displayed as a link but already as a node)
     if (nodeIds.includes(relObj.id)) return previousGraphData;
 
     const relRaw = rawObjects.find((o) => o.id === relObj.id);
@@ -349,17 +352,25 @@ const useGraphParser = () => {
     const [linkToRelNode, linkFromRelNode] = buildNestedLinks(relRaw);
 
     // Defensive: should never filter anything since we already checked nodeIdSet above.
-    const previousNodes = (previousGraphData?.nodes ?? []).filter((n) => n.id !== nodeToAdd.id);
+    const filteredNodes = (previousGraphData?.nodes ?? []).filter((n) => n.id !== nodeToAdd.id);
     // Remove the single link that was representing this relationship
-    const previousLinks = (previousGraphData?.links ?? []).filter((link) => link.id !== relRaw.id);
+    const filteredLinks = (previousGraphData?.links ?? []).filter((link) => link.id !== relRaw.id);
 
     return {
-      nodes: [...previousNodes, nodeToAdd],
-      links: [...previousLinks, linkToRelNode, linkFromRelNode],
+      nodes: [...filteredNodes, nodeToAdd],
+      links: [...filteredLinks, linkToRelNode, linkFromRelNode],
     };
   };
 
-  return { buildGraphData, buildCorrelationData, buildNode, buildLink, buildNestedLinks, isNestedRelationship, buildGraphDataAfterRelationshipLinkToNodeConversion };
+  return {
+    buildGraphData,
+    buildCorrelationData,
+    buildNode,
+    buildLink,
+    buildNestedLinks,
+    isNestedRelationship,
+    buildGraphDataAfterRelationshipLinkToNodeConversion,
+  };
 };
 
 export default useGraphParser;
