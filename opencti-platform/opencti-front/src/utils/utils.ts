@@ -72,17 +72,29 @@ export const getCurrentTab = (fullpath: string, basePath: string) => {
   return nextSlashPos >= 0 ? subpath.substring(0, nextSlashPos) : subpath;
 };
 
+/**
+ * Compute the right padding to apply on an entity page based on the current route.
+ * - Knowledge pages get extra padding (200) for the timeline/graph side panel.
+ * - Content pages get padding (350) for the files side panel, except the mapping view which needs full width.
+ *
+ * @param locationPath - The current location pathname.
+ * @param entityBasePath - The base path of the entity being viewed.
+ * @param applyKnowledgePadding - Whether to apply padding on knowledge routes (default: true).
+ * @returns The right padding value
+ */
 export const getPaddingRight = (locationPath: string, entityBasePath: string, applyKnowledgePadding = true) => {
   let paddingRight = 0;
   if (
-    applyKnowledgePadding && locationPath.includes(
-      `${entityBasePath}/knowledge`,
-    )
+    applyKnowledgePadding && locationPath.includes(`${entityBasePath}/knowledge`)
   ) {
     paddingRight = 200;
   }
   if (locationPath.includes(`${entityBasePath}/content`)) {
-    paddingRight = 350;
+    if (locationPath.includes(`${entityBasePath}/content/mapping`)) {
+      paddingRight = 0;
+    } else {
+      paddingRight = 350;
+    }
   }
   return paddingRight;
 };
