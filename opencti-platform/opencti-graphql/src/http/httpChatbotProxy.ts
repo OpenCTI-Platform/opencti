@@ -39,7 +39,7 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
   const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
 
   if (!isChatbotCGUAccepted || !isLicenseValidated) {
-    logApp.error('Chatbot not enabled', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated });
+    logApp.info('Chatbot not enabled', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated });
     res.status(400).json({ error: 'Chatbot is not enabled' });
     return null;
   }
