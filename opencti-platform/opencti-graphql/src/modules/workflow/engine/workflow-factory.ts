@@ -11,15 +11,18 @@ import { FilterMode, FilterOperator, type Filter, type FilterGroup } from '../..
  */
 export class WorkflowFactory {
   // Helper to access nested properties: "workflow_role" -> ctx.user.role
+  // Conditions always evaluate against the triggering user (the actual caller),
+  // while actions run as WORKFLOW_MANAGER_USER. triggeringUser is set by workflow-domain.ts.
   private static getNestedValue(ctx: any, key: string): string | string[] {
+    const ctxUser = (ctx as any).triggeringUser ?? (ctx as any).user;
     if (key === 'workflow_group') {
-      return ((ctx as any)?.user?.groups || []).map((g: any) => g.id);
+      return (ctxUser?.groups || []).map((g: any) => g.id);
     } else if (key === 'workflow_organization') {
-      return ((ctx as any)?.user?.organizations || []).map((o: any) => o.id);
+      return (ctxUser?.organizations || []).map((o: any) => o.id);
     } else if (key === 'workflow_role') {
-      return ((ctx as any)?.user?.roles || []).map((r: any) => r.name);
+      return (ctxUser?.roles || []).map((r: any) => r.name);
     } else if (key === 'workflow_user') {
-      return ((ctx as any)?.user?.id || ((ctx as any)?.user?.internal_id) || null);
+      return (ctxUser?.id || ctxUser?.internal_id || null);
     } else if (key === 'name') {
       return ctx.entity.name;
     } else {

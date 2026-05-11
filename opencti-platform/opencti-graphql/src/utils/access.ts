@@ -72,6 +72,7 @@ const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const EXPIRATION_MANAGER_USER_UUID = '21763151-f598-4f49-97c5-9051b2d25a5c';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const AUTOMATION_MANAGER_USER_UUID = 'c49fe040-2dad-412d-af07-ce639204ad55';
+export const WORKFLOW_MANAGER_USER_UUID = '0a9592ed-0e00-4585-a4e8-219e33f4db48';
 export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
 export const GARBAGE_COLLECTION_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c2';
 const TELEMETRY_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c3';
@@ -511,6 +512,31 @@ export const HUB_REGISTRATION_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const WORKFLOW_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: WORKFLOW_MANAGER_USER_UUID,
+  internal_id: WORKFLOW_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'WORKFLOW MANAGER',
+  user_email: 'WORKFLOW MANAGER',
+  origin: { user_id: WORKFLOW_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_tokens: [],
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: { max_confidence: 100, overrides: [] },
+  user_confidence_level: { max_confidence: 100, overrides: [] },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export interface AuthorizedMember { id: string; access_right: string; groups_restriction_ids?: string[] | null }
 
 class TracingContext {
@@ -567,6 +593,7 @@ export const INTERNAL_USERS = {
   [RESTRICTED_USER.id]: RESTRICTED_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
+  [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -579,6 +606,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
+  [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
 };
 
 export const isInternalUser = (user: AuthUser): boolean => {

@@ -6,6 +6,7 @@ import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
+import { WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { generateInternalId } from '../../../schema/identifier';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { createListTask } from '../../../domain/backgroundTask-common';
@@ -124,7 +125,8 @@ const ensureWorkflowInstance = async (
   const definition = WorkflowFactory.createDefinition(definitionData);
   const workflowContext = {
     entity,
-    user: executionUser,
+    user: WORKFLOW_MANAGER_USER,
+    triggeringUser: executionUser,
     context: executionContext,
     runtimeParams: {},
     __createListTask: createListTask,
@@ -434,7 +436,8 @@ export const triggerWorkflowEvent = async (
 
     const workflowContext = {
       entity,
-      user: executionUser,
+      user: WORKFLOW_MANAGER_USER,
+      triggeringUser: executionUser,
       context: executionContext,
       runtimeParams,
       __createListTask: createListTask,
