@@ -70,7 +70,7 @@ describe('useWorkflowInitialElements', () => {
     ],
     transitions: [
       {
-        from: 'status-open',
+        from: ['status-open'],
         to: 'status-closed',
         event: 'close_event',
         conditions: {},
@@ -221,7 +221,7 @@ describe('useWorkflowInitialElements', () => {
       ...mockWorkflowDefinition!,
       transitions: [
         {
-          from: 'status-open',
+          from: ['status-open'],
           to: 'status-closed',
           event: 'share_event',
           conditions: {},
@@ -260,7 +260,7 @@ describe('useWorkflowInitialElements', () => {
       ...mockWorkflowDefinition!,
       transitions: [
         {
-          from: 'status-open',
+          from: ['status-open'],
           to: 'status-closed',
           event: 'unshare_event',
           conditions: {},
