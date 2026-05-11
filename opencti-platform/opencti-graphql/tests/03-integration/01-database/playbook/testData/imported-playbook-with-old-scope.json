@@ -1,5 +1,5 @@
 {
-  "openCTI_version": "6.260430.0",
+  "openCTI_version": "6.8.0",
   "type": "playbook",
   "configuration": {
     "name": "test config",

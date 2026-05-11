@@ -1,0 +1,10 @@
+{
+  "openCTI_version": "6.9.0",
+  "type": "random",
+  "configuration": {
+    "name": "test config",
+    "description": "",
+    "playbook_start": "ce1413d0-d93b-45ae-9cda-24fea1ab67b7",
+    "playbook_definition": "{\"nodes\":[{\"id\":\"ce1413d0-d93b-45ae-9cda-24fea1ab67b7\",\"name\":\"Listen knowledge events\",\"position\":{\"x\":0,\"y\":0},\"component_id\":\"PLAYBOOK_INTERNAL_DATA_STREAM\",\"configuration\":\"{\\\"create\\\":true,\\\"update\\\":true,\\\"delete\\\":false,\\\"filters\\\":\\\"{\\\\\\\"mode\\\\\\\":\\\\\\\"and\\\\\\\",\\\\\\\"filters\\\\\\\":[],\\\\\\\"filterGroups\\\\\\\":[]}\\\",\\\"canEnrollManually\\\":true}\"},{\"id\":\"01c5e873-df20-41db-805b-00ac26d0de88\",\"name\":\"Apply predefined rule\",\"position\":{\"x\":0,\"y\":150},\"component_id\":\"PLAYBOOK_RULE_COMPONENT\",\"configuration\":\"{\\\"rule\\\":\\\"resolve_container\\\",\\\"inferences\\\":false}\"},{\"id\":\"78411f5e-e053-4e03-92c5-748845ec2de9\",\"name\":\"Container wrapper\",\"position\":{\"x\":-100,\"y\":300},\"component_id\":\"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT\",\"configuration\":\"{\\\"actions\\\":[],\\\"all\\\":true,\\\"applyWithFilters\\\":\\\"{\\\\\\\"mode\\\\\\\":\\\\\\\"and\\\\\\\",\\\\\\\"filters\\\\\\\":[],\\\\\\\"filterGroups\\\\\\\":[]}\\\",\\\"container_type\\\":\\\"Feedback\\\",\\\"excludeMainElement\\\":true}\"},{\"id\":\"2853a108-7d66-4904-aefa-67259308338a\",\"name\":\"Send for ingestion\",\"position\":{\"x\":-100,\"y\":450},\"component_id\":\"PLAYBOOK_INGESTION_COMPONENT\",\"configuration\":\"{}\"}],\"links\":[]}"
+  }
+}
