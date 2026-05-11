@@ -151,7 +151,7 @@ const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> =
   const { settings } = useContext(UserContext);
 
   const urlPath = data.metadata?.find((m) => m?.key === 'url_path')?.value;
-  const href = !!settings?.platform_xtmhub_url && urlPath ? new URL(urlPath, settings.platform_xtmhub_url).toString() : undefined;
+  const href = !!settings?.platform_xtmhub_url && urlPath?.startsWith('/') ? new URL(urlPath, settings.platform_xtmhub_url).toString() : undefined;
 
   if (!href) return null;
 

@@ -3,7 +3,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
-import { Navigate, Outlet, useLocation, useMatch, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useMatch, useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -33,7 +33,6 @@ const Notifications: FunctionComponent = () => {
   const { isXTMHubAccessible, me } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isXTMHubNewsFeedEnabled = isFeatureEnable('XTMHUB_NEWS_FEED_ENABLED');
-  const location = useLocation();
   const navigate = useNavigate();
 
   setTitle(t_i18n('Notifications'));
