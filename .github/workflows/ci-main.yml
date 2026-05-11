@@ -2,6 +2,8 @@ name: OpenCTI CI
 on:
   workflow_dispatch:
   push:
+    branches:
+      - '**'
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -16,12 +18,12 @@ jobs:
       - uses: dorny/paths-filter@v4
         id: filter
         with:
+          predicate-quantifier: every
           filters: |
             code:
               - '**'
               - '!docs/**'
-              - '!**.md'
-              - '!.github/*.md'
+              - '!**/*.md'
 
   wf-build-image:
       name: Build image
