@@ -26,6 +26,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
+import { computeLoaders } from './httpAuthenticatedContext';
 import { buildRateLimiterOptions } from './httpUtils';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -34,6 +35,40 @@ const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
+
+export const extractWsSessionContext = async (context) => {
+  const req = context.extra.request;
+  const webSocket = context.extra.socket;
+  // This will be run every time the client sends a subscription request
+  const wsSession = await new Promise((resolve) => {
+    // use same session parser as normal gql queries
+    const { session } = applicationSession;
+    session(req, {}, () => {
+      if (req.session) {
+        resolve(req.session);
+      }
+      return false;
+    });
+  });
+  // We have a good session. attach to context
+
+  if (wsSession?.user) {
+    const sessionContext = executionContext('api');
+    const origin = {
+      socket: 'subscription',
+      ip: webSocket._socket.remoteAddress,
+      user_id: wsSession.user?.id,
+      group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
+      organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
+    };
+    const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
+    const logged = platformUsers.get(wsSession?.user.id);
+    sessionContext.user = { ...wsSession?.user, ...logged, origin };
+    sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
+    return sessionContext;
+  }
+  throw ForbiddenAccess('User must be authenticated');
+};
 
 const createHttpServer = async () => {
   logApp.info('[INIT] Configuring HTTP/HTTPS server');
@@ -76,37 +111,7 @@ const createHttpServer = async () => {
   });
   const serverCleanup = useServer({
     schema,
-    context: async (ctx) => {
-      const req = ctx.extra.request;
-      const webSocket = ctx.extra.socket;
-      // This will be run every time the client sends a subscription request
-      const wsSession = await new Promise((resolve) => {
-        // use same session parser as normal gql queries
-        const { session } = applicationSession;
-        session(req, {}, () => {
-          if (req.session) {
-            resolve(req.session);
-          }
-          return false;
-        });
-      });
-      // We have a good session. attach to context
-      if (wsSession?.user) {
-        const context = executionContext('api');
-        const origin = {
-          socket: 'subscription',
-          ip: webSocket._socket.remoteAddress,
-          user_id: wsSession.user?.id,
-          group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
-          organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
-        };
-        const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-        const logged = platformUsers.get(wsSession?.user.id);
-        context.user = { ...wsSession?.user, ...logged, origin };
-        return context;
-      }
-      throw ForbiddenAccess('User must be authenticated');
-    },
+    context: extractWsSessionContext,
   }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
