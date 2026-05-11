@@ -45,13 +45,13 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
   const theme = useTheme<Theme>();
   const { fitView, getNode } = useReactFlow();
 
-  const { workflowDefinition, statusTemplates, members, organizations } = usePreloadedQuery<SubTypeWorkflowQuery>(
+  const { workflowDefinition, statusTemplates, members, organizations, groups } = usePreloadedQuery<SubTypeWorkflowQuery>(
     workflowQuery,
     queryRef,
   );
 
   // 1. Get initial edges and nodes from workflow definition
-  const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members, organizations);
+  const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members, organizations, groups);
 
   const [nodes, _dispatchNodes, onNodesChange] = useNodesState<Node>(initialNodes);
   const [edges, _dispatchEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);

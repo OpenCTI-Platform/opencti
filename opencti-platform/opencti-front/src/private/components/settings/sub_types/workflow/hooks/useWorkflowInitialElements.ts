@@ -3,7 +3,7 @@ import { Node, Edge, MarkerType } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
-import { AuthorizedMembers, authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
+import { authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
 import { Connection, getNodes } from '../../../../../../utils/connection';
 import { Action, CommentMode, WorkflowNodeType } from '../utils';
 
@@ -27,6 +27,7 @@ export const useWorkflowInitialElements = (
   statusTemplatesEdges: SubTypeWorkflowQuery$data['statusTemplates'],
   membersEdges: SubTypeWorkflowQuery$data['members'],
   organizationsEdges: SubTypeWorkflowQuery$data['organizations'] | null,
+  groupsEdges: SubTypeWorkflowQuery$data['groups'] | null,
 ) => {
   const theme = useTheme<Theme>();
 
@@ -36,6 +37,7 @@ export const useWorkflowInitialElements = (
     const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
     const members = convertEdgesToObject(membersEdges);
     const organizations = convertEdgesToObject(organizationsEdges);
+    const groups = convertEdgesToObject(groupsEdges);
 
     // Populate authorized members
     const parseActions = (actions?: ReadonlyArray<ReadOnlyAction> | null): Action[] => {
@@ -45,16 +47,21 @@ export const useWorkflowInitialElements = (
 
       return actions.map((action) => {
         if (action.type === 'updateAuthorizedMembers') {
+          const rawMembers = (action?.params as { authorized_members?: { id: string; access_right: string; groups_restriction_ids?: string[] }[] })?.authorized_members ?? [];
           return {
             ...action,
             params: {
               authorized_members: authorizedMembersToOptions(
-                (action?.params as { authorized_members: AuthorizedMembers })
-                  ?.authorized_members
-                  ?.map((am) => ({
-                    ...am,
-                    ...members[am.id],
-                  })) ?? null,
+                rawMembers.map((am) => ({
+                  ...members[am.id],
+                  id: am.id,
+                  member_id: am.id,
+                  access_right: am.access_right,
+                  groups_restriction: (am.groups_restriction_ids ?? []).map((gid) => ({
+                    id: gid,
+                    name: groups[gid]?.name ?? gid,
+                  })),
+                })),
               ),
             },
           };
