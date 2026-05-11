@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT, type SecurityCoverageConfiguration } from '../../../../src/modules/playbook/components/security-coverage-component';
+import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT, type SecurityCoverageConfiguration } from '../../../../../src/modules/playbook/components/security-coverage-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import type { StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
-import type { StixDomainObject } from '../../../../src/types/stix-2-1-common';
+import type { StixSecurityCoverage } from '../../../../../src/modules/securityCoverage/securityCoverage-types';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
+import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common';
 
 const REPORT_ID = 'report--b4754e7d-88b4-51d9-aac4-86edaad66c4d';
 const INTRUSION_SET_ID = 'intrusion-set--1ad04810-ab05-5873-96f5-a89d19607e1c';

@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { findById, playbookDelete, playbookImport } from '../../../src/modules/playbook/playbook-domain';
-import type { AuthContext } from '../../../src/types/user';
-import { ADMIN_USER } from '../../utils/testQuery';
+import { findById, playbookDelete, playbookImport } from '../../../../src/modules/playbook/playbook-domain';
+import type { AuthContext } from '../../../../src/types/user';
+import { ADMIN_USER } from '../../../utils/testQuery';
 import { open } from 'fs/promises';
-import { ENTITY_TYPE_PLAYBOOK } from '../../../src/modules/playbook/playbook-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../../../../src/modules/playbook/playbook-types';
 import { join } from 'path';
 
 describe('playbook-domain', () => {

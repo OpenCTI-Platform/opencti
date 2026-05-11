@@ -1,14 +1,14 @@
 import { describe, expect, it, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDomainObject';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
-import * as authorizedMembers from '../../../../src/utils/authorizedMembers';
-import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/playbook/components/access-restrictions-component';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../../src/modules/organization/organization-types';
+import * as authorizedMembers from '../../../../../src/utils/authorizedMembers';
+import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../../src/modules/playbook/components/access-restrictions-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
-import { USER_EDITOR } from '../../../utils/testQuery';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
-import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../../src/modules/grouping/grouping-types';
+import { USER_EDITOR } from '../../../../utils/testQuery';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../../src/modules/case/case-incident/case-incident-types';
 
 describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
   const REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
