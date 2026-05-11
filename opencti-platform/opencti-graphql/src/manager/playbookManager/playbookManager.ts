@@ -82,21 +82,21 @@ export const getManagerInfo = async () => {
 };
 
 const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
-  try {
-    if (streamEvents.length === 0) {
-      return;
-    }
-    const context = executionContext(PLAYBOOK_MANAGER_NAME);
-    const isEE = await isEnterpriseEdition(context);
-    if (!isEE) {
-      return;
-    }
-    const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
-    for (let index = 0; index < streamEvents.length; index += 1) {
-      const streamEvent = streamEvents[index];
-      const { id: eventId, data: { data, type, origin, scope } } = streamEvent;
-      // For each event we need to check ifs
-      for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
+  if (streamEvents.length === 0) {
+    return;
+  }
+  const context = executionContext(PLAYBOOK_MANAGER_NAME);
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return;
+  }
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  for (let index = 0; index < streamEvents.length; index += 1) {
+    const streamEvent = streamEvents[index];
+    const { id: eventId, data: { data, type, origin, scope } } = streamEvent;
+    // For each event we need to check ifs
+    for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
+      try { // try catch per playbook and per event to avoid losing events if an error is thrown on a playbook event
         const playbook = playbooks[playbookIndex];
         const currentPlaybookInDebug = isDebugPlaybook(playbook.id);
         if (currentPlaybookInDebug) {
@@ -156,11 +156,11 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             }
           }
         }
+      } catch (e) {
+        logApp.error('[OPENCTI-MODULE] Playbook manager stream error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
       }
-      await redisSetManagerEventState(PLAYBOOK_MANAGER_NAME, streamEvent.id);
     }
-  } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Playbook manager stream error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
+    await redisSetManagerEventState(PLAYBOOK_MANAGER_NAME, streamEvent.id);
   }
 };
 
