@@ -38,7 +38,7 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
-import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { findFiltersFromKey, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -751,7 +751,23 @@ const createSseMiddleware = () => {
         logApp.info(`[STREAM] Listening stream ${id} from ${startMessage}${recoveringMessage}`);
         // Start recovery if needed
         const isRecoveryMode = isNotEmptyField(recoverIsoDate) && utcDate(recoverIsoDate).isAfter(startIsoDate);
-        if (isRecoveryMode) {
+        // Origin filters can only match against the live event envelope; Elasticsearch does not
+        // store the original origin so a recovery would either flood the consumer with un-filtered
+        // historical data (security/contract violation) or drop everything (useless work).
+        // We bypass the recovery entirely and let the consumer know via an explicit SSE event.
+        const isOriginFilteredStream = isFilterGroupNotEmpty(originFilters);
+        const skipRecoveryForOriginFilters = isRecoveryMode && isOriginFilteredStream;
+        if (skipRecoveryForOriginFilters) {
+          logApp.warn('[STREAM] Skipping Elasticsearch recovery because origin_filters is set on this stream', { streamCollectionId: id });
+          if (channel.connected()) {
+            await channel.sendEvent(streamEventId(utcDate().toDate()), 'no-recover', {
+              stream: id,
+              message: 'Recovery from history is disabled on streams configured with origin filters; resuming from live events only.',
+              resume_from: recoverStreamId,
+            });
+          }
+        }
+        if (isRecoveryMode && !skipRecoveryForOriginFilters) {
           // noinspection UnnecessaryLocalVariableJS
           const queryCallback = async (elements) => {
             const workingElementsIds = elements.filter((e) => !cache.has(e.standard_id)).map((e) => e.internal_id);

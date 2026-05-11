@@ -1701,7 +1701,22 @@ class ListenStream(threading.Thread):
                         q.put(msg.event, block=False)
                     except queue.Full:
                         pass
-                    if (
+                    if msg.event == "no-recover":
+                        # Server signaled that recovery from history is disabled for this stream
+                        # (typically because origin_filters is set on the live stream collection).
+                        # Acknowledge once and persist `recover_until = False` so subsequent
+                        # restarts don't bother sending the recover query parameter.
+                        self.helper.connector_logger.warning(
+                            "Live stream recovery skipped by the platform; switching to live-only mode",
+                            {"data": msg.data},
+                        )
+                        state = self.helper.get_state()
+                        if state is None:
+                            self.exit_event.set()
+                        else:
+                            state["recover_until"] = False
+                            self.helper.set_state(state)
+                    elif (
                         msg.event == "heartbeat"
                         or msg.event == "consumer_metrics"
                         or msg.event == "connected"
