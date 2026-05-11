@@ -494,8 +494,12 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
 
     // Check if score is in input, unless it's the original score
     // Only if there is no valid until in input too
-    if (scoreEditInput && !scoreEditInput.value.includes(baseScore) && !validUntilEditInput) {
-      const newScore = scoreEditInput.value[0];
+    // Note: HTML number inputs always return strings via event.target.value, so the frontend may send
+    // the score as a string (e.g. "100") even though it is stored as a number (100) in the database.
+    // Using strict equality (===) or Array.includes() would fail here due to this type mismatch.
+    // We therefore convert both sides to Number before comparing to ensure correct behaviour.
+    if (scoreEditInput && !scoreEditInput.value.map((v) => Number(v)).includes(Number(baseScore)) && !validUntilEditInput) {
+      const newScore = Number(scoreEditInput.value[0]);
       // First check if the same update by the same source exists
       if (!hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)) {
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
