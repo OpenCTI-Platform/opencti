@@ -4,6 +4,7 @@ import { InsertChartOutlined, NotificationsOutlined, OpenInNewOutlined } from '@
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
+import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
 
 export interface NewsFeedToastData {
   id: string;
@@ -20,12 +21,10 @@ export const NEWS_FEED_TOAST_WIDTH = 450;
 
 interface NewsFeedToastItemProps {
   item: NewsFeedToastData;
-  xtmHubUrl: string;
 }
 
 const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
   item,
-  xtmHubUrl,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -33,12 +32,7 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
   const IconComponent: React.ElementType = NEWS_FEED_ICON_MAP[item.news_feed_type] ?? NotificationsOutlined;
 
   const urlPath = item.metadata?.find((m) => m?.key === 'url_path')?.value;
-  let resourceLink;
-  try {
-    resourceLink = xtmHubUrl && urlPath ? new URL(urlPath, xtmHubUrl).toString() : undefined;
-  } catch (_) {
-    // catch malformed URL error
-  }
+  const resourceLink = useXTMHubResourceLink(urlPath);
 
   const glassStyle = {
     backgroundColor: `${theme.palette.primary.main}22`,

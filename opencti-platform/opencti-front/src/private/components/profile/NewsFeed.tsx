@@ -19,7 +19,7 @@ import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../util
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import useChipOverflow from '../data/IngestionCatalog/components/card/usecases/useChipOverflow';
-import { isRelativeUrl } from '../../../utils/url';
+import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
 
 const LOCAL_STORAGE_KEY = 'newsFeed';
 
@@ -157,11 +157,9 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
 
 const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> = ({ data }) => {
   const { t_i18n } = useFormatter();
-  const { settings } = useContext(UserContext);
 
   const urlPath = data.metadata?.find((m) => m?.key === 'url_path')?.value;
-  const isRelativeUrlPath = !!urlPath && isRelativeUrl(urlPath);
-  const href = !!settings?.platform_xtmhub_url && isRelativeUrlPath ? new URL(urlPath, settings.platform_xtmhub_url).toString() : undefined;
+  const href = useXTMHubResourceLink(urlPath);
 
   if (!href) return null;
 

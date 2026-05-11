@@ -105,7 +105,7 @@ const NewsFeedToastManager: FunctionComponent = () => {
 
       {/* Toast items */}
       {visibleToasts.map((toast) => (
-        <NewsFeedToastItem key={toast.id} item={toast} xtmHubUrl={xtmHubUrl} />
+        <NewsFeedToastItem key={toast.id} item={toast} />
       ))}
 
       {/* Overflow banner */}
