@@ -545,9 +545,10 @@ class DataTableToolBar extends Component {
   }
 
   handleLaunchEnrollPlaybook(playbookId) {
+    const selectedPlaybook = this.state.enrollPlaybooks.find((p) => p.value === playbookId);
     const actions = [{
       type: 'ENROLL_PLAYBOOK',
-      context: { values: [playbookId] },
+      context: { values: [selectedPlaybook ? { id: playbookId, name: selectedPlaybook.label } : playbookId] },
     }];
     this.setState({ actions }, () => {
       this.handleCloseEnrollPlaybook();
@@ -1521,6 +1522,8 @@ class DataTableToolBar extends Component {
     const { t, classes } = this.props;
 
     const { actionsInputs } = this.state;
+
+    console.log('actionsInputs', actionsInputs);
     const selectedField = actionsInputs[i]?.field;
     const disabled = selectedField == null || selectedField === '';
 

@@ -3217,13 +3217,13 @@ class OpenCTIStix2:
             )
 
     def enroll_playbook(self, item):
-        playbook_ids = self.opencti.get_attribute_in_extension("playbook_ids", item)
-        if playbook_ids is None:
-            playbook_ids = item.get("playbook_ids", [])
+        playbook_id = self.opencti.get_attribute_in_extension("playbook_id", item)
+        if playbook_id is None:
+            playbook_id = item.get("playbook_id")
         entity_id = self.opencti.get_attribute_in_extension("id", item)
         if entity_id is None:
             entity_id = item.get("id")
-        for playbook_id in playbook_ids:
+        if playbook_id and entity_id:
             self.opencti.playbook.enroll_playbook(
                 playbook_id=playbook_id, entity_id=entity_id
             )

@@ -246,7 +246,8 @@ const baseOperationBuilder = (actionType, operations, element) => {
   // Playbook enrollment
   if (isFeatureEnabled('BULK_ENROLLMENT') && actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
     baseOperationObject.opencti_operation = 'enroll_playbook';
-    baseOperationObject.playbook_ids = operations[0].context.values;
+    const playbookValues = operations[0].context.values;
+    baseOperationObject.playbook_id = Array.isArray(playbookValues) ? playbookValues[0] : playbookValues;
   }
   return baseOperationObject;
 };
