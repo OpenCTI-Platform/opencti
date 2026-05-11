@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
@@ -253,6 +253,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   if (viewType === 'killchain') {
     exportName = `${stixDomainObjectName ? `${stixDomainObjectName} - ${t_i18n('Global kill chain')}` : t_i18n('Global kill chain')}`;
   }
+  const exportImageContainerRef = useRef<HTMLDivElement>(null);
   return (
     <>
       <Grid container={true} spacing={3} sx={{ marginBottom: 3 }}>
@@ -476,7 +477,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         </div>
       )}
       <div className={classes.export}>
-        <ExportButtons domElementId="container" name={exportName} />
+        <ExportButtons contentContainerRef={exportImageContainerRef} name={exportName} />
       </div>
       <div className="clearfix" />
       {viewType !== 'diamond' && (
@@ -528,6 +529,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     entityLink={link}
                     paginationOptions={queryPaginationOptions}
                     stixDomainObjectId={stixDomainObjectId}
+                    containerRef={exportImageContainerRef}
                   />
                 );
               }
@@ -538,6 +540,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                   paginationOptions={queryPaginationOptions}
                   stixDomainObjectId={stixDomainObjectId}
                   timeField={timeField}
+                  containerRef={exportImageContainerRef}
                 />
               );
             }

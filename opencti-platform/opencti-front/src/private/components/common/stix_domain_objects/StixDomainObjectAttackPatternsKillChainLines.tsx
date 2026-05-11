@@ -27,6 +27,7 @@ interface StixDomainObjectAttackPatternsKillChainLinesProps {
   onDelete: () => void;
   searchTerm: string;
   coursesOfAction?: boolean;
+  containerRef?: React.Ref<HTMLDivElement>;
 }
 
 const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomainObjectAttackPatternsKillChainLinesProps> = ({
@@ -34,6 +35,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
   searchTerm,
   paginationOptions,
   coursesOfAction,
+  containerRef,
 }) => {
   const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
   const { t_i18n } = useFormatter();
@@ -126,6 +128,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
           paddingBottom: 70,
         }}
         id="container"
+        ref={containerRef}
       >
         <List id="test">
           {sortedAttackPatternsElement.map((element) => (

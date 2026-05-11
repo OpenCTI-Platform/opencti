@@ -452,6 +452,7 @@ const ContainerHeader = (props) => {
     enableEnrollPlaybook,
     redirectToContent,
     enableEnricher,
+    exportImageContainerRef,
   } = props;
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
@@ -609,7 +610,7 @@ const ContainerHeader = (props) => {
 
                 {knowledge && (
                   <ExportButtons
-                    domElementId="container"
+                    contentContainerRef={exportImageContainerRef}
                     name={t_i18n('Report representation')}
                     pixelRatio={currentMode === 'graph' ? 1 : 2}
                     adjust={adjust}

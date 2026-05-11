@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Ref, useState } from 'react';
 import fileDownload from 'js-file-download';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
@@ -54,6 +54,7 @@ type WorkspaceHeaderProps = {
   handleAddWidget?: (widget: Widget) => void;
   handleImportWidget?: (widgetFile: File) => void;
   handleExport?: (workspace: { id: string; name: string }) => void;
+  contentContainerRef: Ref<HTMLElement>;
 };
 
 const WorkspaceHeader = ({
@@ -63,6 +64,7 @@ const WorkspaceHeader = ({
   handleAddWidget = () => {},
   handleImportWidget = () => {},
   handleExport = () => {},
+  contentContainerRef,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -109,7 +111,7 @@ const WorkspaceHeader = ({
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <ExportButtons
-            domElementId="container"
+            contentContainerRef={contentContainerRef}
             name={workspace.name}
             type={workspace.type}
             adjust={adjust}

@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useReducer, useState } from 'react';
+import { SyntheticEvent, useEffect, useReducer, useRef, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
@@ -149,6 +149,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
     timeLineFilters: params['timeLineFilters'] ?? emptyFilterGroup,
     timeLineSearchTerm: params['timeLineSearchTerm'] ?? '',
   }));
+  const exportImageContainerRef = useRef<HTMLDivElement>(null);
 
   const saveView = () => saveViewParameters(
     navigate,
@@ -262,6 +263,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
       }}
       id={location.pathname.includes('matrix') ? 'parent' : 'container'}
       data-testid="report-knowledge"
+      ref={exportImageContainerRef}
     >
       {mode !== 'graph' && (
         <ContainerHeader
@@ -272,6 +274,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
           knowledge={true}
           enableSuggestions={true}
           investigationAddFromContainer={investigationAddFromContainer}
+          exportImageContainerRef={exportImageContainerRef}
         />
       )}
       <Routes>

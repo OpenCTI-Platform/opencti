@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Ref, Suspense } from 'react';
 import { graphql } from 'react-relay';
 import { GroupingKnowledgeGraphQuery$data } from './__generated__/GroupingKnowledgeGraphQuery.graphql';
 import useGroupingKnowledgeGraphDeleteRelation from './useGroupingKnowledgeGraphDeleteRelation';
@@ -27,6 +27,7 @@ interface GroupingKnowledgeGraphProps {
   id: string;
   mode: string;
   enableReferences: boolean;
+  exportImageContainerRef: Ref<HTMLElement>;
 }
 
 const GroupingKnowledgeGraph = ({
@@ -34,6 +35,7 @@ const GroupingKnowledgeGraph = ({
   data,
   mode,
   enableReferences,
+  exportImageContainerRef,
 }: GroupingKnowledgeGraphProps) => {
   const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<GraphContainerKnowledgeObjectsQuery>(
@@ -105,6 +107,7 @@ const GroupingKnowledgeGraph = ({
         onAddRelation={addRelationInGraph}
         onDeleteRelation={deleteRelationInGraph}
         onPositionsChanged={savePositions}
+        exportImageContainerRef={exportImageContainerRef}
       />
     </Suspense>
   );

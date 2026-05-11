@@ -28,6 +28,7 @@ class GroupingKnowledgeComponent extends Component {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
       currentKillChain: propOr('mitre-attack', 'currentKillChain', params),
     };
+    this.exportImageContainerRef = React.createRef();
   }
 
   saveView() {
@@ -56,6 +57,7 @@ class GroupingKnowledgeComponent extends Component {
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
         data-testid="groupings-knowledge"
+        ref={this.exportImageContainerRef}
       >
         {mode !== 'graph' && (
           <ContainerHeader
@@ -66,6 +68,7 @@ class GroupingKnowledgeComponent extends Component {
             knowledge={true}
             enableSuggestions={true}
             investigationAddFromContainer={investigationAddFromContainer}
+            exportImageContainerRef={this.exportImageContainerRef}
           />
         )}
         <Routes>
@@ -83,6 +86,7 @@ class GroupingKnowledgeComponent extends Component {
                         data={props.grouping}
                         mode={mode}
                         enableReferences={enableReferences}
+                        exportImageContainerRef={this.exportImageContainerRef}
                       />
                     );
                   }

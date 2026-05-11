@@ -37,6 +37,7 @@ class StixDomainObjectTimelineComponent extends Component {
       entityLink,
       timeField,
       t,
+      containerRef,
     } = this.props;
     const stixRelationships = pipe(
       map((n) => n.node),
@@ -56,7 +57,7 @@ class StixDomainObjectTimelineComponent extends Component {
 
     return (
       <div style={{ marginBottom: 90 }}>
-        <div id="container">
+        <div id="container" ref={containerRef}>
           <Timeline position="alternate">
             {stixRelationships.map((stixRelationship) => {
               let link = null;

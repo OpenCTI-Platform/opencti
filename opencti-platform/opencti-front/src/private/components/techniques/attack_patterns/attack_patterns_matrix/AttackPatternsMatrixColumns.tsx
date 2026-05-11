@@ -153,6 +153,7 @@ const AttackPatternsMatrixColumns = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  containerRef,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
@@ -254,7 +255,7 @@ const AttackPatternsMatrixColumns = ({
               marginBlockStart: 3,
             }}
           >
-            <Box display="inline-flex" id="container">
+            <Box display="inline-flex" id="container" ref={containerRef}>
               {filteredData?.map((col) => (
                 <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
                   <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

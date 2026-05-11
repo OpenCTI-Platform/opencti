@@ -138,6 +138,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   const isSecurityPlatform = entityType === 'SecurityPlatform';
   const displayButtons = !containerTypes.includes(entityType);
+  const exportImageContainerRef = React.useRef<HTMLDivElement>(null);
 
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
@@ -445,7 +446,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     </ToggleButtonGroup>
 
                     <ExportButtons
-                      domElementId="container"
+                      contentContainerRef={exportImageContainerRef}
                       name={t_i18n('Attack patterns kill chain')}
                       csvData={csvData}
                       csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
@@ -478,6 +479,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             paginationOptions={paginationOptions}
             onDelete={refetch}
             searchTerm={searchTerm}
+            containerRef={exportImageContainerRef}
           />
         )}
         {currentView === 'matrix' && (
@@ -489,6 +491,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
             entityType={entityType}
             isModeOnlyActive={isModeOnlyActive}
+            containerRef={exportImageContainerRef}
           />
         )}
         {currentView === 'matrix-in-line' && (
@@ -508,6 +511,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             onDelete={refetch}
             searchTerm={searchTerm}
             coursesOfAction={true}
+            containerRef={exportImageContainerRef}
           />
         )}
         {currentView === 'relationships' && (

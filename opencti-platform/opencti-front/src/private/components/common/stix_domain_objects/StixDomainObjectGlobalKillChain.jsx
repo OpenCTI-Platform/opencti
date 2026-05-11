@@ -51,7 +51,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
   }
 
   render() {
-    const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
+    const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId, containerRef } = this.props;
     // Extract all kill chain phases
     const killChainPhases = R.pipe(
 
@@ -112,7 +112,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     )(data.stixRelationships.edges);
     return (
       <div style={{ marginBottom: 90 }}>
-        <div id="container">
+        <div id="container" ref={containerRef}>
           <List id="test">
             {stixRelationships.map((stixRelationship) => (
               <div key={stixRelationship.id}>

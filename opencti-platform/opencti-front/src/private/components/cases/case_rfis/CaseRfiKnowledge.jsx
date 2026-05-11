@@ -39,6 +39,7 @@ class CaseRfiKnowledgeComponent extends Component {
       timeLineFilters: propOr(emptyFilterGroup, 'timeLineFilters', params),
       timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
     };
+    this.exportImageContainerRef = React.createRef();
   }
 
   saveView() {
@@ -159,6 +160,7 @@ class CaseRfiKnowledgeComponent extends Component {
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
         data-testid="case-rfi-knowledge"
+        ref={this.exportImageContainerRef}
       >
         {mode !== 'graph' && (
           <ContainerHeader
@@ -169,6 +171,7 @@ class CaseRfiKnowledgeComponent extends Component {
             knowledge={true}
             enableSuggestions={true}
             investigationAddFromContainer={investigationAddFromContainer}
+            exportImageContainerRef={this.exportImageContainerRef}
           />
         )}
         <Routes>

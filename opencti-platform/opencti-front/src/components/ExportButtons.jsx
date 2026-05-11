@@ -58,7 +58,7 @@ class ExportButtons extends Component {
     this.setState({ anchorElImage: null });
   }
 
-  async exportImage({ domElementId, name, themeNode, background }) {
+  async exportImage({ contentContainerRef, name, themeNode, background }) {
     this.setState({ exporting: true });
     this.handleCloseImage();
     const { pixelRatio = 1, t, setExportTheme } = this.props;
@@ -66,28 +66,30 @@ class ExportButtons extends Component {
     // let some delay to display the loading state
     await wait();
 
-    setExportTheme(themeNode);
-
-    const container = document.getElementById(domElementId);
-
     const exportButtons = document.getElementById('export-buttons');
-    exportButtons?.setAttribute('style', 'display: none');
-
     const viewButtons = document.getElementById('container-view-buttons');
-    viewButtons?.setAttribute('style', 'display: none');
-
-    const { offsetWidth, offsetHeight } = container;
-    if (this.adjust) {
-      container.setAttribute('style', 'width:3840px; height:2160px');
-      this.adjust(true);
-    }
 
     try {
+      const container = contentContainerRef.current;
+      if (!container) {
+        throw Error('No content container provided');
+      }
+
+      setExportTheme(themeNode);
+      exportButtons?.setAttribute('style', 'display: none');
+      viewButtons?.setAttribute('style', 'display: none');
+
+      const { offsetWidth, offsetHeight } = container;
+      if (this.adjust) {
+        container.setAttribute('style', 'width:3840px; height:2160px');
+        this.adjust(true);
+      }
+
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
 
       await exportImage(
-        domElementId,
+        container,
         offsetWidth,
         offsetHeight,
         name,
@@ -115,7 +117,7 @@ class ExportButtons extends Component {
     this.setState({ anchorElPdf: null });
   }
 
-  async exportPdf({ domElementId, name, themeNode, background }) {
+  async exportPdf({ contentContainerRef, name, themeNode, background }) {
     this.setState({ exporting: true });
     this.handleClosePdf();
 
@@ -123,18 +125,23 @@ class ExportButtons extends Component {
 
     // Let some delay to display the loading state
     await wait();
-
-    setExportTheme(themeNode);
-
     const buttons = document.getElementById('export-buttons');
-    buttons.setAttribute('style', 'display: none');
 
     try {
+      const container = contentContainerRef.current;
+      if (!container) {
+        throw Error('No content container provided');
+      }
+
+      setExportTheme(themeNode);
+
+      buttons.setAttribute('style', 'display: none');
+
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
 
       await exportPdf(
-        domElementId,
+        container,
         name,
         background ? themeNode?.theme_background : null,
         pixelRatio,
@@ -155,7 +162,6 @@ class ExportButtons extends Component {
     const {
       classes,
       t,
-      domElementId,
       name,
       type,
       csvData,
@@ -165,6 +171,7 @@ class ExportButtons extends Component {
       handleExportDashboard,
       investigationAddFromContainer,
       navigate,
+      contentContainerRef,
       exportToImage = true,
       exportToPdf = true,
     } = this.props;
@@ -245,7 +252,7 @@ class ExportButtons extends Component {
                   <MenuItem
                     key={`${node.id}-with-bg`}
                     onClick={() => this.exportImage({
-                      domElementId,
+                      contentContainerRef,
                       name,
                       themeNode: node,
                       background: true,
@@ -256,7 +263,7 @@ class ExportButtons extends Component {
                   <MenuItem
                     key={`${node.id}-without-bg`}
                     onClick={() => this.exportImage({
-                      domElementId,
+                      contentContainerRef,
                       name,
                       themeNode: node,
                       background: false,
@@ -277,7 +284,7 @@ class ExportButtons extends Component {
                     <MenuItem
                       key={node.id}
                       onClick={() => this.exportPdf({
-                        domElementId,
+                        contentContainerRef,
                         name,
                         themeNode: node,
                         background: true,

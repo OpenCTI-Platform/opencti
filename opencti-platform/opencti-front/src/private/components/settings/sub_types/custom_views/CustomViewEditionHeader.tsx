@@ -39,9 +39,10 @@ interface CustomViewEditionHeaderProps {
   onImportWidget: (widgetFile: File) => void;
   onCreateWidget: (value: Widget, variableName?: string) => void;
   host: WidgetHost;
+  exportImageContainerRef: React.Ref<HTMLDivElement>;
 }
 
-const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }: CustomViewEditionHeaderProps) => {
+const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host, exportImageContainerRef }: CustomViewEditionHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const [isFormOpen, setFormOpen] = useState(false);
@@ -103,7 +104,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
             </IconButton>
           </Tooltip>
           <ExportButtons
-            domElementId="container"
+            contentContainerRef={exportImageContainerRef}
             type="dashboard"
             name={customView.name}
             handleExportDashboard={handleExport}

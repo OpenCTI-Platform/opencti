@@ -14,6 +14,7 @@ import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_w
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
+import { useRef } from 'react';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -138,6 +139,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       },
     });
   };
+  const contentContainerRef = useRef<HTMLElement>(null);
 
   const helpers = useDashboard({
     entity: workspace,
@@ -157,6 +159,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             handleExport={handleExport}
             data={workspace}
             variant="dashboard"
+            contentContainerRef={contentContainerRef}
           />
           <Security
             needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
@@ -175,6 +178,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
         isEditable={userCanEdit}
         entity={workspace}
         host={WIDGET_WORKSPACE_HOST}
+        containerRef={contentContainerRef}
       />
     </Stack>
   );

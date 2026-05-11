@@ -13,6 +13,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   entityType: string;
   attackPatternIdsToOverlap?: string[];
   isModeOnlyActive: boolean;
+  containerRef?: React.Ref<HTMLDivElement>;
 }
 const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
   {
@@ -23,6 +24,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     entityType,
     attackPatternIdsToOverlap,
     isModeOnlyActive,
+    containerRef,
   },
 ) => {
   const attackPatterns = (data.attackPatterns?.edges ?? []).map((n) => n.node);
@@ -35,6 +37,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
       selectedKillChain={selectedKillChain}
       attackPatternIdsToOverlap={attackPatternIdsToOverlap}
       isModeOnlyActive={isModeOnlyActive}
+      containerRef={containerRef}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useRef, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -24,6 +24,7 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
   const helpers = useCustomViewDashboardEdit({ customView });
   const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
   const [previewEntityId, setPreviewEntityId] = useState<string | null>(null);
+  const exportImageContainerRef = useRef<HTMLDivElement>(null);
   const handlePreviewEntityChange = (id: string | null) => {
     setPreviewEntityId(id);
   };
@@ -45,6 +46,7 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
           onCreateWidget={handleAddWidget}
           onImportWidget={handleImportWidget}
           host={host}
+          exportImageContainerRef={exportImageContainerRef}
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DashboardTimeFilters
@@ -59,6 +61,7 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
         entity={customView}
         isEditable={true}
         host={host}
+        containerRef={exportImageContainerRef}
       />
     </Stack>
   );

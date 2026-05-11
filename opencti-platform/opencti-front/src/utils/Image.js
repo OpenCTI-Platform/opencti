@@ -11,7 +11,7 @@ const ignoredClasses = [
 ];
 
 export const exportImage = (
-  domElementId,
+  domElement,
   currentWidth,
   currentHeight,
   name,
@@ -19,7 +19,7 @@ export const exportImage = (
   pixelRatio = 1,
   adjust = null,
 ) => {
-  const container = document.getElementById(domElementId);
+  const container = domElement;
   return new Promise((resolve, reject) => {
     htmlToImage
       .toBlob(container, {
@@ -58,13 +58,13 @@ export const exportImage = (
 };
 
 export const exportPdf = (
-  domElementId,
+  domElement,
   name,
   backgroundColor,
   pixelRatio = 1,
   adjust = null,
 ) => {
-  const container = document.getElementById(domElementId);
+  const container = domElement;
   const { offsetWidth, offsetHeight } = container;
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;

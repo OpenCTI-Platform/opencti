@@ -5,13 +5,29 @@ import DashboardWidgetPopover from './DashboardWidgetPopover';
 import DashboardViz from './DashboardViz';
 import type { DashboardLike } from './dashboard-types';
 import type { WidgetHost } from '../../utils/widget/widget';
+import { Ref } from 'react';
 
 type DashboardContentProps = {
   helpers: ReturnType<typeof useDashboard>;
   host: WidgetHost;
   entity: DashboardLike;
   isEditable: boolean;
+  containerRef?: Ref<HTMLElement>;
 };
+
+function mergeRefs<T>(...refs: Ref<T>[]) {
+  return (ref: T) => {
+    refs.forEach((inputRef) => {
+      if (inputRef) {
+        if (typeof inputRef === 'function') {
+          inputRef(ref);
+        } else {
+          inputRef.current = ref;
+        }
+      }
+    });
+  };
+}
 
 const DashboardContent = ({
   entity,
@@ -29,12 +45,13 @@ const DashboardContent = ({
     config,
   },
   host,
+  containerRef: incomingContainerRef,
 }: DashboardContentProps) => {
   const { width, containerRef } = useContainerWidth();
   return (
     <Box
-      ref={containerRef}
       id="container"
+      ref={incomingContainerRef ? mergeRefs(containerRef, incomingContainerRef) : containerRef}
       sx={{
         marginBottom: '20px',
         ...(isEditable

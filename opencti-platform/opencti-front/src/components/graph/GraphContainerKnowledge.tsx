@@ -2,7 +2,7 @@ import ContainerHeader from '@components/common/containers/ContainerHeader';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import { ContainerHeader_container$key } from '@components/common/containers/__generated__/ContainerHeader_container.graphql';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, Ref, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
 import investigationAddFromContainer from '../../utils/InvestigationUtils';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
@@ -456,6 +456,7 @@ interface GraphContainerKnowledgeComponentProps {
     link: string;
     modes: string[];
   };
+  exportImageContainerRef: Ref<HTMLElement>;
 }
 
 const GraphContainerKnowledgeComponent = ({
@@ -472,6 +473,7 @@ const GraphContainerKnowledgeComponent = ({
     mode,
     modes,
   },
+  exportImageContainerRef,
 }: GraphContainerKnowledgeComponentProps) => {
   const ref = useRef(null);
   const bannerHeight = useSettingsMessagesBannerHeight();
@@ -514,6 +516,7 @@ const GraphContainerKnowledgeComponent = ({
           suggestions.forEach((suggestion) => addLink(suggestion));
         }}
         investigationAddFromContainer={investigationAddFromContainer}
+        exportImageContainerRef={exportImageContainerRef}
       />
       <Graph parentRef={ref} onPositionsChanged={onPositionsChanged}>
         <GraphToolbar
@@ -539,6 +542,7 @@ interface GraphContainerKnowledgeProps
   dataPositions: GraphContainerKnowledgePositions_fragment$key;
   queryObjectsRef: PreloadedQuery<GraphContainerKnowledgeObjectsQuery>;
   pageSize: number;
+  exportImageContainerRef: Ref<HTMLElement>;
 }
 
 const GraphContainerKnowledge = ({

@@ -21,6 +21,7 @@ export interface AttackPatternsMatrixProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
+  containerRef?: React.Ref<HTMLDivElement>;
 }
 
 export const attackPatternsMatrixQuery = graphql`
@@ -41,6 +42,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  containerRef,
 }) => {
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -67,6 +69,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             isCoverage={isCoverage}
             coverageMap={coverageMap}
             entityId={entityId}
+            containerRef={containerRef}
           />
         </React.Suspense>
       )}
