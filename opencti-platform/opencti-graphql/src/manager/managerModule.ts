@@ -157,7 +157,7 @@ const initManager = (manager: ManagerDefinition) => {
       };
     },
     shutdown: async () => {
-      const startTime = new Date().getTime();
+      const startTime = Date.now();
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
       cronTimer.interrupt();

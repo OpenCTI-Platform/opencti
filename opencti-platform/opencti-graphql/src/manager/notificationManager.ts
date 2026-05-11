@@ -721,7 +721,7 @@ const initNotificationManager = () => {
       };
     },
     shutdown: async () => {
-      const startTime = new Date().getTime();
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping notification manager');
       shutdown = true;
       liveTimer.interrupt();

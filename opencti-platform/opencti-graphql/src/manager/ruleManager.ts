@@ -350,12 +350,14 @@ const initRuleManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping rule engine');
       shutdown = true;
       waitTimer.interrupt();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Rule engine stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

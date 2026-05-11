@@ -145,10 +145,12 @@ const initConnectorManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping connector manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Connector manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

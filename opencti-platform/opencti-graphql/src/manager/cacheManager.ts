@@ -383,7 +383,7 @@ const initCacheManager = () => {
       logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized');
     },
     shutdown: async () => {
-      const startTime = new Date().getTime();
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
       try {
         subscribeAdd.unsubscribe();

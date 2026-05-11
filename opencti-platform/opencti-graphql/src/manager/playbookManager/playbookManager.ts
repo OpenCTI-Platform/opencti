@@ -446,7 +446,7 @@ const initPlaybookManager = () => {
       };
     },
     shutdown: async () => {
-      const startTime = new Date().getTime();
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping playbook manager');
       shutdown = true;
       streamTimer.interrupt();

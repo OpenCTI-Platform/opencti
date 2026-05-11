@@ -227,11 +227,13 @@ const initFileIndexManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping file index manager');
       shutdown = true;
       waitTimer.interrupt();
       if (scheduler) await clearIntervalAsync(scheduler);
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
+      logApp.info(`[OPENCTI-MODULE] File index manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

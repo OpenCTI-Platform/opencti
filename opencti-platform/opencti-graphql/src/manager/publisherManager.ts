@@ -566,10 +566,12 @@ const initPublisherManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping publisher manager');
       shutdown = true;
       waitTimer.interrupt();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
+      logApp.info(`[OPENCTI-MODULE] Publisher manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

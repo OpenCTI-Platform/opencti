@@ -275,12 +275,14 @@ const initSyncManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping Sync manager');
       syncListening = false;
       waitLoopTimer.interrupt();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Sync manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

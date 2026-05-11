@@ -147,7 +147,7 @@ export const addUserLoginCount = () => {
 // End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
-  const startTime = new Date().getTime();
+  const startTime = Date.now();
   const context = executionContext('telemetry_manager');
   const filigranMetricReaders = [];
   const collectorCallback = async () => {
@@ -220,7 +220,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
 };
 
 export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
-  const startTime = new Date().getTime();
+  const startTime = Date.now();
   try {
     const context = executionContext('telemetry_manager');
     // region Settings information

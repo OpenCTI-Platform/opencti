@@ -212,7 +212,7 @@ const initActivityManager = () => {
       };
     },
     shutdown: async () => {
-      const startTime = new Date().getTime();
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping activity manager');
       shutdown = true;
       waitTimer.interrupt();

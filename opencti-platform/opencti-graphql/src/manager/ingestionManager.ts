@@ -715,10 +715,12 @@ const initIngestionManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] INGESTION - Stopping ingestion manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Ingestion manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };
