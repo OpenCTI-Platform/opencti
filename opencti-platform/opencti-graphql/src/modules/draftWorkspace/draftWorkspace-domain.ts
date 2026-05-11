@@ -52,14 +52,11 @@ import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
 export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
-  if (draftId) {
-    const draft = await findById(context, user, draftId);
-    if (!draft) {
-      throw FunctionalError(`Draft ${draftId} cannot be found`);
-    }
-    return draft;
+  const draft = await findById(context, user, draftId);
+  if (!draft) {
+    throw FunctionalError(`Draft ${draftId} cannot be found`);
   }
-  throw FunctionalError(`Draft ${draftId} cannot be found`);
+  return draft;
 };
 
 const bypassDraftContext = (context: AuthContext): AuthContext => {
