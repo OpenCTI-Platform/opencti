@@ -9,7 +9,7 @@ This is a strict departure from the old scattered structure (resolvers/, domain/
 3.  **Domain** (`-domain.ts`): Contains business logic.
 4.  **Types** (`-types.ts`): TypeScript definitions.
 5.  **Converter** (`-converter.ts`): Internal <-> STIX conversion.
-6.  **Definition** (`<name>.ts`): Registers the module in `ModuleDefinition`.
+6.  **Definition** (`<entity-name>.ts`): Registers the module in `ModuleDefinition`.
 
 **Registration Steps:**
 1.  Create the directory and files.
