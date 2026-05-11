@@ -164,7 +164,7 @@
     "python-shell": "5.0.0",
     "ramda": "0.32.0",
     "rate-limiter-flexible": "11.1.0",
-    "semver": "7.7.4",
+    "semver": "7.8.0",
     "set-interval-async": "3.0.3",
     "source-map": "0.7.6",
     "tough-cookie": "6.0.1",
