@@ -38,6 +38,12 @@ class ListLinesContent extends Component {
   }
 
   updateScrollElement() {
+    // If a containerRef is explicitly provided and already resolved, mark as done.
+    if (this.props.containerRef && this.props.containerRef.current) {
+      this.setState({ isScrollElementResolved: true });
+      return;
+    }
+    // Auto-detect scrollable ancestor only when no explicit containerRef is given.
     if (!this.props.height && !this.props.containerRef && this.containerRef.current) {
       let node = this.containerRef.current.parentNode;
       while (node && node !== document.body && node !== document.documentElement) {
