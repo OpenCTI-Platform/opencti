@@ -24387,6 +24387,7 @@ export type Query = {
   playbookComponents: Array<Maybe<PlaybookComponent>>;
   playbookManagerInfo?: Maybe<PlaybookManager>;
   playbooks?: Maybe<PlaybookConnection>;
+  playbooksForEnrollment?: Maybe<Array<Maybe<Playbook>>>;
   playbooksForEntity?: Maybe<Array<Maybe<Playbook>>>;
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
@@ -26208,6 +26209,11 @@ export type QueryPlaybooksArgs = {
   orderBy?: InputMaybe<PlaybooksOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPlaybooksForEnrollmentArgs = {
+  ids: Array<Scalars['String']['input']>;
 };
 
 
@@ -48806,6 +48812,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
   playbookManagerInfo?: Resolver<Maybe<ResolversTypes['PlaybookManager']>, ParentType, ContextType>;
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
+  playbooksForEnrollment?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEnrollmentArgs, 'ids'>>;
   playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;

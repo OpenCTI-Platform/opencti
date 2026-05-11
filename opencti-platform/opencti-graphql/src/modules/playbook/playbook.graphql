@@ -97,6 +97,7 @@ type Query {
     ): PlaybookConnection @auth(for: [AUTOMATION])
     playbookComponents: [PlaybookComponent]! @auth(for: [AUTOMATION])
     playbooksForEntity(id: String!): [Playbook] @auth(for: [AUTOMATION])
+    playbooksForEnrollment(ids: [String!]!): [Playbook] @auth(for: [AUTOMATION])
     playbookManagerInfo: PlaybookManager @auth(for: [AUTOMATION])
 }
 

@@ -354,15 +354,11 @@ const toolbarGroupsQuery = graphql`
 `;
 
 const toolBarPlaybooksQuery = graphql`
-  query DataTableToolBarPlaybooksQuery($search: String) {
-    playbooks(search: $search) {
-      edges {
-        node {
-          id
-          name
-          description
-        }
-      }
+  query DataTableToolBarPlaybooksQuery($ids: [String!]!) {
+    playbooksForEnrollment(ids: $ids) {
+      id
+      name
+      description
     }
   }
 `;
@@ -522,14 +518,17 @@ class DataTableToolBar extends Component {
   }
 
   handleOpenEnrollPlaybook() {
-    fetchQuery(toolBarPlaybooksQuery, { search: '' })
+    const { selectedElements } = this.props;
+    const ids = Object.values(selectedElements ?? {}).map((element) => element.id);
+
+    fetchQuery(toolBarPlaybooksQuery, { ids })
       .toPromise()
       .then((data) => {
-        const enrollPlaybooks = (data?.playbooks?.edges ?? [])
-          .map((e) => ({
-            label: e.node.name,
-            value: e.node.id,
-            description: e.node.description,
+        const enrollPlaybooks = (data?.playbooksForEnrollment ?? [])
+          .map((playbook) => ({
+            label: playbook.name,
+            value: playbook.id,
+            description: playbook.description,
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
         this.setState({
