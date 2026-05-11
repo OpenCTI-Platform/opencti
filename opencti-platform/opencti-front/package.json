@@ -87,7 +87,7 @@
     "@tiptap/starter-kit": "3.22.5",
     "@tiptap/suggestion": "3.22.5",
     "analytics": "0.8.19",
-    "apexcharts": "4.4.0",
+    "apexcharts": "5.11.0",
     "axios": "1.16.0",
     "buffer": "6.0.3",
     "ckeditor5": "48.0.1",
