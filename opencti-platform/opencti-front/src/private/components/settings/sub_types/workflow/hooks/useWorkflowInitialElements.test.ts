@@ -40,6 +40,12 @@ describe('useWorkflowInitialElements', () => {
     ],
   };
 
+  const mockGroups: SubTypeWorkflowQuery$data['groups'] = {
+    edges: [
+      { node: { id: 'group-1', name: 'Analysts' } },
+    ],
+  };
+
   const mockWorkflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'] = {
     id: 'workflow-1',
     name: 'Sample Workflow',
@@ -65,7 +71,7 @@ describe('useWorkflowInitialElements', () => {
     ],
     transitions: [
       {
-        from: 'status-open',
+        from: ['status-open'],
         to: 'status-closed',
         event: 'close_event',
         conditions: {},
@@ -83,7 +89,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should return empty arrays if workflowDefinition is null', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(null, null, null, null),
+      useWorkflowInitialElements(null, null, null, null, null),
     );
 
     expect(result.current.initialNodes).toEqual([]);
@@ -92,7 +98,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform states into status nodes', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
     );
 
     const statusNodes = result.current.initialNodes.filter(
@@ -114,7 +120,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform transitions into one node and two edges', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
     );
 
     const transitionNodes = result.current.initialNodes.filter(
@@ -135,11 +141,10 @@ describe('useWorkflowInitialElements', () => {
 
   it('should enrich authorized members actions with member data', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
     );
 
     const node = result.current.initialNodes.find((n: Node) => n.id === 'status-open');
-    // Accessing typed data property
     const action = node?.data.onEnter[0];
 
     expect(action.type).toBe('updateAuthorizedMembers');
@@ -150,6 +155,43 @@ describe('useWorkflowInitialElements', () => {
     });
   });
 
+  it('should map groups_restriction_ids to groups_restriction using groups lookup', () => {
+    const defWithGroupRestriction: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      states: [
+        {
+          statusId: 'status-open',
+          onEnter: [
+            {
+              type: 'updateAuthorizedMembers',
+              mode: 'sync',
+              params: {
+                authorized_members: [
+                  { id: 'user-1', access_right: 'view', groups_restriction_ids: ['group-1'] },
+                ],
+              },
+            },
+          ],
+          onExit: [],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(defWithGroupRestriction, mockStatusTemplates, mockMembers, null, mockGroups),
+    );
+
+    const node = result.current.initialNodes.find((n: Node) => n.id === 'status-open');
+    const action = node?.data.onEnter[0];
+
+    expect(action.type).toBe('updateAuthorizedMembers');
+    expect(action.params.authorized_members[0]).toMatchObject({
+      id: 'user-1',
+      access_right: 'view',
+      groups_restriction: [{ id: 'group-1', name: 'Analysts' }],
+    });
+  });
+
   it('should recompute only when workflowDefinition changes', () => {
     interface HookProps {
       def: SubTypeWorkflowQuery$data['workflowDefinition'];
@@ -157,7 +199,7 @@ describe('useWorkflowInitialElements', () => {
 
     const { result, rerender } = renderHook(
       ({ def }: HookProps) =>
-        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers, null),
+        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers, null, null),
       { initialProps: { def: mockWorkflowDefinition } },
     );
 

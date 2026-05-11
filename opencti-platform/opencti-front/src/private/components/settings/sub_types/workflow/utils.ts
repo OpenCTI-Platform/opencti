@@ -70,7 +70,11 @@ const formatActions = (actions: Action[] = []) => {
         type,
         mode,
         params: { authorized_members: (params as { authorized_members: AuthorizedMemberOption[] }).authorized_members
-          .map(({ value, accessRight }) => ({ id: value, access_right: accessRight })) },
+          .map(({ value, accessRight, groupsRestriction }) => ({
+            id: value,
+            access_right: accessRight,
+            groups_restriction_ids: groupsRestriction?.map((g) => g.value) ?? [],
+          })) },
       };
     }
     if (type === 'validateDraft') {
