@@ -290,7 +290,6 @@ const NewsFeed: FunctionComponent = () => {
 
   const queryPaginationOptions = {
     ...paginationOptions,
-    orderBy: 'creation_date',
     filters: contextFilters,
   } as unknown as NewsFeedLinesPaginationQuery$variables;
 

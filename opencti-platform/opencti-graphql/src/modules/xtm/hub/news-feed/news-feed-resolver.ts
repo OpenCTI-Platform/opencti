@@ -4,7 +4,7 @@ import { myNewsFeedsFind, myUnreadNewsFeedsCount } from './news-feed-domain';
 
 const newsFeedResolvers = {
   Query: {
-    myNewsFeeds: (_: unknown, args: QueryMyNewsFeedsArgs, context: AuthContext) => myNewsFeedsFind(context, context.user!, args as any),
+    myNewsFeeds: (_: unknown, args: QueryMyNewsFeedsArgs, context: AuthContext) => myNewsFeedsFind(context, context.user!, args),
     myUnreadNewsFeedsCount: (_: unknown, __: unknown, context: AuthContext) => myUnreadNewsFeedsCount(context, context.user!),
   },
 } as unknown as Resolvers;
