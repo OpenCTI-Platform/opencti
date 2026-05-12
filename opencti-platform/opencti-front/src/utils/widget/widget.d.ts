@@ -1,6 +1,22 @@
-import { FilterGroup } from '../filters/filtersHelpers-types';
+import type { GqlFilterGroup } from '../utils/filters/filtersUtils';
+import type { FilterGroup } from '../filters/filtersHelpers-types';
+import type { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
+import { ReactNode } from 'react';
 
-export type WidgetContext = 'workspace' | 'fintelTemplate';
+export type WidgetHost = {
+  kind: 'workspace';
+} | {
+  kind: 'fintelTemplate';
+  fintelWidgets: FintelTemplateWidget[];
+  fintelEntityType: string;
+  fintelEditorValue: string;
+} | {
+  kind: 'custom-view';
+  customViewTargetEntityType: string;
+  customViewTargetEntityId?: string;
+  previewMode?: boolean;
+  missingHostEntityFiller?: ReactNode;
+};
 
 export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
@@ -32,6 +48,12 @@ export interface WidgetDataSelection {
   relationship_type?: string;
 }
 
+type GqlWidgetDataSelection = WidgetDataSelection & {
+  filters?: GqlFilterGroup | null;
+  dynamicFrom?: GqlFilterGroup | null;
+  dynamicTo?: GqlFilterGroup | null;
+};
+
 interface WidgetParameters {
   title?: string | null;
   interval?: string | null;
@@ -47,8 +69,8 @@ interface WidgetLayout {
   x: number;
   y: number;
   i: string;
-  moved: boolean;
-  static: boolean;
+  moved?: boolean;
+  static?: boolean;
 }
 
 export interface Widget {
@@ -59,6 +81,10 @@ export interface Widget {
   parameters?: WidgetParameters | null;
   layout?: WidgetLayout | null;
 }
+
+export type GqlWidget = Widget & {
+  dataSelection: GqlWidgetDataSelection[];
+};
 
 interface PirWidgetDataSelection extends WidgetDataSelection {
   pirId: string;

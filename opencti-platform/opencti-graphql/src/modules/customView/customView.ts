@@ -3,7 +3,6 @@ import { isFeatureEnabled } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_CUSTOM_VIEW, type StixCustomView, type StoreEntityCustomView } from './customView-types';
 import convertCustomViewToStix from './customView-converter';
 
@@ -20,10 +19,20 @@ export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, Sti
     },
   },
   attributes: [
+    /** Display name to render in UI **/
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    /** Description for admin **/
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    /** Slug used in the URL path **/
+    { name: 'slug', label: 'Slug', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: true, multiple: false, upsert: false, isFilterable: false },
+    /** Serialized content : layout and widgets **/
     { name: 'manifest', label: 'Manifest', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    authorizedMembers,
+    /** The entity type for which this custom view applies **/
+    { name: 'target_entity_type', label: 'Target entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    /** Only enabled custom views are displayed to end users **/
+    { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    /** One custom view per target_entity_type can be marked as default **/
+    { name: 'default', label: 'Default', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [],

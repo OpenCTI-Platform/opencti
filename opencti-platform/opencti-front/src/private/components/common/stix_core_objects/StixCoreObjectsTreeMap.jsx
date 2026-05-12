@@ -7,6 +7,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixCoreObjectsTreeMapDistributionQuery = graphql`
   query StixCoreObjectsTreeMapDistributionQuery(
@@ -77,12 +79,21 @@ const StixCoreObjectsTreeMap = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'entities',
+    dataSelection,
+    host,
+  });
 
   const renderContent = () => {
-    const selection = dataSelection[0];
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+    const selection = resolvedDataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
     const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
@@ -134,6 +145,7 @@ const StixCoreObjectsTreeMap = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

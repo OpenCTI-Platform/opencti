@@ -164,6 +164,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={region}
               basePath={basePath}
               pages={{
                 overview: <Region regionData={region} />,

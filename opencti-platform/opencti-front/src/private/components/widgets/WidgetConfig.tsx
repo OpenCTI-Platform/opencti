@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { v4 as uuid } from 'uuid';
-import { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
-import type { Widget, WidgetContext } from '../../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../../utils/widget/widget';
 import WidgetUpsert from './WidgetUpsert';
 import { WidgetConfigProvider, WidgetConfigType } from './WidgetConfigContext';
 
@@ -10,12 +9,9 @@ interface WidgetConfigProps {
   open: boolean;
   onClose: () => void;
   widget?: Widget;
-  context: WidgetContext;
+  host: WidgetHost;
   initialVariableName?: string;
   disabledSteps?: number[];
-  fintelWidgets?: FintelTemplateWidget[]; // Used to avoid identical variable names.
-  fintelEntityType?: string;
-  fintelEditorValue?: string;
 }
 
 const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
@@ -23,12 +19,9 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   widget,
   onClose,
   open,
-  context,
+  host,
   initialVariableName,
-  fintelWidgets,
   disabledSteps,
-  fintelEntityType,
-  fintelEditorValue,
 }) => {
   const close = () => onClose();
 
@@ -48,11 +41,8 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     <WidgetConfigProvider
       initialWidget={widget}
       initialVariableName={initialVariableName}
-      context={context}
+      host={host}
       disabledSteps={disabledSteps ?? []}
-      fintelWidgets={fintelWidgets}
-      fintelEntityType={fintelEntityType}
-      fintelEditorValue={fintelEditorValue}
       open={open}
     >
       <WidgetUpsert

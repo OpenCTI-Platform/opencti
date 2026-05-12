@@ -161,6 +161,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={event}
               basePath={basePath}
               pages={{
                 overview:

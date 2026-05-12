@@ -3,12 +3,86 @@ type CustomView implements InternalObject & BasicObject {
     entity_type: String!
     standard_id: String!
     parent_types: [String!]!
-    metrics:[Metric]
+    metrics: [Metric]
     created_at: DateTime!
     updated_at: DateTime!
-    # CustomView
+    # CustomView-specific fields
     name: String!
     description: String
+    slug: String!
     manifest: String
-    authorizedMembers: [MemberAccess!]!
+    path: String! # Derived field, not stored in DB
+    targetEntityType: String!
+    enabled: Boolean!
+    default: Boolean!
+    toWidgetExport(widgetId: ID!): String! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+    toConfigurationExport: String! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
+
+type CustomViewsEdge {
+    cursor: String!
+    node: CustomView!
+}
+
+type CustomViewsConnection {
+    pageInfo: PageInfo!
+    edges: [CustomViewsEdge!]!
+}
+
+enum CustomViewsOrdering {
+    name
+    enabled
+}
+
+type CustomViewsSettings {
+    canEntityTypeHaveCustomViews: Boolean!
+}
+
+input CustomViewAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    manifest: String
+    targetEntityType: String!
+    enabled: Boolean # Defaults to False
+    default: Boolean # Defaults to False
+}
+
+input CustomViewImportWidgetInput {
+    file: Upload!
+    manifest: String
+}
+
+input CustomViewDuplicateInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    manifest: String
+    targetEntityType: String!
+    enabled: Boolean # Defaults to False
+    default: Boolean # Defaults to False
+}
+
+type Query {
+    customViews(
+        entityType: String
+        first: Int
+        after: ID
+        orderBy: CustomViewsOrdering
+        search: String
+        orderMode: OrderingMode
+        filters: FilterGroup
+    ): CustomViewsConnection! @auth
+    customViewsSettings(
+        entityType: String!
+    ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customView(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
+}
+
+type Mutation {
+    customViewAdd(input: CustomViewAddInput!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+    customViewEdit(id: ID!, input: [EditInput!]!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewDuplicate(input: CustomViewDuplicateInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewDelete(id: ID!): ID! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewConfigurationImport(targetEntityType: String!, file: Upload!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+}
+

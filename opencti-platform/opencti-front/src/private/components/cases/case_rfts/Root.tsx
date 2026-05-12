@@ -132,6 +132,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         enableEnricher={true}
       />
       <StixDomainObjectMain
+        entity={caseData}
         basePath={basePath}
         pages={{
           overview: <CaseRft caseRftData={caseData} enableReferences={enableReferences} />,

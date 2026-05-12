@@ -116,6 +116,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
+            entity={dataSource}
             basePath={basePath}
             pages={{
               overview:

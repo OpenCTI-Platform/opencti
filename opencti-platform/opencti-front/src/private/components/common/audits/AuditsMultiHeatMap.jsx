@@ -25,6 +25,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const auditsMultiHeatMapTimeSeriesQuery = graphql`
   query AuditsMultiHeatMapTimeSeriesQuery(
@@ -57,14 +59,20 @@ const AuditsMultiHeatMap = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    host,
+  });
 
   const timeSeriesParameters = useMemo(() => {
-    return dataSelection.map((selection) => {
+    return resolvedDataSelection.map((selection) => {
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
@@ -74,7 +82,7 @@ const AuditsMultiHeatMap = ({
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
-  }, [dataSelection]);
+  }, [resolvedDataSelection]);
 
   const fallbackDates = useMemo(() => ({
     start: monthsAgo(12),
@@ -90,6 +98,9 @@ const AuditsMultiHeatMap = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
 
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -115,7 +126,7 @@ const AuditsMultiHeatMap = ({
         variables={variables}
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
-            const chartData = dataSelection
+            const chartData = resolvedDataSelection
               .map((selection, i) => ({
                 name: selection.label || t_i18n('Number of history entries'),
                 data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
@@ -156,6 +167,7 @@ const AuditsMultiHeatMap = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

@@ -166,6 +166,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={position}
               basePath={basePath}
               pages={{
                 overview:

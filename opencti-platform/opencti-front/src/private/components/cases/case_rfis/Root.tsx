@@ -134,6 +134,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         enableEnricher={true}
       />
       <StixDomainObjectMain
+        entity={caseData}
         basePath={basePath}
         pages={{
           overview: <CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />,

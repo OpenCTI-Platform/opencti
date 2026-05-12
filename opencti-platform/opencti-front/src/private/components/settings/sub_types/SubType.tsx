@@ -1,8 +1,9 @@
-import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import type { SubTypeQuery } from './__generated__/SubTypeQuery.graphql';
 import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Outlet, useParams } from 'react-router-dom';
+import { ErrorBoundary } from '@components/Error';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
@@ -16,9 +17,10 @@ import EntitySettingSettings from './entity_setting/EntitySettingSettings';
 import { entitySettingsOverviewLayoutCustomizationFragment } from './entity_setting/EntitySettingsOverviewLayoutCustomization';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 import { SubTypeTabs } from './SubTypeOutletContext';
+import { useProvideCustomViewsSettingsContext } from './custom_views/CustomViewsSettingsContext';
 
 export const subTypeQuery = graphql`
-  query SubTypeQuery($id: String!){
+  query SubTypeQuery($id: String!, $isCustomViewFeatureEnabled: Boolean!) {
     subType(id: $id) {
       id
       label
@@ -38,6 +40,7 @@ export const subTypeQuery = graphql`
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
     }
+    ...CustomViewsSettingsContext_data @arguments(entityType: $id) @include(if: $isCustomViewFeatureEnabled)
   }
 `;
 
@@ -50,7 +53,9 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { typesWithFintelTemplates } = useAttributes();
   const { isFeatureEnable } = useHelper();
 
-  const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
+  const data = usePreloadedQuery(subTypeQuery, queryRef);
+  const { isCustomViewsEnabled } = useProvideCustomViewsSettingsContext({ data });
+  const { subType } = data;
 
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
@@ -80,6 +85,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
     attributes: isAttributesConfigurationEnabled,
     templates: isFINTELTemplatesEnabled,
     'overview-layout': isCustomOverviewLayoutEnabled,
+    'custom-views': isCustomViewsEnabled,
   };
 
   return (
@@ -102,23 +108,16 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         )
       }
 
-      <SubTypeMenu
-        entityType={subType.label}
-        isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
-        isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
-        isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
-        isCustomOverviewLayoutEnabled={isCustomOverviewLayoutEnabled}
-      />
+      <SubTypeMenu entityType={subType.label} tabs={tabs} />
 
       {/** add a minHeight to prevent page jumps when switching tab
        * that have different content size with magic number */}
       <Box sx={{ minHeight: '240px' }}>
-        <Outlet
-          context={{
-            subType,
-            tabs,
-          }}
-        />
+        <ErrorBoundary>
+          <Outlet
+            context={{ subType, tabs }}
+          />
+        </ErrorBoundary>
       </Box>
 
     </Stack>
@@ -126,10 +125,15 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 };
 
 const SubType = () => {
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const { subTypeId } = useParams<{ subTypeId?: string }>();
   if (!subTypeId) return <ErrorNotFound />;
 
-  const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, { id: subTypeId });
+  const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, {
+    id: subTypeId,
+    isCustomViewFeatureEnabled,
+  });
 
   return (
     <Suspense fallback={<Loader />}>

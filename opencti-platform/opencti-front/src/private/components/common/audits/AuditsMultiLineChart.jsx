@@ -25,6 +25,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const auditsMultiLineChartTimeSeriesQuery = graphql`
   query AuditsMultiLineChartTimeSeriesQuery(
@@ -57,15 +59,21 @@ const AuditsMultiLineChart = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    host,
+  });
 
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const timeSeriesParameters = useMemo(() => {
-    return dataSelection.map((selection) => {
+    return resolvedDataSelection.map((selection) => {
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
@@ -75,7 +83,7 @@ const AuditsMultiLineChart = ({
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
-  }, [dataSelection]);
+  }, [resolvedDataSelection]);
 
   const fallbackDates = useMemo(() => ({
     start: monthsAgo(12),
@@ -90,6 +98,9 @@ const AuditsMultiLineChart = ({
     timeSeriesParameters,
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -117,7 +128,7 @@ const AuditsMultiLineChart = ({
           if (props && props.auditsMultiTimeSeries) {
             return (
               <WidgetMultiLines
-                series={dataSelection.map((selection, i) => ({
+                series={resolvedDataSelection.map((selection, i) => ({
                   name: selection.label || t_i18n('Number of history entries'),
                   data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
                     x: new Date(entry.date),
@@ -146,6 +157,7 @@ const AuditsMultiLineChart = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

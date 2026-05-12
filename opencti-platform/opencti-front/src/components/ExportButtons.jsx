@@ -37,7 +37,7 @@ const wait = async (delay = DELAY) => {
   });
 };
 
-class ExportButtons extends Component {
+export class ExportButtons extends Component {
   constructor(props) {
     super(props);
     this.adjust = props.adjust;
@@ -59,30 +59,30 @@ class ExportButtons extends Component {
   }
 
   async exportImage({ domElementId, name, themeNode, background }) {
-    this.setState({ exporting: true });
-    this.handleCloseImage();
     const { pixelRatio = 1, t, setExportTheme } = this.props;
-
-    // let some delay to display the loading state
-    await wait();
-
-    setExportTheme(themeNode);
-
-    const container = document.getElementById(domElementId);
-
     const exportButtons = document.getElementById('export-buttons');
-    exportButtons?.setAttribute('style', 'display: none');
-
     const viewButtons = document.getElementById('container-view-buttons');
-    viewButtons?.setAttribute('style', 'display: none');
-
-    const { offsetWidth, offsetHeight } = container;
-    if (this.adjust) {
-      container.setAttribute('style', 'width:3840px; height:2160px');
-      this.adjust(true);
-    }
-
     try {
+      this.setState({ exporting: true });
+      this.handleCloseImage();
+
+      // let some delay to display the loading state
+      await wait();
+
+      setExportTheme(themeNode);
+
+      const container = document.getElementById(domElementId);
+
+      exportButtons?.setAttribute('style', 'display: none');
+
+      viewButtons?.setAttribute('style', 'display: none');
+
+      const { offsetWidth, offsetHeight } = container;
+      if (this.adjust) {
+        container.setAttribute('style', 'width:3840px; height:2160px');
+        this.adjust(true);
+      }
+
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
 
@@ -116,20 +116,19 @@ class ExportButtons extends Component {
   }
 
   async exportPdf({ domElementId, name, themeNode, background }) {
-    this.setState({ exporting: true });
-    this.handleClosePdf();
-
     const { pixelRatio = 1, t, setExportTheme } = this.props;
-
-    // Let some delay to display the loading state
-    await wait();
-
-    setExportTheme(themeNode);
-
     const buttons = document.getElementById('export-buttons');
-    buttons.setAttribute('style', 'display: none');
-
     try {
+      this.setState({ exporting: true });
+      this.handleClosePdf();
+
+      // Let some delay to display the loading state
+      await wait();
+
+      setExportTheme(themeNode);
+
+      buttons.setAttribute('style', 'display: none');
+
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
 
@@ -165,6 +164,8 @@ class ExportButtons extends Component {
       handleExportDashboard,
       investigationAddFromContainer,
       navigate,
+      exportToImage = true,
+      exportToPdf = true,
     } = this.props;
     return (
       <UserContext.Consumer>
@@ -176,20 +177,24 @@ class ExportButtons extends Component {
               id="export-buttons"
               style={{ display: 'flex', gap: '8px' }}
             >
-              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-                <Tooltip title={t('Export to image')}>
-                  <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image">
-                    <ImageOutlined fontSize="small" color="primary" />
-                  </ToggleButton>
-                </Tooltip>
-              </Security>
-              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-                <Tooltip title={t('Export to PDF')}>
-                  <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF">
-                    <FilePdfBox fontSize="small" color="primary" />
-                  </ToggleButton>
-                </Tooltip>
-              </Security>
+              {exportToImage && (
+                <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                  <Tooltip title={t('Export to image')}>
+                    <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image">
+                      <ImageOutlined fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                </Security>
+              )}
+              {exportToPdf && (
+                <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                  <Tooltip title={t('Export to PDF')}>
+                    <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF">
+                      <FilePdfBox fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                </Security>
+              )}
               {type === 'dashboard' && handleExportDashboard && (
                 <Tooltip title={t('Export')}>
                   <ToggleButton
@@ -216,7 +221,7 @@ class ExportButtons extends Component {
                   </ToggleButton>
                 </Tooltip>
               )}
-              {type === 'investigation' && (
+              {type === 'investigation' && handleDownloadAsStixReport && (
                 <Tooltip title={t('Download as STIX report')}>
                   <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value="Download-as-STIX-report">
                     <GetAppOutlined fontSize="small" color="primary" />

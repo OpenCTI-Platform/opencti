@@ -163,6 +163,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={administrativeArea}
               basePath={basePath}
               pages={{
                 overview:

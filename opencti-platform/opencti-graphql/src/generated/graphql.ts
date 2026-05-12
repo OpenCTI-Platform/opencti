@@ -6435,17 +6435,73 @@ export type CurrentConnectorStatusInput = {
 
 export type CustomView = BasicObject & InternalObject & {
   __typename?: 'CustomView';
-  authorizedMembers: Array<MemberAccess>;
   created_at: Scalars['DateTime']['output'];
+  default: Scalars['Boolean']['output'];
   description?: Maybe<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   manifest?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  path: Scalars['String']['output'];
+  slug: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
+  targetEntityType: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
+  toWidgetExport: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+};
+
+
+export type CustomViewToWidgetExportArgs = {
+  widgetId: Scalars['ID']['input'];
+};
+
+export type CustomViewAddInput = {
+  default?: InputMaybe<Scalars['Boolean']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  manifest?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  targetEntityType: Scalars['String']['input'];
+};
+
+export type CustomViewDuplicateInput = {
+  default?: InputMaybe<Scalars['Boolean']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  manifest?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  targetEntityType: Scalars['String']['input'];
+};
+
+export type CustomViewImportWidgetInput = {
+  file: Scalars['Upload']['input'];
+  manifest?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CustomViewsConnection = {
+  __typename?: 'CustomViewsConnection';
+  edges: Array<CustomViewsEdge>;
+  pageInfo: PageInfo;
+};
+
+export type CustomViewsEdge = {
+  __typename?: 'CustomViewsEdge';
+  cursor: Scalars['String']['output'];
+  node: CustomView;
+};
+
+export enum CustomViewsOrdering {
+  Enabled = 'enabled',
+  Name = 'name'
+}
+
+export type CustomViewsSettings = {
+  __typename?: 'CustomViewsSettings';
+  canEntityTypeHaveCustomViews: Scalars['Boolean']['output'];
 };
 
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -16904,6 +16960,12 @@ export type Mutation = {
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
   csvMapperTest?: Maybe<CsvMapperTestResult>;
+  customViewAdd: CustomView;
+  customViewConfigurationImport: CustomView;
+  customViewDelete: Scalars['ID']['output'];
+  customViewDuplicate?: Maybe<CustomView>;
+  customViewEdit?: Maybe<CustomView>;
+  customViewWidgetConfigurationImport?: Maybe<CustomView>;
   dataComponentAdd?: Maybe<DataComponent>;
   dataComponentContextClean?: Maybe<DataComponent>;
   dataComponentContextPatch?: Maybe<DataComponent>;
@@ -17715,6 +17777,39 @@ export type MutationCsvMapperFieldPatchArgs = {
 export type MutationCsvMapperTestArgs = {
   configuration: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+};
+
+
+export type MutationCustomViewAddArgs = {
+  input: CustomViewAddInput;
+};
+
+
+export type MutationCustomViewConfigurationImportArgs = {
+  file: Scalars['Upload']['input'];
+  targetEntityType: Scalars['String']['input'];
+};
+
+
+export type MutationCustomViewDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCustomViewDuplicateArgs = {
+  input: CustomViewDuplicateInput;
+};
+
+
+export type MutationCustomViewEditArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationCustomViewWidgetConfigurationImportArgs = {
+  id: Scalars['ID']['input'];
+  input: CustomViewImportWidgetInput;
 };
 
 
@@ -24089,6 +24184,9 @@ export type Query = {
   /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
+  customView?: Maybe<CustomView>;
+  customViews: CustomViewsConnection;
+  customViewsSettings: CustomViewsSettings;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
   dataSource?: Maybe<DataSource>;
@@ -24875,6 +24973,27 @@ export type QueryCsvMappersArgs = {
   orderBy?: InputMaybe<CsvMapperOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCustomViewArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCustomViewsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  entityType?: InputMaybe<Scalars['String']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<CustomViewsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCustomViewsSettingsArgs = {
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -38978,6 +39097,13 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: ResolverTypeWrapper<BasicStoreEntityCustomView>;
+  CustomViewAddInput: CustomViewAddInput;
+  CustomViewDuplicateInput: CustomViewDuplicateInput;
+  CustomViewImportWidgetInput: CustomViewImportWidgetInput;
+  CustomViewsConnection: ResolverTypeWrapper<Omit<CustomViewsConnection, 'edges'> & { edges: Array<ResolversTypes['CustomViewsEdge']> }>;
+  CustomViewsEdge: ResolverTypeWrapper<Omit<CustomViewsEdge, 'node'> & { node: ResolversTypes['CustomView'] }>;
+  CustomViewsOrdering: CustomViewsOrdering;
+  CustomViewsSettings: ResolverTypeWrapper<CustomViewsSettings>;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
@@ -40056,6 +40182,12 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperTestResult: CsvMapperTestResult;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: BasicStoreEntityCustomView;
+  CustomViewAddInput: CustomViewAddInput;
+  CustomViewDuplicateInput: CustomViewDuplicateInput;
+  CustomViewImportWidgetInput: CustomViewImportWidgetInput;
+  CustomViewsConnection: Omit<CustomViewsConnection, 'edges'> & { edges: Array<ResolversParentTypes['CustomViewsEdge']> };
+  CustomViewsEdge: Omit<CustomViewsEdge, 'node'> & { node: ResolversParentTypes['CustomView'] };
+  CustomViewsSettings: CustomViewsSettings;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
@@ -42904,18 +43036,38 @@ export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type CustomViewResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomView'] = ResolversParentTypes['CustomView']> = ResolversObject<{
-  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  default?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  targetEntityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toWidgetExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<CustomViewToWidgetExportArgs, 'widgetId'>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CustomViewsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsConnection'] = ResolversParentTypes['CustomViewsConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['CustomViewsEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type CustomViewsEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsEdge'] = ResolversParentTypes['CustomViewsEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType>;
+}>;
+
+export type CustomViewsSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsSettings'] = ResolversParentTypes['CustomViewsSettings']> = ResolversObject<{
+  canEntityTypeHaveCustomViews?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
@@ -46577,6 +46729,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
+  customViewAdd?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewAddArgs, 'input'>>;
+  customViewConfigurationImport?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewConfigurationImportArgs, 'file' | 'targetEntityType'>>;
+  customViewDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationCustomViewDeleteArgs, 'id'>>;
+  customViewDuplicate?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewDuplicateArgs, 'input'>>;
+  customViewEdit?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewEditArgs, 'id' | 'input'>>;
+  customViewWidgetConfigurationImport?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewWidgetConfigurationImportArgs, 'id' | 'input'>>;
   dataComponentAdd?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentAddArgs, 'input'>>;
   dataComponentContextClean?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextCleanArgs, 'id'>>;
   dataComponentContextPatch?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextPatchArgs, 'id' | 'input'>>;
@@ -48390,6 +48548,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
+  customView?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<QueryCustomViewArgs, 'id'>>;
+  customViews?: Resolver<ResolversTypes['CustomViewsConnection'], ParentType, ContextType, Partial<QueryCustomViewsArgs>>;
+  customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
@@ -52288,6 +52449,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CsvMapperSchemaAttributes?: CsvMapperSchemaAttributesResolvers<ContextType>;
   CsvMapperTestResult?: CsvMapperTestResultResolvers<ContextType>;
   CustomView?: CustomViewResolvers<ContextType>;
+  CustomViewsConnection?: CustomViewsConnectionResolvers<ContextType>;
+  CustomViewsEdge?: CustomViewsEdgeResolvers<ContextType>;
+  CustomViewsSettings?: CustomViewsSettingsResolvers<ContextType>;
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;

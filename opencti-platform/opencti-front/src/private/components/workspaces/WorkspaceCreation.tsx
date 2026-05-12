@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { BaseSyntheticEvent, useContext, useRef } from 'react';
+import { useContext } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
@@ -20,10 +20,11 @@ import { UserContext } from '../../../utils/hooks/useAuth';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { insertNode } from '../../../utils/store';
 import { isNotEmptyField } from '../../../utils/utils';
-import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import Drawer from '../common/drawer/Drawer';
 import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreationImportMutation.graphql';
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
+import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
+import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -57,32 +58,30 @@ interface WorkspaceCreationProps {
 
 const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {
   const { t_i18n } = useFormatter();
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/opencti_custom_dashboards?platform_id=${settings.id}`
     : '';
-
   const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation);
-  const [commitCreationMutation] = useApiMutation(workspaceMutation);
   const navigate = useNavigate();
-
-  const handleImport = (event: BaseSyntheticEvent) => {
-    const importedFile = event.target.files[0];
+  const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
-      variables: { file: importedFile },
+      variables: { file },
       onCompleted: (data) => {
-        if (inputRef.current) inputRef.current.value = ''; // Reset the input uploader ref
         navigate(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
+        resolve();
       },
       onError: (error) => {
-        if (inputRef.current) inputRef.current.value = ''; // Reset the input uploader ref
         handleError(error);
+        reject();
       },
     });
-  };
+  });
+  const importHelpers = useDashboardImport({ onImport: handleImport });
+
+  const [commitCreationMutation] = useApiMutation(workspaceMutation);
 
   const onSubmit: FormikConfig<WorkspaceCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
     commitCreationMutation({
@@ -124,7 +123,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           value="import"
           size="default"
           variant="secondary"
-          onClick={() => inputRef.current?.click()}
+          onClick={importHelpers.handleImport}
           data-testid="ImportDashboard"
           title={t_i18n('Import dashboard')}
         >
@@ -147,7 +146,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
 
   return (
     <>
-      <VisuallyHiddenInput type="file" accept="application/JSON" ref={inputRef} onChange={handleImport} />
+      <DashboardHiddenImportInput helpers={importHelpers} />
       <Drawer
         title={t_i18n(`Create ${type}`)}
         controlledDial={(type === 'dashboard')

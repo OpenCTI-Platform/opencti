@@ -2,7 +2,6 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { AuthorizedMember } from '../../utils/access';
-import type { FilterGroup } from '../../generated/graphql';
 
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
 
@@ -47,38 +46,3 @@ export interface StixWorkspace extends StixDomainObject {
   };
 }
 // endregion
-
-export type Configuration = WidgetConfiguration | DashboardConfiguration;
-
-export interface DashboardConfiguration {
-  name: string;
-  manifest: string;
-}
-export interface WidgetConfiguration {
-  type: string;
-  perspective: string;
-  dataSelection: [
-    {
-      label: string;
-      attribute: string;
-      date_attribute: string;
-      perspective: string;
-      isTo: boolean;
-      filters: FilterGroup;
-      dynamicFrom: FilterGroup;
-      dynamicTo: FilterGroup;
-    },
-  ];
-  parameters: {
-    title: string;
-  };
-  layout: {
-    w: number;
-    h: number;
-    x: number;
-    y: number;
-    i: string;
-    moved: boolean;
-    static: boolean;
-  };
-}

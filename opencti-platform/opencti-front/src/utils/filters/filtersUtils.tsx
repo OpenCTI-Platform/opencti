@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import React from 'react';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
@@ -29,7 +28,7 @@ export type FiltersRestrictions = {
   preventFilterValuesEditionFor?: Map<string, string[]>; // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
-export const emptyFilterGroup = {
+export const emptyFilterGroup: FilterGroup = {
   mode: 'and',
   filters: [],
   filterGroups: [],
@@ -572,81 +571,6 @@ export const deserializeFilterGroupForFrontend = (
   return sanitizeFilterGroupKeysForFrontend(filters);
 };
 
-// Dashboard manifests are complex objects with filters deeply nested in widgets configurations
-// (de)serialization is a bit more complex
-// We use any here and use it when manipulating the manifest or internal fields
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyForDashboardManifest = any;
-
-/**
- * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
- * @param manifest
- */
-export const serializeDashboardManifestForBackend = (
-  manifest: AnyForDashboardManifest,
-): string => {
-  const newWidgets: Record<string, AnyForDashboardManifest> = {};
-  const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
-  widgetIds.forEach((id) => {
-    const widget = manifest.widgets[id];
-    newWidgets[id] = {
-      ...widget,
-      dataSelection: widget.dataSelection.map(
-        (selection: AnyForDashboardManifest) => ({
-          ...selection,
-          filters: selection.filters
-            ? sanitizeFilterGroupKeysForBackend(selection.filters)
-            : undefined,
-          dynamicFrom: selection.dynamicFrom
-            ? sanitizeFilterGroupKeysForBackend(selection.dynamicFrom)
-            : undefined,
-          dynamicTo: selection.dynamicTo
-            ? sanitizeFilterGroupKeysForBackend(selection.dynamicTo)
-            : undefined,
-        }),
-      ),
-    };
-  });
-
-  return JSON.stringify({
-    ...manifest,
-    widgets: newWidgets,
-  });
-};
-
-export const deserializeDashboardManifestForFrontend = (
-  manifestStr: string,
-): AnyForDashboardManifest => {
-  const manifest = JSON.parse(manifestStr);
-  const newWidgets: Record<string, AnyForDashboardManifest> = {};
-  const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
-  widgetIds.forEach((id) => {
-    const widget = manifest.widgets[id];
-    newWidgets[id] = {
-      ...widget,
-      dataSelection: widget.dataSelection.map(
-        (selection: AnyForDashboardManifest) => ({
-          ...selection,
-          filters: selection.filters
-            ? sanitizeFilterGroupKeysForFrontend(selection.filters)
-            : undefined,
-          dynamicFrom: selection.dynamicFrom
-            ? sanitizeFilterGroupKeysForFrontend(selection.dynamicFrom)
-            : undefined,
-          dynamicTo: selection.dynamicTo
-            ? sanitizeFilterGroupKeysForFrontend(selection.dynamicTo)
-            : undefined,
-        }),
-      ),
-    };
-  });
-
-  return {
-    ...manifest,
-    widgets: newWidgets,
-  };
-};
-
 // ----------------------------------------------------------------------------------------------------------------------
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
@@ -848,8 +772,10 @@ export const useFetchFilterKeysSchema = () => {
   return filterKeysSchema;
 };
 
-export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
-  const { filterKeysSchema } = useAuth().schema;
+export const getBuildFilterKeysMapFromEntityType = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  entityTypes = ['Stix-Core-Object'],
+): Map<string, FilterDefinition> => {
   // 1. case one entity type
   if (entityTypes.length === 1) {
     return filterKeysSchema.get(entityTypes[0]) ?? new Map();
@@ -879,9 +805,27 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
   return filterKeysMap;
 };
 
-export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  return uniqueArray(filterKeysMap.keys() ?? []);
+export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
+  const { filterKeysSchema } = useAuth().schema;
+  return getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes);
+};
+
+export const getAvailableFilterKeysForEntityTypes = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  entityTypes: string[],
+  addNotCleanableFilterKeys = false,
+) => {
+  const filterKeysMap = getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes);
+  return uniqueArray(filterKeysMap.keys() ?? [])
+    .concat(addNotCleanableFilterKeys ? NOT_CLEANABLE_FILTER_KEYS : []);
+};
+
+export const useAvailableFilterKeysForEntityTypes = (
+  entityTypes: string[],
+  addNotCleanableFilterKeys = false,
+) => {
+  const { filterKeysSchema } = useAuth().schema;
+  return getAvailableFilterKeysForEntityTypes(filterKeysSchema, entityTypes, addNotCleanableFilterKeys);
 };
 
 const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
@@ -1222,4 +1166,22 @@ export const formatFiltersInPirContext = (f: FilterGroup, pirId: string): Filter
       ? f.filterGroups.map((fg) => formatFiltersInPirContext(fg, pirId))
       : [],
   };
+};
+
+/**
+ * Replace SELF_ID sentinel with the actual entity ID in context.
+ * The filter values are not typed well so we have to use a "big bertha"-like
+ * solution: JSON.stringify + String.replace + JSON.parse.
+ */
+export const buildFiltersForCustomView = (
+  filters: FilterGroup | null | undefined,
+  entityId?: string,
+): FilterGroup | null | undefined => {
+  if (!filters) return filters;
+  const filtersStr = JSON.stringify(filters);
+  const updatedFiltersStr = filtersStr.replaceAll(SELF_ID, entityId || '');
+  if (filtersStr === updatedFiltersStr) {
+    return filters;
+  }
+  return JSON.parse(updatedFiltersStr);
 };

@@ -73,6 +73,7 @@ const ItemBoolean = ({
       <Tag
         label={label}
         color={reverse ? theme.palette.success.main : theme.palette.error.main}
+        labelTextTransform={labelTextTransform}
       />
     );
   };

@@ -8,6 +8,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const stixRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   query StixRelationshipsMultiVerticalBarsTimeSeriesQuery(
@@ -40,12 +42,18 @@ const StixRelationshipsMultiVerticalBars = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'relationships',
+    dataSelection,
+    host,
+  });
 
   const timeSeriesParameters = useMemo(() => {
-    return dataSelection.map((selection) => {
+    return resolvedDataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
@@ -57,7 +65,7 @@ const StixRelationshipsMultiVerticalBars = ({
         dynamicTo: selection.dynamicTo,
       };
     });
-  }, [dataSelection]);
+  }, [resolvedDataSelection]);
 
   const fallbackDates = useMemo(() => ({
     start: monthsAgo(12),
@@ -73,6 +81,9 @@ const StixRelationshipsMultiVerticalBars = ({
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
 
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     return (
       <QueryRenderer
         query={stixRelationshipsMultiVerticalBarsTimeSeriesQuery}
@@ -81,7 +92,7 @@ const StixRelationshipsMultiVerticalBars = ({
           if (props && props.stixRelationshipsMultiTimeSeries) {
             return (
               <WidgetVerticalBars
-                series={dataSelection.map((selection, i) => ({
+                series={resolvedDataSelection.map((selection, i) => ({
                   name: selection.label || t_i18n('Number of entities'),
                   data: props.stixRelationshipsMultiTimeSeries[i].data.map(
                     (entry) => ({
@@ -113,6 +124,7 @@ const StixRelationshipsMultiVerticalBars = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

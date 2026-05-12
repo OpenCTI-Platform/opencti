@@ -23,6 +23,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
 const auditsTreeMapDistributionQuery = graphql`
   query AuditsTreeMapDistributionQuery(
@@ -107,13 +109,22 @@ const AuditsTreeMap = ({
   dataSelection,
   parameters = {},
   popover,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+    perspective: 'audits',
+    dataSelection,
+    host,
+  });
 
   const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -133,7 +144,7 @@ const AuditsTreeMap = ({
         </div>
       );
     }
-    const selection = dataSelection[0];
+    const selection = resolvedDataSelection[0];
     return (
       <QueryRenderer
         query={auditsTreeMapDistributionQuery}
@@ -181,6 +192,7 @@ const AuditsTreeMap = ({
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
       {renderContent()}
     </WidgetContainer>

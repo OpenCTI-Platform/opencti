@@ -142,6 +142,7 @@ const RootReport = () => {
                     enableEnricher={true}
                   />
                   <StixDomainObjectMain
+                    entity={report}
                     basePath={basePath}
                     pages={{
                       overview:

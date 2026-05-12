@@ -3,7 +3,11 @@ import { useFormatter } from '../i18n';
 
 export const NO_DATA_WIDGET_MESSAGE = 'No data has been found.';
 
-const WidgetNoData = () => {
+interface WidgetNoDataProps {
+  message?: string;
+}
+
+const WidgetNoData = ({ message }: WidgetNoDataProps) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -15,7 +19,7 @@ const WidgetNoData = () => {
         justifyContent: 'center',
       }}
     >
-      <p>{t_i18n(NO_DATA_WIDGET_MESSAGE)}</p>
+      <p>{message ?? t_i18n(NO_DATA_WIDGET_MESSAGE)}</p>
     </div>
   );
 };

@@ -165,6 +165,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={tool}
               basePath={basePath}
               pages={{
                 overview:

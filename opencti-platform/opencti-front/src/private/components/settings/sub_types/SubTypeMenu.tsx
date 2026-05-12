@@ -1,74 +1,73 @@
 import { Tab, Tabs } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import type { SubTypeTabs } from './SubTypeOutletContext';
+import { getCurrentTab } from '../../../../utils/utils';
 
 interface SubTypeMenuProps {
   entityType: string;
-  isFINTELTemplatesEnabled?: boolean;
-  isAttributesConfigurationEnabled?: boolean;
-  isWorkflowConfigurationEnabled?: boolean;
-  isCustomOverviewLayoutEnabled?: boolean;
+  tabs: SubTypeTabs;
 }
 
-const SubTypeMenu = ({
-  entityType,
-  isFINTELTemplatesEnabled,
-  isAttributesConfigurationEnabled,
-  isWorkflowConfigurationEnabled,
-  isCustomOverviewLayoutEnabled,
-}: SubTypeMenuProps) => {
+const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
 
-  const hasAtLeastOneEnabledTab = Boolean(
-    isWorkflowConfigurationEnabled
-    || isAttributesConfigurationEnabled
-    || isFINTELTemplatesEnabled
-    || isCustomOverviewLayoutEnabled,
-  );
+  const hasAtLeastOneEnabledTab = Object.values(tabs).some(Boolean);
 
   if (!hasAtLeastOneEnabledTab) return null;
 
+  const currentTab = getCurrentTab(location.pathname, `/dashboard/settings/customization/entity_types/${entityType}`);
+
   return (
     <Tabs
-      value={location.pathname}
+      value={currentTab || false}
       sx={{ paddingBottom: 2 }}
     >
-      {isWorkflowConfigurationEnabled && (
+      {tabs.workflow && (
         <Tab
           component={Link}
-          to={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
-          value={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
+          to="workflow"
+          value="workflow"
           label={t_i18n('Workflow')}
         />
       )}
 
       {
-        isAttributesConfigurationEnabled && (
+        tabs.attributes && (
           <Tab
             component={Link}
-            to={`/dashboard/settings/customization/entity_types/${entityType}/attributes`}
-            value={`/dashboard/settings/customization/entity_types/${entityType}/attributes`}
+            to="attributes"
+            value="attributes"
             label={t_i18n('Attributes')}
           />
         )
       }
 
-      {isFINTELTemplatesEnabled && (
+      {tabs.templates && (
         <Tab
           component={Link}
-          to={`/dashboard/settings/customization/entity_types/${entityType}/templates`}
-          value={`/dashboard/settings/customization/entity_types/${entityType}/templates`}
+          to="templates"
+          value="templates"
           label={t_i18n('Templates')}
         />
       )}
 
-      {isCustomOverviewLayoutEnabled && (
+      {tabs['overview-layout'] && (
         <Tab
           component={Link}
-          to={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
-          value={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
+          to="overview-layout"
+          value="overview-layout"
           label={t_i18n('Overview Layout')}
+        />
+      )}
+
+      {tabs['custom-views'] && (
+        <Tab
+          component={Link}
+          to="custom-views"
+          value="custom-views"
+          label={t_i18n('Custom Views')}
         />
       )}
     </Tabs>

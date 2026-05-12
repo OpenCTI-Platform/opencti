@@ -11,6 +11,7 @@ import FilterValues from './filters/FilterValues';
 import { useFormatter } from './i18n';
 import { DataColumns } from './list_lines';
 
+import type { WidgetHost } from '../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
@@ -46,7 +47,7 @@ interface FilterIconButtonContainerProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  fintelTemplatesContext?: boolean;
+  host?: WidgetHost;
   hasSavedFilters?: boolean;
   filterChipsParams: FilterChipsParameter;
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
@@ -73,7 +74,7 @@ const FilterIconButtonContainer: FunctionComponent<
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  fintelTemplatesContext,
+  host,
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
@@ -263,6 +264,7 @@ const FilterIconButtonContainer: FunctionComponent<
                         redirection={redirection}
                         entityTypes={entityTypes}
                         filtersRestrictions={filtersRestrictions}
+                        host={host}
                       />
                     )
               }
@@ -317,6 +319,7 @@ const FilterIconButtonContainer: FunctionComponent<
                         chipColor={chipColor}
                         entityTypes={entityTypes}
                         filtersRestrictions={filtersRestrictions}
+                        host={host}
                       />
                     </Stack>
                   )}
@@ -372,7 +375,7 @@ const FilterIconButtonContainer: FunctionComponent<
           searchContext={searchContext}
           availableEntityTypes={availableEntityTypes}
           availableRelationshipTypes={availableRelationshipTypes}
-          fintelTemplatesContext={fintelTemplatesContext}
+          host={host}
         />
       )}
       {filters.filterGroups

@@ -173,6 +173,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={campaign}
               basePath={basePath}
               pages={{
                 overview:

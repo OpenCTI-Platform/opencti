@@ -1,27 +1,39 @@
 import { ReactElement, ReactNode } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixDomainObjectMainProps {
+  entity: { id: string; entity_type: string };
   basePath: string;
-  pages: Partial<Record<StixDomainObjectTabsBoxTab, ReactNode>>;
+  /** The overview page is mandatory **/
+  pages: { overview: ReactNode } & Partial<Omit<Record<StixDomainObjectTabsBoxTab, ReactNode>, 'overview'>>;
   extraActions?: ReactNode;
   extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
 }
 
-const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: StixDomainObjectMainProps) => {
+const StixDomainObjectMain = ({
+  entity,
+  basePath,
+  extraActions,
+  pages,
+  extraRoutes,
+}: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   return (
     <>
       <StixDomainObjectTabsBox
+        entityType={entity.entity_type}
         basePath={basePath}
         tabs={tabs}
         extraActions={extraActions}
       />
       <Routes>
-        {tabs.includes('overview') && (
-          <Route path="/" element={pages.overview} />
-        )}
+        <Route path="/overview" element={pages.overview} />
         {tabs.includes('result') && (
           <Route path="/result" element={pages.result} />
         )}
@@ -50,6 +62,23 @@ const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: St
           <Route path="/history" element={pages.history} />
         )}
         {extraRoutes}
+        {isCustomViewFeatureEnabled
+          ? (
+              <Route
+                path="*"
+                element={(
+                  <CustomViewRedirector
+                    entity={entity}
+                    Fallback={<ErrorNotFound />}
+                    indexFallback={<Navigate to="overview" replace />}
+                  />
+                )
+                }
+              />
+            )
+          : <Route path="/" element={<Navigate to="overview" replace />} />
+
+        }
       </Routes>
     </>
   );

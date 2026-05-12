@@ -1,4 +1,4 @@
-import type { WidgetColumn, WidgetContext } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetHost } from '../../../utils/widget/widget';
 import useAttributes from '../../../utils/hooks/useAttributes';
 
 const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
@@ -153,8 +153,8 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
 
 type WidgetEntityType = 'relationships' | 'entities';
 
-export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: WidgetContext): WidgetColumn[] => {
-  if (context && context === 'fintelTemplate') {
+export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: WidgetHost): WidgetColumn[] => {
+  if (context?.kind === 'fintelTemplate') {
     if (type === 'relationships') {
       return fintelTemplateDefaultWidgetColumns.relationships;
     }
