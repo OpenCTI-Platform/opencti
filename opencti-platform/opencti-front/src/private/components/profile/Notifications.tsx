@@ -96,7 +96,7 @@ const Notifications: FunctionComponent = () => {
           sx={{ textTransform: 'none' }}
           label={(
             <Badge color="error" variant="dot" invisible={unreadNewsFeedsCount === 0}>
-              {t_i18n('News Feed')}
+              {t_i18n('XTM Hub News Feed')}
             </Badge>
           )}
         />
