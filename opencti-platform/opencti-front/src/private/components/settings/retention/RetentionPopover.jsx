@@ -172,7 +172,6 @@ class RetentionPopover extends Component {
                 </>
               );
             }
-            // Render menu without activate option while loading
             return (
               <Menu
                 anchorEl={this.state.anchorEl}

@@ -79,7 +79,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   const classes = useStyles();
   const { nsdt, n, t_i18n } = useFormatter();
   const data = useFragment(RetentionLineFragment, node);
-  // active field is added in the schema but the generated type may lag behind - will be fixed after `yarn relay`
+
   const isActive: boolean = (data as unknown as { active?: boolean }).active ?? false;
   const filters = deserializeFilterGroupForFrontend(data.filters);
   let scopeColor = 'warning';
