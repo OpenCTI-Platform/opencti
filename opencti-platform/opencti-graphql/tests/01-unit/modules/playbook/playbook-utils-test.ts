@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as stixFiltering from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
 import { FilterMode } from '../../../../src/generated/graphql';
-import { filterBundleElements, isBundleElementMatchFilters, updateImportedPlaybookDefinitionScope } from '../../../../src/modules/playbook/playbook-utils';
+import {
+  filterBundleElements,
+  isBundleElementMatchFilters,
+  MINIMAL_COMPATIBLE_SCOPE_VERSION,
+  updateImportedPlaybookDefinitionScope,
+} from '../../../../src/modules/playbook/playbook-utils';
 import { testContext } from '../../../utils/testQuery';
 import type { StixObject } from '../../../../src/types/stix-2-1-common';
 import * as cache from '../../../../src/database/cache';
@@ -464,6 +469,19 @@ describe('Playbook utils unit tests', () => {
         const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, recentVersionMock);
 
         expect(result).toEqual(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
+      });
+    });
+
+    describe('with version equals to MINIMAL_COMPATIBLE_SCOPE_VERSION and component is in the list of updated components', () => {
+      const sameVersionMock = MINIMAL_COMPATIBLE_SCOPE_VERSION;
+
+      it('should return applyToElements = all-except-main if all and excludeMainElement are true', () => {
+        const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, sameVersionMock);
+        const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-except-main\\"}"}],"links":[]}';
+
+        expect(result).toEqual(expectedResult);
       });
     });
   });

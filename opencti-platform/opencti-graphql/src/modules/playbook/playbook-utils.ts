@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import semver from 'semver';
 import { isEmptyField } from '../../database/utils';
 import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser, SYSTEM_USER } from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -25,7 +26,6 @@ import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remo
 import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from './components/security-coverage-component';
 import { PLAYBOOK_SHARING_COMPONENT } from './components/sharing-component';
 import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
-import { isCompatibleVersionWithMinimal } from '../../utils/version';
 
 export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -222,9 +222,9 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
  * @param version Version of the platform that exported the playbook.
  * @returns Updated stringified playbook definition, or the original if version is not compatible.
  */
+export const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260428.0'; // to update after merge of playbook scope feature
 export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string | undefined, version: string) => {
-  const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260428.0'; // to update after merge of playbook scope feature
-  if (!playbookDefinition || isCompatibleVersionWithMinimal(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
+  if (!playbookDefinition || semver.gt(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
     return playbookDefinition;
   }
 
