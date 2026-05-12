@@ -16,10 +16,13 @@ import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
+
+const waitLoopTimer = new InterruptibleTimer();
 
 const syncManagerInstance = (syncId) => {
   // Variables
@@ -230,7 +233,7 @@ const initSyncManager = () => {
     while (syncListening) {
       lock.signal.throwIfAborted();
       await processStep();
-      await wait(WAIT_TIME_ACTION);
+      await waitLoopTimer.start(WAIT_TIME_ACTION);
     }
     // Stopping
     for (const syncManager of syncManagers.values()) {
@@ -272,11 +275,14 @@ const initSyncManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping Sync manager');
       syncListening = false;
+      waitLoopTimer.interrupt();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Sync manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

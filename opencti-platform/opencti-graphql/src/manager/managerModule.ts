@@ -8,9 +8,9 @@ import type { BasicStoreSettings } from '../types/settings';
 import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
-import { wait } from '../database/utils';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { InterruptibleTimer } from './interruptible-timer';
 
 export interface HandlerInput {
   shutdown?: () => Promise<void>;
@@ -56,6 +56,9 @@ const initManager = (manager: ManagerDefinition) => {
   let running = false;
   let shutdown = false;
 
+  const cronTimer = new InterruptibleTimer();
+  const streamTimer = new InterruptibleTimer();
+
   const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
       let lock;
@@ -71,7 +74,7 @@ const initManager = (manager: ManagerDefinition) => {
           logApp.info(`[OPENCTI-MODULE] Running ${manager.label} infinite cron handler`);
           while (!shutdown) {
             await manager.cronSchedulerHandler.handler(cronInput);
-            await wait(manager.cronSchedulerHandler.infiniteInterval);
+            await cronTimer.start(manager.cronSchedulerHandler.infiniteInterval);
           }
         } else if (manager.cronSchedulerHandler.lockInHandlerParams) {
           await manager.cronSchedulerHandler.handler(lock);
@@ -109,7 +112,7 @@ const initManager = (manager: ManagerDefinition) => {
         await streamProcessor.start(startFrom);
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();
-          await wait(WAIT_TIME_ACTION);
+          await streamTimer.start(WAIT_TIME_ACTION);
         }
         logApp.info(`[OPENCTI-MODULE] End of ${manager.label} stream handler`);
       } catch (e: any) {
@@ -154,9 +157,11 @@ const initManager = (manager: ManagerDefinition) => {
       };
     },
     shutdown: async () => {
-      const startTime = new Date().getTime();
+      const startTime = Date.now();
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
+      cronTimer.interrupt();
+      streamTimer.interrupt();
       if (scheduler) {
         if (manager.cronSchedulerHandler?.shutdown) {
           manager.cronSchedulerHandler?.shutdown();

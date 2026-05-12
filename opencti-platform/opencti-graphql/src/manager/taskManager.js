@@ -686,10 +686,12 @@ const initTaskManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Stopping task manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] task manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

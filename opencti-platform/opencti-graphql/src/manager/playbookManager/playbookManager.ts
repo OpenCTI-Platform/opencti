@@ -47,6 +47,7 @@ import { listenPirEvents } from './listenPirEventsUtils';
 import { isDebugPlaybook, isValidEventType } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
+import { InterruptibleTimer } from '../interruptible-timer';
 import { isModuleActivated } from '../../database/cluster-module';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
@@ -219,6 +220,9 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   return false;
 };
 
+const cronTimer = new InterruptibleTimer();
+const streamTimer = new InterruptibleTimer();
+
 const checkManagerDelay = async () => {
   const { lastProcessedEventId, lastStreamEventId, firstStreamEventId, managerInGoodHealth } = await getManagerInfo();
   if (!managerInGoodHealth) {
@@ -233,11 +237,7 @@ const initPlaybookManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+
   const playbookHandler = async () => {
     let lock;
     try {
@@ -251,13 +251,13 @@ const initPlaybookManager = () => {
       let delayCheckerCounter = 0;
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await wait(WAIT_TIME_ACTION);
+        await streamTimer.start(WAIT_TIME_ACTION);
         if (++delayCheckerCounter >= 10) {
           await checkManagerDelay();
           delayCheckerCounter = 0;
         }
       }
-      logApp.info('[OPENCTI-MODULE] End of playbook manager processing');
+      logApp.info('[OPENCTI-MODULE] End of playbook manager processing (live)');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
@@ -416,7 +416,7 @@ const initPlaybookManager = () => {
       while (!shutdown) {
         lock.signal.throwIfAborted();
         await handlePlaybookCrons(context);
-        await wait(CRON_SCHEDULE_TIME);
+        await cronTimer.start(CRON_SCHEDULE_TIME);
       }
       logApp.info('[OPENCTI-MODULE] End of playbook manager processing (cron)');
     } catch (e: any) {
@@ -446,10 +446,14 @@ const initPlaybookManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping playbook manager');
       shutdown = true;
+      streamTimer.interrupt();
+      cronTimer.interrupt();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
+      logApp.info(`[OPENCTI-MODULE] Playbook manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };
