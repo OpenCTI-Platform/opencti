@@ -39,7 +39,7 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
   }
   return (
     <Stack gap={2}>
-      <Stack gap={1}>
+      <Stack gap={2}>
         <CustomViewEditionHeader
           data={customView}
           onCreateWidget={handleAddWidget}
