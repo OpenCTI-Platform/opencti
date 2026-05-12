@@ -453,6 +453,24 @@ export const filterValue = (
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);
   }
+  if (filterKey === 'customFieldValue') {
+    // New encoded format: "x_opencti_gravity|select_value|G1" → "gravity = G1"
+    if (value && typeof value === 'string' && value.includes('|')) {
+      const parts = (value as string).split('|');
+      const fieldDisplay = (parts[0] ?? '').replace(/^x_opencti_/, '');
+      const fieldValue = parts[2] ?? '';
+      return `${fieldDisplay} = ${fieldValue}`;
+    }
+    // Legacy object format (backward compat)
+    if (value && typeof value === 'object' && 'key' in value && 'values' in value) {
+      const subFilter = value as { key: string; values: string[] };
+      if (subFilter.key === 'field_name') {
+        return (subFilter.values[0] ?? '').replace(/^x_opencti_/, '');
+      }
+      return subFilter.values[0] ?? '';
+    }
+    return String(value ?? '');
+  }
   if (
     value
     && (filterType === 'boolean' || filterType === 'enum')

@@ -44,6 +44,27 @@ import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '..
 import { displayEntityTypeForTranslation } from '../String';
 import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
 
+// ---------------------------------------------------------------------------
+// GraphQL query for custom field definitions (select-type options for filter dropdown)
+// ---------------------------------------------------------------------------
+const customFieldDefinitionsSearchQuery = graphql`
+  query useSearchEntitiesCustomFieldDefinitionsQuery {
+    customFieldDefinitions(first: 100) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          select_options
+        }
+      }
+    }
+  }
+`;
+
+// ---------------------------------------------------------------------------
+
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
     $search: String
@@ -284,7 +305,7 @@ const useSearchEntities = ({
     value: { key: string; values: string[]; operator?: string }[],
   ) => void;
 }) => {
-  const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
+  const [entities, setEntities] = useState<Record<string, EntityValue>>({});
   const { t_i18n } = useFormatter();
   const { schema, me } = useAuth();
   const { stixCoreObjectTypes } = useAttributes();
@@ -341,6 +362,7 @@ const useSearchEntities = ({
         === index,
     ),
   }));
+
 
   const searchEntities = (
     filterKey: string,
@@ -651,6 +673,7 @@ const useSearchEntities = ({
       'connectedToId', // id of the listened entities in an instance trigger
       'sightedBy', // sighting relationship TODO remove because already in regardingOf, and migrate the key)
       'computed_reliability', // special key for the entity reliability, or the reliability of its author if no reliability is set
+      'customFieldValue', // nested filter for custom fields — options returned as encoded strings "fieldName|subKey|value"
     ].concat(entityTypesFilters)
       .concat(contextFilters);
     // case 1 : filter keys with specific behavior
@@ -767,6 +790,30 @@ const useSearchEntities = ({
         case 'computed_reliability':
           buildOptionsFromVocabularySearchQuery(filterKey, ['reliability_ov']);
           break;
+        case 'customFieldValue': {
+          // Fetch all select-type custom field definitions and expose each option as an encoded string:
+          // "x_opencti_<fieldName>|select_value|<option>" → parsed by backend + filtersUtils.tsx
+          fetchQuery(customFieldDefinitionsSearchQuery, {})
+            .toPromise()
+            .then((data: unknown) => {
+              const edges = (data as any)?.customFieldDefinitions?.edges ?? [];
+              const options: EntityValue[] = [];
+              edges.forEach((edge: any) => {
+                const def = edge?.node;
+                if (!def || def.field_type !== 'select' || !def.select_options?.length) return;
+                const fieldLabel: string = def.label ?? def.name;
+                def.select_options.forEach((opt: string) => {
+                  options.push({
+                    label: `${fieldLabel} = ${opt}`,
+                    value: `x_opencti_${def.name}|select_value|${opt}`,
+                    type: 'CustomFieldValue',
+                  });
+                });
+              });
+              unionSetEntities(filterKey, options);
+            });
+          break;
+        }
         case 'contextObjectLabel':
           buildOptionsFromLabelsSearchQuery(filterKey);
           break;

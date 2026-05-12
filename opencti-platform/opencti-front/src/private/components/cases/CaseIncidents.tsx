@@ -1,16 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
 import {
   CaseIncidentsLinesCasesPaginationQuery,
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from '@components/cases/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentsLinesCases_data$data } from '@components/cases/__generated__/CaseIncidentsLinesCases_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import MuiTextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@common/button/Button';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -24,156 +19,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
-import { Filter } from '../../../utils/filters/filtersHelpers-types';
 
-// --- Custom field definitions query ---
-const customFieldDefinitionsForFilterQuery = graphql`
-  query CaseIncidentsCustomFieldDefinitionsQuery($filters: FilterGroup) {
-    customFieldDefinitions(filters: $filters) {
-      edges {
-        node {
-          id
-          name
-          label
-          field_type
-          select_options
-        }
-      }
-    }
-  }
-`;
-
-interface CustomFieldDef {
-  id: string;
-  name: string;
-  label: string;
-  field_type: string;
-  select_options?: ReadonlyArray<string> | null;
-}
-
-// --- Mini filter bar for custom fields ---
-const CustomFieldFilterBar: FunctionComponent<{
-  onAddFilter: (filter: Filter) => void;
-}> = ({ onAddFilter }) => {
-  const { t_i18n } = useFormatter();
-  const [selectedDefId, setSelectedDefId] = useState('');
-  const [inputValue, setInputValue] = useState('');
-
-  const data = useLazyLoadQuery<any>(customFieldDefinitionsForFilterQuery, {
-    filters: {
-      mode: 'and',
-      filters: [{ key: 'entity_types', values: ['Case-Incident'], operator: 'eq' }],
-      filterGroups: [],
-    },
-  });
-  const defs: CustomFieldDef[] = (data?.customFieldDefinitions?.edges ?? [])
-    .map((e: any) => e?.node).filter(Boolean);
-
-  // Always render the bar: show a hint when no definitions are associated
-  const selectedDef = defs.find((d) => d.id === selectedDefId);
-
-  const getValueSubFilterKey = (def: CustomFieldDef) => {
-    if (def.field_type === 'integer') return 'int_value';
-    if (def.field_type === 'select') return 'select_value';
-    return 'string_value';
-  };
-
-  const handleApply = () => {
-    if (!selectedDef || inputValue === '') return;
-    const fieldName = `x_opencti_${selectedDef.name}`;
-    const valueSubKey = getValueSubFilterKey(selectedDef);
-    const filter: Filter = {
-      key: 'customFieldValue',
-      operator: 'eq',
-      mode: 'and',
-      values: [
-        { key: 'field_name', values: [fieldName] },
-        { key: valueSubKey, values: [inputValue] },
-      ],
-    };
-    onAddFilter(filter);
-    setInputValue('');
-  };
-
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: 1.5,
-        px: 1,
-        py: 1,
-        mb: 1,
-        borderRadius: 1,
-        border: '1px solid',
-        borderColor: 'divider',
-        backgroundColor: 'background.paper',
-        flexWrap: 'wrap',
-      }}
-    >
-      <Chip label={t_i18n('Custom field')} size="small" color="primary" variant="outlined" />
-      {defs.length === 0 ? (
-        <Box sx={{ fontSize: 12, color: 'text.secondary', alignSelf: 'center' }}>
-          {t_i18n('No custom fields are associated to Incident Responses yet.')}
-        </Box>
-      ) : (
-        <>
-          {/* Field selector */}
-          <MuiTextField
-            select
-            size="small"
-            variant="standard"
-            label={t_i18n('Field')}
-            value={selectedDefId}
-            onChange={(e) => { setSelectedDefId(e.target.value); setInputValue(''); }}
-            sx={{ minWidth: 160 }}
-          >
-            <MenuItem value=""><em>—</em></MenuItem>
-            {defs.map((d) => (
-              <MenuItem key={d.id} value={d.id}>{d.label}</MenuItem>
-            ))}
-          </MuiTextField>
-          {/* Value input — adapts to field type */}
-          {selectedDef?.field_type === 'select' && selectedDef.select_options ? (
-            <MuiTextField
-              select
-              size="small"
-              variant="standard"
-              label={t_i18n('Value')}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              sx={{ minWidth: 140 }}
-            >
-              <MenuItem value=""><em>—</em></MenuItem>
-              {selectedDef.select_options.map((opt) => (
-                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-              ))}
-            </MuiTextField>
-          ) : (
-            <MuiTextField
-              size="small"
-              variant="standard"
-              label={t_i18n('Value')}
-              value={inputValue}
-              type={selectedDef?.field_type === 'integer' ? 'number' : 'text'}
-              onChange={(e) => setInputValue(e.target.value)}
-              disabled={!selectedDef}
-              sx={{ minWidth: 140 }}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleApply(); }}
-            />
-          )}
-          <Button
-            size="small"
-            onClick={handleApply}
-            disabled={!selectedDef || inputValue === ''}
-          >
-            {t_i18n('Filter')}
-          </Button>
-        </>
-      )}
-    </Box>
-  );
-};
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -349,9 +195,6 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   return (
     <div data-testid="incident-response-page">
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
-      <CustomFieldFilterBar
-        onAddFilter={(filter) => storageHelpers.handleAddFilterWithEmptyValue(filter)}
-      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
