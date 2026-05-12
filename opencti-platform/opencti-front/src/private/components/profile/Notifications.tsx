@@ -112,7 +112,7 @@ const Notifications: FunctionComponent = () => {
           value="alerts"
           sx={{ textTransform: 'none' }}
           label={(
-            <Badge color="error" variant="dot" invisible={unreadNotificationsCount === 0}>
+            <Badge color="error" badgeContent={unreadNotificationsCount} max={99} invisible={unreadNotificationsCount === 0}>
               {t_i18n('Alerts')}
             </Badge>
           )}
@@ -121,7 +121,7 @@ const Notifications: FunctionComponent = () => {
           value="news-feed"
           sx={{ textTransform: 'none' }}
           label={(
-            <Badge color="error" variant="dot" invisible={unreadNewsFeedsCount === 0}>
+            <Badge color="error" badgeContent={unreadNewsFeedsCount} max={99} invisible={unreadNewsFeedsCount === 0}>
               {t_i18n('XTM Hub News Feed')}
             </Badge>
           )}
