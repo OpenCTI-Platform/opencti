@@ -74,7 +74,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
   const workspaceValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    refreshRate: Yup.number().nullable(),
+    refresh_rate: Yup.number().nullable(),
   });
 
   const handleChangeFocus = (name) => {
@@ -163,7 +163,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
                   select
                   fullWidth
                   label={t_i18n('Interval')}
-                  onSubmit={(name, value) => {
+                  onChange={(name, value) => {
                     handleSubmitField('refresh_rate', value);
                   }}
                 >
