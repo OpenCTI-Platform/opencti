@@ -21,6 +21,8 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Widget } from 'src/utils/widget/widget';
 import { WIDGET_WORKSPACE_HOST } from '../dashboards/custom-dashboards-utils';
 
+export const DASHBOARD_BUTTONS_STYLE: React.CSSProperties = { display: 'flex', gap: '8px' };
+
 const workspaceHeaderFragment = graphql`
   fragment WorkspaceHeaderFragment on Workspace {
     id
@@ -109,7 +111,7 @@ const WorkspaceHeader = ({
         </div>
         <div
           id="dashboard-buttons"
-          style={{ display: 'flex', gap: '8px' }}
+          style={DASHBOARD_BUTTONS_STYLE}
         >
           <ExportButtons
             domElementId="container"

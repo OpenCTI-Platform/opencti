@@ -19,6 +19,7 @@ import withRouter from '../utils/compat_router/withRouter';
 import { KNOWLEDGE_KNFRONTENDEXPORT } from '../utils/hooks/useGranted';
 import Security from '../utils/Security';
 import { useExportTheme } from '../utils/ExportThemeContext';
+import { DASHBOARD_BUTTONS_STYLE } from '../private/components/workspaces/workspaceHeader/WorkspaceHeader';
 
 const styles = () => ({
   exportButtons: {
@@ -30,6 +31,14 @@ const styles = () => ({
 });
 
 const DELAY = 1000;
+
+export const EXPORT_BUTTONS_STYLE = { display: 'flex', gap: '8px' };
+
+// Reset an element's inline style and re-apply the given style object
+const restoreStyle = (element, style) => {
+  element.removeAttribute('style');
+  Object.assign(element.style, style);
+};
 
 const wait = async (delay = DELAY) => {
   await new Promise((resolve) => {
@@ -105,10 +114,10 @@ export class ExportButtons extends Component {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
       if (dashboardButtons) {
-        dashboardButtons.setAttribute('style', 'display: flex; gap: 8px');
+        restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
       } else {
         const exportButtons = document.getElementById('export-buttons');
-        exportButtons?.setAttribute('style', 'display: flex; gap: 8px');
+        if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
         const viewButtons = document.getElementById('container-view-buttons');
         viewButtons?.setAttribute('style', '');
       }
@@ -162,10 +171,10 @@ export class ExportButtons extends Component {
       setExportTheme(null);
       this.setState({ exporting: false });
       if (dashboardButtons) {
-        dashboardButtons.setAttribute('style', 'display: flex; gap: 8px');
+        restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
       } else {
         const exportButtons = document.getElementById('export-buttons');
-        exportButtons?.setAttribute('style', 'display: flex; gap: 8px');
+        if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
       }
     }
   }
@@ -196,7 +205,7 @@ export class ExportButtons extends Component {
             <div
               className={classes.exportButtons}
               id="export-buttons"
-              style={{ display: 'flex', gap: '8px' }}
+              style={EXPORT_BUTTONS_STYLE}
             >
               {exportToImage && (
                 <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
