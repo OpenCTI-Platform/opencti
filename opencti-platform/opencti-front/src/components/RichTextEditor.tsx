@@ -1,9 +1,7 @@
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import { TextSelection, NodeSelection } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
 import { ImageWithOptions } from './richTextEditor/extensions/ImageWithOptions';
-import Underline from '@tiptap/extension-underline';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
@@ -179,19 +177,20 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   imageOptionsPopoverOpenRef.current = imageOptionsPopover.open;
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         paragraph: false,
-      }),
-      Link.configure({
-        autolink: true,
-        linkOnPaste: true,
-        openOnClick: false,
-        HTMLAttributes: {
-          style: `color: ${isDark ? '#00b1ff' : '#0066cc'}`,
-          target: '_blank',
-          rel: 'noopener noreferrer',
+        link: {
+          autolink: true,
+          linkOnPaste: true,
+          openOnClick: false,
+          HTMLAttributes: {
+            style: `color: ${isDark ? '#00b1ff' : '#0066cc'}`,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          },
         },
       }),
       ImageWithOptions.configure({
@@ -205,7 +204,6 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           alwaysPreserveAspectRatio: true,
         },
       }),
-      Underline,
       Subscript,
       Superscript,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -669,7 +667,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [editor, onReady]);
 
   useEffect(() => {
-    if (!editor) return;
+    if (!editor || editor.isDestroyed) return;
     if (data !== undefined && data !== editor.getHTML()) {
       editor.commands.setContent(data || '<p></p>', { emitUpdate: false });
     }

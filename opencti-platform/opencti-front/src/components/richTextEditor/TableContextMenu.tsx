@@ -9,7 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { DeleteOutline, MergeType, SplitscreenOutlined, BorderTopOutlined, BorderLeftOutlined, TableChart, AddOutlined, RemoveOutlined } from '@mui/icons-material';
 
 interface TableContextMenuProps {
-  editor: Editor;
+  editor: Editor | null;
   open: boolean;
   position: { top: number; left: number } | null;
   onClose: () => void;
@@ -36,6 +36,8 @@ export const TableContextMenu: React.FC<TableContextMenuProps> = ({
     },
     [onClose],
   );
+
+  if (!editor) return null;
 
   const canMerge = editor.can().mergeCells();
 
