@@ -13,17 +13,17 @@ const ignoredClasses = [
 export const EXPORT_KEEP_CLASS = 'export-keep';
 export const EXPORT_REMOVE_CLASS = 'export-remove';
 
-const isNodeKeptAtExport = (domNode) => {
-  return domNode.closest?.(`.${EXPORT_KEEP_CLASS}`);
-};
-
-const isNodeRemovedAtExport = (domNode) => {
-  return domNode.closest?.(`.${EXPORT_REMOVE_CLASS}`);
-};
-
-const isDomNodeKeptAtExport = (domNode) => {
-  if (isNodeKeptAtExport(domNode)) return true;
-  if (isNodeRemovedAtExport(domNode)) return false;
+/**
+ * Determines whether a DOM node should be included in the exported image/PDF.
+ *
+ * - If the node (or an ancestor) has the `export-keep` class → kept
+ * - If the node (or an ancestor) has the `export-remove` class → removed
+ * - If the node has one of the `ignoredClasses` → removed
+ * - Otherwise → kept
+ */
+export const isDomNodeKeptAtExport = (domNode) => {
+  if (domNode.closest?.(`.${EXPORT_KEEP_CLASS}`)) return true;
+  if (domNode.closest?.(`.${EXPORT_REMOVE_CLASS}`)) return false;
   if (domNode.className) {
     for (const ignoredClass of ignoredClasses) {
       if (domNode.className.toString().includes(ignoredClass)) {
