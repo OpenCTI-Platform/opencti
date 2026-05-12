@@ -1,16 +1,16 @@
 import { assert, describe, expect, it, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
-import type { BasicStoreObject } from '../../../../src/types/store';
-import type { StixId } from '../../../../src/types/stix-2-0-common';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { generateStandardId } from '../../../../src/schema/identifier';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
-import * as middlewareLoader from '../../../../src/database/middleware-loader';
-import * as access from '../../../../src/utils/access';
-import { PLAYBOOK_UNSHARING_COMPONENT, type UnsharingConfiguration } from '../../../../src/modules/playbook/components/unsharing-component';
+import type { BasicStoreObject } from '../../../../../src/types/store';
+import type { StixId } from '../../../../../src/types/stix-2-0-common';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import { generateStandardId } from '../../../../../src/schema/identifier';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../../src/modules/organization/organization-types';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../../src/schema/stixDomainObject';
+import * as middlewareLoader from '../../../../../src/database/middleware-loader';
+import * as access from '../../../../../src/utils/access';
+import { PLAYBOOK_UNSHARING_COMPONENT, type UnsharingConfiguration } from '../../../../../src/modules/playbook/components/unsharing-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
-import type { StixBundle, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
+import type { StixBundle, StixOpenctiExtension } from '../../../../../src/types/stix-2-1-common';
 
 describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
   const MAIN_REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';

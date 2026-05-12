@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from '../../../../src/modules/playbook/components/create-observable-component';
-import type { StixCyberObject } from '../../../../src/types/stix-2-1-common';
-import type { StixRelation } from '../../../../src/types/stix-2-1-sro';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
-import type { StixIndicator } from '../../../../src/modules/indicator/indicator-types';
+import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from '../../../../../src/modules/playbook/components/create-observable-component';
+import type { StixCyberObject } from '../../../../../src/types/stix-2-1-common';
+import type { StixRelation } from '../../../../../src/types/stix-2-1-sro';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../../src/types/stix-2-1-extensions';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
+import type { StixIndicator } from '../../../../../src/modules/indicator/indicator-types';
 
 describe('PLAYBOOK_CREATE_OBSERVABLE_COMPONENT', () => {
   const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';

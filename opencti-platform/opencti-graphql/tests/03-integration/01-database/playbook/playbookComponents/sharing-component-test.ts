@@ -1,15 +1,15 @@
 import { describe, expect, it, vi, afterEach, beforeEach, type MockInstance } from 'vitest';
-import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
-import type { BasicStoreObject } from '../../../../src/types/store';
-import type { StixId } from '../../../../src/types/stix-2-0-common';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { generateStandardId } from '../../../../src/schema/identifier';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
-import * as middlewareLoader from '../../../../src/database/middleware-loader';
-import * as access from '../../../../src/utils/access';
-import { PLAYBOOK_SHARING_COMPONENT, type SharingConfiguration } from '../../../../src/modules/playbook/components/sharing-component';
+import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../../src/types/stix-2-1-common';
+import type { BasicStoreObject } from '../../../../../src/types/store';
+import type { StixId } from '../../../../../src/types/stix-2-0-common';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import { generateStandardId } from '../../../../../src/schema/identifier';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../../src/modules/organization/organization-types';
+import * as middlewareLoader from '../../../../../src/database/middleware-loader';
+import * as access from '../../../../../src/utils/access';
+import { PLAYBOOK_SHARING_COMPONENT, type SharingConfiguration } from '../../../../../src/modules/playbook/components/sharing-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
 
 describe('PLAYBOOK_SHARING_COMPONENT', () => {
   const MAIN_REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';

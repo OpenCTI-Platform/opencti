@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT, type ContainerWrapperConfiguration } from '../../../../src/modules/playbook/components/container-wrapper-component';
-import type { StixContainer, StixIncident } from '../../../../src/types/stix-2-1-sdo';
+import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT, type ContainerWrapperConfiguration } from '../../../../../src/modules/playbook/components/container-wrapper-component';
+import type { StixContainer, StixIncident } from '../../../../../src/types/stix-2-1-sdo';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import type { StixRelation } from '../../../../src/types/stix-2-1-sro';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import type { StixDomainObject } from '../../../../src/types/stix-2-1-common';
+import type { StixRelation } from '../../../../../src/types/stix-2-1-sro';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common';
 
 const componentConfig = (config: Partial<ContainerWrapperConfiguration>) => {
   return {

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from '../../../../src/modules/playbook/components/create-indicator-component';
+import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from '../../../../../src/modules/playbook/components/create-indicator-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
-import type { StixIndicator } from '../../../../src/modules/indicator/indicator-types';
-import type { StixRelation } from '../../../../src/types/stix-2-1-sro';
-import { RELATION_BASED_ON, RELATION_INDICATES } from '../../../../src/schema/stixCoreRelationship';
-import type { StixId } from '../../../../src/types/stix-2-0-common';
-import type { CyberObjectExtension, StixCyberObject } from '../../../../src/types/stix-2-1-common';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
-import type { StixInternalExternalReference } from '../../../../src/types/stix-2-1-smo';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../../src/types/stix-2-1-extensions';
+import type { StixIndicator } from '../../../../../src/modules/indicator/indicator-types';
+import type { StixRelation } from '../../../../../src/types/stix-2-1-sro';
+import { RELATION_BASED_ON, RELATION_INDICATES } from '../../../../../src/schema/stixCoreRelationship';
+import type { StixId } from '../../../../../src/types/stix-2-0-common';
+import type { CyberObjectExtension, StixCyberObject } from '../../../../../src/types/stix-2-1-common';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
+import type { StixInternalExternalReference } from '../../../../../src/types/stix-2-1-smo';
 
 const OBSERVABLE_ID = 'domain-name--a1b2c3d4-0000-0000-0000-000000000001' as const;
 const INTRUSION_SET_ID = 'intrusion-set--1ad04810-ab05-5873-96f5-a89d19607e1c' as const;

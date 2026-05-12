@@ -1,9 +1,9 @@
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
-import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { PLAYBOOK_REDUCING_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
-import * as access from '../../../../src/utils/access';
-import * as filterUtils from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
+import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import { PLAYBOOK_REDUCING_COMPONENT } from '../../../../../src/modules/playbook/playbook-components';
+import * as access from '../../../../../src/utils/access';
+import * as filterUtils from '../../../../../src/utils/filtering/filtering-stix/stix-filtering';
 
 const REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
 const CAMPAIGN_ID = 'campaign--fdcacc8e-de4d-5a13-8886-401d363664fd';

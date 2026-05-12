@@ -1,10 +1,10 @@
 import { assert, describe, expect, it } from 'vitest';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import type { StixThreatActor } from '../../../../src/types/stix-2-1-sdo';
-import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../src/schema/general';
-import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../src/modules/playbook/components/manipulate-knowledge-component';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import type { StixThreatActor } from '../../../../../src/types/stix-2-1-sdo';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../../src/schema/general';
+import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../../src/modules/playbook/components/manipulate-knowledge-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import type { StixDomainObject } from '../../../../src/types/stix-2-1-common';
+import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common';
 
 describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
   const THREAT_ACTOR_ID = 'threat--09bd862a-f030-55f2-920a-900c4913d9fd';

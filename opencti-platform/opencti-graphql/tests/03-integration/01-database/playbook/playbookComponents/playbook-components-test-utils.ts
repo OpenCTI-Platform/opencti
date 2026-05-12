@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
-import type { CyberObjectExtension, StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
-import type { StixId } from '../../../../src/types/stix-2-0-common';
-import type { ExecutorParameters } from '../../../../src/modules/playbook/playbook-types';
+import type { CyberObjectExtension, StixBundle, StixObject, StixOpenctiExtension } from '../../../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../../src/types/stix-2-1-extensions';
+import type { StixId } from '../../../../../src/types/stix-2-0-common';
+import type { ExecutorParameters } from '../../../../../src/modules/playbook/playbook-types';
 
 type TestBundleObjectArgs<T extends StixObject> = {
   id?: StixId;

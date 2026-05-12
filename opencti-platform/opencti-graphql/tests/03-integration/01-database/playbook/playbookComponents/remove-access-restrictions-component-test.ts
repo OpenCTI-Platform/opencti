@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
-import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/playbook/components/remove-access-restrictions-component';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../../src/schema/stixDomainObject';
+import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../../src/modules/playbook/components/remove-access-restrictions-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
-import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
-import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../../src/modules/grouping/grouping-types';
+import { playbookBundleElementsToApply } from '../../../../../src/modules/playbook/playbook-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../../src/modules/case/case-incident/case-incident-types';
 
 describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
   const REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
