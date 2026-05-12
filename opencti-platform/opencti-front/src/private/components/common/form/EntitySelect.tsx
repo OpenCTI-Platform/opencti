@@ -1,8 +1,7 @@
 import { Autocomplete, Checkbox, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
-import React, { Suspense, useMemo, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import React, { Suspense, useEffect, useTransition } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { EntitySelectSearchQuery, FilterMode, FilterOperator } from './__generated__/EntitySelectSearchQuery.graphql';
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import Loader from '../../../../components/Loader';
@@ -136,9 +135,10 @@ type EntitySelectProps = Omit<EntitySelectComponentProps, 'onInputChange' | 'que
 };
 
 const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
-  const [search, setSearch] = useState('');
+  const [, startTransition] = useTransition();
+  const [queryRef, loadQuery] = useQueryLoader<EntitySelectSearchQuery>(entitySelectSearchQuery);
 
-  const variables = useMemo(() => ({
+  const buildVariables = (search: string) => ({
     search,
     filters: {
       mode: 'and' as FilterMode,
@@ -152,19 +152,25 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
         },
       ],
     },
-  }), [search, types]);
+  });
 
-  const queryRef = useQueryLoading<EntitySelectSearchQuery>(
-    entitySelectSearchQuery,
-    variables,
-  );
+  // Initial load
+  useEffect(() => {
+    loadQuery(buildVariables(''), { fetchPolicy: 'store-and-network' });
+  }, [types]);
+
+  const handleSearchChange = (val: string) => {
+    startTransition(() => {
+      loadQuery(buildVariables(val), { fetchPolicy: 'store-and-network' });
+    });
+  };
 
   return (
     <Suspense fallback={<Loader />}>
       {queryRef && (
         <EntitySelectComponent
           {...otherProps}
-          onInputChange={setSearch}
+          onInputChange={handleSearchChange}
           queryRef={queryRef}
         />
       )}

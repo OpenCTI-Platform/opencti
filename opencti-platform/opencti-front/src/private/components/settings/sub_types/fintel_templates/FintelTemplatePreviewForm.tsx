@@ -32,7 +32,7 @@ const FintelTemplatePreviewForm = ({
   if (!subTypeId) return <ErrorNotFound />;
 
   const validation = () => Yup.object().shape({
-    entity: Yup.object().required(),
+    entity: Yup.object().nullable(),
   });
 
   const initialValues: FintelTemplatePreviewFormInputs = {

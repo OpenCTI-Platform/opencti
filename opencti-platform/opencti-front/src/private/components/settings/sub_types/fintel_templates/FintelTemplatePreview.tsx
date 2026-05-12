@@ -119,7 +119,7 @@ const FintelTemplatePreview = ({
 
       <div style={{ flex: 5, display: 'flex', flexDirection: 'column' }}>
         <Card title={t_i18n('Preview')}>
-          {pdf ? (
+          {pdf && formValues?.entity ? (
             <PdfViewer pdf={pdf} />
           ) : (
             <div style={{
