@@ -107,6 +107,16 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
       upsert: false,
       isFilterable: true,
     },
+    {
+      name: 'active',
+      label: 'Active',
+      type: 'boolean',
+      mandatoryType: 'no',
+      editDefault: true,
+      multiple: false,
+      upsert: false,
+      isFilterable: true,
+    },
   ],
   relations: [],
   representative: (instance: StixRetentionRule) => {
