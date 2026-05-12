@@ -1,13 +1,14 @@
-import React, { useRef } from 'react';
-import { graphql } from 'react-relay';
+import { ReactNode, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget, WidgetHost } from '../../../../utils/widget/widget';
+import { FilterGroup, OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from './__generated__/StixCoreObjectsListQuery.graphql';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 
@@ -417,86 +418,118 @@ export const stixCoreObjectsListQuery = graphql`
   }
 `;
 
-const StixCoreObjectsList = ({
-  title,
-  variant,
-  height,
-  startDate,
-  endDate,
+interface StixCoreObjectsListComponentProps {
+  rootRef: React.RefObject<HTMLDivElement | null>;
+  queryRef: PreloadedQuery<StixCoreObjectsListQuery>;
+  dataSelection: Widget['dataSelection'];
+  widgetId: string;
+};
+
+const StixCoreObjectsListComponent = ({
   dataSelection,
   widgetId,
-  parameters = {},
+  rootRef,
+  queryRef,
+}: StixCoreObjectsListComponentProps) => {
+  const data = usePreloadedQuery(stixCoreObjectsListQuery, queryRef);
+  const selection = dataSelection[0];
+  const columns = selection.columns ?? getDefaultWidgetColumns('entities');
+  const edges = data?.stixCoreObjects?.edges ?? [];
+  return edges.length === 0 ? (
+    <WidgetNoData />
+  ) : (
+    <WidgetListCoreObjects
+      data={edges}
+      rootRef={rootRef.current ?? undefined}
+      widgetId={widgetId}
+      pageSize={selection.number ?? 10}
+      columns={[...columns]}
+    />
+  );
+};
+interface StixCoreObjectsListProps {
+  title?: string;
+  variant?: string;
+  height?: number;
+  parameters: { title?: string };
+  popover?: ReactNode;
+  dataSelection: Widget['dataSelection'];
+  widgetId: string;
+  startDate?: string | null | undefined;
+  endDate?: string | null | undefined;
+  host?: WidgetHost;
+}
+
+const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
+
+const StixCoreObjectsList = ({
+  height,
+  parameters,
+  variant,
   popover,
+  title,
+  dataSelection,
+  widgetId,
+  startDate,
+  endDate,
   host,
-}) => {
+}: StixCoreObjectsListProps) => {
   const { t_i18n } = useFormatter();
+  const rootRef = useRef<HTMLDivElement>(null);
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'entities',
     dataSelection,
     host,
   });
+  const [stixCoreObjectsListQueryRef, loadStixCoreObjectsList] = useQueryLoader<StixCoreObjectsListQuery>(stixCoreObjectsListQuery);
   const selection = resolvedDataSelection[0];
-  const columns = selection.columns ?? getDefaultWidgetColumns('entities');
-  const dataSelectionTypes = ['Stix-Core-Object'];
-
-  const sortBy = selection.sort_by && selection.sort_by.length > 0
+  const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
-    : 'created_at';
+    : 'created_at') as StixCoreObjectsOrdering | null | undefined;
   const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
     ? selection.date_attribute
     : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+  const first = selection.number ?? 10;
+  const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
 
-  const rootRef = useRef(null);
+  const { filters } = useMemo(() => buildFiltersAndOptionsForWidgets(
+    selection.filters, { startDate, endDate, dateAttribute }),
+  [selection.filters, startDate, endDate, dateAttribute],
+  ) as { filters: FilterGroup | null | undefined };
 
+  const reloadData = useCallback(() => {
+    loadStixCoreObjectsList({
+      types: DATA_SELECTION_TYPES,
+      first,
+      orderBy,
+      orderMode,
+      filters,
+    }, {
+      fetchPolicy: 'store-and-network',
+    });
+  }, [loadStixCoreObjectsList, first, orderBy, orderMode, filters]);
+  useEffect(() => {
+    reloadData();
+  }, [reloadData]);
+
+  if (isMissingHostEntity) {
+    return <WidgetNoHostEntity host={host} />;
+  }
   return (
     <WidgetContainer
       padding="horizontal"
       height={height}
-      title={parameters.title ?? title ?? t_i18n('Entities list')}
+      title={parameters?.title ?? title ?? t_i18n('Entities list')}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {
-          isMissingHostEntity
-            ? <WidgetNoHostEntity host={host} />
-            : (
-                <QueryRenderer
-                  query={stixCoreObjectsListQuery}
-                  variables={{
-                    types: dataSelectionTypes,
-                    first: selection.number ?? 10,
-                    orderBy: sortBy,
-                    orderMode: selection.sort_mode ?? 'asc',
-                    filters,
-                  }}
-                  render={({ props }) => {
-                    if (
-                      props
-                      && props.stixCoreObjects
-                      && props.stixCoreObjects.edges.length > 0
-                    ) {
-                      const data = props.stixCoreObjects.edges;
-                      return (
-                        <WidgetListCoreObjects
-                          data={data}
-                          rootRef={rootRef.current ?? undefined}
-                          widgetId={widgetId}
-                          pageSize={selection.number ?? 10}
-                          columns={columns}
-                        />
-                      );
-                    }
-                    if (props) {
-                      return <WidgetNoData />;
-                    }
-                    return <Loader variant={LoaderVariant.inElement} />;
-                  }}
-                />
-              )
-        }
+        {stixCoreObjectsListQueryRef && (
+          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixCoreObjectsListComponent queryRef={stixCoreObjectsListQueryRef} rootRef={rootRef} dataSelection={resolvedDataSelection} widgetId={widgetId} />
+          </Suspense>
+        )}
       </div>
     </WidgetContainer>
   );
