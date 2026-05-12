@@ -45,6 +45,7 @@ const SwitchField = (props) => {
     <div style={props.containerstyle}>
       <FormGroup>
         <FormControlLabel
+          style={{ width: 'fit-content' }}
           control={(
             <MuiSwitch
               {...fieldToSwitch(props)}
