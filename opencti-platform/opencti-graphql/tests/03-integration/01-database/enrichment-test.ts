@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { filterConnectorsForElementEnrichment } from '../../../src/domain/enrichment';
-import { testContext } from '../../utils/testQuery';
+import { findById as findMarkingById } from '../../../src/domain/markingDefinition';
+import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { MARKING_TLP_AMBER, MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 
 import internalConnectors from '../05-parser/internal-connectors.json';
 
-describe('Enrichment domain filter connector unit testing', () => {
+describe('Enrichment domain filter connector unit testing', async () => {
   const externalReferenceElement = {
     _index: 'opencti_stix_meta_objects',
     source_name: 'AlienVault',
@@ -30,6 +33,10 @@ describe('Enrichment domain filter connector unit testing', () => {
     ],
   };
   const connectors = [...internalConnectors];
+  const connector = connectors.find((c) => c.name === 'ImportExternalReference');
+  if (connector) {
+    connector.connector_user_id = (await getAuthUser(USER_EDITOR.id)).internal_id;
+  }
   const externalRefScope = ENTITY_TYPE_EXTERNAL_REFERENCE;
   it('should find enrichment connector with filter', async () => {
     const targetConnectors = await filterConnectorsForElementEnrichment(testContext, connectors, externalReferenceElement, externalRefScope);
@@ -37,6 +44,27 @@ describe('Enrichment domain filter connector unit testing', () => {
     expect(targetConnectors[0].name).toEqual('ImportExternalReference');
     expect(targetConnectors[0].connector_type).toEqual('INTERNAL_ENRICHMENT');
     expect(targetConnectors[0].connector_scope).toEqual(['External-Reference']);
+  });
+  it('should find enrichment connector with filter for non admin user with access', async () => {
+    const tlpAmberMarking = await findMarkingById(testContext, ADMIN_USER, MARKING_TLP_AMBER);
+    const accessibleElement = {
+      ...externalReferenceElement,
+      [RELATION_OBJECT_MARKING]: [tlpAmberMarking.internal_id],
+    };
+    const targetConnectors = await filterConnectorsForElementEnrichment(testContext, connectors, accessibleElement, externalRefScope);
+    expect(targetConnectors.length).toEqual(1);
+    expect(targetConnectors[0].name).toEqual('ImportExternalReference');
+    expect(targetConnectors[0].connector_type).toEqual('INTERNAL_ENRICHMENT');
+    expect(targetConnectors[0].connector_scope).toEqual(['External-Reference']);
+  });
+  it('should not find enrichment connector with filter for non admin user without access', async () => {
+    const tlpRedMarking = await findMarkingById(testContext, ADMIN_USER, MARKING_TLP_RED);
+    const inaccessibleElement = {
+      ...externalReferenceElement,
+      [RELATION_OBJECT_MARKING]: [tlpRedMarking.internal_id],
+    };
+    const targetConnectors = await filterConnectorsForElementEnrichment(testContext, connectors, inaccessibleElement, externalRefScope);
+    expect(targetConnectors.length).toEqual(0);
   });
   it('should find enrichment connector if auto true and no filters', async () => {
     let testConnectors = [...connectors];
