@@ -19,6 +19,7 @@ import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../util
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useChipOverflow from '../data/IngestionCatalog/components/card/usecases/useChipOverflow';
+import { isRelativeUrl } from '../../../utils/url';
 
 const LOCAL_STORAGE_KEY = 'newsFeed';
 
@@ -151,7 +152,8 @@ const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> =
   const { settings } = useContext(UserContext);
 
   const urlPath = data.metadata?.find((m) => m?.key === 'url_path')?.value;
-  const href = !!settings?.platform_xtmhub_url && urlPath?.startsWith('/') ? new URL(urlPath, settings.platform_xtmhub_url).toString() : undefined;
+  const isRelativeUrlPath = !!urlPath && isRelativeUrl(urlPath);
+  const href = !!settings?.platform_xtmhub_url && isRelativeUrlPath ? new URL(urlPath, settings.platform_xtmhub_url).toString() : undefined;
 
   if (!href) return null;
 
