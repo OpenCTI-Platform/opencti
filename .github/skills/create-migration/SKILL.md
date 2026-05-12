@@ -19,18 +19,18 @@ Use the standard template with logging and execution context.
 
 ```javascript
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 
 const message = '[MIGRATION] <Description>';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
   
   // Implementation here
   // usage: await someDomainFunction(context, SYSTEM_USER, args);
   
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 
