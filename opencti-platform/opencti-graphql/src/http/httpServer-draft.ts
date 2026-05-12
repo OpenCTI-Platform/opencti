@@ -13,11 +13,6 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
       const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
       const draftWorkspace: BasicStoreEntityDraftWorkspace = draftWorkspaces.get(executeContext.draft_context) as BasicStoreEntityDraftWorkspace;
 
-      const isUserCanAccess = await isUserCanAccessStoreElement(executeContext, executeContext.user, draftWorkspace);
-      if (!isUserCanAccess) {
-        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
-      }
-
       if (!draftWorkspace) {
         if (executeContext.user.draft_context === executeContext.draft_context) {
           // If user is stuck in an invalid draft, remove draft context from user
@@ -28,6 +23,12 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
         }
         throw DraftLockedError('Could not find draft workspace');
       }
+
+      const isUserCanAccess = await isUserCanAccessStoreElement(executeContext, executeContext.user, draftWorkspace);
+      if (!isUserCanAccess) {
+        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
+      }
+
       if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
         if (executeContext.user.draft_context === executeContext.draft_context) {
           // If user is stuck in an invalid draft, remove draft context from user
