@@ -156,15 +156,12 @@ const CustomViewsSettingsDataTable = ({
       disableLineSelection={true}
       actions={(row) => <CustomViewPopover data={row} paginationOptions={queryPaginationOptions} />}
       icon={
-        ({ default: def }) => (
+        ({ default: def }) => def ? (
           <Tooltip title={t_i18n('Default')}>
-            <Insights sx={{
-              color: def
-                ? 'designSystem.tertiary.yellow.400'
-                : 'designSystem.tertiary.blue.500',
-            }}
-            />
+            <Insights sx={{ color: 'designSystem.tertiary.yellow.400' }} />
           </Tooltip>
+        ) : (
+          <Insights sx={{ color: 'designSystem.tertiary.blue.500' }} />
         )
       }
     />
