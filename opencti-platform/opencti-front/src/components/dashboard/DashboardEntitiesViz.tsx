@@ -70,8 +70,6 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsList
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           widgetId={widget.id}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
@@ -79,6 +77,7 @@ const DashboardEntitiesViz = ({
           title={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
         />
       );
     case 'distribution-list':

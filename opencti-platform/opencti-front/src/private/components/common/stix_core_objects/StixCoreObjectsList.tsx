@@ -1,5 +1,5 @@
-import { ReactNode, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { ReactNode, Suspense, useRef } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -7,10 +7,12 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { Widget, WidgetHost } from '../../../../utils/widget/widget';
-import { FilterGroup, OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from './__generated__/StixCoreObjectsListQuery.graphql';
+import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from './__generated__/StixCoreObjectsListQuery.graphql';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 
 export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
@@ -455,33 +457,14 @@ interface StixCoreObjectsListProps {
   popover?: ReactNode;
   dataSelection: Widget['dataSelection'];
   widgetId: string;
-  startDate?: string | null | undefined;
-  endDate?: string | null | undefined;
   host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number;
 }
 
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 
-const StixCoreObjectsList = ({
-  height,
-  parameters,
-  variant,
-  popover,
-  title,
-  dataSelection,
-  widgetId,
-  startDate,
-  endDate,
-  host,
-}: StixCoreObjectsListProps) => {
-  const { t_i18n } = useFormatter();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'entities',
-    dataSelection,
-    host,
-  });
-  const [stixCoreObjectsListQueryRef, loadStixCoreObjectsList] = useQueryLoader<StixCoreObjectsListQuery>(stixCoreObjectsListQuery);
+const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig) => {
   const selection = resolvedDataSelection[0];
   const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
@@ -491,27 +474,43 @@ const StixCoreObjectsList = ({
     : 'created_at';
   const first = selection.number ?? 10;
   const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
+  const { startDate, endDate } = computeStartEndDates(config);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute },
+  );
+  return {
+    types: DATA_SELECTION_TYPES,
+    first,
+    orderBy,
+    orderMode,
+    filters,
+  };
+};
 
-  const { filters } = useMemo(() => buildFiltersAndOptionsForWidgets(
-    selection.filters, { startDate, endDate, dateAttribute }),
-  [selection.filters, startDate, endDate, dateAttribute],
-  ) as { filters: FilterGroup | null | undefined };
-
-  const reloadData = useCallback(() => {
-    loadStixCoreObjectsList({
-      types: DATA_SELECTION_TYPES,
-      first,
-      orderBy,
-      orderMode,
-      filters,
-    }, {
-      fetchPolicy: 'store-and-network',
-    });
-  }, [loadStixCoreObjectsList, first, orderBy, orderMode, filters]);
-  useEffect(() => {
-    reloadData();
-  }, [reloadData]);
-
+const StixCoreObjectsList = ({
+  height,
+  parameters,
+  variant,
+  popover,
+  title,
+  dataSelection,
+  widgetId,
+  host,
+  config,
+  refreshRate = 20000,
+}: StixCoreObjectsListProps) => {
+  const { t_i18n } = useFormatter();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsListQuery>({
+    perspective: 'entities',
+    dataSelection,
+    host,
+    refreshRate,
+    query: stixCoreObjectsListQuery,
+    config,
+    buildQueryVariables,
+  });
   if (isMissingHostEntity) {
     return <WidgetNoHostEntity host={host} />;
   }
@@ -525,9 +524,9 @@ const StixCoreObjectsList = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {stixCoreObjectsListQueryRef && (
+        {queryRef && (
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <StixCoreObjectsListComponent queryRef={stixCoreObjectsListQueryRef} rootRef={rootRef} dataSelection={resolvedDataSelection} widgetId={widgetId} />
+            <StixCoreObjectsListComponent queryRef={queryRef} rootRef={rootRef} dataSelection={resolvedDataSelection} widgetId={widgetId} />
           </Suspense>
         )}
       </div>
