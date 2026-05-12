@@ -237,7 +237,13 @@ const initTaxiiApi = (app) => {
   });
   app.post(`${basePath}/taxii2/root/collections/:id/objects/`, async (req, res, next) => {
     try {
+      // Verify authentication
       req.taxiiContext = await checkAuthenticationFromRequest(req, res);
+
+      // Verify content type
+      if (!isValidTaxiiPostContentType(req)) {
+        throw TaxiiError('Content-Type in request is missing or invalid', 400);
+      }
 
       // Find and validate the collection
       const { id } = req.params;
@@ -250,8 +256,11 @@ const initTaxiiApi = (app) => {
         throw TaxiiError('Collection not found', 404);
       }
 
+      // Store ingestion data to avoid a second lookup
+      res.locals.ingestion = ingestion;
+
       // Then parse json body
-      next();
+      return next();
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -259,12 +268,7 @@ const initTaxiiApi = (app) => {
   }, JsonTaxiiMiddleware, async (req, res) => {
     try {
       const context = req.taxiiContext;
-      if (!isValidTaxiiPostContentType(req)) {
-        throw TaxiiError('Content-Type in request is missing or invalid', 400);
-      }
-      const { id } = req.params;
-      const ingestion = await findTaxiiCollection(context, context.user, id);
-
+      const { ingestion } = res.locals;
       const { objects = [] } = req.body;
 
       if (objects.length === 0) {
