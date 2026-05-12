@@ -5,10 +5,10 @@ This is a strict departure from the old scattered structure (resolvers/, domain/
 
 **A module MUST contain:**
 1.  **Schema** (`<entity-name>.graphql`): Defines the API model.
-2.  **Resolvers** (`-resolver.ts`): Bridges GraphQL to Domain.
-3.  **Domain** (`-domain.ts`): Contains business logic.
-4.  **Types** (`-types.ts`): TypeScript definitions.
-5.  **Converter** (`-converter.ts`): Internal <-> STIX conversion.
+2.  **Resolvers** (`<entity-name>-resolver.ts`): Bridges GraphQL to Domain.
+3.  **Domain** (`<entity-name>-domain.ts`): Contains business logic.
+4.  **Types** (`<entity-name>-types.ts`): TypeScript definitions.
+5.  **Converter** (`<entity-name>-converter.ts`): Internal <-> STIX conversion.
 6.  **Definition** (`<entity-name>.ts`): Registers the module in `ModuleDefinition`.
 
 **Registration Steps:**

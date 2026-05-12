@@ -55,11 +55,11 @@ export const MyEntityCreation: React.FC<Props> = ({ paginationOptions }) => {
   };
 
   return (
-    <Drawer title={t('Create entity')}>
+    <Drawer title={t_i18n('Create entity')}>
       <Formik initialValues={{ name: '' }} validationSchema={validationSchema} onSubmit={onSubmit}>
          <Form>
-            <Field component={TextField} name="name" label={t('Name')} />
-             <Button type="submit">{t('Create')}</Button>
+            <Field component={TextField} name="name" label={t_i18n('Name')} />
+             <Button type="submit">{t_i18n('Create')}</Button>
          </Form>
       </Formik>
     </Drawer>
