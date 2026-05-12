@@ -35,7 +35,7 @@ const IngestionCsv = () => {
   const classes = useStyles();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}&integrationType=csv_feed`
     : '';
 
   const { t_i18n } = useFormatter();
