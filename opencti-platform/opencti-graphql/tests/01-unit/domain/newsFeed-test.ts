@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { addNewsFeed, myNewsFeedsFind, myUnreadNewsFeedsCount } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
+import { addNewsFeed, markAllNewsFeedItemsAsRead, myNewsFeedsFind, myUnreadNewsFeedsCount } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
 import { NewsFeedItemType } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 import type { NewsFeedAddInput } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 
@@ -274,6 +274,102 @@ describe('News feed', () => {
       const result = await myUnreadNewsFeedsCount(mockContext, mockUser, 'other-user-42');
 
       expect(result).toBe(7);
+    });
+  });
+
+  describe('markAllNewsFeedItemsAsRead', () => {
+    beforeEach(() => {
+      mockFullEntitiesList.mockReset();
+      mockPatchAttribute.mockReset();
+      mockElCount.mockReset();
+      mockNotify.mockReset();
+
+      mockPatchAttribute.mockResolvedValue({});
+      mockElCount.mockResolvedValue(0);
+      mockNotify.mockResolvedValue(undefined);
+    });
+
+    it('should query unread items for the current user', async () => {
+      mockFullEntitiesList.mockResolvedValue([]);
+
+      const result = await markAllNewsFeedItemsAsRead(mockContext, mockUser);
+
+      expect(mockFullEntitiesList).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        ['NewsFeedItem'],
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              expect.objectContaining({ key: ['user_id'], values: [mockUser.id] }),
+              expect.objectContaining({ key: ['is_read'], values: [false] }),
+            ]),
+          }),
+        }),
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should patch each unread item with is_read=true', async () => {
+      const unreadItems = [
+        { id: 'item-1', is_read: false },
+        { id: 'item-2', is_read: false },
+        { id: 'item-3', is_read: false },
+      ];
+      mockFullEntitiesList.mockResolvedValue(unreadItems);
+
+      await markAllNewsFeedItemsAsRead(mockContext, mockUser);
+
+      expect(mockPatchAttribute).toHaveBeenCalledTimes(3);
+      for (const item of unreadItems) {
+        expect(mockPatchAttribute).toHaveBeenCalledWith(
+          mockContext,
+          mockUser,
+          item.id,
+          'NewsFeedItem',
+          { is_read: true },
+        );
+      }
+    });
+
+    it('should not call patchAttribute when there are no unread items', async () => {
+      mockFullEntitiesList.mockResolvedValue([]);
+
+      await markAllNewsFeedItemsAsRead(mockContext, mockUser);
+
+      expect(mockPatchAttribute).not.toHaveBeenCalled();
+    });
+
+    it('should notify with the recomputed unread count after marking all as read', async () => {
+      mockFullEntitiesList.mockResolvedValue([{ id: 'item-1', is_read: false }]);
+      mockElCount.mockResolvedValue(0);
+
+      await markAllNewsFeedItemsAsRead(mockContext, mockUser);
+
+      expect(mockElCount).toHaveBeenCalledOnce();
+      expect(mockNotify).toHaveBeenCalledOnce();
+      expect(mockNotify).toHaveBeenCalledWith(
+        'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
+        { count: 0, user_id: mockUser.id },
+        mockUser,
+      );
+    });
+
+    it('should notify with a non-zero count if new unread items appeared concurrently', async () => {
+      mockFullEntitiesList.mockResolvedValue([{ id: 'item-1', is_read: false }]);
+      // Simulate a concurrent new unread item arriving after the patches
+      mockElCount.mockResolvedValue(1);
+
+      await markAllNewsFeedItemsAsRead(mockContext, mockUser);
+
+      expect(mockElCount).toHaveBeenCalledOnce();
+      expect(mockNotify).toHaveBeenCalledOnce();
+      expect(mockNotify).toHaveBeenCalledWith(
+        'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
+        { count: 1, user_id: mockUser.id },
+        mockUser,
+      );
     });
   });
 });

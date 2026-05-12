@@ -3,16 +3,19 @@ import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER, type BasicStoreEntityNews
 import type { NewsFeedAddInput } from './news-feed-types';
 import { createInternalObject } from '../../../../domain/internalObject';
 import { addFilter } from '../../../../utils/filtering/filtering-utils';
-import { pageEntitiesConnection } from '../../../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection } from '../../../../database/middleware-loader';
 import { elCount } from '../../../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../../database/utils';
 import type { QueryMyNewsFeedsArgs } from '../../../../generated/graphql';
+import { FilterMode } from '../../../../generated/graphql';
 import { notify } from '../../../../database/redis';
 import { BUS_TOPICS } from '../../../../config/conf';
+import { patchAttribute } from '../../../../database/middleware';
+import { promiseMap } from '../../../../utils/promiseUtils';
 
 export const myUnreadNewsFeedsCount = (context: AuthContext, user: AuthUser, userId?: string | null) => {
   const queryFilters = {
-    mode: 'and',
+    mode: FilterMode.And,
     filters: [
       { key: 'user_id', values: [userId ?? user.id] },
       { key: 'is_read', values: [false] },
@@ -39,4 +42,20 @@ export const addNewsFeed = async (context: AuthContext, user: AuthUser, input: N
   const unreadNewsFeedsCount = await myUnreadNewsFeedsCount(context, user, created.user_id);
   await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: unreadNewsFeedsCount, user_id: created.user_id }, user);
   return created;
+};
+
+export const markAllNewsFeedItemsAsRead = async (context: AuthContext, user: AuthUser): Promise<boolean> => {
+  const queryFilters = {
+    mode: FilterMode.And,
+    filters: [
+      { key: ['user_id'], values: [user.id] },
+      { key: ['is_read'], values: [false] },
+    ],
+    filterGroups: [],
+  };
+  const unreadItems = await fullEntitiesList<BasicStoreEntityNewsFeedItem>(context, user, [ENTITY_TYPE_NEWS_FEED_ITEM], { filters: queryFilters });
+  await promiseMap(unreadItems, (item) => patchAttribute(context, user, item.id, ENTITY_TYPE_NEWS_FEED_ITEM, { is_read: true }), 5);
+  const remainingUnreadCount = await myUnreadNewsFeedsCount(context, user);
+  await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: remainingUnreadCount, user_id: user.id }, user);
+  return true;
 };

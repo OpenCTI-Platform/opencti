@@ -3,8 +3,8 @@ import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsF
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
 import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
 import { InsertChartOutlined, OpenInNewOutlined } from '@mui/icons-material';
-import React, { FunctionComponent, Suspense, useCallback, useMemo } from 'react';
-import { graphql, PreloadedQuery, useSubscription } from 'react-relay';
+import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
+import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -114,6 +114,12 @@ const newsFeedItemSubscription = graphql`
   }
 `;
 
+const markAllNewsFeedItemsAsReadMutation = graphql`
+  mutation NewsFeedMarkAllAsReadMutation {
+    markAllNewsFeedItemsAsRead
+  }
+`;
+
 const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[] }> = ({ tags }) => {
   const tagValues = tags.filter(Boolean) as string[];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(tagValues);
@@ -187,6 +193,12 @@ interface NewsFeedComponentProps {
 
 const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem }) => {
   const { t_i18n } = useFormatter();
+
+  const [commitMarkAllAsRead] = useMutation(markAllNewsFeedItemsAsReadMutation);
+
+  useEffect(() => {
+    commitMarkAllAsRead({ variables: {} });
+  }, [commitMarkAllAsRead]);
 
   const subConfig = useMemo(() => ({
     subscription: newsFeedItemSubscription,

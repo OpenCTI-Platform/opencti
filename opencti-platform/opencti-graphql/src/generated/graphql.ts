@@ -17128,6 +17128,7 @@ export type Mutation = {
   managedConnectorAdd?: Maybe<ManagedConnector>;
   managedConnectorEdit?: Maybe<ManagedConnector>;
   managerConfigurationFieldPatch?: Maybe<ManagerConfiguration>;
+  markAllNewsFeedItemsAsRead?: Maybe<Scalars['Boolean']['output']>;
   markingDefinitionAdd?: Maybe<MarkingDefinition>;
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
   meEdit?: Maybe<MeUser>;
@@ -46980,6 +46981,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   managedConnectorAdd?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, Partial<MutationManagedConnectorAddArgs>>;
   managedConnectorEdit?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, Partial<MutationManagedConnectorEditArgs>>;
   managerConfigurationFieldPatch?: Resolver<Maybe<ResolversTypes['ManagerConfiguration']>, ParentType, ContextType, RequireFields<MutationManagerConfigurationFieldPatchArgs, 'id' | 'input'>>;
+  markAllNewsFeedItemsAsRead?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   markingDefinitionAdd?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionAddArgs, 'input'>>;
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
