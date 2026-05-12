@@ -115,7 +115,7 @@
   },
   "smtp": {
     "enabled": true,
-    "hostname": "localhost",
+    "hostname": "smtp",
     "use_ssl": false,
     "rejectUnauthorized": false,
     "port": 1025
