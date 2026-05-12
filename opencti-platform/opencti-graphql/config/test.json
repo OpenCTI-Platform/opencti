@@ -114,6 +114,10 @@
     }
   },
   "smtp": {
-    "enabled": false
+    "enabled": true,
+    "hostname": "smtp",
+    "use_ssl": false,
+    "rejectUnauthorized": false,
+    "port": 1025
   }
 }

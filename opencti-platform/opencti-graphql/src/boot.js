@@ -1,12 +1,14 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags, checkSystemDependencies } from './initialization';
+import platformInit, { checkFeatureFlags } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
+import { checkSystemDependencies } from './boot-utils';
 
 // region platform start and stop
 export const platformStart = async () => {
+  const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
   try {
     checkFeatureFlags();
@@ -45,6 +47,7 @@ export const platformStart = async () => {
       logApp.error('[OPENCTI] Modules startup failed', { cause: modulesError });
       throw modulesError;
     }
+    logApp.info(`[OPENCTI] Platform started ${Date.now() - startTime} ms`);
   } catch (_mainError) {
     process.exit(1);
   }

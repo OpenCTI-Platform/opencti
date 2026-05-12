@@ -118,8 +118,11 @@ export const deleteBucket = async () => {
 };
 
 export const storageInit = async () => {
+  logApp.info('[CHECK] Checking if File Storage is available');
   await initializeFileStorageClient();
   await initializeBucket();
+  logApp.info('[CHECK] File Storage is alive');
+  return true;
 };
 
 export const isStorageAlive = () => initializeBucket();
