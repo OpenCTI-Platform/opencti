@@ -249,7 +249,7 @@ class OpenCTIApiClient:
 
         # Define API
         self.api_token = token
-        self.api_url = url + "/graphql"
+        self.api_url = url.rstrip("/") + "/graphql"
         if provider is not None:
             provider_pattern_checker = re.compile(
                 r"^[A-Za-z]+\/\d+(?:\.[a-z]*\d+){0,}$"
