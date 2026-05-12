@@ -10,6 +10,30 @@ const ignoredClasses = [
   'MuiInputBase-root',
 ];
 
+export const EXPORT_KEEP_CLASS = 'export-keep';
+export const EXPORT_REMOVE_CLASS = 'export-remove';
+
+const isNodeKeptAtExport = (domNode) => {
+  return domNode.closest?.(`.${EXPORT_KEEP_CLASS}`);
+};
+
+const isNodeRemovedAtExport = (domNode) => {
+  return domNode.closest?.(`.${EXPORT_REMOVE_CLASS}`);
+};
+
+const isDomNodeKeptAtExport = (domNode) => {
+  if (isNodeKeptAtExport(domNode)) return true;
+  if (isNodeRemovedAtExport(domNode)) return false;
+  if (domNode.className) {
+    for (const ignoredClass of ignoredClasses) {
+      if (domNode.className.toString().includes(ignoredClass)) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 export const exportImage = (
   domElementId,
   currentWidth,
@@ -27,16 +51,7 @@ export const exportImage = (
         pixelRatio,
         backgroundColor,
         style: { margin: '0' },
-        filter: (domNode) => {
-          if (domNode.className) {
-            for (const ignoredClass of ignoredClasses) {
-              if (domNode.className.toString().includes(ignoredClass)) {
-                return false;
-              }
-            }
-          }
-          return true;
-        },
+        filter: isDomNodeKeptAtExport,
         onImageErrorHandler: () => {
           // We do nothing, it's just to avoid crashing export in case of image error.
         },
@@ -76,16 +91,7 @@ export const exportPdf = (
         backgroundColor,
         style: { margin: '0' },
         imagePlaceholder: '', // ignore image fetch failure, and display empty area
-        filter: (domNode) => {
-          if (domNode.className) {
-            for (const ignoredClass of ignoredClasses) {
-              if (domNode.className.toString().includes(ignoredClass)) {
-                return false;
-              }
-            }
-          }
-          return true;
-        },
+        filter: isDomNodeKeptAtExport,
         onImageErrorHandler: () => {
           // We do nothing, it's just to avoid crashing export in case of image error.
         },

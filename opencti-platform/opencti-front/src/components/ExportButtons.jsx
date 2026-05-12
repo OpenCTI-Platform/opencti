@@ -62,6 +62,8 @@ export class ExportButtons extends Component {
     const { pixelRatio = 1, t, setExportTheme } = this.props;
     const exportButtons = document.getElementById('export-buttons');
     const viewButtons = document.getElementById('container-view-buttons');
+    const dashboardButtons = document.getElementById('dashboard-buttons');
+
     try {
       this.setState({ exporting: true });
       this.handleCloseImage();
@@ -73,9 +75,13 @@ export class ExportButtons extends Component {
 
       const container = document.getElementById(domElementId);
 
+    // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
+    if (dashboardButtons) {
+      dashboardButtons.setAttribute('style', 'display: none');
+    } else {
       exportButtons?.setAttribute('style', 'display: none');
-
       viewButtons?.setAttribute('style', 'display: none');
+    }
 
       const { offsetWidth, offsetHeight } = container;
       if (this.adjust) {
@@ -98,9 +104,14 @@ export class ExportButtons extends Component {
     } catch {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
-      exportButtons?.setAttribute('style', 'display: block');
-      viewButtons?.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
-
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: flex; gap: 8px');
+      } else {
+        const exportButtons = document.getElementById('export-buttons');
+        exportButtons?.setAttribute('style', 'display: flex; gap: 8px');
+        const viewButtons = document.getElementById('container-view-buttons');
+        viewButtons?.setAttribute('style', '');
+      }
       setExportTheme(null);
 
       this.setState({ exporting: false });
@@ -117,7 +128,8 @@ export class ExportButtons extends Component {
 
   async exportPdf({ domElementId, name, themeNode, background }) {
     const { pixelRatio = 1, t, setExportTheme } = this.props;
-    const buttons = document.getElementById('export-buttons');
+    const exportButtons = document.getElementById('export-buttons');
+    const dashboardButtons = document.getElementById('dashboard-buttons');
     try {
       this.setState({ exporting: true });
       this.handleClosePdf();
@@ -127,7 +139,12 @@ export class ExportButtons extends Component {
 
       setExportTheme(themeNode);
 
-      buttons.setAttribute('style', 'display: none');
+    // Hide buttons: dashboard-buttons wraps everything on dashboards
+    if (dashboardButtons) {
+      dashboardButtons.setAttribute('style', 'display: none');
+    } else {
+      exportButtons?.setAttribute('style', 'display: none');
+    }
 
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
@@ -143,9 +160,13 @@ export class ExportButtons extends Component {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf'));
     } finally {
       setExportTheme(null);
-
       this.setState({ exporting: false });
-      buttons.setAttribute('style', 'display: block');
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: flex; gap: 8px');
+      } else {
+        const exportButtons = document.getElementById('export-buttons');
+        exportButtons?.setAttribute('style', 'display: flex; gap: 8px');
+      }
     }
   }
 

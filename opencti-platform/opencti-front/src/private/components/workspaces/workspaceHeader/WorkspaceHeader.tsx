@@ -107,7 +107,10 @@ const WorkspaceHeader = ({
             canEdit={canEdit}
           />
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div
+          id="dashboard-buttons"
+          style={{ display: 'flex', gap: '8px' }}
+        >
           <ExportButtons
             domElementId="container"
             name={workspace.name}
