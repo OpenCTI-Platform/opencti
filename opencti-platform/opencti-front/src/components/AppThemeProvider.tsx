@@ -115,7 +115,12 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     return createTheme(themeBuilder(appTheme) as ThemeOptions);
   }, [themeToUse]);
 
-  useDocumentThemeModifier(themeToUse?.name ?? defaultTheme.name);
+  // Compute the lowercase palette mode used by the body `data-theme`
+  // attribute. This must match `theme.palette.mode` so that CSS files
+  // targeting `body[data-theme="dark"]` / `body[data-theme="light"]`
+  // (e.g. CKEditor theming) apply on the very first render.
+  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Light' ? 'light' : 'dark';
+  useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
 };
