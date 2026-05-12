@@ -37,7 +37,7 @@ It uses **Relay** for data fetching and **Material UI** for styling.
 ## Setup & Build
 
 ### Prerequisites
-- **Yarn 4.13.0**: Enabled via `corepack enable`.
+- **Yarn 4.14**: Enabled via `corepack enable`.
 - **Relay Compiler**: Essential for GraphQL fragment generation.
 
 ### Commands
