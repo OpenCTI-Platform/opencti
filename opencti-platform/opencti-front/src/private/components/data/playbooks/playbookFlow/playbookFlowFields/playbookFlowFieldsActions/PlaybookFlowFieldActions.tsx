@@ -53,6 +53,54 @@ const PlaybookFlowFieldActions = ({
     return a.op && a.attribute && a.value && a.value.length > 0;
   });
 
+  /**
+   * Returns the label for a given option.
+   * Handles both string values and FieldOption objects.
+   */
+  const getOptionLabel = (options: FieldOption[]) => (option: string | FieldOption): string => {
+    if (typeof option === 'string') {
+      return options.find((o) => o.value === option)?.label ?? option;
+    }
+    return option.label ?? '';
+  };
+
+  /**
+   * Reset the action when the operation changes.
+   * Clears attribute, value, and form display value.
+   */
+  const handleOperationChange = (index: number, val: FieldOption | null) => {
+    const newOp = val?.value ?? '';
+    setFieldValue(`actions.${index}`, { op: newOp });
+    if (formActionsValues[index] !== undefined) {
+      setFieldValue(`actionsFormValues.${index}`, null);
+    }
+  };
+
+  /**
+   * Reset the action value when the attribute changes.
+   * Keeps the current operation and sets the new attribute.
+   */
+  const handleAttributeChange = (index: number, currentOp: string | undefined, val: FieldOption | null) => {
+    const newAttribute = val?.value;
+    const newAction: PlaybookUpdateAction = { op: currentOp };
+    if (newAttribute) newAction.attribute = newAttribute;
+    setFieldValue(`actions.${index}`, newAction);
+    if (formActionsValues[index] !== undefined) {
+      const isMultiple = attributesMultiple.includes(newAttribute ?? '');
+      setFieldValue(`actionsFormValues.${index}`, isMultiple ? [] : null);
+    }
+  };
+
+  /**
+   * Remove an action and its associated form display value.
+   */
+  const handleDeleteAction = (index: number, remove: (index: number) => void) => {
+    remove(index);
+    const newFormValues = [...formActionsValues];
+    newFormValues.splice(index, 1);
+    setFieldValue('actionsFormValues', newFormValues);
+  };
+
   return (
     <FieldArray
       name="actions"
@@ -86,19 +134,8 @@ const PlaybookFlowFieldActions = ({
                         }}
                         options={operationOptions}
                         isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
-                        getOptionLabel={(option: string | FieldOption) => {
-                          if (typeof option === 'string') {
-                            return operationOptions.find((o) => o.value === option)?.label ?? option;
-                          }
-                          return option.label ?? '';
-                        }}
-                        onInternalChange={(_: string, val: FieldOption | null) => {
-                          const newOp = val?.value ?? '';
-                          setFieldValue(`actions.${i}`, { op: newOp });
-                          if (formActionsValues[i] !== undefined) {
-                            setFieldValue(`actionsFormValues.${i}`, null);
-                          }
-                        }}
+                        getOptionLabel={getOptionLabel(operationOptions)}
+                        onInternalChange={(_: string, val: FieldOption | null) => handleOperationChange(i, val)}
                       />
                     </Grid>
                     <Grid size={{ xs: 3 }}>
@@ -114,22 +151,8 @@ const PlaybookFlowFieldActions = ({
                         options={fieldOptions}
                         noOptionsText={t_i18n('None')}
                         isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
-                        getOptionLabel={(option: string | FieldOption) => {
-                          if (typeof option === 'string') {
-                            return fieldOptions.find((o) => o.value === option)?.label ?? option;
-                          }
-                          return option.label ?? '';
-                        }}
-                        onInternalChange={(_: string, val: FieldOption | null) => {
-                          const newAttribute = val?.value;
-                          const newAction: PlaybookUpdateAction = { op: action.op };
-                          if (newAttribute) newAction.attribute = newAttribute;
-                          setFieldValue(`actions.${i}`, newAction);
-                          if (formActionsValues[i] !== undefined) {
-                            const isMultiple = attributesMultiple.includes(newAttribute ?? '');
-                            setFieldValue(`actionsFormValues.${i}`, isMultiple ? [] : null);
-                          }
-                        }}
+                        getOptionLabel={getOptionLabel(fieldOptions)}
+                        onInternalChange={(_: string, val: FieldOption | null) => handleAttributeChange(i, action.op, val)}
                       />
                     </Grid>
                     <Grid size={{ xs: 5 }}>
@@ -150,12 +173,7 @@ const PlaybookFlowFieldActions = ({
                       <IconButton
                         aria-label="Delete"
                         disabled={actions.length === 1}
-                        onClick={() => {
-                          arrayHelpers.remove(i);
-                          const newFormvalues = [...formActionsValues];
-                          newFormvalues.splice(i, 1);
-                          setFieldValue('actionsFormValues', newFormvalues);
-                        }}
+                        onClick={() => handleDeleteAction(i, arrayHelpers.remove)}
                       >
                         <DeleteOutlined />
                       </IconButton>
