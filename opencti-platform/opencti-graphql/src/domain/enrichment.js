@@ -105,7 +105,7 @@ export const filterConnectorsForElementEnrichment = async (context, connectors, 
     // isUserCanAccessStoreElement
     if (conn.connector_user_id) {
       const connectorUser = await resolveUserByIdFromCache(context, conn.connector_user_id);
-      hasAccessToElement = await isUserCanAccessStoreElement(context, connectorUser, element);
+      hasAccessToElement = connectorUser && (await isUserCanAccessStoreElement(context, connectorUser, element));
     }
     if (scopeMatch && autoTrigger && hasAccessToElement) {
       targetConnectors.push(conn);
