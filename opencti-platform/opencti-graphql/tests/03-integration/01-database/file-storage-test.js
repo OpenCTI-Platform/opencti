@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import { head } from 'ramda';
-import { downloadFile } from '../../../src/database/raw-file-storage';
+import { downloadFile, storageInit } from '../../../src/database/raw-file-storage';
 import { deleteFile, getFileName, guessMimeType, loadFile, streamConverter } from '../../../src/database/file-storage';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, ADMIN_API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
@@ -17,6 +17,10 @@ const importFileId = `import/global/${exportFileName.toLowerCase()}`;
 const FILE_SIZE = 10700;
 
 describe('File storage file listing', () => {
+  it('should initializeFilStorage initializes without error', async () => {
+    await expect(storageInit()).resolves.not.toThrow();
+  });
+
   it('should file upload succeed', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const importOpts = [API_URI, ADMIN_API_TOKEN, malware.id, 'Malware', exportFileName, [MARKING_TLP_AMBER_STRICT]];

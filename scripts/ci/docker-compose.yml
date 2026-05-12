@@ -59,6 +59,14 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+  smtp:
+    profiles: ["backend"]
+    container_name: smtp
+    image: maildev/maildev:2.2.1
+    restart: unless-stopped
+    ports:
+      - 1025:1025
+      - 1080:1080
 
   opencti-raw-start:
     container_name: opencti-raw-start
