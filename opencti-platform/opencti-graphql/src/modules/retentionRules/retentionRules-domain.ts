@@ -17,7 +17,10 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 
-export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
+// Extended input type until generated types are regenerated
+type RetentionRuleAddInputWithActive = RetentionRuleAddInput & { active?: boolean | null };
+
+export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInputWithActive) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
   if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
     throw UnsupportedError('The history scope for retention rules is not enabled on this platform');
@@ -61,7 +64,7 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
 };
 
 // input { name, filters }
-export const createRetentionRule = async (context: AuthContext, user: AuthUser, input: RetentionRuleAddInput) => {
+export const createRetentionRule = async (context: AuthContext, user: AuthUser, input: RetentionRuleAddInputWithActive) => {
   // filters must be a valid json
   let { filters } = input;
   if (!filters) { // filters is undefined or an empty string
@@ -85,6 +88,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     last_deleted_count: null,
     remaining_count: null,
     retention_unit: input.retention_unit ?? 'days',
+    active: input.active ?? true,
     ...input,
     filters,
   };

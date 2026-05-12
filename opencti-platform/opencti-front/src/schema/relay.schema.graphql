@@ -16545,6 +16545,7 @@ input RetentionRuleAddInput {
   max_retention: Int!
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
+  active: Boolean
 }
 
 enum RetentionRuleOrdering {
@@ -16581,6 +16582,7 @@ type RetentionRule {
   last_deleted_count: Int
   remaining_count: Int
   scope: RetentionRuleScope!
+  active: Boolean!
 }
 
 type RetentionRuleConnection {

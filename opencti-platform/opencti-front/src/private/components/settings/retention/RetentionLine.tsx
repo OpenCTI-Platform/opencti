@@ -20,6 +20,8 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
+import ItemBoolean from '../../../../components/ItemBoolean';
+
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -63,6 +65,7 @@ const RetentionLineFragment = graphql`
         remaining_count
         filters
         scope
+        active
     }
 `;
 
@@ -76,6 +79,8 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   const classes = useStyles();
   const { nsdt, n, t_i18n } = useFormatter();
   const data = useFragment(RetentionLineFragment, node);
+  // active field is added in the schema but the generated type may lag behind - will be fixed after `yarn relay`
+  const isActive: boolean = (data as unknown as { active?: boolean }).active ?? false;
   const filters = deserializeFilterGroupForFrontend(data.filters);
   let scopeColor = 'warning';
   let appliedOnContent = t_i18n('Everything');
@@ -141,6 +146,17 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 variant="outlined"
               />
             </div>
+            {dataColumns.active && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.active.width }}
+              >
+                <ItemBoolean
+                  status={isActive}
+                  label={isActive ? t_i18n('Active') : t_i18n('Inactive')}
+                />
+              </div>
+            )}
             {isFilterGroupNotEmpty(filters) ? (
               <FilterIconButton
                 filters={filters}
@@ -154,7 +170,11 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
                   && (
                     <Tooltip
-                      title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
+                      title={
+                        data.scope === 'history'
+                          ? t_i18n('History logs of knowledge entities')
+                          : `${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`
+                      }
                     >
                       <InformationOutline
                         fontSize="small"
@@ -252,6 +272,19 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 height="100%"
               />
             </div>
+            {dataColumns.active && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.active.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="70%"
+                  height="100%"
+                />
+              </div>
+            )}
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.filters.width }}

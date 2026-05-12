@@ -29,6 +29,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useTheme } from '@mui/material/styles';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const styles = (theme) => ({
   header: {
@@ -86,7 +87,7 @@ const RetentionEditionContainer = (props) => {
   const { classes, open, handleClose, retentionRule } = props;
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit'], retentionRule);
+  const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit', 'active'], retentionRule);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(true);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
@@ -94,6 +95,7 @@ const RetentionEditionContainer = (props) => {
   const retentionValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     max_retention: Yup.number().min(1, t_i18n('This field must be >= 1')),
+    active: Yup.boolean(),
   });
 
   const onSubmit = (values, { setSubmitting }) => {
@@ -200,6 +202,13 @@ const RetentionEditionContainer = (props) => {
                 },
               }}
             />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="active"
+              label={t_i18n('Active')}
+              containerstyle={{ marginTop: 20 }}
+            />
             {retentionRule.scope === 'activity'
               && (
                 <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
@@ -256,19 +265,21 @@ const RetentionEditionContainer = (props) => {
               )
             }
             <div className={classes.buttons}>
-              <Button
-                color="secondary"
-                onClick={() => handleVerify(values)}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-              >
-                {t_i18n('Verify')}
-              </Button>
+              {retentionRule.scope === 'knowledge' && (
+                <Button
+                  color="secondary"
+                  onClick={() => handleVerify(values)}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t_i18n('Verify')}
+                </Button>
+              )}
               <Button
                 color="primary"
                 onClick={submitForm}
                 classes={{ root: classes.button }}
-                disabled={!verified || isSubmitting}
+                disabled={(retentionRule.scope === 'knowledge' && !verified) || isSubmitting}
               >
                 {t_i18n('Update')}
               </Button>
@@ -299,6 +310,7 @@ const RetentionEditionFragment = createFragmentContainer(
                 max_retention
                 filters
                 scope
+                active
             }
         `,
   },

@@ -7,12 +7,10 @@ import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
-import makeStyles from '@mui/styles/makeStyles';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,22 +21,11 @@ import { serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } 
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import AutocompleteField from '../../../../components/AutocompleteField';
 import SelectField from '../../../../components/fields/SelectField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import type { Theme } from '../../../../components/Theme';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
-import useHelper from '../../../../utils/hooks/useHelper';
-
-const useStyles = makeStyles<Theme>(() => ({
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
 
 const RetentionCreationMutation = graphql`
     mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
@@ -71,21 +58,17 @@ interface RetentionFormValues {
   name: string;
   max_retention: string;
   retention_unit: 'minutes' | 'hours' | 'days';
-  scope: { value: string; label: string };
   filters: string;
 }
 
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { isActivityHistoryRetentionEnable } = useHelper();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const scope = values.scope.value;
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
@@ -118,7 +101,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   };
 
   const handleVerify = (values: RetentionFormValues) => {
-    const scope = values.scope.value;
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
@@ -155,12 +137,12 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     >
       {({ onClose }) => (
         <Formik
-          initialValues={{ name: '', max_retention: '31', retention_unit: 'days', scope: { value: 'knowledge', label: 'Knowledge' }, filters: '' }}
+          initialValues={{ name: '', max_retention: '31', retention_unit: 'days', filters: '' }}
           validationSchema={RetentionCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values: formValues, setFieldValue }) => (
+          {({ submitForm, handleReset, isSubmitting, values: formValues }) => (
             <Form>
               <Field
                 component={TextField}

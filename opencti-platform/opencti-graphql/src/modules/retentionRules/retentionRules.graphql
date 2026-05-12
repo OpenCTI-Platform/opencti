@@ -4,6 +4,7 @@ input RetentionRuleAddInput {
   max_retention: Int! @constraint(min: 1)
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
+  active: Boolean
 }
 enum RetentionRuleOrdering {
   name
@@ -36,6 +37,7 @@ type RetentionRule {
   last_deleted_count: Int
   remaining_count: Int
   scope: RetentionRuleScope!
+  active: Boolean!
 }
 type RetentionRuleConnection {
   pageInfo: PageInfo!
