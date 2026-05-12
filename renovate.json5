@@ -26,6 +26,22 @@
     'enabled': false,
   },
   packageRules: [
+    // sticks to MIT version of apexcharts
+    {
+      matchDepNames: [
+        'apexcharts'
+      ],
+      allowedVersions: '<5',
+      description: 'Keep apexcharts at version 4.x',
+    },
+    {
+      matchDepNames: [
+        'react-apexcharts'
+      ],
+      allowedVersions: '<1.8',
+      description: 'Keep react-apexcharts before 1.8',
+    },
+
     // openid-clientv5 is an aliased+patched dependency pinned to openid-client@5.7.1.
     // Its jose resolution is also pinned. Disable all Renovate updates for both.
     {
