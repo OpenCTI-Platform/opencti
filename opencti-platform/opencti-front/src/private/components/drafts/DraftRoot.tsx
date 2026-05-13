@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -12,6 +12,8 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import Paper from '@mui/material/Paper';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -27,8 +29,12 @@ import useSwitchDraft from './useSwitchDraft';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
 import useHelper from '../../../utils/hooks/useHelper';
+import Dialog from '@common/dialog/Dialog';
+import Button from '../../../components/common/button/Button';
 
 const interval$ = interval(TEN_SECONDS);
+
+const DRAFT_COMMENT_SEEN_PREFIX = 'opencti-draft-comment-seen-';
 
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
@@ -100,6 +106,12 @@ export const draftRootFragment = graphql`
         source
       }
     }
+    workflowInstance {
+      lastHistoryEntry {
+        comment
+        timestamp
+      }
+    }
   }
 `;
 
@@ -115,6 +127,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
+  const [showCommentPopup, setShowCommentPopup] = useState(false);
 
   const { draftWorkspace: draftWorkspaceFragment } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   if (!draftWorkspaceFragment) {
@@ -147,6 +160,18 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
     }
   }, [draftContext, draftId, enterDraft, isDraftReadOnly, t_i18n]);
 
+  // Show a popup once per history entry if the last transition has a comment
+  useEffect(() => {
+    const lastEntry = draft.workflowInstance?.lastHistoryEntry;
+    if (!lastEntry?.comment || !lastEntry?.timestamp) return;
+    const storageKey = `${DRAFT_COMMENT_SEEN_PREFIX}${draftId}`;
+    const seenTimestamp = window.localStorage.getItem(storageKey);
+    if (seenTimestamp !== lastEntry.timestamp) {
+      setShowCommentPopup(true);
+      window.localStorage.setItem(storageKey, lastEntry.timestamp);
+    }
+  }, [draftId, draft.workflowInstance?.lastHistoryEntry?.timestamp]);
+
   useEffect(() => {
     // Refresh
     const subscription = interval$.subscribe(() => {
@@ -165,6 +190,21 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
   const basePath = `/dashboard/data/import/draft/${draftId}`;
   return (
     <>
+      <Dialog
+        open={showCommentPopup}
+        onClose={() => setShowCommentPopup(false)}
+        title={t_i18n('Last workflow comment')}
+        size="large"
+      >
+        <DialogContentText sx={{ whiteSpace: 'pre-wrap' }}>
+          {draft.workflowInstance?.lastHistoryEntry?.comment}
+        </DialogContentText>
+        <DialogActions>
+          <Button onClick={() => setShowCommentPopup(false)}>
+            {t_i18n('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {isDraftReadOnly && (
         <>
           <Breadcrumbs
