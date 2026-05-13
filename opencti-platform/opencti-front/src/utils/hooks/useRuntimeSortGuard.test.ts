@@ -66,5 +66,3 @@ describe('Hook: useRuntimeSortGuard', () => {
     expect(FALLBACK_SORT_FIELD).toBe('created_at');
   });
 });
-
-
