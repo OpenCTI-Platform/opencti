@@ -20,7 +20,7 @@ export interface FintelTemplatePreviewFormInputs {
 }
 
 interface FintelTemplatePreviewFormProps {
-  onChange: (val: FintelTemplatePreviewFormInputs) => void;
+  onChange: (val: FintelTemplatePreviewFormInputs | null) => void;
 }
 
 const FintelTemplatePreviewForm = ({
@@ -32,7 +32,7 @@ const FintelTemplatePreviewForm = ({
   if (!subTypeId) return <ErrorNotFound />;
 
   const validation = () => Yup.object().shape({
-    entity: Yup.object().nullable(),
+    entity: Yup.object().required(),
   });
 
   const initialValues: FintelTemplatePreviewFormInputs = {
@@ -52,7 +52,11 @@ const FintelTemplatePreviewForm = ({
         useEffect(() => {
           const validate = async () => {
             const isValid = isEmptyObject(await validateForm(values));
-            if (isValid) onChange(values);
+            if (isValid) {
+              onChange(values);
+            } else {
+              onChange(null);
+            }
           };
           validate();
         }, [values]);
