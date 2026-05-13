@@ -42,7 +42,10 @@ vi.mock('../../../src/manager/telemetryManager', () => ({
 vi.mock('../../../src/modules/user/user-domain', () => ({ createOnTheFlyUser: vi.fn() }));
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({ addDraftWorkspace: vi.fn() }));
 vi.mock('../../../src/utils/platformCrypto', () => ({
-  encryptSynchronizerCredential: vi.fn(), decryptSynchronizerCredential: vi.fn(), getPlatformCrypto: vi.fn(),
+  getPlatformCrypto: vi.fn(),
+}));
+vi.mock('../../../src/domain/connector-sync-crypto', () => ({
+  encryptSynchronizerCredential: vi.fn(), decryptSynchronizerCredential: vi.fn(),
 }));
 vi.mock('../../../src/domain/connector-utils', () => ({
   testSync: vi.fn(), createSyncHttpUri: vi.fn(),
@@ -58,7 +61,7 @@ vi.mock('../../../src/config/conf', async () => {
   return { ...actual, logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() } };
 });
 
-import { encryptSynchronizerCredential } from '../../../src/utils/platformCrypto';
+import { encryptSynchronizerCredential } from '../../../src/domain/connector-sync-crypto';
 import { testSync } from '../../../src/domain/connector-utils';
 import { updateAttribute, createEntity } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
@@ -72,7 +75,7 @@ const fakeUser = { id: 'user-1', name: 'Test User', capabilities: [] } as any;
 describe('connector.ts — syncEditField token encryption', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v) => v ? `encrypted:${v}` : v);
+    vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v: string | null | undefined) => v ? `encrypted:${v}` : v);
     vi.mocked(updateAttribute).mockResolvedValue({ element: { id: 'x', name: 'y' } } as never);
     vi.mocked(publishUserAction).mockResolvedValue([] as void[]);
     vi.mocked(notify).mockResolvedValue(undefined as never);
@@ -111,7 +114,7 @@ describe('connector.ts — syncEditField token encryption', () => {
 describe('connector.ts — registerSync token encryption', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v) => v ? `encrypted:${v}` : v);
+    vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v: string | null | undefined) => v ? `encrypted:${v}` : v);
     vi.mocked(testSync).mockResolvedValue('Connection success' as never);
     vi.mocked(createEntity).mockResolvedValue({
       element: { id: 'test-sync-id', internal_id: 'test-sync-id' },
