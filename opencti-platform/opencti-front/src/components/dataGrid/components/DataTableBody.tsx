@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
@@ -8,6 +8,9 @@ import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 import { useDataTable } from '../dataTableHooks';
 import DataTableEmptyState from './DataTableEmptyState';
+import EnhancedSearchSuggestions, { type EnhancedSearchMode, applySearchMode, detectSearchMode, stripSearchMode } from './EnhancedSearchSuggestions';
+import useAuth from '../../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -32,10 +35,27 @@ const DataTableBody = ({
       onToggleEntity,
     },
     useDataTablePaginationLocalStorage: {
-      viewStorage: { filters },
+      viewStorage: { filters, searchTerm },
+      helpers,
     },
     data,
   } = useDataTableContext();
+
+  const { settings } = useAuth();
+  const isImprovedSearchEnabled = isFeatureEnable(settings, 'IMPROVED_SEARCH');
+
+  // Detect the currently active enhanced search mode from the search string
+  const activeSearchMode: EnhancedSearchMode = useMemo(
+    () => (isImprovedSearchEnabled && searchTerm ? detectSearchMode(searchTerm) : null),
+    [isImprovedSearchEnabled, searchTerm],
+  );
+
+  const handleApplySearchMode = useCallback((mode: EnhancedSearchMode) => {
+    if (!searchTerm) return;
+    const rawTerm = stripSearchMode(searchTerm);
+    const newSearch = applySearchMode(rawTerm, mode);
+    helpers.handleSearch(newSearch);
+  }, [searchTerm, helpers]);
 
   const {
     data: queryData,
@@ -160,7 +180,14 @@ const DataTableBody = ({
       </div>
 
       <div style={containerLinesStyle}>
-        {resolvedData.length === 0 && !!emptyStateMessage && (
+        {resolvedData.length === 0 && isImprovedSearchEnabled && !!searchTerm && (
+          <EnhancedSearchSuggestions
+            searchTerm={searchTerm}
+            activeMode={activeSearchMode}
+            onApplyMode={handleApplySearchMode}
+          />
+        )}
+        {resolvedData.length === 0 && !(isImprovedSearchEnabled && !!searchTerm) && !!emptyStateMessage && (
           <DataTableEmptyState message={emptyStateMessage} />
         )}
         {/* If we have perf issues we should find a way to memoize this */}
