@@ -8,14 +8,15 @@ const keep = process.argv.slice(2).includes('--keep');
 const buildPath = "./builder/prod/build";
 
 (async () => {
-  // Build Monaco web workers as separate bundles (required for GraphiQL schema completion)
+  // Build Monaco web workers as separate IIFE bundles (required for GraphiQL
+  // schema completion). Entry points come directly from the official npm packages.
   await esbuild.build({
       logLevel: "info",
-      entryPoints: [
-        "src/public/workers/editor.worker.ts",
-        "src/public/workers/json.worker.ts",
-        "src/public/workers/graphql.worker.ts",
-      ],
+      entryPoints: {
+        "editor.worker": "monaco-editor/esm/vs/editor/editor.worker.js",
+        "json.worker": "monaco-editor/esm/vs/language/json/json.worker.js",
+        "graphql.worker": "monaco-graphql/esm/graphql.worker.js",
+      },
       bundle: true,
       format: "iife",
       minify: true,
@@ -23,11 +24,6 @@ const buildPath = "./builder/prod/build";
       outdir: `${buildPath}/static/workers`,
       entryNames: "[name]",
       loader: { ".js": "jsx" },
-      // prettier/parser-graphql does not exist in prettier v3 (replaced by
-      // prettier/plugins/graphql). Marking prettier as external avoids a build
-      // error; doFormat will fail gracefully at runtime but autocompletion is
-      // unaffected because it uses doComplete / doValidation only.
-      external: ["prettier", "prettier/standalone", "prettier/parser-graphql"],
     });
 
   await esbuild.build({
@@ -44,12 +40,6 @@ const buildPath = "./builder/prod/build";
         ".woff2": "dataurl",
         ".ttf": "dataurl",
         ".eot": "dataurl",
-      },
-      define: {
-        // Allows setupMonacoWorkers.ts to detect prod vs dev at build time.
-        // The DEV branch (new Worker(new URL(..., import.meta.url))) is dead code
-        // eliminated by esbuild so import.meta.url is never processed in IIFE mode.
-        'import.meta.env': JSON.stringify({ DEV: false, PROD: true, MODE: 'production' }),
       },
       assetNames: keep ? "[dir]/[name]" : "[dir]/[name]-[hash]",
       entryNames: keep ? "static/[ext]/[name]" : "static/[ext]/[name]-[hash]",

@@ -11,32 +11,11 @@ declare module '*?worker' {
   export default workerConstructor;
 }
 
-// Type declarations for Monaco/monaco-graphql ESM worker entry points.
-// These subpath modules do not ship .d.ts files; the any-typed stubs below
-// satisfy TypeScript while esbuild bundles the actual JS implementations.
-declare module 'monaco-editor/esm/vs/editor/editor.worker' {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export function initialize(foreignModuleFactory: (ctx: any, createData: any) => any): void;
-}
-declare module 'monaco-graphql/esm/GraphQLWorker' {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export class GraphQLWorker { constructor(ctx: any, createData: any); }
-}
-
-// Monaco Editor environment (used by setupMonacoWorkers.ts)
+// Monaco Editor environment.
+// Set either by `vite-plugin-monaco-editor` (Vite dev, via an inline script in
+// index.html) or by src/public/workers/setupMonacoWorkers.ts (esbuild builds).
 interface Window {
   MonacoEnvironment?: {
     getWorker(workerId: string, label: string): Worker;
   };
 }
-
-// import.meta.env — provided by Vite at runtime and replaced via esbuild `define` in prod.
-// Declaring it here avoids TypeScript errors in files that read import.meta.env.DEV.
-interface ImportMeta {
-  readonly env?: {
-    readonly DEV: boolean;
-    readonly PROD: boolean;
-    readonly MODE: string;
-  };
-}
-
