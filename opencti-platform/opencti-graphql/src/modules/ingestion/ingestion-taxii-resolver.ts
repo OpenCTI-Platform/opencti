@@ -11,7 +11,7 @@ import {
 } from './ingestion-taxii-domain';
 import { removeAuthenticationCredentials } from './ingestion-common';
 import type { Resolvers } from '../../generated/graphql';
-import { decryptDatabaseValue } from '../../utils/platformCrypto';
+import { decryptIngestionCredential } from '../../utils/platformCrypto';
 import { loadCreator } from '../../database/members';
 
 const ingestionTaxiiResolvers: Resolvers = {
@@ -22,7 +22,7 @@ const ingestionTaxiiResolvers: Resolvers = {
   },
   IngestionTaxii: {
     authentication_value: async (ingestionTaxii) => {
-      const decrypted = await decryptDatabaseValue(ingestionTaxii.authentication_value);
+      const decrypted = await decryptIngestionCredential(ingestionTaxii.authentication_value);
       return removeAuthenticationCredentials(ingestionTaxii.authentication_type, decrypted);
     },
     user: (ingestionTaxii, _, context) => loadCreator(context, context.user, ingestionTaxii.user_id),

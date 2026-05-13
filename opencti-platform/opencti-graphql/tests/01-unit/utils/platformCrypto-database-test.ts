@@ -19,37 +19,37 @@ vi.mock('../../../src/config/credentials', () => ({
   enrichWithRemoteCredentials: vi.fn().mockResolvedValue({ value: undefined }),
 }));
 
-import { encryptDatabaseValue, decryptDatabaseValue } from '../../../src/utils/platformCrypto';
+import { encryptIngestionCredential, decryptIngestionCredential } from '../../../src/utils/platformCrypto';
 
-describe('platformCrypto – encryptDatabaseValue / decryptDatabaseValue', () => {
+describe('platformCrypto – encryptIngestionCredential / decryptIngestionCredential', () => {
   it('should encrypt and decrypt a value round-trip', async () => {
     const original = 'my-secret-bearer-token';
-    const encrypted = await encryptDatabaseValue(original);
+    const encrypted = await encryptIngestionCredential(original);
     expect(encrypted).toBeDefined();
     expect(encrypted).not.toBe(original);
     // Encrypted value should be base64
     expect(encrypted).toMatch(/^[A-Za-z0-9+/]+=*$/);
-    const decrypted = await decryptDatabaseValue(encrypted!);
+    const decrypted = await decryptIngestionCredential(encrypted!);
     expect(decrypted).toBe(original);
   });
 
   it('should return falsy values unchanged', async () => {
-    expect(await encryptDatabaseValue(null)).toBeNull();
-    expect(await encryptDatabaseValue(undefined)).toBeUndefined();
-    expect(await encryptDatabaseValue('')).toBe('');
-    expect(await decryptDatabaseValue(null)).toBeNull();
-    expect(await decryptDatabaseValue(undefined)).toBeUndefined();
-    expect(await decryptDatabaseValue('')).toBe('');
+    expect(await encryptIngestionCredential(null)).toBeNull();
+    expect(await encryptIngestionCredential(undefined)).toBeUndefined();
+    expect(await encryptIngestionCredential('')).toBe('');
+    expect(await decryptIngestionCredential(null)).toBeNull();
+    expect(await decryptIngestionCredential(undefined)).toBeUndefined();
+    expect(await decryptIngestionCredential('')).toBe('');
   });
 
   it('should produce different ciphertexts for the same plaintext (random IV)', async () => {
     const original = 'same-plaintext-value';
-    const encrypted1 = await encryptDatabaseValue(original);
-    const encrypted2 = await encryptDatabaseValue(original);
+    const encrypted1 = await encryptIngestionCredential(original);
+    const encrypted2 = await encryptIngestionCredential(original);
     // AES-GCM uses random IV so ciphertexts differ
     expect(encrypted1).not.toBe(encrypted2);
     // Both must decrypt to the same original
-    expect(await decryptDatabaseValue(encrypted1!)).toBe(original);
-    expect(await decryptDatabaseValue(encrypted2!)).toBe(original);
+    expect(await decryptIngestionCredential(encrypted1!)).toBe(original);
+    expect(await decryptIngestionCredential(encrypted2!)).toBe(original);
   });
 });

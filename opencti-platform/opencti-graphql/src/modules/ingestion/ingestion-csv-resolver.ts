@@ -15,7 +15,7 @@ import {
   testCsvIngestionMapping,
 } from './ingestion-csv-domain';
 import { removeAuthenticationCredentials } from './ingestion-common';
-import { decryptDatabaseValue } from '../../utils/platformCrypto';
+import { decryptIngestionCredential } from '../../utils/platformCrypto';
 import { userAlreadyExists } from '../user/user-domain';
 import { loadCreator } from '../../database/members';
 
@@ -29,7 +29,7 @@ const ingestionCsvResolvers: Resolvers = {
   },
   IngestionCsv: {
     authentication_value: async (ingestionCsv) => {
-      const decrypted = await decryptDatabaseValue(ingestionCsv.authentication_value);
+      const decrypted = await decryptIngestionCredential(ingestionCsv.authentication_value);
       return removeAuthenticationCredentials(ingestionCsv.authentication_type, decrypted);
     },
     user: (ingestionCsv, _, context) => loadCreator(context, context.user, ingestionCsv.user_id),

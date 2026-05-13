@@ -26,7 +26,7 @@ import {
   testJsonIngestionMapping,
 } from './ingestion-json-domain';
 import { removeAuthenticationCredentials } from './ingestion-common';
-import { decryptDatabaseValue } from '../../utils/platformCrypto';
+import { decryptIngestionCredential } from '../../utils/platformCrypto';
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { loadCreator } from '../../database/members';
 
@@ -37,7 +37,7 @@ const ingestionJsonResolvers: Resolvers = {
   },
   IngestionJson: {
     authentication_value: async (ingestionJson) => {
-      const decrypted = await decryptDatabaseValue(ingestionJson.authentication_value);
+      const decrypted = await decryptIngestionCredential(ingestionJson.authentication_value);
       return removeAuthenticationCredentials(ingestionJson.authentication_type, decrypted);
     },
     user: (ingestionJson, _, context) => loadCreator(context, context.user, ingestionJson.user_id),

@@ -34,7 +34,7 @@ import jsonMappingExecution from '../../parser/json-mapper';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { encryptDatabaseValue, decryptDatabaseValue } from '../../utils/platformCrypto';
+import { encryptIngestionCredential, decryptIngestionCredential } from '../../utils/platformCrypto';
 
 interface JsonQueryFetchOpts {
   maxResults?: number;
@@ -107,7 +107,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   Object.entries(headerVariables).forEach(([k, v]) => {
     headers[k] = String(v);
   });
-  const decryptedAuthValue = await decryptDatabaseValue(ingestion.authentication_value);
+  const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value);
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const basicAuthenticationValue = decryptedAuthValue as string;
     const auth = Buffer.from(basicAuthenticationValue, 'utf-8').toString('base64');
@@ -213,7 +213,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
   }
   const inputToCreate = { ...input };
   if (inputToCreate.authentication_value) {
-    inputToCreate.authentication_value = await encryptDatabaseValue(inputToCreate.authentication_value);
+    inputToCreate.authentication_value = await encryptIngestionCredential(inputToCreate.authentication_value);
   }
   const { element, isCreation } = await createEntity(context, user, inputToCreate, ENTITY_TYPE_INGESTION_JSON, { complete: true });
   if (isCreation) {
@@ -240,7 +240,7 @@ export const editIngestionJson = async (context: AuthContext, user: AuthUser, id
   let authenticationValue = input.authentication_value;
   if (authenticationValue && input.authentication_type) {
     const { authentication_value: encrypted_value } = await findById(context, user, id);
-    const authentication_value = await decryptDatabaseValue(encrypted_value);
+    const authentication_value = await decryptIngestionCredential(encrypted_value);
     verifyIngestionAuthenticationContent(input.authentication_type, authenticationValue);
     authenticationValue = addAuthenticationCredentials(
       authentication_value,
@@ -248,7 +248,7 @@ export const editIngestionJson = async (context: AuthContext, user: AuthUser, id
       input.authentication_type,
     );
   }
-  const encryptedAuthenticationValue = await encryptDatabaseValue(authenticationValue);
+  const encryptedAuthenticationValue = await encryptIngestionCredential(authenticationValue);
 
   const { element } = await patchAttribute<StoreEntityIngestionJson>(context, user, id, ENTITY_TYPE_INGESTION_JSON, {
     ...input,
@@ -262,7 +262,7 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
     const { authentication_value: encrypted_value, authentication_type } = await findById(context, user, ingestionId);
-    const authentication_value = await decryptDatabaseValue(encrypted_value);
+    const authentication_value = await decryptIngestionCredential(encrypted_value);
     const authenticationValueField = input.find((editInput) => editInput.key === 'authentication_value');
     if (authenticationValueField?.value[0]) {
       verifyIngestionAuthenticationContent(authentication_type, authenticationValueField?.value[0]);
@@ -272,7 +272,7 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
       authenticationValueField?.value[0],
       authentication_type,
     );
-    const encryptedAuthenticationValue = await encryptDatabaseValue(updatedAuthenticationValue);
+    const encryptedAuthenticationValue = await encryptIngestionCredential(updatedAuthenticationValue);
 
     const updatedInput = patchInput.map((editInput) => {
       if (editInput.key === 'authentication_value') {
@@ -343,7 +343,7 @@ export const testJsonIngestionMapping = async (context: AuthContext, _user: Auth
   }
   const inputToTest = {
     ...input,
-    authentication_value: input.authentication_value ? await encryptDatabaseValue(input.authentication_value) : input.authentication_value,
+    authentication_value: input.authentication_value ? await encryptIngestionCredential(input.authentication_value) : input.authentication_value,
   } as BasicStoreEntityIngestionJson;
   const { objects, nextExecutionState } = await executeJsonQuery(context, inputToTest, { maxResults: 50 });
   return {

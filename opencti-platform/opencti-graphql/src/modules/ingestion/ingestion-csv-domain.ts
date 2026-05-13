@@ -37,7 +37,7 @@ import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { SYSTEM_USER } from '../../utils/access';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
 import { createOnTheFlyUser } from '../user/user-domain';
-import { encryptDatabaseValue, decryptDatabaseValue } from '../../utils/platformCrypto';
+import { encryptIngestionCredential, decryptIngestionCredential } from '../../utils/platformCrypto';
 import { findDefaultIngestionGroups } from '../../domain/group';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
@@ -97,7 +97,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   };
 
   if (finalInput.authentication_value) {
-    finalInput.authentication_value = await encryptDatabaseValue(finalInput.authentication_value);
+    finalInput.authentication_value = await encryptIngestionCredential(finalInput.authentication_value);
   }
 
   const { element, isCreation } = await createEntity(
@@ -149,7 +149,7 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     }
     if (editInput.key === 'authentication_value') {
       const { authentication_value: encrypted_value, authentication_type } = await findById(context, user, ingestionId);
-      const authentication_value = await decryptDatabaseValue(encrypted_value);
+      const authentication_value = await decryptIngestionCredential(encrypted_value);
       const authenticationValueField = input.find((oldEditInput) => oldEditInput.key === 'authentication_value');
       if (authenticationValueField && authenticationValueField.value[0]) {
         verifyIngestionAuthenticationContent(authentication_type, authenticationValueField.value[0]);
@@ -159,7 +159,7 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
         authenticationValueField?.value[0],
         authentication_type,
       );
-      const encryptedAuthenticationValue = await encryptDatabaseValue(updatedAuthenticationValue);
+      const encryptedAuthenticationValue = await encryptIngestionCredential(updatedAuthenticationValue);
       return {
         ...editInput,
         value: [encryptedAuthenticationValue],
@@ -242,7 +242,7 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
   const { limit = undefined } = opts;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
-  const decryptedAuthValue = await decryptDatabaseValue(ingestion.authentication_value);
+  const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value);
 
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const auth = Buffer.from(decryptedAuthValue || '', 'utf-8').toString('base64');
@@ -278,7 +278,7 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
   const ingestion = {
     uri: input.uri,
     authentication_type: input.authentication_type,
-    authentication_value: input.authentication_value ? await encryptDatabaseValue(input.authentication_value) : input.authentication_value,
+    authentication_value: input.authentication_value ? await encryptIngestionCredential(input.authentication_value) : input.authentication_value,
   } as BasicStoreEntityIngestionCsv;
   const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 10 });
   if (parsedMapper.has_header) {

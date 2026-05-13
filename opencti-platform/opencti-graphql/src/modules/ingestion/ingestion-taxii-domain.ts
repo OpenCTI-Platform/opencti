@@ -8,7 +8,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
 import { addAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
-import { encryptDatabaseValue, decryptDatabaseValue } from '../../utils/platformCrypto';
+import { encryptIngestionCredential, decryptIngestionCredential } from '../../utils/platformCrypto';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { createOnTheFlyUser } from '../user/user-domain';
 import type { FileHandle } from 'fs/promises';
@@ -44,7 +44,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
 
   const { automatic_user: _automatic_user, confidence_level: _confidence_level, ...taxiiFeedToCreate } = input;
   if (taxiiFeedToCreate.authentication_value) {
-    taxiiFeedToCreate.authentication_value = await encryptDatabaseValue(taxiiFeedToCreate.authentication_value);
+    taxiiFeedToCreate.authentication_value = await encryptIngestionCredential(taxiiFeedToCreate.authentication_value);
   }
   const { element, isCreation } = await createEntity(context, user, taxiiFeedToCreate, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
   if (isCreation) {
@@ -87,7 +87,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
     const { authentication_value: encrypted_value, authentication_type } = await findById(context, user, ingestionId);
-    const authentication_value = await decryptDatabaseValue(encrypted_value);
+    const authentication_value = await decryptIngestionCredential(encrypted_value);
     const authenticationValueField = input.find((editInput) => editInput.key === 'authentication_value');
     if (authenticationValueField?.value[0]) {
       verifyIngestionAuthenticationContent(authentication_type, authenticationValueField?.value[0]);
@@ -97,7 +97,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
       authenticationValueField?.value[0],
       authentication_type,
     );
-    const encryptedAuthenticationValue = await encryptDatabaseValue(updatedAuthenticationValue);
+    const encryptedAuthenticationValue = await encryptIngestionCredential(updatedAuthenticationValue);
 
     const updatedInput = patchInput.map((editInput) => {
       if (editInput.key === 'authentication_value') {

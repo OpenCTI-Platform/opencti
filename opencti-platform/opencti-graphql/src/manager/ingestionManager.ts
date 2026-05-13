@@ -45,7 +45,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
-import { decryptDatabaseValue } from '../utils/platformCrypto';
+import { decryptIngestionCredential } from '../utils/platformCrypto';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -370,7 +370,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const octiHeaders = new OpenCTIHeaders();
   octiHeaders.Accept = 'application/taxii+json;version=2.1';
 
-  const decryptedAuthValue = await decryptDatabaseValue(ingestion.authentication_value) ?? '';
+  const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value) ?? '';
 
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const auth = Buffer.from(decryptedAuthValue, 'utf-8').toString('base64');

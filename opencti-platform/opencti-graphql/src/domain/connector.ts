@@ -66,7 +66,7 @@ import { AxiosError } from 'axios';
 import { URL } from 'node:url';
 import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
-import { encryptDatabaseValue } from '../utils/platformCrypto';
+import { encryptSynchronizerCredential } from '../utils/platformCrypto';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -613,7 +613,7 @@ export const registerSync = async (
   await testSyncUtils(context, user, synchronizerToCreate);
 
   if (synchronizerToCreate.token) {
-    synchronizerToCreate.token = await encryptDatabaseValue(synchronizerToCreate.token);
+    synchronizerToCreate.token = await encryptSynchronizerCredential(synchronizerToCreate.token);
   }
 
   const { element, isCreation } = await createEntity(
@@ -675,7 +675,7 @@ export const synchronizerAddAutoUser = async (context: AuthContext, user: AuthUs
 export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
   const tokenInput = input.find((i) => i.key === 'token');
   if (tokenInput && tokenInput.value[0]) {
-    tokenInput.value[0] = await encryptDatabaseValue(tokenInput.value[0]);
+    tokenInput.value[0] = await encryptSynchronizerCredential(tokenInput.value[0]);
   }
   const { element } = await updateAttribute<StoreEntity>(context, user, syncId, ENTITY_TYPE_SYNC, input);
   await publishUserAction({

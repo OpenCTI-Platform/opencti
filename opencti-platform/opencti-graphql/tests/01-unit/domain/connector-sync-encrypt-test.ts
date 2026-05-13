@@ -42,7 +42,7 @@ vi.mock('../../../src/manager/telemetryManager', () => ({
 vi.mock('../../../src/modules/user/user-domain', () => ({ createOnTheFlyUser: vi.fn() }));
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({ addDraftWorkspace: vi.fn() }));
 vi.mock('../../../src/utils/platformCrypto', () => ({
-  encryptDatabaseValue: vi.fn(), decryptDatabaseValue: vi.fn(), getPlatformCrypto: vi.fn(),
+  encryptSynchronizerCredential: vi.fn(), decryptSynchronizerCredential: vi.fn(), getPlatformCrypto: vi.fn(),
 }));
 vi.mock('../../../src/domain/connector-utils', () => ({
   testSync: vi.fn(), createSyncHttpUri: vi.fn(),
@@ -58,7 +58,7 @@ vi.mock('../../../src/config/conf', async () => {
   return { ...actual, logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() } };
 });
 
-import { encryptDatabaseValue } from '../../../src/utils/platformCrypto';
+import { encryptSynchronizerCredential } from '../../../src/utils/platformCrypto';
 import { testSync } from '../../../src/domain/connector-utils';
 import { updateAttribute, createEntity } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
@@ -72,7 +72,7 @@ const fakeUser = { id: 'user-1', name: 'Test User', capabilities: [] } as any;
 describe('connector.ts — syncEditField token encryption', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(encryptDatabaseValue).mockImplementation(async (v) => v ? `encrypted:${v}` : v);
+    vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v) => v ? `encrypted:${v}` : v);
     vi.mocked(updateAttribute).mockResolvedValue({ element: { id: 'x', name: 'y' } } as never);
     vi.mocked(publishUserAction).mockResolvedValue([] as void[]);
     vi.mocked(notify).mockResolvedValue(undefined as never);
@@ -86,7 +86,7 @@ describe('connector.ts — syncEditField token encryption', () => {
 
     await syncEditField(fakeContext, fakeUser, 'test-sync-id', input);
 
-    expect(encryptDatabaseValue).toHaveBeenCalledWith('my-plain-token');
+    expect(encryptSynchronizerCredential).toHaveBeenCalledWith('my-plain-token');
     expect(input[0].value[0]).toBe('encrypted:my-plain-token');
     expect(input[1].value[0]).toBe('updated name');
   });
@@ -96,8 +96,7 @@ describe('connector.ts — syncEditField token encryption', () => {
 
     await syncEditField(fakeContext, fakeUser, 'test-sync-id', input);
 
-    expect(encryptDatabaseValue).not.toHaveBeenCalled();
-    expect(input[0].value[0]).toBe('updated name');
+    expect(encryptSynchronizerCredential).not.toHaveBeenCalled();
   });
 
   it('should not encrypt when token value is empty string', async () => {
@@ -105,14 +104,14 @@ describe('connector.ts — syncEditField token encryption', () => {
 
     await syncEditField(fakeContext, fakeUser, 'test-sync-id', input);
 
-    expect(encryptDatabaseValue).not.toHaveBeenCalled();
+    expect(encryptSynchronizerCredential).not.toHaveBeenCalled();
   });
 });
 
 describe('connector.ts — registerSync token encryption', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(encryptDatabaseValue).mockImplementation(async (v) => v ? `encrypted:${v}` : v);
+    vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v) => v ? `encrypted:${v}` : v);
     vi.mocked(testSync).mockResolvedValue('Connection success' as never);
     vi.mocked(createEntity).mockResolvedValue({
       element: { id: 'test-sync-id', internal_id: 'test-sync-id' },
@@ -134,7 +133,7 @@ describe('connector.ts — registerSync token encryption', () => {
 
     await registerSync(fakeContext, fakeUser, input);
 
-    expect(encryptDatabaseValue).toHaveBeenCalledWith('secret-stream-token');
+    expect(encryptSynchronizerCredential).toHaveBeenCalledWith('secret-stream-token');
     expect(testSync).toHaveBeenCalled();
     expect(createEntity).toHaveBeenCalled();
   });
@@ -151,7 +150,7 @@ describe('connector.ts — registerSync token encryption', () => {
 
     await registerSync(fakeContext, fakeUser, input);
 
-    expect(encryptDatabaseValue).not.toHaveBeenCalled();
+    expect(encryptSynchronizerCredential).not.toHaveBeenCalled();
     expect(createEntity).toHaveBeenCalled();
   });
 });

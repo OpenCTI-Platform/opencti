@@ -266,21 +266,60 @@ const createPlatformCrypto = async () => {
 
 export const getPlatformCrypto = memoize(createPlatformCrypto);
 
-const getGeneralKeyPair = memoize(async () => {
+export const getIngestionKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
-  return factory.deriveAesKey(['general', 'credentials'], 1);
+  return factory.deriveAesKey(['ingestion', 'credentials'], 1);
 });
 
-export const encryptDatabaseValue = async (value: string | undefined | null) => {
+export const getSynchronizerKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveAesKey(['synchronizer', 'credentials'], 1);
+});
+
+export const encryptIngestionCredential = async (value: string | undefined | null) => {
   if (!value) return value;
-  const keyPair = await getGeneralKeyPair();
+  const keyPair = await getIngestionKeyPair();
   const clearDataBuffer = Buffer.from(value);
   const encryptedBuffer = await keyPair.encrypt(clearDataBuffer);
   return encryptedBuffer.toString('base64');
 };
 
-export const decryptDatabaseValue = async (value: string | undefined | null) => {
+export const decryptIngestionCredential = async (value: string | undefined | null) => {
   if (!value) return value;
-  const keyPair = await getGeneralKeyPair();
+  const keyPair = await getIngestionKeyPair();
   return (await keyPair.decrypt(Buffer.from(value, 'base64'))).toString();
+};
+
+export const isIngestionCredentialEncrypted = async (value: string): Promise<boolean> => {
+  try {
+    const keyPair = await getIngestionKeyPair();
+    await keyPair.decrypt(Buffer.from(value, 'base64'));
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const encryptSynchronizerCredential = async (value: string | undefined | null) => {
+  if (!value) return value;
+  const keyPair = await getSynchronizerKeyPair();
+  const clearDataBuffer = Buffer.from(value);
+  const encryptedBuffer = await keyPair.encrypt(clearDataBuffer);
+  return encryptedBuffer.toString('base64');
+};
+
+export const decryptSynchronizerCredential = async (value: string | undefined | null) => {
+  if (!value) return value;
+  const keyPair = await getSynchronizerKeyPair();
+  return (await keyPair.decrypt(Buffer.from(value, 'base64'))).toString();
+};
+
+export const isSynchronizerCredentialEncrypted = async (value: string): Promise<boolean> => {
+  try {
+    const keyPair = await getSynchronizerKeyPair();
+    await keyPair.decrypt(Buffer.from(value, 'base64'));
+    return true;
+  } catch {
+    return false;
+  }
 };
