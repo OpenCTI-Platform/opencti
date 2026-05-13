@@ -19,14 +19,8 @@ vi.mock('../../../src/config/credentials', () => ({
   enrichWithRemoteCredentials: vi.fn().mockResolvedValue({ value: undefined }),
 }));
 
-import {
-  encryptIngestionCredential,
-  decryptIngestionCredential,
-  isIngestionCredentialEncrypted,
-  encryptSynchronizerCredential,
-  decryptSynchronizerCredential,
-  isSynchronizerCredentialEncrypted,
-} from '../../../src/utils/platformCrypto';
+import { encryptIngestionCredential, decryptIngestionCredential, isIngestionCredentialEncrypted } from '../../../src/modules/ingestion/ingestion-common';
+import { encryptSynchronizerCredential, decryptSynchronizerCredential, isSynchronizerCredentialEncrypted } from '../../../src/domain/connector-sync-crypto';
 
 describe('platformCrypto – encryptIngestionCredential / decryptIngestionCredential', () => {
   it('should encrypt and decrypt a value round-trip', async () => {
