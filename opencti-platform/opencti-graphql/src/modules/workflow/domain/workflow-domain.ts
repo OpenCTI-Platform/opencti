@@ -1,16 +1,74 @@
+import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
+import { extractEntityRepresentativeName } from '../../../database/entity-representative';
+import { loadAssignees, loadParticipants } from '../../../database/members';
 import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
 import { FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
+import { SYSTEM_USER } from '../../../utils/access';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
+import { addNotification } from '../../notification/notification-domain';
+import type { NotificationAddInput } from '../../notification/notification-types';
 import { WorkflowFactory } from '../engine/workflow-factory';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from '../types/workflow-types';
-
 import { validateWorkflowDefinitionData } from '../workflow-validation';
+
+/**
+ * Sends a UI notification to all assignees and participants of the entity
+ * (excluding the user who triggered the transition) when a comment is provided.
+ */
+const notifyWorkflowTransitionComment = async (
+  context: AuthContext,
+  entity: BasicStoreEntity,
+  eventName: string,
+  comment: string,
+  triggeredByUserId: string,
+): Promise<void> => {
+  try {
+    const [assignees, participants] = await Promise.all([
+      loadAssignees(context, SYSTEM_USER, entity),
+      loadParticipants(context, SYSTEM_USER, entity),
+    ]);
+
+    const seenIds = new Set<string>();
+    const uniqueRecipients = [...assignees, ...participants].filter((recipient) => {
+      const recipientId = recipient.id;
+      if (!recipientId || seenIds.has(recipientId) || recipientId === triggeredByUserId) return false;
+      seenIds.add(recipientId);
+      return true;
+    });
+
+    if (uniqueRecipients.length === 0) return;
+
+    const entityName = extractEntityRepresentativeName(entity) || entity.entity_type;
+    await Promise.all(
+      uniqueRecipients.map((recipient) => {
+        const recipientId = recipient.id;
+        const notificationPayload: NotificationAddInput = {
+          is_read: false,
+          name: entityName,
+          notification_type: 'live',
+          user_id: recipientId,
+          notification_content: [{
+            title: entityName,
+            events: [{
+              operation: 'update',
+              message: `[${eventName}] ${comment}`,
+              instance_id: entity.internal_id ?? entity.id,
+            }],
+          }],
+        };
+        return addNotification(context, SYSTEM_USER, notificationPayload);
+      }),
+    );
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Failed to send workflow transition comment notifications', { cause: error });
+  }
+};
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
@@ -89,7 +147,7 @@ const initializeWorkflowInstance = async (
 };
 
 /**
- * Get workflow definition for an entity type.
+ * Get a workflow definition for an entity type.
  */
 export const getWorkflowDefinition = async (
   context: AuthContext,
@@ -101,7 +159,7 @@ export const getWorkflowDefinition = async (
 };
 
 /**
- * Create or update workflow definition for an entity type.
+ * Create or update the workflow definition for an entity type.
  */
 export const setWorkflowDefinition = async (
   context: AuthContext,
@@ -175,7 +233,7 @@ export const deleteWorkflowDefinition = async (
 };
 
 /**
- * Get workflow instance for an entity.
+ * Get a workflow instance for an entity.
  */
 export const getWorkflowInstance = async (
   context: AuthContext,
@@ -241,7 +299,7 @@ export const getAllowedTransitions = async (
 
   const transitions = definition.getTransitions(effectiveStateId);
 
-  const resolvedTransitions = transitions.map((transition) => {
+  return transitions.map((transition) => {
     return {
       event: transition.event,
       toState: transition.to,
@@ -249,8 +307,6 @@ export const getAllowedTransitions = async (
       actions: transition.actionTypes || [],
     };
   });
-
-  return resolvedTransitions;
 };
 
 /**
@@ -319,7 +375,7 @@ export const triggerWorkflowEvent = async (
 
     const definition = WorkflowFactory.createDefinition(definitionData);
 
-    // 5. Create instance and Trigger the event
+    // 5. Create an instance and Trigger the event
     const instance = WorkflowFactory.getInstance(definitionData, definition, currentStateId || '', workflowContext);
     const result = await instance.trigger(eventName);
 
@@ -343,6 +399,13 @@ export const triggerWorkflowEvent = async (
       ]);
 
       const workflowInstance = await getWorkflowInstance(context, user, entityId);
+
+      // Notify assignees and participants when a non-empty comment was provided
+      if (comment) {
+        const executionCtx = bypassDraftContext(context);
+        await notifyWorkflowTransitionComment(executionCtx, entity as BasicStoreEntity, eventName, comment, user.id);
+      }
+
       return { success: true, newState, instance: workflowInstance, entity };
     }
 
