@@ -5,11 +5,14 @@ import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
+import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 
 // region platform start and stop
 export const platformStart = async () => {
   const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
+  // Start the liveness probe first so orchestrators can detect the process is alive
+  startLivenessServer();
   try {
     checkFeatureFlags();
     // Check all dependencies access
@@ -55,6 +58,8 @@ export const platformStart = async () => {
 
 export const platformStop = async () => {
   const stopTime = new Date().getTime();
+  // Shutdown the liveness probe
+  await stopLivenessServer();
   // Shutdown the cache manager
   await cacheManager.shutdown();
   // Destroy the modules
