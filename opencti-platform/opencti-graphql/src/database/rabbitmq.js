@@ -522,7 +522,7 @@ export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_
 // - This constant is used here to build the dead_letter_routing value in connectorConfig.
 // - The full CONNECTOR_QUEUE_BUNDLES_TOO_LARGE queue configuration object is defined later
 //   in this file near the rest of the queue declarations.
-const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
+export const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
 
 /**
  * Build the complete connector configuration that includes:
@@ -745,6 +745,77 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
             }
           });
         }
+      });
+    } catch (globalError) {
+      reject(globalError);
+    }
+  });
+};
+
+/**
+ * Pull-based queue consumption with manual ack/nack support.
+ * Uses channel.get() to fetch messages one at a time.
+ * The callback receives the message content and must return true to ack or false to nack+requeue.
+ * Processes at most the number of messages present in the queue at the start, to avoid infinite loops
+ * when messages are nacked and requeued.
+ */
+export const consumeQueueWithAck = async (connectorId, callback) => {
+  const cfg = connectorConfig(connectorId);
+  const listenQueue = cfg.listen;
+  const connOptions = getConnectionOptions();
+  return new Promise((resolve, reject) => {
+    try {
+      amqp.connect(amqpUri(), connOptions, (err, conn) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        conn.on('error', (onConnectError) => {
+          reject(onConnectError);
+        });
+        conn.createChannel((channelError, channel) => {
+          if (channelError) {
+            conn.close();
+            reject(channelError);
+            return;
+          }
+          channel.on('error', (onChannelError) => {
+            reject(onChannelError);
+          });
+          const checkQueue = util.promisify(channel.checkQueue).bind(channel);
+          const getMsg = util.promisify(channel.get).bind(channel);
+          const processMessages = async () => {
+            // Get initial message count to cap processing and avoid infinite loops
+            const queueInfo = await checkQueue(listenQueue);
+            const maxMessages = queueInfo.messageCount;
+            let processed = 0;
+            while (processed < maxMessages) {
+              const msg = await getMsg(listenQueue, { noAck: false });
+              if (!msg) {
+                break; // Queue is empty
+              }
+              processed += 1;
+              try {
+                const success = await callback(msg.content.toString());
+                if (success) {
+                  channel.ack(msg);
+                } else {
+                  channel.nack(msg, false, true); // nack and requeue
+                }
+              } catch (_callbackError) {
+                channel.nack(msg, false, true); // nack and requeue on error
+              }
+            }
+            channel.close(() => conn.close(() => resolve()));
+          };
+          processMessages().catch((e) => {
+            try {
+              channel.close(() => conn.close(() => reject(e)));
+            } catch (_) {
+              reject(e);
+            }
+          });
+        });
       });
     } catch (globalError) {
       reject(globalError);
