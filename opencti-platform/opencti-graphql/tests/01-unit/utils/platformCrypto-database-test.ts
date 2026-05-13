@@ -19,7 +19,14 @@ vi.mock('../../../src/config/credentials', () => ({
   enrichWithRemoteCredentials: vi.fn().mockResolvedValue({ value: undefined }),
 }));
 
-import { encryptIngestionCredential, decryptIngestionCredential } from '../../../src/utils/platformCrypto';
+import {
+  encryptIngestionCredential,
+  decryptIngestionCredential,
+  isIngestionCredentialEncrypted,
+  encryptSynchronizerCredential,
+  decryptSynchronizerCredential,
+  isSynchronizerCredentialEncrypted,
+} from '../../../src/utils/platformCrypto';
 
 describe('platformCrypto – encryptIngestionCredential / decryptIngestionCredential', () => {
   it('should encrypt and decrypt a value round-trip', async () => {
@@ -51,5 +58,50 @@ describe('platformCrypto – encryptIngestionCredential / decryptIngestionCreden
     // Both must decrypt to the same original
     expect(await decryptIngestionCredential(encrypted1!)).toBe(original);
     expect(await decryptIngestionCredential(encrypted2!)).toBe(original);
+  });
+});
+
+describe('platformCrypto – isIngestionCredentialEncrypted', () => {
+  it('should return true when value is encrypted with the ingestion key', async () => {
+    const plaintext = 'my-api-key';
+    const encrypted = await encryptIngestionCredential(plaintext);
+    expect(await isIngestionCredentialEncrypted(encrypted!)).toBe(true);
+  });
+
+  it('should return false when value is plain text', async () => {
+    expect(await isIngestionCredentialEncrypted('plain-text-token')).toBe(false);
+  });
+});
+
+describe('platformCrypto – encryptSynchronizerCredential / decryptSynchronizerCredential', () => {
+  it('should encrypt and decrypt a value round-trip', async () => {
+    const original = 'my-synchronizer-token';
+    const encrypted = await encryptSynchronizerCredential(original);
+    expect(encrypted).toBeDefined();
+    expect(encrypted).not.toBe(original);
+    expect(encrypted).toMatch(/^[A-Za-z0-9+/]+=*$/);
+    const decrypted = await decryptSynchronizerCredential(encrypted!);
+    expect(decrypted).toBe(original);
+  });
+
+  it('should return falsy values unchanged', async () => {
+    expect(await encryptSynchronizerCredential(null)).toBeNull();
+    expect(await encryptSynchronizerCredential(undefined)).toBeUndefined();
+    expect(await encryptSynchronizerCredential('')).toBe('');
+    expect(await decryptSynchronizerCredential(null)).toBeNull();
+    expect(await decryptSynchronizerCredential(undefined)).toBeUndefined();
+    expect(await decryptSynchronizerCredential('')).toBe('');
+  });
+});
+
+describe('platformCrypto – isSynchronizerCredentialEncrypted', () => {
+  it('should return true when value is encrypted with the synchronizer key', async () => {
+    const plaintext = 'my-stream-token';
+    const encrypted = await encryptSynchronizerCredential(plaintext);
+    expect(await isSynchronizerCredentialEncrypted(encrypted!)).toBe(true);
+  });
+
+  it('should return false when value is plain text', async () => {
+    expect(await isSynchronizerCredentialEncrypted('plain-text-token')).toBe(false);
   });
 });
