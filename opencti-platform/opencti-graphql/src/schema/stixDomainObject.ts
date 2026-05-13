@@ -26,6 +26,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatf
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'attribute_abstract';
@@ -145,6 +146,7 @@ export const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_VULNERABILITY,
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_SECURITY_COVERAGE,
+  ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
 ];
 schemaTypesDefinition.register(ABSTRACT_STIX_DOMAIN_OBJECT, STIX_DOMAIN_OBJECTS);
 
