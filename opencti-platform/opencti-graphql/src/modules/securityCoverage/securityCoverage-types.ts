@@ -13,7 +13,6 @@ export interface BasicStoreEntitySecurityCoverage extends BasicStoreEntity {
   duration: string;
   type_affinity: string;
   platforms_affinity: string[];
-  coverage_information: { coverage_name: string; coverage_score: number }[];
 }
 
 export interface StoreEntitySecurityCoverage extends StoreEntity {
@@ -22,7 +21,6 @@ export interface StoreEntitySecurityCoverage extends StoreEntity {
   type_affinity: string;
   platforms_affinity: string[];
   [INPUT_COVERED]: BasicStoreEntity;
-  coverage_information: { coverage_name: string; coverage_score: number }[];
 }
 // endregion
 
@@ -35,8 +33,6 @@ export interface StixSecurityCoverage extends StixDomainObject {
   type_affinity: string;
   platforms_affinity: string[];
   covered_ref: string;
-  covered: boolean;
-  coverage: { name: string; score: number }[];
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
