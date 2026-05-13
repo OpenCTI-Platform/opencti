@@ -138,7 +138,7 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
   const [, startTransition] = useTransition();
   const [queryRef, loadQuery] = useQueryLoader<EntitySelectSearchQuery>(entitySelectSearchQuery);
 
-  const buildVariables = (search: string) => ({
+  const search = (search: string) => loadQuery({
     search,
     filters: {
       mode: 'and' as FilterMode,
@@ -152,16 +152,16 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
         },
       ],
     },
-  });
+  }, { fetchPolicy: 'store-and-network' });
 
   // Initial load
   useEffect(() => {
-    loadQuery(buildVariables(''), { fetchPolicy: 'store-and-network' });
+    search('');
   }, [types]);
 
   const handleSearchChange = (val: string) => {
     startTransition(() => {
-      loadQuery(buildVariables(val), { fetchPolicy: 'store-and-network' });
+      search(val);
     });
   };
 
