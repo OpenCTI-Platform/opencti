@@ -374,6 +374,33 @@ describe('Drafts workspace resolver testing', () => {
     expect(drafts.length).toEqual(0);
   });
 
+  it('should list drafts ordered by createdBy without error', async () => {
+    const result = await queryAsAdmin({
+      query: LIST_DRAFT_WORKSPACES_QUERY,
+      variables: { first: 5, orderBy: 'createdBy', orderMode: 'asc' },
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.draftWorkspaces.edges).toBeDefined();
+  });
+
+  it('should list drafts ordered by objectAssignee without error', async () => {
+    const result = await queryAsAdmin({
+      query: LIST_DRAFT_WORKSPACES_QUERY,
+      variables: { first: 5, orderBy: 'objectAssignee', orderMode: 'asc' },
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.draftWorkspaces.edges).toBeDefined();
+  });
+
+  it('should list drafts ordered by objectParticipant without error', async () => {
+    const result = await queryAsAdmin({
+      query: LIST_DRAFT_WORKSPACES_QUERY,
+      variables: { first: 5, orderBy: 'objectParticipant', orderMode: 'asc' },
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.draftWorkspaces.edges).toBeDefined();
+  });
+
   // create entity in draft context and verify that entity doesn't exist in live context
   it('create entity in draft context', async () => {
     await modifyAdminDraftContext(addedDraftId);

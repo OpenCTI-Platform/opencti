@@ -2965,6 +2965,24 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
     `,
     getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
   },
+  objectParticipant: {
+    field: 'objectParticipant.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_object-participant.internal_id')) {
+          def participantId = doc['rel_object-participant.internal_id.keyword'];
+          if (participantId.size() >= 1) {
+            def participantName = params[participantId[0]].toLowerCase();
+            emit(participantName != null ? participantName : 'unknown')
+          } else {
+              emit('unknown')
+            }
+        } else {
+          emit('unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
+  },
 };
 type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   ids?: string[];

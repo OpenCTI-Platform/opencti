@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildElasticSortingForAttributeCriteria } from '../../../src/utils/sorting';
+import { RUNTIME_ATTRIBUTES } from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { testContext } from '../../utils/testQuery';
 
@@ -54,3 +55,28 @@ describe('Sorting utilities', () => {
     await expect(sorting).rejects.toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
   });
 });
+
+describe('RUNTIME_ATTRIBUTES', () => {
+  it('should contain an objectParticipant entry as alias for participant', () => {
+    expect(RUNTIME_ATTRIBUTES.objectParticipant).toBeDefined();
+    expect(RUNTIME_ATTRIBUTES.objectParticipant.field).toEqual('objectParticipant.keyword');
+    expect(RUNTIME_ATTRIBUTES.objectParticipant.type).toEqual('keyword');
+    expect(typeof RUNTIME_ATTRIBUTES.objectParticipant.getSource).toEqual('function');
+    expect(typeof RUNTIME_ATTRIBUTES.objectParticipant.getParams).toEqual('function');
+  });
+
+  it('objectParticipant and participant entries should share the same field and script', async () => {
+    expect(RUNTIME_ATTRIBUTES.objectParticipant.field).toEqual(RUNTIME_ATTRIBUTES.participant.field);
+    const participantSource = await RUNTIME_ATTRIBUTES.participant.getSource();
+    const objectParticipantSource = await RUNTIME_ATTRIBUTES.objectParticipant.getSource();
+    expect(objectParticipantSource).toEqual(participantSource);
+  });
+
+  it('should contain createdBy and objectAssignee entries for draft workspace ordering', () => {
+    expect(RUNTIME_ATTRIBUTES.createdBy).toBeDefined();
+    expect(RUNTIME_ATTRIBUTES.createdBy.field).toEqual('createdBy.keyword');
+    expect(RUNTIME_ATTRIBUTES.objectAssignee).toBeDefined();
+    expect(RUNTIME_ATTRIBUTES.objectAssignee.field).toEqual('objectAssignee.keyword');
+  });
+});
+

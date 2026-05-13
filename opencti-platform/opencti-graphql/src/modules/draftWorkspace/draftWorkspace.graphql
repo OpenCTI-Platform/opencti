@@ -43,6 +43,9 @@ enum DraftWorkspacesOrdering {
     created_at
     creator
     draft_status
+    createdBy
+    objectAssignee
+    objectParticipant
     _score
 }
 

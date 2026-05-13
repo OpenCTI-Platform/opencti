@@ -7895,10 +7895,13 @@ export type DraftWorkspaceEditRelationDeleteArgs = {
 
 export enum DraftWorkspacesOrdering {
   Score = '_score',
+  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   DraftStatus = 'draft_status',
-  Name = 'name'
+  Name = 'name',
+  ObjectAssignee = 'objectAssignee',
+  ObjectParticipant = 'objectParticipant'
 }
 
 export type EditContext = {
