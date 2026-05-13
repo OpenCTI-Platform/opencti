@@ -6,13 +6,16 @@ import { URL } from 'node:url';
 import {
   getPublicAuthorizedDomainsFromConfiguration,
   getRateProtectionIpSkipList,
+  getRateProtectionIpSkipRanges,
   getRateProtectionMaxRequests,
   getRateProtectionTimeWindowMs,
+  getRateProtectionUserAgentSkipPrefixes,
   isDevMode,
   isUnsecureHttpResourceAllowed,
 } from './httpConfig';
 import type { HelmetOptions } from 'helmet';
 import { type Options } from 'express-rate-limit';
+import { BlockList } from 'node:net';
 
 export const setCookieError = (res: Response, message: string) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -183,17 +186,88 @@ const buildRateLimitKey = (req: Request): string => {
   return crypto.createHash('sha256').update(`${ip}|${userAgent}`).digest('hex');
 };
 
+/**
+ * Build a BlockList from CIDR ranges for efficient IP range matching.
+ */
+const buildIpRangeSkipList = (ranges: string[]): BlockList => {
+  console.log('buildIpRangeSkipList');
+  const blockList = new BlockList();
+  try {
+    for (const range of ranges) {
+      if (range.includes('/')) {
+        const [subnet, prefixStr] = range.split('/');
+        const prefix = parseInt(prefixStr, 10);
+        const type = subnet.includes(':') ? 'ipv6' : 'ipv4';
+        blockList.addSubnet(subnet, prefix, type);
+      } else {
+        // Single IP provided as a "range" entry — treat as exact match
+        const type = range.includes(':') ? 'ipv6' : 'ipv4';
+        blockList.addAddress(range, type);
+      }
+    }
+  } catch (e) {
+    logApp.warn('[HTTP] Error when building the IP range that should be ignored by the rate limit, please verify your configuration.', e);
+  }
+  return blockList;
+};
+
+/**
+ * Check whether a User-Agent header matches any of the configured skip prefixes.
+ */
+const matchesUserAgentSkipPrefix = (userAgent: string | undefined, prefixes: string[]): boolean => {
+  if (!userAgent || prefixes.length === 0) return false;
+  const lowerUA = userAgent.toLowerCase();
+  return prefixes.some((prefix) => lowerUA.startsWith(prefix.toLowerCase()));
+};
+
+// Throttle map: tracks last log timestamp per IP+UA pair to avoid log flooding.
+// Key = "ip|userAgent", value = last log epoch ms.
+const rateLimitLogThrottle = new Map<string, number>();
+const RATE_LIMIT_LOG_INTERVAL_MS = 60_000; // 1 minute
+
+/**
+ * Log a rate-limit event for an IP + User-Agent pair at most once per minute.
+ */
+const logRateLimitThrottled = (ip: string, userAgent: string): void => {
+  const key = `${ip}|${userAgent}`;
+  const now = Date.now();
+  const lastLogged = rateLimitLogThrottle.get(key);
+  if (lastLogged === undefined || now - lastLogged >= RATE_LIMIT_LOG_INTERVAL_MS) {
+    rateLimitLogThrottle.set(key, now);
+    logApp.info('[RATE-LIMIT] Rate limited request', { ip, userAgent });
+  }
+};
+
 export const buildRateLimiterOptions = (): Options => {
+  console.log('buildRateLimiterOptions');
   const skipList: string[] = getRateProtectionIpSkipList();
+  const skipRanges: string[] = getRateProtectionIpSkipRanges();
+  const userAgentSkipPrefixes: string[] = getRateProtectionUserAgentSkipPrefixes();
+  const ipRangeSkipList = buildIpRangeSkipList(skipRanges);
+
+  // There is 2 ways to exclude IP from rate limit: by exact IP or by ranges.
+  const isIpInSkipList = (ip: string): boolean => {
+    if (skipList.includes(ip)) return true;
+    if (skipRanges.length > 0 && ipRangeSkipList.check(ip)) return true;
+    return false;
+  };
+
   const rateLimitOptions: Partial<Options> = {
     windowMs: getRateProtectionTimeWindowMs(),
     limit: getRateProtectionMaxRequests(),
     keyGenerator: buildRateLimitKey,
     handler: (req, res /* , next */) => {
-      logApp.info(`[RATE-LIMIT] over quota for ${req.ip ?? 'unknown'}|${req.headers['user-agent'] ?? 'unknown'}`);
+      const ip = req.ip ?? 'unknown';
+      const userAgent = req.headers['user-agent'] ?? 'unknown';
+      logRateLimitThrottled(ip, userAgent);
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
-    skip: (req, _res) => req.ip ? skipList.includes(req.ip) : false,
+    skip: (req, _res) => {
+      // Checks if IP or user-agent should be ignored by the rate limit
+      if (matchesUserAgentSkipPrefix(req.headers['user-agent'], userAgentSkipPrefixes)) return true;
+      if (!req.ip) return false;
+      return isIpInSkipList(req.ip);
+    },
   };
   return rateLimitOptions as Options;
 };

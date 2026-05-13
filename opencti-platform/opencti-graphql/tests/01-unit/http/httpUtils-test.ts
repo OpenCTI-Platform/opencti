@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters, buildRateLimiterOptions } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
-import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
+import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs } from '../../../src/http/httpConfig';
+import type { Request, Response } from 'express';
 
 describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('encodeOidcState', () => {
@@ -201,6 +202,11 @@ describe('httpUtils: buildRateLimiter configuration tests', () => {
     vi.restoreAllMocks();
   });
 
+  const mockReq = (ip?: string, userAgent?: string): Partial<Request> => ({
+    ip,
+    headers: { 'user-agent': userAgent } as any,
+  });
+
   it('buildRateLimiter with default should be good', () => {
     const rateLimiter = buildRateLimiterOptions();
     expect(rateLimiter.windowMs).toBe(1000);
@@ -214,5 +220,57 @@ describe('httpUtils: buildRateLimiter configuration tests', () => {
     const rateLimiter = buildRateLimiterOptions();
     expect(rateLimiter.windowMs).toBe(5);
     expect(rateLimiter.limit).toBe(5000);
+  });
+
+  it('should skip exact IPs in ip_skip_list', () => {
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipList').mockReturnValue(['10.0.0.1', '10.0.0.2']);
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipRanges').mockReturnValue([]);
+    vi.spyOn(httpConfig, 'getRateProtectionUserAgentSkipPrefixes').mockReturnValue([]);
+    const rateLimiter = buildRateLimiterOptions();
+    const skip = rateLimiter.skip as (req: Partial<Request>, res: Partial<Response>) => boolean;
+    expect(skip(mockReq('10.0.0.1', 'curl/7.0'), {} as Response)).toBe(true);
+    expect(skip(mockReq('10.0.0.3', 'curl/7.0'), {} as Response)).toBe(false);
+  });
+
+  it('should skip IPs matching CIDR ranges in ip_skip_ranges', () => {
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipList').mockReturnValue([]);
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipRanges').mockReturnValue(['192.168.1.0/24']);
+    vi.spyOn(httpConfig, 'getRateProtectionUserAgentSkipPrefixes').mockReturnValue([]);
+    const rateLimiter = buildRateLimiterOptions();
+    const skip = rateLimiter.skip as (req: Partial<Request>, res: Partial<Response>) => boolean;
+    expect(skip(mockReq('192.168.1.50', 'curl/7.0'), {} as Response)).toBe(true);
+    expect(skip(mockReq('192.168.1.255', 'curl/7.0'), {} as Response)).toBe(true);
+    expect(skip(mockReq('192.168.2.1', 'curl/7.0'), {} as Response)).toBe(false);
+  });
+
+  it('should skip requests with matching user-agent prefix', () => {
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipList').mockReturnValue([]);
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipRanges').mockReturnValue([]);
+    vi.spyOn(httpConfig, 'getRateProtectionUserAgentSkipPrefixes').mockReturnValue(['Mozilla', 'MyBot']);
+    const rateLimiter = buildRateLimiterOptions();
+    const skip = rateLimiter.skip as (req: Partial<Request>, res: Partial<Response>) => boolean;
+    expect(skip(mockReq('10.0.0.1', 'Mozilla/5.0 (Windows NT 10.0)'), {} as Response)).toBe(true);
+    expect(skip(mockReq('10.0.0.1', 'mozilla/5.0'), {} as Response)).toBe(true); // case-insensitive
+    expect(skip(mockReq('10.0.0.1', 'MyBot/1.0'), {} as Response)).toBe(true);
+    expect(skip(mockReq('10.0.0.1', 'curl/7.0'), {} as Response)).toBe(false);
+  });
+
+  it('should not skip when ip is undefined', () => {
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipList').mockReturnValue(['10.0.0.1']);
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipRanges').mockReturnValue([]);
+    vi.spyOn(httpConfig, 'getRateProtectionUserAgentSkipPrefixes').mockReturnValue([]);
+    const rateLimiter = buildRateLimiterOptions();
+    const skip = rateLimiter.skip as (req: Partial<Request>, res: Partial<Response>) => boolean;
+    expect(skip(mockReq(undefined, 'curl/7.0'), {} as Response)).toBe(false);
+  });
+
+  it('should skip via user-agent even if ip is undefined', () => {
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipList').mockReturnValue([]);
+    vi.spyOn(httpConfig, 'getRateProtectionIpSkipRanges').mockReturnValue([]);
+    vi.spyOn(httpConfig, 'getRateProtectionUserAgentSkipPrefixes').mockReturnValue(['Mozilla']);
+    const rateLimiter = buildRateLimiterOptions();
+    const skip = rateLimiter.skip as (req: Partial<Request>, res: Partial<Response>) => boolean;
+    // Even with no IP, user-agent prefix match should still skip
+    expect(skip(mockReq(undefined, 'Mozilla/5.0'), {} as Response)).toBe(true);
   });
 });
