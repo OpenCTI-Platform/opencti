@@ -35,6 +35,8 @@ import { pushAll } from '../utils/arrayUtil';
 
 export const modules = new Map();
 
+type IdentifierDefinition = { src: string; dependencies?: string[] };
+
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z0 extends S20.StixObject = S20.StixObject> {
   type: {
     id: string;
@@ -44,7 +46,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z
   };
   identifier: {
     definition: {
-      [k: string]: Array<{ src: string; dependencies?: string[] }> | string | (() => string);
+      [k: string]: Array<IdentifierDefinition | IdentifierDefinition[]> | string | (() => string);
     };
     resolvers?: {
       [f: string]: (value: any, data?: object) => string;
