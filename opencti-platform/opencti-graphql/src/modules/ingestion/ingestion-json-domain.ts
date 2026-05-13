@@ -34,7 +34,7 @@ import jsonMappingExecution from '../../parser/json-mapper';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { encryptIngestionCredential, decryptIngestionCredential } from '../../utils/platformCrypto';
+import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 
 interface JsonQueryFetchOpts {
   maxResults?: number;

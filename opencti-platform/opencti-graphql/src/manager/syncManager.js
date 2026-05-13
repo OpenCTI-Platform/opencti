@@ -1,6 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { decryptSynchronizerCredential } from '../utils/platformCrypto';
+import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';

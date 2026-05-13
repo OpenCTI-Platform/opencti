@@ -45,7 +45,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
-import { decryptIngestionCredential } from '../utils/platformCrypto';
+import { decryptIngestionCredential } from '../modules/ingestion/ingestion-common';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.

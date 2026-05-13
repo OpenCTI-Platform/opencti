@@ -66,7 +66,7 @@ import { AxiosError } from 'axios';
 import { URL } from 'node:url';
 import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
-import { encryptSynchronizerCredential } from '../utils/platformCrypto';
+import { encryptSynchronizerCredential } from './connector-sync-crypto';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker

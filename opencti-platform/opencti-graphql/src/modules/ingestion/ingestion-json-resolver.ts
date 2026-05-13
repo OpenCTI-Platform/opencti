@@ -26,7 +26,7 @@ import {
   testJsonIngestionMapping,
 } from './ingestion-json-domain';
 import { removeAuthenticationCredentials } from './ingestion-common';
-import { decryptIngestionCredential } from '../../utils/platformCrypto';
+import { decryptIngestionCredential } from './ingestion-common';
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { loadCreator } from '../../database/members';
 

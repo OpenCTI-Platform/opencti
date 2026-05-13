@@ -11,7 +11,7 @@ import {
 } from './ingestion-taxii-domain';
 import { removeAuthenticationCredentials } from './ingestion-common';
 import type { Resolvers } from '../../generated/graphql';
-import { decryptIngestionCredential } from '../../utils/platformCrypto';
+import { decryptIngestionCredential } from './ingestion-common';
 import { loadCreator } from '../../database/members';
 
 const ingestionTaxiiResolvers: Resolvers = {

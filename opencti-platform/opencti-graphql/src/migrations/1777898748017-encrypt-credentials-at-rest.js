@@ -3,7 +3,8 @@ import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_TAXII } from '../modules/ingestion/ingestion-types';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { encryptIngestionCredential, encryptSynchronizerCredential, isIngestionCredentialEncrypted, isSynchronizerCredentialEncrypted } from '../utils/platformCrypto';
+import { encryptIngestionCredential, isIngestionCredentialEncrypted } from '../modules/ingestion/ingestion-common';
+import { encryptSynchronizerCredential, isSynchronizerCredentialEncrypted } from '../domain/connector-sync-crypto';
 import { elUpdate } from '../database/engine';
 
 const message = '[MIGRATION] Encrypt credentials at rest for ingestions and synchronizers';

@@ -15,7 +15,7 @@ import {
   testCsvIngestionMapping,
 } from './ingestion-csv-domain';
 import { removeAuthenticationCredentials } from './ingestion-common';
-import { decryptIngestionCredential } from '../../utils/platformCrypto';
+import { decryptIngestionCredential } from './ingestion-common';
 import { userAlreadyExists } from '../user/user-domain';
 import { loadCreator } from '../../database/members';
 

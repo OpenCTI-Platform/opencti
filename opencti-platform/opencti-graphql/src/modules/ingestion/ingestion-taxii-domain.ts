@@ -8,7 +8,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
 import { addAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
-import { encryptIngestionCredential, decryptIngestionCredential } from '../../utils/platformCrypto';
+import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { createOnTheFlyUser } from '../user/user-domain';
 import type { FileHandle } from 'fs/promises';

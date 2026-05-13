@@ -1,5 +1,30 @@
 import { IngestionAuthType } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
+import { decryptValue, encryptValue, getPlatformCrypto } from '../../utils/platformCrypto';
+import { memoize } from '../../utils/memoize';
+
+export const getIngestionKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveAesKey(['ingestion', 'credentials'], 1);
+});
+
+export const encryptIngestionCredential = async (value: string | undefined | null) => {
+  return encryptValue(await getIngestionKeyPair(), value);
+};
+
+export const decryptIngestionCredential = async (value: string | undefined | null) => {
+  return decryptValue(await getIngestionKeyPair(), value);
+};
+
+export const isIngestionCredentialEncrypted = async (value: string): Promise<boolean> => {
+  try {
+    const keyPair = await getIngestionKeyPair();
+    await keyPair.decrypt(Buffer.from(value, 'base64'));
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 export const verifyIngestionAuthenticationContent = (authenticationType: string, authenticationValue: string) => {
   if (authenticationType && authenticationValue) {
