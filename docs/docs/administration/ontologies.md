@@ -11,7 +11,7 @@ Labels in OpenCTI serve as a powerful tool for organizing, categorizing, and pri
 1. **Tagging and Categorization**: Labels can be used to tag malware, incidents, or indicators (IOCs) with specific categories, making it easier to filter and search through large datasets.
 2. **Prioritization**: By labeling threats based on their severity or impact, security analysts can prioritize their response efforts accordingly.
 3. **Correlation and Analysis**: Labels help in correlating different pieces of intelligence. For example, if multiple indicators are tagged with the same label, it might indicate a larger campaign or a common adversary.
-4. **Automation and Integration**: Labels can trigger [automated workflows](../usage/automation.md) (also called playbooks) within OpenCTI. For instance, a label might automatically initiate further investigation or escalate an incident.
+4. **Automation and Integration**: Labels can trigger [automated workflows](../usage/playbook-automation.md) (also called playbooks) within OpenCTI. For instance, a label might automatically initiate further investigation or escalate an incident.
 5. **Reporting and Metrics**: Labels facilitate the generation of reports and metrics, allowing organizations to track trends through dashboards, measure response effectiveness, and make data-driven decisions.
 6. **Sharing and Collaboration**: When sharing intelligence with other organizations or platforms, labels provide a common language that helps in understanding the context and relevance of the shared data.
 

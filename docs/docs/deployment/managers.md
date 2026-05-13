@@ -64,7 +64,7 @@ More information can be found [here](../usage/getting-started.md).
 
 The playbook manager handles the automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform.
 
-Please read the [Playbook automation page](../usage/automation.md) to get more information.
+Please read the [Playbook automation page](../usage/playbook-automation.md) to get more information.
 
 ## File index manager
 
