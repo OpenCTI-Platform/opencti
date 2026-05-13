@@ -249,6 +249,7 @@
   "Data type": "Tipo di dati",
   "Date": "Data",
   "Date of birth": "Data di nascita",
+  "Dead letter queue manager": "Gestore della coda delle lettere morte",
   "Decay applied rule": "Regola di decadimento applicata",
   "Decay base score": "Punteggio base di decadimento",
   "Decay base score date": "Data del punteggio base di decadimento",

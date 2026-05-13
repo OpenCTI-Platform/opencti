@@ -249,6 +249,7 @@
   "Data type": "Type de données",
   "Date": "Date",
   "Date of birth": "Date de naissance",
+  "Dead letter queue manager": "Gestionnaire de file d'attente pour les lettres mortes",
   "Decay applied rule": "Règle de désintégration appliquée",
   "Decay base score": "Score de base de la désintégration",
   "Decay base score date": "Date du score de base de la désintégration",

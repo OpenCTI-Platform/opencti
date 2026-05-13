@@ -249,6 +249,7 @@
   "Data type": "Datentyp",
   "Date": "Datum",
   "Date of birth": "Geburtsdatum",
+  "Dead letter queue manager": "Warteschlangenmanager für tote Briefe",
   "Decay applied rule": "Verfall angewandte Regel",
   "Decay base score": "Zerfalls-Basiswert",
   "Decay base score date": "Datum der Zerfallsbasisbewertung",
