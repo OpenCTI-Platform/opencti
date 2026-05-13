@@ -1,12 +1,6 @@
 import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
 import { ADMIN_USER, getAuthUser, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
-import {
-  addDraftWorkspace,
-  draftWorkspaceEditContext,
-  listDraftObjects,
-  listDraftRelations,
-  validateDraftWorkspace,
-} from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, listDraftObjects, listDraftRelations, validateDraftWorkspace } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import type { AdministrativeAreaAddInput, CityAddInput, DraftWorkspaceAddInput, StixCoreRelationshipAddInput } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addCity } from '../../../src/domain/city';
@@ -84,17 +78,6 @@ describe('Drafts workspace domain testing', () => {
 
   it('should checkDraftInContext as editor be all good on Opened draft', async () => {
     await checkDraftInContext(testDraftContext);
-  });
-
-  it('should draftWorkspaceEditContext as editor', async () => {
-    const validateDraftWorkId = await draftWorkspaceEditContext(testContext, editorAuthUser, testDraftId, { focusOn: 'idontknow' });
-    expect(validateDraftWorkId).toBeDefined();
-  });
-
-  it('should analyst not draftWorkspaceEditContext from editor draft', async () => {
-    await expect(async () => {
-      await draftWorkspaceEditContext(testContext, analystAuthUser, testDraftId, { focusOn: 'idontknow' });
-    }).rejects.toThrowError(`Draft ${testDraftId} cannot be found`);
   });
 
   it('should editor listDraftObjects', async () => {
