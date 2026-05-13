@@ -255,7 +255,7 @@ export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string
     } else if (all === true) {
       finalConfig = {
         ...restOfConfig,
-        applyToElements: excludeMainElement
+        applyToElements: node.component_id === PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id && excludeMainElement
           ? playbookBundleElementsToApply.allExceptMain.value
           : playbookBundleElementsToApply.allElements.value,
       };
