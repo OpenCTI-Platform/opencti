@@ -46,6 +46,15 @@ const middleware = (target, ws = false) => createProxyMiddleware({
     outdir: `${buildPath}/static/workers`,
     entryNames: "[name]",
     loader: { ".js": "jsx" },
+    // Prettier v3 uses dynamic imports internally which are incompatible with
+    // esbuild's IIFE format. Stub it out — autocompletion and validation work
+    // fine without it; only "format document" is disabled.
+    alias: {
+      'prettier/standalone': './src/public/workers/prettier-stub.js',
+      'prettier/parser-graphql': './src/public/workers/prettier-stub.js',
+      'prettier/plugins/graphql': './src/public/workers/prettier-stub.js',
+      'prettier': './src/public/workers/prettier-stub.js',
+    },
   });
 
   // Start with an initial build
