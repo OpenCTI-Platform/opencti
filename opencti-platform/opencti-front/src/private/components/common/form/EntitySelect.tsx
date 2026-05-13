@@ -157,7 +157,7 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
   // Initial load
   useEffect(() => {
     search('');
-  }, [types]);
+  }, []);
 
   const handleSearchChange = (val: string) => {
     startTransition(() => {
