@@ -388,7 +388,7 @@ const StixDomainObjectOverview = ({
         </DialogActions>
       </Dialog>
       <Formik
-        initialValues={{}}
+        initialValues={{ objectAssignee: [] }}
         onSubmit={onSubmitAssignees}
         onReset={handleToggleAddAssignee}
       >
@@ -419,7 +419,7 @@ const StixDomainObjectOverview = ({
         )}
       </Formik>
       <Formik
-        initialValues={{}}
+        initialValues={{ objectParticipant: [] }}
         onSubmit={onSubmitParticipant}
         onReset={handleToggleAddParticipant}
       >
