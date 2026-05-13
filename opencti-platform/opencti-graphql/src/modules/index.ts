@@ -80,6 +80,7 @@ import './securityPlatform/securityPlatform';
 import './emailTemplate/emailTemplate';
 import './form/form';
 import './securityCoverage/securityCoverage';
+import './securityCoverage/securityCoverageResult/securityCoverageResult';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
