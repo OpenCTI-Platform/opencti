@@ -34,7 +34,7 @@ const ProfileOverviewNewsFeed = ({
   };
 
   return (
-    <Card title={t_i18n('XTM Hub Newsfeeds')}>
+    <Card title={t_i18n('XTM Hub News Feed')}>
       <ListItem
         divider={!allUnsubscribed}
         sx={allUnsubscribed ? { padding: '0' } : { padding: '0 0 10px 0' }}
