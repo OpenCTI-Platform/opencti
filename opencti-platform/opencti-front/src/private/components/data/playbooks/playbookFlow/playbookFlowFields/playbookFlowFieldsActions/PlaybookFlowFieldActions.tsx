@@ -193,6 +193,8 @@ const PlaybookFlowFieldActions = ({
               disabled={!actionsAreValid}
               onClick={() => {
                 arrayHelpers.push({});
+                const newFormvalues = [...formActionsValues, []];
+                setFieldValue('actionsFormValues', newFormvalues);
               }}
             >
               {t_i18n('Add action')}
