@@ -4,7 +4,7 @@ import ImportMenu from '@components/data/ImportMenu';
 import DraftCreation from '@components/drafts/DraftCreation';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect } from 'react';
 import { graphql } from 'react-relay';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -137,6 +137,9 @@ export const draftsLinesFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
 
+const RUNTIME_ONLY_SORT_FIELDS = ['createdBy', 'objectAssignee', 'objectParticipant'];
+const FALLBACK_SORT_FIELD = 'created_at';
+
 interface DraftsProps {
   entityId?: string;
   openCreate?: boolean;
@@ -176,6 +179,13 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
   const {
     filters,
   } = viewStorage;
+
+  // Reset sortBy to a safe default if runtime sort is disabled and a runtime-only field is persisted in localStorage/URL
+  useEffect(() => {
+    if (!isRuntimeSort && RUNTIME_ONLY_SORT_FIELDS.includes(viewStorage.sortBy ?? '')) {
+      storageHelpers.handleSort(FALLBACK_SORT_FIELD, false);
+    }
+  }, [isRuntimeSort]);
 
   const filtersForDataTable = addFilter(filters, 'entity_id', [entityId || ''], entityId ? 'eq' : 'nil', 'and');
   const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filtersForDataTable);
