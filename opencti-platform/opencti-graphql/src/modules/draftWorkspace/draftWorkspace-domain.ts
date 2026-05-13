@@ -51,6 +51,14 @@ import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type 
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
+export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  const draft = await findById(context, user, draftId);
+  if (!draft) {
+    throw FunctionalError(`Draft ${draftId} cannot be found`);
+  }
+  return draft;
+};
+
 const bypassDraftContext = (context: AuthContext): AuthContext => {
   return {
     ...context,
@@ -172,9 +180,11 @@ export const getCurrentUserAccessRight = async (
   return getUserAccessRight(user, draft);
 };
 
-export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
+export const listDraftObjects = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
+  await checkAndReturnDraft(context, user, draftId);
+
   if (args.types) {
     types = args.types.filter((t) => t && isStixCoreObject(t)) as string[];
   }
@@ -186,9 +196,10 @@ export const listDraftObjects = (context: AuthContext, user: AuthUser, args: Que
   return pageEntitiesConnection<BasicStoreEntity>(draftContext, user, types, newArgs);
 };
 
-export const listDraftRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
+export const listDraftRelations = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
+  await checkAndReturnDraft(context, user, draftId);
   if (args.types) {
     types = args.types.filter((t) => t && isStixRelationshipExceptRef(t)) as string[];
   }
@@ -200,9 +211,10 @@ export const listDraftRelations = (context: AuthContext, user: AuthUser, args: Q
   return pageRelationsConnection<BasicStoreRelation>(draftContext, user, types, newArgs);
 };
 
-export const listDraftSightingRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
+export const listDraftSightingRelations = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
+  await checkAndReturnDraft(context, user, draftId);
   if (args.types) {
     types = args.types.filter((t) => t && isStixSightingRelationship(t)) as string[];
   }
@@ -248,10 +260,7 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
 export const draftWorkspaceAddRelation = async (context: AuthContext, user: AuthUser, draftId: string, input: StixRefRelationshipAddInput) => {
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user ?? user;
-  const draft = await findById(executionContext, executionUser, draftId);
-  if (!draft) {
-    throw FunctionalError(`Draft ${draftId} cannot be found`);
-  }
+  const draft = await checkAndReturnDraft(executionContext, executionUser, draftId);
   const finalInput = { ...input, fromId: draftId };
   const relationData = await createRelation(executionContext, executionUser, finalInput);
   await publishUserAction({
@@ -268,10 +277,7 @@ export const draftWorkspaceAddRelation = async (context: AuthContext, user: Auth
 export const draftWorkspaceDeleteRelation = async (context: AuthContext, user: AuthUser, draftId: string, toId: string, relationshipType: string) => {
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user ?? user;
-  const draft = await findById(executionContext, executionUser, draftId);
-  if (!draft) {
-    throw FunctionalError(`Draft ${draftId} cannot be found`);
-  }
+  const draft = await checkAndReturnDraft(executionContext, executionUser, draftId);
   const { to } = await deleteRelationsByFromAndTo(executionContext, executionUser, draft.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { relationship_type: relationshipType, toId };
   const draftUpdated = await findById(executionContext, executionUser, draftId);
@@ -289,10 +295,8 @@ export const draftWorkspaceDeleteRelation = async (context: AuthContext, user: A
 export const draftWorkspaceEditField = async (context: AuthContext, user: AuthUser, draftId: string, input: EditInput[]) => {
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user ?? user;
-  const draft = await findById(executionContext, executionUser, draftId);
-  if (!draft) {
-    throw FunctionalError(`Draft ${draftId} cannot be found`);
-  }
+  await checkAndReturnDraft(executionContext, executionUser, draftId);
+
   const { element } = await updateAttribute<StoreEntity>(executionContext, executionUser, draftId, ENTITY_TYPE_DRAFT_WORKSPACE, input);
   await publishUserAction({
     user,
@@ -357,10 +361,7 @@ const deleteDraftContextFromWorks = async (context: AuthContext, user: AuthUser,
 
 export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser, id: string) => {
   if (getDraftContext(context, user)) throw UnsupportedError('Cannot delete draft while in draft context');
-  const draftWorkspace = await findById(context, user, id);
-  if (!draftWorkspace) {
-    throw FunctionalError(`Draft workspace ${id} cannot be found`, id);
-  }
+  await checkAndReturnDraft(context, user, id);
   await deleteAllDraftFiles(context, user, id);
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
@@ -437,10 +438,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
 };
 
 export const validateDraftWorkspace = async (context: AuthContext, user: AuthUser, draft_id: string) => {
-  const draftWorkspace = await findById(context, user, draft_id);
-  if (!draftWorkspace) {
-    throw FunctionalError(`Draft workspace ${draft_id} cannot be found`, draft_id);
-  }
+  const draftWorkspace = await checkAndReturnDraft(context, user, draft_id);
   if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
     throw FunctionalError('Draft workspace cannot be validated in this state', { draftId: draft_id, status: draftWorkspace.draft_status });
   }
@@ -467,6 +465,7 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
 
 export const draftWorkspaceEditContext = async (context: AuthContext, user: AuthUser, draftId: string, input?: EditContext) => {
   await checkEnterpriseEdition(context);
+  await checkAndReturnDraft(context, user, draftId);
   if (input) {
     await setEditContext(user, draftId, input);
   }
