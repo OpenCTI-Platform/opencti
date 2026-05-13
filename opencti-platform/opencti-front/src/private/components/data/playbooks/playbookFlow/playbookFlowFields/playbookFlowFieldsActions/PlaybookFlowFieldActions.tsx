@@ -15,15 +15,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import IconButton from '@common/button/IconButton';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
-import { Grid2 as Grid, MenuItem, Stack } from '@mui/material';
+import { Grid2 as Grid, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Field, FieldArray, useFormikContext } from 'formik';
 import type { Theme } from '../../../../../../../components/Theme';
+import AutocompleteField from '../../../../../../../components/AutocompleteField';
 import Button from '../../../../../../../components/common/button/Button';
-import SelectField from '../../../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { capitalizeFirstLetter } from '../../../../../../../utils/String';
-import { fieldSpacingContainerStyle } from '../../../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import PlaybookActionValueField from './PlaybookActionValueField';
 import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
@@ -38,6 +38,11 @@ const PlaybookFlowFieldActions = ({
 }: PlaybookFlowFieldActionsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const operationOptions: FieldOption[] = operations.map((op) => ({
+    label: t_i18n(capitalizeFirstLetter(op)),
+    value: op,
+  }));
+
   const getActionFieldOptions = useActionFieldOptions();
   const { values, setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
   const actions = values.actions ?? [];
@@ -49,29 +54,51 @@ const PlaybookFlowFieldActions = ({
   });
 
   /**
-   * When changing either the operation (op) or the attribute, we need to reset
-   * the field for the value of the action.
-   *
-   * @param index Index of the action in the array of actions in the form.
-   * @param attribute The new value of attribute concerned by the action (undefined = it's the 'op' that has changed).
+   * Returns the label for a given option.
+   * Handles both string values and FieldOption objects.
    */
-  const resetActionValue = (index: number, attribute?: string) => {
-    if (actions[index]) {
-      const newValue: PlaybookUpdateAction = {
-        // By default we only set in the new object the operation.
-        op: actions[index].op,
-      };
-      if (attribute) {
-        newValue.attribute = attribute;
-      }
-      setFieldValue(`actions.${index}`, newValue);
+  const getOptionLabel = (options: FieldOption[]) => (option: string | FieldOption): string => {
+    if (typeof option === 'string') {
+      return options.find((o) => o.value === option)?.label ?? option;
     }
+    return option.label ?? '';
+  };
+
+  /**
+   * Reset the action when the operation changes.
+   * Clears attribute, value, and form display value.
+   */
+  const handleOperationChange = (index: number, val: FieldOption | null) => {
+    const newOp = val?.value ?? '';
+    setFieldValue(`actions.${index}`, { op: newOp });
     if (formActionsValues[index] !== undefined) {
-      // We also reset in the array containing form data, it's either null or empty array
-      // depending of the kind of attribute manipulated (multiple or not).
-      const isMultiple = attributesMultiple.includes(attribute ?? '');
+      setFieldValue(`actionsFormValues.${index}`, null);
+    }
+  };
+
+  /**
+   * Reset the action value when the attribute changes.
+   * Keeps the current operation and sets the new attribute.
+   */
+  const handleAttributeChange = (index: number, currentOp: string | undefined, val: FieldOption | null) => {
+    const newAttribute = val?.value;
+    const newAction: PlaybookUpdateAction = { op: currentOp };
+    if (newAttribute) newAction.attribute = newAttribute;
+    setFieldValue(`actions.${index}`, newAction);
+    if (formActionsValues[index] !== undefined) {
+      const isMultiple = attributesMultiple.includes(newAttribute ?? '');
       setFieldValue(`actionsFormValues.${index}`, isMultiple ? [] : null);
     }
+  };
+
+  /**
+   * Remove an action and its associated form display value.
+   */
+  const handleDeleteAction = (index: number, remove: (index: number) => void) => {
+    remove(index);
+    const newFormValues = [...formActionsValues];
+    newFormValues.splice(index, 1);
+    setFieldValue('actionsFormValues', newFormValues);
   };
 
   return (
@@ -95,42 +122,38 @@ const PlaybookFlowFieldActions = ({
                   display: 'flex',
                 }}
                 >
-                  <Grid container spacing={3} sx={{ width: '100%' }}>
+                  <Grid container spacing={3} sx={{ width: '100%', alignItems: 'flex-end' }}>
                     <Grid size={{ xs: 3 }}>
                       <Field
-                        component={SelectField}
-                        variant="standard"
+                        component={AutocompleteField}
                         name={`actions.${i}.op`}
-                        containerstyle={{ width: '100%' }}
-                        label={t_i18n('Action type')}
-                        onChange={() => resetActionValue(i)}
-                      >
-                        {operations.map((op) => (
-                          <MenuItem key={op} value={op}>
-                            {t_i18n(capitalizeFirstLetter(op))}
-                          </MenuItem>
-                        ))}
-                      </Field>
+                        multiple={false}
+                        textfieldprops={{
+                          variant: 'standard',
+                          label: t_i18n('Action type'),
+                        }}
+                        options={operationOptions}
+                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
+                        getOptionLabel={getOptionLabel(operationOptions)}
+                        onInternalChange={(_: string, val: FieldOption | null) => handleOperationChange(i, val)}
+                      />
                     </Grid>
                     <Grid size={{ xs: 3 }}>
                       <Field
-                        component={SelectField}
-                        disabled={isEmptyField(action.op)}
-                        variant="standard"
+                        component={AutocompleteField}
                         name={`actions.${i}.attribute`}
-                        containerstyle={{ width: '100%' }}
-                        label={t_i18n('Field')}
-                        onChange={(_: string, val: string) => resetActionValue(i, val)}
-                      >
-                        {fieldOptions.length === 0
-                          ? <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                          : fieldOptions.map((option) => (
-                              <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                              </MenuItem>
-                            ))
-                        }
-                      </Field>
+                        multiple={false}
+                        disabled={isEmptyField(action.op)}
+                        textfieldprops={{
+                          variant: 'standard',
+                          label: t_i18n('Field'),
+                        }}
+                        options={fieldOptions}
+                        noOptionsText={t_i18n('None')}
+                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
+                        getOptionLabel={getOptionLabel(fieldOptions)}
+                        onInternalChange={(_: string, val: FieldOption | null) => handleAttributeChange(i, action.op, val)}
+                      />
                     </Grid>
                     <Grid size={{ xs: 5 }}>
                       <PlaybookActionValueField
@@ -150,12 +173,7 @@ const PlaybookFlowFieldActions = ({
                       <IconButton
                         aria-label="Delete"
                         disabled={actions.length === 1}
-                        onClick={() => {
-                          arrayHelpers.remove(i);
-                          const newFormvalues = [...formActionsValues];
-                          newFormvalues.splice(i, 1);
-                          setFieldValue('actionsFormValues', newFormvalues);
-                        }}
+                        onClick={() => handleDeleteAction(i, arrayHelpers.remove)}
                       >
                         <DeleteOutlined />
                       </IconButton>
@@ -175,6 +193,8 @@ const PlaybookFlowFieldActions = ({
               disabled={!actionsAreValid}
               onClick={() => {
                 arrayHelpers.push({});
+                const newFormvalues = [...formActionsValues, []];
+                setFieldValue('actionsFormValues', newFormvalues);
               }}
             >
               {t_i18n('Add action')}
