@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildElasticSortingForAttributeCriteria } from '../../../src/utils/sorting';
+import { RUNTIME_ATTRIBUTES } from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { testContext } from '../../utils/testQuery';
 
@@ -52,5 +53,11 @@ describe('Sorting utilities', () => {
   it('buildElasticSortingForAttributeCriteria throws on error if sorting criteria not in schema', async () => {
     sorting = async () => buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'context_data', 'asc');
     await expect(sorting).rejects.toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
+  });
+});
+
+describe('RUNTIME_ATTRIBUTES', () => {
+  it('objectParticipant getter returns the exact same object reference as participant', () => {
+    expect(RUNTIME_ATTRIBUTES.objectParticipant).toBe(RUNTIME_ATTRIBUTES.participant);
   });
 });
