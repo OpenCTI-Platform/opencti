@@ -34,7 +34,7 @@ interface PlaybookFlowFieldActionsProps {
 }
 
 const PlaybookFlowFieldActions = ({
-  operations = ['add, replace, remove'],
+  operations = ['add', 'replace', 'remove'],
 }: PlaybookFlowFieldActionsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
