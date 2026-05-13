@@ -1,9 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import { Alert, AlertTitle, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip } from '@mui/material';
+import { Alert, AlertTitle, Box, DialogActions, DialogContentText, Divider, Menu, MenuItem, Popover, TextField, Typography } from '@mui/material';
 import { ArrowDropDownOutlined, CommentOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
 import Button from '../../../../components/common/button/Button';
+import IconButton from '../../../../components/common/button/IconButton';
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { WorkflowStatusTriggerMutation } from './__generated__/WorkflowStatusTriggerMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -95,7 +96,9 @@ interface WorkflowTransitionsProps {
 }
 
 const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
+  const { t_i18n } = useFormatter();
   const draft = useFragment(workflowStatusFragment, data);
+  const [commentAnchorEl, setCommentAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   if (!draft.workflowInstance) {
     return null;
@@ -108,9 +111,28 @@ const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) =
   return (
     <>
       {lastComment && (
-        <Tooltip title={lastComment} arrow>
-          <CommentOutlined fontSize="small" sx={{ marginRight: 0.5, color: 'text.secondary' }} />
-        </Tooltip>
+        <>
+          <IconButton
+            aria-label={t_i18n('View last comment')}
+            onClick={(e) => setCommentAnchorEl(e.currentTarget)}
+            sx={{ marginRight: 0.5 }}
+          >
+            <CommentOutlined fontSize="small" />
+          </IconButton>
+          <Popover
+            open={Boolean(commentAnchorEl)}
+            anchorEl={commentAnchorEl}
+            onClose={() => setCommentAnchorEl(null)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center', }}
+            transformOrigin={{ vertical: 'bottom', horizontal: 'center', }}
+          >
+            <Box sx={{ p: 2, maxWidth: 400 }}>
+              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                {lastComment}
+              </Typography>
+            </Box>
+          </Popover>
+        </>
       )}
       <ItemStatus status={currentStatus} />
     </>
