@@ -290,6 +290,12 @@
     "lock_key": "hub_registration_manager_lock",
     "interval": 3600000
   },
+  "dead_letter_queue_manager": {
+    "enabled": true,
+    "lock_key": "dead_letter_queue_manager_lock",
+    "interval": 6000000,
+    "batch_size": 100
+  },
   "indicator_decay_manager": {
     "enabled": true,
     "lock_key": "indicator_decay_manager_lock",

@@ -249,6 +249,7 @@
   "Data type": "Тип данных",
   "Date": "Дата",
   "Date of birth": "Дата рождения",
+  "Dead letter queue manager": "Менеджер очереди мертвых писем",
   "Decay applied rule": "Правило применения распада",
   "Decay base score": "Базовая оценка распада",
   "Decay base score date": "Дата оценки базы распада",
