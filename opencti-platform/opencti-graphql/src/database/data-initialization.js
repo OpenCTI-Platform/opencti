@@ -192,63 +192,63 @@ export const CAPABILITIES = [
 // endregion
 
 const createMarkingDefinitions = async (context) => {
-  // Create marking defs for TLP
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'TLP',
-    definition: 'TLP:CLEAR',
-    x_opencti_color: '#ffffff',
-    x_opencti_order: 1,
-  });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'TLP',
-    definition: 'TLP:GREEN',
-    x_opencti_color: '#2e7d32',
-    x_opencti_order: 2,
-  });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'TLP',
-    definition: 'TLP:AMBER',
-    x_opencti_color: '#d84315',
-    x_opencti_order: 3,
-  });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'TLP',
-    definition: 'TLP:AMBER+STRICT',
-    x_opencti_color: '#d84315',
-    x_opencti_order: 4,
-  });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'TLP',
-    definition: 'TLP:RED',
-    x_opencti_color: '#c62828',
-    x_opencti_order: 5,
-  });
-
-  // Creation markings for PAP
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'PAP',
-    definition: 'PAP:CLEAR',
-    x_opencti_color: '#ffffff',
-    x_opencti_order: 1,
-  });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'PAP',
-    definition: 'PAP:GREEN',
-    x_opencti_color: '#2e7d32',
-    x_opencti_order: 2,
-  });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'PAP',
-    definition: 'PAP:AMBER',
-    x_opencti_color: '#d84315',
-    x_opencti_order: 3,
-  });
-  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
-    definition_type: 'PAP',
-    definition: 'PAP:RED',
-    x_opencti_color: '#c62828',
-    x_opencti_order: 4,
-  });
+  // Create marking defs for TLP and PAP in parallel
+  await Promise.all([
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'TLP',
+      definition: 'TLP:CLEAR',
+      x_opencti_color: '#ffffff',
+      x_opencti_order: 1,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'TLP',
+      definition: 'TLP:GREEN',
+      x_opencti_color: '#2e7d32',
+      x_opencti_order: 2,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'TLP',
+      definition: 'TLP:AMBER',
+      x_opencti_color: '#d84315',
+      x_opencti_order: 3,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'TLP',
+      definition: 'TLP:AMBER+STRICT',
+      x_opencti_color: '#d84315',
+      x_opencti_order: 4,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'TLP',
+      definition: 'TLP:RED',
+      x_opencti_color: '#c62828',
+      x_opencti_order: 5,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'PAP',
+      definition: 'PAP:CLEAR',
+      x_opencti_color: '#ffffff',
+      x_opencti_order: 1,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'PAP',
+      definition: 'PAP:GREEN',
+      x_opencti_color: '#2e7d32',
+      x_opencti_order: 2,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'PAP',
+      definition: 'PAP:AMBER',
+      x_opencti_color: '#d84315',
+      x_opencti_order: 3,
+    }),
+    addAllowedMarkingDefinition(context, SYSTEM_USER, {
+      definition_type: 'PAP',
+      definition: 'PAP:RED',
+      x_opencti_color: '#c62828',
+      x_opencti_order: 4,
+    }),
+  ]);
 };
 
 const createVocabularies = async (context) => {
@@ -441,6 +441,7 @@ export const initializeData = async (context, withMarkings = true) => {
   if (isNotEmptyField(platformId)) {
     logApp.warn(`[INIT] Platform identifier forced to [${platformId}]`);
   }
+  // Sequential: theme → settings → entity settings (each depends on previous)
   const darkTheme = await initDefaultTheme(context);
   await addSettings(context, SYSTEM_USER, {
     internal_id: platformId,
@@ -503,17 +504,21 @@ export const initializeData = async (context, withMarkings = true) => {
     },
   });
   await initCreateEntitySettings(context, SYSTEM_USER);
-  await initManagerConfigurations(context, SYSTEM_USER);
-  await initDecayRules(context, SYSTEM_USER);
-  await createDefaultStatusTemplates(context);
-  await createInitialRequestAccessFlow(context);
-  await createBasicRolesAndCapabilities(context);
-  await createVocabularies(context);
-  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
-  await createDefaultRetentionRules(context);
-  if (withMarkings) {
-    await createMarkingDefinitions(context);
-  }
+  // After entity settings are created, run independent initialization steps in parallel
+  await Promise.all([
+    initManagerConfigurations(context, SYSTEM_USER),
+    initDecayRules(context, SYSTEM_USER),
+    createBasicRolesAndCapabilities(context),
+    createVocabularies(context),
+    addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false),
+    createDefaultRetentionRules(context),
+    withMarkings ? createMarkingDefinitions(context) : Promise.resolve(),
+    // Status templates + request access flow must remain sequential with each other
+    (async () => {
+      await createDefaultStatusTemplates(context);
+      await createInitialRequestAccessFlow(context);
+    })(),
+  ]);
   logApp.info('[INIT] Platform default initialized');
   return true;
 };
