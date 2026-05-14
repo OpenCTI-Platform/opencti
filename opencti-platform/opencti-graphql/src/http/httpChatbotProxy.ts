@@ -205,7 +205,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     const conversationId = req.body.conversation_id;
 
     if (hasFiles && conversationId) {
-      const url = `${XTM_ONE_URL}/api/v1/chat/conversations/${conversationId}/messages`;
+      const url = `${XTM_ONE_URL}/api/v1/chat/conversations/${encodeURIComponent(conversationId)}/messages`;
       const response = await axios.post(url, req.body, { headers, timeout: MULTIPART_XTM_TIMEOUT });
 
       // Convert the JSON response into SSE events the frontend expects
