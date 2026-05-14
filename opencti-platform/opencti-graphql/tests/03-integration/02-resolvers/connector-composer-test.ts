@@ -1354,7 +1354,7 @@ describe('Connector Composer and Managed Connectors', () => {
     });
   });
 
-  describe('Permission checks', () => {
+  describe.concurrent('Permission checks', () => {
     it('should deny non-admin users from registering connector composer', async () => {
       const input = {
         id: uuidv4(),
@@ -1529,7 +1529,7 @@ describe('Connector Composer and Managed Connectors', () => {
     });
   });
 
-  describe('Error handling', () => {
+  describe.concurrent('Error handling', () => {
     it('should handle XTM Composer errors gracefully', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
