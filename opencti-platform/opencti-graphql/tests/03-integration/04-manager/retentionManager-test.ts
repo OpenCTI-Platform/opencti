@@ -76,153 +76,165 @@ describe('Retention Manager tests ', () => {
   });
   beforeAll(async () => {
     // create a file not modified since '2023-01-01T00:00:00.000Z'
-    const fileToUpload = {
-      createReadStream: () => Readable.from('This is a file content.'),
-      filename: fileName,
-    };
-    await uploadToStorage(context, ADMIN_USER, globalPath, fileToUpload, {});
-    const fileUpdateQuery = {
-      script: {
-        params: { lastModified },
-        source: 'ctx._source.lastModified = params.lastModified;',
-      },
-      query: {
-        bool: {
-          must: [
-            { term: { 'internal_id.keyword': { value: fileId } } },
-          ],
+    const uploadFile1 = async () => {
+      const fileToUpload = {
+        createReadStream: () => Readable.from('This is a file content.'),
+        filename: fileName,
+      };
+      await uploadToStorage(context, ADMIN_USER, globalPath, fileToUpload, {});
+      const fileUpdateQuery = {
+        script: {
+          params: { lastModified },
+          source: 'ctx._source.lastModified = params.lastModified;',
         },
-      },
+        query: {
+          bool: {
+            must: [
+              { term: { 'internal_id.keyword': { value: fileId } } },
+            ],
+          },
+        },
+      };
+      await elRawUpdateByQuery({
+        index: [READ_INDEX_INTERNAL_OBJECTS],
+        refresh: true,
+        wait_for_completion: true,
+        body: fileUpdateQuery,
+      }).catch((err: Error) => {
+        throw DatabaseError('Error updating elastic', { cause: err });
+      });
+      const file = await loadFile(context, ADMIN_USER, fileId);
+      expect(file?.lastModified).toEqual(lastModified);
+      expect(file?.uploadStatus).toEqual('complete');
+      expect(file?.id).toEqual(fileId);
     };
-    await elRawUpdateByQuery({
-      index: [READ_INDEX_INTERNAL_OBJECTS],
-      refresh: true,
-      wait_for_completion: true,
-      body: fileUpdateQuery
-    }).catch((err: Error) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
-    });
-    const file = await loadFile(context, ADMIN_USER, fileId);
-    expect(file?.lastModified).toEqual(lastModified);
-    expect(file?.uploadStatus).toEqual('complete');
-    expect(file?.id).toEqual(fileId);
+
     // create a file not modified since '2023-01-01T00:00:00.000Z' and with uploadStatus = 'progress'
-    const progressFileToUpload = {
-      createReadStream: () => Readable.from('This is a file content.'),
-      filename: progressFileName,
-    };
-    await uploadToStorage(context, ADMIN_USER, globalPath, progressFileToUpload, {});
-    const progressFileUpdateQuery = {
-      script: {
-        params: { lastModified, progress: 'progress' },
-        source: 'ctx._source.lastModified = params.lastModified; ctx._source.uploadStatus = params.progress;',
-      },
-      query: {
-        bool: {
-          must: [
-            { term: { 'internal_id.keyword': { value: progressFileId } } },
-          ],
+    const uploadFile2 = async () => {
+      const progressFileToUpload = {
+        createReadStream: () => Readable.from('This is a file content.'),
+        filename: progressFileName,
+      };
+      await uploadToStorage(context, ADMIN_USER, globalPath, progressFileToUpload, {});
+      const progressFileUpdateQuery = {
+        script: {
+          params: { lastModified, progress: 'progress' },
+          source: 'ctx._source.lastModified = params.lastModified; ctx._source.uploadStatus = params.progress;',
         },
-      },
+        query: {
+          bool: {
+            must: [
+              { term: { 'internal_id.keyword': { value: progressFileId } } },
+            ],
+          },
+        },
+      };
+      await elRawUpdateByQuery({
+        index: [READ_INDEX_INTERNAL_OBJECTS],
+        refresh: true,
+        wait_for_completion: true,
+        body: progressFileUpdateQuery,
+      }).catch((err: Error) => {
+        throw DatabaseError('Error updating elastic', { cause: err });
+      });
     };
-    await elRawUpdateByQuery({
-      index: [READ_INDEX_INTERNAL_OBJECTS],
-      refresh: true,
-      wait_for_completion: true,
-      body: progressFileUpdateQuery
-    }).catch((err: Error) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
-    });
+
     // create a workbench not modified since '2023-01-01T00:00:00.000Z'
-    const workbench1ToUpload = {
-      createReadStream: () => Readable.from('This is a file content.'),
-      filename: workbench1Name,
-    };
-    await uploadToStorage(context, ADMIN_USER, pendingPath, workbench1ToUpload, {});
-    const workbench1UpdateQuery = {
-      script: {
-        params: { lastModified },
-        source: 'ctx._source.lastModified = params.lastModified;',
-      },
-      query: {
-        bool: {
-          must: [
-            { term: { 'internal_id.keyword': { value: workbench1Id } } },
-          ],
+    const uploadWorkbench1 = async () => {
+      const workbench1ToUpload = {
+        createReadStream: () => Readable.from('This is a file content.'),
+        filename: workbench1Name,
+      };
+      await uploadToStorage(context, ADMIN_USER, pendingPath, workbench1ToUpload, {});
+      const workbench1UpdateQuery = {
+        script: {
+          params: { lastModified },
+          source: 'ctx._source.lastModified = params.lastModified;',
         },
-      },
+        query: {
+          bool: {
+            must: [
+              { term: { 'internal_id.keyword': { value: workbench1Id } } },
+            ],
+          },
+        },
+      };
+      await elRawUpdateByQuery({
+        index: [READ_INDEX_INTERNAL_OBJECTS],
+        refresh: true,
+        wait_for_completion: true,
+        body: workbench1UpdateQuery,
+      }).catch((err: Error) => {
+        throw DatabaseError('Error updating elastic', { cause: err });
+      });
+      const workbench1 = await loadFile(context, ADMIN_USER, workbench1Id);
+      expect(workbench1?.lastModified).toEqual(lastModified);
     };
-    await elRawUpdateByQuery({
-      index: [READ_INDEX_INTERNAL_OBJECTS],
-      refresh: true,
-      wait_for_completion: true,
-      body: workbench1UpdateQuery
-    }).catch((err: Error) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
-    });
-    const workbench1 = await loadFile(context, ADMIN_USER, workbench1Id);
-    expect(workbench1?.lastModified).toEqual(lastModified);
     // create a workbench (not modified since now)
-    const workbench2ToUpload = {
-      createReadStream: () => Readable.from('This is a file content.'),
-      filename: workbench2Name,
-    };
-    await uploadToStorage(context, ADMIN_USER, pendingPath, workbench2ToUpload, {});
-    // create a report not modified since '2023-01-01T00:00:00.000Z'
-    const REPORT1_TO_CREATE = {
-      input: {
-        name: 'report1',
-        description: 'Report description',
-        published: '2020-02-26T00:51:35.000Z',
-        objects: [
-          'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
-          'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
-        ],
-      },
-    };
-    const report1 = await queryAsAdmin({
-      query: CREATE_REPORT_QUERY,
-      variables: REPORT1_TO_CREATE,
-    });
-    report1Id = <string>report1?.data?.reportAdd?.id || '';
-    const report1UpdateQuery = {
-      script: {
-        params: { lastModified },
-        source: 'ctx._source.updated_at = params.lastModified;',
-      },
-      query: {
-        bool: {
-          must: [
-            { term: { 'internal_id.keyword': { value: report1Id } } },
+    const uploadWorkbench2 = async () => {
+      const workbench2ToUpload = {
+        createReadStream: () => Readable.from('This is a file content.'),
+        filename: workbench2Name,
+      };
+      await uploadToStorage(context, ADMIN_USER, pendingPath, workbench2ToUpload, {});
+      // create a report not modified since '2023-01-01T00:00:00.000Z'
+      const REPORT1_TO_CREATE = {
+        input: {
+          name: 'report1',
+          description: 'Report description',
+          published: '2020-02-26T00:51:35.000Z',
+          objects: [
+            'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+            'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
           ],
         },
-      },
+      };
+      const report1 = await queryAsAdmin({
+        query: CREATE_REPORT_QUERY,
+        variables: REPORT1_TO_CREATE,
+      });
+      report1Id = <string>report1?.data?.reportAdd?.id || '';
+      const report1UpdateQuery = {
+        script: {
+          params: { lastModified },
+          source: 'ctx._source.updated_at = params.lastModified;',
+        },
+        query: {
+          bool: {
+            must: [
+              { term: { 'internal_id.keyword': { value: report1Id } } },
+            ],
+          },
+        },
+      };
+      await elRawUpdateByQuery({
+        index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+        refresh: true,
+        wait_for_completion: true,
+        body: report1UpdateQuery,
+      }).catch((err: Error) => {
+        throw DatabaseError('Error updating elastic', { cause: err });
+      });
+      // create a report (not modified since now)
+      const REPORT2_TO_CREATE = {
+        input: {
+          name: 'report2',
+          description: 'Report description',
+          published: '2020-02-26T00:51:35.000Z',
+          objects: [
+            'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+            'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
+          ],
+        },
+      };
+      const report2 = await queryAsAdmin({
+        query: CREATE_REPORT_QUERY,
+        variables: REPORT2_TO_CREATE,
+      });
+      report2Id = <string>report2?.data?.reportAdd?.id || '';
     };
-    await elRawUpdateByQuery({
-      index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
-      refresh: true,
-      wait_for_completion: true,
-      body: report1UpdateQuery
-    }).catch((err: Error) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
-    });
-    // create a report (not modified since now)
-    const REPORT2_TO_CREATE = {
-      input: {
-        name: 'report2',
-        description: 'Report description',
-        published: '2020-02-26T00:51:35.000Z',
-        objects: [
-          'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
-          'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
-        ],
-      },
-    };
-    const report2 = await queryAsAdmin({
-      query: CREATE_REPORT_QUERY,
-      variables: REPORT2_TO_CREATE,
-    });
-    report2Id = <string>report2?.data?.reportAdd?.id || '';
+
+    await Promise.all([uploadFile1, uploadFile2, uploadWorkbench1, uploadWorkbench2]);
   });
   afterAll(async () => {
     // delete the remaining file
@@ -244,7 +256,7 @@ describe('Retention Manager tests ', () => {
         retention_unit: 'days',
         scope: 'knowledge',
         filters: emptyStringFilters,
-      }
+      },
     };
     const fileRule_toCreate = {
       input: {
@@ -253,7 +265,7 @@ describe('Retention Manager tests ', () => {
         retention_unit: 'days',
         scope: 'file',
         filters: emptyStringFilters,
-      }
+      },
     };
     const knowledgeRuleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
