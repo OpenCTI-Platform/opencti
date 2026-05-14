@@ -108,11 +108,6 @@
   "ingestion_manager": {
     "enabled": false
   },
-  "providers": {
-    "local": {
-      "strategy": "LocalStrategy"
-    }
-  },
   "smtp": {
     "enabled": true,
     "hostname": "smtp",

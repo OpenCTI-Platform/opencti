@@ -234,7 +234,7 @@ describe('Retention Manager tests ', () => {
       report2Id = <string>report2?.data?.reportAdd?.id || '';
     };
 
-    await Promise.all([uploadFile1, uploadFile2, uploadWorkbench1, uploadWorkbench2]);
+    await Promise.all([uploadFile1(), uploadFile2(), uploadWorkbench1(), uploadWorkbench2()]);
   });
   afterAll(async () => {
     // delete the remaining file
