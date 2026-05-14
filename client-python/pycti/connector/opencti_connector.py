@@ -157,6 +157,10 @@ class OpenCTIConnector:
                 "only_contextual": self.only_contextual,
                 "playbook_compatible": self.playbook_compatible,
                 "listen_callback_uri": self.listen_callback_uri,
-                **({"xtm_one_intent": self.xtm_one_intent} if self.xtm_one_intent else {}),
+                **(
+                    {"xtm_one_intent": self.xtm_one_intent}
+                    if self.xtm_one_intent
+                    else {}
+                ),
             }
         }

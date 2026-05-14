@@ -1079,6 +1079,7 @@
   "XTM Hub registration User name": "Регистрация концентратора XTM Имя пользователя",
   "XTM Hub should send connectivity email": "Концентратор XTM должен отправить электронное сообщение о возможности подключения",
   "XTM Hub Token": "Токен концентратора XTM",
+  "XTM One intent": "Намерение XTM One",
   "XTM One registration manager": "Менеджер регистрации XTM One",
   "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }

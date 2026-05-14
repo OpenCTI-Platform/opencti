@@ -259,7 +259,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                                   >
                                     {connector?.name}
                                     {connector?.xtm_one_intent && connector.xtm_one_intent in agentsByIntent && agentsByIntent[connector.xtm_one_intent].length === 0
-                                      ? ` (${t_i18n('No XTM One agent available')})`
+                                      ? ` (${t_i18n('No agent available')})`
                                       : ''}
                                   </MenuItem>
                                 ))}
@@ -309,7 +309,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                                         displayEmpty
                                       >
                                         <MenuItem value="" disabled>
-                                          {t_i18n('XTM One agent')}
+                                          {t_i18n('Select agent')}
                                         </MenuItem>
                                         {agents.map((agent) => (
                                           <MenuItem key={agent.id} value={agent.slug}>

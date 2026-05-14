@@ -261,154 +261,154 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
           }, 0);
         }
         return (
-        <Form>
-          <Dialog
-            open={open}
-            onClose={() => handleReset()}
-            onClick={(event) => event.stopPropagation()}
-            title={t_i18n('Launch an import')}
-          >
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="connector_id"
-              label={t_i18n('Connector')}
-              fullWidth={true}
-              containerstyle={{ width: '100%' }}
-              onChange={handleSelectConnector}
+          <Form>
+            <Dialog
+              open={open}
+              onClose={() => handleReset()}
+              onClick={(event) => event.stopPropagation()}
+              title={t_i18n('Launch an import')}
             >
-              {connectors?.map((connector) => {
-                const disabled = !file
-                  || (connector?.connector_scope && connector?.connector_scope?.length > 0
-                    && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
-                const noAgents = !!connector?.xtm_one_intent && (intentAgentCounts[connector.xtm_one_intent] ?? -1) === 0;
-                return (
-                  <MenuItem
-                    key={connector?.id}
-                    value={connector?.id}
-                    disabled={disabled || !connector?.active || noAgents}
-                  >
-                    {connector?.name}
-                    {noAgents ? ` (${t_i18n('No XTM One agent available')})` : ''}
-                  </MenuItem>
-                );
-              })}
-            </Field>
-            {selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
               <Field
                 component={SelectField}
                 variant="standard"
-                name="configuration"
-                label={t_i18n('XTM One agent')}
+                name="connector_id"
+                label={t_i18n('Connector')}
                 fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
+                containerstyle={{ width: '100%' }}
+                onChange={handleSelectConnector}
               >
-                {availableAgents.map((agent) => (
-                  <MenuItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
-                    {agent.name}
-                  </MenuItem>
-                ))}
+                {connectors?.map((connector) => {
+                  const disabled = !file
+                    || (connector?.connector_scope && connector?.connector_scope?.length > 0
+                      && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
+                  const noAgents = !!connector?.xtm_one_intent && (intentAgentCounts[connector.xtm_one_intent] ?? -1) === 0;
+                  return (
+                    <MenuItem
+                      key={connector?.id}
+                      value={connector?.id}
+                      disabled={disabled || !connector?.active || noAgents}
+                    >
+                      {connector?.name}
+                      {noAgents ? ` (${t_i18n('No agent available')})` : ''}
+                    </MenuItem>
+                  );
+                })}
               </Field>
-            )}
-            {!isDraftContext && (
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="validation_mode"
-                label={t_i18n('Validation mode')}
-                fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-                setFieldValue={setFieldValue}
-              >
-                <MenuItem value="workbench">Workbench</MenuItem>
-                <MenuItem value="draft">Draft</MenuItem>
-              </Field>
-            )}
-            {values.validation_mode === 'draft' && (
-              <>
-                {isFeatureEnable('DRAFT_WORKFLOW') && (
-                  <>
-                    <Field
-                      component={MarkdownField}
-                      name="description"
-                      label={t_i18n('Description')}
-                      required={mandatoryAttributes.includes('description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      style={fieldSpacingContainerStyle}
-                      askAi={true}
-                    />
-                    <ObjectAssigneeField
-                      name="objectAssignee"
-                      style={fieldSpacingContainerStyle}
-                      required={mandatoryAttributes.includes('objectAssignee')}
-                    />
-                    <ObjectParticipantField
-                      name="objectParticipant"
-                      style={fieldSpacingContainerStyle}
-                      required={mandatoryAttributes.includes('objectParticipant')}
-                    />
-                    <CreatedByField
-                      name="createdBy"
-                      required={mandatoryAttributes.includes('createdBy')}
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                    />
-                  </>
-                )}
+              {selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
                 <Field
-                  name="authorized_members"
-                  component={AuthorizedMembersField}
-                  owner={owner}
-                  showAllMembersLine={showAllMembersLine}
-                  canDeactivate
-                  addMeUserWithAdminRights
-                  enableAccesses
-                  applyAccesses
+                  component={SelectField}
+                  variant="standard"
+                  name="configuration"
+                  label={t_i18n('Select agent')}
+                  fullWidth={true}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                >
+                  {availableAgents.map((agent) => (
+                    <MenuItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
+                      {agent.name}
+                    </MenuItem>
+                  ))}
+                </Field>
+              )}
+              {!isDraftContext && (
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="validation_mode"
+                  label={t_i18n('Validation mode')}
+                  fullWidth={true}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                >
+                  <MenuItem value="workbench">Workbench</MenuItem>
+                  <MenuItem value="draft">Draft</MenuItem>
+                </Field>
+              )}
+              {values.validation_mode === 'draft' && (
+                <>
+                  {isFeatureEnable('DRAFT_WORKFLOW') && (
+                    <>
+                      <Field
+                        component={MarkdownField}
+                        name="description"
+                        label={t_i18n('Description')}
+                        required={mandatoryAttributes.includes('description')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={fieldSpacingContainerStyle}
+                        askAi={true}
+                      />
+                      <ObjectAssigneeField
+                        name="objectAssignee"
+                        style={fieldSpacingContainerStyle}
+                        required={mandatoryAttributes.includes('objectAssignee')}
+                      />
+                      <ObjectParticipantField
+                        name="objectParticipant"
+                        style={fieldSpacingContainerStyle}
+                        required={mandatoryAttributes.includes('objectParticipant')}
+                      />
+                      <CreatedByField
+                        name="createdBy"
+                        required={mandatoryAttributes.includes('createdBy')}
+                        style={fieldSpacingContainerStyle}
+                        setFieldValue={setFieldValue}
+                      />
+                    </>
+                  )}
+                  <Field
+                    name="authorized_members"
+                    component={AuthorizedMembersField}
+                    owner={owner}
+                    showAllMembersLine={showAllMembersLine}
+                    canDeactivate
+                    addMeUserWithAdminRights
+                    enableAccesses
+                    applyAccesses
+                    style={fieldSpacingContainerStyle}
+                  />
+                </>
+              )}
+              {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="configuration"
+                  label={t_i18n('Configuration')}
+                  fullWidth={true}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  onChange={handleSetCsvMapper}
+                >
+                  {selectedConnector?.configurations?.map((config) => (
+                    <MenuItem key={config.id} value={config.configuration}>
+                      {config.name}
+                    </MenuItem>
+                  ))}
+                </Field>
+              ) : (
+                <ManageImportConnectorMessage name={selectedConnector?.name} />
+              )}
+              {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
+                <ObjectMarkingField
+                  name="objectMarking"
                   style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
                 />
-              </>
-            )}
-            {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="configuration"
-                label={t_i18n('Configuration')}
-                fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-                onChange={handleSetCsvMapper}
-              >
-                {selectedConnector?.configurations?.map((config) => (
-                  <MenuItem key={config.id} value={config.configuration}>
-                    {config.name}
-                  </MenuItem>
-                ))}
-              </Field>
-            ) : (
-              <ManageImportConnectorMessage name={selectedConnector?.name} />
-            )}
-            {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
-              <ObjectMarkingField
-                name="objectMarking"
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-              />
-            )}
-            <DialogActions>
-              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting || !isValid || invalidCsvMapper || !selectedConnector}
-              >
-                {t_i18n('Create')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </Form>
+              )}
+              <DialogActions>
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting || !isValid || invalidCsvMapper || !selectedConnector}
+                >
+                  {t_i18n('Create')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Form>
         );
       }}
     </Formik>
