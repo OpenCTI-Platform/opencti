@@ -72,4 +72,5 @@ export const relationsCounter = {
   'stix-sighting-relationship': 2,
   targets: 2,
   uses: 3,
+  granted: 4,
 };

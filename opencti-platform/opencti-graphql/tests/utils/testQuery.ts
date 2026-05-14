@@ -3,7 +3,7 @@ import { CookieJar } from 'tough-cookie';
 import { print, type ASTNode } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
 
-import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
+import conf, { ACCOUNT_STATUS_ACTIVE, logApp, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
@@ -11,10 +11,13 @@ import '../../src/modules/index';
 import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
 import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN } from '../../src/schema/identifier';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
-import type { ConfidenceLevel } from '../../src/generated/graphql';
-import { findById } from '../../src/domain/user';
+import type { ConfidenceLevel, UserAddInput } from '../../src/generated/graphql';
+import { addUser, findById } from '../../src/domain/user';
+import { addGroup, addRole } from '../../src/domain/grant';
+import { groupAddRelation, groupEditField } from '../../src/domain/group';
+import { addOrganization } from '../../src/modules/organization/organization-domain';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -491,202 +494,86 @@ export const USER_PLATFORM_ADMIN: UserTestData = {
 };
 TESTING_USERS.push(USER_PLATFORM_ADMIN);
 
-// region group management
-const GROUP_CREATION_MUTATION = `
-  mutation groupCreation($input: GroupAddInput!) {
-    groupAdd(input: $input) {
-      id
-    }
-  }
-`;
-const GROUP_EDITION_MARKINGS_MUTATION = `
-  mutation groupEdition($groupId: ID!, $toId: ID) {
-    groupEdit(id: $groupId) {
-      relationAdd(input: {
-        toId: $toId
-        relationship_type: "accesses-to"
-      }) {
-        id
-      }
-    }
-  }
-`;
-const GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION = `
-  mutation groupEdition($groupId: ID!, $input: [EditInput]!) {
-    groupEdit(id: $groupId) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
-const GROUP_EDITION_ROLES_MUTATION = `
-  mutation groupEdition($groupId: ID!, $toId: ID) {
-    groupEdit(id: $groupId) {
-      relationAdd(input: {
-        toId: $toId
-        relationship_type: "has-role"
-      }) {
-        id
-      }
-    }
-  }
-`;
-const GROUP_ASSIGN_MUTATION = `
-  mutation groupAssign($userId: ID!, $toId: ID) {
-    userEdit(id: $userId) {
-      relationAdd(input: {
-        toId: $toId
-        relationship_type: "member-of"
-      }) {
-        id
-      }
-    }
-  }
-`;
 const createGroup = async (input: GroupTestData): Promise<string> => {
-  const { data } = await queryInitPlatformAsAdmin(GROUP_CREATION_MUTATION, {
-    input: { name: input.name, group_confidence_level: input.group_confidence_level },
-  });
+  logApp.info(`[TEST users] creating group ${input.name}`);
+  const newGroup = await addGroup(testContext, ADMIN_USER, { name: input.name, group_confidence_level: input.group_confidence_level });
+  logApp.info(`[TEST users] creating group, newGroup: ${newGroup.id}`);
   for (let index = 0; index < input.markings.length; index += 1) {
     const marking = input.markings[index];
-    await queryInitPlatformAsAdmin(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });
+    logApp.info(`[TEST users] groupAddRelation marking: ${newGroup.id}`, { toId: marking, relationship_type: 'accesses-to' });
+    await groupAddRelation(testContext, ADMIN_USER, newGroup.id, { toId: marking, relationship_type: 'accesses-to' });
   }
   for (let index = 0; index < input.max_shareable_markings.length; index += 1) {
     const maxMarking = input.max_shareable_markings[index];
-    await queryInitPlatformAsAdmin(GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION, {
-      groupId: data.groupAdd.id,
-      input: {
-        key: 'max_shareable_markings',
-        value: [{ type: 'TLP', value: maxMarking }],
-      },
-    });
+    logApp.info(`[TEST users] group add max shareable: ${newGroup.id}`, { type: 'TLP', value: maxMarking });
+    await groupEditField(testContext, ADMIN_USER, newGroup.id, [{
+      key: 'max_shareable_markings',
+      value: [{ type: 'TLP', value: maxMarking }],
+    }]);
   }
   for (let index = 0; index < input.roles.length; index += 1) {
     const role = input.roles[index];
-    await queryInitPlatformAsAdmin(GROUP_EDITION_ROLES_MUTATION, { groupId: data.groupAdd.id, toId: role.id });
+    logApp.info(`[TEST users] groupAddRelation role: ${newGroup.id}`, { groupId: newGroup.id, toId: role.id, relationship_type: 'has-role' });
+    await groupAddRelation(testContext, ADMIN_USER, newGroup.id, { toId: role.id, relationship_type: 'has-role' });
   }
-  return data.groupAdd.id;
-};
-const assignGroupToUser = async (group: GroupTestData, user: UserTestData) => {
-  await queryInitPlatformAsAdmin(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
-};
-// endregion
-
-// region organization management
-const ORGANIZATION_CREATION_MUTATION = `
-  mutation organizationCreation($name: String!) {
-     organizationAdd(input: {
-      name: $name
-    }) {
-        id
-        name
-    }
-  }
-`;
-
-const ORGANIZATION_ASSIGN_MUTATION = `
-  mutation organizationAssign($userId: ID!, $toId: ID) {
-    userEdit(id: $userId) {
-      relationAdd(input: {
-        toId: $toId
-        relationship_type: "participate-to"
-      }) {
-        id
-      }
-    }
-  }
-`;
-const createOrganization = async (input: { name: string }): Promise<string> => {
-  const organization = await queryInitPlatformAsAdmin(ORGANIZATION_CREATION_MUTATION, input);
-  return organization.data.organizationAdd.id;
+  return newGroup.id;
 };
 
-const assignOrganizationToUser = async (organization: OrganizationTestData, user: UserTestData) => {
-  await queryInitPlatformAsAdmin(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
-};
-// endregion
-
-// region role management
-const ROLE_CREATION_MUTATION = `
-  mutation roleCreation($name: String!, $description: String) {
-    roleAdd(input: {
-      name: $name
-      description: $description
-    }) {
-      id
-    }
-  }
-`;
-const ROLE_EDITION_MUTATION = `
-  mutation roleEdition($roleId: ID!, $toId: ID) {
-    roleEdit(id: $roleId) {
-      relationAdd(input: {
-        fromId: $roleId
-        toId: $toId
-        relationship_type: "has-capability"
-      }) {
-        id
-      }
-    }
-  }
-`;
 const createRole = async (input: { name: string; description: string; capabilities: string[] }): Promise<string> => {
-  const { data } = await queryInitPlatformAsAdmin(ROLE_CREATION_MUTATION, { name: input.name, description: input.description });
-  for (let index = 0; index < input.capabilities.length; index += 1) {
-    const capability = input.capabilities[index];
-    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
-    await queryInitPlatformAsAdmin(ROLE_EDITION_MUTATION, { roleId: data.roleAdd.id, toId: generateToId });
-  }
-  return data.roleAdd.id;
+  logApp.info(`[TEST users] creating role ${input.name}`);
+  const newRole = await addRole(testContext, ADMIN_USER, input);
+  return newRole.id;
 };
-// endregion
 
-// region user management
-const USER_CREATION_MUTATION = `
-  mutation userCreation($email: String!, $name: String!, $password: String!) {
-    userAdd(input: {
-      user_email: $email
-      name: $name
-      password: $password
-    }) {
-      id
-    }
-  }
-`;
+const createOrganization = async (input: { name: string }): Promise<string> => {
+  const organization = await addOrganization(testContext, ADMIN_USER, input);
+  return organization.id;
+};
+
 const createUser = async (user: UserTestData) => {
-  // Assign user to groups
+  logApp.info(`[TEST users] creating user ${user.email}`);
+  const allUserRoleId = [];
+  const allUserGroupId = [];
+  const allUserOrganizationId = [];
   for (let indexGroup = 0; indexGroup < user.groups.length; indexGroup += 1) {
     const group = user.groups[indexGroup];
-    // roles
+
     if (group.roles) {
       for (let index = 0; index < group.roles.length; index += 1) {
         const role = group.roles[index];
-        await createRole(role);
+        const roleCreatedId = await createRole(role);
+        allUserRoleId.push(roleCreatedId);
       }
-      await queryInitPlatformAsAdmin(USER_CREATION_MUTATION, {
-        email: user.email,
-        name: user.email,
-        password: user.password,
-      });
+      const groupId = await createGroup(group);
+      allUserGroupId.push(groupId);
     }
-    await createGroup(group);
-    // Assign user to group
-    await assignGroupToUser(group, user);
   }
   // Assign user to organizations
   if (user.organizations && user.organizations.length > 0) {
     for (let indexOrganization = 0; indexOrganization < user.organizations.length; indexOrganization += 1) {
       const organization = user.organizations[indexOrganization];
-      await createOrganization(organization);
-      await assignOrganizationToUser(organization, user);
+      const orgId = await createOrganization(organization);
+      allUserOrganizationId.push(orgId);
     }
   }
+  const userInput: UserAddInput = {
+    name: user.email,
+    user_email: user.email,
+    password: user.password,
+    objectOrganization: allUserOrganizationId,
+    groups: allUserGroupId,
+  };
+  await addUser(testContext, ADMIN_USER, userInput);
 };
+
 // Create all testing users
 export const createTestUsers = async () => {
+  logApp.info('[vitest-global-setup] Creating test users');
+  const startTime = new Date().getTime();
   await Promise.all(TESTING_USERS.map((user) => createUser(user)));
+  logApp.info(`[vitest-global-setup] test user created in ${new Date().getTime() - startTime} ms`);
 };
+
 // Search for test users
 const USERS_SEARCH_QUERY = `
   query usersTestSearchQuery($search: String) {
