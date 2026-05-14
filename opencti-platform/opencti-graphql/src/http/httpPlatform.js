@@ -32,7 +32,16 @@ import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
-import { getChatbotConfig, getChatbotAgents, postChatbotSession, postChatbotMessage, postAgentMessage, postAgentMessageStream, getLegacyChatbotProxy } from './httpChatbotProxy';
+import {
+  getChatbotConfig,
+  getChatbotAgents,
+  postChatbotSession,
+  postChatbotMessage,
+  postChatbotUpload,
+  postAgentMessage,
+  postAgentMessageStream,
+  getLegacyChatbotProxy,
+} from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
@@ -518,6 +527,7 @@ const createApp = async (app, schema) => {
   app.get(`${basePath}/chatbot/agents`, getChatbotAgents);
   app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
+  app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);
   app.post(`${basePath}/chatbot/agent/stream`, postAgentMessageStream);
   // Legacy Flowise proxy (used when xtm_one_token is NOT set)

@@ -20,6 +20,7 @@ const ChatbotContext = createContext<ChatbotContextType | null>(null);
 
 const SIDEBAR_WIDTH_STORAGE_KEY = 'arianeChatSidebarWidth';
 const CHAT_MODE_STORAGE_KEY = 'arianeChatMode';
+const CHAT_OPEN_STORAGE_KEY = 'arianeChatOpen';
 const DEFAULT_SIDEBAR_WIDTH = 400;
 
 interface ChatbotProviderProps {
@@ -27,7 +28,7 @@ interface ChatbotProviderProps {
 }
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(() => localStorage.getItem(CHAT_OPEN_STORAGE_KEY) === 'true');
   const [xtmOneConfigured, setXtmOneConfigured] = useState<boolean | null>(null);
   const [mode, setModeState] = useState<ChatMode>(() => {
     const stored = localStorage.getItem(CHAT_MODE_STORAGE_KEY);
@@ -54,9 +55,21 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
       });
   }, []);
 
-  const openChat = useCallback(() => setIsOpen(true), []);
-  const closeChat = useCallback(() => setIsOpen(false), []);
-  const toggleChat = useCallback(() => setIsOpen((prev) => !prev), []);
+  const openChat = useCallback(() => {
+    setIsOpen(true);
+    localStorage.setItem(CHAT_OPEN_STORAGE_KEY, 'true');
+  }, []);
+  const closeChat = useCallback(() => {
+    setIsOpen(false);
+    localStorage.setItem(CHAT_OPEN_STORAGE_KEY, 'false');
+  }, []);
+  const toggleChat = useCallback(() => {
+    setIsOpen((prev) => {
+      const next = !prev;
+      localStorage.setItem(CHAT_OPEN_STORAGE_KEY, String(next));
+      return next;
+    });
+  }, []);
 
   const setMode = useCallback((newMode: ChatMode) => {
     setModeState(newMode);
