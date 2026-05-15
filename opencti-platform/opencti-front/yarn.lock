@@ -4587,7 +4587,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-blockquote@npm:3.22.5, @tiptap/extension-blockquote@npm:^3.22.5":
+"@tiptap/extension-blockquote@npm:^3.22.5":
   version: 3.22.5
   resolution: "@tiptap/extension-blockquote@npm:3.22.5"
   peerDependencies:
@@ -4617,7 +4617,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-bullet-list@npm:3.22.5, @tiptap/extension-bullet-list@npm:^3.22.5":
+"@tiptap/extension-bullet-list@npm:^3.22.5":
   version: 3.22.5
   resolution: "@tiptap/extension-bullet-list@npm:3.22.5"
   peerDependencies:
@@ -4626,7 +4626,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-code-block@npm:3.22.5, @tiptap/extension-code-block@npm:^3.22.5":
+"@tiptap/extension-code-block@npm:^3.22.5":
   version: 3.22.5
   resolution: "@tiptap/extension-code-block@npm:3.22.5"
   peerDependencies:
@@ -4701,7 +4701,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-heading@npm:3.22.5, @tiptap/extension-heading@npm:^3.22.5":
+"@tiptap/extension-heading@npm:^3.22.5":
   version: 3.22.5
   resolution: "@tiptap/extension-heading@npm:3.22.5"
   peerDependencies:
@@ -4719,7 +4719,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-horizontal-rule@npm:3.22.5, @tiptap/extension-horizontal-rule@npm:^3.22.5":
+"@tiptap/extension-horizontal-rule@npm:^3.22.5":
   version: 3.22.5
   resolution: "@tiptap/extension-horizontal-rule@npm:3.22.5"
   peerDependencies:
@@ -4759,7 +4759,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-list-item@npm:3.22.5, @tiptap/extension-list-item@npm:^3.22.5":
+"@tiptap/extension-list-item@npm:^3.22.5":
   version: 3.22.5
   resolution: "@tiptap/extension-list-item@npm:3.22.5"
   peerDependencies:
@@ -4798,7 +4798,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-ordered-list@npm:3.22.5, @tiptap/extension-ordered-list@npm:^3.22.5":
+"@tiptap/extension-ordered-list@npm:^3.22.5":
   version: 3.22.5
   resolution: "@tiptap/extension-ordered-list@npm:3.22.5"
   peerDependencies:
@@ -4851,33 +4851,6 @@ __metadata:
     "@tiptap/core": 3.22.5
     "@tiptap/pm": 3.22.5
   checksum: 10c0/936a298b14d26a2140841c3422cc4be508b893c1df522e54dba4dde57bd5b7f8dcc5524b8d169ee2edee444854b6fa0ea185b9306295418dacecd5e864b47ad3
-  languageName: node
-  linkType: hard
-
-"@tiptap/extension-table-cell@npm:3.22.5":
-  version: 3.22.5
-  resolution: "@tiptap/extension-table-cell@npm:3.22.5"
-  peerDependencies:
-    "@tiptap/extension-table": 3.22.5
-  checksum: 10c0/d57fd23d7fe430c0eac4ea2496e4543ebf596d2aa60e9a2a795aca53d518ac501b427a9189139fe80017d2f6af276b959f4111289717bae7ed4299f2cbe44e12
-  languageName: node
-  linkType: hard
-
-"@tiptap/extension-table-header@npm:3.22.5":
-  version: 3.22.5
-  resolution: "@tiptap/extension-table-header@npm:3.22.5"
-  peerDependencies:
-    "@tiptap/extension-table": 3.22.5
-  checksum: 10c0/676ea55af2e153e5c3ddff2dfbac4e9ed0e1e4f129f4f378e43dc255a13bf5bffbdeabb46df8282c813dff74e63ac3609f8a5c37670e3f9742b66c32960167f5
-  languageName: node
-  linkType: hard
-
-"@tiptap/extension-table-row@npm:3.22.5":
-  version: 3.22.5
-  resolution: "@tiptap/extension-table-row@npm:3.22.5"
-  peerDependencies:
-    "@tiptap/extension-table": 3.22.5
-  checksum: 10c0/bbb52db89caa2e2eaa4f98780b364108d2daadfe532272b5389ff68f0e3b1412b4260b285dab92d97bb1625b663fcb973cf4ecb956db5f6285957e1fca2a95fe
   languageName: node
   linkType: hard
 
@@ -13241,27 +13214,17 @@ __metadata:
     "@testing-library/react": "npm:16.3.2"
     "@testing-library/user-event": "npm:14.6.1"
     "@tiptap/core": "npm:3.22.5"
-    "@tiptap/extension-blockquote": "npm:3.22.5"
-    "@tiptap/extension-bullet-list": "npm:3.22.5"
-    "@tiptap/extension-code-block": "npm:3.22.5"
     "@tiptap/extension-color": "npm:3.22.5"
-    "@tiptap/extension-heading": "npm:3.22.5"
     "@tiptap/extension-highlight": "npm:3.22.5"
-    "@tiptap/extension-horizontal-rule": "npm:3.22.5"
     "@tiptap/extension-image": "npm:3.22.5"
     "@tiptap/extension-link": "npm:3.22.5"
     "@tiptap/extension-list": "npm:3.22.5"
-    "@tiptap/extension-list-item": "npm:3.22.5"
     "@tiptap/extension-mention": "npm:3.22.5"
-    "@tiptap/extension-ordered-list": "npm:3.22.5"
     "@tiptap/extension-paragraph": "npm:3.22.5"
     "@tiptap/extension-placeholder": "npm:3.22.5"
     "@tiptap/extension-subscript": "npm:3.22.5"
     "@tiptap/extension-superscript": "npm:3.22.5"
     "@tiptap/extension-table": "npm:3.22.5"
-    "@tiptap/extension-table-cell": "npm:3.22.5"
-    "@tiptap/extension-table-header": "npm:3.22.5"
-    "@tiptap/extension-table-row": "npm:3.22.5"
     "@tiptap/extension-task-item": "npm:3.22.5"
     "@tiptap/extension-task-list": "npm:3.22.5"
     "@tiptap/extension-text-align": "npm:3.22.5"
