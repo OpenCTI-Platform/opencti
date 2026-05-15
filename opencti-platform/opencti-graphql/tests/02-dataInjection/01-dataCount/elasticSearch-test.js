@@ -32,7 +32,7 @@ import {
   WRITE_PLATFORM_INDICES,
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
-import { ADMIN_USER, buildStandardUser, testContext, TESTING_GROUPS, TESTING_ORGS } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, NEW_USER_TEST_VERSION, testContext, TESTING_GROUPS, TESTING_ORGS } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
@@ -886,7 +886,7 @@ describe('Elasticsearch pagination', () => {
     expect(stixMetaRelationshipsByType.object.length, 'object').toEqual(relationsCounter.object);
     // expect(stixMetaRelationshipsByType.granted.length, 'granted').toEqual(relationsCounter.granted);
 
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length, 'stix_meta_relationships count').toEqual(133);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length, 'stix_meta_relationships count').toEqual(NEW_USER_TEST_VERSION ? 133 : 129);
 
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length, 'stix-sighting-relationship').toEqual(2);
 

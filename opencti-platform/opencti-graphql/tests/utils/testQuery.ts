@@ -3,7 +3,7 @@ import { CookieJar } from 'tough-cookie';
 import { print, type ASTNode } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
 
-import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
+import conf, { ACCOUNT_STATUS_ACTIVE, logApp, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
@@ -13,9 +13,14 @@ import type { StoreMarkingDefinition } from '../../src/types/store';
 import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
-import type { ConfidenceLevel } from '../../src/generated/graphql';
-import { findById } from '../../src/domain/user';
+import type { ConfidenceLevel, UserAddInput } from '../../src/generated/graphql';
+import { addUser, findById } from '../../src/domain/user';
+import { addOrganization } from '../../src/modules/organization/organization-domain';
+import { addGroup, addRole } from '../../src/domain/grant';
+import { groupAddRelation, groupEditField } from '../../src/domain/group';
 // endregion
+
+export const NEW_USER_TEST_VERSION = false;
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
 export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_uri');
@@ -544,6 +549,81 @@ const GROUP_ASSIGN_MUTATION = `
     }
   }
 `;
+
+// NEW VERSION
+const createGroupDomain = async (input: GroupTestData): Promise<string> => {
+  logApp.info(`[TEST users] creating group ${input.name}`);
+  const newGroup = await addGroup(testContext, ADMIN_USER, { name: input.name, group_confidence_level: input.group_confidence_level });
+  logApp.info(`[TEST users] creating group, newGroup: ${newGroup.id}`);
+  for (let index = 0; index < input.markings.length; index += 1) {
+    const marking = input.markings[index];
+    logApp.info(`[TEST users] groupAddRelation marking: ${newGroup.id}`, { toId: marking, relationship_type: 'accesses-to' });
+    await groupAddRelation(testContext, ADMIN_USER, newGroup.id, { toId: marking, relationship_type: 'accesses-to' });
+  }
+  for (let index = 0; index < input.max_shareable_markings.length; index += 1) {
+    const maxMarking = input.max_shareable_markings[index];
+    logApp.info(`[TEST users] group add max shareable: ${newGroup.id}`, { type: 'TLP', value: maxMarking });
+    await groupEditField(testContext, ADMIN_USER, newGroup.id, [{
+      key: 'max_shareable_markings',
+      value: [{ type: 'TLP', value: maxMarking }],
+    }]);
+  }
+  for (let index = 0; index < input.roles.length; index += 1) {
+    const role = input.roles[index];
+    logApp.info(`[TEST users] groupAddRelation role: ${newGroup.id}`, { groupId: newGroup.id, toId: role.id, relationship_type: 'has-role' });
+    await groupAddRelation(testContext, ADMIN_USER, newGroup.id, { toId: role.id, relationship_type: 'has-role' });
+  }
+  return newGroup.id;
+};
+
+const createRoleDomain = async (input: { name: string; description: string; capabilities: string[] }): Promise<string> => {
+  logApp.info(`[TEST users] creating role ${input.name}`);
+  const newRole = await addRole(testContext, ADMIN_USER, input);
+  return newRole.id;
+};
+
+const createOrganizationDomain = async (input: { name: string }): Promise<string> => {
+  const organization = await addOrganization(testContext, ADMIN_USER, input);
+  return organization.id;
+};
+
+const createUserDomain = async (user: UserTestData) => {
+  logApp.info(`[TEST users] creating user ${user.email}`);
+  const allUserRoleId = [];
+  const allUserGroupId = [];
+  const allUserOrganizationId = [];
+  for (let indexGroup = 0; indexGroup < user.groups.length; indexGroup += 1) {
+    const group = user.groups[indexGroup];
+
+    if (group.roles) {
+      for (let index = 0; index < group.roles.length; index += 1) {
+        const role = group.roles[index];
+        const roleCreatedId = await createRoleDomain(role);
+        allUserRoleId.push(roleCreatedId);
+      }
+      const groupId = await createGroupDomain(group);
+      allUserGroupId.push(groupId);
+    }
+  }
+  // Assign user to organizations
+  if (user.organizations && user.organizations.length > 0) {
+    for (let indexOrganization = 0; indexOrganization < user.organizations.length; indexOrganization += 1) {
+      const organization = user.organizations[indexOrganization];
+      const orgId = await createOrganizationDomain(organization);
+      allUserOrganizationId.push(orgId);
+    }
+  }
+  const userInput: UserAddInput = {
+    name: user.email,
+    user_email: user.email,
+    password: user.password,
+    objectOrganization: allUserOrganizationId,
+    groups: allUserGroupId,
+  };
+  await addUser(testContext, ADMIN_USER, userInput);
+};
+// NEW VERSION END
+
 const createGroup = async (input: GroupTestData): Promise<string> => {
   const { data } = await queryInitPlatformAsAdmin(GROUP_CREATION_MUTATION, {
     input: { name: input.name, group_confidence_level: input.group_confidence_level },
@@ -685,7 +765,11 @@ const createUser = async (user: UserTestData) => {
 };
 // Create all testing users
 export const createTestUsers = async () => {
-  await Promise.all(TESTING_USERS.map((user) => createUser(user)));
+  if (NEW_USER_TEST_VERSION) {
+    await Promise.all(TESTING_USERS.map((user) => createUserDomain(user)));
+  } else {
+    await Promise.all(TESTING_USERS.map((user) => createUser(user)));
+  }
 };
 // Search for test users
 const USERS_SEARCH_QUERY = `

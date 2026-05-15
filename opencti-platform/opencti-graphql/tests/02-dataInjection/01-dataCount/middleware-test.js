@@ -15,7 +15,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
-import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, NEW_USER_TEST_VERSION, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -265,7 +265,7 @@ describe('Relations listing', () => {
     expect(entityTypeMap.get('object-marking')).toBe(relationsCounter['object-marking']);
     expect(entityTypeMap.get('operating-system')).toBe(relationsCounter['operating-system']);
     // expect(entityTypeMap.get('granted')).toBe(relationsCounter['granted']);
-    expect(stixRefRelationships.edges.length).toEqual(133);
+    expect(stixRefRelationships.edges.length).toEqual(NEW_USER_TEST_VERSION ? 133 : 129);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', {
