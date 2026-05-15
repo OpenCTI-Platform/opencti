@@ -91,7 +91,6 @@ const RulesHeader = ({ data, ruleConfiguredCounts = {} }: RulesHeaderProps) => {
     stixDomainObjectsNumber,
     stixRelationshipsNumber,
     ruleManagerInfo,
-    rules,
   } = useFragment(fragmentData, data);
 
   const totalRelations = stixRelationshipsNumber?.total ?? 0;
@@ -101,11 +100,8 @@ const RulesHeader = ({ data, ruleConfiguredCounts = {} }: RulesHeaderProps) => {
   const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
   const configuredCountsEntries = Object.values(ruleConfiguredCounts);
   const activeRulesCount = configuredCountsEntries.length > 0
-    ? configuredCountsEntries.reduce((acc, counts) => acc + counts.active, 0)
-    : (rules ?? []).reduce((acc, rule) => {
-      if (!rule) return acc;
-      return acc + (rule.activated ? 1 : 0);
-    }, 0);
+    ? configuredCountsEntries.reduce((acc: number, counts) => acc + counts.active, 0)
+    : 0;
   const lastEventTimestamp = parseInt((ruleManagerInfo?.lastEventId ?? '-').split('-')[0], 10);
 
   const chartDataEntities = (stixDomainObjectsTimeSeries ?? []).flatMap((entry) => {

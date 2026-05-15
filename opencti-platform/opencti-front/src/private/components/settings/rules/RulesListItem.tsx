@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo, useState } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { Grid2 as Grid, Stack } from '@mui/material';
 import Box from '@mui/material/Box';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
@@ -20,6 +20,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -38,12 +39,46 @@ import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-ty
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { removeIdAndIncorrectKeysFromFilterGroupObject, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import { resolveTypesForRelationship } from '../../../../utils/Relation';
+import { RULES_CONFIGURED_LOCAL_STORAGE_KEY } from './rules-utils';
+import { RULE_CAPABILITIES, RuleCapability, RuleSlotCapability } from './rule-capabilities.generated';
+import { getEligibleConditionFamilies, getLockedEntityTypeFilterValues } from './rule-condition-policy';
+import RuleConditionBuilder, { RuleConditionBuilderHandle } from './RuleConditionBuilder';
+
+// ─── Debug error boundary ─────────────────────────────────────────────────────
+class AccordionErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // eslint-disable-next-line no-console
+    console.error('[AccordionErrorBoundary] Render crash:', error, info.componentStack);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <Box sx={{ p: 2, color: 'error.main', border: '1px solid', borderRadius: 1, fontSize: '0.75rem' }}>
+          Configuration render error — check browser console for details.
+        </Box>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 interface ConfiguredRule {
   id: string;
   name: string;
   description: string;
   active: boolean;
   expanded: boolean;
+  filtersMap: Record<string, FilterGroup>;
+  outputRelationType: string;
+  outputConfidenceMode: 'avg' | 'max' | 'fixed';
+  outputConfidenceFixed: number;
 }
 
 interface RuleEntity {
@@ -65,6 +100,27 @@ interface RuleTriplet {
   relationResolvedTypes: string[];
 }
 
+type ConditionSlotKind = 'entity' | 'relationship';
+
+interface PreviewConditionSlot {
+  key: string;
+  label: string;
+  kind: ConditionSlotKind;
+}
+
+interface ConditionEditorSlot extends PreviewConditionSlot {
+  resolvedEntityTypes: string[];
+  fallbackEntityTypes?: string[];
+  blockedFilterKeys?: string[];
+  forcedAvailableFilterKeys?: string[];
+}
+
+interface TypeFamilyOption {
+  id: string;
+  label: string;
+  entityTypes: string[];
+}
+
 const createId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 const createRevokedFalseFilterGroup = (): FilterGroup => ({
@@ -79,13 +135,46 @@ const createRevokedFalseFilterGroup = (): FilterGroup => ({
 });
 
 const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => ({
-  mode: filterGroup.mode,
-  filters: filterGroup.filters.map((filter) => ({
+  mode: filterGroup.mode ?? 'and',
+  filters: (filterGroup.filters ?? []).map((filter) => ({
     ...filter,
-    values: [...filter.values],
+    values: [...(filter.values ?? [])],
   })),
-  filterGroups: filterGroup.filterGroups.map(cloneFilterGroup),
+  filterGroups: (filterGroup.filterGroups ?? []).map(cloneFilterGroup),
 });
+
+const defaultOutputRelationType = (rule: NonNullable<Rule>) => {
+  const relation = rule.display?.then?.[0]?.relation ?? '';
+  return relation.replace(/^relationship_/, '').trim();
+};
+
+const hydrateConfiguredRule = (
+  rule: NonNullable<Rule>,
+  configuredRule: Partial<ConfiguredRule>,
+  defaultFiltersMap: Record<string, FilterGroup>,
+): ConfiguredRule => {
+  const outputRelationType = configuredRule.outputRelationType ?? defaultOutputRelationType(rule);
+  const outputConfidenceMode = configuredRule.outputConfidenceMode ?? 'avg';
+  const outputConfidenceFixed = typeof configuredRule.outputConfidenceFixed === 'number'
+    ? configuredRule.outputConfidenceFixed
+    : 50;
+  const filtersMap = Object.entries(defaultFiltersMap).reduce<Record<string, FilterGroup>>((acc, [key, fallback]) => {
+    const existing = configuredRule.filtersMap?.[key];
+    acc[key] = existing ? cloneFilterGroup(existing) : cloneFilterGroup(fallback);
+    return acc;
+  }, {});
+  return {
+    id: configuredRule.id ?? createId(),
+    name: configuredRule.name ?? 'Configuration',
+    description: configuredRule.description ?? '',
+    active: configuredRule.active ?? true,
+    expanded: configuredRule.expanded ?? true,
+    filtersMap,
+    outputRelationType,
+    outputConfidenceMode,
+    outputConfidenceFixed,
+  };
+};
 
 // Parse display labels like "Indicator A" → { type: "Indicator", identifier: "A" }
 const parseDisplayLabel = (label: string | null | undefined): { type: string; identifier: string | undefined } => {
@@ -208,13 +297,160 @@ const createEmptyFilterGroup = (): FilterGroup => ({
   filterGroups: [],
 });
 
+const getFilterGroupSignature = (filterGroup: FilterGroup): string => JSON.stringify(filterGroup);
+
+const mergeFiltersByKey = (input: FilterGroup, lockedFilters: Filter[]): FilterGroup => {
+  if (lockedFilters.length === 0) return input;
+  const byKey = new Map<string, Filter>();
+  (input.filters ?? []).forEach((filter) => {
+    byKey.set(filter.key, filter);
+  });
+  lockedFilters.forEach((filter) => {
+    byKey.set(filter.key, {
+      ...filter,
+      values: [...filter.values],
+    });
+  });
+  return {
+    ...input,
+    filters: Array.from(byKey.values()),
+  };
+};
+
+const humanJoin = (values: string[]) => {
+  if (values.length <= 1) return values[0] ?? '';
+  if (values.length === 2) return `${values[0]} or ${values[1]}`;
+  return `${values.slice(0, -1).join(', ')}, or ${values[values.length - 1]}`;
+};
+
+const extractFilterValuesByKey = (filterGroup: FilterGroup | undefined, key: string): string[] => {
+  if (!filterGroup) return [];
+  return (filterGroup.filters ?? [])
+    .filter((filter) => filter.key === key)
+    .flatMap((filter) => filter.values ?? [])
+    .filter((value): value is string => typeof value === 'string' && value.length > 0);
+};
+
+const resolveRelationTypesForTriplet = (
+  triplet: RuleTriplet,
+  filtersMap: Record<string, FilterGroup>,
+): string[] => {
+  if (triplet.relationType && !['any', 'stix-core-relationship'].includes(triplet.relationType.toLowerCase())) {
+    return [triplet.relationType.toLowerCase()];
+  }
+  const fromFilters = extractFilterValuesByKey(filtersMap[`relationship::${triplet.key}`], 'relationship_type');
+  return Array.from(new Set(fromFilters.map((value) => value.toLowerCase())));
+};
+
+const resolveSelectedEntityTypes = (
+  entity: RuleEntity | undefined,
+  filtersMap: Record<string, FilterGroup>,
+): string[] => {
+  if (!entity) return [];
+  const selectedTypes = extractFilterValuesByKey(filtersMap[entity.key], 'entity_type');
+  return selectedTypes.length > 0 ? selectedTypes : entity.resolvedEntityTypes;
+};
+
+const toLowerList = (values: string[]) => values.map((v) => v.toLowerCase());
+
+const LOCATION_TYPE_NAMES = new Set([
+  'location',
+  'country',
+  'region',
+  'city',
+  'administrative-area',
+  'position',
+]);
+
+const IDENTITY_TYPE_NAMES = new Set([
+  'identity',
+  'organization',
+  'individual',
+  'sector',
+  'system',
+]);
+
+const uniqueSorted = (values: string[]) => Array.from(new Set(values)).sort();
+
+const intersectCaseInsensitive = (left: string[], right: string[]): string[] => {
+  const rightLower = new Set(right.map((value) => value.toLowerCase()));
+  return left.filter((value) => rightLower.has(value.toLowerCase()));
+};
+
+const classifyTypeFamily = (
+  value: string,
+  schemaScoTypesLower: Set<string>,
+): 'indicator' | 'observable' | 'identity' | 'location' | 'relationship' | 'entity' => {
+  const lower = value.toLowerCase();
+  if (lower.includes('relationship')) return 'relationship';
+  if (lower.includes('indicator')) return 'indicator';
+  if (lower.includes('observable') || lower.includes('stix-cyber-observable') || schemaScoTypesLower.has(lower)) {
+    return 'observable';
+  }
+  if (IDENTITY_TYPE_NAMES.has(lower) || lower.includes('identity')) return 'identity';
+  if (LOCATION_TYPE_NAMES.has(lower) || lower.includes('location')) return 'location';
+  return 'entity';
+};
+
+const buildTypeFamilyOptions = (
+  kind: ConditionSlotKind,
+  types: string[],
+  schemaScoTypes: string[],
+): TypeFamilyOption[] => {
+  const uniqueTypes = uniqueSorted(types);
+  if (uniqueTypes.length === 0) return [];
+  if (kind === 'relationship') {
+    return [{
+      id: 'relationship',
+      label: 'Relationship type',
+      entityTypes: uniqueTypes,
+    }];
+  }
+
+  const schemaScoTypesLower = new Set(schemaScoTypes.map((sco) => sco.toLowerCase()));
+  const families = new Map<TypeFamilyOption['id'], string[]>();
+  uniqueTypes.forEach((type) => {
+    const family = classifyTypeFamily(type, schemaScoTypesLower);
+    const existing = families.get(family) ?? [];
+    families.set(family, [...existing, type]);
+  });
+
+  const options: TypeFamilyOption[] = [{
+    id: 'entity',
+    label: 'Entity type',
+    entityTypes: uniqueTypes,
+  }];
+
+  const orderedFamilies: Array<{ id: TypeFamilyOption['id']; label: string }> = [
+    { id: 'indicator', label: 'Indicator type' },
+    { id: 'observable', label: 'Observable type' },
+    { id: 'identity', label: 'Identity type' },
+    { id: 'location', label: 'Location type' },
+  ];
+
+  orderedFamilies.forEach((family) => {
+    const familyTypes = uniqueSorted(families.get(family.id) ?? []);
+    if (familyTypes.length > 0) {
+      options.push({
+        id: family.id,
+        label: family.label,
+        entityTypes: familyTypes,
+      });
+    }
+  });
+
+  return options;
+};
+
 interface ConfiguredRuleEntityFiltersProps {
   entityLabel: string;
-  entityType: string;
   resolvedEntityTypes: string[];
+  headerContent?: React.ReactNode;
   fallbackEntityTypes?: string[];
   hideEntityTypeFilter?: boolean;
   blockedFilterKeys?: string[];
+  forcedAvailableFilterKeys?: string[];
+  lockedFilters?: Filter[];
   initialFilters: FilterGroup;
   disabled: boolean;
   onFiltersChange: (filters: FilterGroup) => void;
@@ -222,11 +458,13 @@ interface ConfiguredRuleEntityFiltersProps {
 
 const ConfiguredRuleEntityFilters = ({
   entityLabel,
-  entityType,
   resolvedEntityTypes,
+  headerContent,
   fallbackEntityTypes = ['Stix-Core-Object'],
   hideEntityTypeFilter = false,
   blockedFilterKeys = [],
+  forcedAvailableFilterKeys,
+  lockedFilters = [],
   initialFilters,
   disabled,
   onFiltersChange,
@@ -244,17 +482,41 @@ const ConfiguredRuleEntityFilters = ({
       blockedKeys.add('fromTypes');
       blockedKeys.add('toTypes');
     }
-    return rawAvailableFilterKeys.filter((key) => !blockedKeys.has(key.toLowerCase()));
-  }, [rawAvailableFilterKeys, hideEntityTypeFilter, blockedFilterKeys]);
+    const visible = rawAvailableFilterKeys.filter((key) => !blockedKeys.has(key.toLowerCase()));
+    if (!forcedAvailableFilterKeys || forcedAvailableFilterKeys.length === 0) {
+      return visible;
+    }
+    const forcedLower = new Set(forcedAvailableFilterKeys.map((k) => k.toLowerCase()));
+    return visible.filter((key) => forcedLower.has(key.toLowerCase()));
+  }, [rawAvailableFilterKeys, hideEntityTypeFilter, blockedFilterKeys, forcedAvailableFilterKeys]);
   const searchEntityTypes = resolvedEntityTypes.length > 0 ? resolvedEntityTypes : fallbackEntityTypes;
 
+  const mergeLockedFilters = (input: FilterGroup): FilterGroup => {
+    if (!lockedFilters.length) return input;
+    const byKey = new Map<string, Filter>();
+    (input.filters ?? []).forEach((filter) => {
+      byKey.set(filter.key, filter);
+    });
+    lockedFilters.forEach((filter) => {
+      byKey.set(filter.key, {
+        ...filter,
+        values: [...filter.values],
+      });
+    });
+    return {
+      ...input,
+      filters: Array.from(byKey.values()),
+    };
+  };
+
   const initialFilterState = useMemo(() => {
+    const withLockedFilters = mergeLockedFilters(cloneFilterGroup(initialFilters));
     const sanitized = removeIdAndIncorrectKeysFromFilterGroupObject(
-      cloneFilterGroup(initialFilters),
+      withLockedFilters,
       availableFilterKeys,
     );
-    return sanitized ?? createEmptyFilterGroup();
-  }, [initialFilters, availableFilterKeys]);
+    return sanitized ?? mergeLockedFilters(createEmptyFilterGroup());
+  }, [initialFilters, availableFilterKeys, lockedFilters]);
   const [filters, filterHelpers] = useFiltersState(initialFilterState);
 
   // Notify parent when filter state changes
@@ -262,14 +524,15 @@ const ConfiguredRuleEntityFilters = ({
   useEffect(() => {
     const sanitizedFilters = removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys)
       ?? createEmptyFilterGroup();
+    const finalFilters = mergeLockedFilters(sanitizedFilters);
     if (isFirstRender.current) {
       isFirstRender.current = false;
       // Still call on mount so parent's map is initialised with preset filters
-      onFiltersChange(sanitizedFilters);
+      onFiltersChange(finalFilters);
       return;
     }
-    onFiltersChange(sanitizedFilters);
-  }, [filters, availableFilterKeys]);
+    onFiltersChange(finalFilters);
+  }, [filters, availableFilterKeys, lockedFilters]);
 
   return (
     <Stack
@@ -283,6 +546,7 @@ const ConfiguredRuleEntityFilters = ({
       <Typography variant="body2" fontWeight={600}>
         {entityLabel}
       </Typography>
+      {headerContent}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <Filters
           availableFilterKeys={availableFilterKeys}
@@ -355,9 +619,22 @@ const FilterSummaryChips = ({ filters }: { filters: FilterGroup }) => {
 interface ConfiguredRulePreviewProps {
   rule: NonNullable<Rule>;
   filtersMap: Record<string, FilterGroup>;
+  showWhenEmpty?: boolean;
+  canManage?: boolean;
+  editableEntityKeys?: Set<string>;
+  onAddCondition?: (slot: PreviewConditionSlot) => void;
+  withTopDivider?: boolean;
 }
 
-const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps) => {
+const ConfiguredRulePreview = ({
+  rule,
+  filtersMap,
+  showWhenEmpty = false,
+  canManage = false,
+  editableEntityKeys,
+  onAddCondition,
+  withTopDivider = true,
+}: ConfiguredRulePreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
@@ -370,11 +647,89 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
   };
 
   const hasAnyFilters = Object.values(filtersMap).some((fg) => (fg?.filters?.length ?? 0) > 0);
-  if (!hasAnyFilters) return null;
+  if (!showWhenEmpty && !hasAnyFilters) return null;
+
+  const resolveEntitySlot = (rawLabel?: string | null): PreviewConditionSlot | null => {
+    if (!rawLabel) return null;
+    const { type, identifier } = parseDisplayLabel(rawLabel);
+    if (!type) return null;
+    const key = `${type}::${identifier ?? ''}`;
+    return {
+      key,
+      label: `${type}${identifier ? ` ${identifier}` : ''}`,
+      kind: 'entity',
+    };
+  };
+
+  const renderAddConditionButton = (
+    slot: PreviewConditionSlot | null,
+    disabled = false,
+  ) => {
+    if (!slot || !canManage || !onAddCondition) return null;
+    return (
+      <Tooltip title="add condition">
+        <span>
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              onAddCondition(slot);
+            }}
+            disabled={disabled}
+          >
+            <AddOutlined fontSize="small" />
+          </IconButton>
+        </span>
+      </Tooltip>
+    );
+  };
+
+  const renderEntityTagWithAddCondition = (
+    label: string | null | undefined,
+    color: string | null | undefined,
+    slot: PreviewConditionSlot | null,
+    disabled = false,
+  ) => {
+    if (!label) return null;
+    const canRenderAddButton = !!slot && canManage && !!onAddCondition;
+    return (
+      <Box sx={{ position: 'relative', width: '100%' }}>
+        <RuleTag color={color} label={label} />
+        {canRenderAddButton && (
+          <Tooltip title="add condition">
+            <span>
+              <IconButton
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onAddCondition(slot);
+                }}
+                disabled={disabled}
+                sx={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -6,
+                  width: 18,
+                  height: 18,
+                  backgroundColor: (t) => t.palette.background.paper,
+                  border: (t) => `1px solid ${t.palette.divider}`,
+                  '&:hover': {
+                    backgroundColor: (t) => t.palette.action.hover,
+                  },
+                }}
+              >
+                <AddOutlined sx={{ fontSize: 12 }} />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
+      </Box>
+    );
+  };
 
   const styleStepPrimaryRow: CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: '96px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)',
+    gridTemplateColumns: '72px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)',
     alignItems: 'center',
     columnGap: theme.spacing(1),
     padding: `${theme.spacing(0.5)} ${theme.spacing(0.5)} 0`,
@@ -384,11 +739,37 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
 
   const styleStepConditionsRow: CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: '96px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)',
+    gridTemplateColumns: '72px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)',
     alignItems: 'flex-start',
     columnGap: theme.spacing(1),
     padding: `0 ${theme.spacing(0.5)} ${theme.spacing(0.5)}`,
     width: '100%',
+  };
+
+  const renderProgramToken = (label: string | null | undefined) => {
+    if (!label) return null;
+    return (
+      <Box
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minWidth: 56,
+          height: 30,
+          px: 1.25,
+          borderRadius: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.35)',
+          border: (t) => `1px solid ${t.palette.divider}`,
+          color: (t) => t.palette.text.primary,
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+        }}
+      >
+        {label}
+      </Box>
+    );
   };
 
   const stylePreviewBlock: CSSProperties = {
@@ -402,12 +783,17 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
     minWidth: 420,
   };
 
+  const styleThenPreviewBlock: CSSProperties = {
+    ...stylePreviewBlock,
+    justifyContent: 'center',
+  };
+
   return (
     <Box
       sx={{
-        mt: 1,
-        pt: 1,
-        borderTop: (t) => `1px solid ${t.palette.divider}`,
+        mt: withTopDivider ? 1 : 0,
+        pt: withTopDivider ? 1 : 0,
+        borderTop: withTopDivider ? ((t) => `1px solid ${t.palette.divider}`) : 'none',
         width: '100%',
       }}
       onClick={(e) => e.stopPropagation()}
@@ -415,28 +801,48 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
       <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 2, flexWrap: 'wrap' }}>
         {/* IF block */}
         <Box style={stylePreviewBlock}>
-          {(rule.display?.if ?? []).map((step, index) => (
-            <Box key={index}>
+          {(() => {
+            let relationshipTripletIndex = 0;
+            return (rule.display?.if ?? []).map((step, index) => {
+              const isPropertyStep = step?.relation === 'relationship_has';
+              const sourceSlot = resolveEntitySlot(step?.source);
+              const sourceEditable = sourceSlot
+                ? (editableEntityKeys ? editableEntityKeys.has(sourceSlot.key) : true)
+                : false;
+              const targetSlot = !isPropertyStep ? resolveEntitySlot(step?.target) : null;
+              const targetEditable = targetSlot
+                ? (editableEntityKeys ? editableEntityKeys.has(targetSlot.key) : true)
+                : false;
+              const relationshipSlot = !isPropertyStep
+                ? {
+                  key: `relationship::triplet-${relationshipTripletIndex}`,
+                  label: t_i18n(step?.relation ?? 'Relationship'),
+                  kind: 'relationship' as const,
+                }
+                : null;
+              if (!isPropertyStep) {
+                relationshipTripletIndex += 1;
+              }
+              return (
+                <Box key={index}>
               <Box sx={styleStepPrimaryRow}>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'left' }}>
-                    {t_i18n('IF')}
-                  </Typography>
+                  {renderProgramToken(t_i18n('IF'))}
                 </Box>
-                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
-                  <RuleTag color={step?.source_color} label={step?.source ?? undefined} />
+                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
+                  {renderEntityTagWithAddCondition(step?.source, step?.source_color, sourceSlot, !sourceEditable)}
                 </Box>
-                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
                   {step?.relation && (
                     <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
                       {t_i18n(step.relation)}
                     </Typography>
                   )}
+                  {renderAddConditionButton(relationshipSlot)}
                 </Box>
-                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
-                  {step?.target && step?.relation !== 'relationship_has' && (
-                    <RuleTag color={step.target_color} label={step.target} />
-                  )}
+                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
+                  {step?.target && step?.relation !== 'relationship_has'
+                    && renderEntityTagWithAddCondition(step.target, step.target_color, targetSlot, !targetEditable)}
                 </Box>
               </Box>
 
@@ -446,7 +852,9 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
                   <FilterSummaryChips filters={getFilters(step?.source) ?? createEmptyFilterGroup()} />
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
-                  <FilterSummaryChips filters={filtersMap[`relationship::triplet-${index}`] ?? createEmptyFilterGroup()} />
+                  <FilterSummaryChips
+                    filters={relationshipSlot ? (filtersMap[relationshipSlot.key] ?? createEmptyFilterGroup()) : createEmptyFilterGroup()}
+                  />
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
                   {step?.target && step?.relation !== 'relationship_has' && (
@@ -454,21 +862,23 @@ const ConfiguredRulePreview = ({ rule, filtersMap }: ConfiguredRulePreviewProps)
                   )}
                 </Box>
               </Box>
-            </Box>
-          ))}
+                </Box>
+              );
+            });
+          })()}
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <ArrowRightAlt />
-          <Typography variant="caption" color="text.secondary">{t_i18n('THEN')}</Typography>
+          {renderProgramToken(t_i18n('THEN'))}
         </Box>
 
         {/* THEN block */}
-        <Box style={stylePreviewBlock}>
+        <Box style={styleThenPreviewBlock}>
           {(rule.display?.then ?? []).map((step, index) => (
             <Box key={index} sx={styleStepPrimaryRow}>
               <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'flex-start' }}>
-                <RuleTag action label={step?.action} />
+                {renderProgramToken(step?.action ?? undefined)}
               </Box>
               <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
                 {step?.source && <RuleTag color={step.source_color} label={step.source} />}
@@ -497,8 +907,12 @@ interface ConfiguredRuleAccordionProps {
   configuredRule: ConfiguredRule;
   rule: NonNullable<Rule>;
   ruleEntities: RuleEntity[];
+  schemaRelationsTypesMapping: Map<string, readonly string[]>;
+  schemaSdoTypes: string[];
+  schemaScoTypes: string[];
   canManage: boolean;
   onChange: (id: string, data: Partial<Pick<ConfiguredRule, 'name' | 'description' | 'active'>>) => void;
+  onFiltersMapChange: (id: string, slotKey: string, filters: FilterGroup) => void;
   onToggleExpand: (id: string, expanded: boolean) => void;
   onDelete: (id: string) => void;
 }
@@ -507,26 +921,18 @@ const ConfiguredRuleAccordion = ({
   configuredRule,
   rule,
   ruleEntities,
+  schemaRelationsTypesMapping,
+  schemaSdoTypes,
+  schemaScoTypes,
   canManage,
   onChange,
+  onFiltersMapChange,
   onToggleExpand,
   onDelete,
 }: ConfiguredRuleAccordionProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const ruleTriplets = useMemo(() => buildRuleTriplets(rule), [rule]);
-
-  // filtersMap: entityKey → current FilterGroup (for the preview)
-  const [filtersMap, setFiltersMap] = useState<Record<string, FilterGroup>>(() => {
-    const initial: Record<string, FilterGroup> = {};
-    ruleEntities.forEach((entity) => {
-      initial[entity.key] = cloneFilterGroup(entity.initialFilters);
-    });
-    ruleTriplets.forEach((triplet) => {
-      initial[`relationship::${triplet.key}`] = createEmptyFilterGroup();
-    });
-    return initial;
-  });
 
   const entitiesByKey = useMemo(() => {
     const map = new Map<string, RuleEntity>();
@@ -547,8 +953,280 @@ const ConfiguredRuleAccordion = ({
     return firstByEntity;
   }, [ruleTriplets]);
 
-  const handleEntityFiltersChange = (entityKey: string, filters: FilterGroup) => {
-    setFiltersMap((prev) => ({ ...prev, [entityKey]: filters }));
+  const filtersMap = configuredRule.filtersMap;
+  const isSightingIncidentRule = rule.name === 'Raise incident based on sighting';
+  const isEntityTypeFirstRule = [
+    'Relation propagation testing rule',
+    'Generic relationship chain propagation (prototype)',
+  ].includes(rule.name);
+  const genericEntityTypeOptions = useMemo(() => {
+    const types = [...schemaSdoTypes, ...schemaScoTypes];
+    return Array.from(new Set(types)).sort();
+  }, [schemaSdoTypes, schemaScoTypes]);
+  const computeValidationErrors = () => {
+    const errors: string[] = [];
+    ruleTriplets.forEach((triplet) => {
+      const sourceEntity = entitiesByKey.get(triplet.sourceKey);
+      const targetEntity = entitiesByKey.get(triplet.targetKey);
+      const isSightingTriplet = isSightingIncidentRule && triplet.relationType.toLowerCase() === 'stix-sighting-relationship';
+      const sourceTypes = resolveSelectedEntityTypes(sourceEntity, filtersMap);
+      const targetTypes = resolveSelectedEntityTypes(targetEntity, filtersMap);
+      const relationTypes = resolveRelationTypesForTriplet(triplet, filtersMap);
+
+      if (isSightingTriplet) {
+        const selectedEntityCTypes = targetEntity
+          ? extractFilterValuesByKey(filtersMap[targetEntity.key], 'entity_type')
+          : [];
+        if (selectedEntityCTypes.length === 0) {
+          errors.push('Entity C type is required for sighted in/at filtering.');
+        }
+      }
+
+      relationTypes.forEach((relationType) => {
+        if (relationType === 'related-to') {
+          return;
+        }
+        if (sourceTypes.length > 0) {
+          const sourceTypesLower = toLowerList(sourceTypes);
+          const targetTypesLower = toLowerList(targetTypes);
+          const allowedTargets = Array.from(new Set(sourceTypes.flatMap((sourceType) => {
+            return resolveTypesForRelationship(
+              schemaRelationsTypesMapping,
+              relationType,
+              'to',
+              sourceType,
+            );
+          })));
+          const allowedTargetsLower = toLowerList(allowedTargets);
+          if (allowedTargets.length === 0 && sourceTypes.length > 0) {
+            const relationLabel = relationType || triplet.relationLabel;
+            const sourceLabel = sourceEntity?.label ?? 'Source entity';
+            errors.push(`${relationLabel} cannot be used from ${sourceLabel} with the selected type(s).`);
+          } else if (allowedTargets.length > 0 && targetTypes.length > 0 && !targetTypesLower.some((t) => allowedTargetsLower.includes(t))) {
+            const relationLabel = relationType || triplet.relationLabel;
+            const targetLabel = targetEntity?.label ?? 'Target entity';
+            errors.push(
+              `${targetLabel} must be of type ${humanJoin(allowedTargets)} for relationship ${relationLabel}.`,
+            );
+          }
+
+          if (targetTypes.length > 0) {
+            const allowedSources = Array.from(new Set(targetTypes.flatMap((targetType) => {
+              return resolveTypesForRelationship(
+                schemaRelationsTypesMapping,
+                relationType,
+                'from',
+                undefined,
+                targetType,
+              );
+            })));
+            const allowedSourcesLower = toLowerList(allowedSources);
+            if (allowedSources.length === 0) {
+              const relationLabel = relationType || triplet.relationLabel;
+              const targetLabel = targetEntity?.label ?? 'Target entity';
+              errors.push(`${relationLabel} cannot target ${targetLabel} with the selected type(s).`);
+            } else if (sourceTypes.length > 0 && !sourceTypesLower.some((t) => allowedSourcesLower.includes(t))) {
+              const relationLabel = relationType || triplet.relationLabel;
+              const sourceLabel = sourceEntity?.label ?? 'Source entity';
+              errors.push(
+                `${sourceLabel} must be of type ${humanJoin(allowedSources)} for relationship ${relationLabel}.`,
+              );
+            }
+          }
+        }
+      });
+    });
+
+    if (isEntityTypeFirstRule) {
+      ruleEntities.forEach((entity) => {
+        const selectedTypes = extractFilterValuesByKey(filtersMap[entity.key], 'entity_type');
+        if (selectedTypes.length === 0) {
+          errors.push(`${entity.label} type is required.`);
+        }
+      });
+    }
+    return Array.from(new Set(errors));
+  };
+
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  useEffect(() => {
+    // Deferred so the accordion renders immediately; validation runs after paint
+    const id = setTimeout(() => setValidationErrors(computeValidationErrors()), 0);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ruleTriplets, entitiesByKey, filtersMap, schemaRelationsTypesMapping, isSightingIncidentRule, isEntityTypeFirstRule, ruleEntities]);
+
+  const [conditionEditorSlot, setConditionEditorSlot] = useState<ConditionEditorSlot | null>(null);
+  const [conditionEditorDraftFilters, setConditionEditorDraftFilters] = useState<FilterGroup>(createEmptyFilterGroup());
+  const conditionBuilderRef = useRef<RuleConditionBuilderHandle | null>(null);
+
+  const editableEntityKeys = useMemo(
+    () => new Set(Array.from(firstTripletForEntity.entries()).map(([entityKey]) => entityKey)),
+    [firstTripletForEntity],
+  );
+
+  const resolveEditorEntityTypes = (resolvedTypes: string[]) => {
+    const normalizedResolved = uniqueSorted(resolvedTypes);
+    const hasOnlyGeneric = normalizedResolved.length === 0
+      || normalizedResolved.every((t) => ['stix-core-object', 'entity', 'observable'].includes(t.toLowerCase()));
+    if (hasOnlyGeneric) {
+      return genericEntityTypeOptions;
+    }
+    return normalizedResolved;
+  };
+
+  const handleAddCondition = (slot: PreviewConditionSlot) => {
+    if (!canManage) return;
+    if (slot.kind === 'entity' && !editableEntityKeys.has(slot.key)) {
+      return;
+    }
+
+    setConditionEditorDraftFilters(cloneFilterGroup(filtersMap[slot.key] ?? createEmptyFilterGroup()));
+
+    if (slot.kind === 'entity') {
+      const entity = entitiesByKey.get(slot.key);
+      const resolvedEntityTypes = resolveEditorEntityTypes(entity?.resolvedEntityTypes ?? []);
+      setConditionEditorSlot({
+        ...slot,
+        resolvedEntityTypes,
+        fallbackEntityTypes: resolvedEntityTypes,
+      });
+      return;
+    }
+
+    const tripletKey = slot.key.replace(/^relationship::/, '');
+    const triplet = ruleTriplets.find((candidate) => candidate.key === tripletKey);
+    const relationType = triplet?.relationType.toLowerCase() ?? '';
+    const isSightingTriplet = isSightingIncidentRule && relationType === 'stix-sighting-relationship';
+    setConditionEditorSlot({
+      ...slot,
+      resolvedEntityTypes: triplet?.relationResolvedTypes ?? ['stix-core-relationship'],
+      fallbackEntityTypes: ['stix-core-relationship'],
+      forcedAvailableFilterKeys: isSightingTriplet
+        ? ['first_seen', 'last_seen', 'confidence']
+        : (relationType === 'related-to' ? ['start_time', 'stop_time', 'confidence', 'objectMarking'] : undefined),
+      blockedFilterKeys: [
+        'fromId',
+        'toId',
+        'fromOrToId',
+        'fromTypes',
+        'toTypes',
+        'fromRole',
+        'toRole',
+        'dynamicFrom',
+        'dynamicTo',
+        'relatedId',
+        'relatedType',
+      ],
+    });
+  };
+
+  const ruleCapability = useMemo<RuleCapability | null>(() => {
+    const direct = RULE_CAPABILITIES[rule.id];
+    if (direct) {
+      return direct;
+    }
+    return Object.values(RULE_CAPABILITIES).find((candidate) => candidate.ruleName === rule.name) ?? null;
+  }, [rule.id, rule.name]);
+
+  const slotCapability = useMemo<RuleSlotCapability | null>(() => {
+    if (!conditionEditorSlot || !ruleCapability) return null;
+    if (conditionEditorSlot.kind === 'entity') {
+      const { identifier } = parseDisplayLabel(conditionEditorSlot.label);
+      if (identifier) {
+        return ruleCapability.slots.find((slot) => slot.kind === 'entity' && slot.id === identifier) ?? null;
+      }
+      return null;
+    }
+    const relationshipSlots = ruleCapability.slots.filter((slot) => slot.kind === 'relationship');
+    if (relationshipSlots.length === 0) return null;
+    const tripletKey = conditionEditorSlot.key.replace(/^relationship::triplet-/, '');
+    const tripletIndex = Number.parseInt(tripletKey, 10);
+    if (Number.isNaN(tripletIndex)) {
+      return relationshipSlots[0] ?? null;
+    }
+    return relationshipSlots[tripletIndex] ?? relationshipSlots[0] ?? null;
+  }, [conditionEditorSlot, ruleCapability]);
+
+  const isMultiTypeEntitySlot = conditionEditorSlot?.kind === 'entity' && Boolean(slotCapability?.multiType);
+
+  const conditionEditorSearchTypes = useMemo(() => {
+    if (!conditionEditorSlot) return ['Stix-Core-Object'];
+    return conditionEditorSlot.resolvedEntityTypes.length > 0
+      ? conditionEditorSlot.resolvedEntityTypes
+      : (conditionEditorSlot.fallbackEntityTypes ?? ['Stix-Core-Object']);
+  }, [conditionEditorSlot]);
+
+  const editorAvailableFilterKeys = useAvailableFilterKeysForEntityTypes(conditionEditorSearchTypes);
+
+  const eligibleConditionPolicyFamilies = useMemo(() => {
+    if (!ruleCapability || !slotCapability || !conditionEditorSlot) return [];
+    return getEligibleConditionFamilies(ruleCapability, slotCapability, editorAvailableFilterKeys);
+  }, [ruleCapability, slotCapability, conditionEditorSlot, editorAvailableFilterKeys]);
+
+  const displayedConditionPolicyFamilies = useMemo(
+    () => eligibleConditionPolicyFamilies.filter((family) => family.id !== 'entity-type-restriction'),
+    [eligibleConditionPolicyFamilies],
+  );
+
+  const effectiveForcedAvailableFilterKeys = useMemo(() => {
+    const policyKeys = uniqueSorted(displayedConditionPolicyFamilies.flatMap((family) => family.availableFilterKeys));
+    const slotForced = conditionEditorSlot?.forcedAvailableFilterKeys ?? [];
+    if (policyKeys.length > 0 && slotForced.length > 0) {
+      return intersectCaseInsensitive(slotForced, policyKeys);
+    }
+    if (policyKeys.length > 0) return policyKeys;
+    if (slotForced.length > 0) return slotForced;
+    return undefined;
+  }, [displayedConditionPolicyFamilies, conditionEditorSlot]);
+
+  const effectiveLockedEntityTypes = useMemo(() => {
+    if (!conditionEditorSlot || conditionEditorSlot.kind !== 'entity') return [];
+    const policyLocked = slotCapability ? getLockedEntityTypeFilterValues(slotCapability) : [];
+    if (policyLocked.length > 0) return policyLocked;
+    const normalized = uniqueSorted(conditionEditorSlot.resolvedEntityTypes);
+    return normalized;
+  }, [slotCapability, conditionEditorSlot]);
+
+  const sanitizeConditionEditorFiltersForPersistence = (input: FilterGroup): FilterGroup => {
+    if (!conditionEditorSlot) {
+      return cloneFilterGroup(input);
+    }
+
+    const blockedKeys = new Set(
+      ['regardingOf', 'dynamicRegardingOf', ...(conditionEditorSlot.blockedFilterKeys ?? [])].map((k) => k.toLowerCase()),
+    );
+    if (conditionEditorSlot.kind === 'entity') {
+      blockedKeys.add('relationship_type');
+      blockedKeys.add('fromTypes');
+      blockedKeys.add('toTypes');
+    }
+
+    const candidateKeys = effectiveForcedAvailableFilterKeys && effectiveForcedAvailableFilterKeys.length > 0
+      ? effectiveForcedAvailableFilterKeys
+      : editorAvailableFilterKeys;
+    const availableKeys = candidateKeys.filter((key) => !blockedKeys.has(key.toLowerCase()));
+    const sanitized = removeIdAndIncorrectKeysFromFilterGroupObject(
+      cloneFilterGroup(input),
+      availableKeys,
+    ) ?? createEmptyFilterGroup();
+
+    const lockedFilters: Filter[] = (conditionEditorSlot.kind === 'entity' && !isMultiTypeEntitySlot && effectiveLockedEntityTypes.length > 0)
+      ? [{
+        key: 'entity_type',
+        values: effectiveLockedEntityTypes,
+        operator: 'eq',
+        mode: 'or',
+      }]
+      : [];
+
+    return mergeFiltersByKey(sanitized, lockedFilters);
+  };
+
+  const closeConditionEditor = () => {
+    conditionBuilderRef.current = null;
+    setConditionEditorSlot(null);
+    setConditionEditorDraftFilters(createEmptyFilterGroup());
   };
 
   return (
@@ -557,7 +1235,22 @@ const ConfiguredRuleAccordion = ({
       onChange={(_, expanded) => onToggleExpand(configuredRule.id, expanded)}
       slotProps={{ transition: { unmountOnExit: false } }}
     >
-      <AccordionSummary expandIcon={<ExpandMore />}>
+      <AccordionSummary
+        expandIcon={<ExpandMore />}
+        sx={{
+          alignItems: 'flex-start',
+          '& .MuiAccordionSummary-content': {
+            alignItems: 'flex-start',
+            marginY: 1,
+            paddingRight: 2,
+          },
+          '& .MuiAccordionSummary-expandIconWrapper': {
+            alignSelf: 'flex-start',
+            marginTop: 2,
+            marginRight: 0.5,
+          },
+        }}
+      >
         <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 0.5 }}>
           {/* Row 1: name + controls */}
           <Box
@@ -583,7 +1276,7 @@ const ConfiguredRuleAccordion = ({
                     color="secondary"
                     checked={configuredRule.active}
                     onChange={(_, checked) => onChange(configuredRule.id, { active: checked })}
-                    disabled={!canManage}
+                    disabled={!canManage || (!configuredRule.active && validationErrors.length > 0)}
                   />
                 )}
               />
@@ -607,13 +1300,16 @@ const ConfiguredRuleAccordion = ({
 
           {/* Row 2: rule preview (visible when collapsed) */}
           {!configuredRule.expanded && (
-            <ConfiguredRulePreview rule={rule} filtersMap={filtersMap} />
+            <ConfiguredRulePreview
+              rule={rule}
+              filtersMap={filtersMap}
+            />
           )}
         </Box>
       </AccordionSummary>
 
-      <AccordionDetails>
-        <Stack spacing={2}>
+      <AccordionDetails sx={{ pt: 0.5 }}>
+        <Stack spacing={1.5}>
           <TextField
             fullWidth
             label={t_i18n('Configuration name')}
@@ -634,127 +1330,7 @@ const ConfiguredRuleAccordion = ({
             disabled={!canManage}
           />
 
-          <Stack spacing={1}>
-            <Typography variant="body2" fontWeight={600}>
-              {t_i18n('Entity filters')}
-            </Typography>
-            {ruleTriplets.map((triplet) => {
-                const srcEntity = entitiesByKey.get(triplet.sourceKey);
-                const tgtEntity = entitiesByKey.get(triplet.targetKey);
-                const relationshipKey = `relationship::${triplet.key}`;
-              const sourceIsEditable = firstTripletForEntity.get(triplet.sourceKey) === triplet.key;
-              const targetIsEditable = firstTripletForEntity.get(triplet.targetKey) === triplet.key;
-              const sourceHasFixedType = !!srcEntity && !['entity', 'observable', 'stix-core-object'].includes(srcEntity.entityType.toLowerCase());
-              const targetHasFixedType = !!tgtEntity && !['entity', 'observable', 'stix-core-object'].includes(tgtEntity.entityType.toLowerCase());
-                return (
-                  <Box
-                    key={triplet.key}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 2,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {srcEntity && (
-                      <Box sx={{ flex: '1 1 240px', minWidth: 0 }}>
-                        {sourceIsEditable ? (
-                          <ConfiguredRuleEntityFilters
-                            entityLabel={srcEntity.label}
-                            entityType={srcEntity.entityType}
-                            resolvedEntityTypes={srcEntity.resolvedEntityTypes}
-                            hideEntityTypeFilter={sourceHasFixedType}
-                            initialFilters={srcEntity.initialFilters}
-                            disabled={!canManage}
-                            onFiltersChange={(filters) => handleEntityFiltersChange(srcEntity.key, filters)}
-                          />
-                        ) : (
-                          <Stack
-                            spacing={1}
-                            sx={{
-                              border: (t) => `1px solid ${t.palette.divider}`,
-                              borderRadius: 1,
-                              p: 2,
-                            }}
-                          >
-                            <Typography variant="body2" fontWeight={600}>
-                              {srcEntity.label}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {t_i18n('Configured in first occurrence')}
-                            </Typography>
-                            <FilterSummaryChips filters={filtersMap[srcEntity.key] ?? createEmptyFilterGroup()} />
-                          </Stack>
-                        )}
-                      </Box>
-                    )}
-                    <Box sx={{ flex: '1 1 240px', minWidth: 0 }}>
-                      <ConfiguredRuleEntityFilters
-                        entityLabel={t_i18n(triplet.relationLabel)}
-                        entityType={triplet.relationType}
-                        resolvedEntityTypes={triplet.relationResolvedTypes}
-                        fallbackEntityTypes={['stix-core-relationship']}
-                        hideEntityTypeFilter={true}
-                        blockedFilterKeys={[
-                          'fromId',
-                          'toId',
-                          'fromOrToId',
-                          'fromTypes',
-                          'toTypes',
-                          'fromRole',
-                          'toRole',
-                          'dynamicFrom',
-                          'dynamicTo',
-                          'relatedId',
-                          'relatedType',
-                        ]}
-                        initialFilters={createEmptyFilterGroup()}
-                        disabled={!canManage}
-                        onFiltersChange={(filters) => handleEntityFiltersChange(relationshipKey, filters)}
-                      />
-                    </Box>
-                    {tgtEntity && (
-                      <Box sx={{ flex: '1 1 240px', minWidth: 0 }}>
-                        {targetIsEditable ? (
-                          <ConfiguredRuleEntityFilters
-                            entityLabel={tgtEntity.label}
-                            entityType={tgtEntity.entityType}
-                            resolvedEntityTypes={tgtEntity.resolvedEntityTypes}
-                            hideEntityTypeFilter={targetHasFixedType}
-                            initialFilters={tgtEntity.initialFilters}
-                            disabled={!canManage}
-                            onFiltersChange={(filters) => handleEntityFiltersChange(tgtEntity.key, filters)}
-                          />
-                        ) : (
-                          <Stack
-                            spacing={1}
-                            sx={{
-                              border: (t) => `1px solid ${t.palette.divider}`,
-                              borderRadius: 1,
-                              p: 2,
-                            }}
-                          >
-                            <Typography variant="body2" fontWeight={600}>
-                              {tgtEntity.label}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {t_i18n('Configured in first occurrence')}
-                            </Typography>
-                            <FilterSummaryChips filters={filtersMap[tgtEntity.key] ?? createEmptyFilterGroup()} />
-                          </Stack>
-                        )}
-                      </Box>
-                    )}
-                  </Box>
-                );
-              })}
-          </Stack>
-
-          {/* Inline preview while editing */}
-          <Box sx={{ pt: 1 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              {t_i18n('Preview')}
-            </Typography>
+          <Box>
             <Box
               sx={{
                 border: (t) => `1px solid ${t.palette.divider}`,
@@ -763,15 +1339,70 @@ const ConfiguredRuleAccordion = ({
                 background: (t) => t.palette.background.default,
               }}
             >
-              <ConfiguredRulePreview rule={rule} filtersMap={filtersMap} />
-              {Object.values(filtersMap).every((fg) => (fg?.filters?.length ?? 0) === 0) && (
-                <Typography variant="caption" color="text.secondary">
-                  {t_i18n('No filters configured yet. Add filters above to see the preview.')}
-                </Typography>
-              )}
+              <ConfiguredRulePreview
+                rule={rule}
+                filtersMap={filtersMap}
+                showWhenEmpty
+                canManage={canManage}
+                editableEntityKeys={editableEntityKeys}
+                onAddCondition={handleAddCondition}
+                withTopDivider={false}
+              />
             </Box>
           </Box>
+
         </Stack>
+
+        <Dialog
+          open={Boolean(conditionEditorSlot)}
+          onClose={closeConditionEditor}
+          title={t_i18n('Add condition')}
+          size="large"
+        >
+          <Stack spacing={2} sx={{ pt: 0.5 }}>
+            {conditionEditorSlot && (
+              <>
+                <RuleConditionBuilder
+                  ref={conditionBuilderRef}
+                    key={conditionEditorSlot.key}
+                    slotKind={conditionEditorSlot.kind}
+                    allowedEntityTypes={effectiveLockedEntityTypes.length > 0
+                      ? effectiveLockedEntityTypes
+                      : conditionEditorSlot.resolvedEntityTypes}
+                    isMultiType={isMultiTypeEntitySlot}
+                    showEntityTypeRow={conditionEditorSlot.kind === 'entity' && isMultiTypeEntitySlot}
+                    availablePropertyKeys={effectiveForcedAvailableFilterKeys ?? editorAvailableFilterKeys}
+                    entitySearchTypes={conditionEditorSearchTypes}
+                    initialFilters={conditionEditorDraftFilters}
+                    disabled={!canManage}
+                    onFiltersChange={(filters) => {
+                      setConditionEditorDraftFilters((previous) => {
+                        if (getFilterGroupSignature(previous) === getFilterGroupSignature(filters)) {
+                          return previous;
+                        }
+                        return cloneFilterGroup(filters);
+                      });
+                    }}
+                  />
+              </>
+            )}
+          </Stack>
+          <DialogActions>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                if (conditionEditorSlot) {
+                  const currentFilters = conditionBuilderRef.current?.getFilters() ?? conditionEditorDraftFilters;
+                  const sanitized = sanitizeConditionEditorFiltersForPersistence(currentFilters);
+                  onFiltersMapChange(configuredRule.id, conditionEditorSlot.key, sanitized);
+                }
+                closeConditionEditor();
+              }}
+            >
+              {t_i18n('Done')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </AccordionDetails>
     </Accordion>
   );
@@ -799,11 +1430,31 @@ const RulesListItem = ({
 
   const [configuredRules, setConfiguredRules] = useState<ConfiguredRule[]>([]);
   const [configuredRuleToDelete, setConfiguredRuleToDelete] = useState<string | null>(null);
+  const [configuredRulesLoaded, setConfiguredRulesLoaded] = useState(false);
 
   const ruleEntities = useMemo(
     () => buildRuleEntities(rule, schema.schemaRelationsTypesMapping),
     [rule, schema.schemaRelationsTypesMapping],
   );
+  const schemaSdoTypes = useMemo(
+    () => (schema?.sdos ?? []).map((sdo) => sdo.id),
+    [schema?.sdos],
+  );
+  const schemaScoTypes = useMemo(
+    () => (schema?.scos ?? []).map((sco) => sco.id),
+    [schema?.scos],
+  );
+  const ruleTriplets = useMemo(() => buildRuleTriplets(rule), [rule]);
+  const defaultFiltersMap = useMemo(() => {
+    const initial: Record<string, FilterGroup> = {};
+    ruleEntities.forEach((entity) => {
+      initial[entity.key] = cloneFilterGroup(entity.initialFilters);
+    });
+    ruleTriplets.forEach((triplet) => {
+      initial[`relationship::${triplet.key}`] = createEmptyFilterGroup();
+    });
+    return initial;
+  }, [ruleEntities, ruleTriplets]);
 
   const ruleStatus = isEngineEnabled && rule.activated ? t_i18n('Enabled') : t_i18n('Disabled');
   const taskWork = task?.work;
@@ -814,6 +1465,43 @@ const RulesListItem = ({
     : (rule.activated ? 1 : 0);
 
   const configuredRulePendingDeletion = configuredRules.find((r) => r.id === configuredRuleToDelete);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      setConfiguredRulesLoaded(true);
+      return;
+    }
+    try {
+      const stored = window.localStorage.getItem(RULES_CONFIGURED_LOCAL_STORAGE_KEY);
+      const parsed = stored ? JSON.parse(stored) as Record<string, Partial<ConfiguredRule>[]> : {};
+      const ruleConfigurations = Array.isArray(parsed?.[rule.id]) ? parsed[rule.id] : [];
+      setConfiguredRules(ruleConfigurations.map((configuredRule, index) => {
+        const hydrated = hydrateConfiguredRule(rule, configuredRule, defaultFiltersMap);
+        return {
+          ...hydrated,
+          name: hydrated.name || `Configuration ${index + 1}`,
+        };
+      }));
+    } catch {
+      setConfiguredRules([]);
+    } finally {
+      setConfiguredRulesLoaded(true);
+    }
+  }, [rule.id]);
+
+  useEffect(() => {
+    if (!configuredRulesLoaded || typeof window === 'undefined') {
+      return;
+    }
+    try {
+      const stored = window.localStorage.getItem(RULES_CONFIGURED_LOCAL_STORAGE_KEY);
+      const parsed = stored ? JSON.parse(stored) as Record<string, ConfiguredRule[]> : {};
+      parsed[rule.id] = configuredRules;
+      window.localStorage.setItem(RULES_CONFIGURED_LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+    } catch {
+      // Keep UI functional even if local storage is unavailable.
+    }
+  }, [configuredRules, configuredRulesLoaded, rule.id]);
 
   useEffect(() => {
     onConfiguredRuleCountsChange?.({
@@ -831,6 +1519,13 @@ const RulesListItem = ({
         description: '',
         active: true,
         expanded: true,
+        filtersMap: Object.entries(defaultFiltersMap).reduce<Record<string, FilterGroup>>((acc, [key, filterGroup]) => {
+          acc[key] = cloneFilterGroup(filterGroup);
+          return acc;
+        }, {}),
+        outputRelationType: defaultOutputRelationType(rule),
+        outputConfidenceMode: 'avg',
+        outputConfidenceFixed: 50,
       },
     ]);
   };
@@ -852,6 +1547,34 @@ const RulesListItem = ({
         ? { ...configuredRule, ...data }
         : configuredRule
     )));
+  };
+
+  const handleConfiguredRuleFiltersMapChange = (
+    id: string,
+    slotKey: string,
+    filters: FilterGroup,
+  ) => {
+    setConfiguredRules((previous) => {
+      let changed = false;
+      const next = previous.map((configuredRule) => {
+        if (configuredRule.id !== id) {
+          return configuredRule;
+        }
+        const existing = configuredRule.filtersMap[slotKey] ?? createEmptyFilterGroup();
+        if (getFilterGroupSignature(existing) === getFilterGroupSignature(filters)) {
+          return configuredRule;
+        }
+        changed = true;
+        return {
+          ...configuredRule,
+          filtersMap: {
+            ...configuredRule.filtersMap,
+            [slotKey]: cloneFilterGroup(filters),
+          },
+        };
+      });
+      return changed ? next : previous;
+    });
   };
 
   const handleDeleteConfiguredRule = () => {
@@ -876,25 +1599,43 @@ const RulesListItem = ({
   const styleDefinition: CSSProperties = {
     display: 'flex',
     alignItems: 'stretch',
-    gap: theme.spacing(4),
+    gap: theme.spacing(2),
+    width: '100%',
   };
   const styleIfThenBlock: CSSProperties = {
     flex: 1,
     border: `1px solid ${theme.palette.divider}`,
     borderRadius: Number(theme.shape.borderRadius),
-    padding: theme.spacing(1.5),
+    padding: theme.spacing(1.25),
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
   };
   const styleStep: CSSProperties = {
-    margin: theme.spacing(1),
+    margin: theme.spacing(0.75),
     height: 50,
-    minWidth: 400,
+    minWidth: 320,
     display: 'flex',
     alignItems: 'center',
     textAlign: 'center',
     gap: theme.spacing(1),
+  };
+  const styleProgramTokenTop: CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 56,
+    height: 30,
+    padding: `0 ${theme.spacing(1.25)}`,
+    borderRadius: Number(theme.shape.borderRadius),
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    border: `1px solid ${theme.palette.divider}`,
+    color: theme.palette.text.primary,
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+    flexShrink: 0,
   };
 
   return (
@@ -993,11 +1734,11 @@ const RulesListItem = ({
             <Box
               sx={{
                 borderRadius: 1,
-                p: 2,
+                p: 1.5,
               }}
             >
               {canManageConfiguredRules && (
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1.5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
                   <Button
                     size="small"
                     variant="secondary"
@@ -1013,7 +1754,7 @@ const RulesListItem = ({
                 <div style={styleIfThenBlock}>
                   {(rule.display?.if ?? []).map((step, index) => (
                     <div key={index} style={styleStep}>
-                      <span style={{ width: '30px', flexShrink: 0 }}>{t_i18n('IF')}</span>
+                      <div style={styleProgramTokenTop}>{t_i18n('IF')}</div>
                       <RuleTag color={step?.source_color} label={step?.source} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span>{t_i18n(step?.relation)}</span>
@@ -1024,13 +1765,13 @@ const RulesListItem = ({
                 </div>
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <ArrowRightAlt fontSize="large" />
-                  <span style={{ width: '80px' }}>{t_i18n('THEN')}</span>
+                  <div style={{ ...styleProgramTokenTop, marginTop: theme.spacing(0.5) }}>{t_i18n('THEN')}</div>
                 </div>
                 <div style={styleIfThenBlock}>
                   {(rule.display?.then ?? []).map((step, index) => {
                     return (
                       <div key={index} style={styleStep}>
-                        <RuleTag action label={step?.action} />
+                        {step?.action && <div style={styleProgramTokenTop}>{step.action}</div>}
                         <RuleTag color={step?.source_color} label={step?.source} />
                         {step?.relation && (
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -1050,16 +1791,21 @@ const RulesListItem = ({
             <Card title={t_i18n('Configured rules')}>
               <Stack spacing={1.5}>
                 {configuredRules.map((configuredRule) => (
-                  <ConfiguredRuleAccordion
-                    key={configuredRule.id}
-                    configuredRule={configuredRule}
-                    rule={rule}
-                    ruleEntities={ruleEntities}
-                    canManage={canManageConfiguredRules}
-                    onChange={handleConfiguredRuleChange}
-                    onToggleExpand={handleConfiguredRuleToggleExpanded}
-                    onDelete={(id) => setConfiguredRuleToDelete(id)}
-                  />
+                  <AccordionErrorBoundary key={configuredRule.id}>
+                    <ConfiguredRuleAccordion
+                      configuredRule={configuredRule}
+                      rule={rule}
+                      ruleEntities={ruleEntities}
+                      schemaRelationsTypesMapping={schema.schemaRelationsTypesMapping}
+                      schemaSdoTypes={schemaSdoTypes}
+                      schemaScoTypes={schemaScoTypes}
+                      canManage={canManageConfiguredRules}
+                      onChange={handleConfiguredRuleChange}
+                      onFiltersMapChange={handleConfiguredRuleFiltersMapChange}
+                      onToggleExpand={handleConfiguredRuleToggleExpanded}
+                      onDelete={(id) => setConfiguredRuleToDelete(id)}
+                    />
+                  </AccordionErrorBoundary>
                 ))}
               </Stack>
             </Card>
