@@ -87,12 +87,8 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
 
 export const findPlaybooksForEnrollment = async (
   context: AuthContext,
-  ids: string[],
 ) => {
   await checkEnterpriseEdition(context);
-  if (ids.length === 0) {
-    return [];
-  }
   const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
   const filteredPlaybooks: BasicStoreEntityPlaybook[] = [];
   for (const playbook of playbooks) {

@@ -354,8 +354,8 @@ const toolbarGroupsQuery = graphql`
 `;
 
 const toolBarPlaybooksQuery = graphql`
-  query DataTableToolBarPlaybooksQuery($ids: [String!]!) {
-    playbooksForEnrollment(ids: $ids) {
+  query DataTableToolBarPlaybooksQuery {
+    playbooksForEnrollment {
       id
       name
       description
@@ -540,14 +540,14 @@ class DataTableToolBar extends Component {
   }
 
   handleCloseEnrollPlaybook() {
-    this.setState({ displayEnrollPlaybook: false, enrollPlaybookId: null });
+    this.setState({ displayEnrollPlaybook: false });
   }
 
   handleLaunchEnrollPlaybook(playbookId) {
     const selectedPlaybook = this.state.enrollPlaybooks.find((p) => p.value === playbookId);
     const actions = [{
       type: 'ENROLL_PLAYBOOK',
-      context: { values: [selectedPlaybook ? { id: playbookId, name: selectedPlaybook.label } : playbookId] },
+      context: { values: [{ id: playbookId, name: selectedPlaybook?.label ?? playbookId }] },
     }];
     this.setState({ actions }, () => {
       this.handleCloseEnrollPlaybook();
@@ -1522,7 +1522,6 @@ class DataTableToolBar extends Component {
 
     const { actionsInputs } = this.state;
 
-    console.log('actionsInputs', actionsInputs);
     const selectedField = actionsInputs[i]?.field;
     const disabled = selectedField == null || selectedField === '';
 

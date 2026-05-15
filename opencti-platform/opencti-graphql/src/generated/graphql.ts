@@ -26212,11 +26212,6 @@ export type QueryPlaybooksArgs = {
 };
 
 
-export type QueryPlaybooksForEnrollmentArgs = {
-  ids: Array<Scalars['String']['input']>;
-};
-
-
 export type QueryPlaybooksForEntityArgs = {
   id: Scalars['String']['input'];
 };
@@ -48812,7 +48807,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
   playbookManagerInfo?: Resolver<Maybe<ResolversTypes['PlaybookManager']>, ParentType, ContextType>;
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
-  playbooksForEnrollment?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEnrollmentArgs, 'ids'>>;
+  playbooksForEnrollment?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType>;
   playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;

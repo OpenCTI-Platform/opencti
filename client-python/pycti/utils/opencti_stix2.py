@@ -3224,7 +3224,7 @@ class OpenCTIStix2:
         if entity_id is None:
             entity_id = item.get("id")
         if playbook_id and entity_id:
-            self.opencti.playbook.enroll_playbook(
+            self.opencti.playbook.playbook_execute(
                 playbook_id=playbook_id, entity_id=entity_id
             )
 

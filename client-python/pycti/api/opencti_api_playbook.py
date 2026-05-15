@@ -82,7 +82,7 @@ class OpenCTIApiPlaybook:
             )
             return None
 
-    def enroll_playbook(self, playbook_id: str, entity_id: str):
+    def playbook_execute(self, playbook_id: str, entity_id: str):
         """Enroll a playbook on an entity.
 
         :param playbook_id: the playbook id
@@ -93,7 +93,7 @@ class OpenCTIApiPlaybook:
         :rtype: None
         """
         query = """
-            mutation PlaybookEnroll($playbook_id: ID!, $entity_id: String!) {
+            mutation PlaybookExecute($playbook_id: ID!, $entity_id: String!) {
                 playbookExecute(id: $playbook_id, entityId: $entity_id)
             }
            """
