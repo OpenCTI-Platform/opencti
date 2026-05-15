@@ -14,7 +14,7 @@ import {
   isUnsecureHttpResourceAllowed,
 } from './httpConfig';
 import type { HelmetOptions } from 'helmet';
-import { type Options } from 'express-rate-limit';
+import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 
 export const setCookieError = (res: Response, message: string) => {
@@ -181,7 +181,7 @@ export const buildDefaultHelmetParameters = () => {
  * This allows to distinguish different users behind a shared IP.
  */
 const buildRateLimitKey = (req: Request): string => {
-  const ip = req.ip ?? 'unknown';
+  const ip = ipKeyGenerator(req.ip ?? 'unknown');
   const userAgent = req.headers['user-agent'] ?? 'unknown';
   return crypto.createHash('sha256').update(`${ip}|${userAgent}`).digest('hex');
 };
@@ -205,7 +205,7 @@ const buildIpRangeSkipList = (ranges: string[]): BlockList => {
         blockList.addAddress(range, type);
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     logApp.warn('[HTTP] Error when building the IP range that should be ignored by the rate limit, please verify your configuration.', e);
   }
   return blockList;
@@ -248,8 +248,7 @@ export const buildRateLimiterOptions = (): Options => {
   // There is 2 ways to exclude IP from rate limit: by exact IP or by ranges.
   const isIpInSkipList = (ip: string): boolean => {
     if (skipList.includes(ip)) return true;
-    if (skipRanges.length > 0 && ipRangeSkipList.check(ip)) return true;
-    return false;
+    return skipRanges.length > 0 && ipRangeSkipList.check(ip);
   };
 
   const rateLimitOptions: Partial<Options> = {
