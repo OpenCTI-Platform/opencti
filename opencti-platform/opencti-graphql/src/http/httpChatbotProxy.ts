@@ -21,10 +21,11 @@ export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
 
 // Default timeout for non-streaming XTM One HTTP calls (2 minutes).
 // Streaming endpoints use timeout: 0 (no timeout) since the connection stays open.
-const DEFAULT_XTM_TIMEOUT = 2 * 60 * 1000;
+const DEFAULT_XTM_TIMEOUT = 2 * 60 * 1000; // 2 minutes.
+
 // Extended timeout for multipart file-based agent calls (10 minutes).
 // File upload and analysis can take significantly longer than text-based calls.
-const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000;
+const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
 
 // ── Multipart parsing helper ────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ const parseMultipart = (req: Express.Request): Promise<ParsedMultipart> => {
     busboy.on('field', (name: string, value: string) => fields[name] = value);
     busboy.on('finish', () => {
       if (truncated) {
-        reject(new Error('File exceeds maximum size limit (50MB)'));
+        reject(new Error('File exceeds maximum size limit'));
       } else {
         resolve({ files, fields });
       }
@@ -61,6 +62,18 @@ const parseMultipart = (req: Express.Request): Promise<ParsedMultipart> => {
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────
+const generateBasicHeaders = async (req: Express.Request, context: AuthContext) => {
+  if (!context?.user) return {};
+  const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+  return {
+    Authorization: `Bearer ${jwt}`,
+    'Content-Type': 'application/json',
+    'X-Platform-URL': getChatbotUrl(req),
+    'X-Platform-Product': 'opencti',
+    'X-Platform-Version': PLATFORM_VERSION,
+    'opencti-draft-id': req.headers['opencti-draft-id'] as string || '',
+  };
+};
 
 /**
  * Authenticate the request and verify chatbot prerequisites (CGU + license).
@@ -93,7 +106,6 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 
 // ── GET /chatbot/config ──────────────────────────────────────────────────
 // Returns chatbot configuration (XTM One URL) for the frontend.
-
 export const getChatbotConfig = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
@@ -111,7 +123,6 @@ export const getChatbotConfig = async (req: Express.Request, res: Express.Respon
 
 // ── GET /chatbot/agents ─────────────────────────────────────────────────
 // Returns available agents from the stored intent catalog (no XTM One call).
-
 export const getChatbotAgents = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
@@ -139,7 +150,6 @@ export const getChatbotAgents = async (req: Express.Request, res: Express.Respon
 
 // ── POST /chatbot/sessions ──────────────────────────────────────────────
 // Proxies to XTM One Platform Chat API to create/resume a conversation.
-
 export const postChatbotSession = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
@@ -167,24 +177,11 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
   }
 };
 
-const generateBasicHeaders = async (req: Express.Request, context: AuthContext) => {
-  if (!context?.user) return {};
-  const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
-  return {
-    Authorization: `Bearer ${jwt}`,
-    'Content-Type': 'application/json',
-    'X-Platform-URL': getChatbotUrl(req),
-    'X-Platform-Product': 'opencti',
-    'X-Platform-Version': PLATFORM_VERSION,
-    'opencti-draft-id': req.headers['opencti-draft-id'] as string || '',
-  };
-};
-
 // ── POST /chatbot/messages ──────────────────────────────────────────────
 // Proxies to XTM One Platform Chat API (streaming SSE).
 // When file_ids are present in the body, routes to the conversation-level
 // messages endpoint so that uploaded files are visible to the agent.
-
+// Chat stream (conversationId available or not)
 export const postChatbotMessage = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
@@ -196,46 +193,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     }
 
     const headers = await generateBasicHeaders(req, context);
-
-    // When file_ids are included, use the conversation-level endpoint
-    // so that XTM One sees the uploaded files in the same conversation.
-    // The conversation-level endpoint does NOT support streaming — it returns
-    // plain JSON. So we make a regular request and convert to SSE for the frontend.
-    const hasFiles = Array.isArray(req.body.file_ids) && req.body.file_ids.length > 0;
-    const conversationId = req.body.conversation_id;
-
-    if (hasFiles && conversationId) {
-      const url = `${XTM_ONE_URL}/api/v1/chat/conversations/${encodeURIComponent(conversationId)}/messages`;
-      const response = await axios.post(url, req.body, { headers, timeout: MULTIPART_XTM_TIMEOUT });
-
-      // Convert the JSON response into SSE events the frontend expects
-      const data = response.data;
-      const assistantContent = data?.assistant_message?.content ?? '';
-      const responseConversationId = data?.conversation_id ?? conversationId;
-
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache, no-transform');
-      res.setHeader('Connection', 'keep-alive');
-      res.setHeader('X-Accel-Buffering', 'no');
-
-      const ssePayload = {
-        type: 'done',
-        content: assistantContent,
-        conversation_id: responseConversationId,
-        tool_names: data?.assistant_message?.tool_names ?? undefined,
-        tool_call_count: data?.assistant_message?.tool_call_count ?? undefined,
-        iterations: data?.assistant_message?.iterations ?? undefined,
-        transfer_agent_id: data?.transfer_agent_id ?? undefined,
-        transfer_agent_name: data?.transfer_agent_name ?? undefined,
-      };
-      res.write(`data: ${JSON.stringify(ssePayload)}\n\n`);
-      res.end();
-      return;
-    }
-
-    // Normal streaming path (no file_ids) — platform API supports SSE
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
-
     const response = await axios.post(url, req.body, {
       headers,
       responseType: 'stream',
@@ -323,12 +281,11 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
 //   - conversation_id field (required)
 //   - one or more file fields
 // Returns: { file_ids: string[] }
-
+// Upload files in conversation
 export const postChatbotUpload = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
-
     const { files, fields } = await parseMultipart(req);
     const conversationId = fields.conversation_id;
     if (!conversationId || files.length === 0) {
@@ -351,12 +308,10 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
         fileIds.push(uploadRes.data.file_id);
       }
     }
-
     if (fileIds.length === 0) {
       res.status(502).json({ error: 'Failed to upload files to XTM One' });
       return;
     }
-
     res.json({ file_ids: fileIds });
   } catch (e: unknown) {
     logApp.error('Error in chatbot upload', { cause: e });
@@ -378,7 +333,7 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
 //   1. application/json — text-based: { agent_slug, content }
 //   2. multipart/form-data — file-based: files[] + agent_slug field
 // In multipart mode, files are proxied to XTM One and a STIX bundle is returned.
-
+// Require direct response (files support through multipart), not streamable
 export const postAgentMessage = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
@@ -475,18 +430,16 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
 // Streaming agent call: sends a message with stream=true and pipes the
 // SSE event stream back to the client for real-time rendering.
 // Body: { agent_slug, content }
-
+// AskIA / Insight (no files), streamed to client
 export const postAgentMessageStream = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
-
     const { agent_slug, content } = req.body || {};
     if (!agent_slug || !content) {
       res.status(400).json({ error: 'agent_slug and content are required' });
       return;
     }
-
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
     const headers = await generateBasicHeaders(req, context);
     const response = await axios.post(url, {
@@ -499,18 +452,14 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       decompress: false,
       timeout: 0,
     });
-
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
-
     response.data.pipe(res);
-
     req.on('close', () => {
       response.data.destroy();
     });
-
     response.data.on('error', (error: Error) => {
       logApp.error('Stream error in agent stream proxy', { cause: error });
       if (!res.headersSent) {
@@ -559,7 +508,6 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
 // Used when XTM One is NOT configured (no xtm_one_token).
 // Proxies to the Flowise-based chatbot at ${XTM_ONE_URL}/chatbot with
 // PEM-based authentication.
-
 export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'chatbot');
