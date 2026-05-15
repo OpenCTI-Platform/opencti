@@ -20,22 +20,18 @@ export const findDraftEntityRead = async (
 };
 
 // Mark the entity as read by the current user in the draft
-// Upsert: creates the record if it doesn't exist, updates it otherwise
+// Upsert: the deterministic standard_id (uuidv5 on user_id|draft_id|entity_id) ensures
+// concurrent calls resolve to the same document without a prior find.
 export const draftEntityMarkRead = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
   draftId: string,
 ): Promise<StoreEntityDraftEntityRead> => {
-  const existing = await findDraftEntityRead(context, user, entityId, draftId);
-  if (existing) {
-    const { element } = await patchAttribute<StoreEntityDraftEntityRead>(context, user, existing.id, ENTITY_TYPE_DRAFT_ENTITY_READ, { is_read: true });
-    return element;
-  }
   const input = { user_id: user.id, draft_id: draftId, entity_id: entityId, is_read: true };
   // Force creation outside of any draft context to store in live index
   const contextOutOfDraft = { ...context, draft_context: '' };
-  return createInternalObject<StoreEntityDraftEntityRead>(contextOutOfDraft, user, input, ENTITY_TYPE_DRAFT_ENTITY_READ);
+  return createInternalObject<StoreEntityDraftEntityRead>(contextOutOfDraft, user, input, ENTITY_TYPE_DRAFT_ENTITY_READ, { auditLogEnabled: false });
 };
 
 // Mark the entity as unread by the current user in the draft
