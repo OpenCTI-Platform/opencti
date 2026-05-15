@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import convertDraftEntityReadToStix from './draftEntityRead-converter';
 import { ENTITY_TYPE_DRAFT_ENTITY_READ, type StoreEntityDraftEntityRead, type StixDraftEntityRead } from './draftEntityRead-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -14,7 +13,7 @@ const DRAFT_ENTITY_READ_DEFINITION: ModuleDefinition<StoreEntityDraftEntityRead,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DRAFT_ENTITY_READ]: () => uuidv4(),
+      [ENTITY_TYPE_DRAFT_ENTITY_READ]: [{ src: 'user_id' }, { src: 'draft_id' }, { src: 'entity_id' }],
     },
   },
   attributes: [
