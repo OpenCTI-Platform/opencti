@@ -120,6 +120,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
   name: 'Container wrapper',
   description: 'Create a container and wrap the element inside it',
   icon: 'container',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],

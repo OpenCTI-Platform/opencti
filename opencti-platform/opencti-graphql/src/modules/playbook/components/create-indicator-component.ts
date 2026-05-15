@@ -73,6 +73,7 @@ export const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndica
   name: 'Promote observable to indicator',
   description: 'Create an indicator based on an observable',
   icon: 'indicator',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],

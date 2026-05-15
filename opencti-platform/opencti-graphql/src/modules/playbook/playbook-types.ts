@@ -70,11 +70,18 @@ export interface ExecutorParameters<T extends object> {
   event?: StreamDataEvent;
 }
 
+export type PlaybookCategory
+  = | 'start_playbook'
+    | 'transform_and_enrich'
+    | 'share_and_access'
+    | 'end_playbook';
+
 export interface PlaybookComponent<T extends object> {
   id: string;
   name: string;
   description: string;
   icon: string;
+  category: PlaybookCategory;
   is_entry_point: boolean;
   is_internal: boolean;
   ports: PortDefinition[];

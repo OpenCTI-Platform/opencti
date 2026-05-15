@@ -43,6 +43,7 @@ const playbookComponentsFragment = graphql`
       name
       description
       icon
+      category
       is_entry_point
       is_internal
       configuration_schema

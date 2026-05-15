@@ -42,6 +42,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
   icon: 'notification',
   is_entry_point: false,
   is_internal: true,
+  category: 'end_playbook',
   ports: [],
   configuration_schema: PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA,
   schema: async () => {

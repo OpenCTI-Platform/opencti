@@ -23425,8 +23425,16 @@ export type PlaybookAddNodeInput = {
   position: PositionInput;
 };
 
+export enum PlaybookCategory {
+  EndPlaybook = 'end_playbook',
+  ShareAndAccess = 'share_and_access',
+  StartPlaybook = 'start_playbook',
+  TransformAndEnrich = 'transform_and_enrich'
+}
+
 export type PlaybookComponent = {
   __typename?: 'PlaybookComponent';
+  category: PlaybookCategory;
   configuration_schema?: Maybe<Scalars['String']['output']>;
   description: Scalars['String']['output'];
   icon: Scalars['String']['output'];
@@ -39695,6 +39703,7 @@ export type ResolversTypes = ResolversObject<{
   PlaybookAddInput: PlaybookAddInput;
   PlaybookAddLinkInput: PlaybookAddLinkInput;
   PlaybookAddNodeInput: PlaybookAddNodeInput;
+  PlaybookCategory: PlaybookCategory;
   PlaybookComponent: ResolverTypeWrapper<PlaybookComponent>;
   PlaybookComponentPort: ResolverTypeWrapper<PlaybookComponentPort>;
   PlaybookConnection: ResolverTypeWrapper<Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversTypes['PlaybookEdge']> }>;
@@ -48319,6 +48328,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type PlaybookComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookComponent'] = ResolversParentTypes['PlaybookComponent']> = ResolversObject<{
+  category?: Resolver<ResolversTypes['PlaybookCategory'], ParentType, ContextType>;
   configuration_schema?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   icon?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

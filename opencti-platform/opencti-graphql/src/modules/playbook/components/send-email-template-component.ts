@@ -28,6 +28,7 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
   name: 'Send email from template',
   description: 'Send email from template to targets',
   icon: 'emailtemplate',
+  category: 'end_playbook',
   is_entry_point: false,
   is_internal: true,
   ports: [],

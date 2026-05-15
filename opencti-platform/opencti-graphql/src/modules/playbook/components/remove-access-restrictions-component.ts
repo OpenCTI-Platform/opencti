@@ -40,6 +40,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
   name: 'Remove access restrictions',
   description: 'Remove advanced access restrictions on entities',
   icon: 'lock-remove',
+  category: 'share_and_access',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],

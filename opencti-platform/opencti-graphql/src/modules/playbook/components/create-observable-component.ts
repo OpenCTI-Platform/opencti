@@ -52,6 +52,7 @@ export const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObser
   name: 'Extract observables from indicator',
   description: 'Create observables based on an indicator',
   icon: 'observable',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],

@@ -72,9 +72,10 @@ const SECURITY_COVERAGE_COMPATIBLE_TYPES = [
 
 export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCoverageConfiguration> = {
   id: 'PLAYBOOK_SECURITY_COVERAGE_COMPONENT',
-  name: 'Security coverage',
+  name: 'Create Security Coverage',
   description: 'Create a security coverage for the given entity(ies) (when type is compatible)',
   icon: 'security-coverage',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
