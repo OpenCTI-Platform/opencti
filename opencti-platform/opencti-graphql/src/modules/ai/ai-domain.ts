@@ -12,7 +12,6 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
-import { TimeoutError } from '@opentelemetry/sdk-metrics';
 import nconf from 'nconf';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
@@ -49,6 +48,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
+import { callWithTimeout, TimeoutError } from '../../utils/promiseUtils';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
@@ -406,12 +406,6 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
     filters: filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap),
     notResolvedValues,
   };
-};
-
-const callWithTimeout = <T>(promise: Promise<T>, delay: number) => {
-  return Promise.race([new Promise<T>((_resolve, reject) => {
-    setTimeout(() => reject(new TimeoutError()), delay);
-  }), promise]);
 };
 
 export const generateNLQresponse = async (context: AuthContext, user: AuthUser, args: MutationAiNlqArgs) => {

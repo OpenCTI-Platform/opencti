@@ -1,5 +1,5 @@
 import { MeterProvider, type IMetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { type Counter, type Histogram, ValueType } from '@opentelemetry/api';
+import { type Counter, type Histogram, ValueType, SpanKind } from '@opentelemetry/api';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import nodeMetrics from 'opentelemetry-node-metrics';
@@ -127,7 +127,7 @@ export const telemetry = async (context: AuthContext, user: AuthUser, spanName: 
       [ATTR_ENDUSER_ID]: user.id,
       ...attrs,
     },
-    kind: 2 }, ctx);
+    kind: SpanKind.CLIENT }, ctx);
 
   try {
     const data = await fn();

@@ -1,11 +1,14 @@
 import * as api from '@opentelemetry/api';
 import { internal, ExportResultCode, globalErrorHandler, unrefTimer } from '@opentelemetry/core';
-import { type MetricProducer, type PushMetricExporter, TimeoutError } from '@opentelemetry/sdk-metrics';
+import { type MetricProducer, type PushMetricExporter } from '@opentelemetry/sdk-metrics';
 import { type DataPoint, type ResourceMetrics, MetricReader } from '@opentelemetry/sdk-metrics';
 import { emptyResource } from '@opentelemetry/resources';
 import { UnknownError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { pushAll } from '../utils/arrayUtil';
+import { callWithTimeout, TimeoutError } from '../utils/promiseUtils';
+
+const EMPTY_RESOURCE = emptyResource();
 
 export type BatchExportingMetricReaderOptions = {
   exporter: PushMetricExporter;
@@ -16,14 +19,8 @@ export type BatchExportingMetricReaderOptions = {
   collectCallback?: () => void;
 };
 
-const callWithTimeout = <T>(promise: Promise<T>, delay: number) => {
-  return Promise.race([new Promise<T>((_resolve, reject) => {
-    setTimeout(() => reject(new TimeoutError()), delay);
-  }), promise]);
-};
-
 export class BatchExportingMetricReader extends MetricReader {
-  private _resourceMetrics: ResourceMetrics = { resource: emptyResource(), scopeMetrics: [] };
+  private _resourceMetrics: ResourceMetrics = { resource: EMPTY_RESOURCE, scopeMetrics: [] };
 
   private _intervalCollect?: ReturnType<typeof setInterval>;
 
@@ -71,7 +68,7 @@ export class BatchExportingMetricReader extends MetricReader {
       );
     }
     const doCollect = async () => {
-      if (this._resourceMetrics.resource !== emptyResource()) {
+      if (this._resourceMetrics.resource !== EMPTY_RESOURCE) {
         // Append result
         const metrics = resourceMetrics.scopeMetrics.map((scopeMetric) => scopeMetric.metrics).flat();
         this._resourceMetrics.scopeMetrics.forEach((value) => {
@@ -122,7 +119,7 @@ export class BatchExportingMetricReader extends MetricReader {
       if (result.code !== ExportResultCode.SUCCESS) {
         throw UnknownError('PeriodicExportingMetricReader: metrics export failed', { cause: result.error });
       }
-      this._resourceMetrics.resource = emptyResource();
+      this._resourceMetrics.resource = EMPTY_RESOURCE;
     };
     await doExport();
   }

@@ -171,9 +171,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   };
   // region File exporter
   const fileExporterReader = new BatchExportingMetricReader({
-    exporter: new MetricFileExporter({
-      temporalityPreference: AggregationTemporality.DELTA,
-    }),
+    exporter: new MetricFileExporter(AggregationTemporality.DELTA),
     collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
     exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
     collectCallback: collectorCallback,
