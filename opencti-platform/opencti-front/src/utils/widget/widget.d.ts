@@ -1,4 +1,4 @@
-import type { GqlFilterGroup } from '../utils/filters/filtersUtils';
+import type { GqlFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
 import { ReactNode } from 'react';
