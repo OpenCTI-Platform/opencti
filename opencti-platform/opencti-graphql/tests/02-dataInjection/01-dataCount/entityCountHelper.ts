@@ -1,4 +1,4 @@
-import { TESTING_GROUPS, TESTING_ORGS, TESTING_ROLES, TESTING_USERS } from '../../utils/testQuery';
+import { NEW_USER_TEST_VERSION, TESTING_GROUPS, TESTING_ORGS, TESTING_ROLES, TESTING_USERS } from '../../utils/testQuery';
 
 export const entitiesCounter = {
   AdministrativeArea: 1,
@@ -72,5 +72,5 @@ export const relationsCounter = {
   'stix-sighting-relationship': 2,
   targets: 2,
   uses: 3,
-  granted: 4,
+  granted: NEW_USER_TEST_VERSION ? 4 : 0,
 };
