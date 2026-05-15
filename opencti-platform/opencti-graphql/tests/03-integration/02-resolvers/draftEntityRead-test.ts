@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
-import { draftEntityMarkRead, draftEntityMarkUnread, findDraftEntityRead, resetDraftEntityRead } from '../../../src/modules/draftEntityRead/draftEntityRead-domain';
+import { draftEntityMarkRead, findDraftEntityRead, resetDraftEntityRead } from '../../../src/modules/draftEntityRead/draftEntityRead-domain';
 
 // -----------------------------------------------------------------
 // GraphQL fragments / mutations / queries
@@ -87,18 +87,18 @@ describe('DraftEntityRead Resolver', () => {
 
   beforeAll(async () => {
     // Create a draft workspace to use as draftId context
-    const draftResult = await queryAsAdmin({
+    const draftResult = await queryAsAdminWithSuccess({
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: { input: { name: 'test-draft-entity-read' } },
     });
-    draftId = draftResult?.data?.draftWorkspaceAdd?.id as string;
+    draftId = draftResult.data.draftWorkspaceAdd.id as string;
 
     // Create a report to use as the entity target
-    const reportResult = await queryAsAdmin({
+    const reportResult = await queryAsAdminWithSuccess({
       query: CREATE_REPORT_QUERY,
       variables: { input: { name: 'test-report-for-draft-entity-read', published: '2024-01-01T00:00:00Z' } },
     });
-    entityId = reportResult?.data?.reportAdd?.id as string;
+    entityId = reportResult.data.reportAdd.id as string;
   });
 
   afterAll(async () => {
@@ -113,12 +113,12 @@ describe('DraftEntityRead Resolver', () => {
 
   describe('draftEntityMarkRead', () => {
     it('should mark an entity as read and return the record', async () => {
-      const result = await queryAsAdmin({
+      const result = await queryAsAdminWithSuccess({
         query: DRAFT_ENTITY_MARK_READ_MUTATION,
         variables: { entityId, draftId },
       });
-      const record = result?.data?.draftEntityMarkRead;
-      expect(record).toBeDefined();
+      const record = result.data.draftEntityMarkRead;
+      expect(record).not.toBeNull();
       expect(record.entity_id).toEqual(entityId);
       expect(record.draft_id).toEqual(draftId);
       expect(record.user_id).toEqual(ADMIN_USER.id);
@@ -126,15 +126,15 @@ describe('DraftEntityRead Resolver', () => {
     });
 
     it('should be idempotent — calling markRead twice returns the same record (upsert)', async () => {
-      const first = await queryAsAdmin({
+      const first = await queryAsAdminWithSuccess({
         query: DRAFT_ENTITY_MARK_READ_MUTATION,
         variables: { entityId, draftId },
       });
-      const second = await queryAsAdmin({
+      const second = await queryAsAdminWithSuccess({
         query: DRAFT_ENTITY_MARK_READ_MUTATION,
         variables: { entityId, draftId },
       });
-      expect(first?.data?.draftEntityMarkRead?.id).toEqual(second?.data?.draftEntityMarkRead?.id);
+      expect(first.data.draftEntityMarkRead?.id).toEqual(second.data.draftEntityMarkRead?.id);
     });
   });
 
@@ -144,12 +144,12 @@ describe('DraftEntityRead Resolver', () => {
 
   describe('draftEntityRead query', () => {
     it('should return the read record for the current user', async () => {
-      const result = await queryAsAdmin({
+      const result = await queryAsAdminWithSuccess({
         query: DRAFT_ENTITY_READ_QUERY,
         variables: { entityId, draftId },
       });
-      const record = result?.data?.draftEntityRead;
-      expect(record).toBeDefined();
+      const record = result.data.draftEntityRead;
+      expect(record).not.toBeNull();
       expect(record.is_read).toBe(true);
       expect(record.entity_id).toEqual(entityId);
     });
@@ -170,12 +170,17 @@ describe('DraftEntityRead Resolver', () => {
 
   describe('draftEntityMarkUnread', () => {
     it('should mark the entity as unread', async () => {
-      const result = await queryAsAdmin({
+      // Ensure entity is read first
+      await queryAsAdminWithSuccess({
+        query: DRAFT_ENTITY_MARK_READ_MUTATION,
+        variables: { entityId, draftId },
+      });
+      const result = await queryAsAdminWithSuccess({
         query: DRAFT_ENTITY_MARK_UNREAD_MUTATION,
         variables: { entityId, draftId },
       });
-      const record = result?.data?.draftEntityMarkUnread;
-      expect(record).toBeDefined();
+      const record = result.data.draftEntityMarkUnread;
+      expect(record).not.toBeNull();
       expect(record.is_read).toBe(false);
     });
 
@@ -248,7 +253,7 @@ describe('DraftEntityRead Resolver', () => {
         variables: { entityId, draftId },
       });
       const record = result?.data?.draftEntityMarkRead;
-      expect(record).toBeDefined();
+      expect(record).not.toBeNull();
       expect(record.user_id).not.toEqual(ADMIN_USER.id);
       expect(record.is_read).toBe(true);
     });
