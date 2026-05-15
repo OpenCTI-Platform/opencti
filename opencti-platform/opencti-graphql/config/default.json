@@ -288,7 +288,9 @@
   "hub_registration_manager": {
     "enabled": true,
     "lock_key": "hub_registration_manager_lock",
-    "interval": 3600000
+    "interval": 3600000,
+    "news_feed_cleanup_interval_value": 180,
+    "news_feed_cleanup_interval_unit": "days"
   },
   "indicator_decay_manager": {
     "enabled": true,

@@ -4,13 +4,13 @@ import type { NewsFeedAddInput } from './news-feed-types';
 import { createInternalObject } from '../../../../domain/internalObject';
 import { addFilter } from '../../../../utils/filtering/filtering-utils';
 import { fullEntitiesList, pageEntitiesConnection } from '../../../../database/middleware-loader';
-import { elCount } from '../../../../database/engine';
+import { elCount, elPaginate } from '../../../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../../database/utils';
-import type { QueryMyNewsFeedsArgs } from '../../../../generated/graphql';
-import { FilterMode } from '../../../../generated/graphql';
+import { FilterMode, FilterOperator, type QueryMyNewsFeedsArgs } from '../../../../generated/graphql';
 import { notify } from '../../../../database/redis';
-import { BUS_TOPICS } from '../../../../config/conf';
-import { patchAttribute } from '../../../../database/middleware';
+import { BUS_TOPICS, logApp } from '../../../../config/conf';
+import { deleteElementById, patchAttribute } from '../../../../database/middleware';
+import { ALREADY_DELETED_ERROR } from '../../../../config/errors';
 import { promiseMap } from '../../../../utils/promiseUtils';
 
 export const myUnreadNewsFeedsCount = (context: AuthContext, user: AuthUser, userId?: string | null) => {
@@ -58,4 +58,68 @@ export const markAllNewsFeedItemsAsRead = async (context: AuthContext, user: Aut
   const remainingUnreadCount = await myUnreadNewsFeedsCount(context, user);
   await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: remainingUnreadCount, user_id: user.id }, user);
   return true;
+};
+
+const NEWS_FEED_CLEANUP_BATCH_SIZE = 1500;
+const NEWS_FEED_CLEANUP_CONCURRENCY = 5;
+
+export const cleanOldNewsFeedItems = async (
+  context: AuthContext,
+  user: AuthUser,
+  cutoffDate: Date,
+): Promise<number> => {
+  const filters = {
+    mode: FilterMode.And,
+    filters: [
+      {
+        key: ['creation_date'],
+        values: [cutoffDate.toISOString()],
+        operator: FilterOperator.Lt,
+      },
+    ],
+    filterGroups: [],
+  };
+
+  let totalDeleted = 0;
+
+  while (true) {
+    const result = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+      filters,
+      types: [ENTITY_TYPE_NEWS_FEED_ITEM],
+      first: NEWS_FEED_CLEANUP_BATCH_SIZE,
+    }) as any;
+
+    if (!result.edges || result.edges.length === 0) {
+      break;
+    }
+
+    await promiseMap(
+      result.edges,
+      async (edge: any) => {
+        try {
+          await deleteElementById(
+            context,
+            user,
+            edge.node.internal_id,
+            ENTITY_TYPE_NEWS_FEED_ITEM,
+          );
+          totalDeleted += 1;
+        } catch (err: any) {
+          if (err?.extensions?.code !== ALREADY_DELETED_ERROR) {
+            logApp.error('[XTMH] Failed to delete news feed item during cleanup', {
+              cause: err,
+              id: edge.node.internal_id,
+            });
+          }
+        }
+      },
+      NEWS_FEED_CLEANUP_CONCURRENCY,
+    );
+
+    if (result.edges.length < NEWS_FEED_CLEANUP_BATCH_SIZE) {
+      break;
+    }
+  }
+
+  return totalDeleted;
 };
