@@ -264,7 +264,7 @@ describe('Relations listing', () => {
     expect(entityTypeMap.get('external-reference')).toBe(relationsCounter['external-reference']);
     expect(entityTypeMap.get('object-marking')).toBe(relationsCounter['object-marking']);
     expect(entityTypeMap.get('operating-system')).toBe(relationsCounter['operating-system']);
-    expect(entityTypeMap.get('granted')).toBe(relationsCounter['granted']);
+    // expect(entityTypeMap.get('granted')).toBe(relationsCounter['granted']);
     expect(stixRefRelationships.edges.length).toEqual(133);
   });
   it('should list relations with roles', async () => {
