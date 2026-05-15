@@ -99,6 +99,7 @@ jobs:
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
           -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
+          -e APP__SESSION_TIMEOUT=3600000 \
           -e APP__HEALTH_ACCESS_KEY=cihealthkey \
           -e REDIS__HOSTNAME=redis \
           -e REDIS__NAMESPACE=e2e-start \
