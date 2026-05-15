@@ -165,6 +165,7 @@ jobs:
           -e TEAMS_WEBHOOK="teams-webhook-url" \
           -e NODE_OPTIONS=--max_old_space_size=8192 \
           -e CI=true \
+          -e NODE_OPTIONS=--max_old_space_size=8192 \
           node:22.21.0 \
           sh -c 'set -ex;
               echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
