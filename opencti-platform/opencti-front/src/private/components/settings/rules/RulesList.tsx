@@ -14,9 +14,11 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 
-export type Rule = NonNullable<RulesList_data$data['rules']>[number];
+export type Rule = NonNullable<NonNullable<RulesList_data$data['rules']>[number]>;
 export type Task = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node'];
 export type Work = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node']['work'];
+
+const PROTOTYPE_GENERIC_RULE_ID = 'prototype_generic_relation_chain';
 
 const fragmentData = graphql`
   fragment RulesList_data on Query {
@@ -127,13 +129,61 @@ const RulesList = ({
 
   const { rules, backgroundTasks } = useFragment(fragmentData, data);
 
+  const prototypeGenericRule = useMemo(() => ({
+    id: PROTOTYPE_GENERIC_RULE_ID,
+    name: 'Generic relationship chain propagation (prototype)',
+    description: 'If A - rel -> B and B - rel -> C, then create A - rel -> C with configurable filters and output relation settings.',
+    activated: false,
+    category: 'General propagation',
+    display: {
+      if: [
+        {
+          action: null,
+          source: 'Entity A',
+          source_color: '#ff9800',
+          relation: 'Any relationship',
+          target: 'Entity B',
+          target_color: '#4caf50',
+          identifier: null,
+          identifier_color: null,
+        },
+        {
+          action: null,
+          source: 'Entity B',
+          source_color: '#4caf50',
+          relation: 'Any relationship',
+          target: 'Entity C',
+          target_color: '#00bcd4',
+          identifier: null,
+          identifier_color: null,
+        },
+      ],
+      then: [
+        {
+          action: 'CREATE',
+          source: 'Entity A',
+          source_color: '#ff9800',
+          relation: 'Related to',
+          target: 'Entity C',
+          target_color: '#00bcd4',
+          identifier: null,
+          identifier_color: null,
+        },
+      ],
+    },
+  }) as Rule, []);
+
   const filteredRules = useMemo(() => {
+    const backendRules: Rule[] = (rules ?? []).flatMap((r) => (r ? [r] : []));
+    const rulesWithPrototype = backendRules.some((r) => r.id === PROTOTYPE_GENERIC_RULE_ID)
+      ? backendRules
+      : [...backendRules, prototypeGenericRule];
     const filterByKeyword = (p: Rule) => keyword === ''
       || p?.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || p?.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || p?.category?.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-    return (rules ?? []).flatMap((r) => (!r || !filterByKeyword(r) ? [] : r));
-  }, [rules, viewStorage]);
+    return rulesWithPrototype.filter((r) => filterByKeyword(r));
+  }, [rules, keyword, prototypeGenericRule]);
 
   const categories = useMemo(() => {
     const setOfCategories = new Set(filteredRules.flatMap((r) => r.category ?? []));
@@ -144,7 +194,7 @@ const RulesList = ({
     setExpandedCategories((previous) => {
       const next: Record<string, boolean> = {};
       categories.forEach((category) => {
-        next[category] = previous[category] ?? true;
+        next[category] = previous[category] ?? false;
       });
       return next;
     });
@@ -223,6 +273,9 @@ const RulesList = ({
                     task={getTasksByRuleId(catRule.id)[0]}
                     onConfiguredRuleCountsChange={(counts) => onRuleConfiguredCountsChange?.(catRule.id, counts)}
                     toggle={() => {
+                      if (catRule.id === PROTOTYPE_GENERIC_RULE_ID) {
+                        return;
+                      }
                       setSelectedRule(catRule.id);
                       setPendingMutation(catRule.activated ? 'disable' : 'enable');
                     }}

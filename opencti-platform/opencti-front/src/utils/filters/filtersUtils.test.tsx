@@ -5,6 +5,7 @@ import {
   emptyFilterGroup,
   findFiltersFromKeys,
   formatFiltersInPirContext,
+  getBuildFilterKeysMapFromEntityType,
   getEntityTypeThreeFirstLevelsFilterValues,
   isFilterGroupFormatCorrect,
   isRegardingOfFilterWarning,
@@ -20,8 +21,89 @@ import {
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
 import { FilterGroup } from './filtersHelpers-types';
+import { FilterDefinition } from '../hooks/useAuth';
 
 describe('Filters utils', () => {
+  describe('getBuildFilterKeysMapFromEntityType', () => {
+    it('should return only common compatible keys in intersection mode', () => {
+      const typeA = new Map([
+        ['name', {
+          filterKey: 'name',
+          label: 'Name',
+          type: 'string',
+          multiple: false,
+          subEntityTypes: ['TypeA'],
+          elementsForFilterValuesSearch: [],
+        }],
+        ['confidence', {
+          filterKey: 'confidence',
+          label: 'Confidence',
+          type: 'integer',
+          multiple: false,
+          subEntityTypes: ['TypeA'],
+          elementsForFilterValuesSearch: [],
+        }],
+      ]);
+      const typeB = new Map([
+        ['name', {
+          filterKey: 'name',
+          label: 'Name',
+          type: 'string',
+          multiple: false,
+          subEntityTypes: ['TypeB'],
+          elementsForFilterValuesSearch: [],
+        }],
+        ['pattern', {
+          filterKey: 'pattern',
+          label: 'Pattern',
+          type: 'text',
+          multiple: false,
+          subEntityTypes: ['TypeB'],
+          elementsForFilterValuesSearch: [],
+        }],
+      ]);
+
+      const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
+        ['TypeA', typeA],
+        ['TypeB', typeB],
+      ]);
+
+      const result = getBuildFilterKeysMapFromEntityType(filterKeysSchema, ['TypeA', 'TypeB'], { mode: 'intersection' });
+      expect(Array.from(result.keys())).toStrictEqual(['name']);
+    });
+
+    it('should exclude same key when definitions are incompatible in intersection mode', () => {
+      const typeA = new Map([
+        ['aliases', {
+          filterKey: 'aliases',
+          label: 'Aliases',
+          type: 'string',
+          multiple: true,
+          subEntityTypes: ['TypeA'],
+          elementsForFilterValuesSearch: [],
+        }],
+      ]);
+      const typeB = new Map([
+        ['aliases', {
+          filterKey: 'aliases',
+          label: 'Aliases',
+          type: 'integer',
+          multiple: true,
+          subEntityTypes: ['TypeB'],
+          elementsForFilterValuesSearch: [],
+        }],
+      ]);
+
+      const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
+        ['TypeA', typeA],
+        ['TypeB', typeB],
+      ]);
+
+      const result = getBuildFilterKeysMapFromEntityType(filterKeysSchema, ['TypeA', 'TypeB'], { mode: 'intersection' });
+      expect(Array.from(result.keys())).toStrictEqual([]);
+    });
+  });
+
   describe('useBuildFilterKeysMapFromEntityType', () => {
     it('should list filter definitions by given entity types attributes', () => {
       const stixCoreObjectKey = 'Stix-Core-Object';

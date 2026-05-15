@@ -31,7 +31,7 @@ const display = {
       relation: 'relationship_participate-to',
       source: 'User A',
       source_color: '#ff9800',
-      target: 'organization C',
+      target: 'Organization C',
       target_color: '#00bcd4',
     },
   ],
