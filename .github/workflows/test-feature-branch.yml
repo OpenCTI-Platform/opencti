@@ -40,17 +40,18 @@ jobs:
       - name: Wait for Docker tags availability
         run: |
           tag="${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}"
+          echo "Waiting for image tag: ${tag}"
           images=("filigran/platform" "filigran/worker")
           for image in "${images[@]}"; do
             echo "Checking ${image}:${tag} availability..."
             available=false
-            for attempt in {1..20}; do
+            for attempt in {1..40}; do
               if docker manifest inspect "${image}:${tag}" >/dev/null 2>&1; then
                 echo "${image}:${tag} is available"
                 available=true
                 break
               fi
-              echo "Attempt ${attempt}/20: ${image}:${tag} not yet available, retrying in 15s..."
+              echo "Attempt ${attempt}/40: ${image}:${tag} not yet available, retrying in 15s..."
               sleep 15
             done
             if [ "${available}" != "true" ]; then
