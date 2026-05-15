@@ -86,7 +86,6 @@
       }
     },
     "health_access_key": "ChangeMe",
-    "liveness_port": 4001,
     "request_timeout": 1200000,
     "session_timeout": 1200000,
     "session_cookie": false,

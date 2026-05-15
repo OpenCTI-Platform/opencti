@@ -15,19 +15,10 @@ Container orchestrators like **Kubernetes** need to distinguish between two stat
 - **Liveness** — Is the process running? If not, restart the container.
 - **Readiness** — Is the application ready to serve traffic? If not, stop sending requests.
 
-| Probe     | Endpoint                      | Port                                 | Available                          | Checks                             |
-|:----------|:------------------------------|:-------------------------------------|:-----------------------------------|:-----------------------------------|
-| Liveness  | `{base_path}/health/liveness` | `app:liveness_port` (default `4001`) | Immediately on process start       | Process is running                 |
-| Readiness | `{base_path}/health`          | `app:port` (default `4000`)          | After full platform initialization | ElasticSearch, Redis, RabbitMQ, S3 |
-
-## Configuration
-
-The liveness probe is configured through the standard OpenCTI configuration system.
-
-| Parameter         | Environment variable | Default value | Description                              |
-|:------------------|:---------------------|:--------------|:-----------------------------------------|
-| app:liveness_port | APP__LIVENESS_PORT   | 4001          | Port for the liveness probe HTTP server. |
-
+| Probe     | Endpoint                      | Port                                   | Available                          | Checks                             |
+|:----------|:------------------------------|:---------------------------------------|:-----------------------------------|:-----------------------------------|
+| Liveness  | `{base_path}/health/liveness` | `app:liveness_port` (default disabled) | Immediately on process start       | Process is running                 |
+| Readiness | `{base_path}/health`          | `app:port` (default `4000`)            | After full platform initialization | ElasticSearch, Redis, RabbitMQ, S3 |
 
 ## What's next?
 

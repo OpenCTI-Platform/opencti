@@ -11,9 +11,14 @@ import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 export const platformStart = async () => {
   const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
-  // Start the liveness probe first so orchestrators can detect the process is alive
-  startLivenessServer();
   try {
+    // Start the liveness probe first so orchestrators can detect the process is alive
+    try {
+      await startLivenessServer();
+    } catch (livenessError) {
+      logApp.error('[OPENCTI] Liveness server startup failed', { cause: livenessError });
+      throw livenessError;
+    }
     checkFeatureFlags();
     // Check all dependencies access
     try {

@@ -1,6 +1,7 @@
 {
   "app": {
     "port": 4010,
+    "liveness_port": 4001,
     "base_url": "http://127.0.0.1:4010/",
     "performance_logger": false,
     "enabled_dev_features": ["*"],
