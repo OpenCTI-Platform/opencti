@@ -33,7 +33,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA: JSONSchemaType<CreateObservab
       $ref: 'Apply to',
       oneOf: [
         { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
-        { const: playbookBundleElementsToApply.allElements.value, title: 'All observables in the bundle' },
+        { const: playbookBundleElementsToApply.allElements.value, title: 'All indicators in the bundle' },
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
     },
