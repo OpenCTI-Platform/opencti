@@ -5,7 +5,7 @@ import Bluebird, { Promise as BluePromise } from 'bluebird';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { compareUnsorted } from 'js-deep-equals';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import nconf from 'nconf';
 import {
@@ -1192,8 +1192,8 @@ export const inputResolveRefs = async (
     return inputResolved;
   };
   return telemetry(context, user, `INPUTS RESOLVE ${type}`, {
-    [SEMATTRS_DB_NAME]: 'middleware',
-    [SEMATTRS_DB_OPERATION]: 'resolver',
+    [ATTR_DB_NAMESPACE]: 'middleware',
+    [ATTR_DB_OPERATION_NAME]: 'resolver',
   }, inputResolveRefsFn);
 };
 const isRelationTargetGrants = (elementGrants: any[], relation: Record<string, any>, type: string) => {

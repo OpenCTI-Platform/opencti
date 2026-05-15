@@ -13,7 +13,7 @@ import './manager/index';
 // import tracing
 import './config/tracing';
 // endregion
-import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { platformStart } from './boot';
 import { ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
@@ -27,7 +27,7 @@ if (ENABLED_TRACING) {
     const otlpExporter = new OTLPTraceExporter({ url: otlpUri, headers: {} });
     const provider = new NodeTracerProvider({
       resource: defaultResource().merge(resourceFromAttributes({
-        [SEMRESATTRS_SERVICE_NAME]: 'opencti-platform',
+        [ATTR_SERVICE_NAME]: 'opencti-platform',
       })),
       spanProcessors: [new BatchSpanProcessor(otlpExporter)],
     });
@@ -39,7 +39,7 @@ if (ENABLED_TRACING) {
     const zipkinExporter = new ZipkinExporter({ url: zipKinUri, headers: {} });
     const provider = new NodeTracerProvider({
       resource: defaultResource().merge(resourceFromAttributes({
-        [SEMRESATTRS_SERVICE_NAME]: 'opencti-platform',
+        [ATTR_SERVICE_NAME]: 'opencti-platform',
       })),
       spanProcessors: [new BatchSpanProcessor(zipkinExporter)],
     });

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { SEMRESATTRS_SERVICE_INSTANCE_ID, SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../../../src/telemetry/TelemetryMeterManager';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
 import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION, TELEMETRY_GAUGE_DRAFT_CREATION } from '../../../src/manager/telemetryManager';
@@ -12,9 +12,9 @@ describe('Telemetry manager test coverage', () => {
   test('Verify that metrics get collected from both elastic and redis', async () => {
     // GIVEN a configured telemetry
     const filigranResource = resourceFromAttributes({
-      [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-      [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-      [SEMRESATTRS_SERVICE_INSTANCE_ID]: 'api-test-telemetry-id',
+      [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
+      [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
+      [ATTR_SERVICE_INSTANCE_ID]: 'api-test-telemetry-id',
       'service.instance.creation': new Date().toUTCString(),
     });
     const resource = defaultResource().merge(filigranResource);

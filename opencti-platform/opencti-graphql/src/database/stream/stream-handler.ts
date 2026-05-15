@@ -1,4 +1,4 @@
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
@@ -41,7 +41,7 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
       await streamClient.rawPushToStream(eventToPush);
     };
     await telemetry(context, user, 'INSERT STREAM', {
-      [SEMATTRS_DB_NAME]: 'stream_engine',
+      [ATTR_DB_NAMESPACE]: 'stream_engine',
     }, pushToStreamFn);
   }
 };

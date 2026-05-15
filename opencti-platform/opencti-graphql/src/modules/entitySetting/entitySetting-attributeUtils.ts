@@ -1,4 +1,4 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { defaultScale, type EntitySettingSchemaAttribute, getAttributesConfiguration } from './entitySetting-utils';
@@ -25,8 +25,8 @@ export const getEntitySettingSchemaAttributes = async (
   entitySetting: BasicStoreEntityEntitySetting,
 ): Promise<EntitySettingSchemaAttribute[]> => {
   return telemetry(context, user, 'ATTRIBUTES', {
-    [SEMATTRS_DB_NAME]: 'attributes_domain',
-    [SEMATTRS_DB_OPERATION]: 'attributes_definition',
+    [ATTR_DB_NAMESPACE]: 'attributes_domain',
+    [ATTR_DB_OPERATION_NAME]: 'attributes_definition',
   }, async () => {
     if (!entitySetting) {
       return [];

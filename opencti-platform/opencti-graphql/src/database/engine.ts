@@ -5,7 +5,7 @@ import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_QUERY_TEXT, ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
   buildPagination,
@@ -588,9 +588,9 @@ export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[
     return retryElOperations(searchOperation);
   };
   return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'read',
-    [SEMATTRS_DB_STATEMENT]: JSON.stringify(query),
+    [ATTR_DB_NAMESPACE]: 'search_engine',
+    [ATTR_DB_OPERATION_NAME]: 'read',
+    [ATTR_DB_QUERY_TEXT]: JSON.stringify(query),
   }, retriedElRawSearchFn);
 };
 
@@ -4787,8 +4787,8 @@ export const elIndexElements = async (
     return transformedElements.length;
   };
   return telemetry(context, user, `INSERT ${indexingType}`, {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'insert',
+    [ATTR_DB_NAMESPACE]: 'search_engine',
+    [ATTR_DB_OPERATION_NAME]: 'insert',
   }, elIndexElementsFn);
 };
 

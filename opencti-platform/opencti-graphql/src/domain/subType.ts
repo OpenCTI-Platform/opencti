@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildPagination } from '../database/utils';
@@ -46,8 +46,8 @@ export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: 
   };
 
   return telemetry(context, user, 'QUERY default subtypes', {
-    [SEMATTRS_DB_NAME]: 'subtypes_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [ATTR_DB_NAMESPACE]: 'subtypes_domain',
+    [ATTR_DB_OPERATION_NAME]: 'read',
   }, queryDefaultSubTypesFn);
 };
 

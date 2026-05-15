@@ -1,4 +1,3 @@
-import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
 import { MeterProvider, type IMetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { type Counter, type Histogram, ValueType } from '@opentelemetry/api';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -8,6 +7,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import nconf from 'nconf';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import type { Gauge } from '@opentelemetry/api';
+import { ATTR_ENDUSER_ID } from '../telemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_METRICS, ENABLED_TRACING } from './conf';
 
@@ -124,7 +124,7 @@ export const telemetry = async (context: AuthContext, user: AuthUser, spanName: 
   const tracingSpan = tracer.startSpan(spanName, {
     attributes: {
       'enduser.type': context.source,
-      [SEMATTRS_ENDUSER_ID]: user.id,
+      [ATTR_ENDUSER_ID]: user.id,
       ...attrs,
     },
     kind: 2 }, ctx);

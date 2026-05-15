@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
 import { DatabaseError, UnsupportedError } from '../config/errors';
@@ -167,8 +167,8 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     return fromCache.values as Promise<Array<T> | Map<string, T>>;
   };
   return telemetry(context, user, `CACHE ${type}`, {
-    [SEMATTRS_DB_NAME]: 'cache_engine',
-    [SEMATTRS_DB_OPERATION]: 'select',
+    [ATTR_DB_NAMESPACE]: 'cache_engine',
+    [ATTR_DB_OPERATION_NAME]: 'select',
   }, getEntitiesFromCacheFn);
 };
 

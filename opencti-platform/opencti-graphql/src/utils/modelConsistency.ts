@@ -1,4 +1,4 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { checkRelationshipRef, checkStixCoreRelationshipMapping } from '../database/stix';
 import { FunctionalError } from '../config/errors';
@@ -48,8 +48,8 @@ export const checkRelationConsistency = async (
     });
   };
   return telemetry(context, user, 'CONSISTENCY relation', {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [ATTR_DB_NAMESPACE]: 'search_engine',
+    [ATTR_DB_OPERATION_NAME]: 'read',
   }, checkRelationConsistencyFn);
 };
 export const isRelationConsistent = async (

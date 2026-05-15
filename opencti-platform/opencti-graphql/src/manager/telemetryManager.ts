@@ -1,5 +1,5 @@
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
-import { SEMRESATTRS_SERVICE_INSTANCE_ID, SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
@@ -223,9 +223,9 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const platformId = settings.id;
   const filigranResource = resourceFromAttributes({
-    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-    [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
+    [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
+    [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
+    [ATTR_SERVICE_INSTANCE_ID]: platformId,
     'service.instance.creation': settings.created_at as unknown as string,
   });
   const resource = defaultResource().merge(filigranResource);
