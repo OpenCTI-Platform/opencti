@@ -20,7 +20,7 @@ export const getDiscoveredIntentCatalog = async (): Promise<IntentCatalogEntry[]
   return result?.intent_catalog ?? [];
 };
 
-export const getXtmOneRegistration = async (): Promise<{ register: boolean, version: string }> => {
+export const getXtmOneRegistration = async (): Promise<{ register: boolean; version: string }> => {
   const result = await getXtmRegistrationResult();
   return { register: !!result, version: result?.version ?? 'unknown' };
 };
