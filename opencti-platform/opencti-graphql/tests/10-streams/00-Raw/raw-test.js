@@ -60,6 +60,46 @@ const mergeEventsById = (baseEvents, newEvents) => {
   return Array.from(byEventId.values());
 };
 
+const collectDuplicateKeys = (values) => {
+  const countByKey = new Map();
+  values.forEach((value) => {
+    if (!value) {
+      return;
+    }
+    countByKey.set(value, (countByKey.get(value) ?? 0) + 1);
+  });
+  return Array.from(countByKey.entries())
+    .filter(([, count]) => count > 1)
+    .map(([key, count]) => ({ key, count }));
+};
+
+const extractCaseRfiCreateEvents = (events) => {
+  return events
+    .filter((event) => event.type === EVENT_TYPE_CREATE && event.data?.data?.type === 'case-rfi')
+    .map((event) => ({
+      lastEventId: event.lastEventId,
+      id: event.data?.data?.id,
+      created_at: event.data?.data?.extensions?.['extension-definition--4ca6de00-5b0d-45ef-a1dc-ea7279ea910e']?.created_at,
+      message: event.data?.message,
+      origin: event.origin,
+    }));
+};
+
+const dumpCaseRfiDiagnostics = (events, label) => {
+  const caseRfiCreates = extractCaseRfiCreateEvents(events);
+  const duplicateEventIds = collectDuplicateKeys(caseRfiCreates.map((event) => event.lastEventId));
+  const duplicateEntityIds = collectDuplicateKeys(caseRfiCreates.map((event) => event.id));
+  const diagnostics = {
+    label,
+    count: caseRfiCreates.length,
+    duplicateEventIds,
+    duplicateEntityIds,
+    events: caseRfiCreates,
+  };
+  writeTestDataToFile(JSON.stringify(diagnostics, null, 2), `raw-test-case-rfi-${label}.json`);
+  logApp.info('[TEST][RAW][CASE-RFI] stream diagnostics', diagnostics);
+};
+
 const waitStreamStabilization = async ({
   requiredStableChecks = 3,
   checkIntervalMs = 2000,
@@ -103,11 +143,20 @@ describe('Raw streams tests', () => {
           timeoutMs: 180000,
           inactivityTimeoutMs: 60000,
         });
+        dumpCaseRfiDiagnostics(batch, `batch-${round + 1}`);
         events = mergeEventsById(events, batch);
+        dumpCaseRfiDiagnostics(events, `aggregated-${round + 1}`);
         const lastBatchEventId = batch.at(-1)?.lastEventId;
         if (lastBatchEventId) {
           from = lastBatchEventId;
         }
+        logApp.info('[TEST][RAW] stream batch summary', {
+          round: round + 1,
+          from,
+          batchSize: batch.length,
+          aggregatedSize: events.length,
+          caseRfiCreateCount: extractCaseRfiCreateEvents(events).length,
+        });
         if (hasAtLeastExpectedEvents(events)) {
           break;
         }
