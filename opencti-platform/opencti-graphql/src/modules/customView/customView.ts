@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import { isFeatureEnabled } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
@@ -42,8 +41,4 @@ export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, Sti
   converter_2_1: convertCustomViewToStix,
 };
 
-const isCustomViewEnabled = isFeatureEnabled('CUSTOM_VIEW');
-
-if (isCustomViewEnabled) {
-  registerDefinition(CUSTOM_VIEW_DEFINITION);
-}
+registerDefinition(CUSTOM_VIEW_DEFINITION);

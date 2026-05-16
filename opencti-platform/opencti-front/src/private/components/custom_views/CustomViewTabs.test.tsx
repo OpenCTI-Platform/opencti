@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { screen } from '@testing-library/react';
-import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import testRender from '../../../utils/tests/test-render';
 import useCustomViewTabs from './useCustomViewTabs';
 import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from './useCustomViews';
 import { DropDownMenu, TabWithDropDownMenu } from '../../../components/TabWithDropDownMenu';
@@ -104,7 +104,7 @@ describe('useCustomViewTabs', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
-  it('renders another tab when custom view available', () => {
+  it('renders another tab', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
       allCustomViews: [{
         id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
@@ -117,19 +117,7 @@ describe('useCustomViewTabs', () => {
     }));
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
-    testRender(
-      <TestWrapper entityType="Intrusion-Set" basePath="" />,
-      {
-        userContext: createMockUserContext({
-          settings: {
-            platform_feature_flags: [{
-              id: 'CUSTOM_VIEW',
-              enable: true,
-            }],
-          },
-        }),
-      },
-    );
+    testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
     const tabElem = screen.getByRole('tab', { name: new RegExp(customViewDisplayName, 'i') });
     expect(tabElem).toBeInTheDocument();
     expect(tabElem).toHaveAttribute(
@@ -155,19 +143,7 @@ describe('useCustomViewTabs', () => {
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
-    const { user } = testRender(
-      <TestWrapper entityType="Intrusion-Set" basePath="" />,
-      {
-        userContext: createMockUserContext({
-          settings: {
-            platform_feature_flags: [{
-              id: 'CUSTOM_VIEW',
-              enable: true,
-            }],
-          },
-        }),
-      },
-    );
+    const { user } = testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
     const tabElem = screen.getByRole('tab', { name: /Custom view/i });
     expect(tabElem).toBeInTheDocument();
     await user.click(tabElem);
@@ -196,19 +172,7 @@ describe('useCustomViewTabs', () => {
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
-    testRender(
-      <TestWrapper entityType="Case-Rft" basePath="" />,
-      {
-        userContext: createMockUserContext({
-          settings: {
-            platform_feature_flags: [{
-              id: 'CUSTOM_VIEW',
-              enable: true,
-            }],
-          },
-        }),
-      },
-    );
+    testRender(<TestWrapper entityType="Case-Rft" basePath="" />);
     expect(screen.queryByRole('tab', {
       name: new RegExp(customViewDisplayName, 'i'),
     })).not.toBeInTheDocument();
@@ -240,19 +204,7 @@ describe('useCustomViewTabs', () => {
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
-    const { user } = testRender(
-      <TestWrapper entityType="Intrusion-Set" basePath="" />,
-      {
-        userContext: createMockUserContext({
-          settings: {
-            platform_feature_flags: [{
-              id: 'CUSTOM_VIEW',
-              enable: true,
-            }],
-          },
-        }),
-      },
-    );
+    const { user } = testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
     const defaultTabElem = screen.getByRole('tab', { name: /My default custom view/i });
     expect(defaultTabElem).toBeInTheDocument();
     const othersTabElem = screen.getByRole('tab', { name: /^Custom view$/i });

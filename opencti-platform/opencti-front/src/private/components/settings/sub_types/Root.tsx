@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
-import useHelper from '../../../../utils/hooks/useHelper';
 import FintelTemplate from './fintel_templates/FintelTemplate';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
@@ -42,8 +41,6 @@ const SubTypeIndexRedirect = () => {
 
 const RootSubType = () => {
   const { subTypeId } = useParams<{ subTypeId?: string }>();
-  const { isFeatureEnable } = useHelper();
-  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
 
   if (!subTypeId) return <ErrorNotFound />;
 
@@ -56,7 +53,7 @@ const RootSubType = () => {
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
           <Route path={SUBTYPE_TAB_ATTRIBUTES} element={<EntitySettingAttributesCard />} />
           <Route path={SUBTYPE_TAB_OVERVIEW_LAYOUT} element={<EntitySettingCustomOverview />} />
-          {isCustomViewFeatureEnabled ? <Route path={SUBTYPE_TAB_CUSTOM_VIEWS} element={<CustomViewsSettings />} /> : null}
+          <Route path={SUBTYPE_TAB_CUSTOM_VIEWS} element={<CustomViewsSettings />} />
         </Route>
         <Route
           path={`/${SUBTYPE_TAB_TEMPLATES}/:templateId`}

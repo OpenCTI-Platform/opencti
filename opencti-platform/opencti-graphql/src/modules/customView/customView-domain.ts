@@ -34,8 +34,6 @@ import { createInternalObject, deleteInternalObject, editInternalObject } from '
 import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
-import { isFeatureEnabled } from '../../config/conf';
-import { emptyPaginationResult } from '../../database/utils';
 
 /**
  * Exclusion list: entity types not capable of
@@ -154,9 +152,6 @@ export const findAllCustomViews = async (
   entityType: string | undefined | null,
   paginationOptions: Omit<QueryCustomViewsArgs, 'entityType'>,
 ) => {
-  if (!isFeatureEnabled('CUSTOM_VIEW')) {
-    return emptyPaginationResult<BasicStoreEntityCustomView>();
-  }
   const entityTypeFilterGroup = addFilter(
     undefined,
     'target_entity_type',

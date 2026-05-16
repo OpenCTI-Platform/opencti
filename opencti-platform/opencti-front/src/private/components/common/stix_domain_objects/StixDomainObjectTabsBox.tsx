@@ -6,7 +6,6 @@ import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import { OtherCustomViewsTab, DefaultCustomViewTab } from '@components/custom_views/CustomViewTab';
 import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
@@ -141,8 +140,6 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const { basePath, entityType, extraActions, tabs } = props;
   const { t_i18n } = useFormatter();
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const currentTab = getCurrentTab(location.pathname, basePath);
 
   const staticTabs = TABS_INFO.map(({ tab, path, label }) =>
@@ -165,19 +162,15 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       justifyContent: 'space-between',
     }}
     >
-      {isCustomViewFeatureEnabled ? (
-        <TabsWithCustomViews
-          basePath={basePath}
-          entityType={entityType}
-          currentTab={currentTab}
-        >
-          {staticTabs}
-        </TabsWithCustomViews>
-      ) : (
-        <Tabs value={currentTab || false}>
-          {staticTabs}
-        </Tabs>
-      )}
+      (
+      <TabsWithCustomViews
+        basePath={basePath}
+        entityType={entityType}
+        currentTab={currentTab}
+      >
+        {staticTabs}
+      </TabsWithCustomViews>
+      )
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}
