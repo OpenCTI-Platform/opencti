@@ -129,7 +129,7 @@ export const getChatbotAgents = async (req: Express.Request, res: Express.Respon
     if (!context) return;
 
     const intent = (req.query.intent as string) || 'global.assistant';
-    const catalog = getDiscoveredIntentCatalog();
+    const catalog = await getDiscoveredIntentCatalog();
     const intentEntry = catalog.find((entry) => entry.intent === intent);
     const agents = (intentEntry?.agents ?? [])
       .filter((a) => a.enabled)

@@ -72,7 +72,7 @@ vi.mock('../../../src/http/httpUtils', () => ({
 }));
 
 vi.mock('../../../src/modules/xtm/one/xtm-one', () => ({
-  getDiscoveredIntentCatalog: vi.fn(() => []),
+  getDiscoveredIntentCatalog: vi.fn(async () => []),
 }));
 
 vi.mock('../../../src/modules/xtm/one/xtm-one-client', () => ({

@@ -520,7 +520,7 @@ export const uploadJobImport = async (
         configuration: connectorConfiguration,
       };
     };
-    const pushMessage = (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
+    const pushMessage = async (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
       const { connector } = data;
       let connectorConfiguration = configuration;
       // In auto mode, if the connector declares an xtm_one_intent and no agent_slug
@@ -528,7 +528,7 @@ export const uploadJobImport = async (
       if (connector.xtm_one_intent) {
         const existingConfig = connectorConfiguration ? JSON.parse(connectorConfiguration) : {};
         if (!existingConfig.agent_slug) {
-          const catalog = getDiscoveredIntentCatalog();
+          const catalog = await getDiscoveredIntentCatalog();
           const intentEntry = catalog.find((entry) => entry.intent === connector.xtm_one_intent);
           if (intentEntry && intentEntry.agents.length > 0) {
             const defaultAgent = intentEntry.agents.find((a) => a.is_default && a.enabled) ?? intentEntry.agents.find((a) => a.enabled);

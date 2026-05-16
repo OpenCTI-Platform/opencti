@@ -45,6 +45,7 @@ export interface XtmOneRegistrationInput {
 
 export interface XtmOneRegistrationResponse {
   status: string;
+  version: string;
   platform_identifier: string;
   ee_enabled: boolean;
   user_integrations: number;

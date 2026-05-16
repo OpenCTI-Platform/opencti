@@ -24,6 +24,14 @@ vi.mock('../../../../src/config/conf', () => ({
   PLATFORM_VERSION: '6.0.0-test',
 }));
 
+let redisRegistrationResult: object | null = null;
+vi.mock('../../../../src/database/redis', () => ({
+  redisSetXtmRegistrationResult: vi.fn(async (result: object, _ttlSeconds: number) => {
+    redisRegistrationResult = result;
+  }),
+  redisGetXtmRegistrationResult: vi.fn(async () => redisRegistrationResult),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────────
 
 import xtmOneClient from '../../../../src/modules/xtm/one/xtm-one-client';
@@ -51,6 +59,7 @@ const mockRegistrationResponse = {
   ee_enabled: true,
   user_integrations: 0,
   chat_web_token: null,
+  version: '6.0.0-test',
   intent_catalog: [
     {
       intent: 'global.assistant',
@@ -77,6 +86,7 @@ const mockRegistrationResponse = {
 describe('registerWithXtmOne', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    redisRegistrationResult = null;
   });
 
   afterEach(() => {
@@ -134,7 +144,7 @@ describe('registerWithXtmOne', () => {
 
     // Import the getter to check the catalog was updated
     const { getDiscoveredIntentCatalog } = await import('../../../../src/modules/xtm/one/xtm-one');
-    const catalog = getDiscoveredIntentCatalog();
+    const catalog = await getDiscoveredIntentCatalog();
     expect(catalog).toEqual(mockRegistrationResponse.intent_catalog);
     expect(catalog[0].agents.length).toBe(1);
     expect(catalog[0].agents[0].agent_name).toBe('TestAgent');

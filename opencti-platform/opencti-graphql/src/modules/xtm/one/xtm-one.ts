@@ -4,12 +4,26 @@ import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache } from '../../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { decodeLicensePem, getEnterpriseEditionActivePem } from '../../settings/licensing';
+import { redisGetXtmRegistrationResult, redisSetXtmRegistrationResult } from '../../../database/redis';
 import xtmOneClient from './xtm-one-client';
-import type { IntentCatalogEntry } from './xtm-one-client';
+import type { IntentCatalogEntry, XtmOneRegistrationResponse } from './xtm-one-client';
 
-let discoveredIntentCatalog: IntentCatalogEntry[] = [];
+export const XTM_ONE_SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
+const XTM_REGISTRATION_RESULT_TTL = Math.ceil((XTM_ONE_SCHEDULE_TIME * 2) / 1000); // 2× schedule, in seconds
 
-export const getDiscoveredIntentCatalog = (): IntentCatalogEntry[] => discoveredIntentCatalog;
+export const getXtmRegistrationResult = async (): Promise<XtmOneRegistrationResponse | null> => {
+  return await redisGetXtmRegistrationResult() as Promise<XtmOneRegistrationResponse | null>;
+};
+
+export const getDiscoveredIntentCatalog = async (): Promise<IntentCatalogEntry[]> => {
+  const result = await getXtmRegistrationResult();
+  return result?.intent_catalog ?? [];
+};
+
+export const getXtmOneRegistration = async (): Promise<{ register: boolean, version: string }> => {
+  const result = await getXtmRegistrationResult();
+  return { register: !!result, version: result?.version ?? 'unknown' };
+};
 
 /**
  * Register this OpenCTI instance with XTM One.
@@ -72,18 +86,8 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   });
 
   if (result) {
-    if (result.intent_catalog) {
-      discoveredIntentCatalog = result.intent_catalog;
-      const agentCount = result.intent_catalog.reduce((acc, entry) => acc + entry.agents.length, 0);
-      logApp.info('[XTM One] Intent catalog updated', {
-        intents: result.intent_catalog.length,
-        agents: agentCount,
-      });
-    }
-    logApp.info('[XTM One] Registration successful', {
-      status: result.status,
-      ee_enabled: result.ee_enabled,
-    });
+    await redisSetXtmRegistrationResult(result, XTM_REGISTRATION_RESULT_TTL);
+    logApp.info('[XTM One] Registration successful', { status: result.status, ee_enabled: result.ee_enabled, version: result.version });
   } else {
     logApp.warn('[XTM One] Registration failed, will retry on next tick');
   }
