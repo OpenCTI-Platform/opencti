@@ -6,6 +6,7 @@ import { logApp, PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, waitInSec } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
 import { doTotal, RAW_EVENTS_SIZE, testCreatedCounter, testDeletedCounter, testMergedCounter, testUpdatedCounter } from '../../utils/syncCountHelper';
+import { fetchStreamInfo } from '../../../src/database/stream/stream-handler';
 
 export const dumpEventByTypeToFile = (eventTypeName, eventsByTypesRecords) => {
   const allCreatedEventKeys = Object.keys(eventsByTypesRecords);
@@ -16,6 +17,73 @@ export const dumpEventByTypeToFile = (eventTypeName, eventsByTypesRecords) => {
   writeTestDataToFile(allCreatedEventCount, `raw-test-${eventTypeName}-event.txt`);
 };
 
+const hasAtLeastExpectedEvents = (events) => {
+  const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
+  const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
+  const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
+  const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
+  const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
+  const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
+  const mergeEvents = events.filter((e) => e.type === EVENT_TYPE_MERGE);
+  const mergeEventsByTypes = R.groupBy((e) => e.data.data.type, mergeEvents);
+
+  const hasAtLeastExpectedByType = (actualByType, expectedByType) => {
+    const keys = Object.keys(expectedByType);
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      if (!actualByType[key] || actualByType[key].length < expectedByType[key]) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  return hasAtLeastExpectedByType(createEventsByTypes, testCreatedCounter)
+    && hasAtLeastExpectedByType(updateEventsByTypes, testUpdatedCounter)
+    && hasAtLeastExpectedByType(deleteEventsByTypes, testDeletedCounter)
+    && hasAtLeastExpectedByType(mergeEventsByTypes, testMergedCounter)
+    && createEvents.length >= doTotal(testCreatedCounter)
+    && updateEvents.length >= doTotal(testUpdatedCounter)
+    && deleteEvents.length >= doTotal(testDeletedCounter)
+    && mergeEvents.length >= doTotal(testMergedCounter)
+    && events.length >= RAW_EVENTS_SIZE;
+};
+
+const mergeEventsById = (baseEvents, newEvents) => {
+  const byEventId = new Map();
+  baseEvents.forEach((event) => {
+    byEventId.set(event.lastEventId, event);
+  });
+  newEvents.forEach((event) => {
+    byEventId.set(event.lastEventId, event);
+  });
+  return Array.from(byEventId.values());
+};
+
+const waitStreamStabilization = async ({
+  requiredStableChecks = 3,
+  checkIntervalMs = 2000,
+  maxWaitMs = 120000,
+} = {}) => {
+  let stableChecks = 0;
+  let previousLastEventId;
+  const start = Date.now();
+  while (stableChecks < requiredStableChecks) {
+    if (Date.now() - start > maxWaitMs) {
+      throw new Error(`Stream did not stabilize in ${maxWaitMs}ms`);
+    }
+    const streamInfo = await fetchStreamInfo();
+    const currentLastEventId = streamInfo.lastEventId;
+    if (currentLastEventId === previousLastEventId) {
+      stableChecks += 1;
+    } else {
+      stableChecks = 1;
+      previousLastEventId = currentLastEventId;
+    }
+    await waitInSec(checkIntervalMs / 1000);
+  }
+};
+
 describe('Raw streams tests', () => {
   // We need to check the event format to be sure that everything is setup correctly
   it(
@@ -24,9 +92,27 @@ describe('Raw streams tests', () => {
       const startTime = new Date().getTime();
 
       await waitInSec(10);
+      await waitStreamStabilization();
 
-      // Read all events from the beginning.
-      const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
+      // Fetch stream in batches to avoid missing late async events between phases.
+      let events = [];
+      let from = '0';
+      for (let round = 0; round < 4; round += 1) {
+        const batch = await fetchStreamEvents(`http://localhost:${PORT}/stream`, {
+          from,
+          timeoutMs: 180000,
+          inactivityTimeoutMs: 60000,
+        });
+        events = mergeEventsById(events, batch);
+        const lastBatchEventId = batch.at(-1)?.lastEventId;
+        if (lastBatchEventId) {
+          from = lastBatchEventId;
+        }
+        if (hasAtLeastExpectedEvents(events)) {
+          break;
+        }
+        await waitStreamStabilization({ requiredStableChecks: 2, checkIntervalMs: 2000, maxWaitMs: 60000 });
+      }
       logApp.info(`[TEST][TIME] time to fetch event: ${new Date().getTime() - startTime}`);
 
       writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.json');

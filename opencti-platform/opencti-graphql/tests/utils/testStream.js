@@ -9,35 +9,89 @@ import { STIX_EXT_OCTI } from '../../src/types/stix-2-1-extensions';
 import { EVENT_TYPE_UPDATE } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 
-export const fetchStreamEvents = (uri, { from } = {}) => {
-  const opts = {
-    headers: { authorization: generateBasicAuth(), 'last-event-id': from },
-  };
+export const fetchStreamEvents = (
+  uri,
+  {
+    from,
+    inactivityTimeoutMs = 30000,
+    timeoutMs = 120000,
+    targetEventCount,
+    shouldStop = () => false,
+  } = {},
+) => {
+  const headers = { authorization: generateBasicAuth() };
+  if (from) {
+    headers['last-event-id'] = from;
+  }
+  const opts = { headers };
   return new Promise((resolve, reject) => {
-    let eventNumber = 0;
+    let isClosed = false;
+    let inactivityTimer;
+    let hardTimeoutTimer;
     const events = [];
     const es = new EventSource(uri, opts);
-    const closeEventSource = () => {
+
+    const cleanup = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      if (hardTimeoutTimer) {
+        clearTimeout(hardTimeoutTimer);
+      }
       es.close();
+    };
+    const closeWithEvents = () => {
+      if (isClosed) {
+        return;
+      }
+      isClosed = true;
+      cleanup();
       resolve(events);
     };
+    const closeWithError = (error) => {
+      if (isClosed) {
+        return;
+      }
+      isClosed = true;
+      cleanup();
+      reject(error);
+    };
+    const refreshInactivityTimer = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      inactivityTimer = setTimeout(() => {
+        closeWithEvents();
+      }, inactivityTimeoutMs);
+    };
+    const reachedTargetCount = () => Number.isInteger(targetEventCount) && targetEventCount > 0 && events.length >= targetEventCount;
+    const stopConditionMet = () => reachedTargetCount() || shouldStop(events) === true;
+
+    hardTimeoutTimer = setTimeout(() => {
+      closeWithError(new Error(`Stream fetch timed out after ${timeoutMs}ms. Collected ${events.length} event(s).`));
+    }, timeoutMs);
+    refreshInactivityTimer();
+
     const handleEvent = (event) => {
-      const { type, data, lastEventId, origin } = event;
-      eventNumber += 1;
-      const currentEventNumber = eventNumber;
-      events.push({ type, data: JSON.parse(data), lastEventId, origin });
-      // If no new event for 5 secs, stop the processing
-      setTimeout(() => {
-        if (currentEventNumber === eventNumber) {
-          closeEventSource();
-        }
-      }, 30000);
+      try {
+        const { type, data, lastEventId, origin } = event;
+        events.push({ type, data: JSON.parse(data), lastEventId, origin });
+      } catch (error) {
+        closeWithError(error);
+        return;
+      }
+
+      if (stopConditionMet()) {
+        closeWithEvents();
+        return;
+      }
+      refreshInactivityTimer();
     };
     es.addEventListener('create', (event) => handleEvent(event));
     es.addEventListener('update', (event) => handleEvent(event));
     es.addEventListener('merge', (event) => handleEvent(event));
     es.addEventListener('delete', (event) => handleEvent(event));
-    es.onerror = (err) => reject(err);
+    es.onerror = (err) => closeWithError(err);
   });
 };
 
