@@ -4,8 +4,13 @@ import StixCoreRelationshipHistoryLines, { stixCoreRelationshipHistoryLinesQuery
 import CardTitle from '../../../../components/common/card/CardTitle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { StixCoreRelationshipHistoryLinesQuery, StixCoreRelationshipHistoryLinesQuery$variables } from './__generated__/StixCoreRelationshipHistoryLinesQuery.graphql';
 
-const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
+interface StixCoreRelationshipLatestHistoryProps {
+  stixCoreRelationshipId: string;
+}
+
+const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }: StixCoreRelationshipLatestHistoryProps) => {
   const { t_i18n } = useFormatter();
   const { tz, locale, unitSystem } = useAuth();
   const paginationOptions = {
@@ -23,8 +28,8 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
     tz,
     locale: locale,
     unit_system: unitSystem,
-  };
-  const queryRef = useQueryLoading(
+  } as unknown as StixCoreRelationshipHistoryLinesQuery$variables;
+  const queryRef = useQueryLoading<StixCoreRelationshipHistoryLinesQuery>(
     stixCoreRelationshipHistoryLinesQuery,
     paginationOptions,
   );
