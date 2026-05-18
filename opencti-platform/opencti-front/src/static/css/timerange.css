@@ -121,3 +121,58 @@
     color: #77828c;
     font-family: sans-serif;
 }
+
+.resaa-timeline-timerange .react_time_range__handle_wrapper,
+.resaa-timeline-timerange .react_time_range__handle_container {
+    transform: translate(-50%, calc(-50% - 11px));
+}
+
+.resaa-timeline-timerange .react_time_range__handle_container {
+    width: 14px;
+    height: 22px;
+    border-radius: 0 0 12px 12px;
+    background-color: #4a86e8;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.resaa-timeline-timerange .react_time_range__handle_marker {
+    display: none;
+}
+
+.resaa-timeline-timerange .react_time_range__track {
+    background-color: rgba(74, 134, 232, 0.14) !important;
+    border-left: 1px solid #4a86e8 !important;
+    border-right: 1px solid #4a86e8 !important;
+}
+
+.resaa-timeline-timerange .react_time_range__tick_label {
+    white-space: nowrap;
+    width: max-content;
+    transform: translateX(-50%);
+    margin-inline-start: 0;
+    line-height: 1.2;
+}
+
+.resaa-timeline-timerange--hourly .react_time_range__tick_label {
+    white-space: normal;
+}
+
+.resaa-timeline-timerange--hourly .resaa-timeline-tick-label__date {
+    display: block;
+}
+
+.resaa-timeline-timerange--hourly .resaa-timeline-tick-label__time {
+    display: block;
+    font-size: 9px;
+    opacity: 0.88;
+}
+
+.resaa-timeline-timerange--hourly.react_time_range__time_range_container {
+    height: 84px;
+    padding-top: 22px;
+}
+
+.resaa-timeline-timerange .react_time_range__time_range_container {
+    overflow: visible;
+}

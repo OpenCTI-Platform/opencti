@@ -6,7 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
-import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
+import { ChartTimeline, ChartTimelineVariant, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import { Link, useNavigate } from 'react-router-dom';
@@ -644,6 +644,21 @@ const ContainerHeader = (props) => {
                               <ChartTimeline
                                 fontSize="small"
                                 color={currentMode === 'timeline' ? 'primary' : 'inherit'}
+                              />
+                            </ToggleButton>
+                          </Tooltip>
+                        )}
+                        {modes.includes('resaa-timeline') && (
+                          <Tooltip title={t_i18n('Resaa Timeline view')}>
+                            <ToggleButton
+                              value="resaa-timeline"
+                              component={Link}
+                              to={`${link}/resaa-timeline`}
+                              selected={currentMode === 'resaa-timeline'}
+                            >
+                              <ChartTimelineVariant
+                                fontSize="small"
+                                color={currentMode === 'resaa-timeline' ? 'primary' : 'inherit'}
                               />
                             </ToggleButton>
                           </Tooltip>

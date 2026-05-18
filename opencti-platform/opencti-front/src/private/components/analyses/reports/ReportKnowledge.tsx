@@ -10,6 +10,7 @@ import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './R
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
+import ReportKnowledgeResaaTimeLine, { reportKnowledgeResaaTimeLineQuery } from './ReportKnowledgeResaaTimeLine';
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
@@ -267,7 +268,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
         <ContainerHeader
           container={report}
           link={`/dashboard/analyses/reports/${report.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'timeline', 'resaa-timeline', 'correlation', 'matrix']}
           currentMode={mode}
           knowledge={true}
           enableSuggestions={true}
@@ -327,6 +328,48 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
                   if (props && props.report) {
                     return (
                       <ReportKnowledgeTimeLine
+                        report={props.report}
+                        dateAttribute={orderBy}
+                        displayRelationships={timeLineDisplayRelationships}
+                      />
+                    );
+                  }
+                  return (
+                    <div style={{ height: '50vh' }}>
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                      />
+                    </div>
+                  );
+                }}
+              />
+            </>
+          )}
+        />
+        <Route
+          path="/resaa-timeline"
+          element={(
+            <>
+              <ContentKnowledgeTimeLineBar
+                handleTimeLineSearch={handleTimeLineSearch}
+                timeLineSearchTerm={timeLineSearchTerm}
+                timeLineDisplayRelationships={timeLineDisplayRelationships}
+                handleToggleTimeLineDisplayRelationships={handleToggleTimeLineDisplayRelationships}
+                timeLineFunctionalDate={timeLineFunctionalDate}
+                handleToggleTimeLineFunctionalDate={handleToggleTimeLineFunctionalDate}
+                timeLineFilters={timeLineFilters}
+                handleAddTimeLineFilter={handleAddTimeLineFilter}
+                handleRemoveTimeLineFilter={handleRemoveTimeLineFilter}
+                handleSwitchFilterLocalMode={handleSwitchFilterLocalMode}
+                handleSwitchFilterGlobalMode={handleSwitchFilterGlobalMode}
+              />
+              <QueryRenderer
+                query={reportKnowledgeResaaTimeLineQuery}
+                variables={{ id: report.id, ...timeLinePaginationOptions }}
+                render={({ props }: { props: ReportKnowledgeTimeLineQuery$data }) => {
+                  if (props && props.report) {
+                    return (
+                      <ReportKnowledgeResaaTimeLine
                         report={props.report}
                         dateAttribute={orderBy}
                         displayRelationships={timeLineDisplayRelationships}

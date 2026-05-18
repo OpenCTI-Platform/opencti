@@ -87,7 +87,14 @@ class TimeRange extends React.Component {
   };
 
   getDateTicks = () => {
-    const { timelineInterval = [startOfToday(), endOfToday()], ticksNumber = 48 } = this.props;
+    const {
+      timelineInterval = [startOfToday(), endOfToday()],
+      ticksNumber = 48,
+      tickValues,
+    } = this.props;
+    if (tickValues?.length) {
+      return tickValues;
+    }
     return scaleTime().domain(timelineInterval).ticks(ticksNumber).map((t) => +t);
   };
 
@@ -105,6 +112,11 @@ class TimeRange extends React.Component {
       showNow,
       formatTick = (ms) => format(new Date(ms), 'HH:mm'),
       mode = 3,
+      tickValues,
+      showAllTickLabels = false,
+      showUnitTickMarkers = false,
+      tickLabelMultiline = false,
+      tickLabelEvery = 1,
     } = this.props;
 
     const domain = timelineInterval.map((t) => Number(t));
@@ -192,12 +204,17 @@ class TimeRange extends React.Component {
           <Ticks values={this.getDateTicks()}>
             {({ ticks }) => (
               <>
-                {ticks.map((tick) => (
+                {ticks.map((tick, index) => (
                   <Tick
                     key={tick.id}
                     tick={tick}
+                    tickIndex={index}
                     count={ticks.length}
                     format={formatTick}
+                    showAllTickLabels={showAllTickLabels}
+                    showUnitTickMarkers={showUnitTickMarkers}
+                    tickLabelMultiline={tickLabelMultiline}
+                    tickLabelEvery={tickLabelEvery}
                   />
                 ))}
               </>
@@ -218,6 +235,11 @@ TimeRange.propTypes = {
   sliderRailClassName: PropTypes.string,
   step: PropTypes.number,
   formatTick: PropTypes.func,
+  tickValues: PropTypes.arrayOf(PropTypes.number),
+  showAllTickLabels: PropTypes.bool,
+  showUnitTickMarkers: PropTypes.bool,
+  tickLabelMultiline: PropTypes.bool,
+  tickLabelEvery: PropTypes.number,
 };
 
 export default TimeRange;

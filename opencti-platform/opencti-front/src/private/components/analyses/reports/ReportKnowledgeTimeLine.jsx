@@ -58,7 +58,18 @@ const ReportKnowledgeTimeLineComponent = ({
   report,
   dateAttribute,
   displayRelationships,
+  renderTimeline,
 }) => {
+  if (typeof renderTimeline === 'function') {
+    const RenderTimeline = renderTimeline;
+    return (
+      <RenderTimeline
+        report={report}
+        dateAttribute={dateAttribute}
+        displayRelationships={displayRelationships}
+      />
+    );
+  }
   const classes = useStyles();
   const { fldt, t_i18n } = useFormatter();
   const { edges } = report.objects;

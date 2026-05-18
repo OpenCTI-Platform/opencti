@@ -290,36 +290,38 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
               return (
                 <div>
                   <Tooltip title={t_i18n('Open the suggestions')}>
-                    <ToggleButton
-                      onClick={() => setDisplaySuggestions(true)}
-                      disabled={
-                        suggestions.length === 0 || currentMode !== 'graph'
-                      }
-                      value="suggestion"
-                      size="small"
-                    >
-                      <Badge
-                        badgeContent={
-                          suggestions.filter(
-                            (n) => !appliedSuggestions.includes(n.type),
-                          ).length
+                    <span style={{ display: 'inline-flex' }}>
+                      <ToggleButton
+                        onClick={() => setDisplaySuggestions(true)}
+                        disabled={
+                          suggestions.length === 0 || currentMode !== 'graph'
                         }
-                        color="secondary"
+                        value="suggestion"
+                        size="small"
                       >
-                        <AssistantOutlined
-                          fontSize="small"
-                          disabled={suggestions.length === 0}
-                          color={
-
-                            suggestions.length === 0
-                              ? 'disabled'
-                              : displaySuggestions
-                                ? 'secondary'
-                                : 'primary'
+                        <Badge
+                          badgeContent={
+                            suggestions.filter(
+                              (n) => !appliedSuggestions.includes(n.type),
+                            ).length
                           }
-                        />
-                      </Badge>
-                    </ToggleButton>
+                          color="secondary"
+                        >
+                          <AssistantOutlined
+                            fontSize="small"
+                            disabled={suggestions.length === 0}
+                            color={
+
+                              suggestions.length === 0
+                                ? 'disabled'
+                                : displaySuggestions
+                                  ? 'secondary'
+                                  : 'primary'
+                            }
+                          />
+                        </Badge>
+                      </ToggleButton>
+                    </span>
                   </Tooltip>
                   <Dialog
                     open={displaySuggestions}
