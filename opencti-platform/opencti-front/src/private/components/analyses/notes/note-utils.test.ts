@@ -21,9 +21,9 @@ describe('note-utils', () => {
     expect(resolved).toBe('/storage/view/embedded%2FNote%2Fnote-123%2Fimage-b.png');
   });
 
-  it('keeps full embedded storage paths unchanged', () => {
+  it('resolves full embedded storage paths to storage/view URL', () => {
     const fullPath = 'embedded/Note/note-123/image-c.png';
-    expect(resolveNoteEmbeddedImageUrl(fullPath, 'note-999')).toBe(fullPath);
+    expect(resolveNoteEmbeddedImageUrl(fullPath, 'note-999')).toBe('/storage/view/embedded%2FNote%2Fnote-123%2Fimage-c.png');
   });
 
   it('returns null when embedded path has no filename', () => {

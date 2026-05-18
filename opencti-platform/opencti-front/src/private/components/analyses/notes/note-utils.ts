@@ -14,7 +14,7 @@ export const resolveNoteEmbeddedImageUrl = (url: string, noteId: string): string
   }
 
   if (normalizedUrl.split('/').length >= 4) {
-    return normalizedUrl;
+    return `/storage/view/${encodeURIComponent(normalizedUrl)}`;
   }
 
   if (!noteId) {
