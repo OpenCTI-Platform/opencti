@@ -2469,6 +2469,7 @@ export enum Capabilities {
   KnowledgeKngetexport = 'KNOWLEDGE_KNGETEXPORT',
   KnowledgeKngetexportKnaskexport = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
   KnowledgeKnparticipate = 'KNOWLEDGE_KNPARTICIPATE',
+  KnowledgeKnsharefilters = 'KNOWLEDGE_KNSHAREFILTERS',
   KnowledgeKnupdate = 'KNOWLEDGE_KNUPDATE',
   KnowledgeKnupdateKndelete = 'KNOWLEDGE_KNUPDATE_KNDELETE',
   KnowledgeKnupdateKnmanageauthmembers = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
