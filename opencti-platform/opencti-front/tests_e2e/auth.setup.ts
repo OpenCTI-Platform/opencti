@@ -12,6 +12,12 @@ setup('authenticate as admin(at)opencti.io by default', async ({ page }) => {
   await page.goto('/');
   await loginPage.login();
   await expect(dashboardPage.getPage()).toBeVisible();
+
+  // Dismiss the RegisterPlatformBanner so its fixed-position button does not intercept clicks in any test
+  await page.evaluate(() => {
+    localStorage.setItem('register-banner-dismissed', 'true');
+  });
+
   // End of authentication steps.
   await page.context().storageState({ path: authFile });
 });
