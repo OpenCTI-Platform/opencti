@@ -1,5 +1,4 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreRelationshipHistoryLines, { stixCoreRelationshipHistoryLinesQuery } from './StixCoreRelationshipHistoryLines';
 import CardTitle from '../../../../components/common/card/CardTitle';
@@ -38,10 +37,7 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
   );
 
   return (
-    <div className="break">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Most recent history')}
-      </Typography>
+    <>
       {queryRef && (
         <React.Suspense fallback={Fallback}>
           <StixCoreRelationshipHistoryLines
@@ -52,7 +48,7 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

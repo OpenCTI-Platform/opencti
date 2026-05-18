@@ -74,7 +74,11 @@ const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationO
   };
 
   return (
-    <Card title={t_i18n('Most recent history')}>
+    <Card
+      title={t_i18n('Most recent history')}
+      padding="horizontal"
+      titleAlignItems="end"
+    >
       <HistoryDrawer
         open={open}
         onClose={handleClose}
