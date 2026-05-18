@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import {
   ResponsiveContainer,
   Scatter,
@@ -179,10 +181,40 @@ const getViewportAroundCenter = (center, granularity) => {
   }
 };
 
-export const computeTimelineAxisInterval = (granularity, dates) => {
-  const { center } = getDataTimeExtent(dates);
+export const centerTimelineViewportOn = (center, granularity) => {
   const { start, end } = getViewportAroundCenter(center, granularity);
   return alignTimelineIntervalToGranularity([start, end], granularity);
+};
+
+export const shiftTimelineViewport = (viewport, granularity, direction) => {
+  const spanMs = viewport[1].getTime() - viewport[0].getTime();
+  const centerMs = (viewport[0].getTime() + viewport[1].getTime()) / 2;
+  const newCenter = new Date(centerMs + (direction * spanMs));
+  return centerTimelineViewportOn(newCenter, granularity);
+};
+
+const VIEWPORT_PAN_EDGE_TOLERANCE_MS = 60 * 1000;
+
+export const getTimelineViewportPanState = (viewport, dataExtent) => {
+  const viewportStart = viewport[0].getTime();
+  const viewportEnd = viewport[1].getTime();
+  const extentStart = dataExtent[0].getTime();
+  const extentEnd = dataExtent[1].getTime();
+
+  const coversFullDataExtent = viewportStart <= extentStart + VIEWPORT_PAN_EDGE_TOLERANCE_MS
+    && viewportEnd >= extentEnd - VIEWPORT_PAN_EDGE_TOLERANCE_MS;
+
+  return {
+    canPanBackward: !coversFullDataExtent
+      && viewportStart > extentStart + VIEWPORT_PAN_EDGE_TOLERANCE_MS,
+    canPanForward: !coversFullDataExtent
+      && viewportEnd < extentEnd - VIEWPORT_PAN_EDGE_TOLERANCE_MS,
+  };
+};
+
+export const computeTimelineAxisInterval = (granularity, dates) => {
+  const { center } = getDataTimeExtent(dates);
+  return centerTimelineViewportOn(center, granularity);
 };
 
 export const inferDefaultTimeGranularity = (interval) => {
@@ -276,6 +308,88 @@ const formatHourlyTick = (ms, formatDate, formatTime) => (
 
 const MARKER_VERTICAL_OFFSET = 14;
 
+const toIntervalPercent = (time, extentStart, extentSpan) => (
+  ((time - extentStart) / extentSpan) * 100
+);
+
+const ResaaTimelineMinimap = ({
+  dataExtent,
+  viewportInterval,
+  items,
+  onNavigate,
+}) => {
+  const extentStart = dataExtent[0].getTime();
+  const extentEnd = dataExtent[1].getTime();
+  const extentSpan = Math.max(extentEnd - extentStart, 1);
+
+  const viewportLeft = toIntervalPercent(viewportInterval[0].getTime(), extentStart, extentSpan);
+  const viewportRight = toIntervalPercent(viewportInterval[1].getTime(), extentStart, extentSpan);
+  const viewportWidth = Math.min(100 - viewportLeft, Math.max(viewportRight - viewportLeft, 1.5));
+
+  const handleTrackClick = useCallback((event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    const centerTime = extentStart + (ratio * extentSpan);
+    onNavigate(new Date(centerTime));
+  }, [extentSpan, extentStart, onNavigate]);
+
+  return (
+    <Box
+      role="button"
+      tabIndex={0}
+      onClick={handleTrackClick}
+      className="resaa-timeline-minimap"
+      sx={{
+        position: 'relative',
+        flex: 1,
+        height: 28,
+        borderRadius: 1,
+        backgroundColor: '#eef1f5',
+        border: '1px solid #dde2e8',
+        cursor: 'pointer',
+        overflow: 'hidden',
+      }}
+    >
+      {items.map((item) => {
+        const left = toIntervalPercent(item.time.getTime(), extentStart, extentSpan);
+        return (
+          <Box
+            key={item.id}
+            className="resaa-timeline-minimap__marker"
+            sx={{
+              position: 'absolute',
+              left: `${left}%`,
+              top: '50%',
+              width: 3,
+              height: 14,
+              transform: 'translate(-50%, -50%)',
+              borderRadius: 0.5,
+              backgroundColor: item.color,
+              opacity: 0.9,
+              pointerEvents: 'none',
+            }}
+          />
+        );
+      })}
+      <Box
+        className="resaa-timeline-minimap__viewport"
+        sx={{
+          position: 'absolute',
+          left: `${viewportLeft}%`,
+          width: `${viewportWidth}%`,
+          top: 2,
+          bottom: 2,
+          borderRadius: 0.5,
+          border: '2px solid #4a86e8',
+          backgroundColor: 'rgba(74, 134, 232, 0.18)',
+          pointerEvents: 'none',
+          boxSizing: 'border-box',
+        }}
+      />
+    </Box>
+  );
+};
+
 const TimelineMarkerShape = ({
   cx,
   cy,
@@ -299,10 +413,13 @@ const TimelineMarkerShape = ({
 
 const ResaaTimelineTimeRangeFilter = ({
   items,
+  dataExtent,
   timelineInterval,
   selectedInterval,
   granularity,
   onGranularityChange,
+  onViewportPan,
+  onViewportNavigate,
   onChange,
 }) => {
   const { fsd, md, yd, nt, t_i18n } = useFormatter();
@@ -373,6 +490,11 @@ const ResaaTimelineTimeRangeFilter = ({
     [selectedInterval, tickValues, alignedTimelineInterval],
   );
 
+  const { canPanBackward, canPanForward } = useMemo(
+    () => getTimelineViewportPanState(alignedTimelineInterval, dataExtent),
+    [alignedTimelineInterval, dataExtent],
+  );
+
   const handleTimeRangeChange = (interval) => {
     if (!interval || interval.length !== 2) {
       return;
@@ -420,6 +542,41 @@ const ResaaTimelineTimeRangeFilter = ({
             {t_i18n('Yearly')}
           </ToggleButton>
         </ToggleButtonGroup>
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          width: '90%',
+          marginX: 'auto',
+          marginBottom: 1.5,
+        }}
+      >
+        <IconButton
+          size="small"
+          disabled={!canPanBackward}
+          aria-label={t_i18n('Previous period')}
+          onClick={() => onViewportPan(-1)}
+          sx={{ flexShrink: 0 }}
+        >
+          <ChevronLeft fontSize="small" />
+        </IconButton>
+        <ResaaTimelineMinimap
+          dataExtent={dataExtent}
+          viewportInterval={alignedTimelineInterval}
+          items={items}
+          onNavigate={onViewportNavigate}
+        />
+        <IconButton
+          size="small"
+          disabled={!canPanForward}
+          aria-label={t_i18n('Next period')}
+          onClick={() => onViewportPan(1)}
+          sx={{ flexShrink: 0 }}
+        >
+          <ChevronRight fontSize="small" />
+        </IconButton>
       </Box>
       <Box
         sx={{

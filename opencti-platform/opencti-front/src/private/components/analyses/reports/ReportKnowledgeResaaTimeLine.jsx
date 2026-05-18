@@ -18,10 +18,13 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
 import ResaaTimelineTimeRangeFilter, {
   alignTimelineIntervalToGranularity,
+  centerTimelineViewportOn,
   computeResaaTimelineInterval,
   computeTimelineAxisInterval,
   generateCalendarTickValues,
   inferDefaultTimeGranularity,
+  getTimelineViewportPanState,
+  shiftTimelineViewport,
   snapIntervalToTickValues,
 } from './ResaaTimelineTimeRangeFilter';
 
@@ -68,6 +71,7 @@ export const ReportKnowledgeResaaTimeLineView = ({
   const { edges } = report.objects;
   const [selectedTimeRange, setSelectedTimeRange] = useState(null);
   const [timeGranularity, setTimeGranularity] = useState('daily');
+  const [axisViewport, setAxisViewport] = useState(null);
 
   const timelineMarkers = useMemo(
     () => edges.flatMap((edge) => {
@@ -93,13 +97,15 @@ export const ReportKnowledgeResaaTimeLineView = ({
     [timelineMarkers],
   );
 
-  const timelineAxisInterval = useMemo(
+  const defaultAxisViewport = useMemo(
     () => computeTimelineAxisInterval(
       timeGranularity,
       timelineMarkers.map((marker) => marker.time),
     ),
     [timeGranularity, timelineMarkers],
   );
+
+  const timelineAxisInterval = axisViewport ?? defaultAxisViewport;
 
   const activeTimeRange = selectedTimeRange ?? timelineAxisInterval;
   const effectiveTimeRange = useMemo(() => {
@@ -112,9 +118,12 @@ export const ReportKnowledgeResaaTimeLineView = ({
   const showFullRange = isFullTimelineRange(effectiveTimeRange, timelineAxisInterval);
 
   useEffect(() => {
+    const granularity = inferDefaultTimeGranularity(dataTimeExtent);
+    const dates = timelineMarkers.map((marker) => marker.time);
     setSelectedTimeRange(null);
-    setTimeGranularity(inferDefaultTimeGranularity(dataTimeExtent));
-  }, [dataTimeExtent[0].getTime(), dataTimeExtent[1].getTime()]);
+    setTimeGranularity(granularity);
+    setAxisViewport(computeTimelineAxisInterval(granularity, dates));
+  }, [dataTimeExtent, timelineMarkers]);
 
   const handleTimeRangeChange = (interval) => {
     if (!interval || interval.length !== 2) {
@@ -134,6 +143,28 @@ export const ReportKnowledgeResaaTimeLineView = ({
 
   const handleGranularityChange = (granularity) => {
     setTimeGranularity(granularity);
+    setSelectedTimeRange(null);
+    setAxisViewport(computeTimelineAxisInterval(
+      granularity,
+      timelineMarkers.map((marker) => marker.time),
+    ));
+  };
+
+  const handleViewportPan = (direction) => {
+    const viewport = axisViewport ?? defaultAxisViewport;
+    const panState = getTimelineViewportPanState(viewport, dataTimeExtent);
+    if (direction < 0 && !panState.canPanBackward) {
+      return;
+    }
+    if (direction > 0 && !panState.canPanForward) {
+      return;
+    }
+    setAxisViewport(shiftTimelineViewport(viewport, timeGranularity, direction));
+    setSelectedTimeRange(null);
+  };
+
+  const handleViewportNavigate = (centerTime) => {
+    setAxisViewport(centerTimelineViewportOn(centerTime, timeGranularity));
     setSelectedTimeRange(null);
   };
 
@@ -193,10 +224,13 @@ export const ReportKnowledgeResaaTimeLineView = ({
       <Box sx={{ maxWidth: 960, margin: '0 auto' }}>
         <ResaaTimelineTimeRangeFilter
           items={timelineMarkers}
+          dataExtent={dataTimeExtent}
           timelineInterval={timelineAxisInterval}
           selectedInterval={activeTimeRange}
           granularity={timeGranularity}
           onGranularityChange={handleGranularityChange}
+          onViewportPan={handleViewportPan}
+          onViewportNavigate={handleViewportNavigate}
           onChange={handleTimeRangeChange}
         />
         {filteredEdges.length === 0 && (

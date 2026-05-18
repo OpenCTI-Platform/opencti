@@ -176,3 +176,8 @@
 .resaa-timeline-timerange .react_time_range__time_range_container {
     overflow: visible;
 }
+
+.resaa-timeline-minimap:focus-visible {
+    outline: 2px solid #4a86e8;
+    outline-offset: 2px;
+}
