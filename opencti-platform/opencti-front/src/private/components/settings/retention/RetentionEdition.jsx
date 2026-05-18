@@ -200,6 +200,13 @@ const RetentionEditionContainer = (props) => {
                 },
               }}
             />
+            {retentionRule.scope === 'activity'
+              && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {t_i18n('The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)')}
+                </Alert>
+              )
+            }
             {retentionRule.scope === 'file'
               && (
                 <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>

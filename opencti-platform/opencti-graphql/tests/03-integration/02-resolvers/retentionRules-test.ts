@@ -1,8 +1,11 @@
-import { describe, expect, it, afterAll } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import type { RetentionRuleAddInput } from '../../../src/generated/graphql';
 import { RetentionRuleScope, RetentionUnit } from '../../../src/generated/graphql';
+import { testContext } from '../../utils/testQuery';
+import { checkRetentionRule } from '../../../src/modules/retentionRules/retentionRules-domain';
+import * as conf from '../../../src/config/conf';
 
 // ---------------------------------------------------------------------------
 // GraphQL fragments
@@ -98,6 +101,7 @@ describe('RetentionRules module – integration tests', () => {
   let fileRuleId: string;
   let workbenchRuleId: string;
   let historyRuleId: string;
+  let activityRuleId: string;
 
   // -------------------------------------------------------------------------
   // CREATE
@@ -207,6 +211,34 @@ describe('RetentionRules module – integration tests', () => {
       expect(rule.remaining_count).toBeNull();
 
       historyRuleId = rule.id;
+    });
+
+    it('should create an activity retention rule', async () => {
+      const input: RetentionRuleAddInput = {
+        name: '[Integration] Activity rule',
+        filters: emptyFilters,
+        max_retention: 365,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.Activity,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CREATE_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const rule = response.data?.retentionRuleAdd;
+      expect(rule).toBeDefined();
+      expect(rule.id).toBeDefined();
+      expect(rule.name).toBe('[Integration] Activity rule');
+      expect(rule.scope).toBe('activity');
+      expect(rule.max_retention).toBe(365);
+      expect(rule.retention_unit).toBe('days');
+      expect(rule.last_execution_date).toBeNull();
+      expect(rule.last_deleted_count).toBeNull();
+      expect(rule.remaining_count).toBeNull();
+
+      activityRuleId = rule.id;
     });
 
     it('should create a retention rule without filters (defaults to empty filter set)', async () => {
@@ -471,6 +503,69 @@ describe('RetentionRules module – integration tests', () => {
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
+    it('should return a count for activity scope', async () => {
+      // Verifies the activity code path executes and returns a number.
+      const input: RetentionRuleAddInput = {
+        name: 'check activity',
+        filters: emptyFilters,
+        max_retention: 3650,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.Activity,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return a number for activity scope with a short retention window', async () => {
+      const input: RetentionRuleAddInput = {
+        name: 'check activity short window',
+        filters: emptyFilters,
+        max_retention: 1,
+        retention_unit: RetentionUnit.Minutes,
+        scope: RetentionRuleScope.Activity,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return a count for activity scope with event_type filter', async () => {
+      const activityFilters = JSON.stringify({
+        mode: 'and',
+        filters: [{ key: ['event_type'], values: ['authentication'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      });
+      const input: RetentionRuleAddInput = {
+        name: 'check activity with event_type filter',
+        filters: activityFilters,
+        max_retention: 3650,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.Activity,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThanOrEqual(0);
+    });
+
     it('should return 0 elements when max_retention is very short (minutes)', async () => {
       // A very short retention (1 minute) should find elements modified before 1 minute ago – likely 0 in a fresh test run
       const input: RetentionRuleAddInput = {
@@ -488,6 +583,40 @@ describe('RetentionRules module – integration tests', () => {
 
       const count = response.data?.retentionRuleCheck;
       expect(typeof count).toBe('number');
+    });
+
+    it('should throw UnsupportedError for history scope', async () => {
+      const spy = vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(false);
+      try {
+        const input: RetentionRuleAddInput = {
+          name: 'check history unsupported',
+          filters: emptyFilters,
+          max_retention: 30,
+          retention_unit: RetentionUnit.Days,
+          scope: RetentionRuleScope.History,
+        };
+        await expect(checkRetentionRule(testContext, input))
+          .rejects.toThrow('The history scope for retention rules is not enabled on this platform');
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it('should throw UnsupportedError for activity scope', async () => {
+      const spy = vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(false);
+      try {
+        const input: RetentionRuleAddInput = {
+          name: 'check activity unsupported',
+          filters: emptyFilters,
+          max_retention: 30,
+          retention_unit: RetentionUnit.Days,
+          scope: RetentionRuleScope.Activity,
+        };
+        await expect(checkRetentionRule(testContext, input))
+          .rejects.toThrow('The activity scope for retention rules is not enabled on this platform');
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 
@@ -542,6 +671,21 @@ describe('RetentionRules module – integration tests', () => {
       });
       expect(getResponse.data?.retentionRule).toBeNull();
     });
+
+    it('should delete the activity retention rule', async () => {
+      const response = await queryAsAdminWithSuccess({
+        query: DELETE_RETENTION_RULE,
+        variables: { id: activityRuleId },
+      });
+      expect(response.data?.retentionRuleEdit?.delete).toBe(activityRuleId);
+
+      // Verify it no longer exists
+      const getResponse = await queryAsAdminWithSuccess({
+        query: GET_RETENTION_RULE,
+        variables: { id: activityRuleId },
+      });
+      expect(getResponse.data?.retentionRule).toBeNull();
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -549,7 +693,7 @@ describe('RetentionRules module – integration tests', () => {
   // -------------------------------------------------------------------------
 
   afterAll(async () => {
-    const rules = [knowledgeRuleId, fileRuleId, workbenchRuleId, historyRuleId].filter(Boolean);
+    const rules = [knowledgeRuleId, fileRuleId, workbenchRuleId, historyRuleId, activityRuleId].filter(Boolean);
     await Promise.allSettled(
       rules.map((id) => queryAsAdminWithSuccess({ query: DELETE_RETENTION_RULE, variables: { id } })),
     );

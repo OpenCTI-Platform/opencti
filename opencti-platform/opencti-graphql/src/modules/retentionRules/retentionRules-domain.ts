@@ -15,12 +15,15 @@ import { BASE_TYPE_ENTITY } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
-import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
   if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
     throw UnsupportedError('The history scope for retention rules is not enabled on this platform');
+  }
+  if (scope === 'activity' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
+    throw UnsupportedError('The activity scope for retention rules is not enabled on this platform');
   }
   const before = utcDate().subtract(maxDays, unit ?? 'days');
   let result: any = [];
@@ -41,6 +44,11 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: 1 });
+    return result.pageInfo.globalCount;
+  } else if (scope === 'activity') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: 1 });
     return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });

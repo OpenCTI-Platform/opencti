@@ -90,7 +90,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       ...values,
       max_retention: Number(values.max_retention),
       scope,
-      filters: (scope === 'knowledge' || scope === 'history') ? values.filters : '',
+      filters: (scope === 'knowledge' || scope === 'history' || scope === 'activity') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
@@ -123,7 +123,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       ...values,
       max_retention: Number(values.max_retention),
       scope,
-      filters: (scope === 'knowledge' || scope === 'history') ? values.filters : '',
+      filters: (scope === 'knowledge' || scope === 'history' || scope === 'activity') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
@@ -217,6 +217,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 fullWidth={true}
                 onChange={setFieldValue}
                 options={[
+                  ...(isActivityHistoryRetentionEnable() ? [{ value: 'activity', label: t_i18n('Activity') }] : []),
                   { value: 'file', label: t_i18n('File') },
                   ...(isActivityHistoryRetentionEnable() ? [{ value: 'history', label: t_i18n('History') }] : []),
                   { value: 'knowledge', label: t_i18n('Knowledge') },
@@ -231,6 +232,13 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   label: t_i18n('Scope'),
                 }}
               />
+              {formValues.scope?.value === 'activity'
+                && (
+                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                    {t_i18n('The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)')}
+                  </Alert>
+                )
+              }
               {formValues.scope?.value === 'file'
                 && (
                   <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
