@@ -3,7 +3,7 @@ import convertSavedFiltersToStix from './savedFilter-converter';
 import { ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter, type StixSavedFilter } from './savedFilter-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { creators, createdAt } from '../../schema/attribute-definition';
+import { authorizedMembers, creators, createdAt } from '../../schema/attribute-definition';
 
 const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSavedFilter> = {
   type: {
@@ -20,6 +20,7 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
   attributes: [
     creators,
     createdAt,
+    authorizedMembers,
     {
       name: 'name',
       label: 'Name',
