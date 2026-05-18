@@ -35,7 +35,7 @@ if (ENABLED_TRACING) {
   }
   // ZIPKIN
   const zipKinUri = nconf.get('app:telemetry:tracing:exporter_zipkin');
-  if (isNotEmptyField(otlpUri)) {
+  if (isNotEmptyField(zipKinUri)) {
     const zipkinExporter = new ZipkinExporter({ url: zipKinUri, headers: {} });
     const provider = new NodeTracerProvider({
       resource: defaultResource().merge(resourceFromAttributes({
