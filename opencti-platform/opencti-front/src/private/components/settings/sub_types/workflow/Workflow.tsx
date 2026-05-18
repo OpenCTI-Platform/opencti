@@ -7,7 +7,6 @@ import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Typography } from '@mui/material';
-import { SaveOutlined } from '@mui/icons-material';
 import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { workflowQuery } from '../SubTypeWorkflow';
@@ -20,11 +19,26 @@ import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
+import PublishButton from './PublishButton';
+
+export interface WorkflowValidationError {
+  type: string;
+  message: string;
+  path?: Array<{ id: string; entity_type: string }>;
+}
 
 const workflowDefinitionSetMutation = graphql`
   mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
     workflowDefinitionSet(entityType: $entityType, definition: $definition) {
       id
+      errors {
+        type
+        message
+        path {
+          id
+          entity_type
+        }
+      }
     }
   }
 `;
@@ -77,12 +91,30 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
     { successMessage: t_i18n('Workflow successfully updated') },
   );
 
-  const onSave = () => {
+  const [workflowDefinitionStatus, setWorkflowDefinitionStatus] = useState<{
+    published: boolean;
+    validationErrors: WorkflowValidationError[];
+  }>({ published: false, validationErrors: [] });
+
+  useEffect(() => {
     const finalSchema = transformToWorkflowDefinition(nodes, edges, workflowDefinition);
     saveWorkflowDefinition({
       variables: { entityType: 'DraftWorkspace', definition: JSON.stringify(finalSchema) },
+      onCompleted: (response) => {
+        if (response.workflowDefinitionSet) {
+          const { errors } = response.workflowDefinitionSet;
+          if (errors && errors.length > 0) {
+            setWorkflowDefinitionStatus({
+              published: false,
+              validationErrors: errors.filter((e): e is WorkflowValidationError => e !== null && e !== undefined) as WorkflowValidationError[],
+            });
+          } else {
+            setWorkflowDefinitionStatus({ published: true, validationErrors: [] });
+          }
+        }
+      },
     });
-  };
+  }, [nodes, edges]);
 
   // Edit status and trantions
   const [open, setOpen] = useState<boolean>(false);
@@ -141,9 +173,7 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
       >
         {nodes.length ? (
           <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Button onClick={onSave} startIcon={<SaveOutlined />} variant="secondary">
-              {t_i18n('Save')}
-            </Button>
+            <PublishButton validationStatus={workflowDefinitionStatus} onPublish={() => {}} />
             <Button
               onClick={() => {
                 setSelectedElement({

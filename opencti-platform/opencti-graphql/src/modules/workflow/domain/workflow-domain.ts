@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
@@ -29,9 +30,13 @@ const getDefinitionData = async (context: AuthContext, user: AuthUser, entitySet
     const executionContext = bypassDraftContext(context);
     const workflowDefinitionEntity = await storeLoadById(executionContext, executionContext.user!, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION) as any;
     if (workflowDefinitionEntity) {
-      const workflowContent = typeof workflowDefinitionEntity.workflow_content === 'string'
-        ? JSON.parse(workflowDefinitionEntity.workflow_content)
-        : workflowDefinitionEntity.workflow_content;
+      // Use published_version if available, otherwise fall back to draft_version
+      const version = workflowDefinitionEntity.published_version || workflowDefinitionEntity.draft_version;
+      if (!version?.content) return null;
+
+      const workflowContent = typeof version.content === 'string'
+        ? JSON.parse(version.content)
+        : version.content;
       return { ...workflowContent, id: workflowDefinitionEntity.id, name: workflowDefinitionEntity.name };
     }
   }
@@ -125,26 +130,41 @@ export const setWorkflowDefinition = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
 
-  await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, entitySetting.workflow_id ?? undefined);
+  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, entitySetting.workflow_id ?? undefined);
 
   const workflowName = definitionObj.name || `Workflow for ${entityType}`;
 
+  // Create version data structure
+  const versionData = {
+    id: randomUUID(),
+    timestamp: new Date().toISOString(),
+    createdBy: executionUser.id,
+    content: definition,
+    validation_errors: errors,
+  };
+
   // 1. Check if we have an existing workflow linked
   if (entitySetting.workflow_id) {
-    const existingWorkflow = await storeLoadById(executionContext, executionUser, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION);
+    const existingWorkflow = await storeLoadById(executionContext, executionUser, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION) as any;
     if (existingWorkflow) {
+      // Add to version history
+      const allVersions = existingWorkflow.all_versions || [];
+      const updatedVersions = [...allVersions, versionData];
+
       await updateAttribute(executionContext, executionUser, existingWorkflow.id, ENTITY_TYPE_WORKFLOW_DEFINITION, [
-        { key: 'workflow_content', value: [definition] },
+        { key: 'draft_version', value: [versionData] },
+        { key: 'all_versions', value: updatedVersions },
         { key: 'name', value: [workflowName] },
       ]);
-      return entitySetting;
+      return { ...entitySetting, errors };
     }
   }
 
   // 2. Create the WorkflowDefinition entity
   const workflowDefinitionInput = {
     name: workflowName,
-    workflow_content: definition,
+    draft_version: versionData,
+    all_versions: [versionData],
   };
   const workflowDefinition = await createEntity(executionContext, executionUser, workflowDefinitionInput, ENTITY_TYPE_WORKFLOW_DEFINITION);
 
@@ -152,7 +172,8 @@ export const setWorkflowDefinition = async (
   const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [
     { key: 'workflow_id', value: [workflowDefinition.id] },
   ]);
-  return element;
+
+  return { ...element, errors };
 };
 
 /**
@@ -364,12 +385,13 @@ export const isStatusTemplateUsedInWorkflows = async (
   const executionContext = bypassDraftContext(context);
   const workflows = await fullEntitiesList<any>(executionContext, executionContext.user!, [ENTITY_TYPE_WORKFLOW_DEFINITION]);
   for (const workflow of workflows) {
-    if (typeof workflow.workflow_content === 'string') {
-      if (workflow.workflow_content.includes(statusTemplateId)) {
+    // Check both published and draft versions
+    const versions = [workflow.published_version, workflow.draft_version].filter(Boolean);
+    for (const version of versions) {
+      const content = version.content;
+      if (typeof content === 'string' && content.includes(statusTemplateId)) {
         return true;
-      }
-    } else if (workflow.workflow_content) {
-      if (JSON.stringify(workflow.workflow_content).includes(statusTemplateId)) {
+      } else if (content && JSON.stringify(content).includes(statusTemplateId)) {
         return true;
       }
     }

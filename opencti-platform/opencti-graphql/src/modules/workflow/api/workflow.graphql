@@ -32,9 +32,21 @@ type WorkflowSchema {
     transitions: [WorkflowSerializedTransition!]!
 }
 
+type WorkflowValidationError {
+    type: String!
+    message: String!
+    path: [WorkflowEntityRef!]
+}
+
+type WorkflowEntityRef {
+    id: String!
+    entity_type: String!
+}
+
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
+    errors: [WorkflowValidationError!]
 }
 
 type WorkflowTriggerResult {

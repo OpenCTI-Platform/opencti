@@ -10788,9 +10788,21 @@ type WorkflowSchema {
   transitions: [WorkflowSerializedTransition!]!
 }
 
+type WorkflowValidationError {
+  type: String!
+  message: String!
+  path: [WorkflowEntityRef!]
+}
+
+type WorkflowEntityRef {
+  id: String!
+  entity_type: String!
+}
+
 type EntitySetting implements InternalObject & BasicObject {
   workflow_configuration: Boolean
   workflow_id: String
+  errors: [WorkflowValidationError!]
   id: ID!
   entity_type: String!
   standard_id: String!

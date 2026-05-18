@@ -5,6 +5,7 @@ import { storeLoadById, storeLoadByIds, fullEntitiesList } from '../../database/
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
+import type { WorkflowValidationError } from './types/workflow-types';
 import { isBasicObject } from '../../schema/stixCoreObject';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 
@@ -108,23 +109,31 @@ export const validateWorkflowDefinitionData = async (
   definitionStr: string,
   entityType: string,
   existingWorkflowId?: string,
-) => {
+): Promise<WorkflowValidationError[]> => {
   let parsed;
+  const errors: WorkflowValidationError[] = [];
   try {
     parsed = JSON.parse(definitionStr);
   } catch (_error) {
-    throw ValidationError('Invalid workflow definition JSON');
+    errors.push({ type: 'INVALID_JSON', message: 'Invalid workflow definition JSON' });
   }
 
   const validationResult = workflowDefinitionSchema.safeParse(parsed);
   if (!validationResult.success) {
-    throw ValidationError('Workflow definition schema validation failed', { errors: validationResult.error.issues });
+    errors.push({
+      type: 'SCHEMA_VALIDATION_FAILED',
+      message: 'Workflow definition schema validation failed',
+    });
+    return errors;
   }
 
   const { id, initialState, states = [], transitions } = validationResult.data;
 
   if (!isBasicObject(entityType) && !['DraftWorkspace'].includes(entityType)) {
-    throw ValidationError(`Entity type '${entityType}' doesn't exist`);
+    errors.push({
+      type: 'INVALID_ENTITY_TYPE',
+      message: `Entity type '${entityType}' doesn't exist`,
+    });
   }
 
   if (id) {
@@ -134,12 +143,16 @@ export const validateWorkflowDefinitionData = async (
       && (workflow.id === id || workflow.name === id || (typeof workflow.workflow_content === 'string' && workflow.workflow_content.includes(`"id":"${id}"`))),
     );
     if (conflict) {
-      throw ValidationError('Workflow id already exists');
+      errors.push({
+        type: 'DUPLICATE_WORKFLOW_ID',
+        message: 'Workflow id already exists',
+        path: [{ id: conflict.id, entity_type: ENTITY_TYPE_WORKFLOW_DEFINITION }],
+      });
     }
   }
 
   const definedStates = new Set<string>();
-  states.forEach((state) => {
+  states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
     if (state.name) definedStates.add(state.name);
     if (state.statusId) definedStates.add(state.statusId);
 
@@ -159,23 +172,29 @@ export const validateWorkflowDefinitionData = async (
 
   for (const transition of transitions) {
     if (transition.from === null || transition.to === null) {
-      throw ValidationError(`Transition ${transition.event} should be linked to at least one status`);
+      errors.push({
+        type: 'UNLINKED_TRANSITION',
+        message: `Transition ${transition.event} should be linked to at least one status`,
+      });
     }
     if (events.has(transition.event)) {
-      throw ValidationError(`Transition '${transition.event}' referenced in multiple transitions`);
+      errors.push({
+        type: 'DUPLICATE_TRANSITION_EVENT',
+        message: `Transition '${transition.event}' referenced in multiple transitions`,
+      });
     }
     events.add(transition.event);
 
     const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
     for (const fromState of fromStates) {
-      if (fromState !== '*' && !definedStates.has(fromState)) {
+      if (fromState && fromState !== '*' && !definedStates.has(fromState)) {
         stateIdsToCheck.add(fromState);
       }
     }
-    if (transition.to !== '*' && !definedStates.has(transition.to)) {
+    if (transition.to && transition.to !== '*' && !definedStates.has(transition.to)) {
       stateIdsToCheck.add(transition.to);
     }
-    if (transition.to !== '*') {
+    if (transition.to && transition.to !== '*') {
       statesWithIncomingTransition.add(transition.to);
     }
 
@@ -187,16 +206,16 @@ export const validateWorkflowDefinitionData = async (
         }
         group.filters.forEach((filter: any) => {
           if (!filter.key) {
-            throw ValidationError('Filter key is required');
+            errors.push({ type: 'MISSING_FILTER_KEY', message: 'Filter key is required' });
           }
           if (!filter.values || !Array.isArray(filter.values)) {
-            throw ValidationError('Filter values must be an array');
+            errors.push({ type: 'INVALID_FILTER_VALUES', message: 'Filter values must be an array' });
           }
           if (filter.operator && !filterOperatorValues.includes(filter.operator)) {
-            throw ValidationError(`Invalid filter operator '${filter.operator}'`);
+            errors.push({ type: 'INVALID_FILTER_OPERATOR', message: `Invalid filter operator '${filter.operator}'` });
           }
           if (filter.mode && !filterModeValues.includes(filter.mode)) {
-            throw ValidationError(`Invalid filter mode '${filter.mode}'`);
+            errors.push({ type: 'INVALID_FILTER_MODE', message: `Invalid filter mode '${filter.mode}'` });
           }
         });
         if (group.filterGroups && Array.isArray(group.filterGroups)) {
@@ -219,17 +238,26 @@ export const validateWorkflowDefinitionData = async (
   }
 
   if (entityType === 'DraftWorkspace' && !hasValidateDraft) {
-    throw ValidationError('DraftWorkspace workflow must contain at least one validateDraft action');
+    errors.push({
+      type: 'MISSING_VALIDATE_DRAFT_ACTION',
+      message: 'DraftWorkspace workflow must contain at least one validateDraft action',
+    });
   }
 
   // Validate exactly one root state (a state with no incoming transitions) and that it matches initialState
   if (initialState !== '*' && definedStates.size > 0) {
     const rootStates = [...definedStates].filter((s) => !statesWithIncomingTransition.has(s));
     if (rootStates.length > 1) {
-      throw ValidationError(`Workflow must have exactly one root state (a state with no incoming transitions), but found: ${rootStates.join(', ')}`);
+      errors.push({
+        type: 'MULTIPLE_ROOT_STATES',
+        message: `Workflow must have exactly one root state (a state with no incoming transitions), but found: ${rootStates.join(', ')}`,
+      });
     }
     if (rootStates.length === 1 && rootStates[0] !== initialState) {
-      throw ValidationError(`The root state '${rootStates[0]}' (no incoming transitions) must match the initialState '${initialState}'`);
+      errors.push({
+        type: 'ROOT_STATE_MISMATCH',
+        message: `The root state '${rootStates[0]}' (no incoming transitions) must match the initialState '${initialState}'`,
+      });
     }
   }
 
@@ -239,7 +267,10 @@ export const validateWorkflowDefinitionData = async (
     const foundIds = new Set(templates.map((template: any) => template.id));
     for (const stateId of stateIdsArray) {
       if (!foundIds.has(stateId)) {
-        throw ValidationError(`Transition/Action state '${stateId}' doesn't exist in the workflow definition states nor in the status templates in DB`);
+        errors.push({
+          type: 'STATE_NOT_FOUND',
+          message: `Transition/Action state '${stateId}' doesn't exist in the workflow definition states nor in the status templates in DB`,
+        });
       }
     }
   }
@@ -277,14 +308,16 @@ export const validateWorkflowDefinitionData = async (
           const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId);
 
           if (conflictingInstances.length > 0) {
-            throw ValidationError(
-              `Cannot remove states ${removedStates.join(', ')} that are currently in use by workflow instances: ${conflictingInstances.map((i: any) => i.id).join(', ')}`,
-            );
+            errors.push({
+              type: 'STATE_IN_USE',
+              message: `Cannot remove states ${removedStates.join(', ')} that are currently in use by workflow instances`,
+              path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
+            });
           }
         }
       }
     }
   }
 
-  return validationResult.data;
+  return errors;
 };
