@@ -6,7 +6,7 @@ import { commitMutation } from '../../../../../relay/environment';
 import { useManipulateComponentsPlaybookUpdatePositionsMutation } from './useManipulateComponents';
 
 const layout = tree<Node>()
-  .nodeSize([200, 150])
+  .nodeSize([200, 175])
   .separation(() => 1);
 
 const options = { duration: 300 };

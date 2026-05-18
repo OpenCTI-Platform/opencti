@@ -1,65 +1,18 @@
 import React, { memo, useState } from 'react';
 import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
-import { makeStyles } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { MoreVert, LoginOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
-import type { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';
+import { truncate } from '../../../../../../utils/String';
 
 type node = {
   id: string;
 };
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  node: {
-    position: 'relative',
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.12)'
-        : '1px solid rgba(0, 0, 0, 0.12)',
-    borderRadius: 4,
-    backgroundColor: theme.palette.background.paper,
-    width: 160,
-    height: 50,
-    padding: '8px 5px 5px 5px',
-  },
-  name: {
-    maxWidth: 100,
-    fontSize: 10,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  component: {
-    maxWidth: 100,
-    color:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.5)'
-        : 'rgba(0, 0, 0, 0.5)',
-    fontSize: 8,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  handlesWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  handle: {
-    position: 'absolute',
-  },
-}));
 
 const getHandlePositionStyle = (count: number, index: number, width = 160): React.CSSProperties | undefined => {
   // we distribute evenly the output ports at the bottom using CSS
@@ -70,19 +23,45 @@ const getHandlePositionStyle = (count: number, index: number, width = 160): Reac
 };
 
 const NodeWorkflow = ({ id, data }: NodeProps) => {
-  const classes = useStyles();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const { getNode } = useReactFlow();
+
   return (
-    <div className={classes.node}>
+    <div style={{
+      position: 'relative',
+      border: theme.palette.mode === 'dark'
+        ? '1px solid rgba(255, 255, 255, 0.12)'
+        : '1px solid rgba(0, 0, 0, 0.12)',
+      borderRadius: 4,
+      backgroundColor: theme.palette.background.paper,
+      width: 160,
+      minHeight: 50,
+      padding: '8px 5px 5px 5px',
+    }}
+    >
       <ItemIcon type={data.component.icon} variant="inline" />
       <div style={{ float: 'left' }}>
         <Tooltip title={t_i18n(data.name)}>
-          <div className={classes.name}>{t_i18n(data.name)}</div>
+          <div style={{ maxWidth: 100, fontSize: 10, wordBreak: 'break-word' }}>
+            {t_i18n(truncate(data.name, 100, false))}
+          </div>
         </Tooltip>
         <Tooltip title={t_i18n(data.component.description)}>
-          <div className={classes.component}>{t_i18n(data.component.description)}</div>
+          <div style={{
+            maxWidth: 100,
+            fontSize: 8,
+            color: theme.palette.mode === 'dark'
+              ? 'rgba(255, 255, 255, 0.5)'
+              : 'rgba(0, 0, 0, 0.5)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          >
+            {t_i18n(data.component.description)}
+          </div>
         </Tooltip>
       </div>
       <div className="clearfix" />
@@ -146,7 +125,16 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       {!data.component?.is_entry_point && (
         <Handle type="target" position={Position.Top} isConnectable={false} />
       )}
-      <div className={classes.handlesWrapper}>
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      >
         {(data.component?.ports ?? []).map((n: node, index: number, array: node[]) => (
           <Handle
             key={n.id}
@@ -154,8 +142,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
             type="source"
             position={Position.Bottom}
             isConnectable={false}
-            className={classes.handle}
-            style={getHandlePositionStyle(array.length, index)}
+            style={{ ...getHandlePositionStyle(array.length, index), position: 'absolute' }}
           />
         ))}
       </div>
