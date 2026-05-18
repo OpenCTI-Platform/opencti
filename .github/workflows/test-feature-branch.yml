@@ -19,6 +19,12 @@ on:
         default: false
 
 jobs:
+  # NOTE:
+  # Do not add a pre-deploy `docker manifest inspect` polling gate here.
+  # A previous implementation caused false negatives for prototype deployments
+  # (timing/visibility race on Docker Hub), blocking successful staging setup.
+  # If a registry issue must be diagnosed, do it in wf-build-image logs or
+  # post-deploy checks instead of hard-failing before AWX deploy.
   wf-build-image:
       name: Build image
       uses: ./.github/workflows/ci-docker-build.yml
