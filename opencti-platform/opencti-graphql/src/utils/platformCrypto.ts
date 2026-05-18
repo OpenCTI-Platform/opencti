@@ -265,3 +265,23 @@ const createPlatformCrypto = async () => {
 };
 
 export const getPlatformCrypto = memoize(createPlatformCrypto);
+
+export type Encryptor = {
+  encrypt: (data: Buffer, aad?: Buffer | undefined) => Promise<Buffer<ArrayBuffer>>;
+};
+
+export type Decryptor = {
+  decrypt: (data: Buffer, aad?: Buffer | undefined) => Promise<Buffer<ArrayBuffer>>;
+};
+
+export const encryptValue = async (encryptor: Encryptor, value: string | undefined | null) => {
+  if (!value) return value;
+  const clearDataBuffer = Buffer.from(value);
+  const encryptedBuffer = await encryptor.encrypt(clearDataBuffer);
+  return encryptedBuffer.toString('base64');
+};
+
+export const decryptValue = async (decryptor: Decryptor, value: string | undefined | null) => {
+  if (!value) return value;
+  return (await decryptor.decrypt(Buffer.from(value, 'base64'))).toString();
+};
