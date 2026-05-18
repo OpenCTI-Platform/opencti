@@ -1,14 +1,14 @@
 import React, { useContext } from 'react';
 import TopBanner from '../../../components/TopBanner';
-import { isEmptyField } from '../../../utils/utils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
+import { shouldDisplayTrialBanner } from '../../../utils/bannerUtils';
 
 const StartTrialBanner = () => {
   const { settings } = useContext(UserContext);
   const { t_i18n } = useFormatter();
 
-  if (!settings || isEmptyField(settings?.platform_xtmhub_url) || !settings.platform_demo) return <></>;
+  if (!shouldDisplayTrialBanner(settings)) return <></>;
 
   const freeTrialUrl = `${settings?.platform_xtmhub_url}/cybersecurity-solutions/free-trial`;
   const createFreeTrialUrl = `${settings?.platform_xtmhub_url}/redirect/create-free-trial`;

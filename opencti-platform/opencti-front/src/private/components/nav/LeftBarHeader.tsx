@@ -86,6 +86,7 @@ interface LeftBarHeaderProps {
   logoCollapsed?: string;
   navOpen: boolean;
   bannerHeightNumber: number;
+  topBannerHeight: number;
   settingsMessagesBannerHeight: number;
   openAEVUrl?: string;
   xtmhubUrl?: string;
@@ -98,6 +99,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   logoCollapsed,
   navOpen,
   bannerHeightNumber,
+  topBannerHeight,
   settingsMessagesBannerHeight,
   openAEVUrl,
   xtmhubUrl,
@@ -133,7 +135,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         component={Link}
         to="/dashboard"
         style={{
-          marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
+          marginTop: `calc(${topBannerHeight}px + ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
         }}
         sx={{
           padding: navOpen ? 2 : '16px 0',

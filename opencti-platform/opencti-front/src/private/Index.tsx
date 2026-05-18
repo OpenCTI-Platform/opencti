@@ -5,8 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
-import LicenseBanner from '@components/LicenseBanner';
-import StartTrialBanner from '@components/xtm_hub/StartTrialBanner';
+import TopBannersManager from '@components/TopBannersManager';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Message from '../components/Message';
@@ -22,6 +21,7 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
 import { ChatbotProvider } from './components/chatbox/ChatbotContext';
+import useTopBannerHeight from '../utils/hooks/useTopBannerHeight';
 
 const HomeDashboard = lazy(() => import('./components/HomeDashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
@@ -58,6 +58,7 @@ const Index = ({ settings }: IndexProps) => {
   } = useAuth();
   const draftContext = useDraftContext();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const topBannerHeight = useTopBannerHeight();
 
   // Change the theme body attribute when the mode changes in
   // the palette because some components like legacy editor uses this
@@ -78,7 +79,7 @@ const Index = ({ settings }: IndexProps) => {
     flexGrow: 1,
     overflowY: 'hidden',
     height: '100vh',
-    paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`,
+    paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
 
@@ -92,8 +93,7 @@ const Index = ({ settings }: IndexProps) => {
   return (
     <ChatbotProvider>
       <SystemBanners settings={settings} />
-      <LicenseBanner />
-      <StartTrialBanner />
+      <TopBannersManager />
       {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
       <SettingsMessagesBanner />
       <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
@@ -101,7 +101,7 @@ const Index = ({ settings }: IndexProps) => {
         sx={{
           display: 'flex',
           minWidth: 1400,
-          marginTop: bannerHeight,
+          marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
           marginBottom: bannerHeight,
         }}
       >
