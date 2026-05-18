@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { findPlaybooksForEntity } from '../../../../src/modules/playbook/playbook-domain';
+import { findPlaybooksForEnrollment, findPlaybooksForEntity } from '../../../../src/modules/playbook/playbook-domain';
 import type { BasicStoreEntityPlaybook } from '../../../../src/modules/playbook/playbook-types';
 import * as cache from '../../../../src/database/cache';
 import * as middleware from '../../../../src/database/middleware';
@@ -7,6 +7,17 @@ import * as stixFiltering from '../../../../src/utils/filtering/filtering-stix/s
 import * as ee from '../../../../src/enterprise-edition/ee';
 import { testContext } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+
+const buildPlaybook = (componentId: string, configuration: object, playbookStart = 'node-1') => ({
+  playbook_start: playbookStart,
+  playbook_definition: JSON.stringify({
+    nodes: [{
+      id: playbookStart,
+      component_id: componentId,
+      configuration: JSON.stringify(configuration),
+    }],
+  }),
+} as unknown as BasicStoreEntityPlaybook);
 
 describe('findPlaybooksForEntity', () => {
   beforeEach(() => {
@@ -17,17 +28,6 @@ describe('findPlaybooksForEntity', () => {
 
   type StixLoadReturn = Awaited<ReturnType<typeof middleware.stixLoadById>>;
   const mockStixEntity = { id: 'malware--id' } as unknown as StixLoadReturn;
-
-  const buildPlaybook = (componentId: string, configuration: object, playbookStart = 'node-1') => ({
-    playbook_start: playbookStart,
-    playbook_definition: JSON.stringify({
-      nodes: [{
-        id: playbookStart,
-        component_id: componentId,
-        configuration: JSON.stringify(configuration),
-      }],
-    }),
-  } as unknown as BasicStoreEntityPlaybook);
 
   // -- Enterprise Edition --
 
@@ -140,5 +140,104 @@ describe('findPlaybooksForEntity', () => {
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
     expect(result).toHaveLength(2);
+  });
+});
+
+describe('findPlaybooksForEnrollment', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.spyOn(ee, 'checkEnterpriseEdition').mockResolvedValue(undefined);
+  });
+
+  // -- Enterprise Edition --
+
+  it('should throw when not EE', async () => {
+    vi.spyOn(ee, 'checkEnterpriseEdition').mockRejectedValue(new Error('Enterprise edition required'));
+    const cacheSpy = vi.spyOn(cache, 'getEntitiesListFromCache');
+
+    await expect(findPlaybooksForEnrollment(testContext)).rejects.toThrow('Enterprise edition required');
+    expect(cacheSpy).not.toHaveBeenCalled();
+  });
+
+  // -- Playbook Definition --
+
+  it('should skip playbook when playbook_definition is missing', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      { playbook_start: 'node-1', playbook_definition: null } as unknown as BasicStoreEntityPlaybook,
+    ]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(0);
+  });
+
+  // -- Component ID --
+
+  it('should skip playbook when component_id is not PLAYBOOK_INTERNAL_DATA_STREAM or PLAYBOOK_INTERNAL_MANUAL_TRIGGER', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      buildPlaybook('PLAYBOOK_OTHER_COMPONENT', {}),
+    ]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(0);
+  });
+
+  it('should include playbook with component PLAYBOOK_INTERNAL_DATA_STREAM', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true }),
+    ]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(1);
+  });
+
+  it('should include playbook with component PLAYBOOK_INTERNAL_MANUAL_TRIGGER', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      buildPlaybook('PLAYBOOK_INTERNAL_MANUAL_TRIGGER', { canEnrollManually: true }),
+    ]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(1);
+  });
+
+  // -- canEnrollManually --
+
+  it('should exclude playbook when canEnrollManually is false', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: false }),
+    ]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(0);
+  });
+
+  it('should include playbook when canEnrollManually is undefined (defaults to true)', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', {}),
+    ]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(1);
+  });
+
+  // -- Multiple Playbooks --
+
+  it('should handle multiple playbooks and return only eligible ones', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true }),
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: false }),
+      buildPlaybook('PLAYBOOK_INTERNAL_MANUAL_TRIGGER', {}),
+      buildPlaybook('PLAYBOOK_OTHER_COMPONENT', { canEnrollManually: true }),
+    ]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(2);
+  });
+
+  it('should return empty array when no playbooks exist', async () => {
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([]);
+
+    const result = await findPlaybooksForEnrollment(testContext);
+    expect(result).toHaveLength(0);
   });
 });
