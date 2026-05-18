@@ -10661,6 +10661,7 @@ type Mutation {
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
   savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
+  savedFilterEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
@@ -15150,6 +15151,8 @@ type SavedFilter implements InternalObject & BasicObject {
   name: String!
   filters: String!
   scope: String!
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type SavedFilterEdge {

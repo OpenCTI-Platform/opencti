@@ -83,7 +83,6 @@ export const workspaceEditAuthorizedMembers = async (
 };
 
 export const getCurrentUserAccessRight = async (
-  _context: AuthContext,
   user: AuthUser,
   workspace: BasicStoreEntityWorkspace,
 ) => {

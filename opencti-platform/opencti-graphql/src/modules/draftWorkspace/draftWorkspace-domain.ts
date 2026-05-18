@@ -174,7 +174,6 @@ export const getProcessingCount = async (context: AuthContext, user: AuthUser, d
 };
 
 export const getCurrentUserAccessRight = async (
-  context: AuthContext,
   user: AuthUser,
   draft: BasicStoreEntityDraftWorkspace,
 ) => {

@@ -17221,6 +17221,7 @@ export type Mutation = {
   samlProviderEdit?: Maybe<AuthenticationProvider>;
   savedFilterAdd?: Maybe<SavedFilter>;
   savedFilterDelete?: Maybe<Scalars['ID']['output']>;
+  savedFilterEditAuthorizedMembers?: Maybe<SavedFilter>;
   savedFilterFieldPatch?: Maybe<SavedFilter>;
   sectorAdd?: Maybe<Sector>;
   sectorEdit?: Maybe<SectorEditMutations>;
@@ -19210,6 +19211,12 @@ export type MutationSavedFilterAddArgs = {
 
 export type MutationSavedFilterDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSavedFilterEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<MemberAccessInput>;
 };
 
 
@@ -28976,6 +28983,8 @@ export type SamlInput = {
 
 export type SavedFilter = BasicObject & InternalObject & {
   __typename?: 'SavedFilter';
+  authorizedMembers: Array<MemberAccess>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -47054,6 +47063,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   samlProviderEdit?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<MutationSamlProviderEditArgs, 'id' | 'input'>>;
   savedFilterAdd?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterAddArgs, 'input'>>;
   savedFilterDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSavedFilterDeleteArgs, 'id'>>;
+  savedFilterEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterEditAuthorizedMembersArgs, 'id' | 'input'>>;
   savedFilterFieldPatch?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterFieldPatchArgs, 'id'>>;
   sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<MutationSectorAddArgs, 'input'>>;
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
@@ -49472,6 +49482,8 @@ export type SamlConfigurationResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type SavedFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['SavedFilter'] = ResolversParentTypes['SavedFilter']> = ResolversObject<{
+  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

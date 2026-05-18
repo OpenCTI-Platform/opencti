@@ -15,7 +15,7 @@ const savedFilterResolver: Resolvers = {
   },
   SavedFilter: {
     authorizedMembers: (savedFilter, _, context) => getAuthorizedMembers(context, context.user, savedFilter),
-    currentUserAccessRight: (savedFilter, _, context) => getCurrentUserAccessRight(context, context.user, savedFilter),
+    currentUserAccessRight: (savedFilter, _, context) => getCurrentUserAccessRight(context.user, savedFilter),
   },
   Mutation: {
     savedFilterAdd: (_, { input }, context) => {

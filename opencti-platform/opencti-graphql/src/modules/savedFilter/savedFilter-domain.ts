@@ -68,7 +68,6 @@ export const savedFilterEditAuthorizedMembers = async (
 };
 
 export const getCurrentUserAccessRight = (
-  _context: AuthContext,
   user: AuthUser,
   savedFilter: BasicStoreEntitySavedFilter,
 ) => {
