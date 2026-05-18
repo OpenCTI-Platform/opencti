@@ -222,7 +222,7 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
  * @param version Version of the platform that exported the playbook.
  * @returns Updated stringified playbook definition, or the original if version is not compatible.
  */
-export const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260428.0'; // to update after merge of playbook scope feature
+export const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260515.0';
 export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string | undefined, version: string) => {
   if (!playbookDefinition || semver.gt(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
     return playbookDefinition;
