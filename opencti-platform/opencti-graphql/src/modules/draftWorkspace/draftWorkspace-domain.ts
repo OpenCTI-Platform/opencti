@@ -46,6 +46,14 @@ import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 
+export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  const draft = await findById(context, user, draftId);
+  if (!draft) {
+    throw FunctionalError(`Draft ${draftId} cannot be found`);
+  }
+  return draft;
+};
+
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 };
@@ -159,9 +167,11 @@ export const getCurrentUserAccessRight = async (
   return getUserAccessRight(user, draft);
 };
 
-export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
+export const listDraftObjects = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
+  await checkAndReturnDraft(context, user, draftId);
+
   if (args.types) {
     types = args.types.filter((t) => t && isStixCoreObject(t)) as string[];
   }
@@ -173,9 +183,10 @@ export const listDraftObjects = (context: AuthContext, user: AuthUser, args: Que
   return pageEntitiesConnection<BasicStoreEntity>(draftContext, user, types, newArgs);
 };
 
-export const listDraftRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
+export const listDraftRelations = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
+  await checkAndReturnDraft(context, user, draftId);
   if (args.types) {
     types = args.types.filter((t) => t && isStixRelationshipExceptRef(t)) as string[];
   }
@@ -187,9 +198,10 @@ export const listDraftRelations = (context: AuthContext, user: AuthUser, args: Q
   return pageRelationsConnection<BasicStoreRelation>(draftContext, user, types, newArgs);
 };
 
-export const listDraftSightingRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
+export const listDraftSightingRelations = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
+  await checkAndReturnDraft(context, user, draftId);
   if (args.types) {
     types = args.types.filter((t) => t && isStixSightingRelationship(t)) as string[];
   }
@@ -284,10 +296,7 @@ const deleteDraftContextFromWorks = async (context: AuthContext, user: AuthUser,
 
 export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser, id: string) => {
   if (getDraftContext(context, user)) throw UnsupportedError('Cannot delete draft while in draft context');
-  const draftWorkspace = await findById(context, user, id);
-  if (!draftWorkspace) {
-    throw FunctionalError(`Draft workspace ${id} cannot be found`, id);
-  }
+  await checkAndReturnDraft(context, user, id);
   await deleteAllDraftFiles(context, user, id);
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
@@ -364,10 +373,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
 };
 
 export const validateDraftWorkspace = async (context: AuthContext, user: AuthUser, draft_id: string) => {
-  const draftWorkspace = await findById(context, user, draft_id);
-  if (!draftWorkspace) {
-    throw FunctionalError(`Draft workspace ${draft_id} cannot be found`, draft_id);
-  }
+  const draftWorkspace = await checkAndReturnDraft(context, user, draft_id);
   if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
     throw FunctionalError('Draft workspace cannot be validated in this state', { draftId: draft_id, status: draftWorkspace.draft_status });
   }
