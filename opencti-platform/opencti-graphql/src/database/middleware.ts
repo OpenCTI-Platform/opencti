@@ -2919,6 +2919,8 @@ export const updateAttributeLockFirst = async <T extends StoreObject>(
     if (!initial) {
       throw FunctionalError('Cant find element to update', { id, type });
     }
+    const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+    await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
     const lockScopedIds = getInstanceIds(initial);
     const mergedOpts = { ...opts, locks: R.uniq([...(opts.locks ?? []), ...lockScopedIds]) };
     const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, mergedOpts);
