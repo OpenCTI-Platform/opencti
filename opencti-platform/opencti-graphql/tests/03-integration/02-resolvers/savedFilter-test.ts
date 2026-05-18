@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 
@@ -46,6 +46,12 @@ const CREATE_SAVED_FILTER_MUTATION = gql`
     savedFilterAdd(input: $input) {
       id
       name
+      authorizedMembers {
+        id
+        name
+        entity_type
+        access_right
+      }
     }
   }
 `;
@@ -92,7 +98,7 @@ describe('Saved Filter Resolver', () => {
 
   describe('savedFilterAdd', () => {
     describe('If I use the addSavedFilter mutation', () => {
-      it('should create a filter', async () => {
+      it('should create a filter with the creator as admin in authorized members', async () => {
         const input = {
           name: 'my new filter',
           filters: JSON.stringify(newFilter),
@@ -109,20 +115,11 @@ describe('Saved Filter Resolver', () => {
         expect(result?.data?.savedFilterAdd).toBeDefined();
         expect(result?.data?.savedFilterAdd.name).toEqual('my new filter');
         createdFilterId = result?.data?.savedFilterAdd.id as string;
-      });
 
-      it('should have the creator as admin in authorized members', async () => {
-        const result = await queryAsAdminWithSuccess({
-          query: GET_SAVED_FILTERS_QUERY,
-          variables: { first: 10 },
-        });
-        const savedFilters = result.data?.savedFilters.edges;
-        const filter = savedFilters.find((e: any) => e.node.id === createdFilterId);
-        expect(filter).toBeDefined();
-        expect(filter.node.authorizedMembers).toBeDefined();
-        expect(filter.node.authorizedMembers.length).toEqual(1);
-        expect(filter.node.authorizedMembers[0].id).toEqual(ADMIN_USER.id);
-        expect(filter.node.authorizedMembers[0].access_right).toEqual('admin');
+        const { authorizedMembers } = result.data.savedFilterAdd;
+        expect(authorizedMembers).toBeDefined();
+        expect(authorizedMembers.length).toEqual(1);
+        expect(authorizedMembers[0].access_right).toEqual('admin');
       });
     });
   });
@@ -140,7 +137,7 @@ describe('Saved Filter Resolver', () => {
         expect(savedFilters.length).toEqual(1);
       });
       it('gives the list of saved filters with restricted members', async () => {
-        const result = await queryAsUserWithSuccess(USER_EDITOR, {
+        const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
           query: GET_SAVED_FILTERS_QUERY,
           variables: {},
         });
@@ -179,7 +176,7 @@ describe('Saved Filter Resolver', () => {
 
   describe('savedFilterEditAuthorizedMembers (sharing)', () => {
     it('should not be visible to another user before sharing', async () => {
-      const result = await queryAsUserWithSuccess(USER_EDITOR, {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
         query: GET_SAVED_FILTERS_QUERY,
         variables: {},
       });
@@ -204,7 +201,7 @@ describe('Saved Filter Resolver', () => {
     });
 
     it('should be visible to another user after sharing with ALL', async () => {
-      const result = await queryAsUserWithSuccess(USER_EDITOR, {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
         query: GET_SAVED_FILTERS_QUERY,
         variables: {},
       });
@@ -228,12 +225,10 @@ describe('Saved Filter Resolver', () => {
       const input = [
         { id: 'non_existing_id', access_right: 'admin' },
       ];
-      const result = await queryAsUser(USER_EDITOR, {
+      await queryAsAdminWithError({
         query: EDIT_AUTHORIZED_MEMBERS_MUTATION,
         variables: { id: createdFilterId, input },
-      });
-      expect(result.errors).toBeDefined();
-      expect(result.errors!.length).toBeGreaterThan(0);
+      }, 'It should have at least one valid member with admin access', 'FUNCTIONAL_ERROR');
     });
 
     it('should not allow removing all admins from authorized members', async () => {
@@ -241,13 +236,20 @@ describe('Saved Filter Resolver', () => {
         { id: ADMIN_USER.id, access_right: 'view' },
         { id: MEMBER_ACCESS_ALL, access_right: 'view' },
       ];
-      const result = await queryAsUser(USER_EDITOR, {
+      await queryAsAdminWithError({
+        query: EDIT_AUTHORIZED_MEMBERS_MUTATION,
+        variables: { id: createdFilterId, input },
+      }, 'It should have at least one valid member with admin access', 'FUNCTIONAL_ERROR');
+    });
+
+    it('should not allow editing authorized members without "share filters" capability', async () => {
+      const input = [
+        { id: ADMIN_USER.id, access_right: 'admin' },
+      ];
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: EDIT_AUTHORIZED_MEMBERS_MUTATION,
         variables: { id: createdFilterId, input },
       });
-      expect(result.errors).toBeDefined();
-      expect(result.errors!.length).toBeGreaterThan(0);
-      expect(result.errors![0].message).toEqual('It should have at least one valid member with admin access');
     });
 
     it('should revoke sharing (restrict back to creator only)', async () => {
@@ -263,7 +265,7 @@ describe('Saved Filter Resolver', () => {
     });
 
     it('should no longer be visible to another user after revoking sharing', async () => {
-      const result = await queryAsUserWithSuccess(USER_EDITOR, {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
         query: GET_SAVED_FILTERS_QUERY,
         variables: {},
       });
