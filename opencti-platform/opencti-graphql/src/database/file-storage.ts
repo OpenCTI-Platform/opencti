@@ -527,14 +527,18 @@ export const uploadJobImport = async (
       // is already in the configuration, inject the default agent slug from the intent catalog
       if (connector.xtm_one_intent) {
         const existingConfig = connectorConfiguration ? JSON.parse(connectorConfiguration) : {};
+        // Connector as for an agent, but not provided directly
         if (!existingConfig.agent_slug) {
+          // We need to fetch the agent with the higher priority
           const catalog = await getDiscoveredIntentCatalog();
           const intentEntry = catalog.find((entry) => entry.intent === connector.xtm_one_intent);
           if (intentEntry && intentEntry.agents.length > 0) {
-            const defaultAgent = intentEntry.agents.find((a) => a.is_default && a.enabled) ?? intentEntry.agents.find((a) => a.enabled);
-            if (defaultAgent?.agent_slug) {
-              connectorConfiguration = JSON.stringify({ ...existingConfig, agent_slug: defaultAgent.agent_slug });
-            }
+            const defaultAgent = intentEntry.agents[0];
+            connectorConfiguration = JSON.stringify({ ...existingConfig, agent_slug: defaultAgent.agent_slug });
+          } else {
+            // Connector cannot be trigger as not agent available
+            logApp.warn('No agent found for connector intent', { connector: connector.name, intent: connector.xtm_one_intent });
+            return false;
           }
         }
       }
