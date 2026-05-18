@@ -162,7 +162,6 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       justifyContent: 'space-between',
     }}
     >
-      (
       <TabsWithCustomViews
         basePath={basePath}
         entityType={entityType}
@@ -170,7 +169,6 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       >
         {staticTabs}
       </TabsWithCustomViews>
-      )
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}
