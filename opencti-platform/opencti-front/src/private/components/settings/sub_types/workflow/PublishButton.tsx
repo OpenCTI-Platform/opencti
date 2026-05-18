@@ -1,10 +1,8 @@
+import { ReactNode } from 'react';
 import { Tooltip, Box, Typography, Divider } from '@mui/material';
 import Button from '@common/button/Button';
 import CircleIcon from '@mui/icons-material/Circle';
 import { useFormatter } from '../../../../../components/i18n';
-// import ValidationErrorsTooltip from './ValidationErrorsTooltip';
-
-import { ReactNode } from 'react';
 
 interface WorkflowEntityRef {
   id: string;
@@ -21,6 +19,8 @@ interface ValidationErrorsTooltipProps {
   errors: ValidationError[];
   children: ReactNode;
 }
+
+const BUTTON_WIDTH = 120;
 
 const ValidationErrorsTooltip = ({ errors, children }: ValidationErrorsTooltipProps) => {
   const { t_i18n } = useFormatter();
@@ -102,6 +102,7 @@ const PublishButton = ({ validationStatus, onPublish, disabled }: PublishButtonP
             startIcon={<CircleIcon color="success" />}
             variant="secondary"
             disabled
+            sx={{ width: BUTTON_WIDTH }}
           >
             {t_i18n('Published')}
           </Button>
@@ -113,15 +114,15 @@ const PublishButton = ({ validationStatus, onPublish, disabled }: PublishButtonP
   // Red: Not published and has validation errors
   if (!published && validationErrors.length > 0) {
     return (
-
       <ValidationErrorsTooltip errors={validationErrors}>
         <span>
           <Button
             startIcon={<CircleIcon color="error" />}
             variant="secondary"
             disabled
+            sx={{ width: BUTTON_WIDTH }}
           >
-            {t_i18n('Cannot Publish')}
+            {t_i18n('Publish')}
           </Button>
         </span>
       </ValidationErrorsTooltip>
@@ -137,6 +138,7 @@ const PublishButton = ({ validationStatus, onPublish, disabled }: PublishButtonP
           variant="secondary"
           onClick={onPublish}
           disabled={disabled}
+          sx={{ width: BUTTON_WIDTH }}
         >
           {t_i18n('Publish')}
         </Button>

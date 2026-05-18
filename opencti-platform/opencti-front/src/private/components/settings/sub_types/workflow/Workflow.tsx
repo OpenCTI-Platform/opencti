@@ -31,6 +31,7 @@ const workflowDefinitionSetMutation = graphql`
   mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
     workflowDefinitionSet(entityType: $entityType, definition: $definition) {
       id
+      published
       errors {
         type
         message
@@ -39,6 +40,16 @@ const workflowDefinitionSetMutation = graphql`
           entity_type
         }
       }
+    }
+  }
+`;
+
+const workflowDefinitionPublishMutation = graphql`
+  mutation WorkflowPublishMutation($entityType: String!) {
+    workflowDefinitionPublish(entityType: $entityType) {
+      id
+      workflow_id
+      published
     }
   }
 `;
@@ -87,13 +98,28 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
   // Update workflow definition
   const [saveWorkflowDefinition] = useApiMutation<WorkflowDefinitionMutation>(workflowDefinitionSetMutation);
 
+  // Publish workflow definition
+  const [publishWorkflowDefinition] = useApiMutation(
+    workflowDefinitionPublishMutation,
+    undefined,
+    { successMessage: t_i18n('Workflow successfully published') },
+  );
+
   const [workflowDefinitionStatus, setWorkflowDefinitionStatus] = useState<{
     published: boolean;
     validationErrors: WorkflowValidationError[];
-  }>({ published: false, validationErrors: [] });
+  }>({ published: workflowDefinition?.published ?? false, validationErrors: workflowDefinition?.errors ?? [] });
 
   // Store previous schema to avoid unnecessary mutations
   const previousSchemaRef = useRef<string | null>(null);
+
+  // Initialize the previous schema ref on mount to prevent initial mutation
+  useEffect(() => {
+    if (previousSchemaRef.current === null) {
+      const initialSchema = transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition);
+      previousSchemaRef.current = JSON.stringify(initialSchema);
+    }
+  }, []);
 
   useEffect(() => {
     const finalSchema = transformToWorkflowDefinition(nodes, edges, workflowDefinition);
@@ -124,12 +150,30 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
               validationErrors,
             });
           } else {
-            setWorkflowDefinitionStatus({ published: true, validationErrors: [] });
+            // No errors, but stay in draft mode until explicitly published
+            setWorkflowDefinitionStatus({ published: false, validationErrors: [] });
           }
         }
       },
     });
   }, [nodes, edges]);
+
+  // Handle publish action
+  const handlePublish = () => {
+    if (workflowDefinitionStatus.validationErrors.length > 0) {
+      return; // Should not happen as button is disabled
+    }
+    publishWorkflowDefinition({
+      variables: { entityType: 'DraftWorkspace' },
+      onCompleted: () => {
+        // Update status to published
+        setWorkflowDefinitionStatus({
+          published: true,
+          validationErrors: [],
+        });
+      },
+    });
+  };
 
   // Edit status and trantions
   const [open, setOpen] = useState<boolean>(false);
@@ -188,7 +232,7 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
       >
         {nodes.length ? (
           <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <PublishButton validationStatus={workflowDefinitionStatus} onPublish={() => {}} />
+            <PublishButton validationStatus={workflowDefinitionStatus} onPublish={handlePublish} />
             <Button
               onClick={() => {
                 setSelectedElement({

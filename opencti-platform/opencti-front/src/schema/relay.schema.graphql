@@ -9599,7 +9599,7 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
-  workflowDefinition(entityType: String!): WorkflowSchema
+  workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowInstance(entityId: String!): WorkflowInstance
   allowedNextStatuses(entityId: String!): [Status!]!
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
@@ -10438,6 +10438,7 @@ type Mutation {
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting
+  workflowDefinitionPublish(entityType: String!): EntitySetting
   workflowDefinitionDelete(entityType: String!): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult!
   channelAdd(input: ChannelAddInput!): Channel
@@ -10783,6 +10784,8 @@ type WorkflowSerializedTransition {
 type WorkflowSchema {
   id: ID!
   name: String!
+  published: Boolean!
+  errors: [WorkflowValidationError!]
   initialState: String!
   states: [WorkflowSerializedState!]!
   transitions: [WorkflowSerializedTransition!]!
@@ -10802,6 +10805,7 @@ type WorkflowEntityRef {
 type EntitySetting implements InternalObject & BasicObject {
   workflow_configuration: Boolean
   workflow_id: String
+  published: Boolean
   errors: [WorkflowValidationError!]
   id: ID!
   entity_type: String!

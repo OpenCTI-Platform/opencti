@@ -27,6 +27,8 @@ type WorkflowSerializedTransition {
 type WorkflowSchema {
     id: ID!
     name: String!
+    published: Boolean!
+    errors: [WorkflowValidationError!]
     initialState: String!
     states: [WorkflowSerializedState!]!
     transitions: [WorkflowSerializedTransition!]!
@@ -46,6 +48,7 @@ type WorkflowEntityRef {
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
+    published: Boolean
     errors: [WorkflowValidationError!]
 }
 
@@ -87,7 +90,7 @@ extend type DraftWorkspace {
 }
 
 extend type Query {
-    workflowDefinition(entityType: String!): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
     allowedNextStatuses(entityId: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -95,6 +98,7 @@ extend type Query {
 
 extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionPublish(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
 }
