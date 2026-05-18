@@ -19,7 +19,6 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { chipInListBasicStyle } from '../../../utils/chipStyle';
 import { hexToRGB } from '../../../utils/Colors';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
@@ -33,6 +32,7 @@ import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
 import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
 
