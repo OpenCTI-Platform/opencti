@@ -28,6 +28,35 @@ const middleware = (target, ws = false) => createProxyMiddleware({
 });
 
 (async () => {
+  // Pre-build Monaco web workers as separate IIFE bundles.
+  // GraphiQL v5 uses Monaco; workers are loaded by URL from setupMonacoWorkers.ts
+  // and cannot be bundled inline (esbuild uses IIFE format here). Entry points
+  // come directly from the official npm packages.
+  await esbuild.build({
+    logLevel: "info",
+    entryPoints: {
+      "editor.worker": "monaco-editor/esm/vs/editor/editor.worker.js",
+      "json.worker": "monaco-editor/esm/vs/language/json/json.worker.js",
+      "graphql.worker": "monaco-graphql/esm/graphql.worker.js",
+    },
+    bundle: true,
+    format: "iife",
+    minify: false,
+    target: ["chrome58"],
+    outdir: `${buildPath}/static/workers`,
+    entryNames: "[name]",
+    loader: { ".js": "jsx" },
+    // Prettier v3 uses dynamic imports internally which are incompatible with
+    // esbuild's IIFE format. Stub it out — autocompletion and validation work
+    // fine without it; only "format document" is disabled.
+    alias: {
+      'prettier/standalone': './src/public/workers/prettier-stub.js',
+      'prettier/parser-graphql': './src/public/workers/prettier-stub.js',
+      'prettier/plugins/graphql': './src/public/workers/prettier-stub.js',
+      'prettier': './src/public/workers/prettier-stub.js',
+    },
+  });
+
   // Start with an initial build
   const builder = await esbuild.context({
       logLevel: "info",

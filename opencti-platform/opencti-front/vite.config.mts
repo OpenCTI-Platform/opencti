@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import $monacoEditorPlugin from 'vite-plugin-monaco-editor';
+
+// Handle ESM/CJS interop for vite-plugin-monaco-editor
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const monacoEditorPlugin = ((($monacoEditorPlugin as any).default ?? $monacoEditorPlugin) as typeof $monacoEditorPlugin);
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -247,7 +252,16 @@ export default defineConfig({
       }
     },
     react(),
-    relay
+    relay,
+    monacoEditorPlugin({
+      languageWorkers: ['editorWorkerService', 'json'],
+      customWorkers: [
+        {
+          label: 'graphql',
+          entry: 'monaco-graphql/esm/graphql.worker.js',
+        },
+      ],
+    })
   ],
 
   server: {

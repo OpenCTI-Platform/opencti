@@ -211,6 +211,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.2",
     "vite": "8.0.11",
+    "vite-plugin-monaco-editor": "1.1.0",
     "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "4.1.0",
     "vitest": "4.1.5"
