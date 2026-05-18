@@ -116,7 +116,7 @@ meterManager.registerMetrics();
 
 export const telemetry = async (context: AuthContext, user: AuthUser, spanName: string, attrs: object, fn: any) => {
   // if tracing disabled or context is not correctly configured.
-  if (!ENABLED_TRACING || !context) {
+  if (!ENABLED_TRACING || !context || !context?.tracing) {
     return fn();
   }
   // if tracing enabled
