@@ -99,6 +99,12 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
           '& .MuiAutocomplete-input': {
             minWidth: '200px',
           },
+          '& .MuiChip-root, & .MuiChip-root::first-letter': {
+            textTransform: 'none !important',
+          },
+          '& .MuiChip-label, & .MuiChip-label::first-letter': {
+            textTransform: 'none !important',
+          },
         }}
       />
     </Box>
