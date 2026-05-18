@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import 'reactflow/dist/style.css';
 import WorkflowEditionDrawer from './WorkflowEditionDrawer';
@@ -85,28 +85,43 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
   }, [nodes, edges, fitView]);
 
   // Update workflow definition
-  const [saveWorkflowDefinition] = useApiMutation<WorkflowDefinitionMutation>(
-    workflowDefinitionSetMutation,
-    undefined,
-    { successMessage: t_i18n('Workflow successfully updated') },
-  );
+  const [saveWorkflowDefinition] = useApiMutation<WorkflowDefinitionMutation>(workflowDefinitionSetMutation);
 
   const [workflowDefinitionStatus, setWorkflowDefinitionStatus] = useState<{
     published: boolean;
     validationErrors: WorkflowValidationError[];
   }>({ published: false, validationErrors: [] });
 
+  // Store previous schema to avoid unnecessary mutations
+  const previousSchemaRef = useRef<string | null>(null);
+
   useEffect(() => {
     const finalSchema = transformToWorkflowDefinition(nodes, edges, workflowDefinition);
+    const schemaString = JSON.stringify(finalSchema);
+
+    // Only save if schema has actually changed
+    if (previousSchemaRef.current === schemaString) {
+      return;
+    }
+
+    previousSchemaRef.current = schemaString;
+
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: JSON.stringify(finalSchema) },
+      variables: { entityType: 'DraftWorkspace', definition: schemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
           if (errors && errors.length > 0) {
+            const validationErrors = errors
+              .filter((e) => e !== null && e !== undefined)
+              .map((e) => ({
+                type: e!.type,
+                message: e!.message,
+                path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
+              }));
             setWorkflowDefinitionStatus({
               published: false,
-              validationErrors: errors.filter((e): e is WorkflowValidationError => e !== null && e !== undefined) as WorkflowValidationError[],
+              validationErrors,
             });
           } else {
             setWorkflowDefinitionStatus({ published: true, validationErrors: [] });
