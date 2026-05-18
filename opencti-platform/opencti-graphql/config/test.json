@@ -90,7 +90,8 @@
     "bulk_creation_size": 5
   },
   "task_scheduler": {
-    "enabled": true
+    "enabled": true,
+    "interval": 1000
   },
   "expiration_scheduler": {
     "enabled": true
