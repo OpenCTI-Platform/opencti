@@ -89,10 +89,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
 
 export const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope } = retentionRule;
-  if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
-    return;
-  }
-  if (scope === 'activity' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
+  if ((scope === 'history' || scope === 'activity') && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
     return;
   }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
@@ -164,7 +161,7 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
       event_type: 'mutation',
       event_scope: 'delete',
       event_access: 'administration',
-      message: `Retention rule \`${name}\` deleted \`${deletedCount}\` history entries`,
+      message: `Retention rule \`${name}\` deleted \`${deletedCount}\` \`${scope}\` entries`,
       context_data: {
         id,
         entity_type: ENTITY_TYPE_RETENTION_RULE,
