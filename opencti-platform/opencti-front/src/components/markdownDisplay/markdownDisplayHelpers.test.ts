@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeMarkdownImageUrl, resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
+import { normalizeEmbeddedImageDestinations, normalizeMarkdownImageUrl, resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
 
 describe('markdownDisplay helpers', () => {
   describe('normalizeMarkdownImageUrl', () => {
@@ -38,6 +38,18 @@ describe('markdownDisplay helpers', () => {
 
     it('keeps non-embedded links unchanged when no resolver is provided', () => {
       expect(resolveAndNormalizeMarkdownImageUrl('https://example.org/image.png', undefined, '/', '/dashboard/analyses/reports/fcd6fa59-c0bb-4e25-8a9b-b54f4917ddef')).toBe('https://example.org/image.png');
+    });
+  });
+
+  describe('normalizeEmbeddedImageDestinations', () => {
+    it('wraps embedded destinations containing spaces and preserves title', () => {
+      const markdown = '![img](embedded/my file.png "Title")';
+      expect(normalizeEmbeddedImageDestinations(markdown)).toBe('![img](<embedded/my%20file.png> "Title")');
+    });
+
+    it('keeps non-embedded destinations unchanged', () => {
+      const markdown = '![img](https://example.org/my file.png)';
+      expect(normalizeEmbeddedImageDestinations(markdown)).toBe(markdown);
     });
   });
 });

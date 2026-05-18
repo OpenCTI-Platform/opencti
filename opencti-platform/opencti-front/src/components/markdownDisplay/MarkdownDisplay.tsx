@@ -11,7 +11,7 @@ import ExternalLinkPopover from '../ExternalLinkPopover';
 import FieldOrEmpty from '../FieldOrEmpty';
 import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/core/markdownImagePreviewUtils';
 import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
-import { resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
+import { normalizeEmbeddedImageDestinations, resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
 import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
 
 const markdownStyle: React.CSSProperties = {
@@ -122,15 +122,15 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
 
   const markdownContent = useMemo(() => {
-    return limit ? truncate(content, limit) : content;
+    return normalizeEmbeddedImageDestinations(limit ? truncate(content, limit) : content);
   }, [content, limit]);
 
   const remarkContent = useMemo(() => {
-    return expand || !limit ? content : truncate(content, limit);
+    return normalizeEmbeddedImageDestinations(expand || !limit ? content : truncate(content, limit));
   }, [content, expand, limit]);
 
   const previewImages = useMemo(() => {
-    const source = (remarkContent ?? markdownContent ?? content ?? '').toString();
+    const source = (remarkContent ?? markdownContent ?? normalizeEmbeddedImageDestinations(content)).toString();
     return extractMarkdownPreviewImages(source, resolveMarkdownImageUrl);
   }, [content, markdownContent, remarkContent, resolveMarkdownImageUrl]);
 
