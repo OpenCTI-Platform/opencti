@@ -65,7 +65,7 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Background tasks')}
+          {t_i18n('Organization sharing')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
@@ -115,7 +115,7 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Immediate actions')}
+          {t_i18n('Authorized members')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
