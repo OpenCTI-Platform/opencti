@@ -216,7 +216,7 @@
     "graphql-tag": "2.12.6",
     "license-checker-rseidelsohn": "4.4.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.59.2",
+    "typescript-eslint": "8.59.3",
     "vitest": "3.2.4"
   },
   "resolutions": {
