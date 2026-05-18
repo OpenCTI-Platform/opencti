@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixDomainObjectMainProps {
   entity: { id: string; entity_type: string };
@@ -22,8 +21,6 @@ const StixDomainObjectMain = ({
   extraRoutes,
 }: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
-  const { isFeatureEnable } = useHelper();
-  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   return (
     <>
       <StixDomainObjectTabsBox
@@ -62,23 +59,17 @@ const StixDomainObjectMain = ({
           <Route path="/history" element={pages.history} />
         )}
         {extraRoutes}
-        {isCustomViewFeatureEnabled
-          ? (
-              <Route
-                path="*"
-                element={(
-                  <CustomViewRedirector
-                    entity={entity}
-                    Fallback={<ErrorNotFound />}
-                    indexFallback={<Navigate to="overview" replace />}
-                  />
-                )
-                }
-              />
-            )
-          : <Route path="/" element={<Navigate to="overview" replace />} />
-
-        }
+        <Route
+          path="*"
+          element={(
+            <CustomViewRedirector
+              entity={entity}
+              Fallback={<ErrorNotFound />}
+              indexFallback={<Navigate to="overview" replace />}
+            />
+          )
+          }
+        />
       </Routes>
     </>
   );

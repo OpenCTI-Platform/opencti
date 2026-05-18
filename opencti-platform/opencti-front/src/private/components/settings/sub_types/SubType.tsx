@@ -20,7 +20,7 @@ import { SubTypeTabs } from './SubTypeOutletContext';
 import { useProvideCustomViewsSettingsContext } from './custom_views/CustomViewsSettingsContext';
 
 export const subTypeQuery = graphql`
-  query SubTypeQuery($id: String!, $isCustomViewFeatureEnabled: Boolean!) {
+  query SubTypeQuery($id: String!) {
     subType(id: $id) {
       id
       label
@@ -40,7 +40,7 @@ export const subTypeQuery = graphql`
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
     }
-    ...CustomViewsSettingsContext_data @arguments(entityType: $id) @include(if: $isCustomViewFeatureEnabled)
+    ...CustomViewsSettingsContext_data @arguments(entityType: $id)
   }
 `;
 
@@ -125,15 +125,10 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 };
 
 const SubType = () => {
-  const { isFeatureEnable } = useHelper();
-  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const { subTypeId } = useParams<{ subTypeId?: string }>();
   if (!subTypeId) return <ErrorNotFound />;
 
-  const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, {
-    id: subTypeId,
-    isCustomViewFeatureEnabled,
-  });
+  const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, { id: subTypeId });
 
   return (
     <Suspense fallback={<Loader />}>
