@@ -68,6 +68,7 @@ export const TELEMETRY_FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount';
 export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
+export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 
@@ -124,6 +125,10 @@ export const addFormIntakeDeletedCount = async () => {
 
 export const addFormIntakeSubmittedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_SUBMITTED, 1);
+};
+
+export const addDecayRuleCreationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DECAY_RULE_CREATION, 1);
 };
 
 export const addUserBackgroundTaskCount = async () => {
@@ -345,6 +350,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeDeletedCount(formIntakeDeletedCountInRedis);
     const formIntakeSubmittedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_SUBMITTED);
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
+    const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
+    manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
