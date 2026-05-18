@@ -47,7 +47,6 @@ export const opinionCreationUserMutation = graphql`
       parent_types
       opinion
       explanation
-      ...OpinionLine_node
     }
   }
 `;
@@ -64,7 +63,6 @@ export const opinionCreationMutation = graphql`
       parent_types
       opinion
       explanation
-      ...OpinionLine_node
     }
   }
 `;
