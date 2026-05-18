@@ -1,7 +1,6 @@
 import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/lab/Alert';
 import { Select, Stack } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import React, { useState } from 'react';
@@ -793,25 +792,22 @@ const StixDomainPanel = ({
         </Stack>
       )}
     >
-
-      <DialogContent>
-        {renderUnavailableBulkMessage()}
-        <Select
-          value={type}
-          onChange={(event) => setType(event.target.value)}
-          fullWidth={true}
-          size="small"
-        >
-          {availableEntityTypes.map((availableType) => (
-            <MenuItem key={availableType.value} value={availableType.value}>
-              {availableType.label}
-            </MenuItem>
-          ))}
-        </Select>
-        <div style={{ marginTop: '20px' }}>
-          {renderEntityCreationInterface()}
-        </div>
-      </DialogContent>
+      {renderUnavailableBulkMessage()}
+      <Select
+        value={type}
+        onChange={(event) => setType(event.target.value)}
+        fullWidth={true}
+        size="small"
+      >
+        {availableEntityTypes.map((availableType) => (
+          <MenuItem key={availableType.value} value={availableType.value}>
+            {availableType.label}
+          </MenuItem>
+        ))}
+      </Select>
+      <div style={{ marginTop: '20px' }}>
+        {renderEntityCreationInterface()}
+      </div>
     </Dialog>
   );
 };
