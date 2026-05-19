@@ -86,7 +86,7 @@ export const extractUserAndCollection = async (req, res, id) => {
 };
 
 const isValidTaxiiPostContentType = (req) => {
-  const contentTypeFromRequest = parseContentType(req);
+  const contentTypeFromRequest = parseContentType(req.headers['content-type']);
   return (TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION);
 };
 
