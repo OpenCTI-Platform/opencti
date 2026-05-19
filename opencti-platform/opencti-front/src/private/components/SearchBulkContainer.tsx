@@ -37,19 +37,23 @@ const SearchBulkContainer = () => {
       .map((val) => val.trim()) ?? [];
   };
 
+  // Normalize: split commas/semicolons into lines
+  const splitIntoLines = (text: string) => {
+    return text
+      .split('\n')
+      .map((o) => o
+        .split(',')
+        .map((p) => p.split(';'))
+        .flat())
+      .flat()
+      .join('\n');
+  };
+
   // Pre-fill from ?q= query parameter (e.g. when coming from the top bar search)
   useEffect(() => {
     const q = searchParams.get('q');
     if (q) {
-      // Normalize: split commas/semicolons into lines (same as handleChangeTextField)
-      const text = q
-        .split('\n')
-        .map((o) => o
-          .split(',')
-          .map((p) => p.split(';'))
-          .flat())
-        .flat()
-        .join('\n');
+      const text = splitIntoLines(q);
       setTextFieldValue(text);
       setValues(bulkTextToValues(text));
       // Clean up the query param so it doesn't persist on refresh
@@ -64,14 +68,7 @@ const SearchBulkContainer = () => {
 
   const handleChangeTextField = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    const text = value
-      .split('\n')
-      .map((o) => o
-        .split(',')
-        .map((p) => p.split(';'))
-        .flat())
-      .flat()
-      .join('\n');
+    const text = splitIntoLines(value);
     setTextFieldValue(text);
     setValuesAfterDebounce(bulkTextToValues(text));
   };
