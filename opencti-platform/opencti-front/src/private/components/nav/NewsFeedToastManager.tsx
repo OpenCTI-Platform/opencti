@@ -24,6 +24,12 @@ const newsFeedToastSubscription = graphql`
   }
 `;
 
+const newsFeedToastDeleteSubscription = graphql`
+  subscription NewsFeedToastManagerDeleteSubscription {
+    newsFeedItemDeleted
+  }
+`;
+
 const MAX_VISIBLE_TOASTS = 5;
 
 const NewsFeedToastManager: FunctionComponent = () => {
@@ -41,9 +47,20 @@ const NewsFeedToastManager: FunctionComponent = () => {
     if (!data?.newsFeedItem) return;
     const { id, title, news_feed_type, metadata } = data.newsFeedItem;
     setToasts((prev) => {
-      if (prev.some((t) => t.id === id)) return prev; // deduplicate
-      return [...prev, { id, title, news_feed_type, metadata }];
+      const existingIndex = prev.findIndex((t) => t.id === id);
+      if (existingIndex === -1) {
+        return [...prev, { id, title, news_feed_type, metadata }];
+      }
+      const next = [...prev];
+      next[existingIndex] = { id, title, news_feed_type, metadata };
+      return next;
     });
+  }, []);
+
+  const handleNewsFeedItemDeleted = useCallback((data: { newsFeedItemDeleted?: string | null }) => {
+    const deletedId = data?.newsFeedItemDeleted;
+    if (!deletedId) return;
+    setToasts((prev) => prev.filter((t) => t.id !== deletedId));
   }, []);
 
   useEffect(() => {
@@ -55,6 +72,16 @@ const NewsFeedToastManager: FunctionComponent = () => {
     });
     return () => sub.dispose();
   }, [isEnabled, handleNewsFeedItem]);
+
+  useEffect(() => {
+    if (!isEnabled) return undefined;
+    const sub = requestSubscription({
+      subscription: newsFeedToastDeleteSubscription,
+      variables: {},
+      onNext: handleNewsFeedItemDeleted,
+    });
+    return () => sub.dispose();
+  }, [isEnabled, handleNewsFeedItemDeleted]);
 
   const handleDismissAll = useCallback(() => setToasts([]), []);
 
