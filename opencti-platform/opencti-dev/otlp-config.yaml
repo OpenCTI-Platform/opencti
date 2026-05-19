@@ -5,7 +5,7 @@ receivers:
   otlp:
     protocols:
       http:
-        endpoint: 0.0.0.0:1010
+        endpoint: 0.0.0.0:1110
 
 processors:
   batch:
@@ -24,3 +24,4 @@ service:
       exporters: [debug]
 
   extensions: [health_check]
+
