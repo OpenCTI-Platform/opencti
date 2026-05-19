@@ -38,8 +38,8 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren } from './playbook-utils';
-import type { SharingConfiguration } from './components/sharing-component';
+import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
+import { type SharingConfiguration } from './components/sharing-component';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -442,6 +442,9 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
+  const updatedPlaybookDefinition = updateImportedPlaybookDefinitionScope(config.playbook_definition, parsedData.openCTI_version);
+  config.playbook_definition = updatedPlaybookDefinition;
+
   const importData = {
     name: config.name,
     description: config.description,

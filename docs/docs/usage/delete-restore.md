@@ -3,7 +3,7 @@
 Knowledge can be deleted from OpenCTI either in an overview of an object or using [background tasks](background-tasks.md).
 When an object is deleted, all its relationships and references to other objects are also deleted. 
 
-The deletion event is written to the [stream](../reference/streaming.md), to trigger automated [playbooks](./automation.md) or synchronize another platform.
+The deletion event is written to the [stream](../reference/streaming.md), to trigger automated [playbooks](./playbook-automation.md) or synchronize another platform.
 
 Since OpenCTI 6.1, a record of the deleted objects is kept for a given period of a time, allowing to restore them on demand. This does not impact the stream events or other side effect of the deletion: the object is still _deleted_.
 

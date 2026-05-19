@@ -7,6 +7,7 @@ export type PlaybookComponent = NonNullable<PlaybookComponents[number]>;
 
 export interface PlaybookConfig {
   filters?: string;
+  applyWithFilters?: string;
   actions?: PlaybookUpdateAction[];
   triggerTime?: string;
 }

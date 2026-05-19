@@ -1,6 +1,7 @@
 import * as R from 'ramda';
+import semver from 'semver';
 import { isEmptyField } from '../../database/utils';
-import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser, SYSTEM_USER } from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -12,15 +13,86 @@ import type { FilterGroup, PlaybookAddNodeInput } from '../../generated/graphql'
 import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
 import { elFindByIds } from '../../database/engine';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
-import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
-import type { ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
+import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { playbookBundleElementsToApply, type ComponentDefinition, type LinkDefinition, type NodeDefinition, type PlaybookBundleElementsToApply } from './playbook-types';
 import { logApp } from '../../config/conf';
 import { pushAll } from '../../utils/arrayUtil';
+import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-restrictions-component';
+import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
+import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from './components/create-indicator-component';
+import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observable-component';
+import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate-knowledge-component';
+import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remove-access-restrictions-component';
+import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from './components/security-coverage-component';
+import { PLAYBOOK_SHARING_COMPONENT } from './components/sharing-component';
+import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
 
 export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
   if (!baseData) throw FunctionalError('Playbook base element no longer accessible');
   return baseData;
+};
+
+export const isBundleElementInScope = (
+  bundleElement: StixObject,
+  applyToElements: PlaybookBundleElementsToApply,
+  mainElementId: string,
+): boolean => {
+  const all = applyToElements === playbookBundleElementsToApply.allElements.value;
+  const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && bundleElement.id === mainElementId;
+  const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && bundleElement.id !== mainElementId;
+  return all || onlyMain || exceptMain;
+};
+
+/**
+ * Check if a STIX element is matching filters.
+ * If no filters, return true.
+ *
+ * @param context
+ * @param bundleElement STIX element to verify.
+ * @param filters Filters to apply.
+ * @returns True if matching filters.
+ */
+export const isBundleElementMatchFilters = async (
+  context: AuthContext,
+  bundleElement: StixObject,
+  filters: string | undefined,
+): Promise<boolean> => {
+  if (!filters || isEmptyField(filters)) return true;
+  const jsonFilters = JSON.parse(filters);
+  return isStixMatchFilterGroup(
+    context,
+    SYSTEM_USER,
+    bundleElement,
+    jsonFilters,
+  );
+};
+
+/**
+ * Filter an array of STIX elements.
+ * Return the same array if no filters given.
+ *
+ * @param context
+ * @param bundleElements Array of STIX elements to filter.
+ * @param filters Filters to apply.
+ * @returns Array of matching elements.
+ */
+export const filterBundleElements = async (
+  context: AuthContext,
+  bundleElements: StixObject[],
+  filters: string | undefined,
+): Promise<StixObject[]> => {
+  if (!filters || isEmptyField(filters)) return bundleElements;
+  const jsonFilters = JSON.parse(filters);
+  const filterResults = await Promise.all(
+    bundleElements.map((element) => isStixMatchFilterGroup(
+      context,
+      SYSTEM_USER,
+      element,
+      jsonFilters,
+    )),
+  );
+  return bundleElements.filter((_, i) => filterResults[i]);
 };
 
 /**
@@ -139,4 +211,70 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
     }
   }
   return JSON.stringify({ ...config, filters: stringifiedFilters });
+};
+
+/**
+ * Update the playbook definition nodes to the new scope format.
+ * If the version is compatible, the nodes configuration is updated to use applyToElements.
+ * If no definition is provided, return undefined.
+ *
+ * @param playbookDefinition Stringified playbook definition to migrate.
+ * @param version Version of the platform that exported the playbook.
+ * @returns Updated stringified playbook definition, or the original if version is not compatible.
+ */
+export const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260515.0';
+export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string | undefined, version: string) => {
+  if (!playbookDefinition || semver.gt(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
+    return playbookDefinition;
+  }
+
+  const listOfScopedPlaybookComponents = [
+    PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.id,
+    PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id,
+    PLAYBOOK_CREATE_INDICATOR_COMPONENT.id,
+    PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id,
+    PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.id,
+    PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.id,
+    PLAYBOOK_SECURITY_COVERAGE_COMPONENT.id,
+    PLAYBOOK_SHARING_COMPONENT.id,
+    PLAYBOOK_UNSHARING_COMPONENT.id,
+  ];
+
+  const parsedPlaybookDefinition: ComponentDefinition = JSON.parse(playbookDefinition);
+
+  const updateNode = (node: NodeDefinition) => {
+    const configuration = JSON.parse(node.configuration);
+    const { all, excludeMainElement, ...restOfConfig } = configuration;
+
+    let finalConfig;
+
+    if (!listOfScopedPlaybookComponents.includes(node.component_id)) {
+      finalConfig = configuration;
+    } else if (configuration?.applyToElements) {
+      finalConfig = restOfConfig;
+    } else if (all === true) {
+      finalConfig = {
+        ...restOfConfig,
+        applyToElements: node.component_id === PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id && excludeMainElement
+          ? playbookBundleElementsToApply.allExceptMain.value
+          : playbookBundleElementsToApply.allElements.value,
+      };
+    } else {
+      finalConfig = {
+        ...restOfConfig,
+        applyToElements: playbookBundleElementsToApply.onlyMain.value,
+      };
+    }
+
+    return {
+      ...node,
+      configuration: JSON.stringify(finalConfig),
+    };
+  };
+  const nodes = parsedPlaybookDefinition.nodes.map((node: any) => updateNode(node));
+  const finalPlaybookDefinition = JSON.stringify({
+    ...parsedPlaybookDefinition,
+    nodes,
+  });
+  return finalPlaybookDefinition;
 };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { PLAYBOOK_CONNECTOR_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
+import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
+import { PLAYBOOK_CONNECTOR_COMPONENT } from '../../../../../src/modules/playbook/playbook-components';
 
 describe('PLAYBOOK_ENRICH_CONNECTOR_COMPONENT', () => {
   const baseBundle: StixBundle = {

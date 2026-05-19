@@ -86,6 +86,11 @@ const PlaybookFlowForm = ({
     : emptyFilterGroup,
   );
 
+  const elementsFiltersState = useFiltersState(currentConfig?.applyWithFilters
+    ? deserializeFilterGroupForFrontend(currentConfig.applyWithFilters)
+    : emptyFilterGroup,
+  );
+
   const selectedComponent = playbookComponents.find((c) => c?.id === componentId);
   const configurationSchema = selectedComponent?.configuration_schema
     ? JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema
@@ -101,6 +106,10 @@ const PlaybookFlowForm = ({
     if (configurationSchema?.properties?.filters) {
       const jsonFilters = serializeFilterGroupForBackend(filtersState[0]);
       finalConfig = { ...finalConfig, filters: jsonFilters };
+    }
+    if (configurationSchema?.properties?.applyWithFilters) {
+      const jsonFilters = serializeFilterGroupForBackend(elementsFiltersState[0]);
+      finalConfig = { ...finalConfig, applyWithFilters: jsonFilters };
     }
     // Special work in case of CRON component,
     // (format trigger time to have correct format).
@@ -130,6 +139,8 @@ const PlaybookFlowForm = ({
       onConfigAdd(selectedComponent, name, finalConfig);
     }
   };
+
+  const requiredProperties = configurationSchema?.required ?? [];
 
   const addComponentValidation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
@@ -195,6 +206,7 @@ const PlaybookFlowForm = ({
                 value={values.name ? t_i18n(values.name) : ''}
                 label={t_i18n('Name')}
                 fullWidth
+                required
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([propName, property]) => {
@@ -264,6 +276,16 @@ const PlaybookFlowForm = ({
                       />
                     );
                   }
+                  if (propName === 'applyWithFilters') {
+                    return (
+                      <PlaybookFlowFieldFilters
+                        label={t_i18n('Apply when')}
+                        key={propName}
+                        componentId={componentId}
+                        filtersState={elementsFiltersState}
+                      />
+                    );
+                  }
                   if (propName === 'period') {
                     return <PlaybookFlowFieldPeriod key={propName} />;
                   }
@@ -289,13 +311,8 @@ const PlaybookFlowForm = ({
                   }
                   if (property.type === 'boolean') {
                     let helperText = '';
-                    let disabled = false;
                     if (propName === 'create_rel') {
                       helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
-                    }
-                    // excludeMainElement depends on 'all' being enabled
-                    if (propName === 'excludeMainElement') {
-                      disabled = !values.all;
                     }
                     return (
                       <PlaybookFlowFieldBoolean
@@ -303,7 +320,6 @@ const PlaybookFlowForm = ({
                         name={propName}
                         helperText={helperText}
                         label={t_i18n(property.$ref ?? propName)}
-                        disabled={disabled}
                       />
                     );
                   }
@@ -314,6 +330,7 @@ const PlaybookFlowForm = ({
                         name={propName}
                         label={t_i18n(property.$ref ?? propName)}
                         options={property.oneOf as PlaybookFlowFieldArrayProps['options']}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }

@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { Box } from '@mui/material';
+import { Box, FormControl, FormLabel } from '@mui/material';
 import FilterIconButton from '../../../../../../components/FilterIconButton';
 import Filters from '../../../../common/lists/Filters';
 import useFiltersState from '../../../../../../utils/filters/useFiltersState';
@@ -21,11 +21,13 @@ import { stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../.
 import { useTheme } from '@mui/material/styles';
 
 interface PlaybookFlowFieldFiltersProps {
+  label?: string;
   componentId: string | null;
   filtersState: ReturnType<typeof useFiltersState>;
 }
 
 const PlaybookFlowFieldFilters = ({
+  label,
   componentId,
   filtersState,
 }: PlaybookFlowFieldFiltersProps) => {
@@ -57,9 +59,13 @@ const PlaybookFlowFieldFilters = ({
   };
 
   return (
-    <div>
+    <FormControl sx={{ marginTop: 2 }}>
+      {label && (
+        <FormLabel sx={{ fontSize: 12, marginBottom: theme.spacing(0.5) }}>
+          {label}
+        </FormLabel>
+      )}
       <Box sx={{
-        marginTop: 4,
         display: 'flex',
         alignItems: 'center',
         gap: theme.spacing(1),
@@ -79,7 +85,7 @@ const PlaybookFlowFieldFilters = ({
         searchContext={searchContext}
         redirection
       />
-    </div>
+    </FormControl>
   );
 };
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters } from '../../../src/modules/playbook/playbook-utils';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
-import { CREATOR_FILTER, LABEL_FILTER, REPRESENTATIVE_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters } from '../../../../src/modules/playbook/playbook-utils';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
+import { CREATOR_FILTER, LABEL_FILTER, REPRESENTATIVE_FILTER } from '../../../../src/utils/filtering/filtering-constants';
 
 describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters', () => {
   it('should check playbook filters and build config with correct filters for stix components', async () => {
