@@ -4948,12 +4948,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:1.2.0":
-  version: 1.2.0
-  resolution: "amqplib@npm:1.2.0"
-  dependencies:
-    buffer-more-ints: "npm:~1.0.0"
-  checksum: 10c0/4f60da4f1c0ba0fbd8c21fd4a4806c466122c9a0e0b65eb15b30770d0f3d18ad2c318acf8842b7a5eddeceda0bc8be3a8a40d0a067bee9fd79ca0cd08f688f25
+"amqplib@npm:2.0.1":
+  version: 2.0.1
+  resolution: "amqplib@npm:2.0.1"
+  checksum: 10c0/4de6dd3ac92bf59c5d7f00c4948a44288fca1a0abeae8f038c037dfc94bc485fc8c16c6d43759b7e50319b43aa0aff18b8b7566b2b3fbf25b3bf7039b80b3537
   languageName: node
   linkType: hard
 
@@ -5548,13 +5546,6 @@ __metadata:
   version: 1.0.0
   resolution: "buffer-crc32@npm:1.0.0"
   checksum: 10c0/8b86e161cee4bb48d5fa622cbae4c18f25e4857e5203b89e23de59e627ab26beb82d9d7999f2b8de02580165f61f83f997beaf02980cdf06affd175b651921ab
-  languageName: node
-  linkType: hard
-
-"buffer-more-ints@npm:~1.0.0":
-  version: 1.0.0
-  resolution: "buffer-more-ints@npm:1.0.0"
-  checksum: 10c0/992b4e372e2550fd92296937ddfb8e67bb6af2664a63eb46492a1fbc05447755c5d8ba23a0311b2b1193ce23349eada76e8da4af49d75872fc40a5913557665b
   languageName: node
   linkType: hard
 
@@ -10053,7 +10044,7 @@ __metadata:
     ae-cvss-calculator: "npm:1.0.12"
     ajv: "npm:8.20.0"
     ajv-formats: "npm:3.0.1"
-    amqplib: "npm:1.2.0"
+    amqplib: "npm:2.0.1"
     antlr4: "npm:4.13.2"
     archiver: "npm:7.0.1"
     archiver-zip-encrypted: "npm:2.0.0"
