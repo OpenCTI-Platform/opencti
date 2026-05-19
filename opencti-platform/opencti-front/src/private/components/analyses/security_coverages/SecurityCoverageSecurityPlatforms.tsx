@@ -105,7 +105,7 @@ const SecurityCoverageSecurityPlatforms = createFragmentContainer(
         name
         parent_types
         entity_type
-        securityPlatforms: stixCoreRelationships(
+        securityPlatforms: stixCoreRelationshipsFromResults(
           orderBy: created_at
           orderMode: asc
           relationship_type: "has-covered"
