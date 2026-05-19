@@ -95,7 +95,7 @@ describe('buildHelmetParameters coverage', () => {
       crossOriginOpenerPolicy: false,
       crossOriginResourcePolicy: false,
       referrerPolicy: {
-        policy: 'strict-origin-when-cross-origi',
+        policy: 'strict-origin-when-cross-origin',
       },
       xFrameOptions: { action: 'deny' },
     });
