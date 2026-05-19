@@ -133,23 +133,6 @@ describe('registerWithXtmOne', () => {
     expect(callArgs.intents.map((i: { name: string }) => i.name)).toContain('global.assistant');
   });
 
-  it('should update discoveredIntentCatalog on successful registration', async () => {
-    vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
-    vi.mocked(getEntityFromCache).mockResolvedValue(mockSettings as any);
-    vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: 'test-pem', licenseByConfiguration: false });
-    vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: true, license_type: 'enterprise' } as any);
-    vi.mocked(xtmOneClient.register).mockResolvedValue(mockRegistrationResponse);
-
-    await registerWithXtmOne(mockContext, mockUser);
-
-    // Import the getter to check the catalog was updated
-    const { getDiscoveredIntentCatalog } = await import('../../../../src/modules/xtm/one/xtm-one');
-    const catalog = await getDiscoveredIntentCatalog();
-    expect(catalog).toEqual(mockRegistrationResponse.intent_catalog);
-    expect(catalog[0].agents.length).toBe(1);
-    expect(catalog[0].agents[0].agent_name).toBe('TestAgent');
-  });
-
   it('should handle null register response gracefully', async () => {
     vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
     vi.mocked(getEntityFromCache).mockResolvedValue(mockSettings as any);

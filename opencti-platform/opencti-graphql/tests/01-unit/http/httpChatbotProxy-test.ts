@@ -71,10 +71,6 @@ vi.mock('../../../src/http/httpUtils', () => ({
   setCookieError: vi.fn(),
 }));
 
-vi.mock('../../../src/modules/xtm/one/xtm-one', () => ({
-  getDiscoveredIntentCatalog: vi.fn(async () => []),
-}));
-
 vi.mock('../../../src/modules/xtm/one/xtm-one-client', () => ({
   default: { isConfigured: vi.fn(() => true) },
 }));
