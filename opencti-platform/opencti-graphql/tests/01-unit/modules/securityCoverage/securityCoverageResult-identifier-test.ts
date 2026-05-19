@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { generateStandardId } from '../../../../src/schema/identifier';
 
+import '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult';
+
 describe('SecurityCoverageResult identifier', () => {
   const generateId = (data: any) => generateStandardId(
     ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
