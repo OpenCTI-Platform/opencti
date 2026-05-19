@@ -3948,15 +3948,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/content-type@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@types/content-type@npm:2.0.0"
-  dependencies:
-    content-type: "npm:*"
-  checksum: 10c0/c1f0eeb005d30ef8d42208ec7faaac29cee55027a7dd98645e9944f6b251ca1449603d4d38c0fda1d584eff32f8f29741a9e525910bce9eb87c2630bb4c74f27
-  languageName: node
-  linkType: hard
-
 "@types/cookies@npm:*":
   version: 0.9.2
   resolution: "@types/cookies@npm:0.9.2"
@@ -6004,7 +5995,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-type@npm:*, content-type@npm:2.0.0":
+"content-type@npm:2.0.0":
   version: 2.0.0
   resolution: "content-type@npm:2.0.0"
   checksum: 10c0/491539fff707d7594b0ca4fabcc084bef2a31ffa754ff0a4f80c4377e3963cff0394317f9271c24087596c97fa675bc123d61fa34ffe65b4904e7d3d3098de72
@@ -10040,7 +10031,6 @@ __metadata:
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@types/archiver": "npm:7.0.0"
     "@types/bluebird": "npm:3.5.42"
-    "@types/content-type": "npm:2.0.0"
     "@types/ejs": "npm:3.1.5"
     "@types/express": "npm:5.0.6"
     "@types/graphql-upload": "npm:17.0.0"
