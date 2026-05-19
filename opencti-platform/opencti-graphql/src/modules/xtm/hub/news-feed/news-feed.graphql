@@ -58,5 +58,6 @@ type Mutation {
 
 type Subscription {
   newsFeedItem: NewsFeedItem @auth
+  newsFeedItemDeleted: ID @auth
   newsFeedsNumber: NewsFeedCount @auth
 }

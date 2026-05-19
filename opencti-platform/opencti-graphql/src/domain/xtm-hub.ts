@@ -12,7 +12,7 @@ import { notify } from '../database/redis';
 import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
-import { addNewsFeed } from '../modules/xtm/hub/news-feed/news-feed-domain';
+import { deleteNewsFeedItemsByExternalId, upsertNewsFeed } from '../modules/xtm/hub/news-feed/news-feed-domain';
 import { pushAll } from '../utils/arrayUtil';
 import { promiseMap } from '../utils/promiseUtils';
 
@@ -222,21 +222,37 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
 
   const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER) as AuthUser[];
   const nonServiceAccountUsers = users.filter((u) => !u.user_service_account);
-  const feedItemUserPairs = newsFeedItems
-    .flatMap((feedItem) => nonServiceAccountUsers
-      .filter((platformUser) => {
-        const unsubscribedTypes = platformUser.unsubscribed_news_feed_types ?? [];
-        const isUnsubscribed = unsubscribedTypes.includes('*') || unsubscribedTypes.includes(feedItem.type);
-        return !isUnsubscribed;
-      }).map((platformUser) => ({ feedItem, platformUser })),
-    );
-
-  await promiseMap(feedItemUserPairs, async ({ feedItem, platformUser }) => {
-    try {
-      await addNewsFeed(context, platformUser, { ...feedItem, news_feed_type: feedItem.type, user_id: platformUser.id });
-    } catch (e) {
-      logApp.error(e, { message: '[XTMH] Error adding news feed item', userId: platformUser.id });
+  await promiseMap(newsFeedItems, async (feedItem) => {
+    if (feedItem.is_deleted) {
+      try {
+        await deleteNewsFeedItemsByExternalId(context, user, feedItem.id);
+      } catch (e) {
+        logApp.error(e, { message: '[XTMH] Error deleting news feed item', feedItemId: feedItem.id });
+      }
+      return;
     }
+
+    const subscribedUsers = nonServiceAccountUsers.filter((platformUser) => {
+      const unsubscribedTypes = platformUser.unsubscribed_news_feed_types ?? [];
+      const isUnsubscribed = unsubscribedTypes.includes('*') || unsubscribedTypes.includes(feedItem.type);
+      return !isUnsubscribed;
+    });
+
+    await promiseMap(subscribedUsers, async (platformUser) => {
+      try {
+        await upsertNewsFeed(context, platformUser, {
+          news_feed_item_id: feedItem.id,
+          title: feedItem.title,
+          news_feed_type: feedItem.type,
+          tags: feedItem.tags,
+          metadata: feedItem.metadata,
+          creation_date: feedItem.creation_date,
+          user_id: platformUser.id,
+        });
+      } catch (e) {
+        logApp.error(e, { message: '[XTMH] Error upserting news feed item', userId: platformUser.id, feedItemId: feedItem.id });
+      }
+    }, 5);
   }, 5);
 };
 

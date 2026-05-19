@@ -32820,6 +32820,7 @@ export type Subscription = {
   markingDefinition?: Maybe<MarkingDefinition>;
   me?: Maybe<MeUser>;
   newsFeedItem?: Maybe<NewsFeedItem>;
+  newsFeedItemDeleted?: Maybe<Scalars['ID']['output']>;
   newsFeedsNumber?: Maybe<NewsFeedCount>;
   notification?: Maybe<Notification>;
   notificationsNumber?: Maybe<NotificationCount>;
@@ -50786,6 +50787,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   markingDefinition?: SubscriptionResolver<Maybe<ResolversTypes['MarkingDefinition']>, "markingDefinition", ParentType, ContextType, RequireFields<SubscriptionMarkingDefinitionArgs, 'id'>>;
   me?: SubscriptionResolver<Maybe<ResolversTypes['MeUser']>, "me", ParentType, ContextType>;
   newsFeedItem?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedItem']>, "newsFeedItem", ParentType, ContextType>;
+  newsFeedItemDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "newsFeedItemDeleted", ParentType, ContextType>;
   newsFeedsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedCount']>, "newsFeedsNumber", ParentType, ContextType>;
   notification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "notification", ParentType, ContextType>;
   notificationsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NotificationCount']>, "notificationsNumber", ParentType, ContextType>;

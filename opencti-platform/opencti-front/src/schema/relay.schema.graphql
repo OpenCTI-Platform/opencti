@@ -9803,6 +9803,7 @@ type Subscription {
   aiBus(id: ID!): AIBus
   securityCoverage(id: ID!): SecurityCoverage
   newsFeedItem: NewsFeedItem
+  newsFeedItemDeleted: ID
   newsFeedsNumber: NewsFeedCount
 }
 
