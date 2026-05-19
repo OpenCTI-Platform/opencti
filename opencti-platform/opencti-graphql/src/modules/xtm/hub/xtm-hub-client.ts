@@ -6,11 +6,13 @@ import { type NewsFeedItemMetadata, NewsFeedItemType } from './news-feed/news-fe
 type RegistrationStatus = 'active' | 'inactive' | 'not_found';
 
 export interface ProvisionedNewsFeedItem {
+  id: string;
   title: string;
   type: NewsFeedItemType;
   tags: string[];
   metadata: NewsFeedItemMetadata[];
   creation_date: Date;
+  is_deleted: boolean;
 }
 
 interface ConsumeProvisionedNewsFeedItemsResponse {
@@ -120,6 +122,7 @@ export const xtmHubClient = {
       mutation ConsumeProvisionedNewsFeedItems {
         consumeProvisionedNewsFeedItems {
           news_feed_items {
+            id
             title
             type
             tags
@@ -128,6 +131,7 @@ export const xtmHubClient = {
               value
             }
             creation_date
+            is_deleted
           }
           available_news_feed_types
         }
