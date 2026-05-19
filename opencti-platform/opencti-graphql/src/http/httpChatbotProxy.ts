@@ -11,7 +11,6 @@ import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modu
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
-import { getDiscoveredIntentCatalog } from '../modules/xtm/one/xtm-one';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
@@ -129,10 +128,8 @@ export const getChatbotAgents = async (req: Express.Request, res: Express.Respon
     if (!context) return;
 
     const intent = (req.query.intent as string) || 'global.assistant';
-    const catalog = await getDiscoveredIntentCatalog();
-    const intentEntry = catalog.find((entry) => entry.intent === intent);
-    const agents = (intentEntry?.agents ?? [])
-      .filter((a) => a.enabled)
+    const rawAgents = await xtmOneClient.listAgentsForIntent(context, intent);
+    const agents = (rawAgents ?? [])
       .map((a) => ({
         id: a.agent_id,
         name: a.agent_name,

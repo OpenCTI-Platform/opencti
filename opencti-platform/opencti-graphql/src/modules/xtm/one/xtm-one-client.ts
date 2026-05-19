@@ -1,5 +1,7 @@
 import axios from 'axios';
 import conf, { logApp } from '../../../config/conf';
+import { issueXtmJwt } from '../../../domain/xtm-auth';
+import type { AuthContext } from '../../../types/user';
 
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
@@ -11,11 +13,7 @@ export interface IntentCatalogAgent {
   agent_name: string;
   agent_slug: string | null;
   agent_description: string | null;
-  vertical: string | null;
   priority: number;
-  is_default: boolean;
-  is_locked: boolean;
-  enabled: boolean;
 }
 
 export interface IntentCatalogEntry {
@@ -58,6 +56,27 @@ export interface XtmOneRegistrationResponse {
 const xtmOneClient = {
   isConfigured: (): boolean => {
     return !!(XTM_ONE_URL && XTM_ONE_TOKEN);
+  },
+
+  listAgentsForIntent: async (context: AuthContext, intent: string): Promise<IntentCatalogAgent[]> => {
+    if (!XTM_ONE_URL || !XTM_ONE_TOKEN || !context.user) {
+      return [];
+    }
+    try {
+      const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+      const url = `${XTM_ONE_URL}/api/v1/intents/catalog?vertical=cti&intent=${intent}`;
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000,
+      });
+      return response.data.flatMap((entry: IntentCatalogEntry) => entry.agents);
+    } catch (error: any) {
+      logApp.error('[XTM One] Registration failed', { error: error.message });
+      return [];
+    }
   },
 
   register: async (input: XtmOneRegistrationInput): Promise<XtmOneRegistrationResponse | null> => {

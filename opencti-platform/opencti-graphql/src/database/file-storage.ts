@@ -18,7 +18,6 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { getDiscoveredIntentCatalog } from '../modules/xtm/one/xtm-one';
 import {
   allFilesForPaths,
   deleteDocumentIndex,
@@ -42,6 +41,7 @@ import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
 import { getEntitiesMapFromCache } from './cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 
 // Minio configuration
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
@@ -530,10 +530,9 @@ export const uploadJobImport = async (
         // Connector as for an agent, but not provided directly
         if (!existingConfig.agent_slug) {
           // We need to fetch the agent with the higher priority
-          const catalog = await getDiscoveredIntentCatalog();
-          const intentEntry = catalog.find((entry) => entry.intent === connector.xtm_one_intent);
-          if (intentEntry && intentEntry.agents.length > 0) {
-            const defaultAgent = intentEntry.agents[0];
+          const agents = await xtmOneClient.listAgentsForIntent(context, connector.xtm_one_intent);
+          if (agents.length > 0) {
+            const defaultAgent = agents[0];
             connectorConfiguration = JSON.stringify({ ...existingConfig, agent_slug: defaultAgent.agent_slug });
           } else {
             // Connector cannot be trigger as not agent available

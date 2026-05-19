@@ -6,18 +6,13 @@ import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { decodeLicensePem, getEnterpriseEditionActivePem } from '../../settings/licensing';
 import { redisGetXtmRegistrationResult, redisSetXtmRegistrationResult } from '../../../database/redis';
 import xtmOneClient from './xtm-one-client';
-import type { IntentCatalogEntry, XtmOneRegistrationResponse } from './xtm-one-client';
+import type { XtmOneRegistrationResponse } from './xtm-one-client';
 
 export const XTM_ONE_SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
 const XTM_REGISTRATION_RESULT_TTL = Math.ceil((XTM_ONE_SCHEDULE_TIME * 2) / 1000); // 2× schedule, in seconds
 
 export const getXtmRegistrationResult = async (): Promise<XtmOneRegistrationResponse | null> => {
   return await redisGetXtmRegistrationResult() as Promise<XtmOneRegistrationResponse | null>;
-};
-
-export const getDiscoveredIntentCatalog = async (): Promise<IntentCatalogEntry[]> => {
-  const result = await getXtmRegistrationResult();
-  return result?.intent_catalog ?? [];
 };
 
 export const getXtmOneRegistration = async (): Promise<{ register: boolean; version: string }> => {
