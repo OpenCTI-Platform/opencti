@@ -23,6 +23,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -147,11 +148,15 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Note')} ${t_i18n('successfully created')}` },
   );
-  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
+
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+
+  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm },
   ) => {
     const input: NoteCreationMutation$variables['input'] = {
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       created: values.created,
       attribute_abstract: values.attribute_abstract,
       content: values.content,
@@ -162,7 +167,6 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
     };
     if (!userIsKnowledgeEditor) {
       delete input.createdBy;
@@ -182,6 +186,9 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
         if (onClose) {
           onClose();
         }
+      },
+      onError: () => {
+        setSubmitting(false);
       },
     });
   };
@@ -238,8 +245,12 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             fullWidth={true}
             multiline={true}
             rows="4"
+            formikSyncMode="immediate"
             style={{ marginTop: 20 }}
             askAi={true}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
           <OpenVocabField
             label={t_i18n('Note types')}

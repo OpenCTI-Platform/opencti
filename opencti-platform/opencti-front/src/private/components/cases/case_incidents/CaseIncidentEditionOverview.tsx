@@ -373,6 +373,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             askAi={true}
+            uploadEntityId={caseData.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

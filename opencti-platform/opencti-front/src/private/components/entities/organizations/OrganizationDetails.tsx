@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import { OrganizationDetails_organization$key } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import ItemScore from '../../../../components/ItemScore';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';

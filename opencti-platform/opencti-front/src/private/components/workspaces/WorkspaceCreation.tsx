@@ -18,6 +18,7 @@ import Security from '../../../utils/Security';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import useMarkdownCreationFilesInput from '../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../utils/store';
 import { isNotEmptyField } from '../../../utils/utils';
 import Drawer from '../common/drawer/Drawer';
@@ -64,6 +65,9 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
     : '';
   const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation);
   const navigate = useNavigate();
+
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+
   const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
       variables: { file },
@@ -87,6 +91,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
     commitCreationMutation({
       variables: {
         input: {
+          ...buildCreationFilesInput(),
           ...values,
           type,
         },
@@ -180,6 +185,8 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
+                  autoPersistOnBlur={false}
+                  registerMarkdownImagesController={registerMarkdownImagesController}
                 />
                 <FormButtonContainer>
                   <Button

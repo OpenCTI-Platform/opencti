@@ -366,6 +366,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={infrastructure.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

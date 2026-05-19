@@ -33,6 +33,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
@@ -110,6 +111,8 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}` },
   );
+
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -138,6 +141,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: ToolCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -148,7 +152,6 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
         tool_version: values.tool_version,
         confidence: parseInt(String(values.confidence), 10),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 
@@ -241,6 +244,9 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               askAi={true}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Tool"

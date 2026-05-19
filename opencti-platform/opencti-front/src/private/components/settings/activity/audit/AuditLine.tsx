@@ -16,7 +16,7 @@ import { useGenerateAuditMessage } from '../../../../../utils/history';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import AuditDrawer from './AuditDrawer';
 import { EMPTY_VALUE } from '../../../../../utils/String';
-import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../../components/markdownDisplay/MarkdownDisplay';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

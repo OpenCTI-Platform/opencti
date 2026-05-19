@@ -61,6 +61,11 @@ export const htmlToPdf = (fileName: string, content: string, isTiptapEnabled = f
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
+  pdfMakeObject.images = normalizePdfMakeImageReferences(
+    pdfMakeObject.images,
+    resolvedEntityBaseUrl,
+  );
+
   return generatePdf(pdfMakeObject, false, isTiptapEnabled);
 };
 
@@ -74,6 +79,32 @@ const normalizeEntityBaseUrl = (url: string) =>
 
 const entityBaseUrl = `${window.location.origin}${window.location.pathname}`.replace(/\/$/, '');
 const resolvedEntityBaseUrl = normalizeEntityBaseUrl(entityBaseUrl);
+
+const resolvePdfImageUrl = (rawUrl: string, baseUrl: string) => {
+  if (/^https?:\/\//i.test(rawUrl) || rawUrl.startsWith('data:')) return rawUrl;
+  if (rawUrl.startsWith('//')) return `${window.location.protocol}${rawUrl}`;
+  if (rawUrl.startsWith('/')) return `${window.location.origin}${rawUrl}`;
+  if (rawUrl.startsWith('storage/')) return `${window.location.origin}/${rawUrl}`;
+  if (APP_BASE_PATH && rawUrl.startsWith(APP_BASE_PATH)) {
+    return `${window.location.origin}${rawUrl}`;
+  }
+  return `${baseUrl}/${rawUrl.replace(/^\/+/, '')}`;
+};
+
+const normalizePdfMakeImageReferences = (
+  images: TDocumentDefinitions['images'],
+  baseUrl: string,
+): Record<string, string | ImageDefinition> => {
+  if (!images) return {};
+
+  return Object.fromEntries(
+    Object.entries(images).map(([key, value]) => {
+      const strValue = typeof value === 'string' ? value : null;
+      if (!strValue || strValue.startsWith('embedded/')) return [key, value] as const;
+      return [key, resolvePdfImageUrl(strValue, baseUrl)] as const;
+    }),
+  );
+};
 
 export const resolvePdfMakeEmbeddedImages = async (
   images: TDocumentDefinitions['images'],
@@ -163,6 +194,11 @@ export const htmlToPdfReport = async (
       )
     : pdfMakeObject.images;
 
+  const normalizedImages = normalizePdfMakeImageReferences(
+    resolvedImages,
+    resolvedEntityBaseUrl,
+  );
+
   const linearGradiant = [
     fintelDesign?.gradiantFromColor || DARK,
     fintelDesign?.gradiantToColor || DARK_BLUE,
@@ -183,7 +219,7 @@ export const htmlToPdfReport = async (
       fontSize: 12,
     },
     ...pdfMakeObject,
-    images: resolvedImages,
+    images: normalizedImages,
     content: [
       {
         columns: [

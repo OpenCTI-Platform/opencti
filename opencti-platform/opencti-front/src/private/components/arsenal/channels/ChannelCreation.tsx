@@ -31,6 +31,7 @@ import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -109,6 +110,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Channel')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -137,6 +139,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: ChannelCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         channel_types: values.channel_types,
@@ -145,7 +148,6 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 
@@ -240,6 +242,9 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Channel"

@@ -1,6 +1,6 @@
 import { Tooltip } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import MarkdownDisplay from './MarkdownDisplay';
+import MarkdownDisplay from './markdownDisplay/MarkdownDisplay';
 
 interface ItemHistoryProps {
   username: string;

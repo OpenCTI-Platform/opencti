@@ -268,6 +268,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 fullWidth={true}
                 multiline={false}
                 rows="1"
+                uploadEntityId={threatActorIndividual.id}
                 style={{ marginTop: 20 }}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}

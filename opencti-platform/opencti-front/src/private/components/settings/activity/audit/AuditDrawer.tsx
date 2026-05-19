@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { useGenerateAuditMessage } from '../../../../../utils/history';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { AuditDrawerQuery } from './__generated__/AuditDrawerQuery.graphql';
-import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../../components/markdownDisplay/MarkdownDisplay';
 
 interface AuditDrawerProps {
   open: boolean;

@@ -227,12 +227,20 @@ import {
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
+import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import {
+  collectTempImageTokensFromDescriptionFields,
+  resolveEmbeddedImagesInDescriptionFieldsForExport,
+  rewriteEmbeddedDataUriImagesInDescriptions,
+  rewriteEmbeddedDataUriImagesInUpdateInputs,
+  rewriteTempImageTokensInDescriptions,
+} from './middlewareEmbeddedImages';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -618,7 +626,9 @@ export const stixLoadById = async (
   const { version = Version.Stix_2_1 } = opts;
   return instance ? convertStoreToStix(instance, version) : null;
 };
+
 const convertStoreToStixWithResolvedFiles = async (
+  context: AuthContext,
   instance: StoreCommon,
   version = Version.Stix_2_1,
 ): Promise<S.StixObject | S2.StixObject> => {
@@ -633,8 +643,27 @@ const convertStoreToStixWithResolvedFiles = async (
       currentFile.no_trigger_import = true;
     }
   }
-  return instanceInStix;
+  const resolvedInstanceInStix = await resolveEmbeddedImagesInDescriptionFieldsForExport(
+    context,
+    instanceInStix,
+    {
+      entityType: instance.entity_type,
+      entityId: instance.internal_id,
+    },
+  );
+  return resolvedInstanceInStix;
 };
+
+const extractMarkingIds = (entity: Record<string, any>): string[] => {
+  if (!Array.isArray(entity.objectMarking)) {
+    return [];
+  }
+
+  return entity.objectMarking
+    .map(({ id }: { id: string }) => id)
+    .filter((id: string) => isNotEmptyField(id));
+};
+
 export const stixLoadByIds = async (
   context: AuthContext,
   user: AuthUser,
@@ -652,7 +681,7 @@ export const stixLoadByIds = async (
   if (resolveStixFiles) {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
       .filter((i) => isNotEmptyField(i))
-      .map((e) => (convertStoreToStixWithResolvedFiles(e as BasicStoreCommon, version)));
+      .map((e) => (convertStoreToStixWithResolvedFiles(context, e as BasicStoreCommon, version)));
     return BluePromise.all(fileResolvedInstancesPromise);
   }
   return ids.map((id) => loadedInstancesMap.get(id))
@@ -2416,6 +2445,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
   }
+
+  await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
+    entityType: initial.entity_type,
+    entityId: initial.internal_id,
+    entity: initial,
+    fileMarkings: extractMarkingIds(initial),
+  });
+
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [
@@ -2424,7 +2461,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   ];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
-  const updated = mergeInstanceWithUpdateInputs(initial, inputs);
+  const updated = mergeInstanceWithUpdateInputs(initial, updates);
+  const removedEmbeddedStoragePaths = draftId
+    ? []
+    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+        entityType: initial.entity_type,
+        entityId: initial.internal_id,
+      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2699,6 +2742,21 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       const objectsRefRelationships = relationsToCreate.filter((r) => r.relationship_type === RELATION_OBJECT);
       if (objectsRefRelationships.length > 0) {
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
+      }
+    }
+    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+      for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
+        const storagePath = removedEmbeddedStoragePaths[i];
+        try {
+          await deleteFile(context, user, storagePath, { forceDelete: true });
+        } catch (err) {
+          logApp.warn('[OPENCTI] Unable to cleanup removed markdown embedded image file', {
+            storagePath,
+            entityId: initial.internal_id,
+            entityType: initial.entity_type,
+            cause: err,
+          });
+        }
       }
     }
     // Post-operation to update the individual linked to a user
@@ -3126,6 +3184,13 @@ const upsertElement = async (
       delete basePatch.decay_exclusion_applied_rule;
     }
   }
+
+  await rewriteEmbeddedDataUriImagesInDescriptions(context, user, basePatch, {
+    entityType: type,
+    entityId: resolvedElement.internal_id,
+    entity: resolvedElement,
+    fileMarkings: extractMarkingIds(resolvedElement),
+  });
 
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch as ObjectWithConfidence, resolvedElement);
 
@@ -3735,6 +3800,14 @@ const internalCreateEntityRaw = async (
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };
+
+    await rewriteEmbeddedDataUriImagesInDescriptions(context, user, dataEntity.element, {
+      entityType: type,
+      entityId: dataEntity.element[ID_INTERNAL],
+      entity: dataEntity.element as BasicStoreBase,
+      fileMarkings: extractMarkingIds(resolvedInput),
+    });
+
     // Handle multiple files upload (new plural form)
     const filesToUpload = [];
     if (!isEmptyField(resolvedInput.files) && Array.isArray(resolvedInput.files)) {
@@ -3762,6 +3835,8 @@ const internalCreateEntityRaw = async (
     if (filesToUpload.length > 0) {
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
       const uploadedFiles = [];
+      const tempTokens = collectTempImageTokensFromDescriptionFields(dataEntity.element);
+      const embeddedImageUrls: string[] = [];
       for (let i = 0; i < filesToUpload.length; i += 1) {
         const { file: fileInput, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
         const { filename } = await fileInput;
@@ -3769,7 +3844,11 @@ const internalCreateEntityRaw = async (
         const prefix = embedded ? 'embedded' : 'import';
         const filePath = `${prefix}/${type}/${dataEntity.element[ID_INTERNAL]}`;
         const key = `${filePath}/${filename}`;
-        const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
+        // Embedded markdown assets are internal to markdown content and must not create external references.
+        const shouldCreateExternalReference = isAutoExternal && !embedded;
+        const meta = shouldCreateExternalReference
+          ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) }
+          : {};
         const { upload: uploadedFile } = await uploadToStorage(
           context,
           user,
@@ -3778,8 +3857,11 @@ const internalCreateEntityRaw = async (
           { entity: dataEntity.element as BasicStoreBase, file_markings, meta, noTriggerImport },
         );
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
+        if (embedded) {
+          embeddedImageUrls.push(`embedded/${uploadedFile.name}`);
+        }
         // Add external references from files if necessary
-        if (isAutoExternal) {
+        if (shouldCreateExternalReference) {
           // Create external ref + link to current entity
           const createExternal = { source_name: uploadedFile.name, url: `/storage/get/${uploadedFile.id}`, fileId: uploadedFile.id };
           const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -3787,6 +3869,16 @@ const internalCreateEntityRaw = async (
           pushAll(dataEntity.relations, newRefRel);
         }
       }
+
+      if (tempTokens.length > 0 && embeddedImageUrls.length > 0) {
+        const tokenToUrl = new Map<string, string>();
+        const rewriteCount = Math.min(tempTokens.length, embeddedImageUrls.length);
+        for (let i = 0; i < rewriteCount; i += 1) {
+          tokenToUrl.set(tempTokens[i], embeddedImageUrls[i]);
+        }
+        rewriteTempImageTokensInDescriptions(dataEntity.element, tokenToUrl);
+      }
+
       dataEntity.element = { ...dataEntity.element, x_opencti_files: uploadedFiles };
     }
     if (opts.restore === true) {

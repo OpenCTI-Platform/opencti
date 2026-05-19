@@ -1,6 +1,6 @@
 import React, { CSSProperties, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
-import MarkdownDisplay from '../MarkdownDisplay';
+import MarkdownDisplay from '../markdownDisplay/MarkdownDisplay';
 import WidgetContainer from './WidgetContainer';
 import type { Theme } from '../Theme';
 

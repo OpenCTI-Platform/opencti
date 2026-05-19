@@ -14,16 +14,19 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import { CaseTaskCreationMutation } from './__generated__/CaseTaskCreationMutation.graphql';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
 const caseTaskAddMutation = graphql`
   mutation CaseTaskCreationMutation($input: TaskAddInput!) {
     taskAdd(input: $input) {
+      id
       ...CaseUtilsTasksLine_data
     }
   }
@@ -70,11 +73,12 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
-  const [addTask] = useApiMutation(
+  const [addTask] = useApiMutation<CaseTaskCreationMutation>(
     caseTaskAddMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<FormikCaseTaskAddInput>['onSubmit'] = (
     values,
@@ -85,6 +89,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     addTask({
       variables: {
         input: {
+          ...buildCreationFilesInput(),
           ...values,
           objectAssignee: (values.objectAssignee ?? []).map(
             ({ value }) => value,
@@ -123,7 +128,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
       validateOnChange={true}
       validateOnBlur={true}
     >
-      {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
+      {({ values, isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form>
           <Field
             style={{ marginBottom: 20 }}
@@ -173,6 +178,9 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             multiline
             rows="4"
             style={fieldSpacingContainerStyle}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>
             <Button

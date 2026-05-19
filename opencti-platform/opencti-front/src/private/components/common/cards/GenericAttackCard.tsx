@@ -7,7 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
 import { CardActions, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
@@ -106,6 +106,20 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
     .map((n) => n?.node?.to?.name))
     .join(', ');
 
+  const resolveEmbeddedImageUrl = (url: string) => {
+    if (!url) {
+      return null;
+    }
+
+    const normalizedUrl = url.startsWith('/') ? url.slice(1) : url;
+    if (!normalizedUrl.startsWith('embedded/')) {
+      return url;
+    }
+
+    const normalizedCardLink = cardLink.endsWith('/') ? cardLink.slice(0, -1) : cardLink;
+    return `${normalizedCardLink}/${normalizedUrl}`;
+  };
+
   const Info = (props: { title: string; value: string }) => (
     <Stack direction="row" gap={1} alignItems="center">
       <Typography
@@ -182,6 +196,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             removeLinks={true}
             removeLineBreaks={true}
             limit={260}
+            resolveImageUrl={resolveEmbeddedImageUrl}
           />
         </div>
         <div style={{ paddingTop: 12 }}>

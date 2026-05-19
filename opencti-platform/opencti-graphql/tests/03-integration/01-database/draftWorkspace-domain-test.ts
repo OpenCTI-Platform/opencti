@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
 import { ADMIN_USER, getAuthUser, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import {
   addDraftWorkspace,
+  buildDraftVersion,
   draftWorkspaceEditContext,
   listDraftObjects,
   listDraftRelations,
@@ -21,6 +22,7 @@ import { RELATION_LOCATED_AT } from '../../../src/schema/stixCoreRelationship';
 import * as rabbitMock from '../../../src/database/rabbitmq';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 import { executionContext } from '../../../src/utils/access';
+import { READ_INDEX_DRAFT_OBJECTS } from '../../../src/database/utils';
 
 describe('Drafts workspace domain testing', () => {
   let testDraftId: string;
@@ -143,5 +145,24 @@ describe('Drafts workspace domain testing', () => {
     await expect(async () => {
       await checkDraftInContext(testDraftContext);
     }).rejects.toThrowError('Draft is in a locked state, no request can be done within this draft');
+  });
+
+  it('should return null draft version for non-draft index', () => {
+    const result = buildDraftVersion({ _index: 'opencti_live' } as any);
+    expect(result).toBeNull();
+  });
+
+  it('should return null draft version when draft ids are missing', () => {
+    const result = buildDraftVersion({ _index: READ_INDEX_DRAFT_OBJECTS, id: 'entity-1', draft_ids: [] } as any);
+    expect(result).toBeNull();
+  });
+
+  it('should return first draft id and operation from draft version', () => {
+    const result = buildDraftVersion({
+      _index: READ_INDEX_DRAFT_OBJECTS,
+      draft_ids: ['draft-1', 'draft-2'],
+      draft_change: { draft_operation: 'update' },
+    } as any);
+    expect(result).toEqual({ draft_id: 'draft-1', draft_operation: 'update' });
   });
 });

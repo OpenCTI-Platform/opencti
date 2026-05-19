@@ -113,18 +113,19 @@ export const loadFile = async (
     if (!fileS3Path) {
       throw FunctionalError('File path not specified');
     }
+    const pathForPermissionChecks = fileS3Path.replace(/^draft\/[^/]+\//, '');
     // 01. Check if user as enough capability to get support packages
-    if (fileS3Path.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
+    if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
       if (opts.dontThrow) {
         return undefined;
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 01.1. Check if user as enough capability to load import / export / template knowledge files
-    if ((fileS3Path.startsWith(IMPORT_STORAGE_PATH)
-      || fileS3Path.startsWith(EMBEDDED_STORAGE_PATH)
-      || fileS3Path.startsWith(EXPORT_STORAGE_PATH)
-      || fileS3Path.startsWith(FROM_TEMPLATE_STORAGE_PATH))
+    if ((pathForPermissionChecks.startsWith(IMPORT_STORAGE_PATH)
+      || pathForPermissionChecks.startsWith(EMBEDDED_STORAGE_PATH)
+      || pathForPermissionChecks.startsWith(EXPORT_STORAGE_PATH)
+      || pathForPermissionChecks.startsWith(FROM_TEMPLATE_STORAGE_PATH))
     && !isUserHasCapability(user, KNOWLEDGE)) {
       if (opts.dontThrow) {
         return undefined;
@@ -132,14 +133,30 @@ export const loadFile = async (
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 01.2. Check if user as enough capability to load import/global files
-    if (fileS3Path.startsWith(`${IMPORT_STORAGE_PATH}/global`) && !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)) {
+    if (pathForPermissionChecks.startsWith(`${IMPORT_STORAGE_PATH}/global`) && !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)) {
       if (opts.dontThrow) {
         return undefined;
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 02. Check if the referenced document is accessible
-    const document = await documentFindById(context, user, fileS3Path, { ignoreDuplicates: true });
+    const draftContext = getDraftContext(context, user);
+    const draftPrefix = draftContext ? getDraftFilePrefix(draftContext) : null;
+    const candidatePaths = [fileS3Path];
+    if (draftPrefix && !fileS3Path.startsWith(draftPrefix)) {
+      candidatePaths.push(`${draftPrefix}${fileS3Path}`);
+    }
+    let document: BasicStoreEntityDocument | undefined;
+    let resolvedPath: string | undefined;
+    for (let i = 0; i < candidatePaths.length; i += 1) {
+      const candidatePath = candidatePaths[i];
+      const resolvedDocument = await documentFindById(context, user, candidatePath, { ignoreDuplicates: true });
+      if (resolvedDocument) {
+        document = resolvedDocument;
+        resolvedPath = candidatePath;
+        break;
+      }
+    }
     if (!document) {
       if (opts.dontThrow) {
         return undefined;
@@ -166,7 +183,7 @@ export const loadFile = async (
     // All good, return the file
     return {
       ...document,
-      id: fileS3Path,
+      id: resolvedPath || fileS3Path,
       information: '',
       uploadStatus: 'complete',
       metaData,
@@ -609,7 +626,7 @@ export const upload = async (
   if (currentFile) {
     // If file exists, we want to use it's internal_id to use the same casing and keep it compatible
     key = currentFile.internal_id;
-    // If the file content is identical (same SHA256), skip the upload entirely
+    // If the file content is identical, we don't upload
     if ((currentFile.metaData as FileMetadata).sha256 === sha256) {
       return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
     }

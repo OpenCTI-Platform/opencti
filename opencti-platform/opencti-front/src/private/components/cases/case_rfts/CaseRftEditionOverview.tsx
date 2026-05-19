@@ -365,6 +365,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={caseData.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

@@ -30,6 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
@@ -100,6 +101,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Region')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -128,6 +130,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: RegionCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -135,7 +138,6 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
         objectLabel: values.objectLabel.map(({ value }) => value),
         externalReferences: values.externalReferences.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        file: values.file,
       },
     }));
 
@@ -220,6 +222,9 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Region"

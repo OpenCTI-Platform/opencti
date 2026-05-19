@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const positionMutation = graphql`
   mutation PositionCreationMutation($input: PositionAddInput!) {
@@ -143,6 +144,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Position')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -171,6 +173,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: PositionCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -182,7 +185,6 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 
@@ -271,6 +273,9 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Position"

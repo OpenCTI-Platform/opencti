@@ -16,6 +16,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -90,6 +91,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const initialValues: FormikTaskAddInput = {
     name: inputValue ?? '',
@@ -104,6 +106,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     { setSubmitting, resetForm, setErrors },
   ) => {
     const input: TaskCreationMutation$variables['input'] = {
+      ...buildCreationFilesInput(),
       name: values.name,
       description: values.description,
       due_date: values.due_date,
@@ -137,7 +140,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       onReset={onClose}
       validationSchema={validator}
     >
-      {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
+      {({ isSubmitting, handleReset, submitForm, setFieldValue, values }) => (
         <Form>
           <Field
             style={{ marginBottom: 20 }}
@@ -183,6 +186,9 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             multiline
             rows="4"
             style={fieldSpacingContainerStyle}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>
             <Button

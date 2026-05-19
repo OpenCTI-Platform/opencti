@@ -22,6 +22,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
@@ -107,6 +108,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Data-Component')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -139,6 +141,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     const allNames = splitMultilines(values.name);
     const variables: DataComponentCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -146,7 +149,6 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map((v) => v.value),
         confidence: parseInt(String(values.confidence), 10),
-        file: values.file,
       },
     }));
 
@@ -244,6 +246,9 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

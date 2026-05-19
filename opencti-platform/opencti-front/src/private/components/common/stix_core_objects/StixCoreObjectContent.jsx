@@ -20,7 +20,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectContentBar from './StixCoreObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import RichTextEditor from '../../../../components/RichTextEditor';

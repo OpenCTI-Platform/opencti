@@ -32,6 +32,7 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -415,6 +416,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     undefined,
     { successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}` },
   );
+
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -424,6 +428,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       return;
     }
     const finalValues = {
+      ...buildCreationFilesInput(),
       name: values.name,
       description: values.description,
       objectCovered: selectedEntity.id,
@@ -694,6 +699,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               containerStyle={fieldSpacingContainerStyle}

@@ -324,6 +324,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
+            uploadEntityId={stixSightingRelationship.id}
             helperText={
               <SubscriptionFocus context={editContext} fieldName="description" />
             }

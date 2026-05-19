@@ -123,6 +123,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={workspace.id}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}

@@ -172,7 +172,7 @@ const createApp = async (app, schema) => {
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
-      const stream = await downloadFile(file);
+      const stream = await downloadFile(data.id);
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
@@ -202,7 +202,7 @@ const createApp = async (app, schema) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(file);
+      const stream = await downloadFile(data.id);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
@@ -223,6 +223,7 @@ const createApp = async (app, schema) => {
         return;
       }
       const element = await internalLoadById(context, context.user, id);
+
       const file = `embedded/${element.entity_type}/${id}/${filename}`;
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
@@ -235,7 +236,8 @@ const createApp = async (app, schema) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(file);
+
+      const stream = await downloadFile(data.id);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);

@@ -30,6 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const sectorMutation = graphql`
   mutation SectorCreationMutation($input: SectorAddInput!) {
@@ -122,6 +123,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Sector')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -154,6 +156,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: SectorCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -161,7 +164,6 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 
@@ -256,6 +258,9 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Sector"

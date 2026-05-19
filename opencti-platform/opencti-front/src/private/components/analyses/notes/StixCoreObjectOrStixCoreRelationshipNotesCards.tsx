@@ -7,15 +7,16 @@ import { ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui
 import { Field, Formik } from 'formik';
 import Button from '@common/button/Button';
 import { Stack, Box } from '@mui/material';
-import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
+import { NOTE_TYPE, noteCreationMutation, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/core/markdownImagesController';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -38,6 +39,7 @@ import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsM
 import CardTitle from '../../../../components/common/card/CardTitle';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
 import { DefaultMarking } from './../../settings/marking_definitions/markingDefinition.types';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
@@ -150,9 +152,16 @@ type NoteFormProps = {
   onSubmit: (values: NoteAddInput, formikHelpers: FormikHelpers<NoteAddInput>) => void;
   onCancel: () => void;
   onToggleMore: (value: boolean) => void;
+  registerMarkdownImagesController: (controller: MarkdownImagesController) => void;
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'defaultMarkings'>;
 
-const NoteForm = ({ defaultMarkings, onCancel, onToggleMore, onSubmit }: NoteFormProps) => {
+const NoteForm = ({
+  defaultMarkings,
+  onCancel,
+  onToggleMore,
+  onSubmit,
+  registerMarkdownImagesController,
+}: NoteFormProps) => {
   const { t_i18n } = useFormatter();
   const [more, setMore] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
@@ -214,6 +223,9 @@ const NoteForm = ({ defaultMarkings, onCancel, onToggleMore, onSubmit }: NoteFor
               fullWidth={true}
               multiline={true}
               rows="4"
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -359,24 +371,42 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
     scrollToBottom();
   };
 
-  const [commit] = useApiMutation(noteCreationUserMutation);
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+  const [commit] = useApiMutation(userIsKnowledgeEditor ? noteCreationMutation : noteCreationUserMutation);
+  const markdownControllerRef = useRef<MarkdownImagesController | null>(null);
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
-  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
+  const registerMarkdownController = (controller: MarkdownImagesController) => {
+    markdownControllerRef.current = controller;
+    registerMarkdownImagesController(controller);
+  };
+
+  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues = toFinalValues(values, id);
+    const content = userIsKnowledgeEditor
+      ? values.content
+      : (await markdownControllerRef.current?.persistTempImages(id) ?? values.content);
+
+    const finalValues = {
+      ...toFinalValues({ ...values, content }, id),
+      ...(userIsKnowledgeEditor ? buildMarkdownFilesInput() : {}),
+    };
     commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_notes', paginationOptions, 'userNoteAdd');
+        insertNode(store, 'Pagination_notes', paginationOptions, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         scrollToTop();
+      },
+      onError: () => {
+        setSubmitting(false);
       },
     });
   };
@@ -420,6 +450,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
                 onCancel={() => changeState(false)}
                 onToggleMore={handleMore}
                 onSubmit={onSubmit}
+                registerMarkdownImagesController={registerMarkdownController}
               />
             )}
           </CardAccordion>

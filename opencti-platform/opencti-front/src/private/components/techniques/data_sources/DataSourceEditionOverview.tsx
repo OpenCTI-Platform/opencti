@@ -289,6 +289,7 @@ const DataSourceEditionOverview: FunctionComponent<
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={dataSource.id}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

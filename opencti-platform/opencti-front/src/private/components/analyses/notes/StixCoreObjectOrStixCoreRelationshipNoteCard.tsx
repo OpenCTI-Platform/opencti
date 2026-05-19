@@ -18,12 +18,13 @@ import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$key } from './__gener
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Card from '../../../../components/common/card/Card';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import Tag from '../../../../components/common/tag/Tag';
+import { resolveNoteEmbeddedImageUrl } from './note-utils';
 
 const StixCoreObjectOrStixCoreRelationshipNoteCardFragment = graphql`
   fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
@@ -75,6 +76,8 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
     StixCoreObjectOrStixCoreRelationshipNoteCardFragment,
     data,
   );
+
+  const noteImageResolver = (url: string) => resolveNoteEmbeddedImageUrl(url, note.id);
 
   const authorName = note.createdBy ? note.createdBy.name : null;
   const authorLink = note.createdBy ? `${resolveLink(note.createdBy.entity_type)}/${note.createdBy.id}` : null;
@@ -134,6 +137,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
               <MarkdownDisplay
                 content={note.attribute_abstract}
                 remarkGfmPlugin
+                resolveImageUrl={noteImageResolver}
               />
             </FieldOrEmpty>
           </Box>
@@ -143,6 +147,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
               <MarkdownDisplay
                 content={note.content}
                 remarkGfmPlugin
+                resolveImageUrl={noteImageResolver}
               />
             </FieldOrEmpty>
           </Box>

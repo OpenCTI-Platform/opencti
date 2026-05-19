@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const cityMutation = graphql`
   mutation CityCreationMutation($input: CityAddInput!) {
@@ -108,6 +109,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_City')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -136,6 +138,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: CityCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         latitude: parseFloat(values.latitude),
@@ -145,7 +148,6 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
         objectLabel: values.objectLabel.map(({ value }) => value),
         externalReferences: values.externalReferences.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        file: values.file,
       },
     }));
 
@@ -231,6 +233,9 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="City"

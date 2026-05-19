@@ -3,7 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import { AddTaskOutlined, AssistantOutlined } from '@mui/icons-material';
 import { Badge, CircularProgress, DialogActions, IconButton, List, ListItem, ListItemText, MenuItem, Select, ToggleButton, Tooltip } from '@mui/material';
 import { useState } from 'react';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';

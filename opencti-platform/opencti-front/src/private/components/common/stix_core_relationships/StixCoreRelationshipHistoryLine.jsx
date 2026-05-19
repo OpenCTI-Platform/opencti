@@ -23,7 +23,7 @@ import { Link } from 'react-router-dom';
 import { useFormatter } from 'src/components/i18n';
 import { truncate } from 'src/utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Transition from '../../../../components/Transition';
 
 export const StixCoreRelationshipHistoryFragment = graphql`

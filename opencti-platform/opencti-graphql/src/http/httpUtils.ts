@@ -80,7 +80,7 @@ const buildScriptSrc = () => {
 };
 
 const buildImgSrcSrc = () => {
-  const imgSrc = ["'self'", 'data:', 'https://*'];
+  const imgSrc = ["'self'", 'data:', 'blob:', 'https://*'];
   if (isUnsecureHttpResourceAllowed()) {
     imgSrc.push('http://*');
   }

@@ -327,6 +327,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={incident.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

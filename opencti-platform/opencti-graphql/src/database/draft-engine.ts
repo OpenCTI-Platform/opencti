@@ -31,10 +31,16 @@ import { storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from './midd
 import { buildRefRelationKey } from '../schema/general';
 import { getFileContent } from './raw-file-storage';
 import { loadFile } from './file-storage';
+import { rewriteMarkdownPatchUpdatesForExport } from './middlewareEmbeddedImages';
 import { EditOperation } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRelation } from '../types/store';
 import { files } from '../schema/attribute-definition';
+
+type ResolveDraftUpdateFilesOptions = {
+  entityType?: string;
+  entityId?: string;
+};
 
 const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]): Promise<void> => {
   const draftContext = getDraftContext(context, user);
@@ -274,11 +280,25 @@ export const elDeleteDraftContextFromWorks = async (context: AuthContext, user: 
   });
 };
 
-export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUser, draftUpdates: InternalEditInput[]) => {
-  const resolvedDraftUpdatePatch = [...draftUpdates.filter((k) => k.key !== files.name)];
-  const addedFiles = draftUpdates.find((k) => k.key === files.name && k.operation === EditOperation.Add);
-  if (addedFiles) {
-    const fileIds = addedFiles.value;
+export const resolveDraftUpdateFiles = async (
+  context: AuthContext,
+  user: AuthUser,
+  draftUpdates: InternalEditInput[],
+  options: ResolveDraftUpdateFilesOptions = {},
+) => {
+  // File patches are rebuilt separately with full file payload objects.
+  const nonFileDraftUpdates = draftUpdates.filter((update) => update.key !== files.name);
+  const resolvedNonFilePatches = (options.entityType && options.entityId)
+    ? await rewriteMarkdownPatchUpdatesForExport(context, nonFileDraftUpdates, {
+        entityType: options.entityType,
+        entityId: options.entityId,
+      })
+    : nonFileDraftUpdates;
+  const resolvedDraftUpdatePatch = [...resolvedNonFilePatches];
+
+  const fileAddPatch = draftUpdates.find((update) => update.key === files.name && update.operation === EditOperation.Add);
+  if (fileAddPatch) {
+    const fileIds = fileAddPatch.value;
     const loadedFileValues = [];
     for (let i = 0; i < fileIds.length; i += 1) {
       const currentFileId = fileIds[i];
