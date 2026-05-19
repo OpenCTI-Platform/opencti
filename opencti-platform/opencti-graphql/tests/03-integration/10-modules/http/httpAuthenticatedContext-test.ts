@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
-import { ADMIN_API_TOKEN, getAuthUser, testContext, USER_EDITOR } from '../../utils/testQuery';
-import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-import { TokenDuration } from '../../../src/generated/graphql';
-import { addUserToken, revokeUserToken } from '../../../src/modules/user/user-domain';
-import type { AuthUser } from '../../../src/types/user';
+import { createAuthenticatedContext } from '../../../../src/http/httpAuthenticatedContext';
+import { ADMIN_API_TOKEN, getAuthUser, testContext, USER_EDITOR } from '../../../utils/testQuery';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
+import { TokenDuration } from '../../../../src/generated/graphql';
+import { addUserToken, revokeUserToken } from '../../../../src/modules/user/user-domain';
+import type { AuthUser } from '../../../../src/types/user';
 
 describe('Testing createAuthenticatedContext', () => {
   it('should create executeContext with synchronizedUpsert=false for bypass user without synchronized-upsert headers', async () => {

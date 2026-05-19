@@ -133,6 +133,7 @@ nav:
       - Other resources: deployment/resources.md
     - Advanced:
       - Platform managers: deployment/managers.md
+      - Liveness probe: deployment/liveness-probe.md
       - Clustering: deployment/clustering.md
       - Indices and rollover: deployment/rollover.md
       - On-premise map server: deployment/map.md

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { extractWsSessionContext } from '../../../src/http/httpServer';
-import { ADMIN_USER } from '../../utils/testQuery';
+import { ADMIN_USER } from '../../../utils/testQuery';
+import { extractWsSessionContext } from '../../../../src/http/httpServer';
 
 describe('httpServer', () => {
   describe('extractWsSessionContext', async () => {
