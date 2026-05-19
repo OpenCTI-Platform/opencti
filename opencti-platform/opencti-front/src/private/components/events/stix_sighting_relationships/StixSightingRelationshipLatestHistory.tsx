@@ -23,7 +23,7 @@ const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }: S
   } as unknown as StixSightingRelationshipHistoryLinesQuery$variables;
   const queryRef = useQueryLoading<StixSightingRelationshipHistoryLinesQuery>(
     stixCoreObjectHistoryLinesQuery,
-    { count: 25, ...paginationOptions },
+    paginationOptions,
   );
   return (
     <>
