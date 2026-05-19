@@ -15,7 +15,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { convertFromStixType, convertToStixType } from '../../../../utils/String';
+import { convertFromStixType, convertToStixType, splitIntoLines } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { isEmptyField } from '../../../../utils/utils';
@@ -140,16 +140,7 @@ const DynamicResolutionField = ({
   }, [textFieldValue, setFieldValue, field.name]);
   const handleChangeTextField = (event) => {
     const { value } = event.target;
-    setTextFieldValue(
-      value
-        .split('\n')
-        .map((n) => n
-          .split(',')
-          .map((o) => o.split(';'))
-          .flat())
-        .flat()
-        .join('\n'),
-    );
+    setTextFieldValue(splitIntoLines(value));
   };
   const handleChangeType = (id, event) => {
     setFieldValue(

@@ -18,7 +18,7 @@ export const disseminationListValidator = (t: (value: string) => string) => {
         'max-emails',
         t('You cannot have more than 500 e-mail addresses'),
         (value) => {
-          const emails = value.split('\n').map((email) => email.trim());
+          const emails = formatEmailsForApi(value);
           return emails.length <= 500;
         },
       ),

@@ -14,6 +14,7 @@ import SearchBulk, { BULK_SEARCH_LOCAL_STORAGE_KEY } from './SearchBulk';
 import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
+import { splitIntoLines } from '../../utils/String';
 
 const SearchBulkContainer = () => {
   const { t_i18n } = useFormatter();
@@ -35,18 +36,6 @@ const SearchBulkContainer = () => {
       .split('\n')
       .filter((o) => o.length > 1)
       .map((val) => val.trim()) ?? [];
-  };
-
-  // Normalize: split commas/semicolons into lines
-  const splitIntoLines = (text: string) => {
-    return text
-      .split('\n')
-      .map((o) => o
-        .split(',')
-        .map((p) => p.split(';'))
-        .flat())
-      .flat()
-      .join('\n');
   };
 
   // Pre-fill from ?q= query parameter (e.g. when coming from the top bar search)
