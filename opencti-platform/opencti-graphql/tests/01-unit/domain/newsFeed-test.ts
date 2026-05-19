@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { addNewsFeed, cleanOldNewsFeedItems, markAllNewsFeedItemsAsRead, myNewsFeedsFind, myUnreadNewsFeedsCount } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
 import { NewsFeedItemType } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 import type { NewsFeedAddInput } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
+import { ALREADY_DELETED_ERROR } from '../../../src/config/errors';
 
 const mockCreateInternalObject = vi.fn();
 const mockPageEntitiesConnection = vi.fn();
@@ -449,7 +450,7 @@ describe('News feed', () => {
         ],
       });
       const alreadyDeletedError = Object.assign(new Error('Already deleted'), {
-        extensions: { code: 'ALREADY_DELETED' },
+        extensions: { code: ALREADY_DELETED_ERROR },
       });
       mockDeleteElementById
         .mockRejectedValueOnce(alreadyDeletedError)

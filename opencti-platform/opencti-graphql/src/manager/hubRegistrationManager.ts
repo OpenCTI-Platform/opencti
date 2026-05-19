@@ -12,6 +12,24 @@ const SCHEDULE_TIME = conf.get('hub_registration_manager:interval') || 60 * 60 *
 const NEWS_FEED_CLEANUP_INTERVAL_VALUE = conf.get('hub_registration_manager:news_feed_cleanup_interval_value') || 180;
 const NEWS_FEED_CLEANUP_INTERVAL_UNIT = conf.get('hub_registration_manager:news_feed_cleanup_interval_unit') || 'days';
 
+const VALID_CLEANUP_UNITS = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'] as const;
+type ValidCleanupUnit = typeof VALID_CLEANUP_UNITS[number];
+
+if (
+  typeof NEWS_FEED_CLEANUP_INTERVAL_VALUE !== 'number'
+  || !Number.isFinite(NEWS_FEED_CLEANUP_INTERVAL_VALUE)
+  || NEWS_FEED_CLEANUP_INTERVAL_VALUE <= 0
+) {
+  throw new Error(
+    `[XTMH] Invalid news_feed_cleanup_interval_value: expected a positive number, got "${NEWS_FEED_CLEANUP_INTERVAL_VALUE}"`,
+  );
+}
+if (!VALID_CLEANUP_UNITS.includes(NEWS_FEED_CLEANUP_INTERVAL_UNIT as ValidCleanupUnit)) {
+  throw new Error(
+    `[XTMH] Invalid news_feed_cleanup_interval_unit: "${NEWS_FEED_CLEANUP_INTERVAL_UNIT}". Expected one of: ${VALID_CLEANUP_UNITS.join(', ')}`,
+  );
+}
+
 /**
  * If platform is registered, calls XTM Hub backend to check if the registration data is still valid
  * Update the settings with the result.
@@ -22,10 +40,9 @@ export const hubRegistrationManager = async () => {
   if (status === XtmHubRegistrationStatus.Registered) {
     await loadAndSaveLatestNewsFeed(context, HUB_REGISTRATION_MANAGER_USER);
   }
-
   try {
     const cutoffDate = moment()
-      .subtract(NEWS_FEED_CLEANUP_INTERVAL_VALUE, NEWS_FEED_CLEANUP_INTERVAL_UNIT)
+      .subtract(NEWS_FEED_CLEANUP_INTERVAL_VALUE, NEWS_FEED_CLEANUP_INTERVAL_UNIT as ValidCleanupUnit)
       .toDate();
     const deletedCount = await cleanOldNewsFeedItems(
       context,
@@ -62,5 +79,4 @@ const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
 registerManager(HUB_REGISTRATION_MANAGER_DEFINITION);
