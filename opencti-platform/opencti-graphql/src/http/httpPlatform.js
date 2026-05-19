@@ -11,7 +11,7 @@ import { marked } from 'marked';
 import archiver from 'archiver';
 import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
-import contentDisposition from 'content-disposition';
+import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
@@ -193,7 +193,7 @@ const createApp = async (app, schema) => {
       const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
-      res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
+      res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set({ Pragma: 'no-cache' });
@@ -227,7 +227,7 @@ const createApp = async (app, schema) => {
       const file = `embedded/${element.entity_type}/${id}/${filename}`;
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
-      res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
+      res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set({ Pragma: 'no-cache' });
