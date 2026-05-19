@@ -59,7 +59,7 @@ interface HistoryIconProps {
   eventMessage: string;
   commit: string | null | undefined;
   isRelation: boolean;
-  onCommitClick: () => void;
+  onClick: () => void;
 }
 
 /**
@@ -70,7 +70,7 @@ const HistoryIcon = ({
   eventMessage,
   commit,
   isRelation,
-  onCommitClick,
+  onClick,
 }: HistoryIconProps) => {
   const theme = useTheme<Theme>();
   const { color, Icon, clickable } = getHistoryIconConfig(eventScope, eventMessage, isRelation);
@@ -86,7 +86,7 @@ const HistoryIcon = ({
         color: theme.palette.text.primary,
         cursor: canClick ? 'pointer' : 'auto',
       }}
-      onClick={canClick ? onCommitClick : undefined}
+      onClick={canClick ? onClick : undefined}
     >
       <Icon style={{ fontSize: 12 }} />
     </Avatar>
