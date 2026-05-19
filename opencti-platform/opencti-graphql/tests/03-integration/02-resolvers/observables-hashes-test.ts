@@ -545,11 +545,12 @@ describe('Observables with hashes: management of other stix ids', () => {
       });
       expect(fileByMergeSourceId?.data?.stixCyberObservable.standard_id).toEqual(targetMd5StandardId);
 
+      // mergeTarget was merged into mergeSource and deleted — querying by its internal_id should return null
       const fileByMergeTargetId = await queryAsAdmin({
         query: FIND_BY_ID_QUERY,
         variables: { id: mergeTargetId },
       });
-      expect(fileByMergeTargetId?.data?.stixCyberObservable.standard_id).toEqual(targetMd5StandardId);
+      expect(fileByMergeTargetId?.data?.stixCyberObservable).toBeNull();
     } finally {
       const idsToDelete = [...new Set([mergeSourceId, mergeTargetId].filter(Boolean))];
       await Promise.all(idsToDelete.map((id) => queryAsAdmin({
