@@ -183,7 +183,7 @@ export const loadFile = async (
     // All good, return the file
     return {
       ...document,
-      id: resolvedPath || fileS3Path,
+      id: document.internal_id || resolvedPath || fileS3Path,
       information: '',
       uploadStatus: 'complete',
       metaData,
