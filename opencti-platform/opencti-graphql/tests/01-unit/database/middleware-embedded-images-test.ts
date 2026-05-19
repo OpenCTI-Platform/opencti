@@ -90,7 +90,7 @@ describe('middlewareEmbeddedImages markdown rewrite helpers', () => {
     } as any);
 
     const payload: Record<string, unknown> = {
-      description: `![a](data:image/png;base64,${Buffer.from('img-a').toString('base64')})`,
+      description: `![coucou ééé 223.png](data:image/png;base64,${Buffer.from('img-a').toString('base64')})`,
     };
 
     await rewriteEmbeddedDataUriImagesInDescriptions(
@@ -105,8 +105,12 @@ describe('middlewareEmbeddedImages markdown rewrite helpers', () => {
       },
     );
 
-    expect(payload.description).toContain('![a](embedded/Report/r-1/image-a.png)');
+    expect(payload.description).toContain('![coucou ééé 223.png](embedded/Report/r-1/image-a.png)');
     expect(uploadToStorage).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(uploadToStorage).mock.calls[0][3]).toMatchObject({
+      filename: 'coucou-eee-223.png',
+      mimeType: 'image/png',
+    });
   });
 
   it('should rewrite data URI images in update inputs for upsert/update-like patches', async () => {

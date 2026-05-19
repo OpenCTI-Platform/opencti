@@ -28,7 +28,7 @@ describe('Retention Manager tests ', () => {
   const fileName = 'fileToTestRetentionRule';
   const fileId = `${globalPath}/${fileName.toLowerCase()}`;
   const progressFileName = 'progressFile';
-  const progressFileId = `${globalPath}/${progressFileName}`;
+  const progressFileId = `${globalPath}/${progressFileName.toLowerCase()}`;
 
   const pendingPath = 'import/pending';
   const workbench1Name = 'workbench1';

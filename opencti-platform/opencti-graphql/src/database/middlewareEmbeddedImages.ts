@@ -8,6 +8,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftFilePrefix } from './draft-utils';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPES,
+  type CollectedMarkdownDataUriImage,
   collectDataUriImagesFromMarkdown,
   DEFAULT_MAX_EMBEDDED_IMAGE_SIZE_BYTES,
   DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES,
@@ -25,6 +26,7 @@ export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'con
 const TEMP_IMAGE_TOKEN_REGEX = /([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
 const EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS = 3;
 const ALLOWED_EMBEDDED_IMAGE_MIME_TYPES_SET = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
+const MAX_EMBEDDED_IMAGE_BASENAME_LENGTH = 120;
 
 const visitObjectGraph = (
   node: unknown,
@@ -84,9 +86,59 @@ const visitObjectGraphAsync = async (
   }
 };
 
-const buildEmbeddedMarkdownImageFilename = (dedupeKey: string, mimeType: string): string => {
-  const extension = mime.extension(mimeType) || 'bin';
-  return `markdown-image-${dedupeKey.slice(0, 24)}.${extension}`;
+const sanitizeEmbeddedMarkdownImageBaseName = (rawName: string): string | undefined => {
+  const trimmed = rawName.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const pathLeaf = trimmed.split(/[\\/]/).pop() ?? trimmed;
+  const withoutExtension = pathLeaf.replace(/\.[^./\\\s]{1,10}$/u, '');
+  const normalized = withoutExtension
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^[-._]+|[-._]+$/g, '');
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  return normalized.slice(0, MAX_EMBEDDED_IMAGE_BASENAME_LENGTH);
+};
+
+const getEmbeddedMarkdownImageBaseName = (image: CollectedMarkdownDataUriImage): string => {
+  for (let i = 0; i < image.occurrences.length; i += 1) {
+    const occurrence = image.occurrences[i];
+    const titleCandidate = sanitizeEmbeddedMarkdownImageBaseName(occurrence.title ?? '');
+    if (titleCandidate) {
+      return titleCandidate;
+    }
+    const altTextCandidate = sanitizeEmbeddedMarkdownImageBaseName(occurrence.altText);
+    if (altTextCandidate) {
+      return altTextCandidate;
+    }
+  }
+  return `markdown-image-${image.dedupeKey.slice(0, 8)}`;
+};
+
+const buildEmbeddedMarkdownImageFilename = (
+  image: CollectedMarkdownDataUriImage,
+  usedLowercaseFilenames: Set<string>,
+): string => {
+  const extension = mime.extension(image.mimeType) || 'bin';
+  const baseName = getEmbeddedMarkdownImageBaseName(image);
+
+  let suffix = 1;
+  let fileName = `${baseName}.${extension}`;
+  while (usedLowercaseFilenames.has(fileName.toLowerCase())) {
+    suffix += 1;
+    fileName = `${baseName}-${suffix}.${extension}`;
+  }
+  usedLowercaseFilenames.add(fileName.toLowerCase());
+  return fileName;
 };
 
 export type RewriteEmbeddedDataUriOptions = {
@@ -171,6 +223,7 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
 ): Promise<void> => {
   const allowedMimeTypes = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
   const uploadedUriByDedupeKey = new Map<string, string>();
+  const usedLowercaseFilenames = new Set<string>();
   const seen = new Set<object>();
   let totalDataUriSizeBytes = 0;
 
@@ -204,7 +257,7 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
           });
         }
 
-        const fileName = buildEmbeddedMarkdownImageFilename(image.dedupeKey, image.mimeType);
+        const fileName = buildEmbeddedMarkdownImageFilename(image, usedLowercaseFilenames);
         const fileUpload = {
           createReadStream: () => Readable.from(image.bytes),
           filename: fileName,

@@ -383,7 +383,7 @@ describe('Component: MarkdownField', () => {
     commitMutationMock.mockImplementationOnce(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
-          importPush: { id: 'import/global/uploaded-1', name: 'to-finalize-00000000.png' },
+          importPush: { id: 'import/global/uploaded-1', name: 'to finalize.png' },
         },
       });
     });
@@ -399,7 +399,7 @@ describe('Component: MarkdownField', () => {
 
     fireEvent.change(fileInput, {
       target: {
-        files: [new File(['file-content'], 'to-finalize.png', { type: 'image/png' })],
+        files: [new File(['file-content'], 'to finalize.png', { type: 'image/png' })],
       },
     });
 
@@ -410,11 +410,11 @@ describe('Component: MarkdownField', () => {
     fireEvent.blur(textArea, { relatedTarget: document.body });
 
     await waitFor(() => {
-      expect(textArea.value).toContain('embedded/to-finalize-00000000.png');
+      expect(textArea.value).toContain('embedded/to%20finalize.png');
     });
     expect(onSubmit).toHaveBeenCalledWith(
       'description',
-      '![to-finalize.png](embedded/to-finalize-00000000.png)',
+      '![to finalize.png](embedded/to%20finalize.png)',
     );
   });
 
