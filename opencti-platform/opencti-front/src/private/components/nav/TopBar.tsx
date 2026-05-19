@@ -9,7 +9,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { usePage } from 'use-analytics';
@@ -107,18 +107,18 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
-  const handleNewNotificationsNumber = (
+  const handleNewNotificationsNumber = useCallback((
     response: TopBarNotificationNumberSubscription$data | null | undefined | unknown,
   ) => {
     const notificationNumber = response ? (response as TopBarNotificationNumberSubscription$data).notificationsNumber?.count : null;
     return setNotificationsNumber(notificationNumber ?? null);
-  };
-  const handleNewNewsFeedNumber = (
+  }, [setNotificationsNumber]);
+  const handleNewNewsFeedNumber = useCallback((
     response: TopBarNewsFeedNumberSubscription$data | null | undefined | unknown,
   ) => {
     const newsFeedNumber = response ? (response as TopBarNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
     return setNewsFeedsNumberFromSub(newsFeedNumber ?? null);
-  };
+  }, [setNewsFeedsNumberFromSub]);
   const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
@@ -133,7 +133,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       variables: {},
       onNext: handleNewNotificationsNumber,
     }),
-    [topBarNotificationNumberSubscription],
+    [topBarNotificationNumberSubscription, handleNewNotificationsNumber],
   );
   useSubscription(subConfig);
 
@@ -146,7 +146,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       onNext: handleNewNewsFeedNumber,
     });
     return () => sub.dispose();
-  }, [shouldSubscribeToNewsFeed]);
+  }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
