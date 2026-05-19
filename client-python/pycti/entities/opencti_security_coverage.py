@@ -450,3 +450,24 @@ class SecurityCoverage:
                 "[opencti_security_coverage] Missing parameters: stixObject"
             )
             return None
+
+    def delete(self, **kwargs):
+        """Delete a Security-Coverage object.
+
+        :param id: the Security-Coverage id
+        :type id: str
+        """
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.app_logger.info("Deleting security_coverage", {"id": id})
+            query = """
+                mutation SecurityCoverageDelete($id: ID!) {
+                    securityCoverageDelete(id: $id)
+                }
+            """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_security_coverage] Missing parameters: id"
+            )
+            return None
