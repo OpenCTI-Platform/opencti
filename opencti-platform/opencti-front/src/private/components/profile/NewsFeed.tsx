@@ -5,7 +5,7 @@ import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
 import { InsertChartOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useContext } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';

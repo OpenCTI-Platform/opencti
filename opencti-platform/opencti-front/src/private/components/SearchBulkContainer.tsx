@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { isEmpty } from 'ramda';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import SearchBulkUnknownEntities from './SearchBulkUnknownEntities';
 import { useFormatter } from '../../components/i18n';
 import Breadcrumbs from '../../components/Breadcrumbs';

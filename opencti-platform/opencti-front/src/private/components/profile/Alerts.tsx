@@ -13,7 +13,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import { FunctionComponent, Suspense, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
