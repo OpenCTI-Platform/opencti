@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
@@ -10,6 +11,15 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
+
+/**
+ * Sanitizes a raw uri_key input to a valid [a-z0-9-] slug.
+ * Falls back to a UUID v4 if the resulting slug is empty (e.g. fully non-Latin input).
+ */
+export const sanitizePublicDashboardUriKey = (input: string): string => {
+  const slug = input.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
+  return slug || uuidv4();
+};
 
 /**
  * Find which markings should be used when searching the data to populate in the widgets.
