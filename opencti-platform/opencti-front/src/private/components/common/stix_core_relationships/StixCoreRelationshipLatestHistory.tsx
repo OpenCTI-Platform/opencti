@@ -1,12 +1,16 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreRelationshipHistoryLines, { stixCoreRelationshipHistoryLinesQuery } from './StixCoreRelationshipHistoryLines';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { StixCoreRelationshipHistoryLinesQuery, StixCoreRelationshipHistoryLinesQuery$variables } from './__generated__/StixCoreRelationshipHistoryLinesQuery.graphql';
 
-const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
+interface StixCoreRelationshipLatestHistoryProps {
+  stixCoreRelationshipId: string;
+}
+
+const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }: StixCoreRelationshipLatestHistoryProps) => {
   const { t_i18n } = useFormatter();
   const { tz, locale, unitSystem } = useAuth();
   const paginationOptions = {
@@ -24,8 +28,8 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
     tz,
     locale: locale,
     unit_system: unitSystem,
-  };
-  const queryRef = useQueryLoading(
+  } as unknown as StixCoreRelationshipHistoryLinesQuery$variables;
+  const queryRef = useQueryLoading<StixCoreRelationshipHistoryLinesQuery>(
     stixCoreRelationshipHistoryLinesQuery,
     paginationOptions,
   );
@@ -38,10 +42,7 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
   );
 
   return (
-    <div className="break">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Most recent history')}
-      </Typography>
+    <>
       {queryRef && (
         <React.Suspense fallback={Fallback}>
           <StixCoreRelationshipHistoryLines
@@ -52,7 +53,7 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

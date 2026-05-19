@@ -1,8 +1,13 @@
 import React from 'react';
 import StixSightingRelationshipHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixSightingRelationshipHistoryLines';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
+import { StixSightingRelationshipHistoryLinesQuery, StixSightingRelationshipHistoryLinesQuery$variables } from './__generated__/StixSightingRelationshipHistoryLinesQuery.graphql';
 
-const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }) => {
+interface StixSightingRelationshipLatestHistoryProps {
+  stixSightingRelationshipId: string;
+}
+
+const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }: StixSightingRelationshipLatestHistoryProps) => {
   const paginationOptions = {
     filters: {
       mode: 'and',
@@ -15,17 +20,16 @@ const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }) =
     first: 6,
     orderBy: 'timestamp',
     orderMode: 'desc',
-  };
-  const queryRef = useQueryLoading(
+  } as unknown as StixSightingRelationshipHistoryLinesQuery$variables;
+  const queryRef = useQueryLoading<StixSightingRelationshipHistoryLinesQuery>(
     stixCoreObjectHistoryLinesQuery,
-    { count: 25, ...paginationOptions },
+    paginationOptions,
   );
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<div />}>
           <StixSightingRelationshipHistoryLines
-            stixSightingRelationshipId={stixSightingRelationshipId}
             queryRef={queryRef}
             isRelationLog={false}
             paginationOptions={paginationOptions}

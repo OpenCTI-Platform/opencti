@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { graphql, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import StixCoreObjectHistoryLine from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
 import { useFormatter } from 'src/components/i18n';
 import useInterval from 'src/utils/hooks/useInterval';
@@ -8,6 +8,9 @@ import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
 import Card from '@common/card/Card';
+import { StixSightingRelationshipHistoryLinesQuery, StixSightingRelationshipHistoryLinesQuery$variables } from './__generated__/StixSightingRelationshipHistoryLinesQuery.graphql';
+import { StixSightingRelationshipHistoryLines_data$key } from './__generated__/StixSightingRelationshipHistoryLines_data.graphql';
+import { StixSightingRelationshipHistoryRefetchQuery } from './__generated__/StixSightingRelationshipHistoryRefetchQuery.graphql';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixSightingRelationshipHistoryLinesQuery(
@@ -49,20 +52,29 @@ const StixSightingRelationshipHistoryFragment = graphql`
   }
 `;
 
-const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationOptions }) => {
+interface StixSightingRelationshipHistoryLinesProps {
+  queryRef: PreloadedQuery<StixSightingRelationshipHistoryLinesQuery>;
+  isRelationLog: boolean;
+  paginationOptions: StixSightingRelationshipHistoryLinesQuery$variables;
+}
+
+const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationOptions }: StixSightingRelationshipHistoryLinesProps) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [selectedLog, setSelectedLog] = useState(undefined);
+  const [selectedLog, setSelectedLog] = useState<string | undefined>(undefined);
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
-  const [data, refetch] = useRefetchableFragment(StixSightingRelationshipHistoryFragment, queryData);
+  const [data, refetch] = useRefetchableFragment<StixSightingRelationshipHistoryRefetchQuery, StixSightingRelationshipHistoryLines_data$key>(
+    StixSightingRelationshipHistoryFragment,
+    queryData,
+  );
 
   useInterval(() => {
     // Refresh the history every interval
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, FIVE_SECONDS);
-  const logs = data?.logs.edges ?? [];
+  const logs = data?.logs?.edges ?? [];
 
-  const handleOpen = (logId) => {
+  const handleOpen = (logId: string) => {
     setSelectedLog(logId);
     setOpen(true);
   };

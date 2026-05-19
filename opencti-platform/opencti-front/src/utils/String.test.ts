@@ -1,6 +1,6 @@
 import purify from 'dompurify';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { displayEntityTypeForTranslation, translateDateInterval, isStringSafe, sanitize, extractJsonContent } from './String';
+import { displayEntityTypeForTranslation, translateDateInterval, isStringSafe, sanitize, extractJsonContent, splitIntoLines } from './String';
 
 describe('String utils', () => {
   describe('translateDateInterval', () => {
@@ -124,6 +124,36 @@ describe('String utils', () => {
     it('should return trimmed string for empty input', () => {
       expect(extractJsonContent('')).toBe('');
       expect(extractJsonContent('   ')).toBe('');
+    });
+  });
+
+  describe('splitIntoLines', () => {
+    it('should split text by newlines', () => {
+      expect(splitIntoLines('a\nb\nc')).toBe('a\nb\nc');
+    });
+
+    it('should split text by commas', () => {
+      expect(splitIntoLines('a,b,c')).toBe('a\nb\nc');
+    });
+
+    it('should split text by semicolons', () => {
+      expect(splitIntoLines('a;b;c')).toBe('a\nb\nc');
+    });
+
+    it('should split text with mixed separators', () => {
+      expect(splitIntoLines('a,b;c\nd,e')).toBe('a\nb\nc\nd\ne');
+    });
+
+    it('should handle a single value without separators', () => {
+      expect(splitIntoLines('hello')).toBe('hello');
+    });
+
+    it('should handle empty string', () => {
+      expect(splitIntoLines('')).toBe('');
+    });
+
+    it('should handle consecutive separators', () => {
+      expect(splitIntoLines('a,,b')).toBe('a\n\nb');
     });
   });
 });

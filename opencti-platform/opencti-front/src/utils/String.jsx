@@ -36,6 +36,24 @@ export const adaptFieldValue = (value) => {
   return value.toString();
 };
 
+/**
+ * Split a string by newlines, commas and semicolons,
+ * then join all resulting parts with newlines.
+ *
+ * @param text {string} The input text to split.
+ * @returns {string} The text with commas/semicolons replaced by newlines.
+ */
+export const splitIntoLines = (text) => {
+  return text
+    .split('\n')
+    .map((o) => o
+      .split(',')
+      .map((p) => p.split(';'))
+      .flat())
+    .flat()
+    .join('\n');
+};
+
 export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
 
 export const convertFromStixType = (s) => {
