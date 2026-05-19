@@ -1,6 +1,8 @@
 import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from '../../utils/widget/widget';
 import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import { type FilterDefinition } from '../../utils/hooks/useAuth';
+import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import { DashboardConfig } from './dashboard-types';
 
 export const resolveDataSelection = ({
   filterKeysSchema,
@@ -43,4 +45,16 @@ export const resolveDataSelection = ({
     isMissingHostEntity,
     isPreviewMode,
   };
+};
+
+export const computeStartEndDates = (config: DashboardConfig) => {
+  const startDate = config.relativeDate
+    ? computerRelativeDate(config.relativeDate)
+    : config.startDate;
+
+  const endDate = config.relativeDate
+    ? formatDate(dayStartDate(null, false))
+    : config.endDate;
+
+  return { startDate, endDate };
 };

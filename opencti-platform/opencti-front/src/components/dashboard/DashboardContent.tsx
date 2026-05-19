@@ -11,11 +11,13 @@ type DashboardContentProps = {
   host: WidgetHost;
   entity: DashboardLike;
   isEditable: boolean;
+  refreshRate?: number | null;
 };
 
 const DashboardContent = ({
   entity,
   isEditable,
+  refreshRate,
   helpers: {
     widgetsLayouts,
     widgetsArray,
@@ -79,6 +81,7 @@ const DashboardContent = ({
                   host={host}
                   config={config}
                   popover={popover}
+                  refreshRate={refreshRate}
                 />
               )}
             </div>

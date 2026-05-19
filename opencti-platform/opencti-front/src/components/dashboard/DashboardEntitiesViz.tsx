@@ -24,6 +24,7 @@ interface DashboardEntitiesVizProps {
   popover?: ReactNode;
   config: DashboardConfig;
   host?: WidgetHost;
+  refreshRate?: number | null;
 }
 
 const DashboardEntitiesViz = ({
@@ -31,6 +32,7 @@ const DashboardEntitiesViz = ({
   popover,
   config,
   host,
+  refreshRate,
 }: DashboardEntitiesVizProps) => {
   const startDate = config.relativeDate
     ? computeRelativeDate(config.relativeDate)
@@ -70,8 +72,6 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsList
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           widgetId={widget.id}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
@@ -79,6 +79,8 @@ const DashboardEntitiesViz = ({
           title={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'distribution-list':
