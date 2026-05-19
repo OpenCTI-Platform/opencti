@@ -95,7 +95,7 @@ describe('buildHelmetParameters coverage', () => {
       crossOriginOpenerPolicy: false,
       crossOriginResourcePolicy: false,
       referrerPolicy: {
-        policy: 'unsafe-url',
+        policy: 'strict-origin-when-cross-origi',
       },
       xFrameOptions: { action: 'deny' },
     });
@@ -123,7 +123,7 @@ describe('buildHelmetParameters coverage', () => {
       crossOriginOpenerPolicy: false,
       crossOriginResourcePolicy: false,
       referrerPolicy: {
-        policy: 'unsafe-url',
+        policy: 'strict-origin-when-cross-origin',
       },
       xFrameOptions: { action: 'deny' },
     });
@@ -157,7 +157,7 @@ describe('buildHelmetParameters coverage', () => {
       crossOriginOpenerPolicy: false,
       crossOriginResourcePolicy: false,
       referrerPolicy: {
-        policy: 'unsafe-url',
+        policy: 'strict-origin-when-cross-origin',
       },
       xFrameOptions: false,
     });
@@ -185,7 +185,7 @@ describe('buildHelmetParameters coverage', () => {
       crossOriginOpenerPolicy: false,
       crossOriginResourcePolicy: false,
       referrerPolicy: {
-        policy: 'unsafe-url',
+        policy: 'strict-origin-when-cross-origin',
       },
       xFrameOptions: { action: 'deny' },
     });
