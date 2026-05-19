@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ElementType } from 'react';
 import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
 import Avatar from '@mui/material/Avatar';
 import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
@@ -8,7 +8,7 @@ import type { Theme } from '../../../../components/Theme';
 
 interface IconConfig {
   color: string;
-  Icon: React.ElementType;
+  Icon: ElementType;
   clickable: boolean;
 }
 
