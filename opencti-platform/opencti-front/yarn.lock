@@ -5658,13 +5658,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pdfmake@npm:0.3.2":
-  version: 0.3.2
-  resolution: "@types/pdfmake@npm:0.3.2"
+"@types/pdfmake@npm:0.3.3":
+  version: 0.3.3
+  resolution: "@types/pdfmake@npm:0.3.3"
   dependencies:
     "@types/node": "npm:*"
     "@types/pdfkit": "npm:*"
-  checksum: 10c0/0ea880a84870bd63f2aebbe5b3cb7ffa1bb5082d6e33244d88b61eab392c7ceb710b3565abb273a2aca02e88baf4f434730af3653f8320f7e1d6f439b473d8da
+  checksum: 10c0/0fa22029264d36b15e08cccdc4c5c7543925142f53d942051dc6b5a2171653c00472f9b6f3c6e8950efa6371497d39af3a592bb294bba633ab608b26d00331f6
   languageName: node
   linkType: hard
 

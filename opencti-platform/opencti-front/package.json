@@ -214,7 +214,7 @@
   "resolutions": {
     "@filigran/chatbot/lodash": "4.18.1",
     "@filigran/chatbot/uuid": "14.0.0",
-    "@types/pdfmake": "0.3.2",
+    "@types/pdfmake": "0.3.3",
     "axios": "1.16.1",
     "cookie": "1.1.1",
     "d3-color": "3.1.0",
