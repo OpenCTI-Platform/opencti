@@ -512,8 +512,10 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     const unrevokedIndicator = await findById(testContext, ADMIN_USER, indicator.id);
     expect(unrevokedIndicator.revoked).toBeFalsy();
     expect(unrevokedIndicator.x_opencti_score).toBe(INDICATOR_DEFAULT_SCORE);
-    expect(new Date(unrevokedIndicator.valid_until).getTime()).toBeGreaterThan(new Date().getTime());
-    expect(new Date(unrevokedIndicator.valid_from).getTime()).toBeLessThanOrEqual(new Date().getTime() + 1000);
+    const validUntilMs = new Date(unrevokedIndicator.valid_until).getTime();
+    const validFromMs = new Date(unrevokedIndicator.valid_from).getTime();
+    expect(validUntilMs - validFromMs).toBe(NO_DECAY_DEFAULT_VALID_PERIOD);
+    expect(validFromMs).toBeLessThanOrEqual(new Date().getTime() + 1000);
   });
 
   it('decay enabled - updating only valid_until should be kept as-is (safeguard line 547)', async () => {
