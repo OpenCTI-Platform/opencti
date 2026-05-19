@@ -17,7 +17,7 @@ import { extractEntityRepresentativeName } from '../../../database/entity-repres
 
 export interface NotifierConfiguration {
   notifiers: string[];
-  authorized_members: object;
+  authorized_members: { value: string }[];
 }
 
 const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
@@ -30,7 +30,17 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
       $ref: 'Notifiers',
       items: { type: 'string', oneOf: [] },
     },
-    authorized_members: { type: 'object' },
+    authorized_members: {
+      type: 'array',
+      default: [],
+      items: {
+        type: 'object',
+        properties: {
+          value: { type: 'string' },
+        },
+        required: ['value'],
+      },
+    },
   },
   required: ['notifiers', 'authorized_members'],
 };
