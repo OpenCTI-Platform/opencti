@@ -3,7 +3,7 @@ import {
   ATTR_MESSAGING_MESSAGE_BODY_SIZE as INCUBATING_ATTR_MESSAGING_MESSAGE_BODY_SIZE,
 } from '@opentelemetry/semantic-conventions/incubating';
 
-// This file lists all unstable OPTL semantic conventions constants used in the
+// This file lists all unstable OTLP semantic conventions constants used in the
 // codebase. We follow the recommandation for handling such "incubating" cases
 // of not using values directly imported from the /incubating entry-point but
 // we still do a type verification to detect if/when a breaking change happens
