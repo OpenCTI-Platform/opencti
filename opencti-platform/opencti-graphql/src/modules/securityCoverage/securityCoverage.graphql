@@ -123,8 +123,6 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   roles: [String]
   x_opencti_aliases: [String]
   x_opencti_reliability: String
-  # SecurityCoverage
-  security_platform_type: String
   # Technical
   creators: [Creator!]
   toStix(version: Version): String
@@ -165,6 +163,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
   toStixBundle: String
+  security_platform_type: String
 }
 
 # Ordering
@@ -224,7 +223,6 @@ input SecurityCoverageAddInput {
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
-  external_uri: String
   externalReferences: [String]
   file: Upload
   fileMarkings: [String]
@@ -234,6 +232,7 @@ input SecurityCoverageAddInput {
   embedded: [Boolean]
   update: Boolean
   # coverage specific
+  external_uri: String
   auto_enrichment_disable: Boolean!
   periodicity: String
   duration: String
