@@ -8,13 +8,18 @@ export const RELATION_RESULT_OF = 'result-of';
 export const ATTRIBUTE_RESULT_OF = 'result_of_ref';
 export const INPUT_RESULT_OF = 'resultOf';
 
+interface CoverageInformation {
+  coverage_name: string;
+  coverage_score: number;
+}
+
 export interface BasicStoreEntitySecurityCoverageResult extends BasicStoreEntity {
   name: string;
   external_uri?: string;
   coverage_last_result?: string;
   coverage_valid_from?: string;
   coverage_valid_to?: string;
-  coverage_information?: { coverage_name: string; coverage_score: number }[];
+  coverage_information?: CoverageInformation[];
 }
 
 export interface StoreEntitySecurityCoverageResult extends StoreEntity {
@@ -23,7 +28,7 @@ export interface StoreEntitySecurityCoverageResult extends StoreEntity {
   coverage_last_result?: string;
   coverage_valid_from?: string;
   coverage_valid_to?: string;
-  coverage_information?: { coverage_name: string; coverage_score: number }[];
+  coverage_information?: CoverageInformation[];
   [INPUT_RESULT_OF]: BasicStoreEntitySecurityCoverage;
 }
 
