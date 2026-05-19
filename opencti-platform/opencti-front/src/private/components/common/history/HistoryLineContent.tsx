@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { truncate } from '../../../../utils/String';
 import HistoryIcon from './HistoryIcon';
 
