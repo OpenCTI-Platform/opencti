@@ -1,21 +1,12 @@
-import React, { useContext, useEffect } from 'react';
+import React from 'react';
 import TopBanner from '../../../components/TopBanner';
 import { useFormatter } from '../../../components/i18n';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../../../utils/hooks/useAuth';
-import { REGISTER_BANNER_DISMISSED_BUS, REGISTER_BANNER_DISMISSED_KEY, resetRegisterBannerDismiss } from '../../../utils/bannerUtils';
+import { REGISTER_BANNER_DISMISSED_BUS, REGISTER_BANNER_DISMISSED_KEY } from '../../../utils/bannerConstants';
 
 const RegisterPlatformBanner = () => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const { settings } = useContext(UserContext);
-
-  // Auto-reset dismissed state once the platform becomes registered
-  useEffect(() => {
-    if (settings?.xtm_hub_registration_status === 'registered') {
-      resetRegisterBannerDismiss();
-    }
-  }, [settings?.xtm_hub_registration_status]);
 
   const text = (
     <>

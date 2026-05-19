@@ -115,7 +115,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import useImportAccess from '../../../utils/hooks/useImportAccess';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useTopBannerHeight from '../../../utils/hooks/useTopBannerHeight';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
@@ -381,7 +381,7 @@ const LeftBarComponent = ({ queryRef }) => {
     },
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const topBannerHeight = useTopBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const { dimension } = useDimensions();
 
   const isMobile = dimension.width < 768;

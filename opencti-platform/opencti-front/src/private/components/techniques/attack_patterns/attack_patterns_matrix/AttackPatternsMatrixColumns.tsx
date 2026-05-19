@@ -16,7 +16,7 @@ import {
 import { truncate } from '../../../../../utils/String';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
-import useTopBannerHeight from '../../../../../utils/hooks/useTopBannerHeight';
+import useTopBanner from '../../../../../utils/hooks/useTopBanner';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
@@ -230,7 +230,7 @@ const AttackPatternsMatrixColumns = ({
         .sort((f, s) => f.name.localeCompare(s.name)),
     })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
 
-  const topBannerHeight = useTopBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);

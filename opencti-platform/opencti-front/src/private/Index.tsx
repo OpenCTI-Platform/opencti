@@ -21,7 +21,7 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
 import { ChatbotProvider } from './components/chatbox/ChatbotContext';
-import useTopBannerHeight from '../utils/hooks/useTopBannerHeight';
+import useTopBanner from '../utils/hooks/useTopBanner';
 
 const HomeDashboard = lazy(() => import('./components/HomeDashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
@@ -58,7 +58,7 @@ const Index = ({ settings }: IndexProps) => {
   } = useAuth();
   const draftContext = useDraftContext();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const topBannerHeight = useTopBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
 
   // Change the theme body attribute when the mode changes in
   // the palette because some components like legacy editor uses this

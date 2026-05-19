@@ -1,11 +1,9 @@
 import { dispatch } from './hooks/useBus';
 import { isNotEmptyField } from './utils';
 import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
+import { REGISTER_BANNER_DISMISSED_BUS, REGISTER_BANNER_DISMISSED_KEY } from './bannerConstants';
 
 // -- Register banner dismiss store --
-
-export const REGISTER_BANNER_DISMISSED_KEY = 'register-banner-dismissed';
-export const REGISTER_BANNER_DISMISSED_BUS = `${REGISTER_BANNER_DISMISSED_KEY}_bus`;
 
 export const readRegisterDismissed = (): boolean => localStorage.getItem(REGISTER_BANNER_DISMISSED_KEY) === 'true';
 
