@@ -73,6 +73,7 @@ const MarkdownFieldBase = ({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isFieldFocusedRef = useRef(false);
+  const initialValueOnFocus = useRef<string | null>(null);
 
   const showError = !isNil(errorMessage) && showValidationError;
   const activeTab = controlledSelectedTab ?? selectedTab;
@@ -119,6 +120,9 @@ const MarkdownFieldBase = ({
   });
 
   const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      initialValueOnFocus.current = latestMarkdownRef.current;
+    }
     isFieldFocusedRef.current = true;
 
     const { nodeName } = (event.relatedTarget as HTMLElement) || {};
@@ -154,7 +158,8 @@ const MarkdownFieldBase = ({
 
     cleanupRemovedAttachments(submitValue, true);
 
-    if (typeof onSubmit === 'function') {
+    const hasChangedSinceFocus = submitValue !== initialValueOnFocus.current;
+    if (typeof onSubmit === 'function' && hasChangedSinceFocus) {
       onSubmit(name, submitValue);
     }
   };

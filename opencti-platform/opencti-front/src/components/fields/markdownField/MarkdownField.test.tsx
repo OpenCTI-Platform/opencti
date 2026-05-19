@@ -449,4 +449,17 @@ describe('Component: MarkdownField', () => {
       expect(screen.getByText('Description is required')).toBeInTheDocument();
     });
   });
+
+  it('does not call onSubmit on blur when value is unchanged', async () => {
+    const onSubmit = vi.fn();
+    renderMarkdownField('unchanged markdown', { onSubmit });
+
+    const textArea = await screen.findByRole('textbox');
+    fireEvent.focus(textArea);
+    fireEvent.blur(textArea, { relatedTarget: document.body });
+
+    await waitFor(() => {
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+  });
 });
