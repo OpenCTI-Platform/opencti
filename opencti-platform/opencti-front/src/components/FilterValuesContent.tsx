@@ -39,30 +39,31 @@ const FilterValuesContent: FunctionComponent<
   const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
 
   const filterType = filterDefinition?.type;
-  let displayedValue = isFilterTooltip
+  const rawValue = isFilterTooltip
     ? filterValue(filterKey, value, filterType, filterOperator)
     : truncate(filterValue(filterKey, value, filterType, filterOperator), 20);
 
-  if (displayedValue === null) {
+  if (rawValue === null) {
     return (
       <>
         <del>{t_i18n('deleted')}</del>
       </>
     );
   }
-  if (displayedValue === SELF_ID_VALUE) {
+
+  const renderSelfIdValue = () => {
     const tooltipMessage = host?.kind === 'fintelTemplate'
       ? t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the entity in which the template is used.')
       : host?.kind === 'custom-view'
         ? t_i18n('Current entity refers to the entity in which the users will view the Custom View. Removing this filter means you will lose the context of the entity in which the Custom View is viewed.')
         : undefined;
-    displayedValue = (
+    return (
       <Stack
         direction="row"
         alignItems="center"
         gap={0.5}
       >
-        <span>{displayedValue}</span>
+        <span>{rawValue}</span>
         {tooltipMessage && (
           <Tooltip title={tooltipMessage}>
             <InformationOutline color="primary" fontSize="small" />
@@ -70,7 +71,9 @@ const FilterValuesContent: FunctionComponent<
         )}
       </Stack>
     );
-  }
+  };
+
+  const displayedValue = rawValue === SELF_ID_VALUE ? renderSelfIdValue() : rawValue;
   const isRedirectableFilter = filterDefinition
     && filterType === 'id'
     && filterDefinition.elementsForFilterValuesSearch

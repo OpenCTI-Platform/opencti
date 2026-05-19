@@ -613,11 +613,10 @@ const StixCoreRelationshipCreation = ({
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
-                  {fromObjects.length > 1 ? (
-                    <em>{t_i18n('Multiple entities selected')}</em>
-                  ) : (
-                    truncate(fromObjects[0].name)
-                  )}
+                  {fromObjects.length > 1
+                    ? <em>{t_i18n('Multiple entities selected')}</em>
+                    : <span>{truncate(fromObjects[0].name)}</span>
+                  }
                 </span>
               </div>
             </div>

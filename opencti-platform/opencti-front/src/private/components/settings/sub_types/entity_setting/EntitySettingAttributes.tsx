@@ -8,7 +8,7 @@ import { EntitySettingAttributes_entitySetting$key } from './__generated__/Entit
 import EntitySettingAttributeLines, { AttributeNode } from './EntitySettingAttributeLines';
 import { useFormatter } from '../../../../../components/i18n';
 import { isNotEmptyField } from '../../../../../utils/utils';
-import { capitalizeFirstLetter } from 'src/utils/String';
+import { capitalizeFirstLetter } from '../../../../../utils/String';
 
 const entitySettingAttributesFragment = graphql`
   fragment EntitySettingAttributes_entitySetting on EntitySetting {

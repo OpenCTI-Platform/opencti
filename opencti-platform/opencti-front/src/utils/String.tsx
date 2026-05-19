@@ -12,8 +12,16 @@ export const RELATIVE_DATE_REGEX = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
 // the value to display if a field is empty or undefined
 export const EMPTY_VALUE = '-';
 
-export const truncate = (str, limit, truncateSpaces = true) => {
-  if (str === undefined || str === null || str.length <= limit) {
+export function truncate(str: string, limit?: number, truncateSpaces?: boolean): string;
+export function truncate(str: undefined, limit?: number, truncateSpaces?: boolean): undefined;
+export function truncate(str: null, limit?: number, truncateSpaces?: boolean): null;
+export function truncate(str: string | undefined | null, limit?: number, truncateSpaces?: boolean): string | undefined | null;
+export function truncate(
+  str: string | undefined | null,
+  limit?: number,
+  truncateSpaces = true,
+): string | undefined | null {
+  if (str === undefined || str === null || (limit && str.length <= limit)) {
     return str;
   }
   const trimmedStr = str.substring(0, limit);
@@ -24,9 +32,20 @@ export const truncate = (str, limit, truncateSpaces = true) => {
     0,
     Math.min(trimmedStr.length, trimmedStr.lastIndexOf(' ')),
   )}...`;
-};
+}
 
-export const adaptFieldValue = (value) => {
+/**
+ * Normalize a field value for use in GraphQL edit inputs.
+ * - If the value is an array, it is returned as-is.
+ * - If the value is nil (null/undefined), returns an empty string.
+ * - Otherwise, converts the value to its string representation.
+ *
+ * @param value The raw field value.
+ * @returns The normalized value as a string or array.
+ */
+export function adaptFieldValue(value: unknown[]): unknown[];
+export function adaptFieldValue(value: unknown): string | unknown[];
+export function adaptFieldValue(value: unknown): string | unknown[] {
   if (Array.isArray(value)) {
     return value;
   }
@@ -34,7 +53,7 @@ export const adaptFieldValue = (value) => {
     return '';
   }
   return value.toString();
-};
+}
 
 /**
  * Split a string by newlines, commas and semicolons,
@@ -54,9 +73,9 @@ export const splitIntoLines = (text) => {
     .join('\n');
 };
 
-export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+export const pascalize = (s: string) => s.replace(/(\w)(\w*)/g, (g0: string, g1: string, g2: string) => g1.toUpperCase() + g2.toLowerCase());
 
-export const convertFromStixType = (s) => {
+export const convertFromStixType = (s: string | undefined | null): string | undefined | null => {
   if (!s) {
     return s;
   }
@@ -76,7 +95,7 @@ export const convertFromStixType = (s) => {
   return type;
 };
 
-export const convertToStixType = (type) => {
+export const convertToStixType = (type: string | undefined | null): string | undefined | null => {
   if (!type) {
     return type;
   }
@@ -95,7 +114,7 @@ export const convertToStixType = (type) => {
   return type.toLowerCase();
 };
 
-export const isValidStixBundle = (bundle) => {
+export const isValidStixBundle = (bundle: string): boolean => {
   try {
     const data = JSON.parse(bundle);
     return !!(data.objects && data.objects.length > 0);
@@ -104,46 +123,53 @@ export const isValidStixBundle = (bundle) => {
   }
 };
 
-export const toB64 = (str) => Base64.encodeURI(str);
+export const toB64 = (str: string): string => Base64.encodeURI(str);
 
-export const toBase64 = (str) => Base64.encode(str);
+export const toBase64 = (str: string): string => Base64.encode(str);
 
-export const fromB64 = (str) => Base64.decode(str);
+export const fromB64 = (str: string): string => Base64.decode(str);
 
-export const fromBase64 = (str) => Base64.encode(str);
+export const fromBase64 = (str: string): string => Base64.encode(str);
 
-export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const uniqWithByFields = R.curry((fields: string[], data: any[]) => R.uniqWith(R.allPass(fields.map((f) => R.eqProps(f)) as any) as any, data));
 
-export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R.eqProps)(fields)), data);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const computeDuplicates = (fields: string[], data: any[]) => R.groupWith(R.allPass(fields.map((f) => R.eqProps(f)) as any) as any, data);
 
-export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+export const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const capitalizeWords = (str) => str.split(' ').map(capitalizeFirstLetter).join(' ');
+export const capitalizeWords = (str: string): string => str.split(' ').map(capitalizeFirstLetter).join(' ');
 
-export const toCamelCase = (str) => {
-  return str.replace(/[^a-zA-Z0-9 ]/g, '').replace(/(?:^\w|[A-Z]|\b\w)/g, (word, i) => {
-    return i === 0 ? word.toLowerCase() : word.toUpperCase();
-  }).replace(/\s+/g, '');
+export const toCamelCase = (str: string): string => {
+  return str
+    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, i) => {
+      return i === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, '');
 };
 
-export const renderObservableValue = (observable) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const renderObservableValue = (observable: any) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':
     case 'IPv6-Addr':
       if ((observable.countries?.edges ?? []).length > 0) {
-        const country = R.head(observable.countries.edges).node;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const country = (R.head(observable.countries.edges) as any)?.node;
         const flag = R.head(
-          (country.x_opencti_aliases ?? []).filter((n) => n.length === 2),
+          (country?.x_opencti_aliases ?? []).filter((n: string) => n.length === 2),
         );
         if (flag) {
           return (
             <div>
               <div style={{ float: 'left', paddingTop: 2 }}>
-                <Tooltip title={country.name}>
+                <Tooltip title={country?.name}>
                   <img
                     style={{ width: 20 }}
-                    src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                    alt={country.name}
+                    src={`${APP_BASE_PATH}/static/flags/4x3/${(flag as string).toLowerCase()}.svg`}
+                    alt={country?.name}
                   />
                 </Tooltip>
               </div>
@@ -160,18 +186,20 @@ export const renderObservableValue = (observable) => {
   }
 };
 
-export const emptyFilled = (str) => (isNotEmptyField(str) ? str : EMPTY_VALUE);
+export const emptyFilled = (str: string | undefined | null): string => (isNotEmptyField(str) ? str : EMPTY_VALUE);
 
 /**
- * @param str {string}
- * @returns {string[]}
+ * Split a string by newlines, filter out empty lines, and trim each resulting line.
+ *
+ * @param str The input string to split.
+ * @returns Array of non-empty trimmed lines.
  */
-export const splitMultilines = (str) => (str ?? '')
+export const splitMultilines = (str: string | undefined | null): string[] => (str ?? '')
   .split(/\r?\n/)
   .filter((v) => !!v)
   .map((s) => s.trim());
 
-export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
+export const maskString = (value: string | undefined | null): string => (value ? '•'.repeat(value.length) : '');
 
 /**
  * Add zero-width spaces every 10 characters in a string.
@@ -181,7 +209,7 @@ export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
  * @param value String to make wrappable.
  * @returns {string} Same string but wrappable.
  */
-export const stringWithZeroWidthSpace = (value) => {
+export const stringWithZeroWidthSpace = (value: string) => {
   return (value.match(/.{1,10}/g) ?? []).join('​');
 };
 
@@ -192,12 +220,15 @@ export const stringWithZeroWidthSpace = (value) => {
  * @param stringDate String
  * @returns {boolean} If the string is in a correct date format.
  */
-export const isValidDate = (stringDate) => {
+export const isValidDate = (stringDate: string | undefined | null): boolean => {
+  if (!stringDate) return false;
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
   const dateInstance = new Date(dateParsed);
   return dateInstance.toISOString() === stringDate;
 };
+
+type RelativeUnit = 's' | 'm' | 'H' | 'h' | 'w' | 'd' | 'M' | 'y';
 
 /**
  * Check if an array of string is translatable in a comprehensible date interval phrase
@@ -205,28 +236,29 @@ export const isValidDate = (stringDate) => {
  * and the first in a relative date math format before now,
  * and the second is 'now'
  *
- * @param {string[]}
+ * @param filterValues {string[]} The filter values to check.
  * @returns {boolean} If the array is translatable in a relative date interval phrase
  */
-export const isDateIntervalTranslatable = (filterValues) => {
+export const isDateIntervalTranslatable = (filterValues: string[]): boolean => {
   return filterValues.length === 2
     && filterValues[1] === 'now'
-    && filterValues[0].match(RELATIVE_DATE_REGEX)
+    && !!filterValues[0].match(RELATIVE_DATE_REGEX)
     && filterValues[0].includes('-')
     && !filterValues[0].includes('/');
 };
 
 /**
- * Translatable an array in a comprehensible date interval phrase
+ * Translate an array into a comprehensible date interval phrase.
  *
- * @param {string[]}
+ * @param filterValues {string[]} The filter values to translate.
+ * @param t_i18n {function} The translation function.
  * @returns {string} Translation in a relative date interval phrase
  */
-export const translateDateInterval = (filterValues, t_i18n) => {
+export const translateDateInterval = (filterValues: string[], t_i18n: (s: string) => string): string => {
   if (!isDateIntervalTranslatable(filterValues)) {
     throw Error('The interval of value is not translatable in a relative date interval phrase.');
   }
-  const relativeUnitMapInPlural = {
+  const relativeUnitMapInPlural: Record<RelativeUnit, string> = {
     s: t_i18n('seconds'),
     m: t_i18n('minutes'),
     H: t_i18n('hours'),
@@ -236,7 +268,7 @@ export const translateDateInterval = (filterValues, t_i18n) => {
     M: t_i18n('months'),
     y: t_i18n('years'),
   };
-  const relativeUnitMapInSingular = {
+  const relativeUnitMapInSingular: Record<RelativeUnit, string> = {
     s: t_i18n('second'),
     m: t_i18n('minute'),
     H: t_i18n('hour'),
@@ -247,11 +279,11 @@ export const translateDateInterval = (filterValues, t_i18n) => {
     y: t_i18n('year'),
   };
   const relativeExtraction = last(filterValues[0].split('now-')) ?? '';
-  const relativeUnitLetter = last(relativeExtraction) ?? '';
+  const relativeUnitLetter = last(relativeExtraction) ?? '' as string;
   const relativeNumber = relativeExtraction.split(relativeUnitLetter)[0];
   const relativeUnit = relativeNumber === '1'
-    ? relativeUnitMapInSingular[relativeUnitLetter]
-    : relativeUnitMapInPlural[relativeUnitLetter];
+    ? relativeUnitMapInSingular[relativeUnitLetter as RelativeUnit]
+    : relativeUnitMapInPlural[relativeUnitLetter as RelativeUnit];
 
   return `${t_i18n('Last')} ${relativeNumber} ${t_i18n(relativeUnit)}`;
 };
@@ -262,7 +294,7 @@ export const translateDateInterval = (filterValues, t_i18n) => {
  * @param {string|undefined} value The entity type to translate
  * @returns {string} Translation in a translatable string
  */
-export const displayEntityTypeForTranslation = (value) => {
+export const displayEntityTypeForTranslation = (value: string | undefined): string | undefined => {
   if (!value) return undefined;
   return value.toString()[0] === value.toString()[0].toUpperCase()
     ? `entity_${value.toString()}`
@@ -275,14 +307,14 @@ export const displayEntityTypeForTranslation = (value) => {
  * @returns {*[]}
  * @param text
  */
-export const extractUrlsFromText = (text) => {
+export const extractUrlsFromText = (text: string) => {
   const extractUrlsregex = /\b(?:https?:\/\/|www\.)\S+\b/gm;
-  const matches = [...text.matchAll(extractUrlsregex)];
+  const matches = Array.from(text.matchAll(extractUrlsregex));
   const parts = [];
   let lastIndex = 0;
 
   matches.forEach((match) => {
-    if (match.index > lastIndex) {
+    if ((match.index ?? 0) > lastIndex) {
       parts.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex, match.index)}</span>);
     }
     const url = match[0];
@@ -293,7 +325,7 @@ export const extractUrlsFromText = (text) => {
         {url}
       </a>,
     );
-    lastIndex = match.index + url.length;
+    lastIndex = (match.index ?? 0) + url.length;
   });
 
   if (lastIndex < text.length) {
@@ -310,7 +342,7 @@ export const extractUrlsFromText = (text) => {
  * @param escapeHtml If we want to keep html tags without removing them.
  * @returns Sanitized string.
  */
-export const sanitize = (data, escapeHtml = false) => {
+export const sanitize = (data: string, escapeHtml = false): string => {
   const toSanitize = escapeHtml
     ? data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     : data;
@@ -323,7 +355,7 @@ export const sanitize = (data, escapeHtml = false) => {
  * @param data Determine is a string is xss safe or not.
  * @returns True if the string is safe.
  */
-export const isStringSafe = (data) => {
+export const isStringSafe = (data: string): boolean => {
   return data === purify.sanitize(data);
 };
 
@@ -335,7 +367,7 @@ export const isStringSafe = (data) => {
  * @param content {string} The raw string potentially wrapping JSON in a code block.
  * @returns {string} The extracted JSON string.
  */
-export const extractJsonContent = (content) => {
+export const extractJsonContent = (content: string): string => {
   const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   if (codeBlockMatch?.[1]) {
     return codeBlockMatch[1].trim();
