@@ -15,5 +15,3 @@ describe('generatePublicDashboardUriKey', () => {
     expect(result).toMatch(UUID_V4_REGEX);
   });
 });
-
-
