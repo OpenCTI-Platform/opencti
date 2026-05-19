@@ -1,4 +1,4 @@
-import { deleteElementById, updateAttribute, updateAttributeLockFirst } from '../../database/middleware';
+import { deleteElementById, updateAttributeLockFirst } from '../../database/middleware';
 import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from './retentionRules-types';
 import { generateInternalId, generateStandardId } from '../../schema/identifier';
