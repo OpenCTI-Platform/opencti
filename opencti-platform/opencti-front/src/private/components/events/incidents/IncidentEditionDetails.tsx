@@ -137,7 +137,10 @@ const IncidentEditionDetails: FunctionComponent<
       ...otherValues,
       first_seen: values.first_seen ? parse(values.first_seen).format() : null,
       last_seen: values.last_seen ? parse(values.last_seen).format() : null,
-    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
+    }).map(([key, value]) => {
+      const adapted = adaptFieldValue(value);
+      return { key, value: Array.isArray(adapted) ? adapted : [adapted] };
+    });
 
     commitFieldPatch({
       variables: {
