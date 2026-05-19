@@ -69,7 +69,7 @@ RUN set -eux; \
 
 FROM base AS app
 
-COPY opencti-graphql/src/python/requirements-prod.txt /opt/opencti/src/python/requirements-prod.txt
+COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
 
 RUN set -eux; \
     curl -L -o /usr/bin/tini https://github.com/krallin/tini/releases/download/v0.19.0/tini; \
@@ -89,7 +89,7 @@ RUN set -eux; \
     alternatives --set python3-config /usr/bin/python3.12-config; \
     python3 -m ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
-    pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements-prod.txt ;
+    pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt ;
 
 WORKDIR /opt/opencti
 

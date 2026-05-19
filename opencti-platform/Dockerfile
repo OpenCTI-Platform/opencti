@@ -60,9 +60,9 @@ RUN set -ex; \
     && ln -sf python3 /usr/bin/python
 WORKDIR /opt/opencti
 
-COPY opencti-graphql/src/python/requirements-prod.txt ./src/python/requirements-prod.txt
+COPY opencti-graphql/src/python/requirements.txt ./src/python/requirements.txt
 
-RUN pip3 install --no-cache-dir --requirement ./src/python/requirements-prod.txt \
+RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt \
     && pip3 install \
         --no-cache-dir \
         --upgrade \

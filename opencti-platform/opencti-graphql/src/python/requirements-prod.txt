@@ -1,5 +1,0 @@
-eql==0.9.19
-parsuricata==0.4.1
-pysigma==1.3.3
-stix2==3.0.2
-yara-python==4.5.4
