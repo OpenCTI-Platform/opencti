@@ -81,6 +81,55 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const renderObservableValue = (observable: any, theme: Theme) => {
+  switch (observable.entity_type) {
+    case 'IPv4-Addr':
+    case 'IPv6-Addr': {
+      const country = observable.countries?.edges?.[0]?.node;
+      if (country) {
+        const flag = (country.x_opencti_aliases ?? []).filter(
+          (n: string) => n.length === 2,
+        )[0];
+        if (flag) {
+          return (
+            <div
+              style={{
+                display: 'flex',
+                gap: theme.spacing(1),
+                alignItems: 'center',
+              }}
+            >
+              <Tooltip title={country.name}>
+                <img
+                  style={{ width: 20 }}
+                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                  alt={country.name}
+                />
+              </Tooltip>
+              <div>
+                {defaultRender(
+                  observable.observable_value,
+                  observable.draftVersion,
+                )}
+              </div>
+            </div>
+          );
+        }
+      }
+      return defaultRender(
+        observable.observable_value,
+        observable.draftVersion,
+      );
+    }
+    default:
+      return defaultRender(
+        observable.observable_value,
+        observable.draftVersion,
+      );
+  }
+};
+
 const defaultColumns: DataTableProps['dataColumns'] = {
   aliases: {
     id: 'aliases',
@@ -777,54 +826,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Value',
     percentWidth: 20,
     isSortable: false,
-    // Please check the String.tsx->renderObservableValue. It should have the same behavior and will replace it at the end.
     render: (observable) => {
       const theme = useTheme<Theme>();
-      switch (observable.entity_type) {
-        case 'IPv4-Addr':
-        case 'IPv6-Addr': {
-          const country = observable.countries?.edges?.[0]?.node;
-          if (country) {
-            const flag = (country.x_opencti_aliases ?? []).filter(
-              (n: string) => n.length === 2,
-            )[0];
-            if (flag) {
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: theme.spacing(1),
-                    alignItems: 'center',
-                  }}
-                >
-                  <Tooltip title={country.name}>
-                    <img
-                      style={{ width: 20 }}
-                      src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                      alt={country.name}
-                    />
-                  </Tooltip>
-                  <div>
-                    {defaultRender(
-                      observable.observable_value,
-                      observable.draftVersion,
-                    )}
-                  </div>
-                </div>
-              );
-            }
-          }
-          return defaultRender(
-            observable.observable_value,
-            observable.draftVersion,
-          );
-        }
-        default:
-          return defaultRender(
-            observable.observable_value,
-            observable.draftVersion,
-          );
-      }
+      return renderObservableValue(observable, theme);
     },
   },
   operatingSystem: {

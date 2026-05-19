@@ -1,9 +1,7 @@
 import * as R from 'ramda';
+import { last } from 'ramda';
 import purify from 'dompurify';
 import { Base64 } from 'js-base64';
-import Tooltip from '@mui/material/Tooltip';
-import { last } from 'ramda';
-import { APP_BASE_PATH } from '../relay/environment';
 import { isNotEmptyField } from './utils';
 
 // the relative date values must be: 'now' OR 'now' followed by -/+ then a number then a letter among [smhHdwMy] and eventually a / followed by a letter among [smhHdwMy]
@@ -44,7 +42,7 @@ export function truncate(
  * @returns The normalized value as a string or array.
  */
 export function adaptFieldValue(value: unknown[]): unknown[];
-export function adaptFieldValue(value: unknown): string | unknown[];
+export function adaptFieldValue(value: unknown): string;
 export function adaptFieldValue(value: unknown): string | unknown[] {
   if (Array.isArray(value)) {
     return value;
@@ -62,7 +60,7 @@ export function adaptFieldValue(value: unknown): string | unknown[] {
  * @param text {string} The input text to split.
  * @returns {string} The text with commas/semicolons replaced by newlines.
  */
-export const splitIntoLines = (text) => {
+export const splitIntoLines = (text: string) => {
   return text
     .split('\n')
     .map((o) => o
@@ -131,11 +129,38 @@ export const fromB64 = (str: string): string => Base64.decode(str);
 
 export const fromBase64 = (str: string): string => Base64.encode(str);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const uniqWithByFields = R.curry((fields: string[], data: any[]) => R.uniqWith(R.allPass(fields.map((f) => R.eqProps(f)) as any) as any, data));
+/** Check if two objects have the same values (deep equality) for the given fields. */
+const areSameByFields = <T extends Record<string, unknown>>(
+  fields: string[],
+  a: T,
+  b: T,
+): boolean =>
+  fields.every((f) => JSON.stringify(a[f]) === JSON.stringify(b[f]));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const computeDuplicates = (fields: string[], data: any[]) => R.groupWith(R.allPass(fields.map((f) => R.eqProps(f)) as any) as any, data);
+/** Deduplicate an array by keeping only the first occurrence of each unique combination of the given fields. */
+export const uniqWithByFields = <T extends Record<string, unknown>>(fields: (keyof T)[]) => (data: T[]): T[] => {
+  return data.filter((item, index) =>
+    data.findIndex((other) =>
+      areSameByFields(fields as string[], item, other),
+    ) === index,
+  );
+};
+
+/**
+ * Group consecutive elements that share the same values for the given fields.
+ */
+export const computeDuplicates = <T extends Record<string, unknown>>(fields: string[], data: T[]): T[][] => {
+  if (data.length === 0) return [];
+  const result: T[][] = [[data[0]]];
+  for (let i = 1; i < data.length; i++) {
+    if (areSameByFields(fields, data[i - 1], data[i])) {
+      result[result.length - 1].push(data[i]);
+    } else {
+      result.push([data[i]]);
+    }
+  }
+  return result;
+};
 
 export const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -148,42 +173,6 @@ export const toCamelCase = (str: string): string => {
       return i === 0 ? word.toLowerCase() : word.toUpperCase();
     })
     .replace(/\s+/g, '');
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const renderObservableValue = (observable: any) => {
-  switch (observable.entity_type) {
-    case 'IPv4-Addr':
-    case 'IPv6-Addr':
-      if ((observable.countries?.edges ?? []).length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const country = (R.head(observable.countries.edges) as any)?.node;
-        const flag = R.head(
-          (country?.x_opencti_aliases ?? []).filter((n: string) => n.length === 2),
-        );
-        if (flag) {
-          return (
-            <div>
-              <div style={{ float: 'left', paddingTop: 2 }}>
-                <Tooltip title={country?.name}>
-                  <img
-                    style={{ width: 20 }}
-                    src={`${APP_BASE_PATH}/static/flags/4x3/${(flag as string).toLowerCase()}.svg`}
-                    alt={country?.name}
-                  />
-                </Tooltip>
-              </div>
-              <div style={{ float: 'left', marginLeft: 10 }}>
-                {observable.observable_value}
-              </div>
-            </div>
-          );
-        }
-      }
-      return observable.observable_value;
-    default:
-      return observable.observable_value;
-  }
 };
 
 export const emptyFilled = (str: string | undefined | null): string => (isNotEmptyField(str) ? str : EMPTY_VALUE);
