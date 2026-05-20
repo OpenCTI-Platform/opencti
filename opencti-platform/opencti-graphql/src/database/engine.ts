@@ -1011,19 +1011,27 @@ const elCreateLifecyclePolicy = async () => {
       },
     };
     // Check if the ISM policy already exists before creating it
-    const existingPolicy = await engine.transport.request({
-      method: 'GET',
-      path: policyPath,
-    }).then((response) => oebp(response)).catch(() => null);
+    let existingPolicy;
+    try {
+      const existingPolicyRequestResult = await engine.transport.request({
+        method: 'GET',
+        path: policyPath,
+      });
+      existingPolicy = oebp(existingPolicyRequestResult);
+    } catch {
+      existingPolicy = null;
+    }
     if (!existingPolicy) {
       // Policy does not exist: create it
-      await engine.transport.request({
-        method: 'PUT',
-        path: policyPath,
-        body: policyBody,
-      }).catch((e) => {
+      try {
+        await engine.transport.request({
+          method: 'PUT',
+          path: policyPath,
+          body: policyBody,
+        });
+      } catch (e: any) {
         throw DatabaseError('Creating lifecycle policy fail', { cause: e });
-      });
+      }
     }
   }
 };
