@@ -1,6 +1,17 @@
 import purify from 'dompurify';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { displayEntityTypeForTranslation, translateDateInterval, isStringSafe, sanitize, extractJsonContent, splitIntoLines, uniqWithByFields, computeDuplicates } from './String';
+import {
+  displayEntityTypeForTranslation,
+  translateDateInterval,
+  isStringSafe,
+  sanitize,
+  extractJsonContent,
+  splitIntoLines,
+  splitAndTrim,
+  splitAndTrimArray,
+  uniqWithByFields,
+  computeDuplicates,
+} from './String';
 
 describe('String utils', () => {
   describe('translateDateInterval', () => {
@@ -237,6 +248,55 @@ describe('String utils', () => {
         [{ a: 1, b: 2, c: 'x' }, { a: 1, b: 2, c: 'y' }],
         [{ a: 1, b: 3, c: 'z' }],
       ]);
+    });
+  });
+
+  describe('splitAndTrim', () => {
+    it('should split by comma and trim whitespace', () => {
+      expect(splitAndTrim('a, b, c')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should remove empty entries', () => {
+      expect(splitAndTrim('a,,b, ,c')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should return empty array for empty string', () => {
+      expect(splitAndTrim('')).toEqual([]);
+    });
+
+    it('should return empty array for null or undefined', () => {
+      expect(splitAndTrim(null)).toEqual([]);
+      expect(splitAndTrim(undefined)).toEqual([]);
+    });
+
+    it('should support a custom separator', () => {
+      expect(splitAndTrim('a; b; c', ';')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should handle a single value with no separator', () => {
+      expect(splitAndTrim('  hello  ')).toEqual(['hello']);
+    });
+  });
+
+  describe('splitAndTrimArray', () => {
+    it('should split and trim each entry of the array', () => {
+      expect(splitAndTrimArray(['a, b', 'c , d'])).toEqual(['a', 'b', 'c', 'd']);
+    });
+
+    it('should remove empty entries from all elements', () => {
+      expect(splitAndTrimArray(['a,', ' ,b', ''])).toEqual(['a', 'b']);
+    });
+
+    it('should return empty array for an empty input array', () => {
+      expect(splitAndTrimArray([])).toEqual([]);
+    });
+
+    it('should handle entries without the separator', () => {
+      expect(splitAndTrimArray(['  foo  ', '  bar  '])).toEqual(['foo', 'bar']);
+    });
+
+    it('should support a custom separator', () => {
+      expect(splitAndTrimArray(['a; b', 'c; d'], ';')).toEqual(['a', 'b', 'c', 'd']);
     });
   });
 });

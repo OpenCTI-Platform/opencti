@@ -22,6 +22,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
+import { splitAndTrim } from '../../../../utils/String';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -329,7 +330,7 @@ const SamlProviderForm = ({
         identifier_format: values.identifier_format || null,
         signature_algorithm: values.signature_algorithm || null,
         digest_algorithm: values.digest_algorithm || null,
-        authn_context: values.authn_context ? values.authn_context.split(',').map((s) => s.trim()).filter(Boolean) : null,
+        authn_context: values.authn_context ? splitAndTrim(values.authn_context) : null,
         disable_requested_authn_context: values.disable_requested_authn_context,
         disable_request_acs_url: values.disable_request_acs_url,
         skip_request_compression: values.skip_request_compression,

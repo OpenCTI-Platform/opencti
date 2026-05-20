@@ -3,7 +3,7 @@ import { and, ControlProps, isPrimitiveArrayControl, RankedTester, rankWith, sch
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
-import { isNotEmptyField } from '../../../../../utils/utils';
+import { splitAndTrimArray } from '../../../../../utils/String';
 
 export const JsonFormArrayRenderer = (props: ControlProps) => {
   const {
@@ -23,10 +23,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
   const [inputValue, setInputValue] = useState('');
 
   const normalizeValues = useCallback((values: string[]) => {
-    const splitAndTrimmedValues = values
-      .flatMap((value) => value.split(','))
-      .map((value) => value.trim())
-      .filter((value) => isNotEmptyField(value));
+    const splitAndTrimmedValues = splitAndTrimArray(values);
 
     return Array.from(new Set(splitAndTrimmedValues));
   }, []);

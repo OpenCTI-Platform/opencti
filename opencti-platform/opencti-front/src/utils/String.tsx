@@ -188,6 +188,28 @@ export const splitMultilines = (str: string | undefined | null): string[] => (st
   .filter((v) => !!v)
   .map((s) => s.trim());
 
+/**
+ * Split a string using a separator, trim each part and remove empty values.
+ *
+ * @param value {string | null | undefined}
+ * @param separator {string}
+ * @returns {string[]}
+ */
+export const splitAndTrim = (value: string | null | undefined, separator = ',') => (value ?? '')
+  .split(separator)
+  .map((s) => s.trim())
+  .filter((s) => isNotEmptyField(s));
+
+/**
+ * Split and trim each entry of an array, then flatten the result.
+ *
+ * @param values {string[]}
+ * @param separator {string}
+ * @returns {string[]}
+ */
+export const splitAndTrimArray = (values: (string | null | undefined)[], separator = ',') => values
+  .flatMap((value) => splitAndTrim(value, separator));
+
 export const maskString = (value: string | undefined | null): string => (value ? '•'.repeat(value.length) : '');
 
 /**
