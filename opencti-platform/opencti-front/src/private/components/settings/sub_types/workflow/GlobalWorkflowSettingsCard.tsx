@@ -11,7 +11,7 @@ const GlobalWorkflowSettingsCard = () => {
   const { subType } = useSubTypeOutletContext();
   const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
 
-  const hasRequestAccessConfig = subType.settings.availableSettings.includes('request_access_configuration')
+  const hasRequestAccessConfig = subType.settings.availableSettings.includes('request_access_workflow')
     && !!requestAccessConfiguration;
 
   return (
