@@ -11,6 +11,7 @@ import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
+  DraftChangeType,
   type DraftWorkspaceAddInput,
   type EditContext,
   type EditInput,
@@ -513,7 +514,7 @@ export const listDraftContainerObjects = async (context: AuthContext, user: Auth
       entity_id: rel.toId,
       entity_type: entity.entity_type,
       representative_main: extractEntityRepresentativeName(entity as any),
-      draft_operation: op === DRAFT_OPERATION_CREATE ? 'add' : 'remove',
+      draft_operation: op === DRAFT_OPERATION_CREATE ? DraftChangeType.Add : DraftChangeType.Remove,
     });
   }
   return result;
@@ -557,7 +558,7 @@ type DraftEntityRelationResult = {
   relation_id: string; relationship_type: string;
   from_id: string; from_type: string; from_name: string;
   to_id: string; to_type: string; to_name: string;
-  draft_operation: string;
+  draft_operation: DraftChangeType;
 };
 
 export const getEntityRelations = async (
@@ -617,7 +618,7 @@ export const getEntityRelations = async (
     to_id: rel.toId,
     to_type: rel.toType,
     to_name: rel.toName,
-    draft_operation: rel.draft_change!.draft_operation === DRAFT_OPERATION_CREATE ? 'create' : 'delete',
+    draft_operation: rel.draft_change!.draft_operation === DRAFT_OPERATION_CREATE ? DraftChangeType.Create : DraftChangeType.Delete,
   }));
   const containerResults = containerRelations.map(({ rel, refOp }) => ({
     relation_id: rel.internal_id,
@@ -629,7 +630,7 @@ export const getEntityRelations = async (
     to_type: rel.toType,
     to_name: rel.toName,
     // The ref changed (added/removed from this container), not the relation itself
-    draft_operation: refOp === DRAFT_OPERATION_CREATE ? 'add' : 'remove',
+    draft_operation: refOp === DRAFT_OPERATION_CREATE ? DraftChangeType.Add : DraftChangeType.Remove,
   }));
   return [...directResults, ...containerResults];
 };
@@ -638,7 +639,7 @@ type DraftEntityContainerRefResult = {
   container_id: string;
   container_type: string;
   container_name: string;
-  draft_operation: string;
+  draft_operation: DraftChangeType;
 };
 
 export const getEntityContainerRefs = async (
@@ -678,7 +679,7 @@ export const getEntityContainerRefs = async (
       container_id: ref.fromId,
       container_type: container.entity_type,
       container_name: extractEntityRepresentativeName(container as any),
-      draft_operation: op === DRAFT_OPERATION_CREATE ? 'add' : 'remove',
+      draft_operation: op === DRAFT_OPERATION_CREATE ? DraftChangeType.Add : DraftChangeType.Remove,
     });
   }
   return results;
