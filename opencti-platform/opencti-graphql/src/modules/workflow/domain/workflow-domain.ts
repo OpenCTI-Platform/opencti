@@ -1,5 +1,5 @@
 import { FunctionalError } from '../../../config/errors';
-import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
+import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
 import { FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
@@ -516,10 +516,17 @@ export const triggerWorkflowEvent = async (
       event: eventName,
       ...(comment ? { comment } : {}),
     });
-    await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-      { key: 'currentState', value: [newState] },
-      { key: 'history', value: [JSON.stringify(history)] },
-    ]);
+
+    // A sync action (e.g. validateDraft) may delete the WorkflowInstance as part of its own
+    // cleanup. If the instance is gone by the time we try to persist the new state, that is
+    // expected and the transition still succeeded — skip the write.
+    const instanceStillExists = await storeLoadById(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
+    if (instanceStillExists) {
+      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'currentState', value: [newState] },
+        { key: 'history', value: [JSON.stringify(history)] },
+      ]);
+    }
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);
     return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
@@ -548,6 +555,18 @@ export const initializeEntityWorkflow = async (
   const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
   if (!definitionData) return;
   await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+};
+
+export const deleteWorkflowInstanceForEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+): Promise<void> => {
+  const instance = await findWorkflowInstanceEntity(context, user, entityId);
+  if (instance) {
+    const executionContext = bypassDraftContext(context);
+    await deleteElementById(executionContext, executionContext.user!, instance.id, ENTITY_TYPE_WORKFLOW_INSTANCE);
+  }
 };
 
 export const isStatusTemplateUsedInWorkflows = async (

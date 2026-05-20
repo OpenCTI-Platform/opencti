@@ -92,10 +92,17 @@ const DELETE_DRAFT_WORKSPACE_QUERY = gql`
   }
 `;
 
+const VALIDATE_DRAFT_WORKSPACE_QUERY = gql`
+  mutation DraftWorkspaceValidate($id: ID!) {
+    draftWorkspaceValidate(id: $id) {
+      id
+    }
+  }
+`;
+
 describe('Workflow Resolver', () => {
   let draftWorkspaceId: string;
   const workflowDefinition = JSON.stringify({
-    id: 'draft-workflow',
     name: 'Draft Workflow',
     initialState: 'open',
     states: [{ statusId: 'open' }, { statusId: 'validated' }],
@@ -108,7 +115,6 @@ describe('Workflow Resolver', () => {
   });
 
   const workflowWithFilters = JSON.stringify({
-    id: 'filter-workflow',
     name: 'Filter Workflow',
     initialState: 'open',
     states: [
@@ -277,16 +283,9 @@ describe('Workflow Resolver', () => {
     });
     expect(result.data?.triggerWorkflowEvent.success).toBe(true);
     expect(result.data?.triggerWorkflowEvent.newState).toBe('validated');
-
-    // Check if the entity was actually updated
-    const instanceResult = await queryAsAdmin({
-      query: WORKFLOW_INSTANCE_QUERY,
-      variables: {
-        entityId: draftWorkspaceId,
-      },
-    });
-    expect(instanceResult.data?.workflowInstance.currentState).toBe('validated');
-    expect(instanceResult.data?.workflowInstance.allowedTransitions.length).toBe(0);
+    // The validateDraft action deletes the WorkflowInstance as part of its cleanup,
+    // so querying workflowInstance afterward returns a virtual instance at initialState.
+    // Post-cleanup behavior is covered by the 'Workflow Instance Cleanup' describe block.
   });
 
   it('should fail to trigger an invalid event', async () => {
@@ -415,6 +414,137 @@ describe('Workflow Resolver', () => {
       });
       // May pass or fail depending on draft name, but exercises the code path
       expect(result.data?.triggerWorkflowEvent).toBeDefined();
+    });
+  });
+});
+
+describe('Workflow Instance Cleanup', () => {
+  let workspaceToDeleteId: string;
+  let workspaceToValidateId: string;
+
+  // No 'id' field to avoid "Workflow id already exists" conflict on repeated runs
+  // (deleteWorkflowDefinition only unlinks, the entity stays in ES)
+  const cleanupWorkflowDefinition = JSON.stringify({
+    name: 'Cleanup Test Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'in_review' }, { statusId: 'validated' }],
+    transitions: [
+      { from: 'open', to: 'in_review', event: 'start_review' },
+      { from: 'in_review', to: 'validated', event: 'validate_event', actions: [{ type: 'validateDraft' }] },
+    ],
+  });
+
+  const reducedWorkflowDefinition = JSON.stringify({
+    name: 'Cleanup Test Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'validated' }],
+    transitions: [
+      { from: 'open', to: 'validated', event: 'validate_event', actions: [{ type: 'validateDraft' }] },
+    ],
+  });
+
+  beforeAll(async () => {
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_ADD_MUTATION,
+      variables: { entityType: 'DraftWorkspace', definition: cleanupWorkflowDefinition },
+    });
+
+    const deleteResult = await queryAsAdmin({
+      query: CREATE_DRAFT_WORKSPACE_QUERY,
+      variables: { input: { name: 'Cleanup Delete Test Workspace' } },
+    });
+    workspaceToDeleteId = deleteResult.data?.draftWorkspaceAdd.id;
+
+    const validateResult = await queryAsAdmin({
+      query: CREATE_DRAFT_WORKSPACE_QUERY,
+      variables: { input: { name: 'Cleanup Validate Test Workspace' } },
+    });
+    workspaceToValidateId = validateResult.data?.draftWorkspaceAdd.id;
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'DraftWorkspace' },
+    });
+  });
+
+  it('should clean up the workflow instance when deleting a draft workspace', async () => {
+    // Trigger start_review to create a real WorkflowInstance entity in ES
+    const triggerResult = await queryAsAdmin({
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: { entityId: workspaceToDeleteId, eventName: 'start_review' },
+    });
+    expect(triggerResult.data?.triggerWorkflowEvent.success).toBe(true);
+    expect(triggerResult.data?.triggerWorkflowEvent.newState).toBe('in_review');
+
+    // Confirm the instance is tracking 'in_review'
+    const beforeResult = await queryAsAdmin({
+      query: WORKFLOW_INSTANCE_QUERY,
+      variables: { entityId: workspaceToDeleteId },
+    });
+    expect(beforeResult.data?.workflowInstance.currentState).toBe('in_review');
+
+    // Delete the draft workspace — should also delete the WorkflowInstance
+    await queryAsAdmin({
+      query: DELETE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: workspaceToDeleteId },
+    });
+
+    // getWorkflowInstance returns null when the workspace entity is gone
+    const afterResult = await queryAsAdmin({
+      query: WORKFLOW_INSTANCE_QUERY,
+      variables: { entityId: workspaceToDeleteId },
+    });
+    expect(afterResult.data?.workflowInstance).toBeNull();
+
+    // Verify no orphan blocks: removing 'in_review' from the definition should now succeed
+    const updateResult = await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_ADD_MUTATION,
+      variables: { entityType: 'DraftWorkspace', definition: reducedWorkflowDefinition },
+    });
+    expect(updateResult.errors).toBeUndefined();
+
+    // Restore 3-state definition so the validate test can still use start_review
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_ADD_MUTATION,
+      variables: { entityType: 'DraftWorkspace', definition: cleanupWorkflowDefinition },
+    });
+  });
+
+  it('should clean up the workflow instance when validating a draft workspace', async () => {
+    // Trigger start_review to create a real WorkflowInstance entity in ES
+    const triggerResult = await queryAsAdmin({
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: { entityId: workspaceToValidateId, eventName: 'start_review' },
+    });
+    expect(triggerResult.data?.triggerWorkflowEvent.success).toBe(true);
+    expect(triggerResult.data?.triggerWorkflowEvent.newState).toBe('in_review');
+
+    // Confirm the instance is tracking 'in_review'
+    const beforeResult = await queryAsAdmin({
+      query: WORKFLOW_INSTANCE_QUERY,
+      variables: { entityId: workspaceToValidateId },
+    });
+    expect(beforeResult.data?.workflowInstance.currentState).toBe('in_review');
+
+    // Validate the draft — should also delete the WorkflowInstance
+    await queryAsAdmin({
+      query: VALIDATE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: workspaceToValidateId },
+    });
+
+    // Verify no orphan blocks: removing 'in_review' from the definition should now succeed
+    const updateResult = await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_ADD_MUTATION,
+      variables: { entityType: 'DraftWorkspace', definition: reducedWorkflowDefinition },
+    });
+    expect(updateResult.errors).toBeUndefined();
+
+    // Clean up the validated draft
+    await queryAsAdmin({
+      query: DELETE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: workspaceToValidateId },
     });
   });
 });
