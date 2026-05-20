@@ -84,13 +84,13 @@ export class ExportButtons extends Component {
 
       const container = document.getElementById(domElementId);
 
-    // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
-    if (dashboardButtons) {
-      dashboardButtons.setAttribute('style', 'display: none');
-    } else {
-      exportButtons?.setAttribute('style', 'display: none');
-      viewButtons?.setAttribute('style', 'display: none');
-    }
+      // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: none');
+      } else {
+        exportButtons?.setAttribute('style', 'display: none');
+        viewButtons?.setAttribute('style', 'display: none');
+      }
 
       const { offsetWidth, offsetHeight } = container;
       if (this.adjust) {
@@ -148,12 +148,12 @@ export class ExportButtons extends Component {
 
       setExportTheme(themeNode);
 
-    // Hide buttons: dashboard-buttons wraps everything on dashboards
-    if (dashboardButtons) {
-      dashboardButtons.setAttribute('style', 'display: none');
-    } else {
-      exportButtons?.setAttribute('style', 'display: none');
-    }
+      // Hide buttons: dashboard-buttons wraps everything on dashboards
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: none');
+      } else {
+        exportButtons?.setAttribute('style', 'display: none');
+      }
 
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
@@ -173,7 +173,6 @@ export class ExportButtons extends Component {
       if (dashboardButtons) {
         restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
       } else {
-        const exportButtons = document.getElementById('export-buttons');
         if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
       }
     }

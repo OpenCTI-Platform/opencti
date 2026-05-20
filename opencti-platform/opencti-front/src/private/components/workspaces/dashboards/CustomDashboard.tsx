@@ -158,6 +158,11 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             data={workspace}
             variant="dashboard"
           />
+        </Stack>
+      )
+      }
+      <div id="container" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {!noToolbar && (
           <Security
             needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
             hasAccess={userCanEdit}
@@ -167,15 +172,14 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
               handleDateChange={handleDateChange}
             />
           </Security>
-        </Stack>
-      )
-      }
-      <DashboardContent
-        helpers={helpers}
-        isEditable={userCanEdit}
-        entity={workspace}
-        host={WIDGET_WORKSPACE_HOST}
-      />
+        )}
+        <DashboardContent
+          helpers={helpers}
+          isEditable={userCanEdit}
+          entity={workspace}
+          host={WIDGET_WORKSPACE_HOST}
+        />
+      </div>
     </Stack>
   );
 };

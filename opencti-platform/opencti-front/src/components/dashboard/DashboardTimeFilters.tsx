@@ -10,6 +10,7 @@ import { Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../Theme';
 import { DashboardConfig } from './dashboard-types';
+import { EXPORT_KEEP_CLASS, EXPORT_REMOVE_CLASS } from '../../utils/Image';
 
 interface DashboardTimeFiltersProps {
   config?: DashboardConfig;
@@ -43,6 +44,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         size="small"
         style={{ width: 194 }}
         variant="outlined"
+        className={config.relativeDate ? EXPORT_KEEP_CLASS : EXPORT_REMOVE_CLASS}
       >
         <InputLabel
           id="relative"
@@ -56,6 +58,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           onChange={handleChangeRelativeDate}
           label={t_i18n('Relative time')}
           variant="outlined"
+          className={config.relativeDate ? EXPORT_KEEP_CLASS : undefined}
           sx={{
             '& fieldset': {
               border: config.relativeDate
@@ -78,6 +81,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         label={t_i18n('Start date')}
         disableFuture
         disabled={!!config.relativeDate}
+        className={config.startDate ? EXPORT_KEEP_CLASS : EXPORT_REMOVE_CLASS}
         onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
       />
       <DatePicker
@@ -85,6 +89,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         label={t_i18n('End date')}
         disabled={!!config.relativeDate}
         disableFuture
+        className={config.endDate ? EXPORT_KEEP_CLASS : EXPORT_REMOVE_CLASS}
         onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
       />
     </Stack>
