@@ -18,7 +18,7 @@ export const up = async (next) => {
   const deleteCapability = await elLoadById(context, SYSTEM_USER, deleteCapaStandardId);
   if (deleteCapability) {
     const deleteCapabilityPatch = { description: 'Delete knowledge' };
-    await elReplace(deleteCapability._index, deleteCapability.internal_id, { doc: deleteCapabilityPatch });
+    await elReplace(context, deleteCapability._index, deleteCapability.internal_id, { doc: deleteCapabilityPatch });
   }
   // Add Merge knowledge capability
   const mergeKnowledgeCapa = await addCapability(

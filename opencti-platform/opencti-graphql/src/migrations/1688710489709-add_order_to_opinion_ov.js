@@ -59,7 +59,7 @@ export const up = async (next) => {
     const defaultVocabulary = defaultVocabularies.get(vocabulary.name);
     if (defaultVocabulary) {
       const patch = { order: defaultVocabulary.order };
-      await elReplace(vocabulary._index, vocabulary.id, { doc: patch });
+      await elReplace(context, vocabulary._index, vocabulary.id, { doc: patch });
     }
   };
 

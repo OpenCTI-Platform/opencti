@@ -77,7 +77,7 @@ export const indexFileToDocument = async (context: AuthContext, file: any) => {
 export const deleteDocumentIndex = async (context: AuthContext, user: AuthUser, id: string) => {
   const internalFile = await elFindByIds(context, user, [id], { type: ENTITY_TYPE_INTERNAL_FILE }) as BasicStoreEntityDocument[];
   if (internalFile.length > 0) {
-    await elDeleteInstances(internalFile);
+    await elDeleteInstances(context, internalFile);
   }
 };
 

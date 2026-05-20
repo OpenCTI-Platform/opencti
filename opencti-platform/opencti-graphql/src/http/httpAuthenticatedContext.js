@@ -39,10 +39,33 @@ export const computeLoaders = (executeContext, user) => {
   };
 };
 
+const createRequestAbortSignal = (req, res) => {
+  const abortController = new AbortController();
+  const abort = () => {
+    if (!abortController.signal.aborted) {
+      abortController.abort();
+    }
+  };
+  if (req.once) {
+    req.once('aborted', abort);
+  }
+  if (res.once) {
+    res.once('close', () => {
+    // `close` is emitted for both success and disconnect; only abort on disconnect.
+      if (!res.writableEnded) {
+        abort();
+      }
+    });
+  }
+  return abortController.signal;
+};
+
 export const createAuthenticatedContext = async (req, res, contextName) => {
   const executeContext = executionContext(contextName);
+  const requestAbortSignal = createRequestAbortSignal(req, res);
   executeContext.req = req;
   executeContext.res = res;
+  executeContext.requestAbortSignal = requestAbortSignal;
   const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   executeContext.otp_mandatory = settings?.otp_mandatory ?? false; // Null check fixes 500 error on platform theme selection
   executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
