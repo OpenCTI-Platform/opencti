@@ -12,8 +12,8 @@ export const THIRTY_SECONDS = TEN_SECONDS * 3;
 
 type DateInput = string | number | Date;
 
-export const buildDate = (date: DateInput): Date | null => {
-  if (isNone(date)) {
+export const buildDate = (date: DateInput | undefined | null): Date | null => {
+  if (!date || isNone(date)) {
     return null;
   }
   return new Date(date);
@@ -21,8 +21,8 @@ export const buildDate = (date: DateInput): Date | null => {
 
 export const parse = (date: DateInput): Moment => moment(date);
 
-export const formatDate = (date: DateInput): string | null => {
-  if (isNone(date)) {
+export const formatDate = (date: DateInput | null | undefined): string | null => {
+  if (!date || isNone(date)) {
     return null;
   }
   return parse(date).format();
@@ -92,7 +92,11 @@ export const yearsAgo = (number: number | string): string => moment(dayStartDate
 export const yearFormat = (data: DateInput): string => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
 
 /**
- * @param {string | null} specificFormat
+ * Format a date using a specific format string, or the default 'YYYY-MM-DD'.
+ *
+ * @param data The date to format.
+ * @param specificFormat Optional format string (defaults to 'YYYY-MM-DD').
+ * @returns The formatted date string, or null if the date is empty.
  */
 export const dateFormat = (
   data: DateInput | null,
@@ -237,16 +241,24 @@ export const formatUptime = (
 /**
  * Convert a date value stored in filters to a date value displayed in frontend according to the operator
  *
- * @param dateValue - The date value stored in filters
- * @param operator - The associated filter operator
  * @returns The date value to be displayed
+ * @param dateFilterValue
+ * @param filterOperator
  */
-export const dateFiltersValueForDisplay = (
+export function dateFiltersValueForDisplay(
+  dateFilterValue: Date | string,
+  filterOperator: string | null | undefined,
+): Date | string;
+export function dateFiltersValueForDisplay(
   dateFilterValue: Date | string | null,
   filterOperator: string | null | undefined,
-): Date | string | null => {
+): Date | string | null;
+export function dateFiltersValueForDisplay(
+  dateFilterValue: Date | string | null,
+  filterOperator: string | null | undefined,
+): Date | string | null {
   if (filterOperator && dateFilterValue && ['lte', 'gt'].includes(filterOperator)) {
     return subDays(dateFilterValue, 1);
   }
   return dateFilterValue;
-};
+}
