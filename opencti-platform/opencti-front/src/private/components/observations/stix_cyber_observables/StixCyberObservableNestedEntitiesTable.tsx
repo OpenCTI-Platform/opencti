@@ -20,6 +20,8 @@ import { StixCyberObservableNestedEntitiesTable_node$data } from './__generated_
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import stopEvent from '../../../../utils/domEvent';
 import { useComputeLink, ComputeLinkNode } from '../../../../utils/hooks/useAppData';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableNestedEntitiesTable';
 
@@ -64,6 +66,130 @@ const stixCyberObservableNestedEntitiesLineFragment = graphql`
         draftVersion {
           draft_id
           draft_operation
+        }
+        ... on AttackPattern {
+          name
+          description
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Incident {
+          name
+          description
+        }
+        ... on Event {
+          name
+          description
+        }
+        ... on Channel {
+          name
+          description
+        }
+        ... on Narrative {
+          name
+          description
+        }
+        ... on Language {
+          name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
+        ... on Case {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+        ... on Report {
+          name
+        }
+        ... on Grouping {
+          name
+        }
+        ... on Note {
+          attribute_abstract
+          content
+        }
+        ... on Opinion {
+          opinion
+        }
+        ... on ObservedData {
+          name
         }
       }
     }
@@ -290,6 +416,10 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<StixCyberObservableNestedEntitiesTablePaginationQuery>;
 
+  const getNestedObject = (stixObject: StixCyberObservableNestedEntitiesTable_node$data) => (
+    stixObject.from?.id === stixCyberObservableId ? stixObject.to : stixObject.from
+  );
+
   const dataColumns = {
     relationship_type: {
       label: 'Attribute',
@@ -303,19 +433,21 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
       label: 'Entity type',
       percentWidth: isInLine ? 20 : 10,
       isSortable: false,
-      render: (data: StixCyberObservableNestedEntitiesTable_node$data) => (
-        <ItemEntityType entityType={data.to?.entity_type || ''} />
-      ),
+      render: (data: StixCyberObservableNestedEntitiesTable_node$data) => {
+        const nestedObject = getNestedObject(data);
+        return <ItemEntityType entityType={nestedObject?.entity_type || EMPTY_VALUE} />;
+      },
     },
     name: {
       label: 'Name',
       percentWidth: isInLine ? 35 : 22,
       isSortable: false,
       render: (data: StixCyberObservableNestedEntitiesTable_node$data) => {
+        const nestedObject = getNestedObject(data);
         return (
           <>
-            {data.to?.name || data.to?.observable_value || data.to?.attribute_abstract || data.to?.content}
-            {data.to?.draftVersion && <DraftChip />}
+            {getMainRepresentative(nestedObject, EMPTY_VALUE)}
+            {nestedObject?.draftVersion && <DraftChip />}
           </>
         );
       },
@@ -340,7 +472,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
   };
 
   const getRedirectionLink = (stixObject: StixCyberObservableNestedEntitiesTable_node$data) => {
-    const targetObject = stixObject.from?.id === stixCyberObservableId ? stixObject.to : stixObject.from;
+    const targetObject = getNestedObject(stixObject);
     if (targetObject) {
       return computeLink(targetObject as ComputeLinkNode);
     }
@@ -366,7 +498,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           hideHeaders={isInLine}
           disableLineSelection
           getComputeLink={getRedirectionLink}
-          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type} />}
+          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={getNestedObject(data)?.entity_type} />}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
               <div style={{ marginLeft: -10 }} onClick={(e) => stopEvent(e)}>
