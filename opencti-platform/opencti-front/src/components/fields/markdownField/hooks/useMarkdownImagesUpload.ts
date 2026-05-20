@@ -31,39 +31,17 @@ const uploadEntityImportPushMutation = graphql`
   }
 `;
 
-const extensionByMimeType: Record<string, string> = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/jpg': 'jpg',
-  'image/gif': 'gif',
-  'image/webp': 'webp',
-};
-
-const withUniqueUploadName = (file: File, token: string): File => {
-  const trimmedName = file.name.trim();
-  const lastDotIndex = trimmedName.lastIndexOf('.');
-  const hasExtension = lastDotIndex > 0 && lastDotIndex < trimmedName.length - 1;
-
-  const currentBaseName = hasExtension ? trimmedName.slice(0, lastDotIndex) : trimmedName;
-  const currentExtension = hasExtension ? trimmedName.slice(lastDotIndex + 1) : '';
-  const fallbackExtension = extensionByMimeType[file.type] ?? '';
-
-  const baseName = currentBaseName || 'image';
-  const extension = currentExtension || fallbackExtension;
-  const tokenSuffix = token.slice(0, 8);
-  const uniqueName = extension
-    ? `${baseName}-${tokenSuffix}.${extension}`
-    : `${baseName}-${tokenSuffix}`;
-
-  return new File([file], uniqueName, {
-    type: file.type,
-    lastModified: file.lastModified,
-  });
+const encodePathSegments = (path: string): string => {
+  return path
+    .split('/')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
 };
 
 const toEmbeddedMarkdownUrl = (uploadedFileId: string, uploadedFileName: string): string => {
   if (uploadedFileName) {
-    return `embedded/${uploadedFileName}`;
+    return `embedded/${encodePathSegments(uploadedFileName)}`;
   }
 
   const normalizedId = uploadedFileId.startsWith('/') ? uploadedFileId.slice(1) : uploadedFileId;
@@ -71,7 +49,7 @@ const toEmbeddedMarkdownUrl = (uploadedFileId: string, uploadedFileName: string)
   if (!filename) {
     throw new Error('Missing uploaded file name');
   }
-  return `embedded/${filename}`;
+  return `embedded/${encodePathSegments(filename)}`;
 };
 
 const useMarkdownImagesUpload = ({
@@ -138,8 +116,7 @@ const useMarkdownImagesUpload = ({
         continue;
       }
 
-      const uploadFileInput = withUniqueUploadName(attachment.file, token);
-      const uploadedFile = await uploadFile(uploadFileInput, options?.uploadEntityIdOverride);
+      const uploadedFile = await uploadFile(attachment.file, options?.uploadEntityIdOverride);
       const finalUrl = toEmbeddedMarkdownUrl(uploadedFile.id, uploadedFile.name);
       result = replaceTempImageTokenUrl(result, token, finalUrl);
       onTokenFinalized(token);

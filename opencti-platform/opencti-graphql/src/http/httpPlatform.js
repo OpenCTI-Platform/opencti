@@ -216,7 +216,16 @@ const createApp = async (app, schema) => {
   const embeddedFileGetPath = new RegExp(`${basePath}/(.*)/(${uuidPattern})/(.*)embedded/(.*)$`, 'i');
   app.get(embeddedFileGetPath, async (req, res) => {
     try {
-      const [_, id, __, filename] = Object.values(req.params);
+      const [_, id, __, rawFilename] = Object.values(req.params);
+
+      // Embedded markdown links can carry percent-encoded filenames (spaces, parentheses, etc.).
+      let filename = rawFilename;
+      try {
+        filename = decodeURIComponent(rawFilename);
+      } catch {
+        // keep raw filename
+      }
+
       const context = await createAuthenticatedContext(req, res, 'storage_view_embedded');
       if (!context.user) {
         res.sendStatus(403);

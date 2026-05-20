@@ -147,13 +147,12 @@ export const loadFile = async (
       candidatePaths.push(`${draftPrefix}${fileS3Path}`);
     }
     let document: BasicStoreEntityDocument | undefined;
-    let resolvedPath: string | undefined;
+    // let resolvedPath: string | undefined;
     for (let i = 0; i < candidatePaths.length; i += 1) {
       const candidatePath = candidatePaths[i];
       const resolvedDocument = await documentFindById(context, user, candidatePath, { ignoreDuplicates: true });
       if (resolvedDocument) {
         document = resolvedDocument;
-        resolvedPath = candidatePath;
         break;
       }
     }
@@ -180,10 +179,10 @@ export const loadFile = async (
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
     }
+
     // All good, return the file
     return {
       ...document,
-      id: resolvedPath || fileS3Path,
       information: '',
       uploadStatus: 'complete',
       metaData,
