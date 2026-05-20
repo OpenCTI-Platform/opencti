@@ -8,8 +8,8 @@ export default class CampaignPageModel {
     return this.page.getByText(name, { exact: true });
   }
 
-  getItemFromListWithUrl(name: string) {
-    return this.page.getByRole('link', { name });
+  getNthItemFromGrid(nth: number) {
+    return this.page.getByRole('gridcell').nth(nth);
   }
 
   getPage() {

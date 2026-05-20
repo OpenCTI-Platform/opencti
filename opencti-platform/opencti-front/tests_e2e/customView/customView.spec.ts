@@ -80,7 +80,7 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
 
   // ─── Verify tab appears on a Campaign entity page ─────────────────────────────
   await leftBarPage.clickOnMenu('Threats', 'Campaigns');
-  await campaignPage.getItemFromListWithUrl('menuPass').click();
+  await campaignPage.getNthItemFromGrid(0).click();
   // The custom view tab should be visible (single view → uses view name directly)
   await expect(page.getByRole('tab', { name: viewName })).toBeVisible();
 
@@ -93,7 +93,7 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
 
   // Verify the default tab is first on a Campaign entity page
   await leftBarPage.clickOnMenu('Threats', 'Campaigns');
-  await campaignPage.getItemFromListWithUrl('menuPass').click();
+  await campaignPage.getNthItemFromGrid(0).click();
   const tabs = page.getByRole('tab');
   await expect(tabs.first()).toHaveText(viewName);
 
@@ -104,6 +104,7 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   await customViewDetailsPage.getActionsPopover().click();
   await customViewDetailsPage.getActionButton('Duplicate').click();
   await customViewDetailsPage.getDuplicateButton().click();
+  await expect(page.getByText(/The custom view has been duplicated/i)).toBeVisible();
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
   await expect(customViewsSettingsPage.getItemFromList(duplicateName)).toBeVisible();
 
@@ -121,15 +122,10 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   await customViewsSettingsPage.getImportButton().click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(`./test-results/e2e-files/${download.suggestedFilename()}`);
+  await expect(page.getByText(/Custom view created/i)).toBeVisible();
   // Imported view should be visible (disabled by default)
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
-  const lines = customViewsSettingsPage.getItemFromList(viewName);
-  await expect.poll(async () => {
-    return await lines.filter({ visible: true }).count();
-  }, {
-    timeout: 5000,
-    intervals: [100, 200, 500],
-  }).toBe(2);
+  await expect(customViewsSettingsPage.getItemFromList(viewName)).toHaveCount(2);
 
   // ─── Cleanup: delete all created views ───────────────────────────────────────
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
