@@ -349,8 +349,8 @@ const ResaaTimelineTickLabel = ({ timestamp, formatPrimary, formatTime, showTime
 );
 
 const TIMELINE_MARKER_HEIGHT = 36;
-const MARKER_VERTICAL_OFFSET = 14;
-const SCATTER_MARGIN_TOP = 18;
+const MARKER_VERTICAL_OFFSET = 7;
+const SCATTER_MARGIN_TOP = 0;
 const TIMELINE_RAIL_TOP_OFFSET = 22;
 const TIMELINE_RAIL_BAND_HEIGHT = 50;
 const TIMELINE_SECTION_HEIGHT = 96;
@@ -430,10 +430,10 @@ const ResaaTimelineMinimap = ({
               position: 'absolute',
               left: `${left}%`,
               top: '50%',
-              width: 3,
+              width: 5,
               height: 14,
               transform: 'translate(-50%, -50%)',
-              borderRadius: 0.5,
+              borderRadius: 2.5,
               backgroundColor: item.color,
               opacity: 0.9,
               pointerEvents: 'none',
@@ -472,13 +472,14 @@ const TimelineMarkerShape = ({
   }
   return (
     <rect
-      x={cx - 1.5}
+      x={cx - 2.5}
       y={cy - (TIMELINE_MARKER_HEIGHT / 2) - MARKER_VERTICAL_OFFSET}
-      width={3}
+      width={5}
       height={TIMELINE_MARKER_HEIGHT}
       fill={payload.color}
       opacity={0.92}
-      rx={0.5}
+      rx={2.5}
+      ry={2.5}
     />
   );
 };
@@ -616,7 +617,15 @@ const ResaaTimelineTimeRangeFilter = ({
   }
 
   return (
-    <Box sx={{ marginBottom: 3, width: '100%' }}>
+    <Box
+      sx={{
+        marginBottom: 3,
+        width: '100%',
+        mx: { xs: -2, sm: -4 },
+        px: { xs: 2, sm: 4 },
+        boxSizing: 'border-box',
+      }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -679,9 +688,21 @@ const ResaaTimelineTimeRangeFilter = ({
           value={granularity}
           onChange={handleGranularityChange}
           aria-label={t_i18n('Time step')}
+          className="resaa-timeline-granularity-toggle"
           sx={{
             flexShrink: 0,
             height: TIMELINE_TOOLBAR_CONTROL_HEIGHT,
+            overflow: 'hidden',
+            borderRadius: '6px',
+            '& .MuiToggleButton-root': {
+              borderRadius: 0,
+            },
+            '& .MuiToggleButton-root:first-of-type': {
+              borderRadius: '6px 0 0 6px',
+            },
+            '& .MuiToggleButton-root:last-of-type': {
+              borderRadius: '0 6px 6px 0',
+            },
           }}
         >
           <ToggleButton value="hourly">

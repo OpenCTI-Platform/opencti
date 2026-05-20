@@ -221,18 +221,18 @@ export const ReportKnowledgeResaaTimeLineView = ({
         backgroundColor: (theme) => theme.palette.background.default,
       }}
     >
+      <ResaaTimelineTimeRangeFilter
+        items={timelineMarkers}
+        dataExtent={dataTimeExtent}
+        timelineInterval={timelineAxisInterval}
+        selectedInterval={activeTimeRange}
+        granularity={timeGranularity}
+        onGranularityChange={handleGranularityChange}
+        onViewportPan={handleViewportPan}
+        onViewportNavigate={handleViewportNavigate}
+        onChange={handleTimeRangeChange}
+      />
       <Box sx={{ maxWidth: 960, margin: '0 auto' }}>
-        <ResaaTimelineTimeRangeFilter
-          items={timelineMarkers}
-          dataExtent={dataTimeExtent}
-          timelineInterval={timelineAxisInterval}
-          selectedInterval={activeTimeRange}
-          granularity={timeGranularity}
-          onGranularityChange={handleGranularityChange}
-          onViewportPan={handleViewportPan}
-          onViewportNavigate={handleViewportNavigate}
-          onChange={handleTimeRangeChange}
-        />
         {filteredEdges.length === 0 && (
           <Typography
             variant="body2"
