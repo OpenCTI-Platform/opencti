@@ -4,6 +4,10 @@ import pdfMake from 'pdfmake';
 import isSvg from 'is-svg';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
 
+/**
+ * MUI class names that are excluded from image/PDF exports by default.
+ * Elements with these classes are filtered out unless explicitly marked with EXPORT_KEEP_CLASS.
+ */
 const ignoredClasses = [
   'MuiDialog-root',
   'MuiDrawer-docked',
@@ -11,7 +15,10 @@ const ignoredClasses = [
   'MuiInputBase-root',
 ];
 
+/** CSS class to force a DOM node (and its descendants) to be included in exports. */
 export const EXPORT_KEEP_CLASS = 'export-keep';
+
+/** CSS class to force a DOM node (and its descendants) to be excluded from exports. */
 export const EXPORT_REMOVE_CLASS = 'export-remove';
 
 /**
@@ -52,7 +59,7 @@ export const exportImage = async (
         skipFonts: true,
         pixelRatio,
         backgroundColor,
-        style: { margin: '0' },
+        style: { margin: '0', paddingTop: '12px', paddingLeft: '12px' },
         filter: isDomNodeKeptAtExport,
         onImageErrorHandler: () => {
           // We do nothing, it's just to avoid crashing export in case of image error.
@@ -94,7 +101,7 @@ export const exportPdf = async (
         skipFonts: true,
         pixelRatio,
         backgroundColor,
-        style: { margin: '0' },
+        style: { margin: '0', paddingTop: '12px', paddingLeft: '12px' },
         imagePlaceholder: '', // ignore image fetch failure, and display empty area
         filter: isDomNodeKeptAtExport,
         onImageErrorHandler: () => {

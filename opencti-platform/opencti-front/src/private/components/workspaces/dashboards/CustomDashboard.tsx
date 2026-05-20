@@ -161,16 +161,18 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
         </Stack>
       )
       }
-      <div id="container" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div id="container">
         {!noToolbar && (
           <Security
             needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
             hasAccess={userCanEdit}
           >
-            <DashboardTimeFilters
-              config={config}
-              handleDateChange={handleDateChange}
-            />
+            <div style={{ marginBottom: 12 }}>
+              <DashboardTimeFilters
+                config={config}
+                handleDateChange={handleDateChange}
+              />
+            </div>
           </Security>
         )}
         <DashboardContent
