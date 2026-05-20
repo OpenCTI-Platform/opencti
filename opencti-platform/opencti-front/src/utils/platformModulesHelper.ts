@@ -20,6 +20,7 @@ export const INDICATOR_DECAY_MANAGER = 'INDICATOR_DECAY_MANAGER';
 export const TELEMETRY_MANAGER = 'TELEMETRY_MANAGER';
 export const GARBAGE_COLLECTION_MANAGER = 'GARBAGE_COLLECTION_MANAGER';
 export const TIPTAP_EDITOR = 'TIPTAP_EDITOR';
+export const MARKDOWN_IMAGE_UPLOAD = 'MARKDOWN_IMAGE_UPLOAD';
 
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
