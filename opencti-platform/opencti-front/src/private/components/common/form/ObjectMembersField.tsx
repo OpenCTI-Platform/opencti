@@ -58,7 +58,11 @@ interface ObjectMembersFieldProps {
   disabled?: boolean;
   required?: boolean;
   entityTypes?: MemberType[];
-  dynamicKeysForPlaybooks?: boolean;
+  withDynamicKeys?: boolean;
+  dynamicContextTypeLabel?: string;
+  dynamicBundleTypeLabel?: string;
+  dynamicAuthorOrgLabel?: string;
+  includeBundleOrganizationDynamicOption?: boolean;
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,
@@ -70,37 +74,44 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   disabled = false,
   required = false,
   entityTypes,
-  dynamicKeysForPlaybooks,
+  withDynamicKeys,
+  dynamicContextTypeLabel = 'Dynamic from context',
+  dynamicBundleTypeLabel = 'Dynamic from bundle',
+  dynamicAuthorOrgLabel = 'Author (organization)',
+  includeBundleOrganizationDynamicOption = true,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [members, setMembers] = useState<OptionMember[]>(dynamicKeysForPlaybooks ? [
+  const dynamicMembers: OptionMember[] = withDynamicKeys ? [
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n(dynamicContextTypeLabel),
       value: 'AUTHOR',
-      label: t_i18n('Author (organization)'),
+      label: t_i18n(dynamicAuthorOrgLabel),
     },
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n(dynamicContextTypeLabel),
       value: 'CREATORS',
       label: t_i18n('Creators'),
     },
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n(dynamicContextTypeLabel),
       value: 'ASSIGNEES',
       label: t_i18n('Assignees'),
     },
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n(dynamicContextTypeLabel),
       value: 'PARTICIPANTS',
       label: t_i18n('Participants'),
     },
-    {
-      type: t_i18n('Dynamic from the objects in the bundle of the playbook'),
-      value: 'BUNDLE_ORGANIZATIONS',
-      label: t_i18n('Organizations'),
-    },
-  ] : []);
+    ...(includeBundleOrganizationDynamicOption
+      ? [{
+          type: t_i18n(dynamicBundleTypeLabel),
+          value: 'BUNDLE_ORGANIZATIONS',
+          label: t_i18n('Organizations'),
+        }]
+      : []),
+  ] : [];
+  const [members, setMembers] = useState<OptionMember[]>(dynamicMembers);
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectMembersFieldSearchQuery, {
       search: event && event.target.value ? event.target.value : '',
