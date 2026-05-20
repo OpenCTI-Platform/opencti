@@ -154,30 +154,51 @@
     line-height: 1.2;
 }
 
-.resaa-timeline-timerange--hourly .react_time_range__tick_label {
+.resaa-timeline-timerange--stacked-labels .react_time_range__tick_label {
     white-space: normal;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.15;
+    gap: 1px;
 }
 
-.resaa-timeline-timerange--hourly .resaa-timeline-tick-label__date {
+.resaa-timeline-timerange--stacked-labels .resaa-timeline-tick-label__date {
     display: block;
 }
 
-.resaa-timeline-timerange--hourly .resaa-timeline-tick-label__time {
+.resaa-timeline-timerange--stacked-labels .resaa-timeline-tick-label__time {
     display: block;
     font-size: 9px;
+    line-height: 1.15;
     opacity: 0.88;
 }
 
-.resaa-timeline-timerange--hourly.react_time_range__time_range_container {
-    height: 84px;
-    padding-top: 22px;
+.resaa-timeline-timerange--stacked-labels .resaa-timeline-tick-label__time--placeholder {
+    visibility: hidden;
+    opacity: 0;
 }
 
-.resaa-timeline-timerange .react_time_range__time_range_container {
+.react_time_range__time_range_container.resaa-timeline-timerange {
     overflow: visible;
+    width: 100%;
+    height: 84px;
+    padding: 22px 0 0;
+    box-sizing: border-box;
 }
 
-.resaa-timeline-minimap:focus-visible {
+.resaa-timeline-timerange .react_time_range__tick_marker,
+.resaa-timeline-timerange .react_time_range__tick_marker__large {
+    transform: translateX(-50%);
+    margin-inline-start: 0;
+}
+
+.resaa-timeline-minimap-group .resaa-timeline-minimap:focus-visible {
     outline: 2px solid #4a86e8;
-    outline-offset: 2px;
+    outline-offset: -2px;
+}
+
+.resaa-timeline-minimap-pan:focus-visible {
+    outline: 2px solid #4a86e8;
+    outline-offset: -2px;
 }

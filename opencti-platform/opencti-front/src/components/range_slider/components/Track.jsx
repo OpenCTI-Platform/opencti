@@ -4,7 +4,7 @@ import React from 'react';
 const getTrackConfig = ({ error, source, target, disabled = false }) => {
   const basicStyle = {
     left: `${source.percent}%`,
-    width: `calc(${target.percent - source.percent}% - 1px)`,
+    width: `${target.percent - source.percent}%`,
   };
 
   if (disabled) return basicStyle;
