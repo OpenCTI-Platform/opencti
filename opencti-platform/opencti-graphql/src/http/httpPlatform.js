@@ -97,6 +97,16 @@ const publishFileRead = async (executeContext, auth, file) => {
   });
 };
 
+export const decodeStoragePath = (fileParts = []) => fileParts
+  .map((part) => {
+    try {
+      return decodeURIComponent(part);
+    } catch {
+      return part;
+    }
+  })
+  .join('/');
+
 const createApp = async (app, schema) => {
   // Init the http server
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
@@ -177,7 +187,7 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
@@ -199,7 +209,7 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
       res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
@@ -272,7 +282,7 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
@@ -300,7 +310,7 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
