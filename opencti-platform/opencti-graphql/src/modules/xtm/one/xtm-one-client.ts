@@ -1,7 +1,7 @@
-import axios from 'axios';
 import conf, { logApp } from '../../../config/conf';
 import { issueXtmJwt } from '../../../domain/xtm-auth';
 import type { AuthContext } from '../../../types/user';
+import { getHttpClient } from '../../../utils/http-client';
 
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
@@ -64,17 +64,18 @@ const xtmOneClient = {
     }
     try {
       const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
-      const url = `${XTM_ONE_URL}/api/v1/intents/catalog?vertical=cti&intent=${intent}`;
-      const response = await axios.get(url, {
+      const httpClient = getHttpClient({
+        baseURL: XTM_ONE_URL,
+        responseType: 'json',
         headers: {
           Authorization: `Bearer ${jwt}`,
           'Content-Type': 'application/json',
         },
-        timeout: 15000,
       });
+      const response = await httpClient.get('/api/v1/intents/catalog?vertical=cti&intent=' + encodeURIComponent(intent), { timeout: 15000 });
       return response.data.flatMap((entry: IntentCatalogEntry) => entry.agents);
     } catch (error: any) {
-      logApp.error('[XTM One] Registration failed', { error: error.message });
+      logApp.error('[XTM One] listAgentsForIntent failed', { error: error.message });
       return [];
     }
   },
@@ -84,14 +85,15 @@ const xtmOneClient = {
       return null;
     }
     try {
-      const url = `${XTM_ONE_URL}/api/v1/platform/register`;
-      const response = await axios.post(url, input, {
+      const httpClient = getHttpClient({
+        baseURL: XTM_ONE_URL,
+        responseType: 'json',
         headers: {
           Authorization: `Bearer ${XTM_ONE_TOKEN}`,
           'Content-Type': 'application/json',
         },
-        timeout: 15000,
       });
+      const response = await httpClient.post('/api/v1/platform/register', input, { timeout: 15000 });
       return response.data;
     } catch (error: any) {
       logApp.error('[XTM One] Registration failed', { error: error.message });

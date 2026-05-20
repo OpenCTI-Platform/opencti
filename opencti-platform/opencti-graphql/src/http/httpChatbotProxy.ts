@@ -1,4 +1,3 @@
-import axios from 'axios';
 import type Express from 'express';
 import nconf from 'nconf';
 import Busboy from 'busboy';
@@ -14,6 +13,7 @@ import { setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
+import { getHttpClient, getResponseError } from '../utils/http-client';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -25,6 +25,15 @@ const DEFAULT_XTM_TIMEOUT = 2 * 60 * 1000; // 2 minutes.
 // Extended timeout for multipart file-based agent calls (10 minutes).
 // File upload and analysis can take significantly longer than text-based calls.
 const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
+
+// ── HTTP client (proxy-aware) ────────────────────────────────────────────
+const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, string>) => {
+  return getHttpClient({
+    baseURL: XTM_ONE_URL,
+    responseType,
+    headers,
+  });
+};
 
 // ── Multipart parsing helper ────────────────────────────────────────────
 
@@ -61,7 +70,7 @@ const parseMultipart = (req: Express.Request): Promise<ParsedMultipart> => {
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────
-const generateBasicHeaders = async (req: Express.Request, context: AuthContext) => {
+const generateBasicHeaders = async (req: Express.Request, context: AuthContext): Promise<Record<string, string>> => {
   if (!context?.user) return {};
   const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
   return {
@@ -151,22 +160,22 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
-    const url = `${XTM_ONE_URL}/api/v1/platform/chat/sessions`;
     const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
-    const response = await axios.post(url, req.body, {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.post('/api/v1/platform/chat/sessions', req.body, {
       timeout: DEFAULT_XTM_TIMEOUT,
     });
     res.json(response.data);
   } catch (e: unknown) {
     logApp.error('Error in chatbot session', { cause: e });
     const { message } = e as Error;
-    if (axios.isAxiosError(e) && e.response) {
+    const httpErr = getResponseError(e);
+    if (httpErr) {
       setCookieError(res, message);
-      res.status(e.response.status).send({ status: e.response.status, error: message });
+      res.status(httpErr.status).send({ status: httpErr.status, error: message });
     } else {
       setCookieError(res, message);
       res.status(503).send({ status: 503, error: message });
@@ -190,10 +199,8 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     }
 
     const headers = await generateBasicHeaders(req, context);
-    const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
-    const response = await axios.post(url, req.body, {
-      headers,
-      responseType: 'stream',
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.post('/api/v1/platform/chat/messages', req.body, {
       decompress: false,
       timeout: 0,
     });
@@ -226,20 +233,21 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     logApp.error('Error in chatbot proxy', { cause: e });
     const { message } = e as Error;
 
-    if (axios.isAxiosError(e) && e.response) {
-      const code = e.response.status;
+    const httpErr = getResponseError(e);
+    if (httpErr) {
+      const code = httpErr.status;
 
-      // For streaming responses, e.response.data may be a stream, not parsed JSON.
+      // For streaming responses, httpErr.data may be a stream, not parsed JSON.
       // Try to extract the detail from the response body.
       let detail = message;
       try {
-        if (typeof e.response.data === 'object' && e.response.data !== null) {
-          if ('detail' in e.response.data) {
-            detail = e.response.data.detail;
-          } else if (typeof e.response.data.pipe === 'function') {
+        if (typeof httpErr.data === 'object' && httpErr.data !== null) {
+          if ('detail' in httpErr.data) {
+            detail = httpErr.data.detail;
+          } else if (typeof httpErr.data.pipe === 'function') {
             // It's a stream — read the buffer
             const chunks: Buffer[] = [];
-            for await (const chunk of e.response.data) {
+            for await (const chunk of httpErr.data) {
               chunks.push(Buffer.from(chunk));
             }
             const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
@@ -294,13 +302,12 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
     for (const file of files) {
       const form = new FormData();
       form.append('file', file.data, { filename: file.filename, contentType: file.mimetype });
-      const uploadUri = `${XTM_ONE_URL}/api/v1/chat/conversations/${conversationId}/upload?create_message=false`;
-      const uploadRes = await axios.post(uploadUri, form, {
-        headers: { ...authHeaders, ...form.getHeaders() },
-        timeout: MULTIPART_XTM_TIMEOUT,
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
+      const httpClient = getXtmClient('json', { ...authHeaders, ...form.getHeaders() });
+      const uploadRes = await httpClient.post(
+        `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
+        form,
+        { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+      );
       if (uploadRes.data?.file_id) {
         fileIds.push(uploadRes.data.file_id);
       }
@@ -315,11 +322,14 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
     const { message } = e as Error;
     if (message?.includes('maximum size limit')) {
       res.status(413).json({ error: message });
-    } else if (axios.isAxiosError(e) && e.response) {
-      const detail = e.response.data?.detail ?? e.response.data?.message ?? message;
-      res.status(e.response.status).json({ error: detail });
     } else {
-      res.status(503).json({ error: 'XTM One is unreachable' });
+      const httpErr = getResponseError(e);
+      if (httpErr) {
+        const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
+        res.status(httpErr.status).json({ error: detail });
+      } else {
+        res.status(503).json({ error: 'XTM One is unreachable' });
+      }
     }
   }
 };
@@ -337,7 +347,6 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     if (!context?.user) return;
 
     const isMultipart = (req.headers['content-type'] ?? '').includes('multipart/form-data');
-    const messageUri = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
 
     if (isMultipart) {
       // File-based mode: 3-step flow via XTM One chat API
@@ -350,10 +359,9 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
         return;
       }
       const authHeaders = await generateBasicHeaders(req, context);
+      const jsonClient = getXtmClient('json', { ...authHeaders, 'Content-Type': 'application/json' });
       // 2. Create a session with the agent
-      const sessionUri = `${XTM_ONE_URL}/api/v1/platform/chat/sessions`;
-      const sessionRes = await axios.post(sessionUri, { agent_slug: agentSlug }, {
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      const sessionRes = await jsonClient.post('/api/v1/platform/chat/sessions', { agent_slug: agentSlug }, {
         timeout: DEFAULT_XTM_TIMEOUT,
       });
       const conversationId = sessionRes.data?.conversation_id;
@@ -366,13 +374,12 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
       for (const file of files) {
         const form = new FormData();
         form.append('file', file.data, { filename: file.filename, contentType: file.mimetype });
-        const uploadUri = `${XTM_ONE_URL}/api/v1/chat/conversations/${conversationId}/upload?create_message=false`;
-        const uploadRes = await axios.post(uploadUri, form, {
-          headers: { ...authHeaders, ...form.getHeaders() },
-          timeout: MULTIPART_XTM_TIMEOUT,
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity,
-        });
+        const uploadClient = getXtmClient('json', { ...authHeaders, ...form.getHeaders() });
+        const uploadRes = await uploadClient.post(
+          `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
+          form,
+          { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+        );
         if (uploadRes.data?.file_id) {
           fileIds.push(uploadRes.data.file_id);
         }
@@ -382,11 +389,11 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
         return;
       }
       // 4. Send message with file_ids to trigger extraction
-      const conversationUri = `${XTM_ONE_URL}/api/v1/chat/conversations/${conversationId}/messages`;
-      const messageRes = await axios.post(conversationUri, { content: messageContent, file_ids: fileIds }, {
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
-        timeout: MULTIPART_XTM_TIMEOUT,
-      });
+      const messageRes = await jsonClient.post(
+        `/api/v1/chat/conversations/${conversationId}/messages`,
+        { content: messageContent, file_ids: fileIds },
+        { timeout: MULTIPART_XTM_TIMEOUT },
+      );
       // Return the response from XTM One
       res.json(messageRes.data);
     } else {
@@ -397,8 +404,8 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
         return;
       }
       const headers = await generateBasicHeaders(req, context);
-      const response = await axios.post(messageUri, { agent_slug, content, stream: false }, {
-        headers,
+      const httpClient = getXtmClient('json', headers);
+      const response = await httpClient.post('/api/v1/platform/chat/messages', { agent_slug, content, stream: false }, {
         timeout: DEFAULT_XTM_TIMEOUT,
       });
       // XTM One returns { message_id, content } for non-streaming requests
@@ -409,16 +416,18 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     const { message } = e as Error;
     if (message?.includes('maximum size limit')) {
       res.status(413).json({ error: message });
-    } else if (axios.isAxiosError(e) && e.response) {
-      const responseData = e.response.data;
-      logApp.error('XTM One error response', { status: e.response.status, data: JSON.stringify(responseData) });
-      const detail = responseData?.detail ?? responseData?.message ?? message;
-      setCookieError(res, message);
-      res.status(200).json({ content: '', status: 'error', error: detail, code: e.response.status });
     } else {
-      const userMessage = 'XTM One is unreachable';
-      setCookieError(res, userMessage);
-      res.status(200).json({ content: '', status: 'error', error: userMessage, code: 503 });
+      const httpErr = getResponseError(e);
+      if (httpErr) {
+        logApp.error('XTM One error response', { status: httpErr.status, data: JSON.stringify(httpErr.data) });
+        const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
+        setCookieError(res, message);
+        res.status(200).json({ content: '', status: 'error', error: detail, code: httpErr.status });
+      } else {
+        const userMessage = 'XTM One is unreachable';
+        setCookieError(res, userMessage);
+        res.status(200).json({ content: '', status: 'error', error: userMessage, code: 503 });
+      }
     }
   }
 };
@@ -437,15 +446,13 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       res.status(400).json({ error: 'agent_slug and content are required' });
       return;
     }
-    const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
     const headers = await generateBasicHeaders(req, context);
-    const response = await axios.post(url, {
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.post('/api/v1/platform/chat/messages', {
       agent_slug,
       content,
       stream: true,
     }, {
-      headers,
-      responseType: 'stream',
       decompress: false,
       timeout: 0,
     });
@@ -468,16 +475,17 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
   } catch (e: unknown) {
     logApp.error('Error in agent stream proxy', { cause: e });
     const { message } = e as Error;
-    if (axios.isAxiosError(e) && e.response) {
-      // For streaming responses, e.response.data may be a stream, not parsed JSON.
+    const httpErr = getResponseError(e);
+    if (httpErr) {
+      // For streaming responses, httpErr.data may be a stream, not parsed JSON.
       let detail = message;
       try {
-        if (typeof e.response.data === 'object' && e.response.data !== null) {
-          if ('detail' in e.response.data) {
-            detail = e.response.data.detail;
-          } else if (typeof e.response.data.pipe === 'function') {
+        if (typeof httpErr.data === 'object' && httpErr.data !== null) {
+          if ('detail' in httpErr.data) {
+            detail = httpErr.data.detail;
+          } else if (typeof httpErr.data.pipe === 'function') {
             const chunks: Buffer[] = [];
-            for await (const chunk of e.response.data) {
+            for await (const chunk of httpErr.data) {
               chunks.push(Buffer.from(chunk));
             }
             const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
@@ -558,9 +566,8 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
       },
     };
 
-    const response = await axios.post(XTM_ONE_CHATBOT_URL, enhancedBody, {
-      headers,
-      responseType: 'stream',
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.post('/chatbot', enhancedBody, {
       decompress: false,
       timeout: 0,
     });
@@ -597,8 +604,9 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
     logApp.error('Error in legacy chatbot proxy', { cause: e });
     const { message } = e as Error;
 
-    if (axios.isAxiosError(e) && e.response) {
-      res.status(e.response.status).send({ status: e.response.status, error: message });
+    const httpErr = getResponseError(e);
+    if (httpErr) {
+      res.status(httpErr.status).send({ status: httpErr.status, error: message });
     } else {
       res.status(503).send({ status: 503, error: message });
     }
