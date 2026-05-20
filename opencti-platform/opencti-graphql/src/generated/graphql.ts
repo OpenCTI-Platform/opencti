@@ -7795,6 +7795,13 @@ export type DomainNameAddInput = {
   value: Scalars['String']['input'];
 };
 
+export enum DraftChangeType {
+  Add = 'add',
+  Create = 'create',
+  Delete = 'delete',
+  Remove = 'remove'
+}
+
 export type DraftContainerObjectChange = {
   __typename?: 'DraftContainerObjectChange';
   draft_operation: DraftChangeType;
@@ -7840,13 +7847,6 @@ export type DraftObjectsCount = {
   sightingsCount: Scalars['Int']['output'];
   totalCount: Scalars['Int']['output'];
 };
-
-export enum DraftChangeType {
-  Add = 'add',
-  Create = 'create',
-  Delete = 'delete',
-  Remove = 'remove',
-}
 
 export enum DraftOperation {
   Create = 'create',

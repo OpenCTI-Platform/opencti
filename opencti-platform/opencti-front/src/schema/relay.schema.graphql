@@ -9727,7 +9727,7 @@ type Query {
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspacesRestricted(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
-  draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, draftOperation: String): StixCoreObjectConnection
+  draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, draftOperation: DraftOperation): StixCoreObjectConnection
   draftWorkspaceContainerObjects(draftId: String!, containerId: String!): [DraftContainerObjectChange!]!
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
   draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
@@ -14980,11 +14980,18 @@ enum DraftStatus {
   validated
 }
 
+enum DraftChangeType {
+  create
+  delete
+  add
+  remove
+}
+
 type DraftContainerObjectChange {
   entity_id: String!
   entity_type: String!
   representative_main: String
-  draft_operation: String!
+  draft_operation: DraftChangeType!
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {
@@ -15052,14 +15059,14 @@ type DraftEntityRelation {
   to_id: String!
   to_type: String!
   to_name: String!
-  draft_operation: String!
+  draft_operation: DraftChangeType!
 }
 
 type DraftEntityContainerRef {
   container_id: String!
   container_type: String!
   container_name: String!
-  draft_operation: String!
+  draft_operation: DraftChangeType!
 }
 
 type DraftResolvedId {
