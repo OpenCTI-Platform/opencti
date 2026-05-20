@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { resolveDraftFieldDefaults } from '../../../src/modules/form/form-domain';
+import { resolveDraftFieldDefaults, resolveAuthorizedMembersForDraft } from '../../../src/modules/form/form-domain';
+import type { AuthUser } from '../../../src/types/user';
 
 describe('resolveDraftFieldDefaults', () => {
   it('should apply schema defaults when draft fields are omitted', () => {
@@ -178,5 +179,83 @@ describe('resolveDraftFieldDefaults', () => {
       } as any,
     );
     expect(resolved.finalDraftParticipants).toEqual(['p-1', 'p-2']);
+  });
+});
+
+const makeUser = (orgs: { internal_id: string }[] = []): AuthUser => ({
+  id: 'user-1',
+  organizations: orgs,
+} as unknown as AuthUser);
+
+describe('resolveAuthorizedMembersForDraft', () => {
+  it('should produce separate entries for same org with different group restrictions', () => {
+    const user = makeUser([{ internal_id: 'org-a' }]);
+    const rules = [
+      { value: 'org-a', accessRight: 'edit', groupsRestriction: [{ value: 'group-analyst' }] },
+      { value: 'org-a', accessRight: 'view', groupsRestriction: [{ value: 'group-manager' }] },
+    ];
+
+    const result = resolveAuthorizedMembersForDraft(user, rules);
+
+    expect(result).toHaveLength(2);
+    expect(result).toContainEqual({ id: 'org-a', access_right: 'edit', groups_restriction_ids: ['group-analyst'] });
+    expect(result).toContainEqual({ id: 'org-a', access_right: 'view', groups_restriction_ids: ['group-manager'] });
+  });
+
+  it('should deduplicate identical (org, groupsRestriction) pairs — keeping first', () => {
+    const user = makeUser([{ internal_id: 'org-a' }]);
+    const rules = [
+      { value: 'org-a', accessRight: 'edit', groupsRestriction: [{ value: 'group-analyst' }] },
+      { value: 'org-a', accessRight: 'admin', groupsRestriction: [{ value: 'group-analyst' }] },
+    ];
+
+    const result = resolveAuthorizedMembersForDraft(user, rules);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({ id: 'org-a', access_right: 'edit', groups_restriction_ids: ['group-analyst'] });
+  });
+
+  it('should produce separate entries for same org: one unrestricted, one with groups', () => {
+    const user = makeUser([{ internal_id: 'org-a' }]);
+    const rules = [
+      { value: 'org-a', accessRight: 'admin', groupsRestriction: [] },
+      { value: 'org-a', accessRight: 'view', groupsRestriction: [{ value: 'group-analyst' }] },
+    ];
+
+    const result = resolveAuthorizedMembersForDraft(user, rules);
+
+    expect(result).toHaveLength(2);
+    expect(result).toContainEqual({ id: 'org-a', access_right: 'admin', groups_restriction_ids: undefined });
+    expect(result).toContainEqual({ id: 'org-a', access_right: 'view', groups_restriction_ids: ['group-analyst'] });
+  });
+
+  it('should produce separate AUTHOR entries per org when multiple orgs have different restrictions', () => {
+    const user = makeUser([{ internal_id: 'org-a' }, { internal_id: 'org-b' }]);
+    const rules = [
+      { type: 'AUTHOR_ORG', intersectionGroup: 'group-analyst' },
+      { type: 'AUTHOR_ORG', intersectionGroup: 'group-manager' },
+    ];
+
+    const result = resolveAuthorizedMembersForDraft(user, rules);
+
+    // Each org gets two entries (one per group restriction)
+    expect(result).toHaveLength(4);
+    expect(result).toContainEqual({ id: 'org-a', access_right: 'admin', groups_restriction_ids: ['group-analyst'] });
+    expect(result).toContainEqual({ id: 'org-a', access_right: 'admin', groups_restriction_ids: ['group-manager'] });
+    expect(result).toContainEqual({ id: 'org-b', access_right: 'admin', groups_restriction_ids: ['group-analyst'] });
+    expect(result).toContainEqual({ id: 'org-b', access_right: 'admin', groups_restriction_ids: ['group-manager'] });
+  });
+
+  it('should always produce a single unrestricted CREATORS entry regardless of duplicates', () => {
+    const user = makeUser();
+    const rules = [
+      { type: 'CREATOR' },
+      { type: 'CREATOR' },
+    ];
+
+    const result = resolveAuthorizedMembersForDraft(user, rules);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({ id: 'user-1', access_right: 'admin', groups_restriction_ids: undefined });
   });
 });

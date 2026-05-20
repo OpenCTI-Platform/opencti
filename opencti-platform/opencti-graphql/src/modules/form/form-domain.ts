@@ -338,7 +338,12 @@ const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAutho
   };
 };
 
-const resolveAuthorizedMembersForDraft = (
+const makeCompositeKey = (id: string, groupsRestrictionIds: string[] | undefined): string => {
+  if (!groupsRestrictionIds || groupsRestrictionIds.length === 0) return id;
+  return `${id}::${[...groupsRestrictionIds].sort().join(',')}`;
+};
+
+export const resolveAuthorizedMembersForDraft = (
   user: AuthUser,
   rawRules: unknown[],
 ): MemberAccessInput[] => {
@@ -366,31 +371,30 @@ const resolveAuthorizedMembersForDraft = (
     if (value === 'AUTHOR') {
       if (user.organizations) {
         user.organizations.forEach((org) => {
-          const existing = authorizedMembersMap.get(org.internal_id)
-            || { id: org.internal_id, access_right: accessRight };
-          const currentGroupRestrictions = existing.groups_restriction_ids ?? [];
-          // When groupsRestrictionIds is undefined the rule grants unrestricted access to this org.
-          // We intentionally set undefined (not preserve existing restrictions) so that a later
-          // unrestricted rule always wins — preventing accidental over-restriction from a prior rule.
-          const mergedGroupRestrictions = groupsRestrictionIds
-            ? Array.from(new Set([...currentGroupRestrictions, ...groupsRestrictionIds]))
-            : undefined;
-
-          authorizedMembersMap.set(org.internal_id, {
-            ...existing,
-            access_right: existing.access_right || accessRight,
-            groups_restriction_ids: mergedGroupRestrictions,
-          });
+          // Each (org, groupsRestriction) combination is a separate entry so that
+          // e.g. "Org A + analyst → edit" and "Org A + manager → view" are kept distinct.
+          const key = makeCompositeKey(org.internal_id, groupsRestrictionIds);
+          if (!authorizedMembersMap.has(key)) {
+            authorizedMembersMap.set(key, {
+              id: org.internal_id,
+              access_right: accessRight,
+              groups_restriction_ids: groupsRestrictionIds,
+            });
+          }
         });
       }
       return;
     }
 
-    authorizedMembersMap.set(value, {
-      id: value,
-      access_right: accessRight,
-      groups_restriction_ids: groupsRestrictionIds,
-    });
+    // Same composite-key logic for direct org/user/group rules.
+    const key = makeCompositeKey(value, groupsRestrictionIds);
+    if (!authorizedMembersMap.has(key)) {
+      authorizedMembersMap.set(key, {
+        id: value,
+        access_right: accessRight,
+        groups_restriction_ids: groupsRestrictionIds,
+      });
+    }
   });
 
   return Array.from(authorizedMembersMap.values());
