@@ -31,7 +31,7 @@ import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicStoreRelation, NumberResult, BasicConnection, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { checkUserIsAdminOnDashboard, getWidgetArguments } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -175,7 +175,7 @@ export const addPublicDashboard = async (
     await checkUserCanShareMarkings(context, user, markingLevels);
   }
 
-  const uriKey = input.uri_key.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
+  const uriKey = sanitizePublicDashboardUriKey(input.uri_key);
   const existingDashboard = await getPublicDashboardByUriKey(context, uriKey);
   if (existingDashboard) {
     throw FunctionalError(`Cannot publish this dashboard, uri key ${uriKey} already used.`);

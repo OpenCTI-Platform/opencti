@@ -22,6 +22,7 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
 import { fromB64 } from '../../../../../utils/String';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
+import { generatePublicDashboardUriKey } from './public-dashboard-utils';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -165,7 +166,7 @@ const PublicDashboardCreationFormComponent = ({
             label={t_i18n('Name')}
             style={fieldSpacingContainerStyle}
             onChange={(_: string, val: string) => {
-              setFieldValue('uri_key', val.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-').toLowerCase());
+              setFieldValue('uri_key', generatePublicDashboardUriKey(val));
             }}
           />
           <Field
