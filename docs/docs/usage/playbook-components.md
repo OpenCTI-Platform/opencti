@@ -52,8 +52,6 @@ If you activate the ****Only last modified entities after the last run**** optio
 
 Use this event source to create a playbook that you trigger manually on specific entities. You can configure filters in the component so that the playbook appears as a suggestion only for entities that match the filter criteria.
 
-For more details, see [Manual enrollment](#manual-enrollment).
-
 ![Manual enrollment component configured to match important incidents](assets/playbook_manual_source.png)
 
 ## Playbook body components

@@ -126,6 +126,8 @@ nav:
         - Overview: deployment/integration-manager.md
         - Quick start: deployment/integration-manager/quick-start.md
         - Architecture: deployment/integration-manager/architecture.md
+        - Private registry authentication: deployment/integration-manager/registry-authentication.md
+        - Proxy support: deployment/integration-manager/proxy-configuration.md
         - Installation guide: deployment/integration-manager/installation.md
         - Configuration: deployment/integration-manager/configuration.md
         - Migration guide: deployment/integration-manager/migration.md
@@ -142,12 +144,13 @@ nav:
     - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
+            - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
+            - Metrics renamed in Client Python: deployment/breaking-changes/6.8-client-python-metrics.md
             - OpenBAS scenario generation: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
             - Stream connectors data import: deployment/breaking-changes/6.3-removing-some-connectors.md
             - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
             - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
             - New filter API: deployment/breaking-changes/5.12-filters.md
-            - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
   - User Guide:
     - Getting started: usage/getting-started.md
     - Foundations:
@@ -162,6 +165,7 @@ nav:
       - Overview: usage/overview.md
       - Search for knowledge: usage/search.md
       - Insights and summaries ✨: usage/insights.md
+      - Priority Intelligence Requirements: usage/pir.md
       - Explore by entity types:
         - Analysis: usage/exploring-analysis.md
         - Cases: usage/exploring-cases.md
@@ -206,7 +210,8 @@ nav:
       - Custom views: usage/custom-views.md
       - Workflows and assignation: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
-      - Playbook automation: usage/playbook-automation.md
+      - Playbook automation:
+        - Introduction: usage/playbook-automation.md
         - Playbook creation: usage/playbook-creation.md
         - Playbook components: usage/playbook-components.md
       - Security Coverage: usage/security-coverage.md
@@ -248,6 +253,7 @@ nav:
         - Decay rules & Decay Exclusion rules: 
           - Decay rules: administration/decay-rules.md
           - Decay exclusion rules: administration/decay-exclusion-rules.md
+        - Fintel designs: administration/fintel-designs.md
         - Exclusion lists: administration/exclusion-lists.md
       - Taxonomies: administration/ontologies.md
       - Activity:

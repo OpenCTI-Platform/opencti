@@ -117,4 +117,4 @@ Variables:
 Look for proxy-related keys in `manager_contract_configuration`.
 
 
-See also: [Private Registry Authentication](registry-authentification.md)
+See also: [Private Registry Authentication](registry-authentication.md)

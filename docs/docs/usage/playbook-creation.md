@@ -13,13 +13,14 @@ You can access playbook automation in the user interface under **Data > Processi
 
 ## Creating playbooks
 
-You can create as many playbooks as you need. Each playbook runs independently. Playbooks can be [created manually](#Create-a-playbook-manually) from scratch, [duplicated](#duplicate-a-playbook) or [imported](#Import-and-export-a-playbook) from other OpenCTI environments. Playbooks can only be used when they are started running. 
+You can create as many playbooks as you need. Each playbook runs independently. Playbooks can be [created manually](#create-a-playbook-manually) from scratch, [duplicated](#duplicate-a-playbook) or [imported](#import-and-export-a-playbook) from other OpenCTI environments. Playbooks can only be used when they are started running. 
 
 Each playbook needs to have three steps to be complete:
-- [Step 1](#Step-1:-Set-your-event-source): An Event source or Trigger
-- [Step 2](#Step-2:-Build-your-workflow): Components that filter, enrich or manipulate the data
-- [Step 3](#Step-3:-End-your-playbook): An action to either notify a user or send for ingestion
-- [Step 4](#Using-playbooks): Set the playbook to start
+
+- [Step 1](#step-1-set-your-event-source): An Event source or Trigger
+- [Step 2](#step-2-build-your-workflow-with-playbook-components): Components that filter, enrich or manipulate the data
+- [Step 3](#step-3-end-your-playbook): An action to either notify a user or send for ingestion
+- [Step 4](#step-4-start-your-playbook): Set the playbook to start
 
 ### Create a playbook manually
 
@@ -41,7 +42,7 @@ You have flexible choices for the next steps in your workflow:
 - Enrich data using external sources and internal rules
 - Modify entities and relationships
 
-Use the various playbook components at your disposal to build these steps. See the [Playbook Components](#Playbook-Components) page for full details of the available components.
+Use the various playbook components at your disposal to build these steps. See the [Playbook Components](playbook-components.md) page for full details of the available components.
 
 To replace a component, click the **☰** (menu) button on the component.
 
@@ -51,13 +52,13 @@ To insert a component between two existing components, click the **+** button on
 
 ![Grid of available playbook components in the OpenCTI component selector dialog](assets/playbook_components.png)
 
-## Step 3: End your playbook 
+## Step 3: End your playbook
 
 Playbooks finishing processing the bundle with at least one of the following components:
 - **send for ingestion** is required to update your OpenCTI knowledge with the modifications the playbook has made to the data
 - **notify users** of the data will trigger a notification to users, can be ran in parrallel to other actions in your playbook. 
 
-These two components will complete a branch of your playbook. See the [Playbook components](/playbook-components) page for full details of the available components. If you want to both send for ingestion and send a notification then you can use the option to “add a new branch at the same level from the parent output”. 
+These two components will complete a branch of your playbook. See the [Playbook components](playbook-components.md) page for full details of the available components. If you want to both send for ingestion and send a notification then you can use the option to “add a new branch at the same level from the parent output”. 
 
 ![Add new branch at the same level](assets/playbook_add_new_branch_at_same_level.png)
 
@@ -110,7 +111,7 @@ To view execution traces, open a playbook and click the execution traces icon in
 - **Test with temporary steps:** If your playbook uses multiple components with different routes, add a temporary "Manipulate knowledge" step that applies a label. This helps you identify which route the bundle follows. Use this approach when the playbook output does not match your expectations.
 - **Check Manipulate knowledge execution traces:** If the data does not change as expected, verify that the "Manipulate knowledge" step executed. If it did, open the execution trace details and confirm that the operation type (for example, add, replace, or remove), field, and value are correct. Also verify that the step scope targets the correct entities — either the triggering entity only, or all elements in the bundle.
 
-![Execution trace panel showing completed steps and raw data for a playbook run](assets/playbook-traces.png)
+![Execution trace panel showing completed steps and raw data for a playbook run](assets/playbook_traces.png)
 
 ## Tips on creating playbooks
 
