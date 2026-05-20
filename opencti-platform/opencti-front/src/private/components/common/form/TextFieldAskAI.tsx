@@ -143,12 +143,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   // ── XTM One (new) path ────────────────────────────────────────────────
 
   const intentForAction: Record<AgentAction, string> = {
-    spelling: 'fix.spelling',
-    shorter: 'make.it.shorter',
-    longer: 'make.it.longer',
-    tone: 'change.tone',
-    summarize: 'summarize',
-    explain: 'explain',
+    spelling: 'global.fix_spelling',
+    shorter: 'global.make_it_shorter',
+    longer: 'global.make_it_longer',
+    tone: 'global.change_tone',
+    summarize: 'global.summarize',
+    explain: 'global.explain',
   };
 
   const handleAgentAction = (action: AgentAction) => {

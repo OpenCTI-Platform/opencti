@@ -37,6 +37,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DangerZoneButton from '../common/danger_zone/DangerZoneButton';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -113,6 +114,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const classes = useStyles();
   const { settings: { filigran_chatbot_ai_cgu_status, platform_ai_enabled } } = useAuth();
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
+  const { xtmOneConfigured } = useChatbot();
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
   const data = usePreloadedQuery(experienceQuery, queryRef);
   const settings = useFragment<Experience$key>(ExperienceFragment, data.settings);
@@ -247,11 +249,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     <ListItemText
                       primary={(
                         <Stack direction="row" alignItems="center" gap={1}>
-                          <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
-                          <Tag
-                            label={t_i18n('Preview')}
-                            tooltipTitle={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}
-                          />
+                          <span>{xtmOneConfigured ? t_i18n('XTM One (Ask Ariane)') : t_i18n('Agentic AI (Ariane Assistant)')}</span>
+                          {!xtmOneConfigured && (
+                            <Tag
+                              label={t_i18n('Preview')}
+                              tooltipTitle={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}
+                            />
+                          )}
                         </Stack>
                       )}
                     />
@@ -278,7 +282,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   </ListItem>
                 )}
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Generative AI (AI Insight, NLQ)')} />
+                  <ListItemText primary={t_i18n(xtmOneConfigured ? t_i18n('XTM One (AI Insight, NLQ)') : 'Generative AI (AI Insight, NLQ)')} />
                   <Box sx={{ marginBlock: -6 }}>
                     <Switch
                       checked={platform_ai_enabled}

@@ -116,9 +116,11 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 // Returns chatbot configuration (XTM One URL) for the frontend.
 export const getChatbotConfig = async (req: Express.Request, res: Express.Response) => {
   try {
-    const context = await authenticateAndVerify(req, res);
-    if (!context) return;
-
+    const context = await createAuthenticatedContext(req, res, 'chatbot');
+    if (!context.user) {
+      res.sendStatus(403);
+      return null;
+    }
     res.json({
       xtm_one_url: XTM_ONE_URL || null,
       xtm_one_configured: xtmOneClient.isConfigured(),
