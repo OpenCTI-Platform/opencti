@@ -125,6 +125,10 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
   };
   const vocabs = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_VOCABULARY], { filters: filtersForVocabs, maxSize: ES_MAX_PAGINATION });
   const indexedVocab = R.indexBy(R.prop('name'), vocabs);
+  const lowerCasedVocab = R.indexBy((o) => o.name?.toLowerCase(), vocabs);
+  const findOpinionVocab = (opinionName) => {
+    return indexedVocab[opinionName] || lowerCasedVocab[opinionName.toLowerCase()];
+  };
   const filtersForObjects = {
     mode: 'and',
     filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [opinionId] }],
@@ -143,7 +147,7 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
       filterGroups: [],
     };
     const opinions = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { filters: filtersForOpinions, maxSize: ES_MAX_PAGINATION });
-    const opinionsWithVocabs = opinions.map((n) => ({ ...n, vocab: indexedVocab[n.opinion] }));
+    const opinionsWithVocabs = opinions.map((n) => ({ ...n, vocab: findOpinionVocab(n.opinion) }));
     const opinionsNumbers = opinionsWithVocabs.map((n) => n.vocab.order);
     const opinionsMetrics = {
       mean: parseFloat(R.mean(opinionsNumbers).toFixed(2)),
