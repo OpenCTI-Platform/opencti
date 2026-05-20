@@ -44,7 +44,7 @@ import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { now } from '../../utils/format';
-import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE, getDraftOperations } from './draftOperations';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
@@ -194,9 +194,6 @@ export const listDraftObjects = async (context: AuthContext, user: AuthUser, arg
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
-  }
-  if (draftOperation && !getDraftOperations().includes(draftOperation)) {
-    throw FunctionalError('Invalid draft operation', { draftOperation });
   }
   const draftContext = { ...context, draft_context: draftId };
   const draftOperationFilter = draftOperation

@@ -4,11 +4,18 @@ enum DraftStatus {
     validated
 }
 
+enum DraftChangeType {
+    create
+    delete
+    add
+    remove
+}
+
 type DraftContainerObjectChange {
     entity_id: String!
     entity_type: String!
     representative_main: String
-    draft_operation: String!
+    draft_operation: DraftChangeType!
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {
@@ -93,7 +100,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-        draftOperation: String
+        draftOperation: DraftOperation
     ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
     draftWorkspaceContainerObjects(
         draftId: String!
@@ -139,14 +146,14 @@ type DraftEntityRelation {
     to_id: String!
     to_type: String!
     to_name: String!
-    draft_operation: String!
+    draft_operation: DraftChangeType!
 }
 
 type DraftEntityContainerRef {
     container_id: String!
     container_type: String!
     container_name: String!
-    draft_operation: String!
+    draft_operation: DraftChangeType!
 }
 
 type DraftResolvedId {

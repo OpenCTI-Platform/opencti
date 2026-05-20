@@ -7797,7 +7797,7 @@ export type DomainNameAddInput = {
 
 export type DraftContainerObjectChange = {
   __typename?: 'DraftContainerObjectChange';
-  draft_operation: Scalars['String']['output'];
+  draft_operation: DraftChangeType;
   entity_id: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   representative_main?: Maybe<Scalars['String']['output']>;
@@ -7808,7 +7808,7 @@ export type DraftEntityContainerRef = {
   container_id: Scalars['String']['output'];
   container_name: Scalars['String']['output'];
   container_type: Scalars['String']['output'];
-  draft_operation: Scalars['String']['output'];
+  draft_operation: DraftChangeType;
 };
 
 export type DraftEntityField = {
@@ -7819,7 +7819,7 @@ export type DraftEntityField = {
 
 export type DraftEntityRelation = {
   __typename?: 'DraftEntityRelation';
-  draft_operation: Scalars['String']['output'];
+  draft_operation: DraftChangeType;
   from_id: Scalars['String']['output'];
   from_name: Scalars['String']['output'];
   from_type: Scalars['String']['output'];
@@ -7840,6 +7840,13 @@ export type DraftObjectsCount = {
   sightingsCount: Scalars['Int']['output'];
   totalCount: Scalars['Int']['output'];
 };
+
+export enum DraftChangeType {
+  Add = 'add',
+  Create = 'create',
+  Delete = 'delete',
+  Remove = 'remove',
+}
 
 export enum DraftOperation {
   Create = 'create',
@@ -25191,7 +25198,7 @@ export type QueryDraftWorkspaceContainerObjectsArgs = {
 export type QueryDraftWorkspaceEntitiesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   draftId: Scalars['String']['input'];
-  draftOperation?: InputMaybe<Scalars['String']['input']>;
+  draftOperation?: InputMaybe<DraftOperation>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
@@ -39291,6 +39298,7 @@ export type ResolversTypes = ResolversObject<{
   DocsMetrics: ResolverTypeWrapper<DocsMetrics>;
   DomainName: ResolverTypeWrapper<Omit<DomainName, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   DomainNameAddInput: DomainNameAddInput;
+  DraftChangeType: DraftChangeType;
   DraftContainerObjectChange: ResolverTypeWrapper<DraftContainerObjectChange>;
   DraftEntityContainerRef: ResolverTypeWrapper<DraftEntityContainerRef>;
   DraftEntityField: ResolverTypeWrapper<DraftEntityField>;
@@ -43681,7 +43689,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type DraftContainerObjectChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftContainerObjectChange'] = ResolversParentTypes['DraftContainerObjectChange']> = ResolversObject<{
-  draft_operation?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  draft_operation?: Resolver<ResolversTypes['DraftChangeType'], ParentType, ContextType>;
   entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   representative_main?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -43691,7 +43699,7 @@ export type DraftEntityContainerRefResolvers<ContextType = any, ParentType exten
   container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   container_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   container_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  draft_operation?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  draft_operation?: Resolver<ResolversTypes['DraftChangeType'], ParentType, ContextType>;
 }>;
 
 export type DraftEntityFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftEntityField'] = ResolversParentTypes['DraftEntityField']> = ResolversObject<{
@@ -43700,7 +43708,7 @@ export type DraftEntityFieldResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type DraftEntityRelationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftEntityRelation'] = ResolversParentTypes['DraftEntityRelation']> = ResolversObject<{
-  draft_operation?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  draft_operation?: Resolver<ResolversTypes['DraftChangeType'], ParentType, ContextType>;
   from_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
