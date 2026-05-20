@@ -52,8 +52,10 @@ const getYupValidationForField = (
       validation = Yup.string();
   }
 
-  // Add required validation if field is mandatory
-  if (field.isMandatory) {
+  // Add required validation if field is mandatory and not read-only.
+  // Read-only fields are hidden for non-bypass users and pre-populated by the form schema,
+  // so client-side required validation must not block submission.
+  if (field.isMandatory && !field.isReadOnly) {
     if (field.type === 'multiselect' || field.type === 'objectMarking'
       || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
       validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(1, t_i18n('This field is required'));
@@ -356,7 +358,7 @@ export const convertFormSchemaToYupSchema = (
 };
 
 export const formatFormDataForSubmission = (
-  values: Record<string, string | string[] | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
+  values: Record<string, string | string[] | null | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
   schema: FormSchemaDefinition,
 ): Record<string, unknown> => {
   const formattedData: Record<string, unknown> = {};
@@ -663,6 +665,56 @@ export const formatFormDataForSubmission = (
     if (relationshipsData.length > 0) {
       formattedData.relationships = relationshipsData;
     }
+  }
+
+  // Handle draft fields
+  const normalizeDraftSelectionIds = (entries: unknown[]): string[] => {
+    return entries
+      .map((entry) => {
+        if (typeof entry === 'string') {
+          return entry;
+        }
+        if (typeof entry === 'object' && entry !== null) {
+          const option = entry as { value?: string; id?: string };
+          return option.value || option.id || '';
+        }
+        return '';
+      })
+      .filter((id) => typeof id === 'string' && id.length > 0);
+  };
+
+  if (Object.hasOwn(values, 'draftName') && typeof values.draftName === 'string') {
+    formattedData.draftName = values.draftName.trim();
+  }
+
+  if (Object.hasOwn(values, 'draftDescription') && typeof values.draftDescription === 'string') {
+    formattedData.draftDescription = values.draftDescription.trim();
+  }
+
+  if (Object.hasOwn(values, 'draftObjectAssignee') && Array.isArray(values.draftObjectAssignee)) {
+    const draftObjectAssignee = values.draftObjectAssignee as unknown[];
+    formattedData.draftObjectAssignee = normalizeDraftSelectionIds(draftObjectAssignee);
+  }
+
+  if (Object.hasOwn(values, 'draftObjectParticipant') && Array.isArray(values.draftObjectParticipant)) {
+    const draftObjectParticipant = values.draftObjectParticipant as unknown[];
+    formattedData.draftObjectParticipant = normalizeDraftSelectionIds(draftObjectParticipant);
+  }
+
+  if (Object.hasOwn(values, 'draftAuthor')) {
+    const selectedDraftAuthor = values.draftAuthor as { value: string } | null | undefined;
+    if (selectedDraftAuthor?.value) {
+      formattedData.draftAuthor = selectedDraftAuthor.value;
+    } else {
+      formattedData.draftAuthor = null; // explicit opt-out signal
+    }
+  }
+
+  if (Object.hasOwn(values, 'draftAuthorizedMembers') && Array.isArray(values.draftAuthorizedMembers)) {
+    const members = values.draftAuthorizedMembers as { value: string }[];
+    // Pass the full member objects to support access rights and group restrictions,
+    // including empty arrays so users can explicitly clear members.
+    formattedData.draftAuthorizedMembers = members;
   }
 
   return formattedData;
