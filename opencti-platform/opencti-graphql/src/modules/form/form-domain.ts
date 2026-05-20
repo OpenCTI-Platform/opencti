@@ -12,9 +12,9 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorPriorityGroup, ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
+import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -213,6 +213,190 @@ export interface FormParsed extends Omit<StoreEntityForm, 'form_schema'> {
   form_schema: FormSchemaDefinition;
 }
 
+const normalizeOptionId = (option: unknown): string | undefined => {
+  if (typeof option === 'object' && option !== null) {
+    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
+    return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
+  }
+  return typeof option === 'string' && option.length > 0 ? option : undefined;
+};
+
+export const resolveDraftFieldDefaults = (
+  formName: string,
+  values: Record<string, unknown>,
+  draftDefaults: FormSchemaDefinition['draftDefaults'] | undefined,
+  isBypass: boolean = false,
+) => {
+  const isDefaultEnabled = (defaultConfig: { enabled?: boolean } | undefined, hasContent: boolean) => {
+    if (!defaultConfig) return false;
+    if (defaultConfig.enabled === false) return false;
+    if (defaultConfig.enabled === true) return true;
+    return hasContent;
+  };
+
+  const explicitDraftName = typeof values.draftName === 'string' ? values.draftName.trim() : '';
+  const draftNameDefaultValue = (draftDefaults?.name?.defaultValue ?? '').trim();
+  const defaultDraftName = isDefaultEnabled(draftDefaults?.name, draftNameDefaultValue.length > 0)
+    ? draftNameDefaultValue
+    : '';
+  const canOverrideDraftName = isBypass || (draftDefaults?.name?.isEditable !== false);
+  const finalDraftName = (canOverrideDraftName ? explicitDraftName : '') || defaultDraftName || `${formName} - ${nowTime()}`;
+
+  const hasExplicitDraftDescription = Object.hasOwn(values, 'draftDescription');
+  const explicitDraftDescription = typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
+  const draftDescriptionDefaultValue = (draftDefaults?.description?.defaultValue ?? '').trim();
+  const defaultDraftDescription = isDefaultEnabled(draftDefaults?.description, draftDescriptionDefaultValue.length > 0)
+    ? draftDescriptionDefaultValue
+    : '';
+  const canOverrideDraftDescription = isBypass || (draftDefaults?.description?.isEditable !== false);
+  const finalDraftDescription = (canOverrideDraftDescription && hasExplicitDraftDescription) ? explicitDraftDescription : defaultDraftDescription;
+
+  const hasExplicitDraftAssignees = Object.hasOwn(values, 'draftObjectAssignee');
+  const explicitDraftAssignees = Array.isArray(values.draftObjectAssignee)
+    ? values.draftObjectAssignee.map(normalizeOptionId).filter((id): id is string => !!id)
+    : [];
+  const draftAssigneeDefaults = (draftDefaults?.objectAssignee?.defaults ?? [])
+    .map(normalizeOptionId)
+    .filter((id): id is string => !!id);
+  const defaultDraftAssignees = isDefaultEnabled(draftDefaults?.objectAssignee, draftAssigneeDefaults.length > 0)
+    ? draftAssigneeDefaults
+    : [];
+  const canOverrideDraftAssignees = isBypass || (draftDefaults?.objectAssignee?.isEditable !== false);
+  const finalDraftAssignees = (canOverrideDraftAssignees && hasExplicitDraftAssignees) ? explicitDraftAssignees : defaultDraftAssignees;
+
+  const hasExplicitDraftParticipants = Object.hasOwn(values, 'draftObjectParticipant');
+  const explicitDraftParticipants = Array.isArray(values.draftObjectParticipant)
+    ? values.draftObjectParticipant.map(normalizeOptionId).filter((id): id is string => !!id)
+    : [];
+  const draftParticipantDefaults = (draftDefaults?.objectParticipant?.defaults ?? [])
+    .map(normalizeOptionId)
+    .filter((id): id is string => !!id);
+  const defaultDraftParticipants = isDefaultEnabled(draftDefaults?.objectParticipant, draftParticipantDefaults.length > 0)
+    ? draftParticipantDefaults
+    : [];
+  const canOverrideDraftParticipants = isBypass || (draftDefaults?.objectParticipant?.isEditable !== false);
+  const finalDraftParticipants = (canOverrideDraftParticipants && hasExplicitDraftParticipants) ? explicitDraftParticipants : defaultDraftParticipants;
+
+  return {
+    finalDraftName,
+    finalDraftDescription,
+    finalDraftAssignees,
+    finalDraftParticipants,
+  };
+};
+
+const normalizeGroupsRestrictionIds = (groupsRestriction: unknown): string[] | undefined => {
+  if (!Array.isArray(groupsRestriction)) {
+    return undefined;
+  }
+  const ids = groupsRestriction
+    .map((group) => normalizeOptionId(group))
+    .filter((groupId): groupId is string => !!groupId);
+  return ids.length > 0 ? ids : undefined;
+};
+
+type NormalizedDraftAuthorizedMemberRule = {
+  value: string;
+  accessRight: string;
+  groupsRestrictionIds?: string[];
+};
+
+const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAuthorizedMemberRule | null => {
+  if (rule === null || rule === undefined) {
+    return null;
+  }
+
+  if (typeof rule === 'object') {
+    const legacyRule = rule as { type?: string; intersectionGroup?: string };
+    if (legacyRule.type === 'CREATOR') {
+      return { value: 'CREATORS', accessRight: 'admin' };
+    }
+    if (legacyRule.type === 'AUTHOR_ORG') {
+      return {
+        value: 'AUTHOR',
+        accessRight: 'admin',
+        groupsRestrictionIds: legacyRule.intersectionGroup ? [legacyRule.intersectionGroup] : undefined,
+      };
+    }
+  }
+
+  const value = normalizeOptionId(rule);
+  if (!value) {
+    return null;
+  }
+
+  const accessRight = (typeof rule === 'object' && (rule as { accessRight?: string }).accessRight)
+    ? (rule as { accessRight: string }).accessRight
+    : 'admin';
+
+  return {
+    value,
+    accessRight,
+    groupsRestrictionIds: typeof rule === 'object'
+      ? normalizeGroupsRestrictionIds((rule as { groupsRestriction?: unknown }).groupsRestriction)
+      : undefined,
+  };
+};
+
+const resolveAuthorizedMembersForDraft = (
+  user: AuthUser,
+  rawRules: unknown[],
+): MemberAccessInput[] => {
+  const authorizedMembersMap = new Map<string, MemberAccessInput>();
+  rawRules.forEach((rule) => {
+    const normalizedRule = normalizeDraftAuthorizedMemberRule(rule);
+    if (!normalizedRule) {
+      return;
+    }
+
+    const { value, accessRight, groupsRestrictionIds } = normalizedRule;
+    if (value === 'CREATORS') {
+      const existing = authorizedMembersMap.get(user.id)
+        || { id: user.id, access_right: accessRight };
+
+      authorizedMembersMap.set(user.id, {
+        ...existing,
+        access_right: existing.access_right || accessRight,
+        // CREATORS is always unrestricted in form intake.
+        groups_restriction_ids: undefined,
+      });
+      return;
+    }
+
+    if (value === 'AUTHOR') {
+      if (user.organizations) {
+        user.organizations.forEach((org) => {
+          const existing = authorizedMembersMap.get(org.internal_id)
+            || { id: org.internal_id, access_right: accessRight };
+          const currentGroupRestrictions = existing.groups_restriction_ids ?? [];
+          // When groupsRestrictionIds is undefined the rule grants unrestricted access to this org.
+          // We intentionally set undefined (not preserve existing restrictions) so that a later
+          // unrestricted rule always wins — preventing accidental over-restriction from a prior rule.
+          const mergedGroupRestrictions = groupsRestrictionIds
+            ? Array.from(new Set([...currentGroupRestrictions, ...groupsRestrictionIds]))
+            : undefined;
+
+          authorizedMembersMap.set(org.internal_id, {
+            ...existing,
+            access_right: existing.access_right || accessRight,
+            groups_restriction_ids: mergedGroupRestrictions,
+          });
+        });
+      }
+      return;
+    }
+
+    authorizedMembersMap.set(value, {
+      id: value,
+      access_right: accessRight,
+      groups_restriction_ids: groupsRestrictionIds,
+    });
+  });
+
+  return Array.from(authorizedMembersMap.values());
+};
+
+// Submit a form and convert to STIX bundle
 export const formSubmit = async (
   context: AuthContext,
   user: AuthUser,
@@ -242,8 +426,8 @@ export const formSubmit = async (
     }
   }
 
-  validateFormSubmission(schema, values);
-
+  const isBypass = isUserHasCapability(user, BYPASS);
+  validateFormSubmission(schema, values, isBypass);
   const bundle: any = {
     type: 'bundle',
     id: `bundle--${uuidv4()}`,
@@ -253,14 +437,12 @@ export const formSubmit = async (
 
   const { mainEntityType } = schema;
 
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType);
+  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
 
-  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle);
+  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
 
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
-
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
-
   logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
 
   try {
@@ -278,7 +460,68 @@ export const formSubmit = async (
 
     let draftId = null;
     if (finalIsDraft) {
-      const draft = await addDraftWorkspace(context, user, { name: `${form.name} - ${nowTime()}` });
+      let createdBy: string | null = null;
+      const {
+        finalDraftName,
+        finalDraftDescription,
+        finalDraftAssignees,
+        finalDraftParticipants,
+      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
+
+      // Apply draft defaults for author
+      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+      const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
+      const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
+      if (canOverrideDraftAuthor && values.draftAuthor) {
+        createdBy = normalizeOptionId(values.draftAuthor) || null;
+      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
+        // User explicitly cleared the field; it's editable and not required → honour the opt-out
+        // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
+        createdBy = null;
+      } else if (schema.draftDefaults?.author) {
+        if (schema.draftDefaults.author.type === 'static') {
+          createdBy = schema.draftDefaults.author.defaultValue || null;
+        } else if (schema.draftDefaults.author.type === 'main_entity_author') {
+          const possibleAuthor = values.createdBy
+            || values.mainEntityFields?.createdBy
+            || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
+          createdBy = normalizeOptionId(possibleAuthor) || null;
+        } else if (schema.draftDefaults.author.type === 'none') {
+          createdBy = null;
+        }
+      }
+
+      // Apply explicit authorized members from form submission
+      // Bypass users can always override; non-bypass users can override when the field is editable and they have the manage auth members capability
+      const canOverrideAuthorizedMembers = isBypass || (schema.draftDefaults?.authorizedMembers?.isEditable && isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS));
+      let authorized_members: MemberAccessInput[] = [];
+      if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
+        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
+      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
+        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
+      }
+
+      // Ensure the submitter is an admin member of the draft if not already included.
+      // Required for form intakes, where the authorized_members are defined at creation and not afterward.
+      if (!isBypass && authorized_members.length > 0) {
+        const submitterIdx = authorized_members.findIndex((m) => m.id === user.id);
+        if (submitterIdx === -1) {
+          authorized_members.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
+        } else if (authorized_members[submitterIdx].access_right !== MEMBER_ACCESS_RIGHT_ADMIN) {
+          authorized_members[submitterIdx] = { ...authorized_members[submitterIdx], access_right: MEMBER_ACCESS_RIGHT_ADMIN };
+        }
+      }
+
+      const draftInput: DraftWorkspaceAddInput = {
+        name: finalDraftName,
+      };
+      if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
+      if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
+      if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
+      if (createdBy) draftInput.createdBy = createdBy;
+      if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
+
+      const draft = await addDraftWorkspace(context, user, draftInput);
       draftId = draft.id;
     }
     await pushToWorkerForConnector(connectorId, {
