@@ -19,13 +19,18 @@ export type Status = {
   onExit?: Action[];
 };
 
-export type CommentMode = 'disable' | 'allowed' | 'required';
+export enum CommentMode {
+  disable = 'disable',
+  allowed = 'allowed',
+  required = 'required',
+}
+export type CommentModeType = `${CommentMode}`;
 
 export type Transition = {
   event: string;
   actions?: Action[];
   conditions?: { filters: FilterGroup };
-  comment?: CommentMode;
+  comment?: CommentModeType;
 };
 
 export const NEW_EVENT_NAME = 'NEW_EVENT';

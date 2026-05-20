@@ -46,7 +46,7 @@ export const workflowSerializedTransitionSchema = z.object({
   from: z.union([z.string().max(255), z.array(z.string().max(255))]).nullable(),
   to: z.string().max(255).nullable(),
   event: z.string().max(255),
-  comment: z.string().max(255).optional(),
+  comment: z.enum(['disable', 'allowed', 'required']).optional(),
   actions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
 });

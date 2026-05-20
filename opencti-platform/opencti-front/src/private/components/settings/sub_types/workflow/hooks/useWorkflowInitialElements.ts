@@ -5,7 +5,7 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { AuthorizedMembers, authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
 import { Connection, getNodes } from '../../../../../../utils/connection';
-import { Action, CommentMode, WorkflowNodeType } from '../utils';
+import { Action, CommentMode, CommentModeType, WorkflowNodeType } from '../utils';
 
 type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onEnter']>[0]
   | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onExit']>[0]
@@ -82,7 +82,7 @@ export const useWorkflowInitialElements = (
           event,
           conditions,
           actions: parseActions(actions),
-          comment: (comment ?? 'disable') as CommentMode,
+          comment: (comment ?? CommentMode.disable) as CommentModeType,
         },
         position: { x: 0, y: 0 },
       }));

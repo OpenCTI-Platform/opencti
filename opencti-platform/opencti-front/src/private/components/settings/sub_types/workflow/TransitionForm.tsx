@@ -2,7 +2,7 @@ import { Field, useFormikContext } from 'formik';
 import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, WorkflowActionType, WorkflowDataType } from './utils';
+import { CommentMode, CommentModeType, WorkflowActionType, WorkflowDataType } from './utils';
 import { FormControlLabel, Icon, Switch, Typography, Box, Alert } from '@mui/material';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { FlagOutlined } from '@mui/icons-material';
@@ -14,7 +14,7 @@ const TransitionForm = () => {
   const hasUpdateAuthorizedMembers = values.actions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasValidateDraft = values.actions?.some((a) => a.type === WorkflowActionType.validateDraft);
 
-  const commentMode: CommentMode = values.comment ?? 'disable';
+  const commentMode: CommentModeType = values.comment ?? CommentMode.disable;
   const enableComments = commentMode !== 'disable';
   const requireComments = commentMode === 'required';
 
