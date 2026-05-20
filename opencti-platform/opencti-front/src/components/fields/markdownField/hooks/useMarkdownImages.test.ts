@@ -26,6 +26,7 @@ const buildHookArgs = () => ({
   uploadFileMarkings: [],
   tempCleanupDelayMs: 300,
   maxImageSizeBytes: 5 * 1024 * 1024,
+  isImageUploadEnabled: true,
 });
 
 describe('Hook: useMarkdownImages', () => {

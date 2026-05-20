@@ -2,10 +2,17 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { Field, Formik } from 'formik';
-import testRender from '../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import MarkdownField from './MarkdownField';
+import { MARKDOWN_IMAGE_UPLOAD } from '../../../utils/platformModulesHelper';
 
 const commitMutationMock = vi.fn();
+
+const markdownImageUploadEnabledUserContext = createMockUserContext({
+  settings: {
+    platform_feature_flags: [{ id: MARKDOWN_IMAGE_UPLOAD, enable: true }],
+  },
+});
 
 vi.mock('../../../relay/environment', async () => {
   const actual = await vi.importActual('../../../relay/environment');
@@ -38,6 +45,9 @@ const renderMarkdownField = (
         {...props}
       />
     </Formik>,
+    {
+      userContext: markdownImageUploadEnabledUserContext,
+    },
   );
 };
 
@@ -436,6 +446,9 @@ describe('Component: MarkdownField', () => {
           label="Description"
         />
       </Formik>,
+      {
+        userContext: markdownImageUploadEnabledUserContext,
+      },
     );
 
     const textArea = await screen.findByRole('textbox');

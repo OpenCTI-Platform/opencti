@@ -8,6 +8,7 @@ import useMarkdownImagesUpload from './useMarkdownImagesUpload';
 type UseMarkdownImagesArgs = {
   activeTab: MarkdownImagesTab;
   disabled?: boolean;
+  isImageUploadEnabled: boolean;
   t_i18n: (value: string) => string;
   containerRef: RefObject<HTMLDivElement | null>;
   value: string;
@@ -25,6 +26,7 @@ type UseMarkdownImagesArgs = {
 const useMarkdownImages = ({
   activeTab,
   disabled,
+  isImageUploadEnabled,
   t_i18n,
   containerRef,
   value,
@@ -166,6 +168,7 @@ const useMarkdownImages = ({
   const interactions = useMarkdownImageInteractions({
     activeTab,
     disabled,
+    isImageUploadEnabled,
     t_i18n,
     containerRef,
     latestMarkdownRef,
