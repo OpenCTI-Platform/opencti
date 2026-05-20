@@ -42,7 +42,7 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
 export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
   name: 'Share with organizations',
-  description: 'Share with organizations within the platform',
+  description: 'Add sharing permissions to the STIX bundle',
   icon: 'organization-add',
   category: 'share_and_access',
   is_entry_point: false,

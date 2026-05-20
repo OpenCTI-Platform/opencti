@@ -64,7 +64,7 @@ const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestri
 export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRestrictionsConfiguration> = {
   id: 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT',
   name: 'Manage access restrictions',
-  description: 'Manage advanced access restrictions on entities',
+  description: 'Manage advanced access restrictions to the STIX containers and organisations',
   icon: 'lock',
   category: 'share_and_access',
   is_entry_point: false,

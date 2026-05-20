@@ -18,6 +18,7 @@ export interface PlaybookDefinitionNode {
   component_id: string;
   configuration: string; // json
   position: XYPosition;
+  description?: string;
 }
 
 export interface PlaybookDefinitionEdge {
@@ -33,6 +34,7 @@ export interface PlaybookDefinitionEdge {
 
 export type PlaybookNode = Node<{
   name?: string;
+  description?: string;
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
   openConfig: (nodeId: string) => void;

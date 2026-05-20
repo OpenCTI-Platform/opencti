@@ -38,7 +38,7 @@ const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<Remov
 export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<RemoveAccessRestrictionsConfiguration> = {
   id: 'PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT',
   name: 'Remove access restrictions',
-  description: 'Remove advanced access restrictions on entities',
+  description: 'Remove access restrictions to the STIX bundle',
   icon: 'lock-remove',
   category: 'share_and_access',
   is_entry_point: false,

@@ -31,7 +31,7 @@ const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = 
 export const PLAYBOOK_DATA_STREAM_PIR: PlaybookComponent<PirStreamConfiguration> = {
   id: 'PLAYBOOK_DATA_STREAM_PIR',
   name: 'Listen PIR events',
-  description: 'Listen for all internal PIR events',
+  description: 'Listen for updates to your PIR(s)',
   icon: 'in-pir',
   category: 'start_playbook',
   is_entry_point: true,

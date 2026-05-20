@@ -46,7 +46,7 @@ const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration
 export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfiguration> = {
   id: 'PLAYBOOK_UNSHARING_COMPONENT',
   name: 'Unshare with organizations',
-  description: 'Unshare with organizations within the platform',
+  description: 'Remove sharing permissions to the STIX bundle',
   icon: 'organization-remove',
   category: 'share_and_access',
   is_entry_point: false,

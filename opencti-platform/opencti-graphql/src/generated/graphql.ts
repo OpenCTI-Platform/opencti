@@ -23425,6 +23425,7 @@ export type PlaybookAddLinkInput = {
 export type PlaybookAddNodeInput = {
   component_id: Scalars['String']['input'];
   configuration?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   position: PositionInput;
 };

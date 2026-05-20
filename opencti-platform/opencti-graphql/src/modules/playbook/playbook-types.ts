@@ -102,6 +102,7 @@ export interface NodeDefinition {
   position: { x: number; y: number };
   component_id: string;
   configuration: string; // json
+  description?: string;
 }
 
 export interface LinkDefinition {
@@ -140,6 +141,7 @@ export const playbookComponentDefinition: JSONSchemaType<ComponentDefinition> = 
           },
           component_id: { type: 'string' },
           configuration: { type: 'string' },
+          description: { type: 'string', nullable: true },
         },
         required: ['id', 'name', 'position', 'component_id', 'configuration'],
       },

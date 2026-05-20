@@ -18,6 +18,7 @@ export const computeNodes = (
       position: node.position,
       data: {
         name: node.name,
+        description: node.description,
         configuration: node.configuration ? JSON.parse(node.configuration) : undefined,
         component,
         openConfig: (nodeId: string) => {

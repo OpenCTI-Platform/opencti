@@ -115,6 +115,7 @@ const useManipulateComponents = (playbook) => {
     component,
     name,
     configuration,
+    description,
   ) => {
     const childPlaceholderId = uuid();
     const childPlaceholderNodes = component.ports
@@ -160,6 +161,7 @@ const useManipulateComponents = (playbook) => {
             type: 'workflow',
             data: {
               name,
+              description,
               configuration,
               component,
               openConfig: (nodeId) => {
@@ -204,13 +206,14 @@ const useManipulateComponents = (playbook) => {
       })
       .concat(childPlaceholderEdges));
   };
-  const applyAddNode = (result, component, name, configuration, originEdge) => {
+  const applyAddNode = (result, component, name, configuration, originEdge, description) => {
     const newNode = {
       id: result.nodeId,
       position: { x: selectedNode.position.x, y: selectedNode.position.y },
       type: 'workflow',
       data: {
         name,
+        description,
         configuration,
         component,
         openConfig: (nodeId) => {
@@ -282,7 +285,7 @@ const useManipulateComponents = (playbook) => {
     setNodes((nodes) => nodes.concat([...childPlaceholderNodes, newNode]));
     setEdges((edges) => edges.concat([...childPlaceholderEdges, newEdge]));
   };
-  const applyInsertNode = (result, component, name, configuration) => {
+  const applyInsertNode = (result, component, name, configuration, description) => {
     let newNodes = getNodes();
     let newEdges = getEdges();
     const targetNode = getNode(selectedEdge.target);
@@ -292,6 +295,7 @@ const useManipulateComponents = (playbook) => {
       type: 'workflow',
       data: {
         name,
+        description,
         configuration,
         component,
         openConfig: (nodeId) => {
@@ -404,7 +408,7 @@ const useManipulateComponents = (playbook) => {
     setNodes(newNodes);
     setEdges(newEdges);
   };
-  const applyReplaceNode = (component, name, configuration) => {
+  const applyReplaceNode = (component, name, configuration, description) => {
     let newEdges = getEdges();
     let newNodes = getNodes().map((node) => {
       if (node.id === selectedNode.id) {
@@ -414,6 +418,7 @@ const useManipulateComponents = (playbook) => {
           type: 'workflow',
           data: {
             name,
+            description,
             configuration,
             component,
             openConfig: (nodeId) => {
@@ -585,7 +590,7 @@ const useManipulateComponents = (playbook) => {
   // endregion
 
   // region backend graph
-  const addNodeFromPlaceholder = (component, name, config) => {
+  const addNodeFromPlaceholder = (component, name, config, description) => {
     const jsonConfig = config ? JSON.stringify(config) : null;
     const position = {
       x: selectedNode.position.x,
@@ -600,6 +605,7 @@ const useManipulateComponents = (playbook) => {
           component_id: component.id,
           position,
           configuration: jsonConfig,
+          description,
         },
       },
       onCompleted: (nodeResult) => {
@@ -616,6 +622,7 @@ const useManipulateComponents = (playbook) => {
             component,
             name,
             config,
+            description,
           );
         } else {
           commitMutation({
@@ -637,6 +644,7 @@ const useManipulateComponents = (playbook) => {
                 component,
                 name,
                 config,
+                description,
               );
             },
           });
@@ -646,7 +654,7 @@ const useManipulateComponents = (playbook) => {
       },
     });
   };
-  const addNode = (component, name, config) => {
+  const addNode = (component, name, config, description) => {
     const jsonConfig = config ? JSON.stringify(config) : null;
     const position = {
       x: selectedNode.position.x,
@@ -661,6 +669,7 @@ const useManipulateComponents = (playbook) => {
           component_id: component.id,
           position,
           configuration: jsonConfig,
+          description,
         },
       },
       onCompleted: (nodeResult) => {
@@ -691,6 +700,7 @@ const useManipulateComponents = (playbook) => {
                 name,
                 config,
                 originEdge,
+                description,
               );
             },
           });
@@ -700,7 +710,7 @@ const useManipulateComponents = (playbook) => {
       },
     });
   };
-  const insertNode = (component, name, config) => {
+  const insertNode = (component, name, config, description) => {
     const jsonConfig = config ? JSON.stringify(config) : null;
     const targetNode = getNode(selectedEdge.target);
     const position = {
@@ -719,6 +729,7 @@ const useManipulateComponents = (playbook) => {
           component_id: component.id,
           position,
           configuration: jsonConfig,
+          description,
         },
       },
       onCompleted: (insertResult) => {
@@ -730,13 +741,14 @@ const useManipulateComponents = (playbook) => {
           component,
           name,
           config,
+          description,
         );
         setSelectedEdge(null);
         setAction(null);
       },
     });
   };
-  const replaceNode = (component, name, config) => {
+  const replaceNode = (component, name, config, description) => {
     const position = {
       x: selectedNode.position.x,
       y: selectedNode.position.y,
@@ -752,10 +764,11 @@ const useManipulateComponents = (playbook) => {
           component_id: component.id,
           position,
           configuration: jsonConfig,
+          description,
         },
       },
       onCompleted: () => {
-        applyReplaceNode(component, name, config);
+        applyReplaceNode(component, name, config, description);
         setSelectedNode(null);
         setAction(null);
       },
@@ -777,19 +790,19 @@ const useManipulateComponents = (playbook) => {
   };
   // endregion
 
-  const onConfigAdd = (component, name, config) => {
+  const onConfigAdd = (component, name, config, description) => {
     // We are in a placeholder
     if (selectedNode && action === 'config') {
-      addNodeFromPlaceholder(component, name, config);
+      addNodeFromPlaceholder(component, name, config, description);
     } else if (selectedNode && action === 'add') {
-      addNode(component, name, config);
+      addNode(component, name, config, description);
     } else if (selectedEdge) {
       // We are in an edge
-      insertNode(component, name, config);
+      insertNode(component, name, config, description);
     }
   };
-  const onConfigReplace = (component, name, config) => {
-    replaceNode(component, name, config);
+  const onConfigReplace = (component, name, config, description) => {
+    replaceNode(component, name, config, description);
   };
 
   return {
