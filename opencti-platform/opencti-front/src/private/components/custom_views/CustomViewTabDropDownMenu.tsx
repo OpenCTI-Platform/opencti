@@ -29,7 +29,7 @@ const CustomViewTabDropDownMenu = ({ displayMode, otherCustomViews: customViews,
             selected={isSelected}
             role="link"
             component={Link}
-            to={path}
+            to={`../${path}`}
             onClick={close}
             sx={{
               '&.Mui-selected': {

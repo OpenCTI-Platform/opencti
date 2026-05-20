@@ -58,14 +58,12 @@ const Root = () => {
           path="/tools/:toolId/*"
           element={boundaryWrapper(RootTool)}
         />
-        <Route
-          path="/vulnerabilities"
-          element={boundaryWrapper(Vulnerabilities)}
-        />
-        <Route
-          path="/vulnerabilities/:vulnerabilityId/*"
-          element={boundaryWrapper(RootVulnerabilities)}
-        />
+        <Route path="/vulnerabilities">
+          <Route index element={boundaryWrapper(Vulnerabilities)} />
+          <Route path=":vulnerabilityId">
+            <Route path="*" index element={boundaryWrapper(RootVulnerabilities)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );
