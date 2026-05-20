@@ -2,6 +2,7 @@ import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
 import pdfMake from 'pdfmake';
 import isSvg from 'is-svg';
+import { TDocumentDefinitions } from 'pdfmake/interfaces';
 
 const ignoredClasses = [
   'MuiDialog-root',
@@ -21,7 +22,7 @@ export const EXPORT_REMOVE_CLASS = 'export-remove';
  * - If the node has one of the `ignoredClasses` → removed
  * - Otherwise → kept
  */
-export const isDomNodeKeptAtExport = (domNode) => {
+export const isDomNodeKeptAtExport = (domNode: HTMLElement): boolean => {
   if (domNode.closest?.(`.${EXPORT_KEEP_CLASS}`)) return true;
   if (domNode.closest?.(`.${EXPORT_REMOVE_CLASS}`)) return false;
   if (domNode.className) {
@@ -34,16 +35,17 @@ export const isDomNodeKeptAtExport = (domNode) => {
   return true;
 };
 
-export const exportImage = (
-  domElementId,
-  currentWidth,
-  currentHeight,
-  name,
-  backgroundColor,
+export const exportImage = async (
+  domElementId: string,
+  currentWidth: number,
+  currentHeight: number,
+  name: string,
+  backgroundColor: string | undefined,
   pixelRatio = 1,
-  adjust = null,
-) => {
+  adjust: ((value: boolean) => void) | null = null,
+): Promise<void> => {
   const container = document.getElementById(domElementId);
+  if (!container) return Promise.reject(new Error(`Element #${domElementId} not found`));
   return new Promise((resolve, reject) => {
     htmlToImage
       .toBlob(container, {
@@ -57,7 +59,9 @@ export const exportImage = (
         },
       })
       .then((blob) => {
-        fileDownload(blob, `${name}.png`, 'image/png');
+        if (blob) {
+          fileDownload(blob, `${name}.png`, 'image/png');
+        }
         if (adjust) {
           container.setAttribute(
             'style',
@@ -72,14 +76,15 @@ export const exportImage = (
   });
 };
 
-export const exportPdf = (
-  domElementId,
-  name,
-  backgroundColor,
+export const exportPdf = async (
+  domElementId: string,
+  name: string,
+  backgroundColor: string | undefined,
   pixelRatio = 1,
-  adjust = null,
-) => {
+  adjust: ((value: boolean) => void) | null = null,
+): Promise<void> => {
   const container = document.getElementById(domElementId);
+  if (!container) return Promise.reject(new Error(`Element #${domElementId} not found`));
   const { offsetWidth, offsetHeight } = container;
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;
@@ -97,7 +102,7 @@ export const exportPdf = (
         },
       })
       .then((image) => {
-        const docDefinition = {
+        const docDefinition: TDocumentDefinitions = {
           pageSize: {
             width: imageWidth,
             height: 'auto',
@@ -141,7 +146,7 @@ export const exportPdf = (
   });
 };
 
-export const getBase64ImageFromURL = (url) => {
+export const getBase64ImageFromURL = async (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.setAttribute('crossOrigin', 'anonymous');
@@ -167,7 +172,12 @@ export const getBase64ImageFromURL = (url) => {
   });
 };
 
-export const isImageFromUrlSvg = async (url) => {
+interface SvgCheckResult {
+  isSvg: boolean;
+  content: string;
+}
+
+export const isImageFromUrlSvg = async (url: string): Promise<SvgCheckResult> => {
   const response = await fetch(url);
   const blob = await response.blob();
   const content = await blob.text();
