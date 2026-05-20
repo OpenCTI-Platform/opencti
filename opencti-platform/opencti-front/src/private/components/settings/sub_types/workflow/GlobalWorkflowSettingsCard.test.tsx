@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import GlobalWorkflowSettingsCard from './GlobalWorkflowSettingsCard';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 vi.mock('@common/card/Card', () => ({
   default: ({ title, children }: { title: string; children: ReactNode }) => (
@@ -21,6 +22,10 @@ vi.mock('../../../../../components/i18n', () => ({
 
 vi.mock('../SubTypeOutletContext', () => ({
   useSubTypeOutletContext: vi.fn(),
+}));
+
+vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
+  default: vi.fn(),
 }));
 
 vi.mock('./GlobalWorkflowSettings', () => ({
@@ -42,6 +47,7 @@ const makeSubType = (availableSettings: string[]) => ({
 
 describe('GlobalWorkflowSettingsCard', () => {
   it('renders request access settings when request_access_workflow is available', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
     vi.mocked(useSubTypeOutletContext).mockReturnValue({
       subType: makeSubType(['workflow_configuration', 'request_access_workflow']),
     } as never);
@@ -53,8 +59,21 @@ describe('GlobalWorkflowSettingsCard', () => {
   });
 
   it('does not render request access settings when request_access_workflow is not available', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
     vi.mocked(useSubTypeOutletContext).mockReturnValue({
       subType: makeSubType(['workflow_configuration', 'request_access_configuration']),
+    } as never);
+
+    render(<GlobalWorkflowSettingsCard />);
+
+    expect(screen.getByText('global-workflow-settings')).toBeInTheDocument();
+    expect(screen.queryByText('request-access-settings')).not.toBeInTheDocument();
+  });
+
+  it('does not render request access settings in CE even when request_access_workflow is available', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    vi.mocked(useSubTypeOutletContext).mockReturnValue({
+      subType: makeSubType(['workflow_configuration', 'request_access_workflow']),
     } as never);
 
     render(<GlobalWorkflowSettingsCard />);
