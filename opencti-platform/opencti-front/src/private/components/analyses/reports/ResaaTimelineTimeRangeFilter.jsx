@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -71,6 +71,8 @@ export const generateCalendarTickValues = (interval, granularity) => {
   const alignedInterval = alignTimelineIntervalToGranularity(interval, granularity);
   let current = alignedInterval[0];
   const end = alignedInterval[1];
+  const startTime = alignedInterval[0].getTime();
+  const endTime = end.getTime();
 
   while (isBefore(current, end) || isEqual(current, end)) {
     ticks.push(current.getTime());
@@ -80,7 +82,29 @@ export const generateCalendarTickValues = (interval, granularity) => {
     }
   }
 
+  if (ticks.length === 0) {
+    return [startTime, endTime];
+  }
+  if (ticks[0] !== startTime) {
+    ticks.unshift(startTime);
+  }
+  const useMonthYearStartTicksOnly = granularity === 'monthly' || granularity === 'yearly';
+  if (!useMonthYearStartTicksOnly && ticks[ticks.length - 1] !== endTime) {
+    ticks.push(endTime);
+  }
+
   return ticks;
+};
+
+export const getTimelineSliderStep = (tickValues, granularity) => {
+  if (tickValues.length < 2) {
+    return GRANULARITY_STEP_MS[granularity] ?? 1;
+  }
+  if (granularity === 'monthly' || granularity === 'yearly') {
+    const span = tickValues[tickValues.length - 1] - tickValues[0];
+    return Math.max(1, Math.round(span / (tickValues.length - 1)));
+  }
+  return tickValues[1] - tickValues[0];
 };
 
 const snapToNearestTickValue = (date, tickValues) => {
@@ -95,10 +119,31 @@ const snapToNearestTickValue = (date, tickValues) => {
   return new Date(nearest);
 };
 
+const SNAP_EDGE_TOLERANCE_MS = 60 * 1000;
+
+const getSnapEdgeThresholdMs = (tickValues) => {
+  if (tickValues.length >= 2) {
+    return Math.max(
+      (tickValues[tickValues.length - 1] - tickValues[tickValues.length - 2]) / 2,
+      SNAP_EDGE_TOLERANCE_MS,
+    );
+  }
+  return SNAP_EDGE_TOLERANCE_MS;
+};
+
 export const snapIntervalToTickValues = (interval, tickValues, bounds) => {
   const [min, max] = bounds;
-  let start = snapToNearestTickValue(interval[0], tickValues);
-  let end = snapToNearestTickValue(interval[1], tickValues);
+  const minTime = min.getTime();
+  const maxTime = max.getTime();
+  const edgeThreshold = getSnapEdgeThresholdMs(tickValues);
+
+  let start = interval[0].getTime() <= minTime + edgeThreshold
+    ? min
+    : snapToNearestTickValue(interval[0], tickValues);
+  let end = interval[1].getTime() >= maxTime - edgeThreshold
+    ? max
+    : snapToNearestTickValue(interval[1], tickValues);
+
   if (end.getTime() < start.getTime()) {
     const swap = start;
     start = end;
@@ -291,26 +336,46 @@ export const snapIntervalToGranularity = (interval, granularity, bounds) => {
   return [start, end];
 };
 
-const ResaaHourlyTickLabel = ({ timestamp, formatDate, formatTime }) => (
+const ResaaTimelineTickLabel = ({ timestamp, formatPrimary, formatTime, showTime }) => (
   <>
-    <span className="resaa-timeline-tick-label__date">{formatDate(timestamp)}</span>
-    <span className="resaa-timeline-tick-label__time">{formatTime(timestamp)}</span>
+    <span className="resaa-timeline-tick-label__date">{formatPrimary(timestamp)}</span>
+    <span
+      className={`resaa-timeline-tick-label__time${showTime ? '' : ' resaa-timeline-tick-label__time--placeholder'}`}
+      aria-hidden={!showTime}
+    >
+      {showTime ? formatTime(timestamp) : '\u00A0'}
+    </span>
   </>
 );
 
-const formatHourlyTick = (ms, formatDate, formatTime) => (
-  <ResaaHourlyTickLabel
-    timestamp={new Date(ms)}
-    formatDate={formatDate}
-    formatTime={formatTime}
-  />
-);
-
+const TIMELINE_MARKER_HEIGHT = 36;
 const MARKER_VERTICAL_OFFSET = 14;
+const SCATTER_MARGIN_TOP = 18;
+const TIMELINE_RAIL_TOP_OFFSET = 22;
+const TIMELINE_RAIL_BAND_HEIGHT = 50;
+const TIMELINE_SECTION_HEIGHT = 96;
 
 const toIntervalPercent = (time, extentStart, extentSpan) => (
   ((time - extentStart) / extentSpan) * 100
 );
+
+const TIMELINE_TOOLBAR_CONTROL_HEIGHT = 36;
+
+const minimapPanButtonSx = {
+  flexShrink: 0,
+  width: TIMELINE_TOOLBAR_CONTROL_HEIGHT,
+  height: TIMELINE_TOOLBAR_CONTROL_HEIGHT,
+  borderRadius: 0,
+  color: '#5f6b7a',
+  '&:hover': {
+    backgroundColor: 'rgba(74, 134, 232, 0.14)',
+    color: '#4a86e8',
+  },
+  '&.Mui-disabled': {
+    color: '#b0b8c4',
+    backgroundColor: 'transparent',
+  },
+};
 
 const ResaaTimelineMinimap = ({
   dataExtent,
@@ -322,9 +387,17 @@ const ResaaTimelineMinimap = ({
   const extentEnd = dataExtent[1].getTime();
   const extentSpan = Math.max(extentEnd - extentStart, 1);
 
-  const viewportLeft = toIntervalPercent(viewportInterval[0].getTime(), extentStart, extentSpan);
-  const viewportRight = toIntervalPercent(viewportInterval[1].getTime(), extentStart, extentSpan);
-  const viewportWidth = Math.min(100 - viewportLeft, Math.max(viewportRight - viewportLeft, 1.5));
+  const visibleViewport = useMemo(() => {
+    const rawLeft = toIntervalPercent(viewportInterval[0].getTime(), extentStart, extentSpan);
+    const rawRight = toIntervalPercent(viewportInterval[1].getTime(), extentStart, extentSpan);
+    const visibleLeft = Math.max(0, rawLeft);
+    const visibleRight = Math.min(100, rawRight);
+    const visibleWidth = visibleRight - visibleLeft;
+    if (visibleWidth <= 0) {
+      return null;
+    }
+    return { left: visibleLeft, width: visibleWidth };
+  }, [viewportInterval, extentStart, extentSpan]);
 
   const handleTrackClick = useCallback((event) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -342,10 +415,7 @@ const ResaaTimelineMinimap = ({
       sx={{
         position: 'relative',
         flex: 1,
-        height: 28,
-        borderRadius: 1,
-        backgroundColor: '#eef1f5',
-        border: '1px solid #dde2e8',
+        height: TIMELINE_TOOLBAR_CONTROL_HEIGHT,
         cursor: 'pointer',
         overflow: 'hidden',
       }}
@@ -371,21 +441,23 @@ const ResaaTimelineMinimap = ({
           />
         );
       })}
-      <Box
-        className="resaa-timeline-minimap__viewport"
-        sx={{
-          position: 'absolute',
-          left: `${viewportLeft}%`,
-          width: `${viewportWidth}%`,
-          top: 2,
-          bottom: 2,
-          borderRadius: 0.5,
-          border: '2px solid #4a86e8',
-          backgroundColor: 'rgba(74, 134, 232, 0.18)',
-          pointerEvents: 'none',
-          boxSizing: 'border-box',
-        }}
-      />
+      {visibleViewport && (
+        <Box
+          className="resaa-timeline-minimap__viewport"
+          sx={{
+            position: 'absolute',
+            left: `${visibleViewport.left}%`,
+            width: `${visibleViewport.width}%`,
+            top: 2,
+            bottom: 2,
+            borderRadius: 0.5,
+            border: '2px solid #4a86e8',
+            backgroundColor: 'rgba(74, 134, 232, 0.18)',
+            pointerEvents: 'none',
+            boxSizing: 'border-box',
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -401,9 +473,9 @@ const TimelineMarkerShape = ({
   return (
     <rect
       x={cx - 1.5}
-      y={cy - 11 - MARKER_VERTICAL_OFFSET}
+      y={cy - (TIMELINE_MARKER_HEIGHT / 2) - MARKER_VERTICAL_OFFSET}
       width={3}
-      height={22}
+      height={TIMELINE_MARKER_HEIGHT}
       fill={payload.color}
       opacity={0.92}
       rx={0.5}
@@ -423,8 +495,6 @@ const ResaaTimelineTimeRangeFilter = ({
   onChange,
 }) => {
   const { fsd, md, yd, nt, t_i18n } = useFormatter();
-  const isHourlyGranularity = granularity === 'hourly';
-
   const alignedTimelineInterval = useMemo(
     () => alignTimelineIntervalToGranularity(timelineInterval, granularity),
     [timelineInterval, granularity],
@@ -442,26 +512,38 @@ const ResaaTimelineTimeRangeFilter = ({
     return Math.ceil(tickValues.length / MAX_LABEL_COUNT);
   }, [tickValues]);
 
-  const step = useMemo(() => {
-    if (tickValues.length >= 2) {
-      return tickValues[1] - tickValues[0];
-    }
-    return GRANULARITY_STEP_MS[granularity];
-  }, [tickValues, granularity]);
+  const step = useMemo(
+    () => getTimelineSliderStep(tickValues, granularity),
+    [tickValues, granularity],
+  );
+
+  const [dragSelection, setDragSelection] = useState(null);
 
   const formatTick = useMemo(() => {
-    switch (granularity) {
-      case 'hourly':
-        return (ms) => formatHourlyTick(ms, fsd, nt);
-      case 'daily':
-        return (ms) => fsd(new Date(ms));
-      case 'monthly':
-        return (ms) => md(new Date(ms));
-      case 'yearly':
-        return (ms) => yd(new Date(ms));
-      default:
-        return (ms) => fsd(new Date(ms));
-    }
+    const formatPrimary = (() => {
+      switch (granularity) {
+        case 'hourly':
+        case 'daily':
+          return fsd;
+        case 'monthly':
+          return md;
+        case 'yearly':
+          return yd;
+        default:
+          return fsd;
+      }
+    })();
+
+    return function formatResaaTimelineTick(ms) {
+      return (
+        <ResaaTimelineTickLabel
+          timestamp={new Date(ms)}
+          formatPrimary={formatPrimary}
+          formatTime={nt}
+          showTime={granularity === 'hourly'}
+        />
+      );
+    };
   }, [granularity, fsd, md, yd, nt]);
 
   const timeDomain = useMemo(
@@ -490,12 +572,32 @@ const ResaaTimelineTimeRangeFilter = ({
     [selectedInterval, tickValues, alignedTimelineInterval],
   );
 
+  const displaySelectedInterval = dragSelection ?? snappedSelectedInterval;
+
+  useEffect(() => {
+    setDragSelection(null);
+  }, [granularity, alignedTimelineInterval[0].getTime(), alignedTimelineInterval[1].getTime()]);
+
   const { canPanBackward, canPanForward } = useMemo(
     () => getTimelineViewportPanState(alignedTimelineInterval, dataExtent),
     [alignedTimelineInterval, dataExtent],
   );
 
+  const handleTimeRangeUpdate = useCallback((update) => {
+    if (granularity !== 'monthly' && granularity !== 'yearly') {
+      return;
+    }
+    const interval = update?.time ?? update;
+    if (!interval || interval.length !== 2) {
+      return;
+    }
+    setDragSelection(
+      snapIntervalToTickValues(interval, tickValues, alignedTimelineInterval),
+    );
+  }, [granularity, tickValues, alignedTimelineInterval]);
+
   const handleTimeRangeChange = (interval) => {
+    setDragSelection(null);
     if (!interval || interval.length !== 2) {
       return;
     }
@@ -518,16 +620,69 @@ const ResaaTimelineTimeRangeFilter = ({
       <Box
         sx={{
           display: 'flex',
-          justifyContent: 'flex-end',
-          marginBottom: 1.5,
+          alignItems: 'center',
+          gap: 2,
+          width: '100%',
+          marginBottom: 1,
         }}
       >
+        <Box
+          className="resaa-timeline-minimap-group"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            flex: 1,
+            minWidth: 0,
+            height: TIMELINE_TOOLBAR_CONTROL_HEIGHT,
+            borderRadius: 1,
+            border: '1px solid #dde2e8',
+            backgroundColor: '#eef1f5',
+            overflow: 'hidden',
+          }}
+        >
+          <IconButton
+            size="small"
+            className="resaa-timeline-minimap-pan"
+            disabled={!canPanBackward}
+            aria-label={t_i18n('Previous period')}
+            onClick={() => onViewportPan(-1)}
+            sx={{
+              ...minimapPanButtonSx,
+              borderRight: '1px solid #dde2e8',
+            }}
+          >
+            <ChevronLeft fontSize="small" />
+          </IconButton>
+          <ResaaTimelineMinimap
+            dataExtent={dataExtent}
+            viewportInterval={alignedTimelineInterval}
+            items={items}
+            onNavigate={onViewportNavigate}
+          />
+          <IconButton
+            size="small"
+            className="resaa-timeline-minimap-pan"
+            disabled={!canPanForward}
+            aria-label={t_i18n('Next period')}
+            onClick={() => onViewportPan(1)}
+            sx={{
+              ...minimapPanButtonSx,
+              borderLeft: '1px solid #dde2e8',
+            }}
+          >
+            <ChevronRight fontSize="small" />
+          </IconButton>
+        </Box>
         <ToggleButtonGroup
           size="small"
           exclusive
           value={granularity}
           onChange={handleGranularityChange}
           aria-label={t_i18n('Time step')}
+          sx={{
+            flexShrink: 0,
+            height: TIMELINE_TOOLBAR_CONTROL_HEIGHT,
+          }}
         >
           <ToggleButton value="hourly">
             {t_i18n('Hourly')}
@@ -545,59 +700,31 @@ const ResaaTimelineTimeRangeFilter = ({
       </Box>
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          width: '90%',
-          marginX: 'auto',
-          marginBottom: 1.5,
-        }}
-      >
-        <IconButton
-          size="small"
-          disabled={!canPanBackward}
-          aria-label={t_i18n('Previous period')}
-          onClick={() => onViewportPan(-1)}
-          sx={{ flexShrink: 0 }}
-        >
-          <ChevronLeft fontSize="small" />
-        </IconButton>
-        <ResaaTimelineMinimap
-          dataExtent={dataExtent}
-          viewportInterval={alignedTimelineInterval}
-          items={items}
-          onNavigate={onViewportNavigate}
-        />
-        <IconButton
-          size="small"
-          disabled={!canPanForward}
-          aria-label={t_i18n('Next period')}
-          onClick={() => onViewportPan(1)}
-          sx={{ flexShrink: 0 }}
-        >
-          <ChevronRight fontSize="small" />
-        </IconButton>
-      </Box>
-      <Box
-        sx={{
           position: 'relative',
-          height: isHourlyGranularity ? 100 : 88,
+          height: TIMELINE_SECTION_HEIGHT,
           width: '100%',
           overflow: 'visible',
         }}
       >
         <Box
           sx={{
-            width: '90%',
-            marginX: 'auto',
-            height: 60,
+            position: 'absolute',
+            top: TIMELINE_RAIL_TOP_OFFSET,
+            left: 0,
+            right: 0,
+            height: TIMELINE_RAIL_BAND_HEIGHT,
             pointerEvents: 'none',
           }}
         >
-          <ResponsiveContainer width="100%" height={60}>
+          <ResponsiveContainer width="100%" height="100%">
             <ScatterChart
-              height={60}
-              margin={{ top: 20, bottom: 0, left: 0, right: 0 }}
+              height={TIMELINE_RAIL_BAND_HEIGHT}
+              margin={{
+                top: SCATTER_MARGIN_TOP,
+                bottom: 0,
+                left: 0,
+                right: 0,
+              }}
             >
               <XAxis
                 type="number"
@@ -630,7 +757,7 @@ const ResaaTimelineTimeRangeFilter = ({
         <Box
           sx={{
             position: 'absolute',
-            top: 30,
+            top: TIMELINE_RAIL_TOP_OFFSET,
             left: 0,
             right: 0,
             bottom: 0,
@@ -642,14 +769,16 @@ const ResaaTimelineTimeRangeFilter = ({
             tickValues={tickValues}
             showUnitTickMarkers
             tickLabelEvery={tickLabelEvery}
-            selectedInterval={snappedSelectedInterval}
+            selectedInterval={displaySelectedInterval}
             timelineInterval={alignedTimelineInterval}
             step={step}
-            onUpdateCallback={() => null}
+            onUpdateCallback={granularity === 'monthly' || granularity === 'yearly'
+              ? handleTimeRangeUpdate
+              : () => null}
             onChangeCallback={handleTimeRangeChange}
             formatTick={formatTick}
-            tickLabelMultiline={isHourlyGranularity}
-            containerClassName={`timerange resaa-timeline-timerange${isHourlyGranularity ? ' resaa-timeline-timerange--hourly' : ''}`}
+            tickLabelMultiline
+            containerClassName="timerange resaa-timeline-timerange resaa-timeline-timerange--stacked-labels react_time_range__time_range_container"
           />
         </Box>
       </Box>
