@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } fr
 import StixCoreObjectHistoryLine from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
 import { useFormatter } from 'src/components/i18n';
 import useInterval from 'src/utils/hooks/useInterval';
-import { FIVE_SECONDS } from 'src/utils/Time';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import HistoryDrawer from '@components/common/drawer/HistoryDrawer';

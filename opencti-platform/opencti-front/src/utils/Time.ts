@@ -1,4 +1,4 @@
-import moment from 'moment-timezone';
+import moment, { Moment } from 'moment-timezone';
 import { subDays } from 'date-fns';
 import { isNone } from '../components/i18n';
 
@@ -10,22 +10,25 @@ export const FIVE_SECONDS = 5000;
 export const TEN_SECONDS = FIVE_SECONDS * 2;
 export const THIRTY_SECONDS = TEN_SECONDS * 3;
 
-export const buildDate = (date) => {
+type DateInput = string | number | Date;
+
+export const buildDate = (date: DateInput): Date | null => {
   if (isNone(date)) {
     return null;
   }
   return new Date(date);
 };
 
-export const parse = (date) => moment(date);
-export const formatDate = (date) => {
+export const parse = (date: DateInput): Moment => moment(date);
+
+export const formatDate = (date: DateInput): string | null => {
   if (isNone(date)) {
     return null;
   }
   return parse(date).format();
 };
 
-export const dayStartDate = (date = null, fromStart = true) => {
+export const dayStartDate = (date: DateInput | null = null, fromStart = true): Date => {
   let start = new Date();
   if (date) {
     start = parse(date).toDate();
@@ -36,7 +39,7 @@ export const dayStartDate = (date = null, fromStart = true) => {
   return start;
 };
 
-export const dayEndDate = (date = null) => {
+export const dayEndDate = (date: DateInput | null = null): Date => {
   let end = new Date();
   if (date) {
     end = parse(date).toDate();
@@ -45,17 +48,26 @@ export const dayEndDate = (date = null) => {
   return end;
 };
 
-export const now = () => moment().format();
+export const now = (): string => moment().format();
 
-export const nowUTC = () => moment().utc().format();
+export const nowUTC = (): string => moment().utc().format();
 
-export const dayAgo = () => moment().subtract(1, 'days').format();
+export const dayAgo = (): string => moment().subtract(1, 'days').format();
 
-export const daysAgo = (number, date, fromStart = true) => moment(dayStartDate(date ?? null, fromStart)).subtract(number, 'days').format();
+export const daysAgo = (
+  number: number | string,
+  date: DateInput | null = null,
+  fromStart = true,
+): string =>
+  moment(dayStartDate(date ?? null, fromStart)).subtract(number, 'days').format();
 
-export const lastDayOfThePreviousMonth = () => moment().subtract(1, 'months').endOf('month').format();
+export const lastDayOfThePreviousMonth = (): string => moment().subtract(1, 'months').endOf('month').format();
 
-export const daysAfter = (number, date, noFuture = true) => {
+export const daysAfter = (
+  number: number | string,
+  date?: DateInput | null,
+  noFuture = true,
+): string => {
   const newDate = moment(date || dayStartDate())
     .add(number, 'days')
     .format();
@@ -65,20 +77,27 @@ export const daysAfter = (number, date, noFuture = true) => {
   return newDate;
 };
 
-export const minutesBefore = (number, date) => moment(date || dayStartDate())
-  .subtract(number, 'minutes')
-  .format();
+export const minutesBefore = (
+  number: number | string,
+  date?: DateInput | null,
+): string =>
+  moment(date || dayStartDate())
+    .subtract(number, 'minutes')
+    .format();
 
-export const monthsAgo = (number) => moment(dayStartDate()).subtract(number, 'months').format();
+export const monthsAgo = (number: number | string): string => moment(dayStartDate()).subtract(number, 'months').format();
 
-export const yearsAgo = (number) => moment(dayStartDate()).subtract(number, 'years').format();
+export const yearsAgo = (number: number | string): string => moment(dayStartDate()).subtract(number, 'years').format();
 
-export const yearFormat = (data) => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
+export const yearFormat = (data: DateInput): string => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
 
 /**
  * @param {string | null} specificFormat
  */
-export const dateFormat = (data, specificFormat = null) => {
+export const dateFormat = (
+  data: DateInput | null,
+  specificFormat: string | null = null,
+): string | null => {
   if (isNone(data)) {
     return null;
   }
@@ -87,28 +106,28 @@ export const dateFormat = (data, specificFormat = null) => {
     : '';
 };
 
-export const formatTimeForToday = (time) => {
+export const formatTimeForToday = (time: string): string => {
   const today = dateFormat(new Date(), 'YYYY-MM-DD');
   return `${today}T${time}`;
 };
 
-export const timestamp = (date) => parse(date).unix();
+export const timestamp = (date: DateInput): number => parse(date).unix();
 
-export const jsDate = (date) => parse(date).toDate();
+export const jsDate = (date: DateInput): Date => parse(date).toDate();
 
-export const minutesBetweenDates = (startDate, endDate) => {
+export const minutesBetweenDates = (startDate: DateInput, endDate: DateInput): number => {
   const start = parse(startDate);
   const end = parse(endDate);
   return end.diff(start, 'minutes') + 1;
 };
 
-export const secondsBetweenDates = (startDate, endDate) => {
+export const secondsBetweenDates = (startDate: DateInput, endDate: DateInput): number => {
   const start = parse(startDate);
   const end = parse(endDate);
   return end.diff(start, 'seconds') + 1;
 };
 
-export const daysBetweenDates = (startDate, endDate) => {
+export const daysBetweenDates = (startDate: DateInput, endDate: DateInput): number => {
   const start = parse(startDate);
   const end = parse(endDate);
   return end.diff(start, 'days') + 1;
@@ -119,10 +138,10 @@ export const daysBetweenDates = (startDate, endDate) => {
  *
  * @param {number} seconds
  */
-export const formatSeconds = (seconds) => {
+export const formatSeconds = (seconds: number): string => {
   const ONE_MINUTE = 60;
   const ONE_HOUR = ONE_MINUTE * ONE_MINUTE;
-  const leadingZero = (value) => {
+  const leadingZero = (value: number): string => {
     return value < 10 ? `0${value}` : String(value);
   };
   const hours = Math.floor(seconds / ONE_HOUR);
@@ -138,9 +157,13 @@ export const formatSeconds = (seconds) => {
 /**
  * Returns a string of the format "1 day 3 hours 58 minutes" from a given number of minutes.
  *
- * @param {number} minutes
+ * @param input The number of minutes.
+ * @param t_i18n Translation function.
  */
-export const stringFormatMinutes = (input, t_i18n) => {
+export const stringFormatMinutes = (
+  input: number,
+  t_i18n: (s: string) => string,
+): string => {
   const ONE_HOUR = 60;
   const ONE_DAY = ONE_HOUR * 24;
   const days = Math.floor(input / ONE_DAY);
@@ -160,7 +183,7 @@ export const stringFormatMinutes = (input, t_i18n) => {
  * @param relativeDate How much time to go before (ex: days-7).
  * @return {string|null} The past date.
  */
-export const computerRelativeDate = (relativeDate) => {
+export const computerRelativeDate = (relativeDate: string): string | null => {
   if (relativeDate.includes('days')) {
     return daysAgo(relativeDate.split('-')[1], null, false);
   }
@@ -173,7 +196,7 @@ export const computerRelativeDate = (relativeDate) => {
   return null;
 };
 
-export const streamEventIdToDate = (streamEventId) => {
+export const streamEventIdToDate = (streamEventId: string | undefined | null): Moment => {
   return parse(parseInt((streamEventId || '-').split('-')[0], 10));
 };
 
@@ -185,7 +208,10 @@ export const streamEventIdToDate = (streamEventId) => {
  * @param {function} t_i18n - Translation function for internationalization
  * @returns {string} Formatted uptime string or 'Not available' if input is null/undefined
  */
-export const formatUptime = (uptimeInSeconds, t_i18n) => {
+export const formatUptime = (
+  uptimeInSeconds: number | null | undefined,
+  t_i18n: (s: string) => string,
+): string => {
   if (uptimeInSeconds == null) {
     return t_i18n('Not available');
   }
@@ -195,7 +221,7 @@ export const formatUptime = (uptimeInSeconds, t_i18n) => {
   const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
   const seconds = uptimeInSeconds % 60;
 
-  const parts = [];
+  const parts: string[] = [];
   if (days > 0) parts.push(`${days} ${t_i18n(days === 1 ? 'day' : 'days')}`);
   if (hours > 0) parts.push(`${hours} ${t_i18n(hours === 1 ? 'hour' : 'hours')}`);
   if (minutes > 0) parts.push(`${minutes} ${t_i18n(minutes === 1 ? 'minute' : 'minutes')}`);
@@ -215,7 +241,10 @@ export const formatUptime = (uptimeInSeconds, t_i18n) => {
  * @param operator - The associated filter operator
  * @returns The date value to be displayed
  */
-export const dateFiltersValueForDisplay = (dateFilterValue, filterOperator) => {
+export const dateFiltersValueForDisplay = (
+  dateFilterValue: Date | string | null,
+  filterOperator: string | null | undefined,
+): Date | string | null => {
   if (filterOperator && dateFilterValue && ['lte', 'gt'].includes(filterOperator)) {
     return subDays(dateFilterValue, 1);
   }
