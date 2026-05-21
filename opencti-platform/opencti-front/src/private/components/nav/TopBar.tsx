@@ -31,6 +31,7 @@ import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
 import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarNewsFeedNumberSubscription$data } from './__generated__/TopBarNewsFeedNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
@@ -100,6 +101,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
@@ -242,7 +244,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       <Toolbar
         style={{
           alignItems: 'center',
-          marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
+          marginTop: bannerHeightNumber + settingsMessagesBannerHeight + topBannerHeight,
           height: '100%',
           minHeight: 68,
           paddingLeft: theme.spacing(3),

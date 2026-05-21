@@ -8,6 +8,7 @@ import { useFormatter } from '../../components/i18n';
 import { APP_BASE_PATH, fetchQuery } from '../../relay/environment';
 import { formatSeconds, ONE_SECOND, secondsBetweenDates } from '../../utils/Time';
 import useAuth from '../../utils/hooks/useAuth';
+import useTopBanner from '../../utils/hooks/useTopBanner';
 
 /**
  * Gets timeout and banner settings from react relay and return those values.
@@ -77,6 +78,7 @@ const TimeoutLock: React.FunctionComponent = () => {
   const {
     bannerSettings: { bannerHeightNumber, idleLimit, sessionLimit },
   } = useAuth();
+  const { height: topBannerHeight } = useTopBanner();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [state, dispatch] = useReducer(timeoutReducer, {
     idleLimit,
@@ -235,8 +237,8 @@ const TimeoutLock: React.FunctionComponent = () => {
       disableEscapeKeyDown={true}
       sx={{
         backdropFilter: 'blur(15px)',
-        marginTop: `${bannerHeightNumber}px`,
-        height: `calc(100% - ${bannerHeightNumber * 2}px)`,
+        marginTop: `${topBannerHeight + bannerHeightNumber}px`,
+        height: `calc(100% - ${topBannerHeight + bannerHeightNumber * 2}px)`,
       }}
       title={(
         <>

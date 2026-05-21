@@ -3,7 +3,6 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
-import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
@@ -23,7 +22,6 @@ import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
 import useActiveTheme from '../utils/hooks/useActiveTheme';
 import { AppDataProvider } from '../utils/hooks/useAppData';
 import { ExportThemeProvider } from '../utils/ExportThemeContext';
-import { TOP_BANNER_HEIGHT } from '../components/TopBanner';
 import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
 import { CustomViewsPreloadedDataContextProvider } from './components/custom_views/CustomViewsPreloadedDataContext';
 
@@ -57,6 +55,7 @@ const rootSettingsFragment = graphql`
     platform_opengrc_url
     platform_xtmhub_url
     xtm_hub_registration_status
+    xtm_hub_backend_is_reachable
     platform_whitemark
     platform_organization {
       id
@@ -381,18 +380,6 @@ const rootPrivateQuery = graphql`
   }
 `;
 
-const displayTopBanner = (settings: RootSettings$data) => {
-  const displayTrialBanner = isNotEmptyField(settings?.platform_xtmhub_url) && settings.platform_demo;
-
-  const eeSettings = settings?.platform_enterprise_edition;
-  const displayLicenseBanner = (eeSettings?.license_enterprise && (
-    !eeSettings.license_validated || eeSettings.license_extra_expiration || eeSettings.license_type === LICENSE_OPTION_TRIAL
-  )
-  );
-
-  return (displayTrialBanner || displayLicenseBanner);
-};
-
 const computeBannerSettings = (settings: RootSettings$data) => {
   const bannerLevel = settings.platform_banner_level;
   const bannerText = settings.platform_banner_text;
@@ -403,7 +390,7 @@ const computeBannerSettings = (settings: RootSettings$data) => {
   const sessionLimit = sessionTimeout
     ? Math.floor(sessionTimeout / ONE_SECOND)
     : 0;
-  const bannerHeightNumber = (displayTopBanner(settings) ? TOP_BANNER_HEIGHT : 0) + (isBannerActivated ? SYSTEM_BANNER_HEIGHT : 0);
+  const bannerHeightNumber = isBannerActivated ? SYSTEM_BANNER_HEIGHT : 0;
   const bannerHeight = bannerHeightNumber !== 0 ? `${bannerHeightNumber}px` : '0';
   return {
     bannerText,
