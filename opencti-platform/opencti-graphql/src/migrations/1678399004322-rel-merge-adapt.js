@@ -34,7 +34,7 @@ export const up = async (next) => {
           params[key] = Array.isArray(data[key]) ? data[key].flat() : data[key];
         }
       }
-      await elUpdate(data._index, mergedId, {
+      await elUpdate(context, data._index, mergedId, {
         script: {
           source: 'for (key in ctx._source.keySet()) { '
             + "if (key.startsWith('rel_')) { "
