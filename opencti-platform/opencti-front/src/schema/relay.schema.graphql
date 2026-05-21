@@ -10706,6 +10706,7 @@ type Mutation {
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub(message: String!): Success!
+  markAllNewsFeedItemsAsRead: Boolean
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
   oidcProviderAdd(input: OidcInput!): AuthenticationProvider
   oidcProviderEdit(id: ID!, input: OidcInput!): AuthenticationProvider
