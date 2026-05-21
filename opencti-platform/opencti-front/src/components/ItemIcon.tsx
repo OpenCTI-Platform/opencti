@@ -360,6 +360,7 @@ const iconSelector = (
         <TaskAlt style={style} fontSize={fontSize} role="img" />
       );
     case 'security-coverage':
+    case 'security-coverage-result':
       return (
         <ShieldCheckOutline style={style} fontSize={fontSize} role="img" />
       );
