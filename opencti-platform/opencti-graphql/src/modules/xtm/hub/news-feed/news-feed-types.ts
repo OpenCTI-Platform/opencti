@@ -3,6 +3,7 @@ import type { StixObject, StixOpenctiExtensionSDO } from '../../../../types/stix
 import { STIX_EXT_OCTI } from '../../../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_NEWS_FEED_ITEM = 'NewsFeedItem';
+export const NEWS_FEED_NUMBER = 'NewsFeedNumber';
 
 export enum NewsFeedItemType {
   RESOURCE_CUSTOM_DASHBOARD = 'RESOURCE_CUSTOM_DASHBOARD',

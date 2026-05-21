@@ -20770,6 +20770,12 @@ export type NetworkTrafficAddInput = {
   upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
+export type NewsFeedCount = {
+  __typename?: 'NewsFeedCount';
+  count?: Maybe<Scalars['Int']['output']>;
+  user_id?: Maybe<Scalars['String']['output']>;
+};
+
 export type NewsFeedItem = BasicObject & InternalObject & {
   __typename?: 'NewsFeedItem';
   creation_date: Scalars['DateTime']['output'];
@@ -32804,6 +32810,8 @@ export type Subscription = {
   managerConfiguration?: Maybe<ManagerConfiguration>;
   markingDefinition?: Maybe<MarkingDefinition>;
   me?: Maybe<MeUser>;
+  newsFeedItem?: Maybe<NewsFeedItem>;
+  newsFeedsNumber?: Maybe<NewsFeedCount>;
   notification?: Maybe<Notification>;
   notificationsNumber?: Maybe<NotificationCount>;
   securityCoverage?: Maybe<SecurityCoverage>;
@@ -39578,6 +39586,7 @@ export type ResolversTypes = ResolversObject<{
   NarrativesOrdering: NarrativesOrdering;
   NetworkTraffic: ResolverTypeWrapper<Omit<NetworkTraffic, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   NetworkTrafficAddInput: NetworkTrafficAddInput;
+  NewsFeedCount: ResolverTypeWrapper<NewsFeedCount>;
   NewsFeedItem: ResolverTypeWrapper<NewsFeedItem>;
   NewsFeedItemConnection: ResolverTypeWrapper<NewsFeedItemConnection>;
   NewsFeedItemEdge: ResolverTypeWrapper<NewsFeedItemEdge>;
@@ -40610,6 +40619,7 @@ export type ResolversParentTypes = ResolversObject<{
   NarrativeEdge: Omit<NarrativeEdge, 'node'> & { node: ResolversParentTypes['Narrative'] };
   NetworkTraffic: Omit<NetworkTraffic, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   NetworkTrafficAddInput: NetworkTrafficAddInput;
+  NewsFeedCount: NewsFeedCount;
   NewsFeedItem: NewsFeedItem;
   NewsFeedItemConnection: NewsFeedItemConnection;
   NewsFeedItemEdge: NewsFeedItemEdge;
@@ -47397,6 +47407,11 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type NewsFeedCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedCount'] = ResolversParentTypes['NewsFeedCount']> = ResolversObject<{
+  count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type NewsFeedItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedItem'] = ResolversParentTypes['NewsFeedItem']> = ResolversObject<{
   creation_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50758,6 +50773,8 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   managerConfiguration?: SubscriptionResolver<Maybe<ResolversTypes['ManagerConfiguration']>, "managerConfiguration", ParentType, ContextType, RequireFields<SubscriptionManagerConfigurationArgs, 'id'>>;
   markingDefinition?: SubscriptionResolver<Maybe<ResolversTypes['MarkingDefinition']>, "markingDefinition", ParentType, ContextType, RequireFields<SubscriptionMarkingDefinitionArgs, 'id'>>;
   me?: SubscriptionResolver<Maybe<ResolversTypes['MeUser']>, "me", ParentType, ContextType>;
+  newsFeedItem?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedItem']>, "newsFeedItem", ParentType, ContextType>;
+  newsFeedsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedCount']>, "newsFeedsNumber", ParentType, ContextType>;
   notification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "notification", ParentType, ContextType>;
   notificationsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NotificationCount']>, "notificationsNumber", ParentType, ContextType>;
   securityCoverage?: SubscriptionResolver<Maybe<ResolversTypes['SecurityCoverage']>, "securityCoverage", ParentType, ContextType, RequireFields<SubscriptionSecurityCoverageArgs, 'id'>>;
@@ -52821,6 +52838,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NarrativeConnection?: NarrativeConnectionResolvers<ContextType>;
   NarrativeEdge?: NarrativeEdgeResolvers<ContextType>;
   NetworkTraffic?: NetworkTrafficResolvers<ContextType>;
+  NewsFeedCount?: NewsFeedCountResolvers<ContextType>;
   NewsFeedItem?: NewsFeedItemResolvers<ContextType>;
   NewsFeedItemConnection?: NewsFeedItemConnectionResolvers<ContextType>;
   NewsFeedItemEdge?: NewsFeedItemEdgeResolvers<ContextType>;

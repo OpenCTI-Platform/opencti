@@ -1,7 +1,7 @@
 import { Badge } from '@mui/material';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
 import { Navigate, Outlet, useMatch, useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -9,8 +9,10 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useHelper from '../../../utils/hooks/useHelper';
+import { requestSubscription } from '../../../relay/environment';
 import type { NotificationsUnreadNewsFeedsCountQuery } from './__generated__/NotificationsUnreadNewsFeedsCountQuery.graphql';
 import { NotificationsNotificationNumberSubscription$data } from '@components/profile/__generated__/NotificationsNotificationNumberSubscription.graphql';
+import { NotificationsNewsFeedNumberSubscription$data } from './__generated__/NotificationsNewsFeedNumberSubscription.graphql';
 
 const notificationsUnreadNewsFeedsCountQuery = graphql`
   query NotificationsUnreadNewsFeedsCountQuery($skipNewsFeedsCount: Boolean!) {
@@ -22,6 +24,14 @@ const notificationsUnreadNewsFeedsCountQuery = graphql`
 const notificationsNumberSubscription = graphql`
   subscription NotificationsNotificationNumberSubscription {
     notificationsNumber {
+      count
+    }
+  }
+`;
+
+const newsFeedNumberSubscription = graphql`
+  subscription NotificationsNewsFeedNumberSubscription {
+    newsFeedsNumber {
       count
     }
   }
@@ -44,9 +54,9 @@ const Notifications: FunctionComponent = () => {
     notificationsUnreadNewsFeedsCountQuery,
     { skipNewsFeedsCount: !isNewsFeedTabVisible },
   );
-  const unreadNewsFeedsCount = data.myUnreadNewsFeedsCount ?? 0;
 
   const [liveNotificationsCount, setLiveNotificationsCount] = useState<number | null>(null);
+  const [liveNewsFeedsCount, setLiveNewsFeedsCount] = useState<number | null>(null);
 
   const subConfig = useMemo(() => ({
     subscription: notificationsNumberSubscription,
@@ -58,9 +68,25 @@ const Notifications: FunctionComponent = () => {
   }), []);
   useSubscription(subConfig);
 
+  useEffect(() => {
+    if (!isNewsFeedTabVisible) return undefined;
+    const sub = requestSubscription({
+      subscription: newsFeedNumberSubscription,
+      variables: {},
+      onNext: (response: NotificationsNewsFeedNumberSubscription$data | null | undefined | unknown) => {
+        const count = response ? (response as NotificationsNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
+        setLiveNewsFeedsCount(count ?? null);
+      },
+    });
+    return () => sub.dispose();
+  }, [isNewsFeedTabVisible]);
+
   const unreadNotificationsCount = liveNotificationsCount !== null
     ? liveNotificationsCount
     : (data.myUnreadNotificationsCount ?? 0);
+  const unreadNewsFeedsCount = liveNewsFeedsCount !== null
+    ? liveNewsFeedsCount
+    : (data.myUnreadNewsFeedsCount ?? 0);
 
   const activeTab = useMatch('/dashboard/profile/notifications/news-feed') ? 'news-feed' : 'alerts';
 
@@ -86,7 +112,7 @@ const Notifications: FunctionComponent = () => {
           value="alerts"
           sx={{ textTransform: 'none' }}
           label={(
-            <Badge color="error" variant="dot" invisible={unreadNotificationsCount === 0}>
+            <Badge color="error" badgeContent={unreadNotificationsCount} max={99} invisible={unreadNotificationsCount === 0}>
               {t_i18n('Alerts')}
             </Badge>
           )}
@@ -95,7 +121,7 @@ const Notifications: FunctionComponent = () => {
           value="news-feed"
           sx={{ textTransform: 'none' }}
           label={(
-            <Badge color="error" variant="dot" invisible={unreadNewsFeedsCount === 0}>
+            <Badge color="error" badgeContent={unreadNewsFeedsCount} max={99} invisible={unreadNewsFeedsCount === 0}>
               {t_i18n('XTM Hub News Feed')}
             </Badge>
           )}

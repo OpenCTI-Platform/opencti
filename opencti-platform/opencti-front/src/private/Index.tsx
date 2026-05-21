@@ -10,6 +10,7 @@ import StartTrialBanner from '@components/xtm_hub/StartTrialBanner';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Message from '../components/Message';
+import NewsFeedToastManager from './components/nav/NewsFeedToastManager';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
@@ -109,6 +110,7 @@ const Index = ({ settings }: IndexProps) => {
         <TopBar />
         <LeftBar />
         <Message />
+        <NewsFeedToastManager />
         <Stack component="main" sx={mainSx}>
           <Box sx={boxSx}>
             <Suspense fallback={<Loader />}>

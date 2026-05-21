@@ -9802,6 +9802,8 @@ type Subscription {
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
   securityCoverage(id: ID!): SecurityCoverage
+  newsFeedItem: NewsFeedItem
+  newsFeedsNumber: NewsFeedCount
 }
 
 type WorkEditMutations {
@@ -15840,6 +15842,11 @@ type NewsFeedItemConnection {
 type NewsFeedItemEdge {
   cursor: String!
   node: NewsFeedItem!
+}
+
+type NewsFeedCount {
+  user_id: String
+  count: Int
 }
 
 type Metric {
