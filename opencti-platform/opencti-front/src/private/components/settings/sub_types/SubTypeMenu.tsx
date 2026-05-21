@@ -2,7 +2,7 @@ import { Tab, Tabs } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import type { SubTypeTabs } from './SubTypeOutletContext';
-import { getCurrentTab } from '../../../../utils/utils';
+import { getCurrentTab } from '../../../../utils/tabUtils';
 
 interface SubTypeMenuProps {
   entityType: string;

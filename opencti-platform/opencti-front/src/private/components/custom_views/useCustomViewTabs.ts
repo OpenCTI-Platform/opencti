@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
-import { getCurrentTab } from '../../../utils/utils';
+import { getCurrentTab } from '../../../utils/tabUtils';
 import { useCustomViews } from './useCustomViews';
 
 interface UseCustomViewTabsParams {

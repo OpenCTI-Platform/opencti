@@ -1,5 +1,5 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+é;// TODO Remove this when V6
+
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Routes, useParams, useLocation } from 'react-router-dom';
@@ -27,6 +27,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import CountryEdition from './CountryEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -97,7 +98,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   const { country, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_COUNTRY(countryId);
   const link = `${basePath}/knowledge`;
-  const isOverview = location.pathname === basePath;
+  const isOverview = isPathOverview(location.pathname, basePath);
   const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>

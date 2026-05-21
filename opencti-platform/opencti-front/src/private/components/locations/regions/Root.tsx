@@ -27,6 +27,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -97,7 +98,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   const { region, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_REGION(regionId);
   const link = `${basePath}/knowledge`;
-  const isOverview = location.pathname === basePath;
+  const isOverview = isPathOverview(location.pathname, basePath);
   const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>

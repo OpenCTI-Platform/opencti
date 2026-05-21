@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
-import { getCurrentTab } from '../../../../utils/utils';
+import { getCurrentTab } from '../../../../utils/tabUtils';
 import { useFormatter } from '../../../../components/i18n';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import { OtherCustomViewsTab, DefaultCustomViewTab } from '@components/custom_views/CustomViewTab';
