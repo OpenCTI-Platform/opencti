@@ -190,10 +190,9 @@ const buildRateLimitKey = (req: Request): string => {
  * Build a BlockList from CIDR ranges for efficient IP range matching.
  */
 const buildIpRangeSkipList = (ranges: string[]): BlockList => {
-  console.log('buildIpRangeSkipList');
   const blockList = new BlockList();
-  try {
-    for (const range of ranges) {
+  for (const range of ranges) {
+    try {
       if (range.includes('/')) {
         const [subnet, prefixStr] = range.split('/');
         const prefix = parseInt(prefixStr, 10);
@@ -204,10 +203,11 @@ const buildIpRangeSkipList = (ranges: string[]): BlockList => {
         const type = range.includes(':') ? 'ipv6' : 'ipv4';
         blockList.addAddress(range, type);
       }
+    } catch (e: any) {
+      logApp.warn('[HTTP] Error when building the IP range that should be ignored by the rate limit, please verify your configuration.', e);
     }
-  } catch (e: any) {
-    logApp.warn('[HTTP] Error when building the IP range that should be ignored by the rate limit, please verify your configuration.', e);
   }
+
   return blockList;
 };
 
@@ -224,7 +224,7 @@ const matchesUserAgentSkipPrefix = (userAgent: string | undefined, prefixes: str
 // Key = "ip|userAgent", value = last log epoch ms.
 const rateLimitLogThrottle = new Map<string, number>();
 const RATE_LIMIT_LOG_INTERVAL_MS = 60_000; // 1 minute
-
+const MAX_LOG_RATE_ENTRIES = 100;
 /**
  * Log a rate-limit event for an IP + User-Agent pair at most once per minute.
  */
@@ -234,12 +234,16 @@ const logRateLimitThrottled = (ip: string, userAgent: string): void => {
   const lastLogged = rateLimitLogThrottle.get(key);
   if (lastLogged === undefined || now - lastLogged >= RATE_LIMIT_LOG_INTERVAL_MS) {
     rateLimitLogThrottle.set(key, now);
-    logApp.info('[RATE-LIMIT] Rate limited request', { ip, userAgent });
+    logApp.warn('[RATE-LIMIT] Rate limited request', { ip, userAgent });
+    if (rateLimitLogThrottle.size > MAX_LOG_RATE_ENTRIES) {
+      for (const [k, v] of rateLimitLogThrottle) {
+        if (now - v >= RATE_LIMIT_LOG_INTERVAL_MS) rateLimitLogThrottle.delete(k);
+      }
+    }
   }
 };
 
 export const buildRateLimiterOptions = (): Options => {
-  console.log('buildRateLimiterOptions');
   const skipList: string[] = getRateProtectionIpSkipList();
   const skipRanges: string[] = getRateProtectionIpSkipRanges();
   const userAgentSkipPrefixes: string[] = getRateProtectionUserAgentSkipPrefixes();
