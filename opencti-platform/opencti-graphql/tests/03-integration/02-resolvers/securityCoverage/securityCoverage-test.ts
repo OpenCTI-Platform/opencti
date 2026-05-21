@@ -42,7 +42,6 @@ describe('SecurityCoverage resolver', () => {
     });
 
     const securityCoverageData = securityCoverage.data?.securityCoverageAdd;
-    console.log(securityCoverageData);
     expect(securityCoverageData).toBeDefined();
     expect(securityCoverageData.name).toEqual('SC name');
     expect(securityCoverageData.coverage_last_result.toISOString()).toEqual('2023-08-06T11:39:36.949Z');
