@@ -57,6 +57,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const showAllMembersLine = !settings.platform_organization?.id;
   const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
   const { xtmOneConfigured } = useChatbot();
+  const isXtmOneConfigured = !!xtmOneConfigured;
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = React.useState(false);
   const [availableAgents, setAvailableAgents] = useState<AgentOption[]>([]);
@@ -65,7 +66,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
 
   // Pre-fetch agent counts for all XTM One connectors to disable those with no agents
   useEffect(() => {
-    if (!xtmOneConfigured) {
+    if (!isXtmOneConfigured) {
       setIntentAgentCounts({});
       return;
     }
@@ -78,13 +79,13 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         setIntentAgentCounts((prev) => ({ ...prev, [intent]: agents.length }));
       });
     });
-  }, [connectors, xtmOneConfigured]);
+  }, [connectors, isXtmOneConfigured]);
 
   // Fetch agents when a connector with xtm_one_intent is selected
   // Also stores a pending pre-select slug to apply once inside Formik render
   const [pendingAgentConfig, setPendingAgentConfig] = useState<string>('');
   useEffect(() => {
-    const intent = xtmOneConfigured ? selectedConnector?.xtm_one_intent : undefined;
+    const intent = isXtmOneConfigured ? selectedConnector?.xtm_one_intent : undefined;
     if (intent) {
       fetchAgentsForIntent(intent).then((agents) => {
         setAvailableAgents(agents);
@@ -97,7 +98,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       setAvailableAgents([]);
       setPendingAgentConfig('');
     }
-  }, [selectedConnector, xtmOneConfigured]);
+  }, [selectedConnector, isXtmOneConfigured]);
 
   const handleSetCsvMapper = (_: UIEvent, csvMapper: string) => {
     try {
@@ -234,7 +235,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
 
   // XTM One connector requires agent selection when agents are available
   const requiresAgentSelection = !!selectedConnector?.xtm_one_intent
-    && xtmOneConfigured
+    && isXtmOneConfigured
     && availableAgents.length > 0;
 
   const draftInitialValues = useDefaultValues<Omit<DraftAddInput, 'name'>>(DRAFTWORKSPACE_TYPE, {
@@ -288,7 +289,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   const disabled = !file
                     || (connector?.connector_scope && connector?.connector_scope?.length > 0
                       && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
-                  const noAgents = xtmOneConfigured && !!connector?.xtm_one_intent && (intentAgentCounts[connector.xtm_one_intent] ?? -1) === 0;
+                  const noAgents = isXtmOneConfigured && !!connector?.xtm_one_intent && (intentAgentCounts[connector.xtm_one_intent] ?? -1) === 0;
                   return (
                     <MenuItem
                       key={connector?.id}
@@ -301,7 +302,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   );
                 })}
               </Field>
-              {xtmOneConfigured && selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
+              {isXtmOneConfigured && selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
                 <Field
                   component={SelectField}
                   variant="standard"
