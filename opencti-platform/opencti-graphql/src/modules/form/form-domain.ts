@@ -227,27 +227,16 @@ export const resolveDraftFieldDefaults = (
   draftDefaults: FormSchemaDefinition['draftDefaults'] | undefined,
   isBypass: boolean = false,
 ) => {
-  const isDefaultEnabled = (defaultConfig: { enabled?: boolean } | undefined, hasContent: boolean) => {
-    if (!defaultConfig) return false;
-    if (defaultConfig.enabled === false) return false;
-    if (defaultConfig.enabled === true) return true;
-    return hasContent;
-  };
-
   const explicitDraftName = typeof values.draftName === 'string' ? values.draftName.trim() : '';
   const draftNameDefaultValue = (draftDefaults?.name?.defaultValue ?? '').trim();
-  const defaultDraftName = isDefaultEnabled(draftDefaults?.name, draftNameDefaultValue.length > 0)
-    ? draftNameDefaultValue
-    : '';
+  const defaultDraftName = draftNameDefaultValue.length > 0 ? draftNameDefaultValue : '';
   const canOverrideDraftName = isBypass || (draftDefaults?.name?.isEditable !== false);
   const finalDraftName = (canOverrideDraftName ? explicitDraftName : '') || defaultDraftName || `${formName} - ${nowTime()}`;
 
   const hasExplicitDraftDescription = Object.hasOwn(values, 'draftDescription');
   const explicitDraftDescription = typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
   const draftDescriptionDefaultValue = (draftDefaults?.description?.defaultValue ?? '').trim();
-  const defaultDraftDescription = isDefaultEnabled(draftDefaults?.description, draftDescriptionDefaultValue.length > 0)
-    ? draftDescriptionDefaultValue
-    : '';
+  const defaultDraftDescription = draftDescriptionDefaultValue.length > 0 ? draftDescriptionDefaultValue : '';
   const canOverrideDraftDescription = isBypass || (draftDefaults?.description?.isEditable !== false);
   const finalDraftDescription = (canOverrideDraftDescription && hasExplicitDraftDescription) ? explicitDraftDescription : defaultDraftDescription;
 
@@ -258,9 +247,7 @@ export const resolveDraftFieldDefaults = (
   const draftAssigneeDefaults = (draftDefaults?.objectAssignee?.defaults ?? [])
     .map(normalizeOptionId)
     .filter((id): id is string => !!id);
-  const defaultDraftAssignees = isDefaultEnabled(draftDefaults?.objectAssignee, draftAssigneeDefaults.length > 0)
-    ? draftAssigneeDefaults
-    : [];
+  const defaultDraftAssignees = draftAssigneeDefaults.length > 0 ? draftAssigneeDefaults : [];
   const canOverrideDraftAssignees = isBypass || (draftDefaults?.objectAssignee?.isEditable !== false);
   const finalDraftAssignees = (canOverrideDraftAssignees && hasExplicitDraftAssignees) ? explicitDraftAssignees : defaultDraftAssignees;
 
@@ -271,9 +258,7 @@ export const resolveDraftFieldDefaults = (
   const draftParticipantDefaults = (draftDefaults?.objectParticipant?.defaults ?? [])
     .map(normalizeOptionId)
     .filter((id): id is string => !!id);
-  const defaultDraftParticipants = isDefaultEnabled(draftDefaults?.objectParticipant, draftParticipantDefaults.length > 0)
-    ? draftParticipantDefaults
-    : [];
+  const defaultDraftParticipants = draftParticipantDefaults.length > 0 ? draftParticipantDefaults : [];
   const canOverrideDraftParticipants = isBypass || (draftDefaults?.objectParticipant?.isEditable !== false);
   const finalDraftParticipants = (canOverrideDraftParticipants && hasExplicitDraftParticipants) ? explicitDraftParticipants : defaultDraftParticipants;
 

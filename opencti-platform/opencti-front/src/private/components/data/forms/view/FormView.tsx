@@ -184,21 +184,26 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     // Initialize values for main entity fields
     const mFields = parsedSchema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
 
-    // Initialize draft defaults
-    if (parsedSchema.draftDefaults?.name?.enabled) {
+    // Initialize draft defaults.
+    // A field should be registered in Formik if:
+    // - the user can see and fill it (isEditable, or bypass who sees all fields), OR
+    // - it has a default value to pre-populate silently on submission.
+    if (parsedSchema.draftDefaults?.name && (parsedSchema.draftDefaults.name.isEditable || isBypass || parsedSchema.draftDefaults.name.defaultValue)) {
       inits.draftName = parsedSchema.draftDefaults.name.defaultValue || '';
     }
 
-    if (parsedSchema.draftDefaults?.description?.enabled) {
+    if (parsedSchema.draftDefaults?.description && (parsedSchema.draftDefaults.description.isEditable || isBypass || parsedSchema.draftDefaults.description.defaultValue)) {
       inits.draftDescription = parsedSchema.draftDefaults.description.defaultValue || '';
     }
 
-    if (parsedSchema.draftDefaults?.objectAssignee?.enabled) {
-      inits.draftObjectAssignee = parsedSchema.draftDefaults.objectAssignee.defaults || [];
+    const assigneeDef = parsedSchema.draftDefaults?.objectAssignee;
+    if (assigneeDef && (assigneeDef.isEditable || isBypass || (assigneeDef.defaults?.length ?? 0) > 0)) {
+      inits.draftObjectAssignee = assigneeDef.defaults || [];
     }
 
-    if (parsedSchema.draftDefaults?.objectParticipant?.enabled) {
-      inits.draftObjectParticipant = parsedSchema.draftDefaults.objectParticipant.defaults || [];
+    const participantDef = parsedSchema.draftDefaults?.objectParticipant;
+    if (participantDef && (participantDef.isEditable || isBypass || (participantDef.defaults?.length ?? 0) > 0)) {
+      inits.draftObjectParticipant = participantDef.defaults || [];
     }
 
     if (parsedSchema.draftDefaults?.author?.type === 'static' && parsedSchema.draftDefaults.author.defaultValue) {
@@ -207,7 +212,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         label: parsedSchema.draftDefaults.author.defaultValueLabel || parsedSchema.draftDefaults.author.defaultValue,
         type: parsedSchema.draftDefaults.author.defaultValueType,
       };
-    } else if (parsedSchema.draftDefaults?.author?.isEditable) {
+    } else if (parsedSchema.draftDefaults?.author && (parsedSchema.draftDefaults.author.isEditable || isBypass)) {
       inits.draftAuthor = null;
     }
 
@@ -383,7 +388,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     }
 
     return { schema: parsedSchema, initialValues: inits, mainEntityFields: mFields };
-  }, [form_schema]);
+  }, [form_schema, isBypass]);
 
   // Initialize isDraft based on schema settings or import context override
   const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
@@ -391,26 +396,28 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const validationSchema = React.useMemo(() => {
     let baseSchema = convertFormSchemaToYupSchema(schema, t_i18n);
     const extraShapes: Record<string, Yup.AnySchema> = {};
-    if (isDraft && schema.draftDefaults?.name?.enabled && schema.draftDefaults?.name?.isEditable && schema.draftDefaults?.name?.isRequired) {
+    // Validate only when the user can see the field (isEditable) AND is not a bypass user.
+    // Bypass users are never blocked by required validation.
+    if (!isBypass && isDraft && schema.draftDefaults?.name?.isEditable && schema.draftDefaults?.name?.isRequired) {
       extraShapes.draftName = Yup.string().trim().required(t_i18n('This field is required'));
     }
-    if (isDraft && schema.draftDefaults?.description?.enabled && schema.draftDefaults?.description?.isEditable && schema.draftDefaults?.description?.isRequired) {
+    if (!isBypass && isDraft && schema.draftDefaults?.description?.isEditable && schema.draftDefaults?.description?.isRequired) {
       extraShapes.draftDescription = Yup.string().trim().required(t_i18n('This field is required'));
     }
-    if (isDraft && schema.draftDefaults?.objectAssignee?.enabled && schema.draftDefaults?.objectAssignee?.isEditable && schema.draftDefaults?.objectAssignee?.isRequired) {
+    if (!isBypass && isDraft && schema.draftDefaults?.objectAssignee?.isEditable && schema.draftDefaults?.objectAssignee?.isRequired) {
       extraShapes.draftObjectAssignee = Yup.array().min(1, t_i18n('This field is required'));
     }
-    if (isDraft && schema.draftDefaults?.objectParticipant?.enabled && schema.draftDefaults?.objectParticipant?.isEditable && schema.draftDefaults?.objectParticipant?.isRequired) {
+    if (!isBypass && isDraft && schema.draftDefaults?.objectParticipant?.isEditable && schema.draftDefaults?.objectParticipant?.isRequired) {
       extraShapes.draftObjectParticipant = Yup.array().min(1, t_i18n('This field is required'));
     }
     // main_entity_author: empty is always valid (backend inherits from main entity)
     const authorRequiresExplicitValue = schema.draftDefaults?.author?.type === 'none';
-    if (isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired && authorRequiresExplicitValue) {
+    if (!isBypass && isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired && authorRequiresExplicitValue) {
       extraShapes.draftAuthor = Yup.object()
         .nullable()
         .required(t_i18n('This field is required'));
     }
-    if (isDraft && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults?.authorizedMembers?.isRequired) {
+    if (!isBypass && isDraft && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults?.authorizedMembers?.isRequired) {
       extraShapes.draftAuthorizedMembers = Yup.array()
         .min(1, t_i18n('This field is required'));
     }
@@ -418,7 +425,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       baseSchema = baseSchema.shape(extraShapes);
     }
     return baseSchema;
-  }, [schema, isDraft, t_i18n]);
+  }, [schema, isDraft, isBypass, t_i18n]);
 
   // Poll for entity existence with timeout
   useEffect(() => {

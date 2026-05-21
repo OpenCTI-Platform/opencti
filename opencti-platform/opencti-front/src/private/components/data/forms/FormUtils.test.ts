@@ -101,90 +101,86 @@ describe('convertFormBuilderDataToSchema', () => {
     ]);
   });
 
-  it('should produce enabled=false for name when defaultValue is empty or whitespace', () => {
+  it('should preserve isEditable and isRequired for name with empty defaultValue', () => {
     const schema = convertFormBuilderDataToSchema({
       ...baseBuilderData,
       draftDefaults: {
-        name: { enabled: false, isEditable: true, isRequired: false, defaultValue: '   ' },
+        name: { isEditable: true, isRequired: false, defaultValue: '   ' },
       },
     });
-    expect(schema.draftDefaults?.name?.enabled).toBe(false);
+    expect(schema.draftDefaults?.name?.defaultValue).toBe('   ');
+    expect(schema.draftDefaults?.name?.isEditable).toBe(true);
   });
 
-  it('should produce enabled=true for name when defaultValue is non-empty', () => {
+  it('should preserve defaultValue, isEditable, and isRequired for name', () => {
     const schema = convertFormBuilderDataToSchema({
       ...baseBuilderData,
       draftDefaults: {
-        name: { enabled: true, isEditable: true, isRequired: true, defaultValue: 'My Default Name' },
+        name: { isEditable: true, isRequired: true, defaultValue: 'My Default Name' },
       },
     });
-    expect(schema.draftDefaults?.name?.enabled).toBe(true);
     expect(schema.draftDefaults?.name?.defaultValue).toBe('My Default Name');
     expect(schema.draftDefaults?.name?.isRequired).toBe(true);
   });
 
-  it('should produce enabled=false for description when defaultValue is empty', () => {
+  it('should preserve isEditable for description with empty defaultValue', () => {
     const schema = convertFormBuilderDataToSchema({
       ...baseBuilderData,
       draftDefaults: {
-        description: { enabled: false, isEditable: false, isRequired: false, defaultValue: '' },
+        description: { isEditable: false, isRequired: false, defaultValue: '' },
       },
     });
-    expect(schema.draftDefaults?.description?.enabled).toBe(false);
+    expect(schema.draftDefaults?.description?.isEditable).toBe(false);
   });
 
-  it('should produce enabled=true for description when defaultValue is non-empty', () => {
+  it('should preserve defaultValue and isEditable for description', () => {
     const schema = convertFormBuilderDataToSchema({
       ...baseBuilderData,
       draftDefaults: {
-        description: { enabled: true, isEditable: true, isRequired: false, defaultValue: 'Default desc' },
+        description: { isEditable: true, isRequired: false, defaultValue: 'Default desc' },
       },
     });
-    expect(schema.draftDefaults?.description?.enabled).toBe(true);
     expect(schema.draftDefaults?.description?.defaultValue).toBe('Default desc');
   });
 
-  it('should produce enabled=false for objectAssignee when defaults array is empty', () => {
+  it('should preserve isEditable for objectAssignee with empty defaults', () => {
     const schema = convertFormBuilderDataToSchema({
       ...baseBuilderData,
       draftDefaults: {
-        objectAssignee: { enabled: false, isEditable: true, isRequired: false, defaults: [] },
+        objectAssignee: { isEditable: true, isRequired: false, defaults: [] },
       },
     });
-    expect(schema.draftDefaults?.objectAssignee?.enabled).toBe(false);
+    expect(schema.draftDefaults?.objectAssignee?.isEditable).toBe(true);
+    expect(schema.draftDefaults?.objectAssignee?.defaults).toHaveLength(0);
   });
 
-  it('should produce enabled=true for objectAssignee when defaults array has entries', () => {
+  it('should preserve isEditable, isRequired, and defaults for objectAssignee', () => {
     const schema = convertFormBuilderDataToSchema({
       ...baseBuilderData,
       draftDefaults: {
         objectAssignee: {
-          enabled: true,
           isEditable: false,
           isRequired: true,
           defaults: [{ value: 'user-1', label: 'User 1' }],
         },
       },
     });
-    expect(schema.draftDefaults?.objectAssignee?.enabled).toBe(true);
     // isRequired is false because isEditable is false — a non-editable field cannot be required
     expect(schema.draftDefaults?.objectAssignee?.isRequired).toBe(false);
     expect(schema.draftDefaults?.objectAssignee?.defaults).toHaveLength(1);
   });
 
-  it('should produce enabled=true for objectParticipant when defaults array has entries', () => {
+  it('should preserve isEditable and defaults for objectParticipant', () => {
     const schema = convertFormBuilderDataToSchema({
       ...baseBuilderData,
       draftDefaults: {
         objectParticipant: {
-          enabled: true,
           isEditable: true,
           isRequired: false,
           defaults: [{ value: 'p-1', label: 'Participant 1' }],
         },
       },
     });
-    expect(schema.draftDefaults?.objectParticipant?.enabled).toBe(true);
     expect(schema.draftDefaults?.objectParticipant?.defaults).toEqual([{ value: 'p-1', label: 'Participant 1' }]);
   });
 

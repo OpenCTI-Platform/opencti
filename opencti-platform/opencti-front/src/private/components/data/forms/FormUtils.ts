@@ -513,7 +513,6 @@ export const normalizeDraftAuthorizedMembersDefaults = (
 export const convertFormBuilderDataToSchema = (
   values: FormBuilderData,
 ): FormSchemaDefinition => {
-  const hasNonEmptyString = (value?: string) => (value || '').trim().length > 0;
   const hasNonEmptyArray = <T>(value?: T[]) => Array.isArray(value) && value.length > 0;
 
   const normalizedDraftAuthorizedMembersDefaults = values.draftDefaults?.authorizedMembers
@@ -524,7 +523,6 @@ export const convertFormBuilderDataToSchema = (
     ? {
         name: values.draftDefaults.name
           ? {
-              enabled: hasNonEmptyString(values.draftDefaults.name.defaultValue),
               isEditable: values.draftDefaults.name.isEditable ?? false,
               isRequired: (values.draftDefaults.name.isEditable ?? false) && (values.draftDefaults.name.isRequired ?? false),
               defaultValue: values.draftDefaults.name.defaultValue ?? '',
@@ -532,7 +530,6 @@ export const convertFormBuilderDataToSchema = (
           : undefined,
         description: values.draftDefaults.description
           ? {
-              enabled: hasNonEmptyString(values.draftDefaults.description.defaultValue),
               isEditable: values.draftDefaults.description.isEditable ?? false,
               isRequired: (values.draftDefaults.description.isEditable ?? false) && (values.draftDefaults.description.isRequired ?? false),
               defaultValue: values.draftDefaults.description.defaultValue ?? '',
@@ -540,7 +537,6 @@ export const convertFormBuilderDataToSchema = (
           : undefined,
         objectAssignee: values.draftDefaults.objectAssignee
           ? {
-              enabled: hasNonEmptyArray(values.draftDefaults.objectAssignee.defaults),
               isEditable: values.draftDefaults.objectAssignee.isEditable ?? false,
               isRequired: (values.draftDefaults.objectAssignee.isEditable ?? false) && (values.draftDefaults.objectAssignee.isRequired ?? false),
               defaults: values.draftDefaults.objectAssignee.defaults ?? [],
@@ -548,7 +544,6 @@ export const convertFormBuilderDataToSchema = (
           : undefined,
         objectParticipant: values.draftDefaults.objectParticipant
           ? {
-              enabled: hasNonEmptyArray(values.draftDefaults.objectParticipant.defaults),
               isEditable: values.draftDefaults.objectParticipant.isEditable ?? false,
               isRequired: (values.draftDefaults.objectParticipant.isEditable ?? false) && (values.draftDefaults.objectParticipant.isRequired ?? false),
               defaults: values.draftDefaults.objectParticipant.defaults ?? [],

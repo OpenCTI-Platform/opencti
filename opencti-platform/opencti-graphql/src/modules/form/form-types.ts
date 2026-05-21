@@ -96,25 +96,21 @@ export interface FormSchemaDefinition {
   allowDraftOverride?: boolean; // Whether users can override the draft setting
   draftDefaults?: {
     name?: {
-      enabled: boolean;
       isEditable: boolean;
       isRequired: boolean;
       defaultValue?: string;
     };
     description?: {
-      enabled: boolean;
       isEditable: boolean;
       isRequired: boolean;
       defaultValue?: string;
     };
     objectAssignee?: {
-      enabled: boolean;
       isEditable: boolean;
       isRequired: boolean;
       defaults: Array<any>;
     };
     objectParticipant?: {
-      enabled: boolean;
       isEditable: boolean;
       isRequired: boolean;
       defaults: Array<any>;
@@ -217,27 +213,22 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
         name: {
           type: 'object',
           properties: {
-            enabled: { type: 'boolean' },
             isEditable: { type: 'boolean' },
             isRequired: { type: 'boolean' },
             defaultValue: { type: 'string' },
           },
-          required: ['enabled'],
         },
         description: {
           type: 'object',
           properties: {
-            enabled: { type: 'boolean' },
             isEditable: { type: 'boolean' },
             isRequired: { type: 'boolean' },
             defaultValue: { type: 'string' },
           },
-          required: ['enabled'],
         },
         objectAssignee: {
           type: 'object',
           properties: {
-            enabled: { type: 'boolean' },
             isEditable: { type: 'boolean' },
             isRequired: { type: 'boolean' },
             defaults: {
@@ -248,12 +239,10 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
               },
             },
           },
-          required: ['enabled'],
         },
         objectParticipant: {
           type: 'object',
           properties: {
-            enabled: { type: 'boolean' },
             isEditable: { type: 'boolean' },
             isRequired: { type: 'boolean' },
             defaults: {
@@ -264,7 +253,6 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
               },
             },
           },
-          required: ['enabled'],
         },
         author: {
           type: 'object',

@@ -8,25 +8,21 @@ import { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 // Draft defaults type shared between FormBuilderData and FormSchemaDefinition
 export interface DraftDefaults {
   name?: {
-    enabled: boolean;
     isEditable: boolean;
     isRequired: boolean;
     defaultValue?: string;
   };
   description?: {
-    enabled: boolean;
     isEditable: boolean;
     isRequired: boolean;
     defaultValue?: string;
   };
   objectAssignee?: {
-    enabled: boolean;
     isEditable: boolean;
     isRequired: boolean;
     defaults: FieldOption[];
   };
   objectParticipant?: {
-    enabled: boolean;
     isEditable: boolean;
     isRequired: boolean;
     defaults: FieldOption[];
