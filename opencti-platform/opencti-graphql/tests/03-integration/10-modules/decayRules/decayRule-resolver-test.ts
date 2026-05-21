@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { queryAsAdmin } from '../../../utils/testQueryHelper';
-import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../../src/schema/stixCyberObservable';
-import { BUILT_IN_DECAY_RULE_IP_URL, checkDecayRules, type DecayRuleConfiguration, FALLBACK_DECAY_RULE, initDecayRules } from '../../../../src/modules/decayRule/decayRule-domain';
-import type { AuthContext } from '../../../../src/types/user';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../tests/utils/testQueryHelper';
-import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
-import { logApp } from '../../../../src/config/conf';
-import type { BasicNodeEdge } from '../../../../src/types/store';
+import { ADMIN_USER, USER_EDITOR, USER_PARTICIPATE } from 'tests/utils/testQuery';
+import { queryAsAdmin } from 'tests/utils/testQueryHelper';
+import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from 'src/schema/stixCyberObservable';
+import { BUILT_IN_DECAY_RULE_IP_URL, checkDecayRules, type DecayRuleConfiguration, FALLBACK_DECAY_RULE, initDecayRules } from 'src/modules/decayRule/decayRule-domain';
+import type { AuthContext } from 'src/types/user';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from 'tests/utils/testQueryHelper';
+import type { BasicStoreEntityDecayRule } from 'src/modules/decayRule/decayRule-types';
+import { logApp } from 'src/config/conf';
+import type { BasicNodeEdge } from 'src/types/store';
 
 export const INDICATOR_WITH_DECAY_RULE_READ_QUERY = gql`
   query indicator($id: String!) {
