@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { buildElasticSortingForAttributeCriteria } from '../../../src/utils/sorting';
-import { RUNTIME_ATTRIBUTES } from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { testContext } from '../../utils/testQuery';
 
