@@ -69,7 +69,6 @@
     "@tiptap/extension-text-align": "3.23.1",
     "@tiptap/extension-text-style": "3.23.1",
     "@tiptap/extension-typography": "3.23.1",
-    "@tiptap/extension-underline": "3.23.1",
     "@tiptap/extensions": "3.23.1",
     "@tiptap/pm": "3.23.1",
     "@tiptap/react": "3.23.1",
