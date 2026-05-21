@@ -7,6 +7,9 @@ import { ExportButtons } from './ExportButtons';
 vi.mock('../utils/Image', () => ({
   exportImage: vi.fn(),
   exportPdf: vi.fn(),
+  isDomNodeKeptAtExport: vi.fn(() => true),
+  EXPORT_KEEP_CLASS: 'export-keep',
+  EXPORT_REMOVE_CLASS: 'export-remove',
 }));
 
 // Mock MESSAGING$ so we can assert error notifications
@@ -197,6 +200,6 @@ describe('ExportButtons — exportPdf()', () => {
     await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
 
     const buttons = document.getElementById('export-buttons');
-    expect(buttons?.getAttribute('style')).toContain('display: block');
+    expect(buttons?.style.display).toBe('flex');
   });
 });
