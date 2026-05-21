@@ -22,7 +22,7 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
-import { getXtmOneRegistration } from '../modules/xtm/one/xtm-one';
+import { getXtmOneRegistrationVersion } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -34,17 +34,12 @@ export const getApplicationInfo = () => ({
 });
 
 export const getApplicationDependencies = async (context) => {
-  const dependencies = [
+  return [
     { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
     { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
     { name: 'Redis', version: getRedisVersion() },
+    { name: 'XTM-One', version: getXtmOneRegistrationVersion() }, // Do not change this, client relies on the name to activate feature
   ];
-  const xtmOneRegistration = await getXtmOneRegistration();
-  if (xtmOneRegistration.register) {
-    // Do not change this, client relies on the name to activate feature
-    dependencies.push({ name: 'XTM-One', version: xtmOneRegistration.version });
-  }
-  return dependencies;
 };
 
 const getAIEndpointType = () => {

@@ -15,9 +15,9 @@ export const getXtmRegistrationResult = async (): Promise<XtmOneRegistrationResp
   return await redisGetXtmRegistrationResult() as Promise<XtmOneRegistrationResponse | null>;
 };
 
-export const getXtmOneRegistration = async (): Promise<{ register: boolean; version: string }> => {
+export const getXtmOneRegistrationVersion = async (): Promise<string> => {
   const result = await getXtmRegistrationResult();
-  return { register: !!result, version: result?.version ?? 'unknown' };
+  return result?.version ?? 'Not connected';
 };
 
 /**

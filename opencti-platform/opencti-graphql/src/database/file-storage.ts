@@ -525,7 +525,7 @@ export const uploadJobImport = async (
       let connectorConfiguration = configuration;
       // In auto mode, if the connector declares an xtm_one_intent and no agent_slug
       // is already in the configuration, inject the default agent slug from the intent catalog
-      if (connector.xtm_one_intent) {
+      if (connector.xtm_one_intent && xtmOneClient.isConfigured()) {
         const existingConfig = connectorConfiguration ? JSON.parse(connectorConfiguration) : {};
         // Connector as for an agent, but not provided directly
         if (!existingConfig.agent_slug) {
