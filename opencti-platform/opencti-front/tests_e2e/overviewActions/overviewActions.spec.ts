@@ -71,7 +71,7 @@ test('Overview routes display AI Insights action button', { tag: ['@ce', '@navig
     await expect(aiInsightsButton, `${routeCheck.label} overview should display AI Insights`).toBeVisible();
 
     if (routeCheck.hasSecurityCoverageAction) {
-      const addCoverageButton = page.getByRole('button', { name: 'Add Security coverage' });
+      const addCoverageButton = page.getByRole('button', { name: 'Create a coverage' });
       const existingCoverageLink = page.locator('a[href*="/dashboard/analyses/security_coverages/"]');
       const hasAddCoverage = await addCoverageButton.isVisible().catch(() => false);
 
