@@ -22,6 +22,8 @@ import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import EETooltip from '../entreprise_edition/EETooltip';
+import ValidateTermsOfUseDialog from '../../settings/ValidateTermsOfUseDialog';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 
 import type { Theme } from '../../../../components/Theme';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
@@ -97,7 +99,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { fullyActive } = useAI();
+  const { fullyActive, enabled } = useAI();
   const { xtmOneConfigured } = useChatbot();
   const useXtmOne = xtmOneConfigured === true;
 
@@ -109,6 +111,16 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
 
   // XTM One agent mode state (new path)
   const [agentMode, setAgentMode] = useState<AgentMode | null>(null);
+
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+  const [displayCGUDialog, setDisplayCGUDialog] = useState(false);
+  const isCGUStatusPending = useXtmOne && !fullyActive;
+
+  // Show the AI button when:
+  // - EE is not active (so user can click and get the EE upgrade prompt)
+  // - OR AI feature is fully active (EE + configured + enabled)
+  // - OR XTM One is enabled (even if fullyActive is false due to pending CGU)
+  const showAIButton = !isEnterpriseEdition || fullyActive || (useXtmOne && enabled);
 
   // Legacy GraphQL state
   const [disableResponse, setDisableResponse] = useState(false);
@@ -127,7 +139,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (isEnterpriseEdition) {
       event.preventDefault();
-      setMenuOpen({ open: true, anchorEl: event.currentTarget });
+      if (isCGUStatusPending) {
+        setDisplayCGUDialog(true);
+      } else {
+        setMenuOpen({ open: true, anchorEl: event.currentTarget });
+      }
     }
   };
   const handleCloseMenu = () => {
@@ -268,10 +284,13 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
 
   const minContentLength = useXtmOne ? 2 : 10;
   const isContentTooShort = currentValue.length < minContentLength;
-  const isButtonDisabled = disabled || isContentTooShort;
-  const tooltipTitle = isContentTooShort
+  const isButtonDisabled = disabled || isContentTooShort || (isCGUStatusPending && !isAdmin);
+  let tooltipTitle = isContentTooShort
     ? t_i18n('Add more content before using AI')
     : t_i18n('Ask AI');
+  if (isCGUStatusPending && !isAdmin) {
+    tooltipTitle = t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.');
+  }
 
   const renderButton = () => {
     return (
@@ -280,7 +299,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           <span style={{ display: 'inline-flex' }}>
             <IconButton
               size="small"
-              onClick={(event) => ((isEnterpriseEdition && fullyActive) ? handleOpenMenu(event) : null)}
+              onClick={(event) => handleOpenMenu(event)}
               disabled={isButtonDisabled}
               style={{ color: isButtonDisabled ? (theme.palette.action?.disabled ?? 'rgba(255,255,255,0.3)') : theme.palette.ai.main }}
             >
@@ -367,6 +386,9 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             </DialogActions>
           </Dialog>
         )}
+        {displayCGUDialog && (
+          <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
+        )}
       </>
     );
   };
@@ -374,21 +396,21 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   if (variant === 'markdown') {
     return (
       <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
-        {fullyActive && renderButton()}
+        {showAIButton && renderButton()}
       </div>
     );
   }
   if (variant === 'html') {
     return (
       <div style={style || { position: 'absolute', top: -12, right: 30, paddingTop: 4 }}>
-        {fullyActive && renderButton()}
+        {showAIButton && renderButton()}
       </div>
     );
   }
 
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
-      {fullyActive && renderButton()}
+      {showAIButton && renderButton()}
     </InputAdornment>
   );
 };

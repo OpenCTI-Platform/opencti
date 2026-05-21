@@ -116,7 +116,7 @@ const StixCoreObjectFileExportForm = ({
 }: StixCoreObjectFileExportFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { fullyActive } = useAI();
+  const { fullyActive, enabled, configured } = useAI();
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
@@ -328,12 +328,12 @@ const StixCoreObjectFileExportForm = ({
                       </Card>
                     </Grid>
                   ))}
-                  {isContainer && fullyActive && (
+                  {isContainer && (enabled && configured) && (
                     <Grid size={{ xs: 4 }}>
                       <Card
                         aria-label={t_i18n('Ask AI')}
                         variant="outlined"
-                        onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
+                        onClick={() => (isEnterpriseEdition && (enabled && configured) ? selectFormat(setFieldValue, 'ai') : null)}
                         sx={{
                           textAlign: 'center',
                           height: 150,

@@ -22,6 +22,7 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
 import useAuth from '../utils/hooks/useAuth';
 import FiligranIcon from '../private/components/common/FiligranIcon';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
+import ValidateTermsOfUseDialog from '../private/components/settings/ValidateTermsOfUseDialog';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
 import Loader from './Loader';
 import useAI from '../utils/hooks/useAI';
@@ -174,6 +175,7 @@ const SearchInput = (props) => {
     ...otherProps
   } = props;
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
+  const [displayCGUDialog, setDisplayCGUDialog] = useState(false);
   const [searchValue, setSearchValue] = useState(keyword);
 
   // Current mode: 'search', 'bulk', or 'nlq:<slug>'
@@ -269,6 +271,11 @@ const SearchInput = (props) => {
   // Click on the NLQ toggle: activate NLQ and execute search if there's a value
   const handleNlqToggleClick = useCallback((event) => {
     if (!isAIEnabled) return;
+    const isCGUStatusPending = useXtmOne && !fullyActive;
+    if (isCGUStatusPending) {
+      setDisplayCGUDialog(true);
+      return;
+    }
     if (isNlqMode(mode)) {
       // Already in NLQ mode — do nothing (user switches away via Search/Bulk toggles)
       return;
@@ -403,6 +410,7 @@ const SearchInput = (props) => {
     },
   };
 
+  const isCGUStatusPending = useXtmOne && !fullyActive;
   const nlqNoAgentAvailable = useXtmOne && nlqAgentsFetched && nlqAgents.length === 0;
 
   const aiColor = theme.palette.ai?.main;
@@ -516,13 +524,15 @@ const SearchInput = (props) => {
           </Tooltip>
 
           {/* NLQ split button — icon toggles NLQ, caret opens agent selector */}
-          {fullyActive && (
+          {isAIEnabled && (
             <Tooltip
-              title={nlqNoAgentAvailable
-                ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
-                : isNLQActivated && selectedAgent
-                  ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
-                  : t_i18n('Ask AI')}
+              title={(isCGUStatusPending && !isAdmin)
+                ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
+                : nlqNoAgentAvailable
+                  ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
+                  : isNLQActivated && selectedAgent
+                    ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
+                    : t_i18n('Ask AI')}
             >
               <span>
                 <ToggleButton
@@ -530,7 +540,7 @@ const SearchInput = (props) => {
                   selected={isNLQActivated}
                   sx={nlqToggleButtonSx}
                   onClick={handleNlqToggleClick}
-                  disabled={nlqNoAgentAvailable}
+                  disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
                 >
                   <Stack direction="row" alignItems="center" spacing={0}>
                     <FiligranIcon
@@ -641,6 +651,10 @@ const SearchInput = (props) => {
             description: t_i18n('To use this AI feature in the enterprise edition, please add a token.'),
           }}
         />
+      )}
+
+      {displayCGUDialog && (
+        <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
       )}
     </>
   );

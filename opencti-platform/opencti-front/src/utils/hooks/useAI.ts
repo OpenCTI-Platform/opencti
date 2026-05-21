@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import useAuth from './useAuth';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 const useAI = (): {
   configured: boolean;
@@ -21,7 +22,31 @@ const useAI = (): {
   fullyActive: boolean;
 } => {
   const { settings } = useAuth();
-  return { enabled: settings.platform_ai_enabled, configured: settings.platform_ai_has_token, fullyActive: settings.platform_ai_enabled && settings.platform_ai_has_token };
+  let xtmOneConfigured;
+
+  try {
+    const chatbot = useChatbot();
+    xtmOneConfigured = chatbot.xtmOneConfigured === true;
+  } catch (_) {
+    // Graceful fallback if used outside of ChatbotProvider
+    xtmOneConfigured = false;
+  }
+
+  if (xtmOneConfigured) {
+    const isChatbotEnabled = settings.filigran_chatbot_ai_cgu_status === 'enabled';
+    const isChatbotDisabled = settings.filigran_chatbot_ai_cgu_status === 'disabled';
+    return {
+      enabled: !isChatbotDisabled,
+      configured: true,
+      fullyActive: isChatbotEnabled,
+    };
+  }
+
+  return {
+    enabled: settings.platform_ai_enabled,
+    configured: settings.platform_ai_has_token,
+    fullyActive: settings.platform_ai_enabled && settings.platform_ai_has_token,
+  };
 };
 
 export default useAI;

@@ -249,7 +249,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     <ListItemText
                       primary={(
                         <Stack direction="row" alignItems="center" gap={1}>
-                          <span>{xtmOneConfigured ? t_i18n('XTM One (Ask Ariane)') : t_i18n('Agentic AI (Ariane Assistant)')}</span>
+                          <span>{xtmOneConfigured ? t_i18n('XTM One (Agentic AI)') : t_i18n('Agentic AI (Ariane Assistant)')}</span>
                           {!xtmOneConfigured && (
                             <Tag
                               label={t_i18n('Preview')}
@@ -281,15 +281,17 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     )}
                   </ListItem>
                 )}
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n(xtmOneConfigured ? t_i18n('XTM One (AI Insight, NLQ)') : 'Generative AI (AI Insight, NLQ)')} />
-                  <Box sx={{ marginBlock: -6 }}>
-                    <Switch
-                      checked={platform_ai_enabled}
-                      onChange={handlePlatformAiEnabledChange}
-                    />
-                  </Box>
-                </ListItem>
+                {!xtmOneConfigured && (
+                  <ListItem divider={true}>
+                    <ListItemText primary={t_i18n('Generative AI (AI Insight, NLQ)')} />
+                    <Box sx={{ marginBlock: -6 }}>
+                      <Switch
+                        checked={platform_ai_enabled}
+                        onChange={handlePlatformAiEnabledChange}
+                      />
+                    </Box>
+                  </ListItem>
+                )}
               </List>
             </Card>
             <Dialog
