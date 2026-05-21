@@ -12,7 +12,7 @@ import type { BasicStoreEntityConnector } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
+import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
@@ -521,7 +521,7 @@ export const uploadJobImport = async (
       };
     };
     const pushMessage = async (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
-      const { connector } = data;
+      const { connector, work } = data;
       let connectorConfiguration = configuration;
       // In auto mode, if the connector declares an xtm_one_intent and no agent_slug
       // is already in the configuration, inject the default agent slug from the intent catalog
@@ -537,6 +537,7 @@ export const uploadJobImport = async (
           } else {
             // Connector cannot be trigger as not agent available
             logApp.warn('No agent found for connector intent', { connector: connector.name, intent: connector.xtm_one_intent });
+            await reportExpectation(context, user, work.id, { error: 'No agent available for connector intent', source: 'Platform' });
             return false;
           }
         }
