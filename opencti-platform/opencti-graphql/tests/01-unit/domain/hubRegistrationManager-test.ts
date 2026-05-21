@@ -21,9 +21,15 @@ vi.mock('../../../src/manager/managerModule', () => ({
   registerManager: vi.fn(),
 }));
 
+vi.mock('../../../src/modules/xtm/hub/news-feed/news-feed-domain', () => ({
+  cleanOldNewsFeedItems: vi.fn(),
+}));
+
 import { hubRegistrationManager } from '../../../src/manager/hubRegistrationManager';
 import { checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../../../src/domain/xtm-hub';
+import { cleanOldNewsFeedItems } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
 
+const mockCleanOldNewsFeedItems = vi.mocked(cleanOldNewsFeedItems);
 const mockCheckXTMHubConnectivity = vi.mocked(checkXTMHubConnectivity);
 const mockLoadAndSaveLatestNewsFeed = vi.mocked(loadAndSaveLatestNewsFeed);
 
@@ -79,5 +85,14 @@ describe('hubRegistrationManager', () => {
     mockLoadAndSaveLatestNewsFeed.mockRejectedValue(error);
 
     await expect(hubRegistrationManager()).rejects.toThrow('Failed to load news feed');
+  });
+
+  it('should call cleanOldNewsFeedItems on every execution', async () => {
+    mockCheckXTMHubConnectivity.mockResolvedValue({ status: XtmHubRegistrationStatus.Unregistered });
+    mockCleanOldNewsFeedItems.mockResolvedValue(0);
+
+    await hubRegistrationManager();
+
+    expect(mockCleanOldNewsFeedItems).toHaveBeenCalledOnce();
   });
 });

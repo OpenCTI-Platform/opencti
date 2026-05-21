@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { addNewsFeed, markAllNewsFeedItemsAsRead, myNewsFeedsFind, myUnreadNewsFeedsCount } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
+import { addNewsFeed, cleanOldNewsFeedItems, markAllNewsFeedItemsAsRead, myNewsFeedsFind, myUnreadNewsFeedsCount } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
 import { NewsFeedItemType } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 import type { NewsFeedAddInput } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
+import { ALREADY_DELETED_ERROR } from '../../../src/config/errors';
 
 const mockCreateInternalObject = vi.fn();
 const mockPageEntitiesConnection = vi.fn();
@@ -9,6 +10,8 @@ const mockElCount = vi.fn();
 const mockFullEntitiesList = vi.fn();
 const mockPatchAttribute = vi.fn();
 const mockNotify = vi.fn();
+const mockElPaginate = vi.fn();
+const mockDeleteElementById = vi.fn();
 
 vi.mock('../../../src/domain/internalObject', () => ({
   createInternalObject: (...args: unknown[]) => mockCreateInternalObject(...args),
@@ -21,10 +24,12 @@ vi.mock('../../../src/database/middleware-loader', () => ({
 
 vi.mock('../../../src/database/engine', () => ({
   elCount: (...args: unknown[]) => mockElCount(...args),
+  elPaginate: (...args: unknown[]) => mockElPaginate(...args),
 }));
 
 vi.mock('../../../src/database/middleware', () => ({
   patchAttribute: (...args: unknown[]) => mockPatchAttribute(...args),
+  deleteElementById: (...args: unknown[]) => mockDeleteElementById(...args),
 }));
 
 vi.mock('../../../src/database/redis', () => ({
@@ -370,6 +375,92 @@ describe('News feed', () => {
         { count: 1, user_id: mockUser.id },
         mockUser,
       );
+    });
+  });
+
+  describe('cleanOldNewsFeedItems', () => {
+    const cutoffDate = new Date('2026-05-01T00:00:00.000Z');
+
+    beforeEach(() => {
+      mockElPaginate.mockReset();
+      mockDeleteElementById.mockReset();
+    });
+
+    it('should call elPaginate with creation_date < cutoff filter', async () => {
+      mockElPaginate.mockResolvedValue({ edges: [] });
+
+      await cleanOldNewsFeedItems(mockContext, mockUser, cutoffDate);
+
+      expect(mockElPaginate).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        expect.any(String),
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              expect.objectContaining({
+                key: ['creation_date'],
+                values: [cutoffDate.toISOString()],
+                operator: 'lt',
+              }),
+            ]),
+          }),
+          types: ['NewsFeedItem'],
+        }),
+      );
+    });
+
+    it('should delete each returned item and return the count', async () => {
+      mockElPaginate
+        .mockResolvedValueOnce({
+          edges: [
+            { node: { internal_id: 'item-1' } },
+            { node: { internal_id: 'item-2' } },
+            { node: { internal_id: 'item-3' } },
+          ],
+        });
+      mockDeleteElementById.mockResolvedValue(undefined);
+
+      const result = await cleanOldNewsFeedItems(mockContext, mockUser, cutoffDate);
+
+      expect(mockDeleteElementById).toHaveBeenCalledTimes(3);
+      expect(mockDeleteElementById).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        'item-1',
+        'NewsFeedItem',
+      );
+      expect(result).toBe(3);
+    });
+
+    it('should return 0 and not call delete when no items match', async () => {
+      mockElPaginate.mockResolvedValue({ edges: [] });
+
+      const result = await cleanOldNewsFeedItems(mockContext, mockUser, cutoffDate);
+
+      expect(result).toBe(0);
+      expect(mockDeleteElementById).not.toHaveBeenCalled();
+    });
+
+    it('should swallow ALREADY_DELETED_ERROR without breaking the loop', async () => {
+      mockElPaginate.mockResolvedValueOnce({
+        edges: [
+          { node: { internal_id: 'item-1' } },
+          { node: { internal_id: 'item-2' } },
+        ],
+      });
+      const alreadyDeletedError = Object.assign(new Error('Already deleted'), {
+        extensions: { code: ALREADY_DELETED_ERROR },
+      });
+      mockDeleteElementById
+        .mockRejectedValueOnce(alreadyDeletedError)
+        .mockResolvedValueOnce(undefined);
+
+      const result = await cleanOldNewsFeedItems(mockContext, mockUser, cutoffDate);
+
+      // Le 1er fail silencieusement (n'incrémente pas), le 2e réussit
+      expect(result).toBe(1);
+      expect(mockDeleteElementById).toHaveBeenCalledTimes(2);
     });
   });
 });
