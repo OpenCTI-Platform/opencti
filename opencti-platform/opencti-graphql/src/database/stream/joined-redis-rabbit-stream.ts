@@ -19,8 +19,8 @@ const isRedisStreamFullyDeprecated = async (streamName = LIVE_STREAM_NAME) => {
   const redisStreamInfo = await redisStreamClient.rawFetchStreamInfo(streamName);
   const redisFirstDate = utcDate(redisStreamInfo.firstEventDate);
   const redisDeprecationDelay = conf.get('app:redis_stream_deprecation_days') || 0; // in days
-  const oneMonthAgo = utcDate().subtract(redisDeprecationDelay, 'days');
-  redisStreamFullyDeprecated = redisStreamInfo.streamSize === 0 || redisFirstDate.isBefore(oneMonthAgo);
+  const reprecationDateThreshold = utcDate().subtract(redisDeprecationDelay, 'days');
+  redisStreamFullyDeprecated = redisStreamInfo.streamSize === 0 || redisFirstDate.isBefore(reprecationDateThreshold);
   return redisStreamFullyDeprecated;
 };
 
