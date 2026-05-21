@@ -4824,7 +4824,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-underline@npm:3.23.1, @tiptap/extension-underline@npm:^3.23.1":
+"@tiptap/extension-underline@npm:^3.23.1":
   version: 3.23.1
   resolution: "@tiptap/extension-underline@npm:3.23.1"
   peerDependencies:
@@ -13050,7 +13050,6 @@ __metadata:
     "@tiptap/extension-text-align": "npm:3.23.1"
     "@tiptap/extension-text-style": "npm:3.23.1"
     "@tiptap/extension-typography": "npm:3.23.1"
-    "@tiptap/extension-underline": "npm:3.23.1"
     "@tiptap/extensions": "npm:3.23.1"
     "@tiptap/pm": "npm:3.23.1"
     "@tiptap/react": "npm:3.23.1"
