@@ -13,6 +13,16 @@ const WORKFLOW_DEFINITION_SET_MUTATION = gql`
   }
 `;
 
+const WORKFLOW_DEFINITION_PUBLISH_MUTATION = gql`
+  mutation WorkflowDefinitionPublish($entityType: String!) {
+    workflowDefinitionPublish(entityType: $entityType) {
+      id
+      workflow_id
+      published
+    }
+  }
+`;
+
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
   mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
     draftWorkspaceAdd(input: $input) {
@@ -109,7 +119,15 @@ describe('Workflow Actions Resolver', () => {
       },
     });
 
-    // 3. Trigger the event
+    // 3. Publish the workflow definition so it can be used at runtime
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+      variables: {
+        entityType: 'DraftWorkspace',
+      },
+    });
+
+    // 4. Trigger the event
     const triggerResult = await queryAsAdmin({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
       variables: {
@@ -120,7 +138,7 @@ describe('Workflow Actions Resolver', () => {
     expect(triggerResult.data?.triggerWorkflowEvent.success).toBe(true);
     expect(triggerResult.data?.triggerWorkflowEvent.newState).toBe('restricted');
 
-    // 4. Verify authorized members
+    // 5. Verify authorized members
     const workspaceResult = await queryAsAdmin({
       query: DRAFT_WORKSPACE_QUERY,
       variables: { id: draftWorkspaceId },

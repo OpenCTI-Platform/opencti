@@ -12,6 +12,16 @@ const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
   }
 `;
 
+const WORKFLOW_DEFINITION_PUBLISH_MUTATION = gql`
+  mutation WorkflowDefinitionPublish($entityType: String!) {
+    workflowDefinitionPublish(entityType: $entityType) {
+      id
+      workflow_id
+      published
+    }
+  }
+`;
+
 const WORKFLOW_DEFINITION_QUERY = gql`
   query WorkflowDefinition($entityType: String!) {
     workflowDefinition(entityType: $entityType) {
@@ -228,6 +238,14 @@ describe('Workflow Resolver', () => {
     });
     expect(result.data?.workflowDefinitionSet.target_type).toBe('DraftWorkspace');
     expect(result.data?.workflowDefinitionSet.workflow_id).toBeDefined();
+
+    // Publish the workflow definition so it can be used at runtime
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+      variables: {
+        entityType: 'DraftWorkspace',
+      },
+    });
   });
 
   it('should query a workflow definition', async () => {

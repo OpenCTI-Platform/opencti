@@ -24,7 +24,7 @@ import PublishButton from './PublishButton';
 export interface WorkflowValidationError {
   type: string;
   message: string;
-  path?: Array<{ id: string; entity_type: string }>;
+  path?: Array<{ id: string; entity_type: string }> | null;
 }
 
 const workflowDefinitionSetMutation = graphql`
@@ -108,7 +108,10 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
   const [workflowDefinitionStatus, setWorkflowDefinitionStatus] = useState<{
     published: boolean;
     validationErrors: WorkflowValidationError[];
-  }>({ published: workflowDefinition?.published ?? false, validationErrors: workflowDefinition?.errors ?? [] });
+  }>({
+    published: workflowDefinition?.published ?? false,
+    validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
+  });
 
   // Store previous schema to avoid unnecessary mutations
   const previousSchemaRef = useRef<string | null>(null);

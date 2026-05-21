@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  setWorkflowDefinition,
-  isStatusTemplateUsedInWorkflows,
-  getAllowedTransitions,
-  triggerWorkflowEvent,
-} from '../../../src/modules/workflow/domain/workflow-domain';
+import { setWorkflowDefinition, isStatusTemplateUsedInWorkflows, getAllowedTransitions, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
 import { createEntity, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -62,8 +57,31 @@ describe('Workflow Domain', () => {
       transitions: [],
     });
 
+    const existingVersionData = {
+      id: 'version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: '{"name":"Old Workflow","initialState":"draft","transitions":[]}',
+      validation_errors: [],
+    };
+
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    (storeLoadById as any).mockResolvedValue({ id: 'workflow-id' });
+    (storeLoadById as any)
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Old Workflow',
+        all_versions: [existingVersionData],
+        draft_version: existingVersionData,
+      })
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Updated Workflow',
+        all_versions: [
+          expect.objectContaining({ content: definition }),
+          existingVersionData,
+        ],
+        draft_version: expect.objectContaining({ content: definition }),
+      });
 
     await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition);
 
@@ -73,10 +91,11 @@ describe('Workflow Domain', () => {
       mockContext.user,
       'workflow-id',
       'WorkflowDefinition',
-      [
-        { key: 'workflow_content', value: [definition] },
-        { key: 'name', value: ['Updated Workflow'] },
-      ],
+      expect.arrayContaining([
+        expect.objectContaining({ key: 'draft_version' }),
+        expect.objectContaining({ key: 'all_versions' }),
+        expect.objectContaining({ key: 'name', value: ['Updated Workflow'] }),
+      ]),
     );
     expect(createEntity).not.toHaveBeenCalled();
   });
@@ -88,7 +107,12 @@ describe('Workflow Domain', () => {
     });
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
-    (createEntity as any).mockResolvedValue({ id: 'workflow-id' });
+    (createEntity as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Workflow for Incident',
+      all_versions: [expect.objectContaining({ content: definition })],
+      draft_version: expect.objectContaining({ content: definition }),
+    });
     (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id', workflow_id: 'workflow-id' } });
 
     const result = await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition);
@@ -97,10 +121,11 @@ describe('Workflow Domain', () => {
     expect(createEntity).toHaveBeenCalledWith(
       mockContext,
       mockContext.user,
-      {
+      expect.objectContaining({
         name: 'Workflow for Incident',
-        workflow_content: definition,
-      },
+        draft_version: expect.objectContaining({ content: definition }),
+        all_versions: [expect.objectContaining({ content: definition })],
+      }),
       'WorkflowDefinition',
     );
     expect(updateAttribute).toHaveBeenCalledWith(
@@ -110,12 +135,25 @@ describe('Workflow Domain', () => {
       'EntitySetting',
       [{ key: 'workflow_id', value: ['workflow-id'] }],
     );
-    expect(result).toEqual({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    expect(result).toMatchObject({
+      id: 'entity-setting-id',
+      workflow_id: 'workflow-id',
+      published: false,
+    });
   });
 
   it('should return true when status template id is found in string workflow content', async () => {
     (fullEntitiesList as any).mockResolvedValue([
-      { workflow_content: '{"states":[{"statusId":"status-template-id"}]}' },
+      {
+        published_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: '{"states":[{"statusId":"status-template-id"}]}',
+          validation_errors: [],
+        },
+        all_versions: [],
+      },
     ]);
 
     const result = await isStatusTemplateUsedInWorkflows(mockContext, mockUser, 'status-template-id');
@@ -125,7 +163,16 @@ describe('Workflow Domain', () => {
 
   it('should return true when status template id is found in object workflow content', async () => {
     (fullEntitiesList as any).mockResolvedValue([
-      { workflow_content: { states: [{ statusId: 'status-template-id' }] } },
+      {
+        draft_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: { states: [{ statusId: 'status-template-id' }] },
+          validation_errors: [],
+        },
+        all_versions: [],
+      },
     ]);
 
     const result = await isStatusTemplateUsedInWorkflows(mockContext, mockUser, 'status-template-id');
@@ -135,9 +182,31 @@ describe('Workflow Domain', () => {
 
   it('should return false when status template id is not found in any workflow content', async () => {
     (fullEntitiesList as any).mockResolvedValue([
-      { workflow_content: '{"states":[{"statusId":"another-id"}]}' },
-      { workflow_content: { states: [{ statusId: 'yet-another-id' }] } },
-      { workflow_content: null },
+      {
+        published_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: '{"states":[{"statusId":"another-id"}]}',
+          validation_errors: [],
+        },
+        all_versions: [],
+      },
+      {
+        draft_version: {
+          id: 'version-2',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: { states: [{ statusId: 'yet-another-id' }] },
+          validation_errors: [],
+        },
+        all_versions: [],
+      },
+      {
+        published_version: null,
+        draft_version: null,
+        all_versions: [],
+      },
     ]);
 
     const result = await isStatusTemplateUsedInWorkflows(mockContext, mockUser, 'status-template-id');
@@ -253,4 +322,3 @@ describe('Transition comments – Domain', () => {
     });
   });
 });
-

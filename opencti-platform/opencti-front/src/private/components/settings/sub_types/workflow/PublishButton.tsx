@@ -12,7 +12,7 @@ interface WorkflowEntityRef {
 interface ValidationError {
   type: string;
   message: string;
-  path?: WorkflowEntityRef[];
+  path?: WorkflowEntityRef[] | null;
 }
 
 interface ValidationErrorsTooltipProps {
