@@ -55,9 +55,3 @@ describe('Sorting utilities', () => {
     await expect(sorting).rejects.toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
   });
 });
-
-describe('RUNTIME_ATTRIBUTES', () => {
-  it('objectParticipant getter returns the exact same object reference as participant', () => {
-    expect(RUNTIME_ATTRIBUTES.objectParticipant).toBe(RUNTIME_ATTRIBUTES.participant);
-  });
-});

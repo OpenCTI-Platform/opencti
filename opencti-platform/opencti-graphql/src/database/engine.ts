@@ -2796,6 +2796,14 @@ const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityTy
   }) as BasicStoreEntity[];
   return R.mergeAll(elements.map((i) => ({ [i.internal_id]: i.name })));
 };
+/**
+ * ⚠️ MAINTENANCE: When adding a new runtime attribute here AND exposing it as a sortable column
+ * in the front-end (isSortable: true in dataTableUtils.tsx), you MUST also add it to
+ * `RUNTIME_ONLY_SORT_FIELDS` in the front-end:
+ * opencti-platform/opencti-front/src/utils/hooks/useRuntimeSortGuard.ts
+ *
+ * Failing to do so will cause an UnsupportedError on OpenSearch instances.
+ */
 export const RUNTIME_ATTRIBUTES: Record<string, any> = {
   observable_value: {
     field: 'observable_value.keyword',
@@ -2947,7 +2955,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
     `,
     getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
   },
-  participant: {
+  objectParticipant: {
     field: 'objectParticipant.keyword',
     type: 'keyword',
     getSource: async () => `
@@ -2964,9 +2972,6 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
         }
     `,
     getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
-  },
-  get objectParticipant() {
-    return this.participant;
   },
 };
 type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
