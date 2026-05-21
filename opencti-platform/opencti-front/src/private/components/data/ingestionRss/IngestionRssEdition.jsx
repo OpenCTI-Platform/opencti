@@ -17,6 +17,7 @@ import { convertCreatedBy, convertMarkingsWithoutEdges, convertUser } from '../.
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export const ingestionRssMutationFieldPatch = graphql`
   mutation IngestionRssEditionFieldPatchMutation(
@@ -108,6 +109,7 @@ const IngestionRssEditionContainer = ({
       'object_marking_refs',
       'report_types',
       'current_state_date',
+      'ssl_verify',
     ]),
   )(ingestionRss);
   return (
@@ -203,6 +205,14 @@ const IngestionRssEditionContainer = ({
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
             />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="ssl_verify"
+              label={t('Verify SSL certificate')}
+              onChange={handleSubmitField}
+              containerstyle={fieldSpacingContainerStyle}
+            />
           </Form>
         )}
       </Formik>
@@ -231,6 +241,7 @@ const IngestionRssEditionFragment = createFragmentContainer(
         report_types
         ingestion_running
         current_state_date
+        ssl_verify
         user {
           id
           entity_type

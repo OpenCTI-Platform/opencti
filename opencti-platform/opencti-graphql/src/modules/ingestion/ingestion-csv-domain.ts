@@ -260,7 +260,7 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
     const [cert, key, ca] = (decryptedAuthValue || '').split(':');
     certificates = { cert, key, ca };
   }
-  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'arraybuffer', certificates };
+  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ingestion.ssl_verify ?? true, responseType: 'arraybuffer', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
   const dataLines = data.toString().split(/\r?\n/);

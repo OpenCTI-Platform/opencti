@@ -16,3 +16,4 @@ describe('Ingestion Taxii creation validations', () => {
     expect(() => verifyIngestionAuthenticationContent(IngestionAuthType.Certificate, 'aaaaaaaaaaaaa:111111111111:22222222:222222')).toThrowError('Certificate, CA and Key cannot have : character.');
   });
 });
+

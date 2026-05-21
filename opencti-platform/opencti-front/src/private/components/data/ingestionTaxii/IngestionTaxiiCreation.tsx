@@ -74,6 +74,7 @@ interface IngestionTaxiiAddInput {
   key?: string;
   ca?: string;
   confidence_to_score?: boolean;
+  ssl_verify?: boolean;
 }
 
 interface IngestionTaxiiCreationProps {
@@ -127,6 +128,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
       confidence_to_score: values.confidence_to_score,
+      ssl_verify: values.ssl_verify,
     };
 
     commit({
@@ -164,6 +166,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
     user_id: '',
     automatic_user: true,
     confidence_to_score: false,
+    ssl_verify: true,
   };
 
   return (
@@ -314,6 +317,13 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 type="checkbox"
                 name="confidence_to_score"
                 label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
+                containerstyle={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="ssl_verify"
+                label={t_i18n('Verify SSL certificate')}
                 containerstyle={fieldSpacingContainerStyle}
               />
               <FormButtonContainer>

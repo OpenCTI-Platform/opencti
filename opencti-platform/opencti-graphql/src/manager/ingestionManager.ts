@@ -206,10 +206,11 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
   };
 };
 
-const rssHttpGetter = (): Getter => {
+const rssHttpGetter = (ingestion: BasicStoreEntityIngestionRss): Getter => {
   const httpClientOptions: GetHttpClient = {
     responseType: 'text',
     headers: { 'User-Agent': RSS_FEED_USER_AGENT },
+    rejectUnauthorized: ingestion.ssl_verify ?? true,
   };
   const httpClient = getHttpClient(httpClientOptions);
   return async (uri: string) => {
@@ -288,7 +289,6 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
 };
 
 const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
-  const httpGet = rssHttpGetter();
   const filters = {
     mode: 'and',
     filters: [{ key: 'ingestion_running', values: [true] }],
@@ -313,6 +313,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
         ingestionPromises.push(ingestionPromise);
         // If no message in queue and last execution is old enough, fetch new data
       } else {
+        const httpGet = rssHttpGetter(ingestion);
         const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
           .catch((e) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
@@ -384,7 +385,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
     certificates = { cert: decryptedAuthValue.split(':')[0], key: decryptedAuthValue.split(':')[1], ca: decryptedAuthValue.split(':')[2] };
   }
 
-  const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: false, responseType: 'json', certificates };
+  const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: ingestion.ssl_verify ?? true, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;

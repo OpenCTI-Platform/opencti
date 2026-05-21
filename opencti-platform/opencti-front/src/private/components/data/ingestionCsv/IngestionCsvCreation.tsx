@@ -68,6 +68,7 @@ const initCSVCreateForm: IngestionCsvAddInput = {
   key: '',
   ca: '',
   markings: [],
+  ssl_verify: true,
 };
 
 const ingestionCsvCreationMutation = graphql`
@@ -127,6 +128,7 @@ export interface IngestionCsvAddInput extends BasicUserHandlingValues {
   key?: string;
   ca?: string;
   markings: FieldOption[];
+  ssl_verify?: boolean;
 }
 
 const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
@@ -247,6 +249,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
       markings: markings ?? [],
+      ssl_verify: values.ssl_verify,
     };
     commit({
       variables: {
@@ -475,6 +478,13 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   />
                 </>
               )}
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="ssl_verify"
+                label={t_i18n('Verify SSL certificate')}
+                containerstyle={fieldSpacingContainerStyle}
+              />
               <Box sx={{ width: '100%', marginTop: 5 }}>
                 <Alert
                   severity="info"

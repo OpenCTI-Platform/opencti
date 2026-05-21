@@ -124,7 +124,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       ca: certificateAuthenticationValue.split(':')[2],
     };
   }
-  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
+  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ingestion.ssl_verify ?? true, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   // Prepare query params
   const queryVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'query_param');

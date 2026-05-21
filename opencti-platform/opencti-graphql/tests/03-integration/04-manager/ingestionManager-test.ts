@@ -23,6 +23,64 @@ import { awaitUntilCondition, readCsvFromFileStream } from '../../utils/testQuer
 import { connectorIdFromIngestId, queueDetails } from '../../../src/domain/connector';
 
 describe('Verify taxii ingestion', () => {
+  it('should create taxii ingestion with ssl_verify default (true)', async () => {
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii ingestion ssl_verify default',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+    // ssl_verify should default to undefined/null when not provided (treated as true by the manager via ?? true)
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
+    const sslVerifyValue = result.ssl_verify ?? true;
+    expect(sslVerifyValue).toBe(true);
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should create taxii ingestion with ssl_verify explicitly set to false', async () => {
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii ingestion ssl_verify false',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+      ssl_verify: false,
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
+    expect(result.ssl_verify).toBe(false);
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should create taxii ingestion with ssl_verify explicitly set to true', async () => {
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii ingestion ssl_verify true',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+      ssl_verify: true,
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
+    expect(result.ssl_verify).toBe(true);
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
     // 1. Create ingestion in opencti
     const input: IngestionTaxiiAddInput = {
@@ -485,5 +543,61 @@ describe('Verify csv ingestion', () => {
     const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionEntity, csvMapperParsed, [...csvLines], null);
     expect(isUnchangedData).toBeTruthy();
     expect(objectsInBundleCount).toBe(0);
+  });
+});
+
+describe('Verify csv ingestion ssl_verify field', () => {
+  it('should create csv ingestion with ssl_verify explicitly set to false', async () => {
+    const mapper = csvMapperMockCities as CsvMapperParsed;
+    const csvMapperInput: CsvMapperAddInput = {
+      has_header: mapper.has_header,
+      name: 'testCsvIngestionMapperSslVerify',
+      representations: JSON.stringify(mapper.representations),
+      separator: mapper.separator,
+      skipLineChar: mapper.skipLineChar,
+    };
+    const mapperCreated = await createCsvMapper(testContext, ADMIN_USER, csvMapperInput);
+
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      ingestion_running: true,
+      name: 'csv ingestion ssl_verify false',
+      uri: 'http://test.invalid',
+      csv_mapper_id: mapperCreated.id,
+      user_id: ADMIN_USER.id,
+      ssl_verify: false,
+    };
+    const ingestion = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
+    expect(ingestion.id).toBeDefined();
+
+    const result = await findIngestionCsvById(testContext, ADMIN_USER, ingestion.id);
+    expect(result.ssl_verify).toBe(false);
+  });
+
+  it('should create csv ingestion with ssl_verify explicitly set to true', async () => {
+    const mapper = csvMapperMockCities as CsvMapperParsed;
+    const csvMapperInput: CsvMapperAddInput = {
+      has_header: mapper.has_header,
+      name: 'testCsvIngestionMapperSslVerifyTrue',
+      representations: JSON.stringify(mapper.representations),
+      separator: mapper.separator,
+      skipLineChar: mapper.skipLineChar,
+    };
+    const mapperCreated = await createCsvMapper(testContext, ADMIN_USER, csvMapperInput);
+
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      ingestion_running: true,
+      name: 'csv ingestion ssl_verify true',
+      uri: 'http://test.invalid',
+      csv_mapper_id: mapperCreated.id,
+      user_id: ADMIN_USER.id,
+      ssl_verify: true,
+    };
+    const ingestion = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
+    expect(ingestion.id).toBeDefined();
+
+    const result = await findIngestionCsvById(testContext, ADMIN_USER, ingestion.id);
+    expect(result.ssl_verify).toBe(true);
   });
 });

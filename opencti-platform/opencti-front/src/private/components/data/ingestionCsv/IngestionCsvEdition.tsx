@@ -86,6 +86,7 @@ export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment
       csv_mapper_id: ingestionCsvData.csv_mapper_type === 'inline' ? null : convertMapper(ingestionCsvData, 'csvMapper'),
       user_id: convertUser(ingestionCsvData, 'user'),
       references: undefined,
+      ssl_verify: ingestionCsvData.ssl_verify ?? true,
       markings: me.allowed_marking?.filter(
         (marking) => ingestionCsvData.markings?.includes(marking.id),
       ).map((marking) => ({
@@ -184,6 +185,7 @@ export const ingestionCsvEditionFragment = graphql`
       name
     }
     markings
+    ssl_verify
     duplicateCsvMapper {
       id
       name
@@ -250,6 +252,7 @@ export interface IngestionCsvEditionForm {
   markings: FieldOption[];
   csv_mapper?: CsvMapperAddInput;
   csv_mapper_type: boolean;
+  ssl_verify?: boolean;
 }
 
 type FieldValue
@@ -667,6 +670,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                   />
                 </>
               )}
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="ssl_verify"
+                label={t_i18n('Verify SSL certificate')}
+                onChange={handleSubmitField}
+                containerstyle={fieldSpacingContainerStyle}
+              />
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
