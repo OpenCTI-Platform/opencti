@@ -4,6 +4,7 @@ import { screen } from '@testing-library/react';
 import TransitionNode from './TransitionNode';
 import testRender from '../../../../../../utils/tests/test-render';
 import type { Edge, NodeProps, Position } from 'reactflow';
+import { CommentMode } from '../utils';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -60,7 +61,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 describe('TransitionNode – comment label', () => {
   it('shows nothing when comment is "disable"', () => {
-    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: 'disable' })} />);
+    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.disable })} />);
     expect(screen.queryByText(/comment/i)).toBeNull();
   });
 
@@ -70,12 +71,12 @@ describe('TransitionNode – comment label', () => {
   });
 
   it('shows "comment allowed" when comment is "allowed"', () => {
-    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: 'allowed' })} />);
+    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.allowed })} />);
     expect(screen.getByText(/comment allowed/i)).toBeDefined();
   });
 
   it('shows "comment required" when comment is "required"', () => {
-    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: 'required' })} />);
+    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.required })} />);
     expect(screen.getByText(/comment required/i)).toBeDefined();
   });
 });

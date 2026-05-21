@@ -15,15 +15,15 @@ const TransitionForm = () => {
   const hasValidateDraft = values.actions?.some((a) => a.type === WorkflowActionType.validateDraft);
 
   const commentMode: CommentModeType = values.comment ?? CommentMode.disable;
-  const enableComments = commentMode !== 'disable';
-  const requireComments = commentMode === 'required';
+  const enableComments = commentMode !== CommentMode.disable;
+  const requireComments = commentMode === CommentMode.required;
 
   const handleToggleEnableComments = (checked: boolean) => {
-    setFieldValue('comment', checked ? 'allowed' : 'disable');
+    setFieldValue('comment', checked ? CommentMode.allowed : CommentMode.disable);
   };
 
   const handleToggleRequireComments = (checked: boolean) => {
-    setFieldValue('comment', checked ? 'required' : 'allowed');
+    setFieldValue('comment', checked ? CommentMode.required : CommentMode.allowed);
   };
 
   const handleToggleAction = (actionType: WorkflowActionType, checked: boolean) => {

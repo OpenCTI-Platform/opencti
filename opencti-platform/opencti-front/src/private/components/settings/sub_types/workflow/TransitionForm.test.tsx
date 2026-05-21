@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import TransitionForm from './TransitionForm';
 import testRender from '../../../../../utils/tests/test-render';
-import { WorkflowActionType } from './utils';
+import { WorkflowActionType, CommentMode } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
@@ -41,44 +41,44 @@ const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit 
 // ---------------------------------------------------------------------------
 describe('TransitionForm – comment section', () => {
   it('renders "Enable comment" switch unchecked when comment is "disable"', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     const enableSwitch = screen.getByRole('checkbox', { name: /enable comment/i });
     expect((enableSwitch as HTMLInputElement).checked).toBe(false);
   });
 
   it('renders "Enable comment" switch checked when comment is "allowed"', () => {
-    renderForm({ event: 'approve', comment: 'allowed', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.allowed, actions: [] });
     const enableSwitch = screen.getByRole('checkbox', { name: /enable comment/i });
     expect((enableSwitch as HTMLInputElement).checked).toBe(true);
   });
 
   it('renders "Enable comment" switch checked when comment is "required"', () => {
-    renderForm({ event: 'approve', comment: 'required', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.required, actions: [] });
     const enableSwitch = screen.getByRole('checkbox', { name: /enable comment/i });
     expect((enableSwitch as HTMLInputElement).checked).toBe(true);
   });
 
   it('"Required" switch is disabled when comment is "disable"', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     const requiredSwitch = screen.getByRole('checkbox', { name: /required/i });
     expect((requiredSwitch as HTMLInputElement).disabled).toBe(true);
   });
 
   it('"Required" switch is enabled when comment is "allowed"', () => {
-    renderForm({ event: 'approve', comment: 'allowed', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.allowed, actions: [] });
     const requiredSwitch = screen.getByRole('checkbox', { name: /required/i });
     expect((requiredSwitch as HTMLInputElement).disabled).toBe(false);
   });
 
   it('"Required" switch is checked when comment is "required"', () => {
-    renderForm({ event: 'approve', comment: 'required', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.required, actions: [] });
     const requiredSwitch = screen.getByRole('checkbox', { name: /required/i });
     expect((requiredSwitch as HTMLInputElement).checked).toBe(true);
   });
 
   it('toggling "Enable comment" ON sets comment to "allowed"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: 'disable', actions: [] }, onSubmit);
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] }, onSubmit);
 
     await user.click(screen.getByRole('checkbox', { name: /enable comment/i }));
 
@@ -87,7 +87,7 @@ describe('TransitionForm – comment section', () => {
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({ comment: 'allowed' }),
+        expect.objectContaining({ comment: CommentMode.allowed }),
         expect.anything(),
       );
     });
@@ -95,7 +95,7 @@ describe('TransitionForm – comment section', () => {
 
   it('toggling "Enable comment" OFF sets comment to "disable"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: 'allowed', actions: [] }, onSubmit);
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.allowed, actions: [] }, onSubmit);
 
     await user.click(screen.getByRole('checkbox', { name: /enable comment/i }));
 
@@ -104,7 +104,7 @@ describe('TransitionForm – comment section', () => {
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({ comment: 'disable' }),
+        expect.objectContaining({ comment: CommentMode.disable }),
         expect.anything(),
       );
     });
@@ -112,7 +112,7 @@ describe('TransitionForm – comment section', () => {
 
   it('toggling "Required" ON sets comment to "required"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: 'allowed', actions: [] }, onSubmit);
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.allowed, actions: [] }, onSubmit);
 
     await user.click(screen.getByRole('checkbox', { name: /required/i }));
 
@@ -121,7 +121,7 @@ describe('TransitionForm – comment section', () => {
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({ comment: 'required' }),
+        expect.objectContaining({ comment: CommentMode.required }),
         expect.anything(),
       );
     });
@@ -129,7 +129,7 @@ describe('TransitionForm – comment section', () => {
 
   it('toggling "Required" OFF sets comment back to "allowed"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: 'required', actions: [] }, onSubmit);
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.required, actions: [] }, onSubmit);
 
     await user.click(screen.getByRole('checkbox', { name: /required/i }));
 
@@ -138,7 +138,7 @@ describe('TransitionForm – comment section', () => {
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({ comment: 'allowed' }),
+        expect.objectContaining({ comment: CommentMode.allowed }),
         expect.anything(),
       );
     });
@@ -147,7 +147,7 @@ describe('TransitionForm – comment section', () => {
 
 describe('TransitionForm – action toggles', () => {
   it('"Update authorized members" switch is unchecked when action is absent', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     const uamSwitch = screen.getByRole('checkbox', { name: /update authorized members/i });
     expect((uamSwitch as HTMLInputElement).checked).toBe(false);
   });
@@ -155,7 +155,7 @@ describe('TransitionForm – action toggles', () => {
   it('"Update authorized members" switch is checked when action is present', () => {
     renderForm({
       event: 'approve',
-      comment: 'disable',
+      comment: CommentMode.disable,
       actions: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
     });
     const uamSwitch = screen.getByRole('checkbox', { name: /update authorized members/i });
@@ -164,7 +164,7 @@ describe('TransitionForm – action toggles', () => {
 
   it('toggling "Update authorized members" ON adds the action', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: 'disable', actions: [] }, onSubmit);
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] }, onSubmit);
 
     await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
 
@@ -186,7 +186,7 @@ describe('TransitionForm – action toggles', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({
       event: 'approve',
-      comment: 'disable',
+      comment: CommentMode.disable,
       actions: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
     }, onSubmit);
 
@@ -201,7 +201,7 @@ describe('TransitionForm – action toggles', () => {
   });
 
   it('"Validate draft" switch is unchecked when action is absent', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     const vdSwitch = screen.getByRole('checkbox', { name: /validate draft/i });
     expect((vdSwitch as HTMLInputElement).checked).toBe(false);
   });
@@ -209,7 +209,7 @@ describe('TransitionForm – action toggles', () => {
   it('"Validate draft" switch is checked when action is present', () => {
     renderForm({
       event: 'approve',
-      comment: 'disable',
+      comment: CommentMode.disable,
       actions: [{ type: WorkflowActionType.validateDraft }],
     });
     const vdSwitch = screen.getByRole('checkbox', { name: /validate draft/i });
@@ -218,7 +218,7 @@ describe('TransitionForm – action toggles', () => {
 
   it('toggling "Validate draft" ON adds the action', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: 'disable', actions: [] }, onSubmit);
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] }, onSubmit);
 
     await user.click(screen.getByRole('checkbox', { name: /validate draft/i }));
 
@@ -240,7 +240,7 @@ describe('TransitionForm – action toggles', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({
       event: 'approve',
-      comment: 'disable',
+      comment: CommentMode.disable,
       actions: [{ type: WorkflowActionType.validateDraft }],
     }, onSubmit);
 
@@ -257,28 +257,28 @@ describe('TransitionForm – action toggles', () => {
 
 describe('TransitionForm – rendering', () => {
   it('renders the transition name field', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     expect(screen.getByTestId('field-event')).toBeDefined();
   });
 
   it('renders the info alert about comments', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     expect(screen.getByText(/users will be prompted to leave a comment/i)).toBeDefined();
   });
 
   it('renders WorkflowConditionFilters when conditions are defined', () => {
     const emptyFilterGroup: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
-    renderForm({ event: 'approve', comment: 'disable', actions: [], conditions: { filters: emptyFilterGroup } });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [], conditions: { filters: emptyFilterGroup } });
     expect(screen.getByTestId('workflow-condition-filters')).toBeDefined();
   });
 
   it('does not render WorkflowConditionFilters when conditions are undefined', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     expect(screen.queryByTestId('workflow-condition-filters')).toBeNull();
   });
 
   it('renders WorkflowFieldList when actions are defined', () => {
-    renderForm({ event: 'approve', comment: 'disable', actions: [] });
+    renderForm({ event: 'approve', comment: CommentMode.disable, actions: [] });
     expect(screen.getByTestId('workflow-field-list')).toBeDefined();
   });
 });

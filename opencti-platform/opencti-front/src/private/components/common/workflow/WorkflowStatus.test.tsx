@@ -4,6 +4,7 @@ import { screen, waitFor } from '@testing-library/react';
 import WorkflowStatus, { WorkflowTransitions } from './WorkflowStatus';
 import testRender from '../../../../utils/tests/test-render';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 // ---------------------------------------------------------------------------
 // Relay mocks
@@ -190,7 +191,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.allowed })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
@@ -206,7 +207,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'required' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.required })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
@@ -222,7 +223,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'required' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.required })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
@@ -238,7 +239,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.allowed })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
@@ -253,7 +254,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.allowed })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
@@ -269,7 +270,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.allowed })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
@@ -289,7 +290,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.allowed })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);
@@ -309,7 +310,7 @@ describe('WorkflowTransitions', () => {
         currentState: 'in_review',
         currentStatus: makeStatus(),
         lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve', comment: 'allowed' })],
+        allowedTransitions: [makeTransition({ event: 'approve', comment: CommentMode.allowed })],
       },
     });
     const { user } = testRender(<WorkflowTransitions data={draft} />);

@@ -2,7 +2,7 @@ import { Handle, NodeProps, Position, useReactFlow } from 'reactflow';
 import { useFormatter } from '../../../../../../components/i18n';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
-import { NODE_SIZE } from '../utils';
+import { CommentMode, NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 import { useMemo } from 'react';
 
@@ -123,9 +123,9 @@ const TransitionNode = ({ data, id }: NodeProps) => {
               <li>
                 {conditionAndActions}
               </li>
-              {data.comment && data.comment !== 'disable' && (
+              {data.comment && data.comment !== CommentMode.disable && (
                 <li>
-                  {data.comment === 'required' ? t_i18n('comment required') : t_i18n('comment allowed')}
+                  {data.comment === CommentMode.required ? t_i18n('comment required') : t_i18n('comment allowed')}
                 </li>
               )}
             </ul>

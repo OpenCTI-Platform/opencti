@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import Transition from '../../../../components/Transition';
 import Dialog from '@common/dialog/Dialog';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
+import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-graphql/src/modules/workflow/api/workflow-resolvers.ts
 
@@ -167,7 +168,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   const handleTransition = (eventName: string, actions: readonly string[], comment?: string | null) => {
     handleClose();
-    if (comment === 'allowed' || comment === 'required') {
+    if (comment === CommentMode.allowed || comment === CommentMode.required) {
       setCommentValue('');
       setCommentDialogTransition({ event: eventName, actions, comment });
       return;
@@ -258,7 +259,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         size="large"
       >
         <DialogContentText sx={{ marginBottom: 2 }}>
-          {commentDialogTransition?.comment === 'required'
+          {commentDialogTransition?.comment === CommentMode.required
             ? t_i18n('A comment is required before changing the status.')
             : t_i18n('You can optionally add a comment before changing the status.')}
         </DialogContentText>
@@ -272,7 +273,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           onChange={(e) => setCommentValue(e.target.value)}
           variant="outlined"
           size="small"
-          required={commentDialogTransition?.comment === 'required'}
+          required={commentDialogTransition?.comment === CommentMode.required}
           slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
           helperText={`${commentValue.length} / ${COMMENT_MAX_LENGTH}`}
         />
@@ -285,7 +286,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           </Button>
           <Button
             onClick={handleConfirmComment}
-            disabled={commentDialogTransition?.comment === 'required' && commentValue.trim() === '' && !canBypassMandatoryFields}
+            disabled={commentDialogTransition?.comment === CommentMode.required && commentValue.trim() === '' && !canBypassMandatoryFields}
           >
             {t_i18n('Confirm')}
           </Button>
