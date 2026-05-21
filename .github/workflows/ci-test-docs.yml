@@ -25,4 +25,4 @@ jobs:
 
       - name: Build documentation
         working-directory: docs
-        run: mkdocs build --verbose
+        run: mkdocs build
