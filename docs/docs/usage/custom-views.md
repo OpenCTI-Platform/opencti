@@ -64,7 +64,7 @@ Custom Views use the same widget engine as [Custom Dashboards](dashboards.md). R
 
 When adding a widget to a Custom View, it comes pre-configured with a dynamic filter that automatically scopes the displayed data to the entity currently being viewed.
 
-[Container entity types](containers/?h=container#types-of-container) come with the `contains = current entity` filter.
+[Container entity types](containers.md/#types-of-container) come with the `contains = current entity` filter.
 Other non-container entity types come with the following:
 
 * `in regards of = current entity` when adding a widget set to the **Entities** perspective,

@@ -6,7 +6,7 @@
 
 OpenCTI playbooks are automated data processing flows that allow platform administrators to enrich, filter, transform, and route data as it is created or updated in the platform.
 
-Playbooks operate on **STIX 2.1 bundles** and can be fully customised to implement intelligence workflows such as enrichment, qualification, normalisation, routing, or automated response.
+Playbooks operate on **STIX 2.1 bundles** and can be fully customized to implement intelligence workflows such as enrichment, qualification, normalisation, routing, or automated response.
 
 ![playbook data processing flow](assets/playbook_data_flow_example.png)
 
@@ -28,7 +28,7 @@ With playbooks, you can for example:
 
 A playbook can be considered as a **STIX 2.1 bundle processing pipeline**.
 
-A playbook starts with an **event source** that listens to a specific data stream (for example knowledge creation, updates, or manual triggers). Each component then receives a STIX bundle, processes it, and forwards the resulting bundle to the next component. For details of the available components see [**playbook components**](playbook-components).
+A playbook starts with an **event source** that listens to a specific data stream (for example knowledge creation, updates, or manual triggers). Each component then receives a STIX bundle, processes it, and forwards the resulting bundle to the next component. For details of the available components see [**playbook components**](playbook-components.md).
 
 Components can:
 

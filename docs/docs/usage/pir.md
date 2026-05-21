@@ -1,5 +1,10 @@
 # Priority Intelligence Requirement (PIR)
 
+!!! tip "Enterprise edition"
+
+    Priority Intelligence Requirement feature is available under the **OpenCTI Enterprise Edition** licence. Please read the [dedicated page](../administration/enterprise.md) for full details.
+
+
 Priority Intelligence Requirements (PIRs) refer to the most critical information necessary to make informed intelligence-based decisions, achieve key objectives, and assess potential risks. PIRs help focus resources and efforts on gathering and analysing the most relevant and crucial information.
 
 PIRs prioritize the most relevant information based on the user's focus, enabling them to gather and analyze key insights necessary for effective decision-making and risk assessment.

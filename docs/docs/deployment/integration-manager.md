@@ -11,7 +11,7 @@ The OpenCTI Integration Manager is a deployment tool that simplifies the managem
 
     - [Quick start](integration-manager/quick-start.md) - Get up and running quickly
     - [Architecture design](integration-manager/architecture.md) - Detailed technical architecure documentation
-    - [Private Registry Authentication](integration-manager/registry-authentification.md) - Configure private Docker registries and authentication handling
+    - [Private Registry Authentication](integration-manager/registry-authentication.md) - Configure private Docker registries and authentication handling
     - [Proxy Support](integration-manager/proxy-configuration.md) - Configure system proxy and HTTPS proxy certificates
     - [Installation guide](integration-manager/installation.md) - System requirements and installation methods
     - [Configuration reference](integration-manager/configuration.md) - Complete configuration documentation
