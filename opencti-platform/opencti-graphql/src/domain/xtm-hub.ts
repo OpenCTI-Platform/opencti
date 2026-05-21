@@ -189,11 +189,6 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
 };
 
 export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: AuthUser): Promise<void> => {
-  const isEnabled = booleanConf('XTMHUB_NEWS_FEED_ENABLED', true);
-  if (!isEnabled) {
-    return;
-  }
-
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   if (!settings.xtm_hub_token) {
     logApp.info('[XTMH] Cannot fetch news feed: platform is not registered');

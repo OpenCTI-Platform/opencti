@@ -206,8 +206,7 @@ const ProfileOverviewComponent = (props) => {
   const { t, me, classes, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
-  const { isPlaygroundEnable, isFeatureEnable } = useHelper();
-  const isXTMHubNewsFeedEnabled = isFeatureEnable('XTMHUB_NEWS_FEED_ENABLED');
+  const { isPlaygroundEnable } = useHelper();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Profile'));
   const objectOrganization = convertOrganizations(me);
@@ -477,7 +476,7 @@ const ProfileOverviewComponent = (props) => {
           <HomeDashboardSettings />
         </Card>
       ) : null}
-      {settings.xtm_hub_registration_status === 'registered' && isXTMHubNewsFeedEnabled && settings.xtm_hub_available_news_feed_types?.length > 0 && (
+      {settings.xtm_hub_registration_status === 'registered' && settings.xtm_hub_available_news_feed_types?.length > 0 && (
         <ProfileOverviewNewsFeed
           availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
           unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
