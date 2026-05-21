@@ -69,7 +69,7 @@ const MarkdownFieldBase = ({
   registerMarkdownImagesController,
 }: MarkdownFieldBaseProps): ReactElement => {
   const { t_i18n } = useFormatter();
-  const { fullyActive } = useAI();
+  const { enabled, configured } = useAI();
   const { isFeatureEnable } = useHelper();
   const isImageUploadEnabled = isFeatureEnable(MARKDOWN_IMAGE_UPLOAD);
   const [selectedTab, setSelectedTab] = useState<MarkdownTab>('write');
@@ -291,7 +291,7 @@ const MarkdownFieldBase = ({
 
       {showError && <FormHelperText error={true}>{errorMessage}</FormHelperText>}
 
-      {askAi && fullyActive && (
+      {askAi && (enabled && configured) && (
         <TextFieldAskAI
           currentValue={draftValue}
           setFieldValue={(nextValue: string) => {
