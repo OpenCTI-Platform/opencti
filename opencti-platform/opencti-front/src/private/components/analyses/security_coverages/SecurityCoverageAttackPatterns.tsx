@@ -25,7 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { capitalizeFirstLetter } from 'src/utils/String';
+import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
 
 const securityCoverageAttackPatternsFragment = graphql`

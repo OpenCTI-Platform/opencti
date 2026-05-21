@@ -2,7 +2,7 @@ import React from 'react';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { isEmptyField } from '../../utils/utils';
-import { capitalizeFirstLetter } from 'src/utils/String';
+import { capitalizeFirstLetter } from '../../utils/String';
 
 export const SYSTEM_BANNER_HEIGHT = 20;
 const BANNER_Z_INDEX = 2000;

@@ -7,7 +7,7 @@ import { Autocomplete } from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import { truncate } from 'src/utils/String';
+import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
 

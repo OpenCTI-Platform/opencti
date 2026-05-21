@@ -31,8 +31,9 @@ const WidgetRadar = ({
     data: data.map((n) => n.value),
   }], [data, label]);
 
-  const options: ApexOptions = useMemo(() => {
+  const options = useMemo<ApexOptions>(() => {
     const labels = buildWidgetLabelsOption(data, groupBy);
+    // @ts-expect-error fixed when Charts in tsx
     return radarChartOptions(
       theme,
       labels,
