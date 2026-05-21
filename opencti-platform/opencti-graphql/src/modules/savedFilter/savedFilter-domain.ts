@@ -1,12 +1,14 @@
 import { publishUserAction } from '../../listener/UserActionListener';
-import { FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter } from './savedFilter-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
+import type { MemberAccessInput, MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import { getUserAccessRight, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { isFeatureEnabled } from '../../config/conf';
 
 const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
@@ -45,4 +47,29 @@ export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser
   });
 
   return element;
+};
+
+export const savedFilterEditAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  savedFilterId: string,
+  input: MemberAccessInput[],
+) => {
+  if (!isFeatureEnabled('SHARE_FILTERS')) {
+    throw ForbiddenAccess('Sharing saved filters is disabled');
+  }
+  const args = {
+    entityId: savedFilterId,
+    input,
+    requiredCapabilities: [KNOWLEDGE_KNSHAREFILTERS],
+    entityType: ENTITY_TYPE_SAVED_FILTER,
+  };
+  return editAuthorizedMembers(context, user, args);
+};
+
+export const getCurrentUserAccessRight = (
+  user: AuthUser,
+  savedFilter: BasicStoreEntitySavedFilter,
+) => {
+  return getUserAccessRight(user, savedFilter);
 };

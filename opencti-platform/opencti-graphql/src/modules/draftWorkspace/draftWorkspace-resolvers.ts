@@ -48,7 +48,7 @@ const draftWorkspaceResolvers: Resolvers = {
     },
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
-    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
+    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context.user, workspace),
     objectParticipant: async (workspace, _, context) => loadParticipants(context, context.user, workspace),
     objectAssignee: async (workspace, _, context) => loadAssignees(context, context.user, workspace),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),

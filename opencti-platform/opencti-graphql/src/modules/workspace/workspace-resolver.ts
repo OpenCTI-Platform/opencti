@@ -33,7 +33,7 @@ const workspaceResolvers: Resolvers = {
   },
   Workspace: {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
-    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
+    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context.user, workspace),
     owner: (workspace, _, context) => loadCreator(context, context.user, getOwnerId(workspace)),
     objects: (workspace, args, context) => {
       return objects(context, context.user, workspace, args) as any;
