@@ -34,7 +34,7 @@ export const up = async (next) => {
     const authorIdToKeep = currentAuthorsIds[currentAuthorsIds.length - 1];
     // 1. Update the denormalized refs of the current entity
     const updateCreatedByWithUniqueIdSource = "ctx._source['rel_created-by.internal_id'] = [params.authorIdToKeep]";
-    await elUpdate(currentEntityWithMultipleAuthors._index, currentEntityWithMultipleAuthors._id, {
+    await elUpdate(context, currentEntityWithMultipleAuthors._index, currentEntityWithMultipleAuthors._id, {
       script: { source: updateCreatedByWithUniqueIdSource, lang: 'painless', params: { authorIdToKeep } },
     });
 

@@ -55,7 +55,7 @@ export const up = async (next) => {
   const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
   const concurrentUpdate = async (bulk) => {
     if (bulk.length > 0) {
-      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
+      await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
       currentProcessing += bulk.length / 2;
       logApp.info(`[OPENCTI] Migrating decay rule filters: ${currentProcessing} / ${bulkOperations.length / 2}`);
     }

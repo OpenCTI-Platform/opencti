@@ -35,13 +35,13 @@ export const up = async (next) => {
         };
         const newTokensList = [...currentTokens, newToken];
         const source = "ctx._source.api_tokens = params.api_tokens; ctx._source.remove('api_token');";
-        await elUpdate(user._index, user.internal_id, {
+        await elUpdate(context, user._index, user.internal_id, {
           script: { source, lang: 'painless', params: { api_tokens: newTokensList } },
         });
       } else {
         // Ensure old api_token attribute cleanup
         const source = "ctx._source.remove('api_token');";
-        await elUpdate(user._index, user.internal_id, { script: { source, lang: 'painless' } });
+        await elUpdate(context, user._index, user.internal_id, { script: { source, lang: 'painless' } });
       }
     }
   }
