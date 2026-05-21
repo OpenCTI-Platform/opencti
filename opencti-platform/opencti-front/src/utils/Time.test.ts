@@ -159,7 +159,7 @@ describe('Time utils', () => {
   describe('stringFormatMinutes', () => {
     it('should format minutes into a human-readable string', () => {
       const t = (s: string) => s;
-      expect(stringFormatMinutes(3065, t)).toBe('2 days, 3 hours, 5 minutes');
+      expect(stringFormatMinutes(3065, t)).toBe('2 days 3 hours 5 minutes');
     });
   });
 
