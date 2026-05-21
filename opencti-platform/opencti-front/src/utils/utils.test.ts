@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getPaddingRight } from './utils';
 
-
 describe('getPaddingRight', () => {
   const basePath = '/dashboard/analyses/reports/a079e1e7-ce97-4528-92f1-64df365d540b';
 
