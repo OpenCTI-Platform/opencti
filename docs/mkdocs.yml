@@ -141,7 +141,7 @@ nav:
       - On-premise map server: deployment/map.md
       - On-premise AI extraction: deployment/ai-import-document.md
       - Troubleshooting: deployment/troubleshooting.md
-    - Breaking changes:dd
+    - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
             - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
