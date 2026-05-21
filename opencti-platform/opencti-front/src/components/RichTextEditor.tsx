@@ -1,6 +1,7 @@
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import { TextSelection, NodeSelection } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
 import { ImageWithOptions } from './richTextEditor/extensions/ImageWithOptions';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
@@ -204,6 +205,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           alwaysPreserveAspectRatio: true,
         },
       }),
+      Underline,
       Subscript,
       Superscript,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
