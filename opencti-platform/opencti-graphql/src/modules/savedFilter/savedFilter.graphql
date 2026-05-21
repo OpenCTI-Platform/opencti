@@ -9,8 +9,8 @@ type SavedFilter implements InternalObject & BasicObject {
     filters: String!
     scope: String!
     # Sharing
-    authorizedMembers: [MemberAccess!]! @ff(flags: ["SHARE_FILTERS"], softFail: true)
-    currentUserAccessRight: String @ff(flags: ["SHARE_FILTERS"], softFail: true)
+    authorizedMembers: [MemberAccess!]! @ff(flags: ["SHARE_FILTERS"])
+    currentUserAccessRight: String @ff(flags: ["SHARE_FILTERS"])
 }
 
 type SavedFilterEdge {
