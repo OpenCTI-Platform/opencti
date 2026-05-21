@@ -40,6 +40,7 @@ import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 const AI_TYPE_MAP: Record<string, string> = {
   mistralai: 'MistralAI',
@@ -184,6 +185,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   const theme = useTheme<Theme>();
 
   const [openEEChanges, setOpenEEChanges] = useState(false);
+  const { xtmOneConfigured } = useChatbot();
 
   const { t_i18n, fldt } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -627,22 +629,24 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         status={null}
                       />
                     </ListItem>
-                    <ListItem divider={true}>
-                      <ListItemText
-                        primary={(
-                          <>
-                            {t_i18n('AI Powered')}
-                            <EEChip />
-                          </>
-                        )}
-                      />
-                      <ItemBoolean
-                        label={aiPoweredLabel}
-                        status={isEnterpriseEditionValid && settings.platform_ai_enabled && settings.platform_ai_has_token}
-                        tooltip={aiPoweredTooltip}
-                        labelTextTransform="none"
-                      />
-                    </ListItem>
+                    {!xtmOneConfigured && (
+                      <ListItem divider={true}>
+                        <ListItemText
+                          primary={(
+                            <>
+                              {t_i18n('AI Powered')}
+                              <EEChip />
+                            </>
+                          )}
+                        />
+                        <ItemBoolean
+                          label={aiPoweredLabel}
+                          status={isEnterpriseEditionValid && settings.platform_ai_enabled && settings.platform_ai_has_token}
+                          tooltip={aiPoweredTooltip}
+                          labelTextTransform="none"
+                        />
+                      </ListItem>
+                    )}
                     <ListItem divider={true}>
                       <ListItemText
                         primary={(
