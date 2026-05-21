@@ -44,6 +44,7 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
   name: 'Share with organizations',
   description: 'Share with organizations within the platform',
   icon: 'organization-add',
+  category: 'share_and_access',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],

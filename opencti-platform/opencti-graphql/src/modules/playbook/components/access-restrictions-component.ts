@@ -66,6 +66,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
   name: 'Manage access restrictions',
   description: 'Manage advanced access restrictions on entities',
   icon: 'lock',
+  category: 'share_and_access',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],

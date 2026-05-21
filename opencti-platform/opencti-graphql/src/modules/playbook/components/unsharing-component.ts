@@ -48,6 +48,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
   name: 'Unshare with organizations',
   description: 'Unshare with organizations within the platform',
   icon: 'organization-remove',
+  category: 'share_and_access',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],

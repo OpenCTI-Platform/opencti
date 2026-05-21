@@ -33,6 +33,7 @@ export const PLAYBOOK_DATA_STREAM_PIR: PlaybookComponent<PirStreamConfiguration>
   name: 'Listen PIR events',
   description: 'Listen for all internal PIR events',
   icon: 'in-pir',
+  category: 'start_playbook',
   is_entry_point: true,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],

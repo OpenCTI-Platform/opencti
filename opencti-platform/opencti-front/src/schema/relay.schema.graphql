@@ -13451,6 +13451,13 @@ type Playbook implements InternalObject & BasicObject {
   toConfigurationExport: String!
 }
 
+enum PlaybookCategory {
+  start_playbook
+  transform_and_enrich
+  share_and_access
+  end_playbook
+}
+
 type PlaybookComponentPort {
   id: ID!
   type: String!
@@ -13461,6 +13468,7 @@ type PlaybookComponent {
   name: String!
   description: String!
   icon: String!
+  category: PlaybookCategory!
   is_entry_point: Boolean
   is_internal: Boolean
   configuration_schema: String
