@@ -12,7 +12,7 @@ import type { Theme } from '../../../components/Theme';
 
 const newsFeedToastSubscription = graphql`
   subscription NewsFeedToastManagerSubscription {
-    newsFeedItem {
+    newsFeedItemAdded {
       id
       title
       news_feed_type
@@ -43,17 +43,12 @@ const NewsFeedToastManager: FunctionComponent = () => {
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const isEnabled = isXTMHubAccessible && isNewsFeedFeatureEnabled && !isAllNewsFeedUnsubscribed;
 
-  const handleNewsFeedItem = useCallback((data: { newsFeedItem?: NewsFeedToastData }) => {
-    if (!data?.newsFeedItem) return;
-    const { id, title, news_feed_type, metadata } = data.newsFeedItem;
+  const handleNewsFeedItem = useCallback((data: { newsFeedItemAdded?: NewsFeedToastData }) => {
+    if (!data?.newsFeedItemAdded) return;
+    const { id, title, news_feed_type, metadata } = data.newsFeedItemAdded;
     setToasts((prev) => {
-      const existingIndex = prev.findIndex((t) => t.id === id);
-      if (existingIndex === -1) {
-        return [...prev, { id, title, news_feed_type, metadata }];
-      }
-      const next = [...prev];
-      next[existingIndex] = { id, title, news_feed_type, metadata };
-      return next;
+      if (prev.some((t) => t.id === id)) return prev; // deduplicate
+      return [...prev, { id, title, news_feed_type, metadata }];
     });
   }, []);
 

@@ -9802,6 +9802,7 @@ type Subscription {
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
   securityCoverage(id: ID!): SecurityCoverage
+  newsFeedItemAdded: NewsFeedItem
   newsFeedItem: NewsFeedItem
   newsFeedItemDeleted: ID
   newsFeedsNumber: NewsFeedCount
