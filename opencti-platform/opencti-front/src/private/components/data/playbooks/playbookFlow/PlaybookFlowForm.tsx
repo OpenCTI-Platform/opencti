@@ -114,7 +114,7 @@ const PlaybookFlowForm = ({
     }
     // Special work in case of CRON component,
     // (format trigger time to have correct format).
-    if (configurationSchema?.properties?.triggerTime) {
+    if (configurationSchema?.properties?.triggerTime && values.time) {
       // Important to translate to UTC before formatting
       let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
       if (values.period !== 'minute' && values.period !== 'hour' && values.period !== 'day') {

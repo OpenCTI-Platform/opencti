@@ -15,7 +15,7 @@ import StixRelationshipsMultiHeatMap from '@components/common/stix_relationships
 import StixRelationshipsTreeMap from '@components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 
@@ -33,7 +33,7 @@ const DashboardRelationshipsViz = ({
   host,
 }: DashboardRelationshipsVizProps) => {
   const startDate = config.relativeDate
-    ? computerRelativeDate(config.relativeDate)
+    ? computeRelativeDate(config.relativeDate)
     : config.startDate;
 
   const endDate = config.relativeDate

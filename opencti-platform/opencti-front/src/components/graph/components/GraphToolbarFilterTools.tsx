@@ -38,8 +38,8 @@ const GraphToolbarFilterTools = () => {
 
   const [start, end] = timeRange.interval;
   const [selectedStart, selectedEnd] = selectedTimeRangeInterval ?? [];
-  const diffStart = minutesBetweenDates(start, selectedStart);
-  const diffEnd = minutesBetweenDates(selectedEnd, end);
+  const diffStart = minutesBetweenDates(start, selectedStart ?? new Date());
+  const diffEnd = minutesBetweenDates(selectedEnd ?? new Date(), end);
   let timeRangeFilters = 0;
   if (selectedTimeRangeInterval) {
     // Using 20 and not 0 because there is a small diff depending of the

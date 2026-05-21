@@ -99,7 +99,7 @@ export const yearFormat = (data: DateInput): string => (data && data !== '-' ? p
  * @returns The formatted date string, or null if the date is empty.
  */
 export const dateFormat = (
-  data: DateInput | null,
+  data: DateInput | null | undefined,
   specificFormat: string | null = null,
 ): string | null => {
   if (isNone(data)) {
@@ -115,7 +115,12 @@ export const formatTimeForToday = (time: string): string => {
   return `${today}T${time}`;
 };
 
-export const timestamp = (date: DateInput): number => parse(date).unix();
+export function timestamp(date: DateInput): number;
+export function timestamp(date: DateInput | null | undefined): number | undefined;
+export function timestamp(date: DateInput | null | undefined): number | undefined {
+  if (date === null || date === undefined) return undefined;
+  return parse(date).unix();
+}
 
 export const jsDate = (date: DateInput): Date => parse(date).toDate();
 
@@ -187,7 +192,7 @@ export const stringFormatMinutes = (
  * @param relativeDate How much time to go before (ex: days-7).
  * @return {string|null} The past date.
  */
-export const computerRelativeDate = (relativeDate: string): string | null => {
+export const computeRelativeDate = (relativeDate: string): string | null => {
   if (relativeDate.includes('days')) {
     return daysAgo(relativeDate.split('-')[1], null, false);
   }
@@ -200,8 +205,14 @@ export const computerRelativeDate = (relativeDate: string): string | null => {
   return null;
 };
 
-export const streamEventIdToDate = (streamEventId: string | undefined | null): Moment => {
-  return parse(parseInt((streamEventId || '-').split('-')[0], 10));
+/**
+ * Extracts the timestamp from a Redis stream event ID and returns it as an ISO date string.
+ *
+ * @param streamEventId The stream event ID to parse (in the the format "timestamp-sequence" (e.g. "1718445600000-0")).
+ * @returns An ISO formatted date string.
+ */
+export const streamEventIdToDate = (streamEventId: string | undefined | null): string => {
+  return parse(parseInt((streamEventId || '-').split('-')[0], 10)).format();
 };
 
 /**
@@ -250,13 +261,13 @@ export function dateFiltersValueForDisplay(
   filterOperator: string | null | undefined,
 ): Date | string;
 export function dateFiltersValueForDisplay(
-  dateFilterValue: Date | string | null,
+  dateFilterValue: Date | string | null | undefined,
   filterOperator: string | null | undefined,
 ): Date | string | null;
 export function dateFiltersValueForDisplay(
-  dateFilterValue: Date | string | null,
+  dateFilterValue: Date | string | null | undefined,
   filterOperator: string | null | undefined,
-): Date | string | null {
+): Date | string | null | undefined {
   if (filterOperator && dateFilterValue && ['lte', 'gt'].includes(filterOperator)) {
     return subDays(dateFilterValue, 1);
   }

@@ -92,8 +92,8 @@ interface ThreatActorIndividualEditionDetailsProps {
 interface ThreatActorIndividualEditionDetailsFormValues {
   message?: string;
   references?: FieldOption[];
-  first_seen?: FieldOption;
-  last_seen?: FieldOption;
+  first_seen?: string;
+  last_seen?: string;
   goals: string;
 }
 
@@ -164,20 +164,16 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
 
     const inputValues = Object.entries({
       ...otherValues,
-      first_seen: values.first_seen
-        ? parse(values.first_seen).format()
-        : null,
+      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
       last_seen: values.last_seen ? parse(values.last_seen).format() : null,
-      goals:
-          values.goals && values.goals.length ? values.goals.split('\n') : [],
+      goals: values.goals && values.goals.length ? values.goals.split('\n') : [],
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     editor.fieldPatch({
       variables: {
         id: threatActorIndividual.id,
         input: inputValues,
-        commitMessage:
-            commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {

@@ -12,7 +12,7 @@ import AuditsRadar from '@components/common/audits/AuditsRadar';
 import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 
@@ -30,7 +30,7 @@ const DashboardAuditsViz = ({
   host,
 }: DashboardAuditsVizProps) => {
   const startDate = config.relativeDate
-    ? computerRelativeDate(config.relativeDate)
+    ? computeRelativeDate(config.relativeDate)
     : config.startDate;
 
   const endDate = config.relativeDate
