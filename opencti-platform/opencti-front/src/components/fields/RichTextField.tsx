@@ -54,7 +54,7 @@ const RichTextField = ({
   const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
-  const { fullyActive, enabled, configured } = useAI();
+  const { enabled, configured } = useAI();
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);

@@ -116,7 +116,7 @@ const StixCoreObjectFileExportForm = ({
 }: StixCoreObjectFileExportFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { fullyActive, enabled, configured } = useAI();
+  const { enabled, configured } = useAI();
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');

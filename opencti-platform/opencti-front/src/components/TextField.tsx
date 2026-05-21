@@ -28,7 +28,7 @@ const TextField = (props: TextFieldProps) => {
     onSubmit,
     onKeyDown,
   } = props;
-  const { fullyActive, enabled, configured } = useAI();
+  const { enabled, configured } = useAI();
 
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
