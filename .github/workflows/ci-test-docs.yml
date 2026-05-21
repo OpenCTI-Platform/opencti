@@ -1,7 +1,7 @@
 name: Docs build check
 
 on:
-  pull_request:
+  push:
     paths:
       - 'docs/mkdocs.yml'
 
