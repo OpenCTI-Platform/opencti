@@ -4,14 +4,17 @@ import { useFormatter } from '../../../../../components/i18n';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import GlobalWorkflowSettings from './GlobalWorkflowSettings';
 import RequestAccessSettings from './RequestAccessSettings';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 const GlobalWorkflowSettingsCard = () => {
   const { t_i18n } = useFormatter();
 
   const { subType } = useSubTypeOutletContext();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
 
-  const hasRequestAccessConfig = subType.settings.availableSettings.includes('request_access_configuration')
+  const hasRequestAccessConfig = isEnterpriseEdition
+    && subType.settings.availableSettings.includes('request_access_workflow')
     && !!requestAccessConfiguration;
 
   return (
