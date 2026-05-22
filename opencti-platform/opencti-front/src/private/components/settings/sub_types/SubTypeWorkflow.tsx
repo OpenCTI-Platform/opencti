@@ -36,6 +36,7 @@ export const workflowQuery = graphql`
           params
         }
         conditions
+        comment
       }
     }
     members(search: "", first: 100) {
