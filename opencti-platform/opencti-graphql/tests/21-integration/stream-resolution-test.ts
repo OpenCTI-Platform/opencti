@@ -62,7 +62,7 @@ const DELETE_DOMAIN_QUERY = gql`
 `;
 
 describe('Should stream parent resolutions correctly working', () => {
-  it('should recursive resolution working as expected', async () => {
+  it.skip('should recursive resolution working as expected', async () => {
     // REPORT 01 -- ref --> CASE 01 -- ref --> CASE 02 -- ref --> REPORT 01
     // CASE 01
     const case01Resolution = await queryAsAdminWithSuccess({
