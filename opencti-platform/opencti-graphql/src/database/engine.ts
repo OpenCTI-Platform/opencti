@@ -4997,8 +4997,10 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
 
 export const isEngineAlive = async () => {
   const context = executionContext('healthcheck');
-  const options = { types: [ENTITY_TYPE_MIGRATION_STATUS], connectionFormat: false };
-  const migrations = await elPaginate(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, options) as BasicStoreBase[];
+  const migrations = await elPaginate(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, {
+    types: [ENTITY_TYPE_MIGRATION_STATUS],
+    connectionFormat: false,
+  }) as BasicStoreBase[];
   if (migrations.length === 0) {
     throw DatabaseError('Invalid database content, missing migration schema');
   }

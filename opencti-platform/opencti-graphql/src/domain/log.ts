@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { elCount, elPaginate, type PaginateOpts } from '../database/engine';
+import { elCount, elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
 import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
@@ -46,8 +46,12 @@ export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAudi
   if (types.length === 0) {
     throw ForbiddenAccess();
   }
-  const finalArgs = { ...args, types, historyFiltering: true };
-  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs as PaginateOpts);
+  return elPaginate(context, user, READ_INDEX_HISTORY, {
+    ...args,
+    first: args.first ? args.first : undefined,
+    types,
+    historyFiltering: true,
+  });
 };
 
 export const findAuditById = async (context: AuthContext, user: AuthUser, auditId: string) => {
