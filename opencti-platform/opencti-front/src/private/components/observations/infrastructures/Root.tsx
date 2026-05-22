@@ -49,6 +49,7 @@ const infrastructureQuery = graphql`
   query RootInfrastructureQuery($id: String!) {
     infrastructure(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation
