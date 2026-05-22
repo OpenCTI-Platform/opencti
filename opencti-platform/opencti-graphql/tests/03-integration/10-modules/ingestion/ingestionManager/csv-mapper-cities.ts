@@ -1,6 +1,6 @@
-import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
-import { ENTITY_TYPE_LOCATION_CITY } from '../../../../src/schema/stixDomainObject';
-import { ENTITY_TYPE_LABEL } from '../../../../src/schema/stixMetaObject';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { ENTITY_TYPE_LOCATION_CITY } from '../../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_LABEL } from '../../../../../src/schema/stixMetaObject';
 
 export const csvMapperMockCities: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-cities',
@@ -38,17 +38,17 @@ export const csvMapperMockCities: Partial<CsvMapperParsed> = {
         { key: 'objectLabel',
           based_on: {
             representations: [
-              'labelRepresentation'
-            ]
-          }
+              'labelRepresentation',
+            ],
+          },
         },
-      ]
+      ],
     },
     {
       id: 'labelRepresentation',
       type: CsvMapperRepresentationType.Entity,
       target:
-        { entity_type: ENTITY_TYPE_LABEL
+        { entity_type: ENTITY_TYPE_LABEL,
         },
       attributes: [
         { key: 'color',
@@ -60,8 +60,8 @@ export const csvMapperMockCities: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'K',
           },
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };

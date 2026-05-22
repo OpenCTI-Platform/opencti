@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
-import { IngestionAuthType } from '../../../src/generated/graphql';
+import { ADMIN_USER } from '../../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
+import { IngestionAuthType } from '../../../../src/generated/graphql';
 
 // Minimal JSON mapper representations - creates a Domain-Name entity from a path
 const MINIMAL_REPRESENTATIONS = JSON.stringify([

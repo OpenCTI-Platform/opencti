@@ -294,6 +294,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       label: marking.definition ?? '',
       value: marking.id,
     })) ?? [],
+    ssl_verify: ingestionCsvData.ssl_verify ?? true,
   } : initCSVCreateForm;
 
   const disableVerify = (values: IngestionCsvAddInput): boolean => {
