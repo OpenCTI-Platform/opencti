@@ -82,6 +82,7 @@ export interface DataTableContextProps {
   endsWithNavigate: boolean;
   /** Width in px for the actions column (default: SELECT_COLUMN_SIZE). Use e.g. 72 when rendering two icon buttons. */
   actionsColumnWidth?: number;
+  enableInfiniteScroll?: boolean;
 }
 
 export interface DataTableProps {
@@ -153,6 +154,7 @@ export interface DataTableProps {
   onLineClick?: (line: any) => void;
   /** Width in px for the actions column (default: SELECT_COLUMN_SIZE). Use e.g. 72 when rendering two icon buttons. */
   actionsColumnWidth?: number;
+  enableInfiniteScroll?: boolean;
   hideHeaders?: boolean;
   message?: string;
   isLocalStorageEnabled?: boolean;
