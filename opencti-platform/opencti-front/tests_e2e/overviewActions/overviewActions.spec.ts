@@ -58,7 +58,7 @@ const OVERVIEW_ROUTE_CHECKS: OverviewRouteCheck[] = [
   },
 ];
 
-test('Overview routes display AI Insights action button', { tag: ['@ce', '@navigation'] }, async ({ page }) => {
+test('Overview routes display action buttons', { tag: ['@ce', '@navigation'] }, async ({ page }) => {
   for (const routeCheck of OVERVIEW_ROUTE_CHECKS) {
     await page.goto(routeCheck.listPath);
     const entityLink = page.getByRole('link', { name: routeCheck.entityName });
@@ -68,7 +68,7 @@ test('Overview routes display AI Insights action button', { tag: ['@ce', '@navig
     await page.getByRole('tab', { name: 'Overview' }).click();
 
     const aiInsightsButton = page.getByLabel('AI Insights', { exact: true });
-    await expect(aiInsightsButton, `${routeCheck.label} overview should display AI Insights`).toBeVisible();
+    await expect(aiInsightsButton, `${routeCheck.label} overview should display AI Insights button`).toBeVisible();
 
     if (routeCheck.hasSecurityCoverageAction) {
       const addCoverageButton = page.getByRole('button', { name: 'Create a coverage' });
@@ -76,9 +76,9 @@ test('Overview routes display AI Insights action button', { tag: ['@ce', '@navig
       const hasAddCoverage = await addCoverageButton.isVisible().catch(() => false);
 
       if (hasAddCoverage) {
-        await expect(addCoverageButton, `${routeCheck.label} overview should display security coverage action`).toBeVisible();
+        await expect(addCoverageButton, `${routeCheck.label} overview should display security coverage button`).toBeVisible();
       } else {
-        await expect(existingCoverageLink.first(), `${routeCheck.label} overview should display security coverage action`).toBeVisible();
+        await expect(existingCoverageLink.first(), `${routeCheck.label} overview should display security coverage button`).toBeVisible();
       }
     }
   }
