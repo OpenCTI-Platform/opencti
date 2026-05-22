@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import { useAppData } from '../../../utils/hooks/useAppData';
 import { DataTableLinesDummy } from './DataTableLine';
@@ -206,8 +206,6 @@ const DataTableComponent = ({
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
 
-  const tableRef = useRef<HTMLDivElement | null>(null);
-
   const endActionsWidth = actionsColumnWidth ?? SELECT_COLUMN_SIZE;
   const startColumnWidth = useMemo(() => {
     if (startsWithIcon && startsWithAction) {
@@ -267,7 +265,6 @@ const DataTableComponent = ({
       <div
         className="datatable-container"
         style={{ width: '100%', overflow: 'auto hidden' }}
-        ref={tableRef}
       >
         <React.Suspense
           fallback={(
