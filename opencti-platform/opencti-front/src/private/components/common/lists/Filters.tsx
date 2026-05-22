@@ -28,6 +28,7 @@ interface FiltersProps {
   type?: string;
   helpers?: handleFilterHelpers;
   required?: boolean;
+  hideSavedFilters?: boolean;
 }
 
 const Filters: FunctionComponent<FiltersProps> = ({
@@ -47,6 +48,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   type,
   helpers,
   required = false,
+  hideSavedFilters = false,
 }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -149,6 +151,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           entityTypes={entityTypes}
           isDatatable={isDatatable}
           disabled={disabled}
+          hideSavedFilters={hideSavedFilters}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

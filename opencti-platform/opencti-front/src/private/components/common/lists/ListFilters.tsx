@@ -38,6 +38,7 @@ type ListFiltersProps = {
   entityTypes: string[];
   isDatatable?: boolean;
   disabled?: boolean;
+  hideSavedFilters?: boolean;
 };
 
 type ParametersType = {
@@ -69,6 +70,7 @@ const ListFilters = ({
   entityTypes,
   isDatatable = false,
   disabled = false,
+  hideSavedFilters = false,
 }: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
@@ -187,7 +189,7 @@ const ListFilters = ({
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
-          {isDatatable && variant === 'default' && (
+          {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilters
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}
@@ -203,7 +205,7 @@ const ListFilters = ({
               <FilterListOffOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
-          {isDatatable && variant === 'default' && (
+          {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilterButton
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}

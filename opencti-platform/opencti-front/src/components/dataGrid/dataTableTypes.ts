@@ -154,6 +154,7 @@ export interface DataTableProps {
   /** Width in px for the actions column (default: SELECT_COLUMN_SIZE). Use e.g. 72 when rendering two icon buttons. */
   actionsColumnWidth?: number;
   hideHeaders?: boolean;
+  hideSavedFilters?: boolean;
   message?: string;
   isLocalStorageEnabled?: boolean;
   emptyStateMessage?: string;
@@ -191,6 +192,7 @@ export interface DataTableFiltersProps {
   currentView?: string;
   additionalHeaderButtons?: ReactNode[];
   additionalHeaderToggleButtons?: ReactNode[];
+  hideSavedFilters?: boolean;
 }
 
 export interface DataTableHeadersProps {

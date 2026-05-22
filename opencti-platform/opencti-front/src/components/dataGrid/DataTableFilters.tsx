@@ -67,6 +67,7 @@ const DataTableFilters = ({
   currentView,
   additionalHeaderButtons,
   additionalHeaderToggleButtons: additionalToggleButtons,
+  hideSavedFilters = false,
 }: DataTableFiltersProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -133,6 +134,7 @@ const DataTableFilters = ({
               availableEntityTypes={availableEntityTypes}
               availableRelationshipTypes={availableRelationshipTypes}
               availableRelationFilterTypes={availableRelationFilterTypes}
+              hideSavedFilters={hideSavedFilters}
             />
           )}
         </div>

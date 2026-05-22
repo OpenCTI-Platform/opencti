@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { InputHTMLAttributes, useRef } from 'react';
+import React, { InputHTMLAttributes, useContext, useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
@@ -32,6 +32,8 @@ import { resolveLink } from '../../../../utils/Entity';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { isNotEmptyField } from '../../../../utils/utils';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import { PlaybookCreationImportMutation } from './__generated__/PlaybookCreationImportMutation.graphql';
 import { PlaybookCreationMutation } from './__generated__/PlaybookCreationMutation.graphql';
 import type { Theme } from '../../../../components/Theme';
@@ -46,7 +48,7 @@ const playbookCreationMutation = graphql`
   }
 `;
 
-const playbookImportMutation = graphql`
+export const playbookImportMutation = graphql`
   mutation PlaybookCreationImportMutation($file: Upload!) {
     playbookImport(file: $file)
   }
@@ -62,6 +64,10 @@ const PlaybookCreation = () => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
+  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_playbooks?platform_id=${settings.id}`
+    : '';
 
   const [importMutation] = useApiMutation<PlaybookCreationImportMutation>(playbookImportMutation);
   const [createMutation] = useApiMutation<PlaybookCreationMutation>(playbookCreationMutation);
@@ -121,6 +127,17 @@ const PlaybookCreation = () => {
       >
         <FileUploadOutlined fontSize="small" color="primary" />
       </ToggleButton>
+      {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+        <Button
+          gradient
+          sx={{ marginLeft: theme.spacing(1) }}
+          href={importFromHubUrl}
+          target="_blank"
+          title={t_i18n('Import from Hub')}
+        >
+          {t_i18n('Import from Hub')}
+        </Button>
+      )}
       <CreateEntityControlledDial
         entityType="Playbook"
         {...props}
