@@ -45,6 +45,7 @@ import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHisto
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
 
 const styles = (theme) => ({
   container: {
@@ -213,8 +214,7 @@ class StixCoreRelationshipContainer extends Component {
   render() {
     const { t, fldt, nsdt, classes, stixCoreRelationship } = this.props;
     const { expanded } = this.state;
-    const { from } = stixCoreRelationship;
-    const { to } = stixCoreRelationship;
+    const { from, to, relationship_type, coverage_information } = stixCoreRelationship;
     const fromRestricted = from === null;
 
     const linkFrom = from
@@ -391,6 +391,7 @@ class StixCoreRelationshipContainer extends Component {
                     limit={400}
                   />
                 </div>
+                <Divider />
 
                 <Grid container={true} spacing={2}>
                   <Grid item xs={6}>
@@ -410,6 +411,9 @@ class StixCoreRelationshipContainer extends Component {
                     {nsdt(stixCoreRelationship.stop_time)}
                   </Grid>
                   <Grid item xs={6}>
+                    {relationship_type === 'has-covered'
+                      && <SecurityCoverageInformation coverage_information={coverage_information} />
+                    }
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
                     />
@@ -624,6 +628,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         is_inferred
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
         creators {
           id
           name
