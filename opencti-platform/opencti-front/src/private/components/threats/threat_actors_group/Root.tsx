@@ -21,6 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
@@ -102,7 +103,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
   } = usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_THREAT_ACTORS_GROUP(threatActorGroupId);
-  const isOverview = location.pathname === basePath;
+  const isOverview = isPathOverview(location.pathname, basePath);
   const paddingRight = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (

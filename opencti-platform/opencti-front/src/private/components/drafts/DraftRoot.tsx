@@ -15,7 +15,7 @@ import ImportFilesContent from '@components/data/import/ImportFilesContent';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import { getCurrentTab } from '../../../utils/utils';
+import { getCurrentTab } from '../../../utils/tabUtils';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';

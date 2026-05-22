@@ -1,5 +1,5 @@
 import { graphql } from 'relay-runtime';
-import { getCurrentTab } from '../../../utils/utils';
+import { getCurrentTab } from '../../../utils/tabUtils';
 import type { CustomView } from './CustomViews-types';
 import { useCustomViewsData } from './useCustomViewsData';
 
