@@ -4,6 +4,13 @@ on:
   push:
     paths:
       - 'docs/mkdocs.yml'
+      - 'docs/requirements.txt'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - 'docs/mkdocs.yml'
+      - 'docs/requirements.txt'
+      - 'docs/**'
 
 jobs:
   docs-build:
