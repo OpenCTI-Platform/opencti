@@ -84,7 +84,7 @@ RUN set -eux; \
     alternatives --install /usr/bin/python3-config python3-config /usr/bin/python${PYTHON_VERSION}-config 2; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
     pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt; \
-    dnf -y remove python${PYTHON_VERSION}-pip python${PYTHON_VERSION}-devel git-core; \
+    dnf -y remove python${PYTHON_VERSION}-pip git-core; \
     dnf clean all;
 
 WORKDIR /opt/opencti
@@ -106,5 +106,5 @@ RUN set -eux; \
 
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "build/back.js"]
