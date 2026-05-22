@@ -520,10 +520,10 @@ describe('Drafts workspace resolver testing', () => {
 
     // Verify that validation bundle contains report
     const bundleData = await buildDraftValidationBundle(testContext, ADMIN_USER, addedDraftId);
-    expect(bundleData.objects.length).toEqual(1);
-    expect(bundleData.objects[0].id).toEqual(reportStandardId);
-    expect(bundleData.objects[0].extensions[STIX_EXT_OCTI].files.length).toBe(1);
-    expect(bundleData.objects[0].extensions[STIX_EXT_OCTI].files[0].data).toBeDefined();
+    expect(bundleData.length).toEqual(1);
+    expect(bundleData[0].id).toEqual(reportStandardId);
+    expect(bundleData[0].extensions[STIX_EXT_OCTI].files.length).toBe(1);
+    expect(bundleData[0].extensions[STIX_EXT_OCTI].files[0].data).toBeDefined();
 
     // Validate draft, verify work result and that draft was correctly deleted
     const validateResult = await queryInitPlatformAsAdmin(

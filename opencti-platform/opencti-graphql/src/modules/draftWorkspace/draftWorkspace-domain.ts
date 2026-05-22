@@ -397,6 +397,32 @@ export const buildDraftVersion = (object: BasicStoreCommon) => {
   return { draft_id: object.draft_ids[0], draft_operation: object.draft_change?.draft_operation };
 };
 
+// Maximum number of IDs to load per stixLoadByIds call to prevent OOM on large drafts
+const STIX_LOAD_BATCH_SIZE = 2000;
+// Maximum number of STIX objects per RabbitMQ message to prevent message size overflow
+const BUNDLE_SPLIT_THRESHOLD = 5000;
+
+/**
+ * Batch-load STIX objects by IDs in chunks to prevent memory exhaustion on large drafts.
+ */
+const stixLoadByIdsBatched = async (
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+  opts: Parameters<typeof stixLoadByIds>[3] = {},
+): Promise<any[]> => {
+  if (ids.length <= STIX_LOAD_BATCH_SIZE) {
+    return stixLoadByIds(context, user, ids, opts);
+  }
+  const results: any[] = [];
+  for (let i = 0; i < ids.length; i += STIX_LOAD_BATCH_SIZE) {
+    const chunk = ids.slice(i, i + STIX_LOAD_BATCH_SIZE);
+    const chunkResults = await stixLoadByIds(context, user, chunk, opts);
+    results.push(...chunkResults);
+  }
+  return results;
+};
+
 export const buildDraftValidationBundle = async (context: AuthContext, user: AuthUser, draft_id: string) => {
   const contextInDraft = { ...context, draft_context: draft_id };
   const includeDeleteOption = { includeDeletedInDraft: true };
@@ -408,12 +434,12 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   // We add all created elements as stix objects to the bundle
   const createEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_CREATE);
   const createEntitiesIds = createEntities.map((e) => e.internal_id);
-  const createStixEntities = await stixLoadByIds(contextInDraft, user, createEntitiesIds, { resolveStixFiles: true });
+  const createStixEntities = await stixLoadByIdsBatched(contextInDraft, user, createEntitiesIds, { resolveStixFiles: true });
 
   // We add all deleted elements as stix objects to the bundle, but we mark them as a delete operation
   const deletedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_DELETE);
   const deleteEntitiesIds = deletedEntities.map((e) => e.internal_id);
-  const deleteStixEntities = await stixLoadByIds(contextInDraft, user, deleteEntitiesIds, includeDeleteOption);
+  const deleteStixEntities = await stixLoadByIdsBatched(contextInDraft, user, deleteEntitiesIds, includeDeleteOption);
   const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => {
     const stixWithOperation = { ...d };
     stixWithOperation.extensions[STIX_EXT_OCTI].opencti_operation = 'delete';
@@ -423,7 +449,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   // Send update with "field patch" info
   const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draft_updates_patch);
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
-  const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
+  const updateStixEntities = await stixLoadByIdsBatched(contextInDraft, user, updateEntitiesIds);
 
   const updateStixEntitiesWithPatchPromises = updateStixEntities.map(async (d: any) => {
     const draftEntity = updateEntities.find((e) => e.standard_id === d.id);
@@ -450,7 +476,16 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   });
   const updateStixEntitiesWithPatch = await Promise.all(updateStixEntitiesWithPatchPromises);
 
-  return buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntitiesWithPatch]);
+  return [...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntitiesWithPatch];
+};
+
+/**
+ * Encode a STIX bundle as a base64 string ready for RabbitMQ transmission.
+ */
+const encodeBundleContent = (stixObjects: any[]): string => {
+  const bundle = buildStixBundle(stixObjects);
+  const jsonBundle = JSON.stringify(bundle);
+  return Buffer.from(jsonBundle, 'utf-8').toString('base64');
 };
 
 export const validateDraftWorkspace = async (context: AuthContext, user: AuthUser, draft_id: string) => {
@@ -458,17 +493,54 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
     throw FunctionalError('Draft workspace cannot be validated in this state', { draftId: draft_id, status: draftWorkspace.draft_status });
   }
-  const stixBundle = await buildDraftValidationBundle(context, user, draft_id);
-  const jsonBundle = JSON.stringify(stixBundle);
-  const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');
+  const stixObjects = await buildDraftValidationBundle(context, user, draft_id);
+  const totalObjectsCount = stixObjects.length;
+  const isLargeDraft = totalObjectsCount > BUNDLE_SPLIT_THRESHOLD;
+
+  logApp.info('[DRAFT] Starting draft validation', { draftId: draft_id, objectsCount: totalObjectsCount, isLargeDraft });
 
   const contextOutOfDraft = { ...context, draft_context: '' };
-  const work: any = await createWork(contextOutOfDraft, SYSTEM_USER, DRAFT_VALIDATION_CONNECTOR, `Draft validation ${draftWorkspace.name} (${draft_id})`, DRAFT_VALIDATION_CONNECTOR.internal_id, { receivedTime: now() });
-  if (stixBundle.objects.length === 1) {
-    // Only add explicit expectation if the worker will not split anything
-    await updateExpectationsNumber(contextOutOfDraft, context.user, work.id, stixBundle.objects.length);
+  const work: any = await createWork(
+    contextOutOfDraft,
+    SYSTEM_USER,
+    DRAFT_VALIDATION_CONNECTOR,
+    `Draft validation ${draftWorkspace.name} (${draft_id})`,
+    DRAFT_VALIDATION_CONNECTOR.internal_id,
+    { receivedTime: now(), isMultiPartWork: isLargeDraft },
+  );
+
+  if (isLargeDraft) {
+    // Split into multiple smaller bundles and send as separate messages
+    for (let i = 0; i < totalObjectsCount; i += BUNDLE_SPLIT_THRESHOLD) {
+      const chunk = stixObjects.slice(i, i + BUNDLE_SPLIT_THRESHOLD);
+      const content = encodeBundleContent(chunk);
+      await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, {
+        type: 'bundle',
+        applicant_id: user.internal_id,
+        content,
+        update: true,
+        work_id: work.id,
+        draft_id: '',
+      });
+    }
+    logApp.info('[DRAFT] Large draft bundle split and sent', { draftId: draft_id, chunks: Math.ceil(totalObjectsCount / BUNDLE_SPLIT_THRESHOLD) });
+  } else {
+    // Small draft: send as a single bundle message
+    const content = encodeBundleContent(stixObjects);
+    if (totalObjectsCount === 1) {
+      // Only add explicit expectation if the worker will not split anything
+      await updateExpectationsNumber(contextOutOfDraft, context.user, work.id, totalObjectsCount);
+    }
+    await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, {
+      type: 'bundle',
+      applicant_id: user.internal_id,
+      content,
+      update: true,
+      work_id: work.id,
+      draft_id: '',
+    });
   }
-  await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id, draft_id: '' });
+
   const draftValidationInput = [{ key: 'draft_status', value: [DRAFT_STATUS_VALIDATED] }, { key: 'validation_work_id', value: [work.id] }];
   const { element } = await updateAttribute(context, user, draft_id, ENTITY_TYPE_DRAFT_WORKSPACE, draftValidationInput);
   await notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, element, user);
