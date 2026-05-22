@@ -15,7 +15,6 @@ vi.mock('../utils/Image', () => ({
 // Mock MESSAGING$ so we can assert error notifications
 vi.mock('../relay/environment', () => ({
   MESSAGING$: { notifyError: vi.fn() },
-  environment: {},
 }));
 
 // Minimal ExportThemeContext mock
