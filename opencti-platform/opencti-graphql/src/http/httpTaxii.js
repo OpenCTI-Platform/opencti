@@ -229,21 +229,19 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.post(`${basePath}/taxii2/root/collections/:id/objects/`, JsonTaxiiMiddleware, async (req, res) => {
+  app.post(`${basePath}/taxii2/root/collections/:id/objects/`, async (req, res, next) => {
     try {
-    // Authentication is checked in this method, keep it first but inside try block.
-      const context = await checkAuthenticationFromRequest(req, res);
+      // Verify authentication
+      req.taxiiContext = await checkAuthenticationFromRequest(req, res);
+
+      // Verify content type
       if (!isValidTaxiiPostContentType(req)) {
         throw TaxiiError('Content-Type in request is missing or invalid', 400);
       }
 
-      const { id } = req.params;
-      const { objects = [] } = req.body;
-
-      if (objects.length === 0) {
-        throw UnsupportedError('Objects required');
-      }
       // Find and validate the collection
+      const { id } = req.params;
+      const context = req.taxiiContext;
       const ingestion = await findTaxiiCollection(context, context.user, id);
       if (!ingestion) {
         throw TaxiiError('Collection not found', 404);
@@ -251,6 +249,26 @@ const initTaxiiApi = (app) => {
       if (ingestion.ingestion_running !== true) {
         throw TaxiiError('Collection not found', 404);
       }
+
+      // Store ingestion data to avoid a second lookup
+      res.locals.ingestion = ingestion;
+
+      // Then parse json body
+      return next();
+    } catch (e) {
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
+    }
+  }, JsonTaxiiMiddleware, async (req, res) => {
+    try {
+      const context = req.taxiiContext;
+      const { ingestion } = res.locals;
+      const { objects = [] } = req.body;
+
+      if (objects.length === 0) {
+        throw UnsupportedError('Objects required');
+      }
+
       const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
       // Push the bundle in queue, return the job id
       const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: stixObjects };
