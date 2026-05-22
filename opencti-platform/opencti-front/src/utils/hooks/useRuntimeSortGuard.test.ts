@@ -58,8 +58,13 @@ describe('Hook: useRuntimeSortGuard', () => {
     expect(handleSort).toHaveBeenCalledWith(FALLBACK_SORT_FIELD, false);
   });
 
-  it('RUNTIME_ONLY_SORT_FIELDS should contain exactly createdBy, objectAssignee and objectParticipant', () => {
-    expect(RUNTIME_ONLY_SORT_FIELDS).toEqual(['createdBy', 'objectAssignee', 'objectParticipant']);
+  it('should contain the minimum fields required for the draft page to work on OpenSearch (createdBy, objectAssignee, objectParticipant)', () => {
+    // These 3 fields are used as sort columns on the draft page.
+    // They rely on ElasticSearch runtime mappings and MUST remain in this list
+    // to prevent UnsupportedError on OpenSearch instances.
+    expect(RUNTIME_ONLY_SORT_FIELDS).toContain('createdBy');
+    expect(RUNTIME_ONLY_SORT_FIELDS).toContain('objectAssignee');
+    expect(RUNTIME_ONLY_SORT_FIELDS).toContain('objectParticipant');
   });
 
   it('FALLBACK_SORT_FIELD should be created_at', () => {
