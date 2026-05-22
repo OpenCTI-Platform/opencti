@@ -17,7 +17,6 @@ import {
   LockOpenOutlined,
   MergeOutlined,
   MoveToInboxOutlined,
-  PlayCircleOutlined,
   PrecisionManufacturingOutlined,
   RestoreOutlined,
   TransformOutlined,
@@ -101,6 +100,7 @@ import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import { isFeatureEnable } from '../../../utils/platformModulesHelper';
+import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -353,16 +353,6 @@ const toolbarGroupsQuery = graphql`
     }
 `;
 
-const toolBarPlaybooksQuery = graphql`
-  query DataTableToolBarPlaybooksQuery {
-    playbooksForEnrollment {
-      id
-      name
-      description
-    }
-  }
-`;
-
 export const toolBarUsersLinesSearchQuery = graphql`
     query  DataTableToolBarUsersLinesSearchQuery(
         $first: Int, $search: String,
@@ -396,7 +386,6 @@ class DataTableToolBar extends Component {
       displayUnshare: false,
       displayPromote: false,
       displayEnrollPlaybook: false,
-      enrollPlaybooks: [],
       displaySendEmail: false,
       containerCreation: false,
       organizationCreation: false,
@@ -517,32 +506,17 @@ class DataTableToolBar extends Component {
   }
 
   handleOpenEnrollPlaybook() {
-    fetchQuery(toolBarPlaybooksQuery)
-      .toPromise()
-      .then((data) => {
-        const enrollPlaybooks = (data?.playbooksForEnrollment ?? [])
-          .map((playbook) => ({
-            label: playbook.name,
-            value: playbook.id,
-            description: playbook.description,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-        this.setState({
-          displayEnrollPlaybook: true,
-          enrollPlaybooks,
-        });
-      });
+    this.setState({ displayEnrollPlaybook: true });
   }
 
   handleCloseEnrollPlaybook() {
     this.setState({ displayEnrollPlaybook: false });
   }
 
-  handleLaunchEnrollPlaybook(playbookId) {
-    const selectedPlaybook = this.state.enrollPlaybooks.find((p) => p.value === playbookId);
+  handleLaunchEnrollPlaybook(playbookId, playbookName) {
     const actions = [{
       type: 'ENROLL_PLAYBOOK',
-      context: { values: [{ id: playbookId, name: selectedPlaybook?.label ?? playbookId }] },
+      context: { values: [{ id: playbookId, name: playbookName }] },
     }];
     this.setState({ actions }, () => {
       this.handleCloseEnrollPlaybook();
@@ -3405,54 +3379,11 @@ class DataTableToolBar extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
-              <Drawer
-                title={t('Enroll in playbook')}
+              <EnrollPlaybookDrawer
                 open={this.state.displayEnrollPlaybook}
                 onClose={this.handleCloseEnrollPlaybook.bind(this)}
-              >
-                <div>
-                  <Alert severity="info" variant="outlined">
-                    {t('Select a playbook to enroll the selected entities.')}
-                  </Alert>
-                  <List>
-                    {this.state.enrollPlaybooks.length > 0 ? (
-                      this.state.enrollPlaybooks.map((playbook) => (
-                        <div key={playbook.value}>
-                          <ListItem
-                            divider={true}
-                            classes={{ root: classes.item }}
-                            secondaryAction={(
-                              <Security needs={[AUTOMATION]}>
-                                <div style={{ right: 0 }}>
-                                  <Tooltip title={t('Enroll in this playbook')}>
-                                    <IconButton
-                                      onClick={this.handleLaunchEnrollPlaybook.bind(this, playbook.value)}
-                                    >
-                                      <PlayCircleOutlined />
-                                    </IconButton>
-                                  </Tooltip>
-                                </div>
-                              </Security>
-                            )}
-                          >
-                            <ListItemIcon classes={{ root: classes.itemIcon }}>
-                              <ItemIcon type="Playbook" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={playbook.label}
-                              secondary={playbook.description ?? ''}
-                            />
-                          </ListItem>
-                        </div>
-                      ))
-                    ) : (
-                      <div className={classes.noResult}>
-                        {t('No playbook available')}
-                      </div>
-                    )}
-                  </List>
-                </div>
-              </Drawer>
+                onLaunch={this.handleLaunchEnrollPlaybook.bind(this)}
+              />
             </>
           );
         }}
