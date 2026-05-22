@@ -62,9 +62,9 @@ describe('identifier', () => {
   it('should ids generated correctly', () => {
     // attack_pattern
     expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack' })).toEqual('attack-pattern--25f21617-8de8-5d5e-8cd4-b7e88547ba76');
-    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack', x_mitre_id: 'MITREID' })).toEqual('attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9');
-    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'Spear phishing messages with malicious links', x_mitre_id: 'T1368' })).toEqual('attack-pattern--a01046cc-192f-5d52-8e75-6e447fae3890');
-    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: 'MITREID' })).toEqual('attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9');
+    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack', x_mitre_id: 'MITREID' })).toEqual('attack-pattern--66488b4f-c9d1-5e36-99cc-372b34ebeeee');
+    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'Spear phishing messages with malicious links', x_mitre_id: 'T1368' })).toEqual('attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498');
+    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: 'MITREID' })).toEqual('attack-pattern--66488b4f-c9d1-5e36-99cc-372b34ebeeee');
     // campaign
     expect(generateStandardId(ENTITY_TYPE_CAMPAIGN, { name: 'attack' })).toEqual('campaign--25f21617-8de8-5d5e-8cd4-b7e88547ba76');
     // note
@@ -80,8 +80,8 @@ describe('identifier', () => {
     // report
     expect(generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, { name: 'Report', published: '2022-11-25T19:00:05.000Z' })).toEqual('report--761c6602-975f-5e5e-b220-7a2d41f33ce4');
     // course-of-action
-    expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'MITREID' })).toEqual('course-of-action--b74cfee2-7b14-585e-862f-fea45e802da9');
-    expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'MITREID', name: 'Name' })).toEqual('course-of-action--b74cfee2-7b14-585e-862f-fea45e802da9');
+    expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'MITREID' })).toEqual('course-of-action--66488b4f-c9d1-5e36-99cc-372b34ebeeee');
+    expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'MITREID', name: 'Name' })).toEqual('course-of-action--66488b4f-c9d1-5e36-99cc-372b34ebeeee');
     expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { name: 'Name' })).toEqual('course-of-action--e6e2ee8d-e54d-50cd-b77c-df8c8eea7726');
     // identity
     expect(generateStandardId(ENTITY_TYPE_IDENTITY_INDIVIDUAL, { name: 'julien', identity_class: 'Individual' })).toEqual('identity--d969b177-497f-598d-8428-b128c8f5f819');
@@ -176,6 +176,25 @@ describe('identifier', () => {
     // Other discriminators (vendor, version, ...) must still be taken into account
     const withVendor = generateStandardId(ENTITY_SOFTWARE, { name: 'Apache', vendor: 'Apache Foundation' });
     expect(withVendor).not.toEqual(mixedId);
+  });
+
+  it('should attack pattern and course of action ids be case-insensitive on x_mitre_id', () => {
+    // x_mitre_id is the primary discriminator for Attack Pattern / Course of Action standard ids.
+    // It must produce the same standard id regardless of its case (and surrounding whitespace),
+    // so re-importing the same MITRE technique with a different casing deduplicates instead of
+    // creating a second entity.
+    const apUpper = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: 'T1059' });
+    const apLower = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: 't1059' });
+    const apPadded = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: '  T1059  ' });
+    expect(apLower).toEqual(apUpper);
+    expect(apPadded).toEqual(apUpper);
+    // The name fallback must remain unaffected when x_mitre_id is set
+    const apWithName = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: 'T1059', name: 'Command and Scripting Interpreter' });
+    expect(apWithName).toEqual(apUpper);
+
+    const coaUpper = generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'M1056' });
+    const coaLower = generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'm1056' });
+    expect(coaLower).toEqual(coaUpper);
   });
 
   it('should file and mutex id remain case-sensitive', () => {

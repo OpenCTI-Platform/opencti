@@ -282,7 +282,7 @@ class AttackPattern:
         :rtype: str
         """
         if x_mitre_id is not None:
-            data = {"x_mitre_id": x_mitre_id.strip()}
+            data = {"x_mitre_id": x_mitre_id.lower().strip()}
         else:
             data = {"name": name.lower().strip()}
         data = canonicalize(data, utf8=False)
