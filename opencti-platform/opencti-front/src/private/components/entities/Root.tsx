@@ -42,54 +42,42 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/entities/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/sectors"
-          element={boundaryWrapper(Sectors)}
-        />
-        <Route
-          path="/sectors/:sectorId/*"
-          element={boundaryWrapper(RootSector)}
-        />
-        <Route
-          path="/events"
-          element={boundaryWrapper(Events)}
-        />
-        <Route
-          path="/events/:eventId/*"
-          element={boundaryWrapper(RootEvent)}
-        />
-        <Route
-          path="/organizations"
-          element={boundaryWrapper(Organizations)}
-        />
-        <Route
-          path="/organizations/:organizationId/*"
-          element={boundaryWrapper(RootOrganization)}
-        />
-        <Route
-          path="/security_platforms"
-          element={boundaryWrapper(Security)}
-        />
-        <Route
-          path="/security_platforms/:securityPlatformId/*"
-          element={boundaryWrapper(RootSecurity)}
-        />
-        <Route
-          path="/systems"
-          element={boundaryWrapper(Systems)}
-        />
-        <Route
-          path="/systems/:systemId/*"
-          element={boundaryWrapper(RootSystem)}
-        />
-        <Route
-          path="/individuals"
-          element={boundaryWrapper(Individuals)}
-        />
-        <Route
-          path="/individuals/:individualId/*"
-          element={boundaryWrapper(RootIndividual)}
-        />
+        <Route path="/sectors">
+          <Route index element={boundaryWrapper(Sectors)} />
+          <Route path=":sectorId">
+            <Route path="*" index element={boundaryWrapper(RootSector)} />
+          </Route>
+        </Route>
+        <Route path="/events">
+          <Route index element={boundaryWrapper(Events)} />
+          <Route path=":eventId">
+            <Route path="*" index element={boundaryWrapper(RootEvent)} />
+          </Route>
+        </Route>
+        <Route path="/organizations">
+          <Route index element={boundaryWrapper(Organizations)} />
+          <Route path=":organizationId">
+            <Route path="*" index element={boundaryWrapper(RootOrganization)} />
+          </Route>
+        </Route>
+        <Route path="/security_platforms">
+          <Route index element={boundaryWrapper(Security)} />
+          <Route path=":securityPlatformId">
+            <Route path="*" index element={boundaryWrapper(RootSecurity)} />
+          </Route>
+        </Route>
+        <Route path="/systems">
+          <Route index element={boundaryWrapper(Systems)} />
+          <Route path=":systemId">
+            <Route path="*" index element={boundaryWrapper(RootSystem)} />
+          </Route>
+        </Route>
+        <Route path="/individuals">
+          <Route index element={boundaryWrapper(Individuals)} />
+          <Route path=":individualId">
+            <Route path="*" index element={boundaryWrapper(RootIndividual)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

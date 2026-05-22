@@ -11,7 +11,7 @@ const Root = () => {
   return (
     <Routes>
       <Route
-        path="/"
+        index
         element={draftContext?.id
           ? (
               <Navigate
@@ -22,10 +22,9 @@ const Root = () => {
           : boundaryWrapper(Drafts)
         }
       />
-      <Route
-        path="/:draftId/*"
-        element={boundaryWrapper(DraftRoot)}
-      />
+      <Route path=":draftId">
+        <Route path="*" index element={boundaryWrapper(DraftRoot)} />
+      </Route>
     </Routes>
   );
 };

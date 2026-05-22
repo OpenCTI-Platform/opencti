@@ -31,8 +31,10 @@ const PirRoot = () => {
       {isEnterpriseEdition
         ? (
             <Routes>
-              <Route path="/" element={boundaryWrapper(Pirs)} />
-              <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
+              <Route index element={boundaryWrapper(Pirs)} />
+              <Route path=":pirId">
+                <Route path="*" index element={boundaryWrapper(Pir)} />
+              </Route>
             </Routes>
           )
         : <EnterpriseEdition feature={t_i18n('PIR')} />}

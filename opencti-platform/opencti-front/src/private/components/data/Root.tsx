@@ -149,14 +149,12 @@ const Root = () => {
             </Security>
           )}
         />
-        <Route
-          path="/ingestion/connectors"
-          element={boundaryWrapper(Connectors)}
-        />
-        <Route
-          path="/ingestion/connectors/:connectorId/*"
-          element={<RootConnector />}
-        />
+        <Route path="/ingestion/connectors">
+          <Route index element={boundaryWrapper(Connectors)} />
+          <Route path=":connectorId">
+            <Route path="*" index element={<RootConnector />} />
+          </Route>
+        </Route>
         <Route
           path="/import/*"
           element={boundaryWrapper(RootImport)}

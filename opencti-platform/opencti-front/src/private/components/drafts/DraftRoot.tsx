@@ -267,7 +267,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
       </Box>
       <Routes>
         <Route
-          path="/"
+          index
           element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
         {isFeatureEnable('DRAFT_WORKFLOW') && (
@@ -277,27 +277,27 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           />
         )}
         <Route
-          path="/entities"
+          path="entities"
           element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntityTypes="Container" isReadOnly={isDraftReadOnly} />}
         />
         <Route
-          path="/observables"
+          path="observables"
           element={<DraftEntities entitiesType="Stix-Cyber-Observable" isReadOnly={isDraftReadOnly} />}
         />
         <Route
-          path="/relationships"
+          path="relationships"
           element={<DraftRelationships isReadOnly={isDraftReadOnly} />}
         />
         <Route
-          path="/sightings"
+          path="sightings"
           element={<DraftSightings isReadOnly={isDraftReadOnly} />}
         />
         <Route
-          path="/containers"
+          path="containers"
           element={<DraftEntities entitiesType="Container" isReadOnly={isDraftReadOnly} />}
         />
         <Route
-          path="/files"
+          path="files"
           element={<ImportFilesContent inDraftOverview />}
         />
       </Routes>

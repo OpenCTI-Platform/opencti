@@ -36,46 +36,36 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/cases/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/incidents"
-          element={boundaryWrapper(CaseIncidents)}
-        />
-        <Route
-          path="/incidents/:caseId/*"
-          element={boundaryWrapper(RootIncident)}
-        />
-        <Route
-          path="/rfis"
-          element={boundaryWrapper(CaseRfis)}
-        />
-        <Route
-          path="/rfis/:caseId/*"
-          element={boundaryWrapper(RootCaseRfi)}
-        />
-        <Route
-          path="/rfts"
-          element={boundaryWrapper(CaseRfts)}
-        />
-        <Route
-          path="/rfts/:caseId/*"
-          element={boundaryWrapper(RootCaseRft)}
-        />
-        <Route
-          path="/tasks"
-          element={boundaryWrapper(Tasks)}
-        />
-        <Route
-          path="/tasks/:taskId/*"
-          element={boundaryWrapper(RootTask)}
-        />
-        <Route
-          path="/feedbacks"
-          element={boundaryWrapper(Feedbacks)}
-        />
-        <Route
-          path="/feedbacks/:caseId/*"
-          element={boundaryWrapper(RootFeedback)}
-        />
+        <Route path="/incidents">
+          <Route index element={boundaryWrapper(CaseIncidents)} />
+          <Route path=":caseId">
+            <Route path="*" index element={boundaryWrapper(RootIncident)} />
+          </Route>
+        </Route>
+        <Route path="/rfis">
+          <Route index element={boundaryWrapper(CaseRfis)} />
+          <Route path=":caseId">
+            <Route path="*" index element={boundaryWrapper(RootCaseRfi)} />
+          </Route>
+        </Route>
+        <Route path="/rfts">
+          <Route index element={boundaryWrapper(CaseRfts)} />
+          <Route path=":caseId">
+            <Route path="*" index element={boundaryWrapper(RootCaseRft)} />
+          </Route>
+        </Route>
+        <Route path="/tasks">
+          <Route index element={boundaryWrapper(Tasks)} />
+          <Route path=":taskId">
+            <Route path="*" index element={boundaryWrapper(RootTask)} />
+          </Route>
+        </Route>
+        <Route path="/feedbacks">
+          <Route index element={boundaryWrapper(Feedbacks)} />
+          <Route path=":caseId">
+            <Route path="*" index element={boundaryWrapper(RootFeedback)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

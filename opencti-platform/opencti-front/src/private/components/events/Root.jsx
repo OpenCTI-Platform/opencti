@@ -27,30 +27,24 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/events/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/incidents"
-          element={boundaryWrapper(Incidents)}
-        />
-        <Route
-          path="/incidents/:incidentId/*"
-          element={boundaryWrapper(RootIncident)}
-        />
-        <Route
-          path="/observed_data"
-          element={boundaryWrapper(ObservedDatas)}
-        />
-        <Route
-          path="/observed_data/:observedDataId/*"
-          element={boundaryWrapper(RootObservedData)}
-        />
-        <Route
-          path="/sightings"
-          element={boundaryWrapper(StixSightingRelationships)}
-        />
-        <Route
-          path="/sightings/:sightingId/*"
-          element={boundaryWrapper(StixSightingRelationship)}
-        />
+        <Route path="/incidents">
+          <Route index element={boundaryWrapper(Incidents)} />
+          <Route path=":incidentId">
+            <Route path="*" index element={boundaryWrapper(RootIncident)} />
+          </Route>
+        </Route>
+        <Route path="/observed_data">
+          <Route index element={boundaryWrapper(ObservedDatas)} />
+          <Route path=":observedDataId">
+            <Route path="*" index element={boundaryWrapper(RootObservedData)} />
+          </Route>
+        </Route>
+        <Route path="/sightings">
+          <Route index element={boundaryWrapper(StixSightingRelationships)} />
+          <Route path=":sightingId">
+            <Route path="*" index element={boundaryWrapper(StixSightingRelationship)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

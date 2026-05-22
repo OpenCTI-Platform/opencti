@@ -38,46 +38,36 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/techniques/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/attack_patterns"
-          element={boundaryWrapper(AttackPatterns)}
-        />
-        <Route
-          path="/attack_patterns/:attackPatternId/*"
-          element={boundaryWrapper(RootAttackPattern)}
-        />
-        <Route
-          path="/narratives"
-          element={boundaryWrapper(Narratives)}
-        />
-        <Route
-          path="/narratives/:narrativeId/*"
-          element={boundaryWrapper(RootNarrative)}
-        />
-        <Route
-          path="/courses_of_action"
-          element={boundaryWrapper(CoursesOfAction)}
-        />
-        <Route
-          path="/courses_of_action/:courseOfActionId/*"
-          element={boundaryWrapper(RootCourseOfAction)}
-        />
-        <Route
-          path="/data_components"
-          element={boundaryWrapper(DataComponents)}
-        />
-        <Route
-          path="/data_components/:dataComponentId/*"
-          element={boundaryWrapper(RootDataComponent)}
-        />
-        <Route
-          path="/data_sources"
-          element={boundaryWrapper(DataSources)}
-        />
-        <Route
-          path="/data_sources/:dataSourceId/*"
-          element={boundaryWrapper(RootDataSource)}
-        />
+        <Route path="/attack_patterns">
+          <Route index element={boundaryWrapper(AttackPatterns)} />
+          <Route path=":attackPatternId">
+            <Route path="*" index element={boundaryWrapper(RootAttackPattern)} />
+          </Route>
+        </Route>
+        <Route path="/narratives">
+          <Route index element={boundaryWrapper(Narratives)} />
+          <Route path=":narrativeId">
+            <Route path="*" index element={boundaryWrapper(RootNarrative)} />
+          </Route>
+        </Route>
+        <Route path="/courses_of_action">
+          <Route index element={boundaryWrapper(CoursesOfAction)} />
+          <Route path=":courseOfActionId">
+            <Route path="*" index element={boundaryWrapper(RootCourseOfAction)} />
+          </Route>
+        </Route>
+        <Route path="/data_components">
+          <Route index element={boundaryWrapper(DataComponents)} />
+          <Route path=":dataComponentId">
+            <Route path="*" index element={boundaryWrapper(RootDataComponent)} />
+          </Route>
+        </Route>
+        <Route path="/data_sources">
+          <Route index element={boundaryWrapper(DataSources)} />
+          <Route path=":dataSourceId">
+            <Route path="*" index element={boundaryWrapper(RootDataSource)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );
