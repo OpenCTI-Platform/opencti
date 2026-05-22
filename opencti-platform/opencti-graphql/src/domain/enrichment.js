@@ -94,7 +94,7 @@ export const filterConnectorsForElementEnrichment = async (context, connectors, 
   for (let i = 0; i < activeConnectors.length; i += 1) {
     const conn = activeConnectors[i];
     const scopeMatch = scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
-    let hasAccessToElement = true; // TODO true or false by default ? can connector_user_id be undefined ?
+    let hasAccessToElement = false;
     let autoTrigger = false;
     if (mode === 'creation') {
       autoTrigger = conn.connector_trigger_filters ? await isStixMatchConnectorFilter(context, element, conn.connector_trigger_filters) : conn.auto === true;
