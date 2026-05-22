@@ -8,6 +8,7 @@ export interface TransitionRecord {
   from: State;
   to: State;
   event: Event;
+  comment?: string;
   date: Date;
   success: boolean;
   reason?: string;
@@ -25,12 +26,14 @@ export class WorkflowInstance<TContext extends Context = Context> extends StateM
    */
   public async trigger(event: Event): Promise<TriggerResult> {
     const from = this.currentState;
+    const transition = this.definition.getTransition(from, event);
     const result = await super.trigger(event);
 
     this.history.push({
       from,
       to: this.currentState,
       event,
+      comment: transition?.comment,
       date: new Date(),
       success: result.success,
       reason: result.reason,

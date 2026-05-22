@@ -158,3 +158,71 @@ describe('Workflow Validation', () => {
     await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow("Invalid filter operator 'invalid_op'");
   });
 });
+
+describe('Workflow Validation – transition comment field', () => {
+  it('should pass when transition has no comment (field is optional)', async () => {
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+    expect(result.transitions[0].comment).toBeUndefined();
+  });
+
+  it('should pass when transition has a valid comment mode: allowed', async () => {
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: 'allowed' },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+    expect(result.transitions[0].comment).toBe('allowed');
+  });
+
+  it('should pass when transition has a valid comment mode: required', async () => {
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: 'required' },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+    expect(result.transitions[0].comment).toBe('required');
+  });
+
+  it('should pass when transition has a valid comment mode: disabled', async () => {
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: 'disabled' },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+    expect(result.transitions[0].comment).toBe('disabled');
+  });
+
+  it('should fail when transition comment mode is invalid', async () => {
+    const definition = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: 'invalid_mode' },
+      ],
+    };
+
+    await expect(
+      validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident'),
+    ).rejects.toThrow('Workflow definition schema validation failed');
+  });
+});

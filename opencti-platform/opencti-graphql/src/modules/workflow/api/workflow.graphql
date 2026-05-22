@@ -21,6 +21,7 @@ type WorkflowSerializedTransition {
     event: String!
     actions: [WorkflowActionConfig!]
     conditions: JSON
+    comment: String
 }
 
 type WorkflowSchema {
@@ -49,7 +50,16 @@ type WorkflowTransition {
     event: String!
     toState: String!
     toStatus: Status
+    comment: String
     actions: [String!]
+}
+
+type WorkflowLastHistoryEntry {
+    state: String!
+    event: String!
+    user_id: String!
+    timestamp: String!
+    comment: String
 }
 
 type WorkflowInstance {
@@ -57,6 +67,7 @@ type WorkflowInstance {
     currentState: String!
     currentStatus: Status
     allowedTransitions: [WorkflowTransition!]!
+    lastHistoryEntry: WorkflowLastHistoryEntry
 }
 
 extend type DraftWorkspace {
@@ -73,5 +84,5 @@ extend type Query {
 extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
 }
