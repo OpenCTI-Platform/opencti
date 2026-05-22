@@ -4576,6 +4576,7 @@ export type Connector = BasicObject & InternalObject & {
   title: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
+  xtm_one_intent?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -28059,6 +28060,7 @@ export type RegisterConnectorInput = {
   playbook_compatible?: InputMaybe<Scalars['Boolean']['input']>;
   scope?: InputMaybe<Array<Scalars['String']['input']>>;
   type: ConnectorType;
+  xtm_one_intent?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type RegisterConnectorsManagerInput = {
@@ -42533,6 +42535,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
+  xtm_one_intent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

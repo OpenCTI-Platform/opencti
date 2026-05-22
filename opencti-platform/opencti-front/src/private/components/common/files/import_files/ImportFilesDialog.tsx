@@ -330,9 +330,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     // For file modes, check if files are selected
     return files.length > 0 && (importMode === 'auto' || files.every((file) => {
       const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
-      return hasCsvMapperConnector ? !!file.configuration : true;
+      if (hasCsvMapperConnector) return !!file.configuration;
+      // XTM One connectors require an agent selection (stored in configuration as JSON with agent_slug)
+      const hasXtmOneConnector = file.connectors?.some((connector) => {
+        const fullConnector = connectorsForImport?.find((c) => c?.id === connector?.id);
+        return !!fullConnector?.xtm_one_intent;
+      });
+      if (hasXtmOneConnector) return !!file.configuration;
+      return true;
     }));
-  }, [files, importMode, selectedFormId]);
+  }, [files, importMode, selectedFormId, connectorsForImport]);
 
   const isValidImport = useMemo(() => {
     const { values } = optionsContext;

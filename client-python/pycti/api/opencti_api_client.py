@@ -793,6 +793,20 @@ class OpenCTIApiClient:
             )
             return None
 
+    def about(self):
+        result = self.query("""
+            query About {
+                about {
+                    version
+                    dependencies {
+                      name
+                      version
+                    }
+                }
+            }
+            """)
+        return result["data"]["about"]
+
     def health_check(self):
         """Submit an example request to the OpenCTI API.
 

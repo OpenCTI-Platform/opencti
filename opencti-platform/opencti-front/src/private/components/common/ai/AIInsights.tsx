@@ -6,7 +6,9 @@ import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import AISummaryForecast from '@components/common/ai/AISummaryForecast';
 import AISummaryHistory from '@components/common/ai/AISummaryHistory';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
+import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import FiligranIcon from '@components/common/FiligranIcon';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -131,36 +133,44 @@ interface AiInsightButtonProps {
   onlyIcon?: boolean;
   floating?: boolean;
   onClick: () => void;
+  showEEChip?: boolean;
+  disabled?: boolean;
+  tooltipTitle?: string;
 }
 
-const AiInsightButton = ({ onlyIcon = false, floating = false, onClick }: AiInsightButtonProps) => {
+const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEEChip = false, disabled = false, tooltipTitle }: AiInsightButtonProps) => {
   const { t_i18n } = useFormatter();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
-  const buttonLabel = t_i18n('AI Insights');
+  const buttonLabel = tooltipTitle || t_i18n('AI Insights');
 
   return (
     <Tooltip title={buttonLabel}>
-      {onlyIcon ? (
-        <IconButton
-          size="small"
-          onClick={onClick}
-          className={floating ? classes.chipFloating : classes.chip}
-        >
-          <FiligranIcon icon={LogoXtmOneIcon} size="small" />
-        </IconButton>
-      ) : (
-        <Button
-          variant="tertiary"
-          size="small"
-          onClick={onClick}
-          intent="ai"
-          aria-label={buttonLabel}
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
-        >
-          {buttonLabel}
-        </Button>
-      )}
+      <span style={{ display: 'inline-flex' }}>
+        {onlyIcon ? (
+          <IconButton
+            size="small"
+            onClick={onClick}
+            className={floating ? classes.chipFloating : classes.chip}
+            disabled={disabled}
+          >
+            <FiligranIcon icon={LogoXtmOneIcon} size="small" />
+          </IconButton>
+        ) : (
+          <Button
+            variant="tertiary"
+            size="small"
+            onClick={onClick}
+            intent="ai"
+            aria-label={buttonLabel}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+            disabled={disabled}
+          >
+            {t_i18n('AI Insights')}
+            {showEEChip && <EEChip feature="AI Insights" />}
+          </Button>
+        )}
+      </span>
     </Tooltip>
   );
 };
@@ -179,6 +189,7 @@ const AIInsights = ({
   const [display, setDisplay] = useState(false);
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [displayAIDialog, setDisplayAIDialog] = useState(false);
+  const [displayCGUDialog, setDisplayCGUDialog] = useState(false);
   const [currentTab, setCurrentTab] = useState(defaultTab);
   const [containersBusId] = useState(uuid());
   const [loading, setLoading] = useState(false);
@@ -261,6 +272,7 @@ const AIInsights = ({
         <AiInsightButton
           onlyIcon={onlyIcon}
           onClick={() => setDisplayEEDialog(true)}
+          showEEChip
         />
 
         {isAdmin ? (
@@ -305,12 +317,31 @@ const AIInsights = ({
     );
   }
 
+  const isCGUStatusPending = useXtmOne && !fullyActive;
+  const isButtonDisabled = isCGUStatusPending && !isAdmin;
+  const tooltipTitle = (isCGUStatusPending && !isAdmin)
+    ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
+    : t_i18n('AI Insights');
+
+  const handleAIInsightClick = () => {
+    if (isCGUStatusPending) {
+      setDisplayCGUDialog(true);
+    } else {
+      setDisplay(true);
+    }
+  };
+
   return (
     <>
       <AiInsightButton
         onlyIcon={onlyIcon}
-        onClick={() => setDisplay(true)}
+        onClick={handleAIInsightClick}
+        disabled={isButtonDisabled}
+        tooltipTitle={tooltipTitle}
       />
+      {displayCGUDialog && (
+        <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
+      )}
       <Drawer
         open={display}
         onClose={handleClose}

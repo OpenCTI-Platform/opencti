@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChatPanel, ChatMode } from '@filigran/chatbot';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import type { Theme } from '../../../components/Theme';
@@ -27,6 +28,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   onResizeStart,
   onResizeEnd,
 }) => {
+  const navigate = useNavigate();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
@@ -55,6 +57,19 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
     t_i18n('Show me recent reports'),
     t_i18n('Analyze this indicator'),
   ];
+
+  const draftId = me.draftContext?.id;
+  const requestHeaders = draftId ? { 'opencti-draft-id': draftId } : undefined;
+  const draftBorderColor = draftId
+    ? theme.palette.designSystem.alert.warning.primary
+    : undefined;
+
+  const handleRelativeLinkClick = (href: string) => {
+    const normalizedHref = APP_BASE_PATH && href.startsWith(APP_BASE_PATH)
+      ? href.slice(APP_BASE_PATH.length) || '/'
+      : href;
+    navigate(normalizedHref);
+  };
 
   useEffect(() => {
     fetch(`${APP_BASE_PATH}/chatbot/config`)
@@ -95,17 +110,26 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       topOffset={topOffset}
       backendType="rest"
       apiBaseUrl={`${APP_BASE_PATH}/chatbot`}
-      apiEndpoints={{ agents: '/agents', messages: '/messages', sessions: '/sessions' }}
+      apiEndpoints={{
+        agents: '/agents',
+        messages: '/messages',
+        sessions: '/sessions',
+        upload: '/upload',
+      }}
       user={{ firstName }}
+      disableFileManagement={false}
       t={t_i18n}
       accentColor={accentColor}
       logoIcon={logoIcon}
       agentDashboardUrl={xtmOneUrl || undefined}
       promptSuggestions={promptSuggestions}
+      draftBorderColor={draftBorderColor}
       resizable={mode === 'sidebar'}
       onWidthChange={onWidthChange}
       onResizeStart={onResizeStart}
       onResizeEnd={onResizeEnd}
+      requestHeaders={requestHeaders}
+      onRelativeLinkClick={handleRelativeLinkClick}
     />,
     container,
   );

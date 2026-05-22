@@ -67,7 +67,7 @@ test('Overview routes display action buttons', { tag: ['@ce', '@navigation'] }, 
 
     await page.getByRole('tab', { name: 'Overview' }).click();
 
-    const aiInsightsButton = page.getByLabel('AI Insights', { exact: true });
+    const aiInsightsButton = page.getByRole('button', { name: 'AI Insights', exact: true });
     await expect(aiInsightsButton, `${routeCheck.label} overview should display AI Insights button`).toBeVisible();
 
     if (routeCheck.hasSecurityCoverageAction) {

@@ -846,3 +846,21 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
     logApp.error('Failed to delete auth log history from Redis', { cause: err });
   }
 };
+
+// region - XTM One registration result
+const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';
+
+export const redisSetXtmRegistrationResult = async (result: object, ttlSeconds: number) => {
+  await getClientBase().set(XTM_REGISTRATION_RESULT_KEY, JSON.stringify(result), 'EX', ttlSeconds);
+};
+
+export const redisGetXtmRegistrationResult = async (): Promise<object | null> => {
+  const raw = await getClientBase().get(XTM_REGISTRATION_RESULT_KEY);
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    logApp.error('[XTM One] Registration result in Redis could not be parsed', { raw });
+    return null;
+  }
+};
+// endregion - XTM One registration result

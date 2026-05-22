@@ -1,6 +1,6 @@
 import conf, { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { registerWithXtmOne } from '../modules/xtm/one/xtm-one';
+import { registerWithXtmOne, XTM_ONE_SCHEDULE_TIME } from '../modules/xtm/one/xtm-one';
 import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 
@@ -11,7 +11,6 @@ const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
 // manager should run — the token is the signal that XTM One registration
 // is intentionally configured.
 const XTM_ONE_ENABLED = !!(XTM_ONE_URL && XTM_ONE_TOKEN);
-const SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
 const BOOT_DELAY = 30_000; // 30 seconds — let the platform finish init
 
 export const xtmOneRegistrationManager = async () => {
@@ -29,7 +28,7 @@ const XTM_ONE_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: 'xtm_one_registration_manager',
   cronSchedulerHandler: {
     handler: xtmOneRegistrationManager,
-    interval: SCHEDULE_TIME,
+    interval: XTM_ONE_SCHEDULE_TIME,
     lockKey: 'xtm_one_registration_manager_lock',
   },
   enabledByConfig: XTM_ONE_ENABLED,

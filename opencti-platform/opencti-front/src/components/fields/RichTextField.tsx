@@ -54,7 +54,7 @@ const RichTextField = ({
   const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
-  const { fullyActive } = useAI();
+  const { enabled, configured } = useAI();
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
@@ -135,7 +135,7 @@ const RichTextField = ({
               <span>{t_i18n('You have unsaved changes')}</span>
             )}
           </div>
-          {askAi && fullyActive && (
+          {askAi && (enabled && configured) && (
             <TextFieldAskAI
               currentValue={value ?? ''}
               setFieldValue={(val) => {

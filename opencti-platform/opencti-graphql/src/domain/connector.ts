@@ -322,7 +322,7 @@ export const registerConnector = async (
   opts: RegisterOptions = {},
 ) => {
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
-  const { auto = null, auto_update = null, enrichment_resolution = null } = connectorData;
+  const { auto = null, auto_update = null, enrichment_resolution = null, xtm_one_intent = null } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -339,6 +339,7 @@ export const registerConnector = async (
       only_contextual,
       playbook_compatible,
       listen_callback_uri,
+      xtm_one_intent,
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false,
     };
@@ -362,6 +363,7 @@ export const registerConnector = async (
     only_contextual,
     playbook_compatible,
     listen_callback_uri,
+    xtm_one_intent,
     connector_user_id: opts.connector_user_id ?? user.id,
     connector_state_timestamp: now(),
     built_in: opts.built_in ?? false,

@@ -265,15 +265,18 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         )}
         <div>
           <Stack direction="row" gap={1} alignItems="center">
+            <Security needs={[KNOWLEDGE]}>
+              <>
+                {
+                  filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
+                    <AskArianeButton />
+                  )
+                }
+              </>
+            </Security>
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
-                  {
-                    filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
-                      <AskArianeButton />
-                    )
-                  }
-
                   {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
                   <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport

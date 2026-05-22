@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import axios from 'axios';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
-
-vi.mock('axios');
-const mockedAxios = vi.mocked(axios, true);
 
 // nconf must be mocked before conf.js is ever loaded (transitively)
 vi.mock('nconf', () => {
@@ -26,15 +22,43 @@ vi.mock('nconf', () => {
 
 // Mock conf without importOriginal to avoid triggering conf.js initialization
 vi.mock('../../../src/config/conf', () => ({
+  default: {
+    get: vi.fn((key: string) => {
+      const store: Record<string, unknown> = {
+        'xtm:xtm_one_url': 'http://xtm-one',
+        'redis:use_ssl': false,
+        'redis:ca': [],
+        'playbook_manager:log_max_size': 100,
+      };
+      return store[key] ?? undefined;
+    }),
+  },
   logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
   getChatbotUrl: vi.fn(() => 'http://localhost:4000'),
   PLATFORM_VERSION: '6.0.0',
   basePath: '',
   DEV_MODE: false,
+  TEST_MODE: false,
   ENABLED_UI: false,
   OPENCTI_SESSION: 'opencti_session',
   AUTH_PAYLOAD_BODY_SIZE: undefined,
   getBaseUrl: vi.fn(() => 'http://localhost:4000'),
+  getPlatformHttpProxyAgent: vi.fn(() => null),
+  booleanConf: vi.fn(() => false),
+  loadCert: vi.fn(() => ''),
+}));
+
+// Mock heavy I/O modules that get pulled in transitively
+vi.mock('../../../src/database/redis', () => ({
+  getClientBase: vi.fn(() => ({ set: vi.fn(), get: vi.fn(), del: vi.fn() })),
+  pubSubSubscription: vi.fn(),
+  storeNotifiersForStream: vi.fn(),
+  redisSetXtmRegistrationResult: vi.fn(),
+  redisGetXtmRegistrationResult: vi.fn(() => null),
+}));
+
+vi.mock('../../../src/lock/master-lock', () => ({
+  lockResource: vi.fn(),
 }));
 
 vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
@@ -45,14 +69,15 @@ vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
 
-vi.mock('../../../src/schema/internalObject', () => ({
-  ENTITY_TYPE_SETTINGS: 'Settings',
-  ENTITY_TYPE_USER: 'User',
-}));
+vi.mock('../../../src/schema/internalObject', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual };
+});
 
-vi.mock('../../../src/generated/graphql', () => ({
-  CguStatus: { Enabled: 'enabled', Disabled: 'disabled' },
-}));
+vi.mock('../../../src/generated/graphql', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual };
+});
 
 vi.mock('../../../src/modules/settings/licensing', () => ({
   getEnterpriseEditionActivePem: vi.fn(),
@@ -71,12 +96,30 @@ vi.mock('../../../src/http/httpUtils', () => ({
   setCookieError: vi.fn(),
 }));
 
-vi.mock('../../../src/modules/xtm/one/xtm-one', () => ({
-  getDiscoveredIntentCatalog: vi.fn(() => []),
-}));
-
 vi.mock('../../../src/modules/xtm/one/xtm-one-client', () => ({
   default: { isConfigured: vi.fn(() => true) },
+}));
+
+// Mock getHttpClient — the core HTTP abstraction
+const mockPost = vi.fn();
+const mockGet = vi.fn();
+vi.mock('../../../src/utils/http-client', () => ({
+  getHttpClient: vi.fn(() => ({
+    get: mockGet,
+    post: mockPost,
+    delete: vi.fn(),
+    head: vi.fn(),
+    call: vi.fn(),
+  })),
+  getResponseError: (error: unknown) => {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const e = error as any;
+      if (e.response) {
+        return { status: e.response.status, data: e.response.data, headers: {}, message: e.message };
+      }
+    }
+    return null;
+  },
 }));
 
 // ── Imports (after mocks) ──────────────────────────────────────────────────
@@ -176,25 +219,21 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
   it('should stream response from XTM One on success', async () => {
     const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
-    mockedAxios.post.mockResolvedValue({ data: fakeStream });
+    mockPost.mockResolvedValue({ data: fakeStream });
 
     const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
     (req as any).on = vi.fn();
 
     await postAgentMessageStream(req, res);
 
-    expect(mockedAxios.post).toHaveBeenCalledTimes(1);
-    const [url, rawBody, rawConfig] = mockedAxios.post.mock.calls[0];
-    const body = rawBody as Record<string, any>;
-    const config = rawConfig as Record<string, any>;
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, body, opts] = mockPost.mock.calls[0];
 
-    expect(url).toBe('http://xtm-one/api/v1/platform/chat/messages');
+    expect(url).toBe('/api/v1/platform/chat/messages');
     expect(body.agent_slug).toBe('test-agent');
     expect(body.content).toBe('hello');
     expect(body.stream).toBe(true);
-    expect(config.headers.Authorization).toBe('Bearer jwt-token-123');
-    expect(config.responseType).toBe('stream');
-    expect(config.timeout).toBe(0);
+    expect(opts.timeout).toBe(0);
 
     expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/event-stream');
     expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-cache, no-transform');
@@ -205,7 +244,7 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
   it('should destroy stream when client disconnects', async () => {
     const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
-    mockedAxios.post.mockResolvedValue({ data: fakeStream });
+    mockPost.mockResolvedValue({ data: fakeStream });
 
     const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
     (req as any).on = vi.fn();
@@ -218,11 +257,10 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(fakeStream.destroy).toHaveBeenCalled();
   });
 
-  it('should return SSE error when axios returns an error with response', async () => {
-    const axiosError = new Error('Bad request') as any;
-    axiosError.response = { status: 400, data: { detail: 'Invalid agent' } };
-    mockedAxios.isAxiosError.mockReturnValue(true);
-    mockedAxios.post.mockRejectedValue(axiosError);
+  it('should return SSE error when HTTP error with response is thrown', async () => {
+    const httpError = new Error('Bad request') as any;
+    httpError.response = { status: 400, data: { detail: 'Invalid agent' } };
+    mockPost.mockRejectedValue(httpError);
 
     const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
 
@@ -239,11 +277,10 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(res.end).toHaveBeenCalled();
   });
 
-  it('should fall back to error message when axios response has no detail', async () => {
-    const axiosError = new Error('Server error') as any;
-    axiosError.response = { status: 500, data: {} };
-    mockedAxios.isAxiosError.mockReturnValue(true);
-    mockedAxios.post.mockRejectedValue(axiosError);
+  it('should fall back to error message when HTTP response has no detail', async () => {
+    const httpError = new Error('Server error') as any;
+    httpError.response = { status: 500, data: {} };
+    mockPost.mockRejectedValue(httpError);
 
     const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
 
@@ -256,9 +293,8 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(res.end).toHaveBeenCalled();
   });
 
-  it('should return 503 when a non-axios error is thrown', async () => {
-    mockedAxios.isAxiosError.mockReturnValue(false);
-    mockedAxios.post.mockRejectedValue(new Error('Network failure'));
+  it('should return 503 when a non-HTTP error is thrown', async () => {
+    mockPost.mockRejectedValue(new Error('Network failure'));
 
     const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
 

@@ -4,12 +4,21 @@ import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache } from '../../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { decodeLicensePem, getEnterpriseEditionActivePem } from '../../settings/licensing';
+import { redisGetXtmRegistrationResult, redisSetXtmRegistrationResult } from '../../../database/redis';
 import xtmOneClient from './xtm-one-client';
-import type { IntentCatalogEntry } from './xtm-one-client';
+import type { XtmOneRegistrationResponse } from './xtm-one-client';
 
-let discoveredIntentCatalog: IntentCatalogEntry[] = [];
+export const XTM_ONE_SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
+const XTM_REGISTRATION_RESULT_TTL = Math.ceil((XTM_ONE_SCHEDULE_TIME * 2) / 1000); // 2× schedule, in seconds
 
-export const getDiscoveredIntentCatalog = (): IntentCatalogEntry[] => discoveredIntentCatalog;
+export const getXtmRegistrationResult = async (): Promise<XtmOneRegistrationResponse | null> => {
+  return await redisGetXtmRegistrationResult() as Promise<XtmOneRegistrationResponse | null>;
+};
+
+export const getXtmOneRegistrationVersion = async (): Promise<string> => {
+  const result = await getXtmRegistrationResult();
+  return result?.version ?? 'Not connected';
+};
 
 /**
  * Register this OpenCTI instance with XTM One.
@@ -54,35 +63,26 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     license_type: licenseType,
     business_vertical: 'cti',
     intents: [
-      { name: 'global.assistant', description: 'General-purpose assistant for the platform' },
-      { name: 'make.it.shorter', description: 'Shorten / summarize content' },
-      { name: 'make.it.longer', description: 'Expand / elaborate content' },
-      { name: 'fix.spelling', description: 'Fix spelling and grammar' },
-      { name: 'change.tone', description: 'Change the tone of content' },
-      { name: 'summarize', description: 'Summarize content' },
-      { name: 'explain', description: 'Explain content in simple terms' },
+      { name: 'global.assistant', description: 'General-purpose assistant' },
+      { name: 'global.make_it_shorter', description: 'Shorten / summarize content' },
+      { name: 'global.make_it_longer', description: 'Expand / elaborate content' },
+      { name: 'global.fix_spelling', description: 'Fix spelling and grammar' },
+      { name: 'global.change_tone', description: 'Change the tone of content' },
+      { name: 'global.summarize', description: 'Summarize content' },
+      { name: 'global.explain', description: 'Explain content in simple terms' },
       { name: 'cti.container_summary', description: 'Summarize an OpenCTI container (report, grouping, case)' },
       { name: 'cti.containers_digest', description: 'Summarize containers related to an OpenCTI entity' },
       { name: 'cti.entity_activity', description: 'Analyse activity trends of an OpenCTI entity' },
       { name: 'cti.entity_forecast', description: 'Forecast future activity of an OpenCTI entity' },
       { name: 'cti.entity_history', description: 'Summarize internal history of an OpenCTI entity' },
-      { name: 'cti.nlq_search', description: 'Translate a natural-language request into OpenCTI search filters' },
+      { name: 'cti.nlq_search', description: 'Generate an OpenCTI filter from a natural language query' },
+      { name: 'cti.stix_harvester', description: 'Extract cyber threat intelligence from documents into STIX 2.1 bundles' },
     ],
   });
 
   if (result) {
-    if (result.intent_catalog) {
-      discoveredIntentCatalog = result.intent_catalog;
-      const agentCount = result.intent_catalog.reduce((acc, entry) => acc + entry.agents.length, 0);
-      logApp.info('[XTM One] Intent catalog updated', {
-        intents: result.intent_catalog.length,
-        agents: agentCount,
-      });
-    }
-    logApp.info('[XTM One] Registration successful', {
-      status: result.status,
-      ee_enabled: result.ee_enabled,
-    });
+    await redisSetXtmRegistrationResult(result, XTM_REGISTRATION_RESULT_TTL);
+    logApp.info('[XTM One] Registration successful', { status: result.status, ee_enabled: result.ee_enabled, version: result.version });
   } else {
     logApp.warn('[XTM One] Registration failed, will retry on next tick');
   }

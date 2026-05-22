@@ -25,7 +25,7 @@ export default class ReportDetailsPage {
   }
 
   getAiInsightsButton() {
-    return this.page.getByLabel('AI Insights', { exact: true });
+    return this.page.getByRole('button', { name: 'AI Insights', exact: true });
   }
 
   getContentFile(fileName: string) {

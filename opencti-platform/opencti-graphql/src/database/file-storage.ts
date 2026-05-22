@@ -12,7 +12,7 @@ import type { BasicStoreEntityConnector } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
+import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
@@ -41,6 +41,7 @@ import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
 import { getEntitiesMapFromCache } from './cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 
 // Minio configuration
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
@@ -519,9 +520,29 @@ export const uploadJobImport = async (
         configuration: connectorConfiguration,
       };
     };
-    const pushMessage = (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
-      const { connector } = data;
-      const message = buildConnectorMessage(data, configuration);
+    const pushMessage = async (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
+      const { connector, work } = data;
+      let connectorConfiguration = configuration;
+      // In auto mode, if the connector declares an xtm_one_intent and no agent_slug
+      // is already in the configuration, inject the default agent slug from the intent catalog
+      if (connector.xtm_one_intent && xtmOneClient.isConfigured()) {
+        const existingConfig = connectorConfiguration ? JSON.parse(connectorConfiguration) : {};
+        // Connector as for an agent, but not provided directly
+        if (!existingConfig.agent_slug) {
+          // We need to fetch the agent with the higher priority
+          const agents = await xtmOneClient.listAgentsForIntent(context, connector.xtm_one_intent);
+          if (agents.length > 0) {
+            const defaultAgent = agents[0];
+            connectorConfiguration = JSON.stringify({ ...existingConfig, agent_slug: defaultAgent.agent_slug });
+          } else {
+            // Connector cannot be trigger as not agent available
+            logApp.warn('No agent found for connector intent', { connector: connector.name, intent: connector.xtm_one_intent });
+            await reportExpectation(context, user, work.id, { error: 'No agent available for connector intent', source: 'Platform' });
+            return false;
+          }
+        }
+      }
+      const message = buildConnectorMessage(data, connectorConfiguration);
       return pushToConnector(connector.internal_id, message);
     };
     await Promise.all(actionList.map((data) => pushMessage(data)));

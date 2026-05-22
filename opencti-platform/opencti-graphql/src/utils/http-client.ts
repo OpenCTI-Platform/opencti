@@ -25,6 +25,27 @@ export interface GetHttpClient {
   };
 }
 
+// Extract the HTTP response from an axios-like error if present.
+// Returns null when the error is not an HTTP response error.
+// Usage: const httpErr = getResponseError(e); if (httpErr) { httpErr.status ... }
+export interface HttpResponseError {
+  status: number;
+  data: any;
+  headers: Record<string, any>;
+  message: string;
+}
+export const getResponseError = (error: unknown): HttpResponseError | null => {
+  if (axios.isAxiosError(error) && error.response) {
+    return {
+      status: error.response.status,
+      data: error.response.data,
+      headers: error.response.headers as Record<string, any>,
+      message: error.message,
+    };
+  }
+  return null;
+};
+
 const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHttpAgent: HttpAgent, defaultHttpsAgent: HttpsAgent) => {
   const agentUri = baseURL ? `${baseURL}${uri}` : uri;
   return {
