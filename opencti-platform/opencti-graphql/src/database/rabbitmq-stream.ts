@@ -123,7 +123,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
   opts: StreamProcessorOption = {},
 ): StreamProcessor => {
-  const isRunning = true;
+  let isRunning = false;
   let processingLoopPromise: Promise<void>;
   const { streamName = LIVE_STREAM_NAME, autoReconnect, withInternal } = opts;
   const rabbitQueueName = getRabbitMQStreamQueueName(streamName);
@@ -178,7 +178,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
           logApp.error('Closing RabbitMQ connection failed', { cause: e });
         }
       }
-      if (autoReconnect) {
+      if (isRunning && autoReconnect) {
         setTimeout(handleStreamConsume as unknown as (args: void) => void, RETRY_CONNECTION_PERIOD);
       }
     });
@@ -188,12 +188,14 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     running: () => isRunning,
     start: async (startEventId = 'live') => {
       logApp.info('[STREAM] Starting queue consuming', { provider, startEventId });
+      isRunning = true;
       processingLoopPromise = (async () => {
         await handleStreamConsume(startEventId);
       })();
     },
     shutdown: async () => {
       logApp.info('[STREAM] Shutdown rabbit connection', { provider });
+      isRunning = false;
       rabbitMqConnection?.close();
       if (processingLoopPromise) {
         await processingLoopPromise;
