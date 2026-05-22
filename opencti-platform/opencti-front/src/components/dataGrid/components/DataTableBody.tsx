@@ -4,7 +4,7 @@ import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { useDataTableContext } from './DataTableContext';
-import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 import { useDataTable } from '../dataTableHooks';
 import DataTableEmptyState from './DataTableEmptyState';
@@ -22,10 +22,6 @@ const DataTableBody = ({
     rootRef,
     variant,
     resolvePath,
-    tableWidthState: [tableWidth],
-    actions,
-    actionsColumnWidth,
-    columns,
     dataQueryArgs,
     useDataTableToggle: {
       selectedElements,
@@ -131,33 +127,17 @@ const DataTableBody = ({
     };
   }, [settingsMessagesBannerHeight, rootRef, filters]);
 
-  const endActionsWidth = actionsColumnWidth ?? SELECT_COLUMN_SIZE;
-  const rowWidth = useMemo(() => (
-    Math.floor(columns.reduce((acc, col) => {
-      if (col.percentWidth) {
-        return acc + tableWidth * (col.percentWidth / 100);
-      }
-      return acc + (col.id === 'icon' ? ICON_COLUMN_SIZE : SELECT_COLUMN_SIZE);
-    }, actions ? endActionsWidth + 9 : 9)) // 9 is for scrollbar.
-  ), [columns, tableWidth, actions, endActionsWidth]);
-
   const containerLinesStyle: CSSProperties = {
     overflow: 'hidden auto',
     maxHeight: `calc(${tableHeight}px - ${hideHeaders ? 0 : SELECT_COLUMN_SIZE}px)`,
-    width: rowWidth,
+    width: '100%',
   };
-
-  if (!tableWidth) {
-    return null;
-  }
 
   return (
     <>
-      <div style={{ width: rowWidth }}>
-        {!hideHeaders && (
-          <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
-        )}
-      </div>
+      {!hideHeaders && (
+        <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
+      )}
 
       <div style={containerLinesStyle}>
         {resolvedData.length === 0 && !!emptyStateMessage && (

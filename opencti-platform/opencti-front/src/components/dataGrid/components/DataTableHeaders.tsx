@@ -173,20 +173,22 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
             </Menu>
           )}
 
-          {columns
-            .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
-            .map((column) => (
-              <DataTableHeader
-                key={column.id}
-                column={column}
-                setAnchorEl={setAnchorEl}
-                isActive={activeColumn?.id === column.id}
-                setActiveColumn={setActiveColumn}
-                containerRef={containerRef}
-                sortBy={sortBy === column.id}
-                orderAsc={!!orderAsc}
-              />
-            ))}
+          <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex' }}>
+            {columns
+              .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
+              .map((column) => (
+                <DataTableHeader
+                  key={column.id}
+                  column={column}
+                  setAnchorEl={setAnchorEl}
+                  isActive={activeColumn?.id === column.id}
+                  setActiveColumn={setActiveColumn}
+                  containerRef={containerRef}
+                  sortBy={sortBy === column.id}
+                  orderAsc={!!orderAsc}
+                />
+              ))}
+          </div>
 
           {(endsWithAction) && <div style={{ width: actionsColumnWidth ?? SELECT_COLUMN_SIZE, flex: '0 0 auto' }} />}
         </>

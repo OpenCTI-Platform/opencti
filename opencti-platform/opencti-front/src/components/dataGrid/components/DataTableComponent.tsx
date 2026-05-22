@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { useAppData } from '../../../utils/hooks/useAppData';
 import { DataTableLinesDummy } from './DataTableLine';
@@ -17,7 +17,6 @@ import {
 } from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
-import callbackResizeObserver from '../../../utils/resizeObservers';
 
 type DataTableComponentProps = Pick<DataTableProps,
   | 'dataColumns'
@@ -207,8 +206,6 @@ const DataTableComponent = ({
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
 
-  const tableWidthState = useState(0);
-  const [tableWidth, setTableWidth] = tableWidthState;
   const tableRef = useRef<HTMLDivElement | null>(null);
 
   const endActionsWidth = actionsColumnWidth ?? SELECT_COLUMN_SIZE;
@@ -221,27 +218,6 @@ const DataTableComponent = ({
     }
     return SELECT_COLUMN_SIZE;
   }, [startsWithIcon, startsWithAction]);
-
-  // Keep table width up to date.
-  useLayoutEffect(() => {
-    let observer: ResizeObserver;
-    if (tableRef.current) {
-      const resize = (el: Element) => {
-        let offset = 10;
-        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
-        if (startsWithIcon) offset += ICON_COLUMN_SIZE;
-        if (endsWithAction) offset += endActionsWidth;
-        if ((el.clientWidth - offset) !== tableWidth) {
-          setTableWidth(el.clientWidth - offset);
-        }
-      };
-      resize(tableRef.current);
-      observer = callbackResizeObserver(tableRef.current, resize);
-    }
-    return () => {
-      observer?.disconnect();
-    };
-  }, [tableRef.current, tableWidth, endActionsWidth, endsWithAction, startsWithAction, startsWithIcon]);
 
   return (
     <DataTableProvider
@@ -279,7 +255,6 @@ const DataTableComponent = ({
         disableLineSelection,
         page,
         setPage,
-        tableWidthState,
         startsWithAction,
         startsWithIcon,
         startColumnWidth,

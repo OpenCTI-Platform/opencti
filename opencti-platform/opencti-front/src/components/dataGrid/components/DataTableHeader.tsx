@@ -82,7 +82,6 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     disableColumnMenu,
     variant,
     formatter: { t_i18n },
-    tableWidthState: [tableWidth],
   } = useDataTableContext();
 
   // To avoid spamming sorting (and calling API)
@@ -99,13 +98,12 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   };
 
   const hasColumnMenu = !disableColumnMenu && (column.isSortable || (availableFilterKeys ?? []).includes(column.id));
-  const cellWidth = Math.round(tableWidth * (column.percentWidth / 100));
 
   return (
     <div
       key={column.id}
       className={classes.headerContainer}
-      style={{ width: cellWidth }}
+      style={{ width: `${column.percentWidth}%` }}
     >
       <div className={classes.label} onClick={throttleSortColumn}>
         <Tooltip title={t_i18n(column.label)}>

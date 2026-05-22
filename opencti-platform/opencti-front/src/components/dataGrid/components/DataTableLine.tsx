@@ -22,24 +22,60 @@ const cellContainerStyle = (theme: Theme) => ({
 
 const DataTableLineDummy = () => {
   const theme = useTheme<Theme>();
-  const { columns, tableWidthState: [tableWidth] } = useDataTableContext();
+  const {
+    columns,
+    startsWithAction,
+    startsWithIcon,
+    startColumnWidth,
+    endsWithAction,
+    actionsColumnWidth,
+    actions,
+    disableNavigation,
+  } = useDataTableContext();
+  const columnsOffset = [startsWithAction, startsWithIcon].filter(Boolean).length;
+  const dataColumns = columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1);
+
   return (
     <div style={{ display: 'flex' }}>
-      {columns.map((column) => (
+      {(startsWithAction || startsWithIcon) && (
         <div
-          key={column.id}
           style={{
             paddingLeft: theme.spacing(0.5),
             paddingRight: theme.spacing(1),
             flex: '0 0 auto',
-            width: column.percentWidth
-              ? Math.round(tableWidth * (column.percentWidth / 100))
-              : SELECT_COLUMN_SIZE,
+            width: startColumnWidth,
           }}
         >
           <Skeleton variant="text" height={35} />
         </div>
-      ))}
+      )}
+      <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex' }}>
+        {dataColumns.map((column) => (
+          <div
+            key={column.id}
+            style={{
+              paddingLeft: theme.spacing(0.5),
+              paddingRight: theme.spacing(1),
+              flex: '0 0 auto',
+              width: `${column.percentWidth}%`,
+            }}
+          >
+            <Skeleton variant="text" height={35} />
+          </div>
+        ))}
+      </div>
+      {endsWithAction && (
+        <div
+          style={{
+            paddingLeft: theme.spacing(0.5),
+            paddingRight: theme.spacing(1),
+            flex: '0 0 auto',
+            width: actionsColumnWidth ?? SELECT_COLUMN_SIZE,
+          }}
+        >
+          <Skeleton variant="text" height={35} />
+        </div>
+      )}
     </div>
   );
 };
@@ -57,7 +93,7 @@ const DataTableCell = ({
   data,
 }: DataTableCellProps) => {
   const theme = useTheme<Theme>();
-  const { useDataCellHelpers, tableWidthState: [tableWidth] } = useDataTableContext();
+  const { useDataCellHelpers } = useDataTableContext();
   const helpers = useDataCellHelpers(cell);
 
   const cellStyle: CSSProperties = {
@@ -75,7 +111,7 @@ const DataTableCell = ({
       key={`${cell.id}_${data.id}`}
       style={{
         ...cellContainerStyle(theme),
-        width: Math.round(tableWidth * (cell.percentWidth / 100)),
+        width: `${cell.percentWidth}%`,
       }}
     >
       <div style={cellStyle}>
@@ -226,13 +262,15 @@ const DataTableLine = ({
           </div>
         )}
 
-        {columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
-          <DataTableCell
-            key={column.id}
-            cell={column}
-            data={data}
-          />
-        ))}
+        <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex' }}>
+          {columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
+            <DataTableCell
+              key={column.id}
+              cell={column}
+              data={data}
+            />
+          ))}
+        </div>
 
         {endsWithAction && (
           <div

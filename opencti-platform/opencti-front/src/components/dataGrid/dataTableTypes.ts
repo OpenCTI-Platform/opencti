@@ -74,7 +74,6 @@ export interface DataTableContextProps {
   onLineClick: DataTableProps['onLineClick'];
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
-  tableWidthState: [number, Dispatch<SetStateAction<number>>];
   startsWithAction: boolean;
   startsWithIcon: boolean;
   startColumnWidth: number;
