@@ -2398,6 +2398,7 @@ enum DraftOperation {
 type DraftVersion {
   draft_id: String!
   draft_operation: DraftOperation!
+  draft_updates_patch: String
 }
 
 interface StixObject {
@@ -9730,9 +9731,14 @@ type Query {
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspacesRestricted(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
-  draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
+  draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, draftOperation: DraftOperation): StixCoreObjectConnection
+  draftWorkspaceContainerObjects(draftId: String!, containerId: String!): [DraftContainerObjectChange!]!
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
   draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
+  draftWorkspaceResolveIds(draftId: String!, ids: [String!]!): [DraftResolvedId!]!
+  draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]!
+  draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]!
+  draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]!
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
@@ -14990,6 +14996,20 @@ enum DraftStatus {
   validated
 }
 
+enum DraftChangeType {
+  create
+  delete
+  add
+  remove
+}
+
+type DraftContainerObjectChange {
+  entity_id: String!
+  entity_type: String!
+  representative_main: String
+  draft_operation: DraftChangeType!
+}
+
 type DraftWorkspace implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -15020,6 +15040,7 @@ type DraftObjectsCount {
   relationshipsCount: Int!
   sightingsCount: Int!
   containersCount: Int!
+  reviewsCount: Int!
 }
 
 enum DraftWorkspacesOrdering {
@@ -15041,6 +15062,35 @@ type DraftWorkspaceConnection {
 type DraftWorkspaceEdge {
   cursor: String!
   node: DraftWorkspace!
+}
+
+type DraftEntityField {
+  field: String!
+  values: [String!]!
+}
+
+type DraftEntityRelation {
+  relation_id: String!
+  relationship_type: String!
+  from_id: String!
+  from_type: String!
+  from_name: String!
+  to_id: String!
+  to_type: String!
+  to_name: String!
+  draft_operation: DraftChangeType!
+}
+
+type DraftEntityContainerRef {
+  container_id: String!
+  container_type: String!
+  container_name: String!
+  draft_operation: DraftChangeType!
+}
+
+type DraftResolvedId {
+  id: String!
+  representative_main: String
 }
 
 input DraftWorkspaceAddInput {

@@ -2,15 +2,16 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
-import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
+import { elAggregationCount, elCount, elFindByIds, elList, elLoadById, loadDraftElement } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, stixLoadByIds, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
+  DraftChangeType,
   type DraftWorkspaceAddInput,
   type EditContext,
   type EditInput,
@@ -29,7 +30,7 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { isStixRefRelationship } from '../../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
@@ -96,6 +97,7 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   };
   const draftContext = { ...context, draft_context: draft.id };
   const distributionResult = await elAggregationCount(draftContext, user, READ_INDEX_DRAFT_OBJECTS, opts);
+
   // TODO fix total to include only stix domain objects & SCO & stix core relationships & sightings & stix domain objects
   const totalCount = computeSumOfList(distributionResult.map((r: { label: string; count: number }) => r.count));
   const entitiesCount = computeSumOfList(
@@ -113,6 +115,8 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   const containersCount = computeSumOfList(
     distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count),
   );
+  // reviewsCount = all stix core objects (entities + observables + containers), matching what the Review list displays
+  const reviewsCount = entitiesCount + observablesCount + containersCount;
   return {
     totalCount,
     entitiesCount,
@@ -120,6 +124,7 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
     relationshipsCount,
     sightingsCount,
     containersCount,
+    reviewsCount,
   };
 };
 
@@ -182,7 +187,7 @@ export const getCurrentUserAccessRight = async (
 
 export const listDraftObjects = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
   let types: string[] = [];
-  const { draftId, ...listArgs } = args;
+  const { draftId, draftOperation, ...listArgs } = args as QueryDraftWorkspaceEntitiesArgs & { draftOperation?: string };
   await checkAndReturnDraft(context, user, draftId);
 
   if (args.types) {
@@ -191,8 +196,18 @@ export const listDraftObjects = async (context: AuthContext, user: AuthUser, arg
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  const newArgs: EntityOptions<BasicStoreEntity> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
   const draftContext = { ...context, draft_context: draftId };
+  const draftOperationFilter = draftOperation
+    ? addFilter(listArgs.filters, 'draft_change.draft_operation', draftOperation)
+    : listArgs.filters;
+  const newArgs: EntityOptions<BasicStoreEntity> = {
+    ...listArgs,
+    types,
+    indices: [READ_INDEX_DRAFT_OBJECTS],
+    includeDeletedInDraft: true,
+    filters: draftOperationFilter,
+    noFiltersChecking: draftOperation ? true : undefined,
+  };
   return pageEntitiesConnection<BasicStoreEntity>(draftContext, user, types, newArgs);
 };
 
@@ -394,7 +409,11 @@ export const buildDraftVersion = (object: BasicStoreCommon) => {
     return null;
   }
 
-  return { draft_id: object.draft_ids[0], draft_operation: object.draft_change?.draft_operation };
+  return {
+    draft_id: object.draft_ids[0],
+    draft_operation: object.draft_change?.draft_operation,
+    draft_updates_patch: object.draft_change?.draft_updates_patch ?? null,
+  };
 };
 
 export const buildDraftValidationBundle = async (context: AuthContext, user: AuthUser, draft_id: string) => {
@@ -479,6 +498,44 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   return work;
 };
 
+export const listDraftContainerObjects = async (context: AuthContext, user: AuthUser, args: { draftId: string; containerId: string }) => {
+  const { draftId, containerId } = args;
+  await checkAndReturnDraft(context, user, draftId);
+  const draftContext = { ...context, draft_context: draftId };
+
+  const relations = await fullRelationsList(draftContext, user, RELATION_OBJECT, {
+    fromId: containerId,
+    indices: [READ_INDEX_DRAFT_OBJECTS],
+    includeDeletedInDraft: true,
+  });
+
+  const relevantRels = relations.filter((rel) => {
+    const op = rel.draft_change?.draft_operation;
+    return op === DRAFT_OPERATION_CREATE || op === DRAFT_OPERATION_DELETE;
+  });
+  if (relevantRels.length === 0) return [];
+
+  const entityIds = relevantRels.map((rel) => rel.toId);
+  const entitiesMap = await elFindByIds<BasicStoreCommon>(draftContext, user, entityIds, {
+    includeDeletedInDraft: true,
+    toMap: true,
+  }) as Record<string, BasicStoreCommon>;
+
+  const result = [];
+  for (const rel of relevantRels) {
+    const entity = entitiesMap[rel.toId];
+    if (!entity) continue;
+    const op = rel.draft_change!.draft_operation;
+    result.push({
+      entity_id: rel.toId,
+      entity_type: entity.entity_type,
+      representative_main: extractEntityRepresentativeName(entity as any),
+      draft_operation: op === DRAFT_OPERATION_CREATE ? DraftChangeType.Add : DraftChangeType.Remove,
+    });
+  }
+  return result;
+};
+
 export const draftWorkspaceEditContext = async (context: AuthContext, user: AuthUser, draftId: string, input?: EditContext) => {
   await checkEnterpriseEdition(context);
   await checkAndReturnDraft(context, user, draftId);
@@ -488,4 +545,194 @@ export const draftWorkspaceEditContext = async (context: AuthContext, user: Auth
   return storeLoadById(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE).then((draft) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].CONTEXT_TOPIC, draft, user);
   });
+};
+
+export const resolveIdRepresentatives = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: { draftId: string; ids: string[] },
+): Promise<{ id: string; representative_main: string | null }[]> => {
+  const { draftId, ids } = args;
+  if (ids.length === 0) return [];
+  const MAX_RESOLVE_IDS = 100;
+  if (ids.length > MAX_RESOLVE_IDS) {
+    throw FunctionalError(`Too many IDs to resolve (max ${MAX_RESOLVE_IDS})`, { count: ids.length });
+  }
+  await checkAndReturnDraft(context, user, draftId);
+  const draftContext = { ...context, draft_context: draftId };
+  const entities = await elFindByIds<BasicStoreCommon>(draftContext, user, ids) as BasicStoreCommon[];
+  return ids.map((id) => {
+    const entity = entities.find((e) => e.standard_id === id || e.internal_id === id);
+    return {
+      id,
+      representative_main: entity ? extractEntityRepresentativeName(entity as any) : null,
+    };
+  });
+};
+
+type DraftEntityRelationResult = {
+  relation_id: string; relationship_type: string;
+  from_id: string; from_type: string; from_name: string;
+  to_id: string; to_type: string; to_name: string;
+  draft_operation: DraftChangeType;
+};
+
+export const getEntityRelations = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: { draftId: string; entityId: string },
+): Promise<DraftEntityRelationResult[]> => {
+  const { draftId, entityId } = args;
+  await checkAndReturnDraft(context, user, draftId);
+  const draftContext = { ...context, draft_context: draftId };
+
+  // Part 1: direct relations where the entity is from or to
+  const directRelations = await fullRelationsList<BasicStoreRelation>(draftContext, user, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
+    fromOrToId: entityId,
+    indices: [READ_INDEX_DRAFT_OBJECTS],
+    includeDeletedInDraft: true,
+  });
+  const filteredDirect = directRelations.filter((rel) => {
+    const op = rel.draft_change?.draft_operation;
+    return op === DRAFT_OPERATION_CREATE || op === DRAFT_OPERATION_DELETE;
+  });
+
+  // Part 2: for containers (e.g. Report), find core/sighting relations that are objects of this entity
+  // via RELATION_OBJECT refs (report → uses), which are not direct endpoints of the relation
+  const objectRefs = await fullRelationsList<BasicStoreRelation>(draftContext, user, RELATION_OBJECT, {
+    fromId: entityId,
+    indices: [READ_INDEX_DRAFT_OBJECTS],
+    includeDeletedInDraft: true,
+  });
+  const directRelationIds = new Set(filteredDirect.map((r) => r.internal_id));
+  const containerRelations: { rel: BasicStoreRelation; refOp: string }[] = [];
+  const relevantRefs = objectRefs.filter((ref) => {
+    const refOp = ref.draft_change?.draft_operation;
+    return refOp === DRAFT_OPERATION_CREATE || refOp === DRAFT_OPERATION_DELETE;
+  });
+  if (relevantRefs.length > 0) {
+    const targetIds = relevantRefs.map((ref) => ref.toId);
+    const targetsMap = await elFindByIds<BasicStoreRelation>(draftContext, user, targetIds, {
+      includeDeletedInDraft: true,
+      toMap: true,
+    }) as Record<string, BasicStoreRelation>;
+    for (const ref of relevantRefs) {
+      const target = targetsMap[ref.toId];
+      if (!target) continue;
+      if (!isStixCoreRelationship(target.entity_type) && !isStixSightingRelationship(target.entity_type)) continue;
+      if (directRelationIds.has(target.internal_id)) continue;
+      containerRelations.push({ rel: target, refOp: ref.draft_change!.draft_operation });
+    }
+  }
+
+  const directResults = filteredDirect.map((rel) => ({
+    relation_id: rel.internal_id,
+    relationship_type: rel.relationship_type,
+    from_id: rel.fromId,
+    from_type: rel.fromType,
+    from_name: rel.fromName,
+    to_id: rel.toId,
+    to_type: rel.toType,
+    to_name: rel.toName,
+    draft_operation: rel.draft_change!.draft_operation === DRAFT_OPERATION_CREATE ? DraftChangeType.Create : DraftChangeType.Delete,
+  }));
+  const containerResults = containerRelations.map(({ rel, refOp }) => ({
+    relation_id: rel.internal_id,
+    relationship_type: rel.relationship_type,
+    from_id: rel.fromId,
+    from_type: rel.fromType,
+    from_name: rel.fromName,
+    to_id: rel.toId,
+    to_type: rel.toType,
+    to_name: rel.toName,
+    // The ref changed (added/removed from this container), not the relation itself
+    draft_operation: refOp === DRAFT_OPERATION_CREATE ? DraftChangeType.Add : DraftChangeType.Remove,
+  }));
+  return [...directResults, ...containerResults];
+};
+
+type DraftEntityContainerRefResult = {
+  container_id: string;
+  container_type: string;
+  container_name: string;
+  draft_operation: DraftChangeType;
+};
+
+export const getEntityContainerRefs = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: { draftId: string; entityId: string },
+): Promise<DraftEntityContainerRefResult[]> => {
+  const { draftId, entityId } = args;
+  await checkAndReturnDraft(context, user, draftId);
+  const draftContext = { ...context, draft_context: draftId };
+
+  // Find RELATION_OBJECT refs pointing TO this entity (container → entityId)
+  const objectRefs = await fullRelationsList<BasicStoreRelation>(draftContext, user, RELATION_OBJECT, {
+    toId: entityId,
+    indices: [READ_INDEX_DRAFT_OBJECTS],
+    includeDeletedInDraft: true,
+  });
+
+  const relevantRefs = objectRefs.filter((ref) => {
+    const op = ref.draft_change?.draft_operation;
+    return op === DRAFT_OPERATION_CREATE || op === DRAFT_OPERATION_DELETE;
+  });
+  if (relevantRefs.length === 0) return [];
+
+  const containerIds = relevantRefs.map((ref) => ref.fromId);
+  const containersMap = await elFindByIds<BasicStoreCommon>(draftContext, user, containerIds, {
+    includeDeletedInDraft: true,
+    toMap: true,
+  }) as Record<string, BasicStoreCommon>;
+
+  const results: DraftEntityContainerRefResult[] = [];
+  for (const ref of relevantRefs) {
+    const container = containersMap[ref.fromId];
+    if (!container) continue;
+    const op = ref.draft_change!.draft_operation;
+    results.push({
+      container_id: ref.fromId,
+      container_type: container.entity_type,
+      container_name: extractEntityRepresentativeName(container as any),
+      draft_operation: op === DRAFT_OPERATION_CREATE ? DraftChangeType.Add : DraftChangeType.Remove,
+    });
+  }
+  return results;
+};
+
+const EXCLUDED_ENTITY_FIELDS = new Set([
+  '_index', '_score', 'internal_id', 'standard_id', 'id',
+  'parent_types', 'base_type', 'entity_type', 'i_aliases_ids',
+  'i_attributes_computed', 'sort', 'draft_ids', 'draft_change', 'draft_context',
+  'hashes', 'created_at', 'updated_at', 'spec_version',
+  'x_opencti_stix_ids', 'creator_id', 'x_opencti_id', 'x_opencti_workflow_id', 'x_opencti_organization_id', 'x_opencti_tags_ids',
+]);
+
+export const getEntityFields = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: { draftId: string; entityId: string },
+): Promise<{ field: string; values: string[] }[]> => {
+  const { draftId, entityId } = args;
+  await checkAndReturnDraft(context, user, draftId);
+  const draftContext = { ...context, draft_context: draftId };
+  const entities = await elFindByIds<BasicStoreCommon>(draftContext, user, [entityId], { includeDeletedInDraft: true }) as BasicStoreCommon[];
+  const entity = entities[0];
+  if (!entity) return [];
+
+  return Object.entries(entity)
+    .filter(([key, value]) => {
+      if (EXCLUDED_ENTITY_FIELDS.has(key)) return false;
+      if (key.startsWith('_') || key.startsWith('i_')) return false;
+      if (key.startsWith('rel_')) return false;
+      if (value === null || value === undefined) return false;
+      if (Array.isArray(value) && value.length === 0) return false;
+      if (typeof value === 'object' && !Array.isArray(value)) return false;
+      return true;
+    })
+    .map(([field, value]) => ({
+      field,
+      values: Array.isArray(value) ? value.map(String) : [String(value)],
+    }));
 };
