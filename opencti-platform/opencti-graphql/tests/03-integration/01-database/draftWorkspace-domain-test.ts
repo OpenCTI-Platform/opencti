@@ -163,6 +163,6 @@ describe('Drafts workspace domain testing', () => {
       draft_ids: ['draft-1', 'draft-2'],
       draft_change: { draft_operation: 'update' },
     } as any);
-    expect(result).toEqual({ draft_id: 'draft-1', draft_operation: 'update' });
+    expect(result).toEqual({ draft_id: 'draft-1', draft_operation: 'update', draft_updates_patch: null });
   });
 });
