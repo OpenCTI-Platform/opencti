@@ -50,6 +50,7 @@ type DataTableComponentProps = Pick<DataTableProps,
   | 'disableLineSelection'
   | 'pageSize'
   | 'actionsColumnWidth'
+  | 'enableInfiniteScroll'
 >;
 
 const DataTableComponent = ({
@@ -83,6 +84,7 @@ const DataTableComponent = ({
   emptyStateMessage,
   pageSize,
   actionsColumnWidth,
+  enableInfiniteScroll = false,
 }: DataTableComponentProps) => {
   const { metricsDefinition } = useAppData();
 
@@ -286,6 +288,7 @@ const DataTableComponent = ({
         endsWithAction,
         endsWithNavigate,
         actionsColumnWidth: endActionsWidth,
+        enableInfiniteScroll,
       }}
     >
       {filtersComponent && <div>{filtersComponent}</div>}

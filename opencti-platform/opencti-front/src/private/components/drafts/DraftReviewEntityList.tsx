@@ -199,7 +199,7 @@ const DraftReviewEntityList: FunctionComponent<DraftReviewEntityListProps> = ({
           lineFragment={draftReviewEntityFragment}
           disableLineSelection
           variant={DataTableVariant.inline}
-
+          enableInfiniteScroll
           entityTypes={['Stix-Core-Object']}
           onLineClick={(node: DraftReviewEntityList_node$data) => {
             onSelectEntity({
