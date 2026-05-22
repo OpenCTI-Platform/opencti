@@ -26,6 +26,8 @@ import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from
 import DraftPopover from './DraftPopover';
 import useHelper from '../../../utils/hooks/useHelper';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import useAuth from '../../../utils/hooks/useAuth';
+import useRuntimeSortGuard from '../../../utils/hooks/useRuntimeSortGuard';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -146,6 +148,8 @@ interface DraftsProps {
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
   const { isFeatureEnable } = useHelper();
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE], false, { capabilitiesInDraft: [KNOWLEDGE_KNUPDATE] });
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
@@ -173,6 +177,9 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
   const {
     filters,
   } = viewStorage;
+
+  // Reset sortBy to a safe default if runtime sort is disabled and a runtime-only field is persisted in localStorage/URL
+  useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
 
   const filtersForDataTable = addFilter(filters, 'entity_id', [entityId || ''], entityId ? 'eq' : 'nil', 'and');
   const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filtersForDataTable);
@@ -254,15 +261,15 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     },
     createdBy: {
       percentWidth: 10,
-      isSortable: true,
+      isSortable: isRuntimeSort,
     },
     objectAssignee: {
       percentWidth: 10,
-      isSortable: true,
+      isSortable: isRuntimeSort,
     },
     objectParticipant: {
       percentWidth: 10,
-      isSortable: true,
+      isSortable: isRuntimeSort,
     },
     draft_status: {
       id: 'draft_status',
