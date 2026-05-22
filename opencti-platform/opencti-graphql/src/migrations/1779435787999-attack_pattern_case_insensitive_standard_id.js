@@ -80,7 +80,8 @@ const migrateEntityType = async (context, entityType) => {
       }
       await mergeEntities(context, SYSTEM_USER, target.internal_id, sources.map((s) => s.internal_id));
       mergedEntities += sources.length;
-      logApp.info(
+      // Use logMigration.info so the operator can follow merge progress in the migration log channel.
+      logMigration.info(
         `${message} > merged ${sources.length} ${entityType} into ${target.internal_id}`
         + ` (target rel_count=${relCountByInternalId.get(target.internal_id) ?? 0},`
         + ` sources rel_count=[${sources.map((s) => relCountByInternalId.get(s.internal_id) ?? 0).join(', ')}])`
@@ -115,7 +116,8 @@ const migrateEntityType = async (context, entityType) => {
     const concurrentUpdate = async (bulk) => {
       await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
       currentProcessing += bulk.length;
-      logApp.info(`${message} > bulk rewrote ${entityType} standard ids: ${currentProcessing} / ${bulkOperations.length}`);
+      // Use logMigration.info so the operator can follow bulk-rewrite progress and estimate remaining time.
+      logMigration.info(`${message} > bulk rewrote ${entityType} standard ids: ${currentProcessing} / ${bulkOperations.length}`);
     };
     await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   }
