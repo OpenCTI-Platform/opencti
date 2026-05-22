@@ -271,6 +271,7 @@
   "An enumeration of Windows service start types": "Eine Aufzählung von Windows-Dienst-Starttypen",
   "An enumeration of Windows service statuses": "Eine Aufzählung von Windows-Dienstzuständen",
   "An enumeration of Windows service types": "Eine Aufzählung von Windows-Diensttypen",
+  "An error occurred while approving the draft. This may happen with very large drafts. Please try again or contact your administrator.": "Beim Genehmigen des Entwurfs ist ein Fehler aufgetreten. Dies kann bei sehr großen Entwürfen vorkommen. Bitte versuchen Sie es erneut oder wenden Sie sich an Ihren Administrator.",
   "An error occurred while creating the connector": "Beim Erstellen des Verbinders ist ein Fehler aufgetreten",
   "An error occurred while importing RSS Feed configuration.": "Beim Importieren der RSS-Feed-Konfiguration ist ein Fehler aufgetreten.",
   "An error occurred while importing Synchronizer configuration.": "Beim Importieren der Synchronizer-Konfiguration ist ein Fehler aufgetreten.",

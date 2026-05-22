@@ -271,6 +271,7 @@
   "An enumeration of Windows service start types": "Перечисление типов запуска служб Windows",
   "An enumeration of Windows service statuses": "Перечисление статусов служб Windows",
   "An enumeration of Windows service types": "Перечисление типов служб Windows",
+  "An error occurred while approving the draft. This may happen with very large drafts. Please try again or contact your administrator.": "При утверждении черновика произошла ошибка. Это может произойти с очень большими черновиками. Пожалуйста, попробуйте еще раз или обратитесь к администратору.",
   "An error occurred while creating the connector": "При создании коннектора произошла ошибка",
   "An error occurred while importing RSS Feed configuration.": "При импорте конфигурации RSS-канала произошла ошибка.",
   "An error occurred while importing Synchronizer configuration.": "При импорте конфигурации синхронизатора произошла ошибка.",
