@@ -396,7 +396,6 @@ class DataTableToolBar extends Component {
       displayUnshare: false,
       displayPromote: false,
       displayEnrollPlaybook: false,
-      enrollPlaybookId: null,
       enrollPlaybooks: [],
       displaySendEmail: false,
       containerCreation: false,
@@ -518,10 +517,7 @@ class DataTableToolBar extends Component {
   }
 
   handleOpenEnrollPlaybook() {
-    const { selectedElements } = this.props;
-    const ids = Object.values(selectedElements ?? {}).map((element) => element.id);
-
-    fetchQuery(toolBarPlaybooksQuery, { ids })
+    fetchQuery(toolBarPlaybooksQuery)
       .toPromise()
       .then((data) => {
         const enrollPlaybooks = (data?.playbooksForEnrollment ?? [])
@@ -534,7 +530,6 @@ class DataTableToolBar extends Component {
         this.setState({
           displayEnrollPlaybook: true,
           enrollPlaybooks,
-          enrollPlaybookId: null,
         });
       });
   }
