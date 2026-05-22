@@ -136,7 +136,7 @@ describe('Stix 2.1 opencti converter', () => {
   };
 
   it('Should stix data correctly generated', async () => {
-    await rawDataCompare('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', 'attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
+    await rawDataCompare('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', 'attack-pattern--5d51528f-84fc-575c-a120-1dd45f0836e5');
 
     // Campaign
 

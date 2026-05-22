@@ -108,7 +108,7 @@ describe('CourseOfAction resolver standard behavior', () => {
     );
     expect(queryResult.data.courseOfAction.attackPatterns.edges.length).toEqual(1);
     expect(queryResult.data.courseOfAction.attackPatterns.edges[0].node.standard_id).toEqual(
-      'attack-pattern--a01046cc-192f-5d52-8e75-6e447fae3890'
+      'attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498'
     );
   });
   it('should list coursesOfAction', async () => {

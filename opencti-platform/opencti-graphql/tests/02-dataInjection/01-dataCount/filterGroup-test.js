@@ -2731,8 +2731,10 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     const eqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', 'or') } });
     expect(eqOrQueryResult.data.globalSearch.edges.length).toEqual(5);
-    expect(eqOrQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--a01046cc-192f-5d52-8e75-6e447fae3890');
-    expect(eqOrQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
+    // Note: T1369 attack pattern's standard_id (5d51528f-...) now sorts before T1368 (b7f107ad-...)
+    // after x_mitre_id was made case-insensitive (#16132), hence the edges[0]/[1] swap vs previous values.
+    expect(eqOrQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--5d51528f-84fc-575c-a120-1dd45f0836e5');
+    expect(eqOrQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498');
     expect(eqOrQueryResult.data.globalSearch.edges[2].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
     expect(eqOrQueryResult.data.globalSearch.edges[3].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     expect(eqOrQueryResult.data.globalSearch.edges[4].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
@@ -2957,8 +2959,9 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(eqQueryResult.data.globalSearch.edges.length).toEqual(1);
     const eqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses'], 'eq', 'or') } });
     expect(eqOrQueryResult.data.globalSearch.edges.length).toEqual(5);
-    expect(eqOrQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--a01046cc-192f-5d52-8e75-6e447fae3890');
-    expect(eqOrQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
+    // Same edges[0]/[1] swap as above: T1369 (5d51528f-...) sorts before T1368 (b7f107ad-...) after #16132.
+    expect(eqOrQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--5d51528f-84fc-575c-a120-1dd45f0836e5');
+    expect(eqOrQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498');
     expect(eqOrQueryResult.data.globalSearch.edges[2].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
     expect(eqOrQueryResult.data.globalSearch.edges[3].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     expect(eqOrQueryResult.data.globalSearch.edges[4].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
