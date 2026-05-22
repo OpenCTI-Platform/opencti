@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, useLocation, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -83,7 +80,12 @@ const feedbackQuery = graphql`
   }
 `;
 
-const RootFeedbackComponent = ({ queryRef, caseId }) => {
+interface RootFeedbackComponentProps {
+  queryRef: PreloadedQuery<RootFeedbackQuery>;
+  caseId: string;
+}
+
+const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootFeedbackSubscription>
   >(
@@ -179,7 +181,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
 };
 
 const Root = () => {
-  const { caseId } = useParams();
+  const { caseId } = useParams() as { caseId: string };
   const queryRef = useQueryLoading<RootFeedbackQuery>(feedbackQuery, {
     id: caseId,
   });

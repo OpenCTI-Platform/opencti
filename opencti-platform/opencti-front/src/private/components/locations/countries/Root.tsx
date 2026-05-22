@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Routes, useParams, useLocation } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
@@ -81,7 +78,12 @@ const countryQuery = graphql`
   }
 `;
 
-const RootCountryComponent = ({ queryRef, countryId }) => {
+interface RootCountryComponentProps {
+  queryRef: PreloadedQuery<RootCountryQuery>;
+  countryId: string;
+}
+
+const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
@@ -186,6 +188,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                 ),
                 sightings: (
                   <EntityStixSightingRelationships
+                    stixCoreObjectTypes={[]} // Check values
                     entityId={country.id}
                     entityLink={link}
                     noPadding={true}

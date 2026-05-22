@@ -1,10 +1,7 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -29,6 +26,8 @@ import { getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { PATH_GROUPING, PATH_GROUPINGS } from '@components/common/routes/paths';
+import type { RootGroupingQuery } from './__generated__/RootGroupingQuery.graphql';
+import type { GroupingKnowledge_grouping$data } from './__generated__/GroupingKnowledge_grouping.graphql';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -106,12 +105,16 @@ const RootGrouping = () => {
   useSubscription(subConfig);
 
   const basePath = PATH_GROUPING(groupingId);
+  const GroupingKnowledgeComponent = GroupingKnowledge as React.ComponentType<{
+    grouping: FragmentRef<GroupingKnowledge_grouping$data>;
+    enableReferences: boolean;
+  }>;
   return (
     <>
       <QueryRenderer
         query={groupingQuery}
         variables={{ id: groupingId }}
-        render={({ props }) => {
+        render={({ props }: { props: RootGroupingQuery['response'] | null }) => {
           if (props) {
             if (props.grouping) {
               const { grouping } = props;
@@ -151,7 +154,7 @@ const RootGrouping = () => {
                       overview:
                         <Grouping grouping={grouping} />,
                       knowledge: (
-                        <GroupingKnowledge
+                        <GroupingKnowledgeComponent
                           grouping={grouping}
                           enableReferences={enableReferences}
                         />

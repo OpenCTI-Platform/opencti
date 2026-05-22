@@ -1,7 +1,3 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
@@ -82,8 +78,6 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityId={threatActorIndividual.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
-              defaultStartTime={threatActorIndividual.startTime}
-              defaultStopTime={threatActorIndividual.stopTime}
               allDirections
             />
           )}
@@ -173,6 +167,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
               entityType={threatActorIndividual.entity_type}
+              disableExport={false}
             />
           )}
         />
@@ -336,9 +331,6 @@ const ThreatActorIndividualKnowledgeComponent = ({
             <EntityStixSightingRelationships
               entityId={threatActorIndividual.id}
               entityLink={link}
-              noRightBar={true}
-              defaultStartTime={threatActorIndividual.first_seen}
-              defaultStopTime={threatActorIndividual.last_seen}
               stixCoreObjectTypes={[
                 'Region',
                 'Country',
@@ -349,6 +341,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
                 'Individual',
                 'System',
               ]}
+              isTo={false}
             />
           )}
         />

@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
@@ -79,7 +76,12 @@ const administrativeAreaQuery = graphql`
   }
 `;
 
-const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => {
+interface RootAdministrativeAreaComponentProps {
+  queryRef: PreloadedQuery<RootAdministrativeAreaQuery>;
+  administrativeAreaId: string;
+}
+
+const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: RootAdministrativeAreaComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
   >(
@@ -187,6 +189,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
+                    stixCoreObjectTypes={[]} // Check
                   />
                 ),
                 files: (

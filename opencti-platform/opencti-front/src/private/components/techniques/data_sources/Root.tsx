@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, useParams, useLocation } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -71,7 +68,12 @@ const dataSourceQuery = graphql`
   }
 `;
 
-const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
+interface RootDataSourceComponentProps {
+  queryRef: PreloadedQuery<RootDataSourceQuery>;
+  dataSourceId: string;
+}
+
+const RootDataSourceComponent = ({ queryRef, dataSourceId }: RootDataSourceComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootDataSourcesSubscription>
   >(
@@ -85,7 +87,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
-  const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
+  const { dataSource, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_DATA_SOURCE(dataSourceId);
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
   return (
@@ -144,9 +146,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
                   element={(
                     <DataSourceKnowledgeComponent
                       data={dataSource}
-                      enableReferences={settings?.platform_enable_reference?.includes(
-                        'Data-Source',
-                      )}
+                      enableReferences={false}
                     />
                   )}
                 />,

@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
@@ -72,7 +69,12 @@ const TaskQuery = graphql`
   }
 `;
 
-const RootTaskComponent = ({ queryRef, taskId }) => {
+interface RootTaskComponentProps {
+  queryRef: PreloadedQuery<RootTaskQuery>;
+  taskId: string;
+}
+
+const RootTaskComponent = ({ queryRef, taskId }: RootTaskComponentProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootTaskSubscription>>(
     () => ({
       subscription,

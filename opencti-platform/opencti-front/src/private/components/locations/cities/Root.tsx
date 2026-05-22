@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
@@ -79,7 +76,12 @@ const cityQuery = graphql`
   }
 `;
 
-const RootCityComponent = ({ queryRef, cityId }) => {
+interface RootCityComponentProps {
+  queryRef: PreloadedQuery<RootCityQuery>;
+  cityId: string;
+}
+
+const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootCitiesSubscription>>(
     () => ({
       subscription,
@@ -182,6 +184,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
+                    stixCoreObjectTypes={[]}
                   />
                 ),
                 files: (

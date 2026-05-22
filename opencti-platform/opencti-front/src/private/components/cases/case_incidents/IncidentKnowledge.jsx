@@ -18,7 +18,7 @@ import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowl
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
 
-class IncidentKnowledgeComponent extends Component {
+export class IncidentKnowledgeComponent extends Component {
   constructor(props) {
     const LOCAL_STORAGE_KEY = `case-incident-knowledge-${props.caseData.id}`;
     super(props);

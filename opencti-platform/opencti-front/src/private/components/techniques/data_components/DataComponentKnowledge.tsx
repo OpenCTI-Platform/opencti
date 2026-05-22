@@ -1,7 +1,4 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -17,7 +14,6 @@ const DataComponentKnowledgeFragment = graphql`
 
 interface DataComponentKnowledgeProps {
   data: DataComponentKnowledge_dataComponent$key;
-  enableReferences: boolean;
 }
 
 const DataComponentKnowledge: FunctionComponent<
