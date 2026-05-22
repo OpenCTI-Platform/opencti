@@ -152,6 +152,53 @@ describe('Workflow Actions Resolver', () => {
     ]));
   });
 
+  it('should not execute actions from draft workflow when not published', async () => {
+    // 1. Create a new workflow with different actions (don't publish)
+    const draftOnlyWorkflow = JSON.stringify({
+      id: 'draft-only-workflow',
+      name: 'Draft Only Workflow',
+      initialState: 'open',
+      states: [
+        { statusId: 'open' },
+        {
+          statusId: 'secret',
+          onEnter: [
+            {
+              type: 'updateAuthorizedMembers',
+              params: {
+                authorized_members: [{ id: ADMIN_USER.id, access_right: 'edit' }],
+              },
+            },
+          ],
+        },
+      ],
+      transitions: [
+        { from: 'open', to: 'secret', event: 'secret_event' },
+      ],
+    });
+
+    // Set but don't publish
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_SET_MUTATION,
+      variables: {
+        entityType: 'DraftWorkspace',
+        definition: draftOnlyWorkflow,
+      },
+    });
+
+    // Try to trigger event - should fail because draft is not published
+    const triggerResult = await queryAsAdmin({
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: {
+        entityId: draftWorkspaceId,
+        eventName: 'secret_event',
+      },
+    });
+
+    // Should fail or not find transition since runtime uses published version
+    expect(triggerResult.data?.triggerWorkflowEvent.success).toBe(false);
+  });
+
   it('should cleanup after tests', async () => {
     await queryAsAdmin({
       query: WORKFLOW_DEFINITION_DELETE_MUTATION,

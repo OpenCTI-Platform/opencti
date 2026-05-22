@@ -23,9 +23,10 @@ const WORKFLOW_DEFINITION_PUBLISH_MUTATION = gql`
 `;
 
 const WORKFLOW_DEFINITION_QUERY = gql`
-  query WorkflowDefinition($entityType: String!) {
-    workflowDefinition(entityType: $entityType) {
+  query WorkflowDefinition($entityType: String!, $allowDraft: Boolean) {
+    workflowDefinition(entityType: $entityType, allowDraft: $allowDraft) {
       name
+      published
       initialState
       states {
         statusId
@@ -433,6 +434,168 @@ describe('Workflow Resolver', () => {
       });
       // May pass or fail depending on draft name, but exercises the code path
       expect(result.data?.triggerWorkflowEvent).toBeDefined();
+    });
+  });
+
+  describe('Workflow Publishing', () => {
+    beforeAll(async () => {
+      // Create a draft by updating the workflow definition
+      const modifiedDefinition = JSON.stringify({
+        id: 'draft-workflow',
+        name: 'Draft Workflow - Before Publish Test',
+        initialState: 'open',
+        states: [{ statusId: 'open' }, { statusId: 'validated' }],
+        transitions: [{
+          from: 'open',
+          to: 'validated',
+          event: 'validate_event',
+          actions: [{ type: 'validateDraft', mode: 'sync' }],
+        }],
+      });
+
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_ADD_MUTATION,
+        variables: {
+          entityType: 'DraftWorkspace',
+          definition: modifiedDefinition,
+        },
+      });
+    });
+
+    it('should publish a workflow definition', async () => {
+      const publishResult = await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+        variables: {
+          entityType: 'DraftWorkspace',
+        },
+      });
+      expect(publishResult.data?.workflowDefinitionPublish.workflow_id).toBeDefined();
+      expect(publishResult.data?.workflowDefinitionPublish.published).toBe(true);
+    });
+
+    it('should query published workflow definition', async () => {
+      const result = await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_QUERY,
+        variables: {
+          entityType: 'DraftWorkspace',
+          allowDraft: false, // Should return published version only
+        },
+      });
+      expect(result.data?.workflowDefinition).toBeDefined();
+      expect(result.data?.workflowDefinition.published).toBe(true);
+    });
+
+    it('should update workflow creating new draft after publish', async () => {
+      const newDefinition = JSON.stringify({
+        id: 'draft-workflow',
+        name: 'Draft Workflow - Modified',
+        initialState: 'open',
+        states: [{ statusId: 'open' }, { statusId: 'validated' }, { statusId: 'closed' }],
+        transitions: [{
+          from: 'open',
+          to: 'validated',
+          event: 'validate_event',
+          actions: [{ type: 'validateDraft', mode: 'sync' }],
+        }],
+      });
+
+      const updateResult = await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_ADD_MUTATION,
+        variables: {
+          entityType: 'DraftWorkspace',
+          definition: newDefinition,
+        },
+      });
+      expect(updateResult.data?.workflowDefinitionSet.workflow_id).toBeDefined();
+    });
+
+    it('should query draft workflow with allowDraft true', async () => {
+      const result = await queryAsAdmin({
+        query: gql`
+          query WorkflowDefinition($entityType: String!, $allowDraft: Boolean) {
+            workflowDefinition(entityType: $entityType, allowDraft: $allowDraft) {
+              name
+              published
+              states {
+                statusId
+              }
+            }
+          }
+        `,
+        variables: {
+          entityType: 'DraftWorkspace',
+          allowDraft: true,
+        },
+      });
+      expect(result.data?.workflowDefinition).toBeDefined();
+      expect(result.data?.workflowDefinition.name).toBe('Draft Workflow - Modified');
+      expect(result.data?.workflowDefinition.published).toBe(false); // Draft differs from published
+      expect(result.data?.workflowDefinition.states.length).toBe(3); // Modified has 3 states
+    });
+
+    it('should use published version for runtime when allowDraft is false', async () => {
+      const result = await queryAsAdmin({
+        query: gql`
+          query WorkflowDefinition($entityType: String!, $allowDraft: Boolean) {
+            workflowDefinition(entityType: $entityType, allowDraft: $allowDraft) {
+              name
+              states {
+                statusId
+              }
+            }
+          }
+        `,
+        variables: {
+          entityType: 'DraftWorkspace',
+          allowDraft: false,
+        },
+      });
+      expect(result.data?.workflowDefinition).toBeDefined();
+      expect(result.data?.workflowDefinition.states.length).toBe(2); // Published has 2 states
+    });
+
+    it('should return validation errors in workflow set response', async () => {
+      const invalidDefinition = JSON.stringify({
+        id: 'invalid-workflow',
+        name: 'Invalid Workflow',
+        initialState: 'open',
+        states: [{ statusId: 'open' }],
+        transitions: [{ from: 'open', to: 'nonexistent', event: 'go' }], // Invalid transition
+      });
+
+      const result = await queryAsAdmin({
+        query: gql`
+          mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
+            workflowDefinitionSet(entityType: $entityType, definition: $definition) {
+              id
+              published
+              errors {
+                type
+                message
+              }
+            }
+          }
+        `,
+        variables: {
+          entityType: 'DraftWorkspace',
+          definition: invalidDefinition,
+        },
+      });
+      expect(result.data?.workflowDefinitionSet.errors).toBeDefined();
+      expect(result.data?.workflowDefinitionSet.errors.length).toBeGreaterThan(0);
+      expect(result.data?.workflowDefinitionSet.published).toBe(false);
+    });
+
+    it('should fail to publish workflow with validation errors', async () => {
+      // Try to publish the invalid workflow from previous test
+      const publishResult = await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+        variables: {
+          entityType: 'DraftWorkspace',
+        },
+      });
+      expect(publishResult.errors).toBeDefined();
+      expect(publishResult.errors?.[0].message).toContain('validation errors');
     });
   });
 });

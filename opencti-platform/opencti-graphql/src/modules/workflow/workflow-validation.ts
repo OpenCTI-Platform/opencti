@@ -33,7 +33,7 @@ export const workflowFilterGroupSchema: z.ZodType<any> = z.lazy(() => z.object({
 }));
 
 export const workflowConditionConfigSchema = z.object({
-  filters: workflowFilterGroupSchema,
+  filters: workflowFilterGroupSchema.optional(),
 });
 
 export const workflowSerializedStateSchema = z.object({
@@ -47,9 +47,9 @@ export const workflowSerializedTransitionSchema = z.object({
   from: z.union([z.string().max(255), z.array(z.string().max(255))]).nullable(),
   to: z.string().max(255).nullable(),
   event: z.string().max(255),
-  comment: z.enum(['disabled', 'allowed', 'required']).optional(),
   actions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
+  comment: z.enum(['allowed', 'required', 'disabled']).optional(),
 });
 
 export const workflowDefinitionSchema = z.object({
@@ -140,7 +140,7 @@ export const validateWorkflowDefinitionData = async (
     const existingWorkflows = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_DEFINITION]);
     const conflict = existingWorkflows.find((workflow) =>
       workflow.id !== existingWorkflowId
-      && (workflow.id === id || workflow.name === id || (typeof workflow.workflow_content === 'string' && workflow.workflow_content.includes(`"id":"${id}"`))),
+      && (workflow.id === id || workflow.name === id || (typeof workflow.draft_version?.content === 'string' && workflow.draft_version.content.includes(`"id":"${id}"`))),
     );
     if (conflict) {
       errors.push({
@@ -264,7 +264,8 @@ export const validateWorkflowDefinitionData = async (
   const stateIdsArray = Array.from(stateIdsToCheck);
   if (stateIdsArray.length > 0) {
     const templates = await storeLoadByIds(context, user, stateIdsArray, ENTITY_TYPE_STATUS_TEMPLATE);
-    const foundIds = new Set(templates.map((template: any) => template.id));
+    // storeLoadByIds returns undefined entries for IDs not found — filter them out before mapping
+    const foundIds = new Set(templates.filter((t) => t != null).map((template: any) => template.id));
     for (const stateId of stateIdsArray) {
       if (!foundIds.has(stateId)) {
         errors.push({
@@ -280,9 +281,9 @@ export const validateWorkflowDefinitionData = async (
     if (existingWorkflow) {
       let oldDefinitionData;
       try {
-        oldDefinitionData = typeof existingWorkflow.workflow_content === 'string'
-          ? JSON.parse(existingWorkflow.workflow_content)
-          : existingWorkflow.workflow_content;
+        oldDefinitionData = existingWorkflow.draft_version?.content
+          ? JSON.parse(existingWorkflow.draft_version.content)
+          : null;
       } catch (_) {
         oldDefinitionData = null;
       }

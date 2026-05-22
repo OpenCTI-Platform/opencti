@@ -390,19 +390,11 @@ export const publishWorkflowDefinition = async (
   }
 
   // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
-  // Copy draft_version to published_version
-  // If they're identical, clear draft_version to avoid confusion
+  // Copy draft_version to published_version and clear the draft (no more unpublished changes).
   const updates: any[] = [
     { key: 'published_version', value: [draftVersion] },
+    { key: 'draft_version', value: [] },
   ];
-
-  // Check if published and draft will be identical - if so, clear draft
-  const publishedVersion = workflowDefinitionEntity.published_version;
-  const contentMatches = publishedVersion && publishedVersion.content === draftVersion.content;
-  if (contentMatches) {
-    // Clear draft_version when it matches published to avoid confusion
-    updates.push({ key: 'draft_version', value: [] });
-  }
 
   await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
 
@@ -467,7 +459,7 @@ export const getAllowedTransitions = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
-): Promise<Array<{ event: string; toState: string; actions: string[] }>> => {
+): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[] }>> => {
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
