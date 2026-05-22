@@ -20,7 +20,7 @@ export type Status = {
 };
 
 export enum CommentMode {
-  disable = 'disable',
+  disabled = 'disabled',
   allowed = 'allowed',
   required = 'required',
 }

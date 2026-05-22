@@ -199,17 +199,17 @@ describe('Workflow Validation – transition comment field', () => {
     expect(result.transitions[0].comment).toBe('required');
   });
 
-  it('should pass when transition has a valid comment mode: disable', async () => {
+  it('should pass when transition has a valid comment mode: disabled', async () => {
     const definition = {
       initialState: 'existing-state',
       states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
       transitions: [
-        { from: 'existing-state', to: 'in-progress', event: 'start', comment: 'disable' },
+        { from: 'existing-state', to: 'in-progress', event: 'start', comment: 'disabled' },
       ],
     };
 
     const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
-    expect(result.transitions[0].comment).toBe('disable');
+    expect(result.transitions[0].comment).toBe('disabled');
   });
 
   it('should fail when transition comment mode is invalid', async () => {

@@ -82,7 +82,7 @@ export const useWorkflowInitialElements = (
           event,
           conditions,
           actions: parseActions(actions),
-          comment: (comment ?? CommentMode.disable) as CommentModeType,
+          comment: (comment ?? CommentMode.disabled) as CommentModeType,
         },
         position: { x: 0, y: 0 },
       }));

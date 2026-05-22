@@ -123,7 +123,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
               <li>
                 {conditionAndActions}
               </li>
-              {data.comment && data.comment !== CommentMode.disable && (
+              {data.comment && data.comment !== CommentMode.disabled && (
                 <li>
                   {data.comment === CommentMode.required ? t_i18n('comment required') : t_i18n('comment allowed')}
                 </li>

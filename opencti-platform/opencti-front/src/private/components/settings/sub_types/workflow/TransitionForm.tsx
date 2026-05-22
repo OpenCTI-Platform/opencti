@@ -14,12 +14,12 @@ const TransitionForm = () => {
   const hasUpdateAuthorizedMembers = values.actions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasValidateDraft = values.actions?.some((a) => a.type === WorkflowActionType.validateDraft);
 
-  const commentMode: CommentModeType = values.comment ?? CommentMode.disable;
-  const enableComments = commentMode !== CommentMode.disable;
+  const commentMode: CommentModeType = values.comment ?? CommentMode.disabled;
+  const enableComments = commentMode !== CommentMode.disabled;
   const requireComments = commentMode === CommentMode.required;
 
   const handleToggleEnableComments = (checked: boolean) => {
-    setFieldValue('comment', checked ? CommentMode.allowed : CommentMode.disable);
+    setFieldValue('comment', checked ? CommentMode.allowed : CommentMode.disabled);
   };
 
   const handleToggleRequireComments = (checked: boolean) => {

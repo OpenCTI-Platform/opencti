@@ -61,7 +61,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 describe('TransitionNode – comment label', () => {
   it('shows nothing when comment is "disable"', () => {
-    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.disable })} />);
+    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.disabled })} />);
     expect(screen.queryByText(/comment/i)).toBeNull();
   });
 
