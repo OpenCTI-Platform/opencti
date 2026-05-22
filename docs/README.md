@@ -22,7 +22,7 @@ Install dependencies
 pip install -r requirements.txt
 ```
 
-Launch the local environment:
+Run local server with hot-reload:
 
 ```sh
 mkdocs serve
@@ -33,7 +33,12 @@ It should display the following output in the terminal:
 > Starting server at http://localhost:8000/
 ```
 
-⚠️ Make sure to always build the documentation locally and check for errors and warnings in the terminal output, as they can indicate issues with the formatting of the documentation.
+⚠️ Make sure to always build the documentation locally before submitting a pull request, and check for errors and warnings in the terminal output,as they can indicate issues with the formatting of the documentation.
+
+```sh
+mkdocs build
+```
+
 
 ## Contribute
 
@@ -104,5 +109,3 @@ With the right version number (eg. 5.7.X), update the `latest` tag:
 ```sh
 mike deploy --push --update-aliases [version] latest
 ```
-
-
