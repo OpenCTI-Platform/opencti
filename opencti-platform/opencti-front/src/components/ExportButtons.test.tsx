@@ -13,8 +13,12 @@ vi.mock('../utils/Image', () => ({
 }));
 
 // Mock MESSAGING$ so we can assert error notifications
+// Use a Proxy for environment so any method call (retain, check, etc.) is auto-mocked
 vi.mock('../relay/environment', () => ({
   MESSAGING$: { notifyError: vi.fn() },
+  environment: new Proxy({}, {
+    get: () => vi.fn(() => ({ dispose: vi.fn() })),
+  }),
 }));
 
 // Minimal ExportThemeContext mock
