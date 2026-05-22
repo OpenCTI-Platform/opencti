@@ -16,7 +16,7 @@ import withTheme from '@mui/styles/withTheme';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -172,7 +172,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                       overflow: 'visible',
                     }}
                   >
-                    <SecurityCoverageInformation
+                    <SecurityCoverageScores
                       coverage_information={node.coverage_information || null}
                       variant="header"
                     />

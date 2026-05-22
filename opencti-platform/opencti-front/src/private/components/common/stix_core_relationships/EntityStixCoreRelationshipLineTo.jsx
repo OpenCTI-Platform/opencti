@@ -23,7 +23,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
-import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
@@ -176,7 +176,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                       overflow: 'visible',
                     }}
                   >
-                    <SecurityCoverageInformation
+                    <SecurityCoverageScores
                       coverage_information={node.coverage_information || null}
                       variant="header"
                     />

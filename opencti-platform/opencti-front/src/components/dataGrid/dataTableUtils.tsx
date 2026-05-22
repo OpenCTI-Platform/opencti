@@ -6,7 +6,7 @@ import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
-import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps } from './dataTableTypes';
@@ -311,7 +311,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ coverage_information }) => {
       return (
-        <SecurityCoverageInformation
+        <SecurityCoverageScores
           coverage_information={coverage_information}
         />
       );
