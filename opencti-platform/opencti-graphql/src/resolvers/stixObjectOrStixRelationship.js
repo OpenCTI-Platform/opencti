@@ -24,7 +24,7 @@ const stixObjectOrStixRelationshipResolvers = {
     x_opencti_stix_ids: (object) => onlyStableStixIds(object.x_opencti_stix_ids || []),
   },
   StixObjectOrStixRelationship: {
-    // eslint-disable-next-line
+
     __resolveType(obj) {
       if (STIX_REF_RELATIONSHIP_TYPES.some((type) => obj.parent_types.includes(type))) {
         return 'StixRefRelationship';
