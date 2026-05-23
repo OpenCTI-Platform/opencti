@@ -15,7 +15,7 @@ html[data-theme="fluent"] {
       // color: var(--fluent-color-primary);
     }
   }
-  .MuiFormControlLabel-root{
+  .MuiFormControlLabel-root {
     margin-left: 0 !important;
   }
   .MuiTab-root {
@@ -279,6 +279,32 @@ html[data-theme="fluent"] {
       }
       + .MuiSwitch-track {
         display: none !important;
+      }
+    }
+  }
+  &[dir="rtl"] {
+    .MuiFormLabel-root {
+      text-align: right;
+    }
+    .MuiSwitch-root {
+      margin-right: 0;
+      margin-left: 8px;
+    }
+    .mui-style-rtl-zrw16i-MuiPaper-root-MuiDrawer-paper {
+      background: linear-gradient(
+        100deg,
+        rgb(236, 236, 242) 0%,
+        rgb(255, 255, 255) 100%
+      );
+    }
+    .ReactVirtualized__Grid__innerScrollContainer {
+      div[role="gridcell"] {
+        direction: rtl;
+        .MuiListItemIcon-root:nth-child(4) {
+          left: 10px;
+          right: auto;
+          transform: rotate(180deg);
+        }
       }
     }
   }

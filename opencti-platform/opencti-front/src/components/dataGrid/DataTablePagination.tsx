@@ -161,7 +161,7 @@ const DataTablePagination = ({
             minWidth: 24,
           }}
         >
-          <ArrowLeft />
+          <ArrowLeft name="arrow-left-icon" />
         </IconButton>
         <Tooltip
           title={(
