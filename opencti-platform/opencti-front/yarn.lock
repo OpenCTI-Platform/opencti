@@ -11837,9 +11837,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-to-jsx@npm:9.8.0":
-  version: 9.8.0
-  resolution: "markdown-to-jsx@npm:9.8.0"
+"markdown-to-jsx@npm:9.8.1":
+  version: 9.8.1
+  resolution: "markdown-to-jsx@npm:9.8.1"
   peerDependencies:
     react: ">= 16.0.0"
     solid-js: ">=1.0.0"
@@ -11853,7 +11853,7 @@ __metadata:
       optional: true
     vue:
       optional: true
-  checksum: 10c0/5a85a79625fb81fe67a0b5b48d61387c0bd02173d4d7bf33530d02c6cea35326d16ff1547a77a12b6702b5b9587d8b42245a9fff283fc58d59e3646b0e8b69ad
+  checksum: 10c0/72bca3e015b839695e44978381708cd855536a1a1c1c6c1cd5f16e8278cc2b15ac4d6ef822c92797f17d25d1750b2919e7ffda8b0375510d451d7cbb61f80dea
   languageName: node
   linkType: hard
 
@@ -13197,7 +13197,7 @@ __metadata:
     knip: "npm:6.14.0"
     leaflet: "npm:1.9.4"
     license-checker-rseidelsohn: "npm:4.4.2"
-    markdown-to-jsx: "npm:9.8.0"
+    markdown-to-jsx: "npm:9.8.1"
     marked: "npm:18.0.3"
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
