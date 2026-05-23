@@ -255,8 +255,11 @@ class CourseOfAction:
         :return: STIX ID for the course of action
         :rtype: str
         """
-        if x_mitre_id is not None:
-            data = {"x_mitre_id": x_mitre_id.lower().strip()}
+        normalized_mitre_id = (
+            x_mitre_id.lower().strip() if x_mitre_id is not None else ""
+        )
+        if normalized_mitre_id:
+            data = {"x_mitre_id": normalized_mitre_id}
         else:
             data = {"name": name.lower().strip()}
         data = canonicalize(data, utf8=False)

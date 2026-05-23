@@ -194,7 +194,20 @@ describe('identifier', () => {
 
     const coaUpper = generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'M1056' });
     const coaLower = generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'm1056' });
+    const coaPadded = generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: '  M1056  ' });
     expect(coaLower).toEqual(coaUpper);
+    expect(coaPadded).toEqual(coaUpper);
+
+    // Whitespace-only x_mitre_id normalizes to an empty string and is filtered out by
+    // filteredIdContributions, so the standard id falls back to name. The python client
+    // (AttackPattern.generate_id / CourseOfAction.generate_id) mirrors this behaviour to
+    // keep client/server ids aligned.
+    const apFromName = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack' });
+    const apFromBlankMitreId = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: '   ', name: 'attack' });
+    expect(apFromBlankMitreId).toEqual(apFromName);
+    const coaFromName = generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { name: 'Name' });
+    const coaFromBlankMitreId = generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: '   ', name: 'Name' });
+    expect(coaFromBlankMitreId).toEqual(coaFromName);
   });
 
   it('should file and mutex id remain case-sensitive', () => {
