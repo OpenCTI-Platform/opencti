@@ -1,7 +1,6 @@
 import { deepPurple, green, indigo, red } from '@mui/material/colors';
 import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
 import React from 'react';
-import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
 
 export const colors: Record<string, string> = {
   none: green[500],
@@ -11,11 +10,65 @@ export const colors: Record<string, string> = {
   multiple: indigo[500],
 };
 
-export const getFirstOperation = ({ notification_content, notification_type }: Pick<NotificationsLine_node$data, 'notification_content' | 'notification_type'>) => {
+export const getFirstOperation = ({ notification_content, notification_type }: {
+  notification_content: ReadonlyArray<{
+    events: ReadonlyArray<{ operation?: string | null }>;
+  }>;
+  notification_type: string;
+}) => {
   const events = notification_content.map((n) => n.events).flat();
   const firstEvent = events.at(0);
   const isDigest = notification_type === 'digest';
   return isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
+};
+
+export type NotificationContentShape = {
+  notification_content: ReadonlyArray<{
+    title?: string | null;
+    events: ReadonlyArray<{
+      message?: string | null;
+      instance_id?: string | null;
+      operation?: string | null;
+    }>;
+  }>;
+  notification_type: string;
+  name?: string | null;
+};
+
+export type NotificationViewTarget =
+  | { type: 'entity'; instanceId: string }
+  | { type: 'notifications' };
+
+export const getNotificationViewTarget = (
+  notification: NotificationContentShape,
+): NotificationViewTarget => {
+  const events = notification.notification_content.flatMap((content) => content.events);
+  const isDigest = events.length > 1 || notification.notification_type === 'digest';
+  if (isDigest) {
+    return { type: 'notifications' };
+  }
+  const firstEvent = events.at(0);
+  const firstOperation = getFirstOperation(notification);
+  if (
+    events.length === 1
+    && firstEvent?.instance_id
+    && firstOperation !== 'delete'
+  ) {
+    return { type: 'entity', instanceId: firstEvent.instance_id };
+  }
+  return { type: 'notifications' };
+};
+
+export const getNotificationToastTitle = (notification: NotificationContentShape) => (
+  notification.notification_content[0]?.title ?? notification.name ?? ''
+);
+
+export const getNotificationToastMessage = (notification: NotificationContentShape) => {
+  const events = notification.notification_content.flatMap((content) => content.events);
+  if (events.length > 1) {
+    return null;
+  }
+  return events.at(0)?.message ?? notification.name ?? '';
 };
 
 export const iconSelector = (operation: string) => {
