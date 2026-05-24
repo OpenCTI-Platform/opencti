@@ -11,6 +11,7 @@ import { Box, Checkbox, FormControlLabel, Stack, Typography } from '@mui/materia
 import { useLoginContext } from './loginContext';
 import { ResetPwdStep } from './ResetPassword';
 import { useEffect, useState } from 'react';
+import { loginFieldSx, LOGIN_BRAND_COLOR } from './loginStyles';
 
 const REMEMBER_EMAIL_KEY = 'resaactip_remember_email';
 
@@ -28,41 +29,6 @@ interface LoginFormValues {
 interface RelayResponseError extends Error {
   res?: RelayResponsePayload;
 }
-
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '8px',
-    backgroundColor: '#FFFFFF',
-    '& fieldset': {
-      borderColor: '#E5E7EB',
-    },
-    '&:hover fieldset': {
-      borderColor: '#D1D5DB',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#533DE4',
-    },
-  },
-  '& .MuiInputLabel-root': {
-    position: 'static',
-    transform: 'none',
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#374151',
-    mb: 0.75,
-  },
-  '& .MuiInputLabel-shrink': {
-    transform: 'none',
-  },
-  '& .MuiInputBase-root': {
-    mt: 0,
-    color: '#111827',
-  },
-  '& .MuiInputBase-input': {
-    color: '#111827',
-    WebkitTextFillColor: '#111827',
-  },
-};
 
 const LoginForm = () => {
   const { t_i18n } = useFormatter();
@@ -132,7 +98,7 @@ const LoginForm = () => {
               fullWidth={true}
               variant="outlined"
               InputLabelProps={{ shrink: true }}
-              sx={fieldSx}
+              sx={loginFieldSx}
               onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
                 setValue('email', e.currentTarget.value);
               }}
@@ -145,7 +111,7 @@ const LoginForm = () => {
               fullWidth={true}
               variant="outlined"
               InputLabelProps={{ shrink: true }}
-              sx={fieldSx}
+              sx={loginFieldSx}
             />
 
             <FormControlLabel
@@ -157,7 +123,7 @@ const LoginForm = () => {
                   sx={{
                     color: '#D1D5DB',
                     '&.Mui-checked': {
-                      color: '#533DE4',
+                      color: LOGIN_BRAND_COLOR,
                     },
                   }}
                 />
@@ -178,17 +144,17 @@ const LoginForm = () => {
                 mt: 0.5,
                 py: 1.25,
                 borderRadius: '8px',
-                backgroundColor: '#533DE4',
-                color: '#FFFFFF',
+                backgroundColor: `${LOGIN_BRAND_COLOR} !important`,
+                color: '#FFFFFF !important',
                 fontWeight: 600,
                 fontSize: 15,
                 textTransform: 'none',
                 '&:hover': {
-                  backgroundColor: '#4330C4',
+                  backgroundColor: '#4330C4 !important',
                 },
                 '&.Mui-disabled': {
-                  backgroundColor: '#C4B5FD',
-                  color: '#FFFFFF',
+                  backgroundColor: '#C4B5FD !important',
+                  color: '#FFFFFF !important',
                 },
               }}
             >
@@ -200,7 +166,7 @@ const LoginForm = () => {
                 variant="tertiary"
                 onClick={goToResetPwd}
                 sx={{
-                  color: '#533DE4',
+                  color: `${LOGIN_BRAND_COLOR} !important`,
                   fontSize: 14,
                   textTransform: 'none',
                   p: 0,
@@ -208,6 +174,7 @@ const LoginForm = () => {
                   '&:hover': {
                     backgroundColor: 'transparent',
                     textDecoration: 'underline',
+                    color: `${LOGIN_BRAND_COLOR} !important`,
                   },
                 }}
               >
