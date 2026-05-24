@@ -75,7 +75,6 @@ const NationalRiskScoreCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -268,7 +267,6 @@ const MttdCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -428,7 +426,6 @@ const MtcrCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },

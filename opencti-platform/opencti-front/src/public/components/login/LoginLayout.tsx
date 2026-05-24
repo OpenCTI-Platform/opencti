@@ -1,13 +1,13 @@
-import { Box, Stack, Typography } from '@mui/material';
-import { PropsWithChildren } from 'react';
-import SystemBanners from '../SystemBanners';
-import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
-import LoginLogo from './LoginLogo';
-
-const LOGIN_ASIDE_COLOR = '#1A2D7A';
+import { Box, Stack, Typography } from "@mui/material";
+import { PropsWithChildren } from "react";
+import SystemBanners from "../SystemBanners";
+import { LoginRootPublicQuery$data } from "../../__generated__/LoginRootPublicQuery.graphql";
+import LoginLogo from "./LoginLogo";
+import SolarSystemAnimation from "./SolarSystemAnimation";
+import { loginPanelSx } from "./loginStyles";
 
 interface LoginLayoutProps extends PropsWithChildren {
-  settings: LoginRootPublicQuery$data['publicSettings'];
+  settings: LoginRootPublicQuery$data["publicSettings"];
 }
 
 const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
@@ -20,11 +20,12 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
         <Box
           flex={3}
           sx={{
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: '#FFFFFF',
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
             minWidth: 0,
+            zIndex: 10,
+            ...loginPanelSx,
           }}
         >
           <Box sx={{ p: 4, pb: 0 }}>
@@ -43,10 +44,10 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
           <Typography
             variant="body2"
             sx={{
-              position: 'absolute',
+              position: "absolute",
               bottom: 24,
               left: 32,
-              color: '#9CA3AF',
+              color: "#9CA3AF",
               fontSize: 13,
             }}
           >
@@ -57,10 +58,13 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
         <Box
           flex={2}
           sx={{
-            backgroundColor: LOGIN_ASIDE_COLOR,
             minWidth: 0,
+            position: 'relative',
+            background: 'linear-gradient(90.12deg, #533DE4 0.11%, #533DE4 99.9%)',
           }}
-        />
+        >
+          <SolarSystemAnimation />
+        </Box>
       </Stack>
     </>
   );
