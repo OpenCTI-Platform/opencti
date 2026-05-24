@@ -8,7 +8,6 @@ import AlertLogout from './AlertLogout';
 import AlertFlashError from './AlertFlashError';
 import ConsentMessage from './ConsentMessage';
 import LoginLayout from './LoginLayout';
-import Card from '../../../components/common/card/Card';
 import { Stack, Typography } from '@mui/material';
 import LoginMarkdown from './LoginMarkdown';
 import AlertValidateOtp from './AlertValidateOtp';
@@ -34,7 +33,6 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
   const handleChange = () => {
     setChecked(!checked);
-    // Auto scroll to bottom of unhidden/re-hidden login options.
     window.setTimeout(() => {
       const scrollingElement = document.scrollingElement ?? document.body;
       scrollingElement.scrollTop = scrollingElement.scrollHeight;
@@ -46,7 +44,31 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
   return (
     <LoginLayout settings={settings}>
-      <Stack gap={1} sx={{ width: 500 }}>
+      <Stack gap={3} sx={{ width: '100%', maxWidth: 420 }}>
+        <Stack gap={1}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: '#111827',
+              fontSize: 28,
+              lineHeight: 1.3,
+            }}
+          >
+            {t_i18n('Welcome to ResaaCTIP')}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: '#6B7280',
+              fontSize: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            {t_i18n('Enter your username and password to access your account')}
+          </Typography>
+        </Stack>
+
         <ConsentMessage
           value={checked}
           data={settings}
@@ -60,15 +82,13 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
         <AlertMfa />
 
         {providers.length === 0 && (
-          <Card>
-            <Typography textAlign="center" variant="body2">
-              {t_i18n('No authentication provider available')}
-            </Typography>
-          </Card>
+          <Typography textAlign="center" variant="body2">
+            {t_i18n('No authentication provider available')}
+          </Typography>
         )}
 
         {!!loginMessage && (
-          <Typography textAlign="center" variant="body2">
+          <Typography variant="body2">
             <LoginMarkdown sx={{ mb: 2 }}>
               {loginMessage}
             </LoginMarkdown>
@@ -79,17 +99,10 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
           && providers.filter((p) => p.type === 'FORM').length > 0
           && (showLoginForm || !!resetPwdStep)
           && (
-            <Card
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div style={{ minHeight: 170 }}>
-                {!!resetPwdStep && <ResetPassword />}
-                {showLoginForm && <LoginForm />}
-              </div>
-            </Card>
+            <div>
+              {!!resetPwdStep && <ResetPassword />}
+              {showLoginForm && <LoginForm />}
+            </div>
           )}
 
         <ExternalAuths

@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import TextFieldPageModel from '../field/TextField.pageModel';
 
 export default class LoginFormPageModel {
-  nameField = new TextFieldPageModel(this.page, 'Login', 'text');
+  nameField = new TextFieldPageModel(this.page, 'Username', 'text');
   passwordField = new TextFieldPageModel(this.page, 'Password', 'text');
 
   constructor(private page: Page) {}
@@ -12,7 +12,7 @@ export default class LoginFormPageModel {
   }
 
   getSignInButton() {
-    return this.page.getByRole('button', { name: 'Sign in' });
+    return this.page.getByRole('button', { name: 'Login' });
   }
 
   async login(name?: string, pwd?: string) {
