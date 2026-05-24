@@ -307,5 +307,11 @@ html[data-theme="fluent"] {
         }
       }
     }
+    svg[name="arrow-right-icon"] {
+      transform: rotate(180deg);
+    }
+    svg[name="arrow-left-icon"] {
+      transform: rotate(180deg);
+    }
   }
 }

@@ -194,7 +194,7 @@ const DataTablePagination = ({
           disabled={lastItem === numberOfElements.original}
           style={{ paddingInlineStart: 0, paddingInlineEnd: 0, minWidth: 24 }}
         >
-          <ArrowRight />
+          <ArrowRight name="arrow-right-icon" />
         </IconButton>
       </ButtonGroup>
       <Suspense>

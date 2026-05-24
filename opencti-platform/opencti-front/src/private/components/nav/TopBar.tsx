@@ -244,11 +244,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
-                  {
+                  {/* {
                     filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
                       <AskArianeButton />
                     )
-                  }
+                  } */}
 
                   {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
                   <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
