@@ -120,7 +120,8 @@ import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
-
+import LogoResaaCtip from '../../../static/images/rctip-logo-text.svg';
+import LogoResaaCtipIcon from '../../../static/images/rctip-logo-icon.svg';
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
 
@@ -264,7 +265,7 @@ const LeftBarComponent = ({ queryRef }) => {
 
   const navOpenLogo = draftContext ? LogoTextOrange : theme.logo;
   const navCloseLogo = draftContext ? LogoCollapsedOrange : theme.logo_collapsed;
-  let logo = navOpen ? navOpenLogo : navCloseLogo;
+  let logo = navOpen ? LogoResaaCtip : LogoResaaCtipIcon;
 
   const addMenuUnique = (menu) => {
     const joined = selectedMenu.concat(menu);
@@ -439,7 +440,7 @@ const LeftBarComponent = ({ queryRef }) => {
     >
       <LeftBarHeader
         logo={logo}
-        logoCollapsed={navCloseLogo}
+        logoCollapsed={LogoResaaCtipIcon}
         navOpen={navOpen}
         bannerHeightNumber={bannerHeightNumber}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}

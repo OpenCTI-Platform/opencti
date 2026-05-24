@@ -159,7 +159,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           }}
         />
 
-        {navOpen && (
+        {/* {navOpen && (
           <IconButton
             color={draftContext ? 'warn' : 'default'}
             onClick={handleClickPopover}
@@ -171,7 +171,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
               }}
             />
           </IconButton>
-        )}
+        )} */}
       </Box>
 
       <Popover
