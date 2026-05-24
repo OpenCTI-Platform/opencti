@@ -230,7 +230,6 @@ const HighConfidenceCampaignsCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -240,7 +239,6 @@ const HighConfidenceCampaignsCard: React.FC = () => {
         labels: {
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
           },
         },
         axisBorder: { show: false },
@@ -421,7 +419,6 @@ const ResourceAllocationCard: React.FC = () => {
         labels: {
           style: {
             fontSize: '9px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -499,7 +496,6 @@ const ResourceAllocationCard: React.FC = () => {
         labels: {
           style: {
             fontSize: '9px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },

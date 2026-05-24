@@ -83,7 +83,6 @@ const NationalThreatHeatmapCard: React.FC = () => {
       enabled: true,
       style: {
         fontSize: '12px',
-        fontFamily: '"IBM Plex Sans", sans-serif',
       },
     },
     legend: {
@@ -270,7 +269,6 @@ const TargetedIndustriesCard: React.FC = () => {
       style: {
         fontSize: '14px',
         fontWeight: '700',
-        fontFamily: '"IBM Plex Sans", sans-serif',
         colors: ['#fff'],
       },
     },

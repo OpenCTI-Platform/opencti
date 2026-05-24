@@ -234,7 +234,6 @@ const ThemeLight = (
     overflowColor: primary || THEME_LIGHT_DEFAULT_PRIMARY,
   },
   typography: {
-    fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
       fontSize: '0.8rem',
       lineHeight: '1.2rem',
@@ -576,15 +575,12 @@ const ThemeLight = (
             color: `${text_color} !important`,
           },
           '.mde-header-item button': {
-            fontFamily: '"IBM Plex Sans", sans-serif',
             color: `${text_color} !important`,
           },
           '.mde-tabs button': {
-            fontFamily: '"IBM Plex Sans", sans-serif',
             color: `${text_color} !important`,
           },
           '.mde-textarea-wrapper textarea': {
-            fontFamily: '"IBM Plex Sans", sans-serif',
             fontSize: 13,
             color: `${text_color} !important`,
             background: 'transparent',

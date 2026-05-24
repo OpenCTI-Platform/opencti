@@ -65,7 +65,6 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
         horizontalAlign: 'center',
         floating: false,
         fontSize: '12px',
-        fontFamily: '"IBM Plex Sans", sans-serif',
         fontColor: theme.palette.text?.primary,
         labels: {
           colors: theme.palette.text?.primary,
@@ -98,7 +97,6 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
               name: {
                 show: true,
                 fontSize: '14px',
-                fontFamily: '"IBM Plex Sans", sans-serif',
                 fontWeight: 400,
                 color: theme.palette.text?.secondary || '#757575',
                 offsetY: -10,
@@ -107,7 +105,6 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
               value: {
                 show: true,
                 fontSize: '24px',
-                fontFamily: '"IBM Plex Sans", sans-serif',
                 fontWeight: 600,
                 color: theme.palette.text?.primary || '#212121',
                 offsetY: 10,
@@ -118,7 +115,6 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
                 showAlways: true,
                 label: t_i18n('Total'),
                 fontSize: '14px',
-                fontFamily: '"IBM Plex Sans", sans-serif',
                 fontWeight: 400,
                 color: theme.palette.text?.secondary || '#757575',
                 formatter: () => total.toLocaleString(),

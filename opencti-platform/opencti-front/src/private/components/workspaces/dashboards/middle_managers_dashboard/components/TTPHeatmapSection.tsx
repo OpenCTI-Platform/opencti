@@ -97,7 +97,6 @@ const TTPHeatmapSection: React.FC = () => {
         rotateAlways: true,
         style: {
           fontSize: '9px',
-          fontFamily: '"IBM Plex Sans", sans-serif',
           colors: theme.palette.text.secondary,
         },
       },
@@ -108,7 +107,6 @@ const TTPHeatmapSection: React.FC = () => {
       labels: {
         style: {
           fontSize: '9px',
-          fontFamily: '"IBM Plex Sans", sans-serif',
         },
       },
     },
