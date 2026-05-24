@@ -11,7 +11,8 @@ import TreatActorIcon from './icons/TreatActorIcon';
 import AutomationIcon from './icons/AutomationIcon';
 import NotificationIcon from './icons/NotificationChannelsIcon';
 import ReportIcon from './icons/ReportIcon';
-import circles from './images/Circles.png'
+import { fileUri } from '../../../relay/environment';
+import Circles from '../../../static/images/Circles.png';
 interface PlanetPosition {
   top?: string | number;
   bottom?: string | number;
@@ -154,7 +155,7 @@ const SolarSystemAnimation = ({ sx }: { sx?: SxProps<Theme> }) => {
         justifyContent: 'center',
         overflow: 'hidden',
         left: '-100%',
-        backgroundImage: `url(${circles})`,
+        backgroundImage: `url(${fileUri(Circles)})`,
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         ...sx,
