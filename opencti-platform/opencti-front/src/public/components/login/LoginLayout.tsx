@@ -18,7 +18,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
       <SystemBanners settings={settings} />
       <Stack data-testid="login-page" direction="row" height="100%">
         <Box
-          flex={3}
+          flex={2}
           sx={{
             position: "relative",
             display: "flex",
@@ -56,7 +56,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
         </Box>
 
         <Box
-          flex={2}
+          flex={1}
           sx={{
             minWidth: 0,
             position: 'relative',

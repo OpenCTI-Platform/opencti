@@ -134,7 +134,7 @@ const SolarSystemAnimation = ({ sx }: { sx?: SxProps<Theme> }) => {
       }
       @keyframes counterRotate {
         from { transform: rotate(0deg); }
-        to   { transform: rotate(-360deg); }
+        to   { transform: rotate(360deg); }
       }
     `;
     document.head.appendChild(style);
@@ -203,7 +203,7 @@ const SolarSystemAnimation = ({ sx }: { sx?: SxProps<Theme> }) => {
               <Box
                 className="planet-icon"
                 sx={{
-                  animation: `counterRotate ${orbit.duration}s linear infinite`,
+                  animation: 'counterRotate 10s linear infinite',
                 }}
               >
                 {planet.icon}
