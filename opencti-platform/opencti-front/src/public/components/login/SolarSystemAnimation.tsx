@@ -134,7 +134,7 @@ const SolarSystemAnimation = ({ sx }: { sx?: SxProps<Theme> }) => {
       }
       @keyframes counterRotate {
         from { transform: rotate(0deg); }
-        to   { transform: rotate(360deg); }
+        to   { transform: rotate(-360deg); }
       }
     `;
     document.head.appendChild(style);
@@ -155,12 +155,21 @@ const SolarSystemAnimation = ({ sx }: { sx?: SxProps<Theme> }) => {
         justifyContent: 'center',
         overflow: 'hidden',
         left: '-100%',
-        backgroundImage: `url(${fileUri(Circles)})`,
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
         ...sx,
       }}
     >
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        <img src={fileUri(Circles)} style={{ animation: `counterRotate 40s linear infinite` }} alt="Circles" />
+      </Box>
       <Box
         sx={{
           position: 'absolute',
@@ -203,7 +212,7 @@ const SolarSystemAnimation = ({ sx }: { sx?: SxProps<Theme> }) => {
               <Box
                 className="planet-icon"
                 sx={{
-                  animation: 'counterRotate 10s linear infinite',
+                  animation: `counterRotate ${orbit.duration}s linear infinite`,
                 }}
               >
                 {planet.icon}
