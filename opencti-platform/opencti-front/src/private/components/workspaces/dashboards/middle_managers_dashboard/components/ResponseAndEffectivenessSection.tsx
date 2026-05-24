@@ -86,7 +86,6 @@ const IncidentResponseTimeCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -299,7 +298,6 @@ const GeographicalEffectivenessCard: React.FC = () => {
           rotateAlways: true,
           style: {
             fontSize: '9px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },

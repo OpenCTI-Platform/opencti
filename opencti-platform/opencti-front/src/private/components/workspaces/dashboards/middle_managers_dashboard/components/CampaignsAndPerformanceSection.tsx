@@ -57,7 +57,6 @@ const HighConfidenceCampaignsRadarCard: React.FC = () => {
       labels: {
         style: {
           fontSize: '11px',
-          fontFamily: '"IBM Plex Sans", sans-serif',
           colors: Array(RADAR_SECTORS.length).fill(theme.palette.text.primary),
         },
       },
@@ -271,7 +270,6 @@ const PerformanceIndicatorsCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },

@@ -5,6 +5,7 @@ html[data-theme="fluent"] {
   --fluent-color-label: #21242d;
   --fluent-color-tab: #151515;
   body {
+    font-family: "IBM Plex Sans", sans-serif;
     &[data-theme="dark"] {
       --fluent-color-border: #292929;
       --fluent-color-border-hover: #adadad;
@@ -283,6 +284,26 @@ html[data-theme="fluent"] {
     }
   }
   &[dir="rtl"] {
+    body *{
+      font-family:
+        "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+    }
+    .MuiTypography-root,
+    .MuiButtonBase-root,
+    .MuiTooltip-tooltip,
+    .MuiInputBase-input,
+    .MuiOutlinedInput-notchedOutline,
+    .MuiFormLabel-root,
+    .MuiChip-label,
+    .MuiPopper-root {
+      font-family:
+        "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+    }
+    .MuiInputBase-input {
+      fieldset {
+        font-family: "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+      }
+    }
     .MuiFormLabel-root {
       text-align: right;
     }
@@ -309,3 +330,193 @@ html[data-theme="fluent"] {
     }
   }
 }
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 100;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-Thin.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-Thin.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 200;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-UltraLight.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-UltraLight.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 300;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-Light.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-Light.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-Regular.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-Regular.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 500;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-Medium.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-Medium.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 600;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-DemiBold.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-DemiBold.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 700;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-Bold.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-Bold.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 800;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-ExtraBold.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-ExtraBold.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 900;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-Black.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-Black.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekan";
+  font-style: normal;
+  font-weight: 1000;
+  src:
+    url(../ext/IRANYekan/IRANYekanX-ExtraBlack.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanX-ExtraBlack.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 100;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-Thin.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Thin.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 200;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-UltraLight.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-UltraLight.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 300;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-Light.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Light.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 500;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-Medium.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Medium.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 600;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-DemiBold.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-DemiBold.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 800;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBold.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBold.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 900;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-Black.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Black.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 950;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBlack.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBlack.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: 1000;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-Heavy.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Heavy.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: bold;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-Bold.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Bold.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "IranYekanNu";
+  font-style: normal;
+  font-weight: normal;
+  src:
+    url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff) format("woff"),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff2) format("woff2");
+}
+
+

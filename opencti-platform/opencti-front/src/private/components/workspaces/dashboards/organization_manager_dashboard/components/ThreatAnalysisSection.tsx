@@ -96,7 +96,6 @@ const CrossSectorImpactCard: React.FC = () => {
           rotateAlways: true,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -109,7 +108,6 @@ const CrossSectorImpactCard: React.FC = () => {
         labels: {
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
           },
         },
         axisBorder: { show: false },
@@ -253,7 +251,6 @@ const ThreatTrendVelocityCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -266,7 +263,6 @@ const ThreatTrendVelocityCard: React.FC = () => {
         labels: {
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
           },
         },
         axisBorder: { show: false },

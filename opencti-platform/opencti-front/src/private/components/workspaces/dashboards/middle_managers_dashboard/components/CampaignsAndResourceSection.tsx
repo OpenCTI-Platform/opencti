@@ -83,7 +83,6 @@ const CurrentCampaignsCard: React.FC = () => {
           ...base.xaxis?.labels,
           style: {
             fontSize: '10px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -273,7 +272,6 @@ const ResourceAllocationCard: React.FC = () => {
         labels: {
           style: {
             fontSize: '8px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
@@ -349,7 +347,6 @@ const ResourceAllocationCard: React.FC = () => {
         labels: {
           style: {
             fontSize: '8px',
-            fontFamily: '"IBM Plex Sans", sans-serif',
             colors: theme.palette.text.secondary,
           },
         },
