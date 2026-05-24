@@ -1,6 +1,11 @@
 declare module '*.png';
 declare module '*.jpg';
 declare module '*.svg';
+declare module '*.svg?react' {
+  import type { FC, SVGProps } from 'react';
+  const ReactComponent: FC<SVGProps<SVGSVGElement>>;
+  export default ReactComponent;
+}
 declare module 'react-rectangle-selection';
 
 // Vite Web Worker imports (https://vite.dev/guide/features#import-with-query-suffixes)
