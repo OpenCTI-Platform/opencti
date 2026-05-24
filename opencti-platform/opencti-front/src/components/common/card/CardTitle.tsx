@@ -18,7 +18,7 @@ const CardTitle = ({
   const theme = useTheme<Theme>();
 
   const containerSx: SxProps = {
-    height: alignItems !== 'center' ? 'inherit' : '19px',
+    height: alignItems !== 'center' ? 'inherit' : 'auto',
     marginBottom: theme.spacing(1),
     flex: 0,
     ...sx,
@@ -26,11 +26,12 @@ const CardTitle = ({
 
   const titleSx: SxProps = {
     marginBottom: 0,
+    padding: theme.spacing(2),
     textTransform: 'capitalize',
     color: theme.palette.text.light,
-    lineHeight: '19px',
+    lineHeight: '24px',
     fontSize: '12px',
-    fontWeight: 400,
+    fontWeight: 600,
     fontFamily: '"IBM Plex Sans", sans-serif',
   };
 

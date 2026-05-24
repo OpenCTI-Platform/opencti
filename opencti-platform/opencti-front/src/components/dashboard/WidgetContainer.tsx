@@ -2,6 +2,8 @@ import ApexCharts from 'apexcharts';
 import { CSSProperties, FunctionComponent, ReactNode } from 'react';
 import Card, { CardProps } from '../common/card/Card';
 import Label from '../common/label/Label';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../Theme';
 import ChartExportPopover from '../../private/components/common/charts/ChartExportPopover';
 import { ErrorBoundary } from '@components/Error';
 
@@ -24,33 +26,36 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   chart,
   action,
 }) => {
+  const theme = useTheme<Theme>();
+
   return (
     <div style={{ height: height || '100%' }}>
       {variant !== 'inLine' && variant !== 'inEntity'
         ? (
-            <Card
-              title={title}
-              padding={padding}
-              action={(
-                <div>
-                  {chart && <ChartExportPopover chart={chart} />}
-                  {action}
-                </div>
-              )}
-            >
-              <ErrorBoundary>
-                {children}
-              </ErrorBoundary>
-            </Card>
-          )
+          <Card
+            title={title}
+            padding={padding}
+            titleAlignItems="center"
+            action={(
+              <div>
+                {chart && <ChartExportPopover chart={chart} />}
+                {action}
+              </div>
+            )}
+          >
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </Card>
+        )
         : (
-            <>
-              {title && <Label>{title}</Label>}
-              <ErrorBoundary>
-                {children}
-              </ErrorBoundary>
-            </>
-          )
+          <>
+            {title && <Label>{title}</Label>}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </>
+        )
       }
     </div>
   );
