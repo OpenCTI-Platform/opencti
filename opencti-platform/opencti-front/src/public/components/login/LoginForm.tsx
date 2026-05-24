@@ -4,14 +4,15 @@ import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
-import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
-import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { Stack } from '@mui/material';
+import { Box, Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
 import { useLoginContext } from './loginContext';
 import { ResetPwdStep } from './ResetPassword';
+import { useEffect, useState } from 'react';
+
+const REMEMBER_EMAIL_KEY = 'resaactip_remember_email';
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
@@ -28,17 +29,61 @@ interface RelayResponseError extends Error {
   res?: RelayResponsePayload;
 }
 
+const fieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
+    backgroundColor: '#FFFFFF',
+    '& fieldset': {
+      borderColor: '#E5E7EB',
+    },
+    '&:hover fieldset': {
+      borderColor: '#D1D5DB',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#533DE4',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    position: 'static',
+    transform: 'none',
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#374151',
+    mb: 0.75,
+  },
+  '& .MuiInputLabel-shrink': {
+    transform: 'none',
+  },
+  '& .MuiInputBase-root': {
+    mt: 0,
+  },
+};
+
 const LoginForm = () => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setValue, email } = useLoginContext();
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [commitLoginMutation] = useApiMutation(loginMutation);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem(REMEMBER_EMAIL_KEY);
+    if (savedEmail) {
+      setValue('email', savedEmail);
+      setRememberMe(true);
+    }
+  }, [setValue]);
 
   const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (
     input,
     { setSubmitting, setErrors },
   ) => {
+    if (rememberMe) {
+      localStorage.setItem(REMEMBER_EMAIL_KEY, input.email);
+    } else {
+      localStorage.removeItem(REMEMBER_EMAIL_KEY);
+    }
+
     commitLoginMutation({
       variables: { input },
       onCompleted: () => window.location.reload(),
@@ -66,20 +111,24 @@ const LoginForm = () => {
   });
 
   return (
-    <>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={loginValidation}
-        onSubmit={onSubmit}
-      >
-        {({ isSubmitting, isValid }) => (
-          <Form>
+    <Formik
+      initialValues={initialValues}
+      enableReinitialize
+      validationSchema={loginValidation}
+      onSubmit={onSubmit}
+    >
+      {({ isSubmitting, isValid }) => (
+        <Form>
+          <Stack gap={2.5}>
             <Field
               component={TextField}
               name="email"
-              label={t_i18n('Login')}
+              label={t_i18n('Username')}
               fullWidth={true}
-              onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+              sx={fieldSx}
+              onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
                 setValue('email', e.currentTarget.value);
               }}
             />
@@ -89,32 +138,81 @@ const LoginForm = () => {
               label={t_i18n('Password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+              sx={fieldSx}
             />
-            <Stack
-              mt={3}
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  size="small"
+                  sx={{
+                    color: '#D1D5DB',
+                    '&.Mui-checked': {
+                      color: '#533DE4',
+                    },
+                  }}
+                />
+              )}
+              label={(
+                <Typography variant="body2" sx={{ color: '#6B7280', fontSize: 14 }}>
+                  {t_i18n('Remember me')}
+                </Typography>
+              )}
+              sx={{ ml: 0, mr: 0 }}
+            />
+
+            <Button
+              type="submit"
+              disabled={isSubmitting || !isValid}
+              fullWidth
+              sx={{
+                mt: 0.5,
+                py: 1.25,
+                borderRadius: '8px',
+                backgroundColor: '#533DE4',
+                color: '#FFFFFF',
+                fontWeight: 600,
+                fontSize: 15,
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: '#4330C4',
+                },
+                '&.Mui-disabled': {
+                  backgroundColor: '#C4B5FD',
+                  color: '#FFFFFF',
+                },
+              }}
             >
+              {t_i18n('Login')}
+            </Button>
+
+            <Box textAlign="center">
               <Button
                 variant="tertiary"
                 onClick={goToResetPwd}
-                sx={{ ml: -2 }}
+                sx={{
+                  color: '#533DE4',
+                  fontSize: 14,
+                  textTransform: 'none',
+                  p: 0,
+                  minWidth: 0,
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                    textDecoration: 'underline',
+                  },
+                }}
               >
                 {t_i18n('I forgot my password')}
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-              >
-                {t_i18n('Sign in')}
-              </Button>
-            </Stack>
-          </Form>
-        )}
-      </Formik>
-    </>
+            </Box>
+          </Stack>
+        </Form>
+      )}
+    </Formik>
   );
 };
 
