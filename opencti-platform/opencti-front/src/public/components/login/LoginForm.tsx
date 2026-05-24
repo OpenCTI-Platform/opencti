@@ -56,6 +56,11 @@ const fieldSx = {
   },
   '& .MuiInputBase-root': {
     mt: 0,
+    color: '#111827',
+  },
+  '& .MuiInputBase-input': {
+    color: '#111827',
+    WebkitTextFillColor: '#111827',
   },
 };
 
