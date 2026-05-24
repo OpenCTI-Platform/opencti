@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react';
 import SystemBanners from '../SystemBanners';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
 import LoginLogo from './LoginLogo';
+import { loginPanelSx } from './loginStyles';
 
 const LOGIN_ASIDE_COLOR = '#1A2D7A';
 
@@ -23,8 +24,8 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: '#FFFFFF',
             minWidth: 0,
+            ...loginPanelSx,
           }}
         >
           <Box sx={{ p: 4, pb: 0 }}>
