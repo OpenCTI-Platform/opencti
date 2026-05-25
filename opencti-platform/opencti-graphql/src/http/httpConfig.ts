@@ -21,6 +21,16 @@ export const getRateProtectionIpSkipList = () => {
   return RATE_PROTECTION_IP_SKIP_LIST;
 };
 
+const RATE_PROTECTION_IP_SKIP_RANGES: string[] = stringArrayConf('app:rate_protection:ip_skip_ranges');
+export const getRateProtectionIpSkipRanges = () => {
+  return RATE_PROTECTION_IP_SKIP_RANGES;
+};
+
+const RATE_PROTECTION_USER_AGENT_SKIP_PREFIXES: string[] = stringArrayConf('app:rate_protection:user_agent_skip_prefixes');
+export const getRateProtectionUserAgentSkipPrefixes = () => {
+  return RATE_PROTECTION_USER_AGENT_SKIP_PREFIXES;
+};
+
 const RATE_PROTECTION_TIME_WINDOW: number = nconf.get('app:rate_protection:time_window') ?? 1;
 export const getRateProtectionTimeWindowMs = () => {
   return RATE_PROTECTION_TIME_WINDOW < 1 ? 1000 : RATE_PROTECTION_TIME_WINDOW * 1000;
