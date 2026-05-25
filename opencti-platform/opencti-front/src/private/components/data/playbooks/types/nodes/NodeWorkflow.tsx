@@ -14,7 +14,7 @@ type node = {
   id: string;
 };
 
-const getHandlePositionStyle = (count: number, index: number, width = 160): React.CSSProperties | undefined => {
+const getHandlePositionStyle = (count: number, index: number, width = 220): React.CSSProperties | undefined => {
   // we distribute evenly the output ports at the bottom using CSS
   // we divide our width in N intervals, the N points being at the center of their interval
   const interval = width / count;
@@ -27,7 +27,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const { getNode } = useReactFlow();
-
+  const displayDescription = data.description || data.component?.description;
   return (
     <div style={{
       position: 'relative',
@@ -36,7 +36,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         : '1px solid rgba(0, 0, 0, 0.12)',
       borderRadius: 4,
       backgroundColor: theme.palette.background.paper,
-      width: 160,
+      width: 220,
       minHeight: 50,
       padding: '8px 5px 5px 5px',
     }}
@@ -44,23 +44,21 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       <ItemIcon type={data.component.icon} variant="inline" />
       <div style={{ float: 'left' }}>
         <Tooltip title={t_i18n(data.name)}>
-          <div style={{ maxWidth: 100, fontSize: 10, wordBreak: 'break-word' }}>
+          <div style={{ maxWidth: 160, fontSize: 10, wordBreak: 'break-word' }}>
             {t_i18n(truncate(data.name, 100, false))}
           </div>
         </Tooltip>
-        <Tooltip title={t_i18n(data.component.description)}>
+        <Tooltip title={t_i18n(displayDescription)}>
           <div style={{
-            maxWidth: 100,
+            maxWidth: 160,
             fontSize: 8,
             color: theme.palette.mode === 'dark'
               ? 'rgba(255, 255, 255, 0.5)'
               : 'rgba(0, 0, 0, 0.5)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            wordBreak: 'break-word',
           }}
           >
-            {t_i18n(data.component.description)}
+            {t_i18n(truncate(displayDescription, 150, false))}
           </div>
         </Tooltip>
       </div>

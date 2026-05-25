@@ -144,7 +144,7 @@ const PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA: JSONSchemaType<ManualTriggerConfi
 const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
   name: 'Available for manual enrollment / trigger',
-  description: 'To be used in manual enrollment / trigger',
+  description: 'Use to trigger manual enrollment from any entity in OpenCTI',
   icon: 'manual',
   category: 'start_playbook',
   is_entry_point: true,
@@ -178,7 +178,7 @@ const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
 export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_DATA_CRON',
   name: 'Query knowledge on a regular basis',
-  description: 'Query knowledge on the platform',
+  description: 'Run regular knowledge queries',
   icon: 'cron',
   category: 'start_playbook',
   is_entry_point: true,
@@ -196,7 +196,7 @@ interface IngestionConfiguration {}
 const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
   id: 'PLAYBOOK_INGESTION_COMPONENT',
   name: 'Send for ingestion',
-  description: 'Send STIX data for ingestion',
+  description: 'Send STIX bundle to knowledge for ingestion',
   icon: 'storage',
   category: 'end_playbook',
   is_entry_point: false,
@@ -233,7 +233,7 @@ const PLAYBOOK_MATCHING_COMPONENT_SCHEMA: JSONSchemaType<MatchConfiguration> = {
 export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
   name: 'Match knowledge',
-  description: 'Match STIX data according to filter (pass if match)',
+  description: 'Match STIX bundle to filter (pass bundle to OUT if filter matches)',
   icon: 'filter',
   category: 'transform_and_enrich',
   is_entry_point: false,
@@ -275,7 +275,7 @@ const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = 
 export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   id: 'PLAYBOOK_REDUCING_COMPONENT',
   name: 'Reduce knowledge',
-  description: 'Reduce STIX data according to the filter (keep only matching)',
+  description: 'Remove data from STIX bundle that does not match the filter. The main element will always remain.',
   icon: 'reduce',
   category: 'transform_and_enrich',
   is_entry_point: false,
@@ -458,7 +458,7 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
 const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   id: 'PLAYBOOK_RULE_COMPONENT',
   name: 'Apply predefined rule',
-  description: 'Execute advanced predefined computing',
+  description: 'Run predefined rule on STIX bundle',
   icon: 'memory',
   category: 'transform_and_enrich',
   is_entry_point: false,
@@ -625,7 +625,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
 const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
   id: 'PLAYBOOK_NOTIFIER_COMPONENT',
   name: 'Send to notifier',
-  description: 'Send user notification',
+  description: 'Automatically send notification',
   icon: 'notification',
   category: 'end_playbook',
   is_entry_point: false,

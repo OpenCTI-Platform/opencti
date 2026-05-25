@@ -13530,6 +13530,7 @@ input PlaybookAddNodeInput {
   component_id: String!
   position: PositionInput!
   configuration: String
+  description: String
 }
 
 input PlaybookAddLinkInput {

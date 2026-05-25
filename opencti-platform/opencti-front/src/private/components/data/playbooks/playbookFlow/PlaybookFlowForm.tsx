@@ -50,6 +50,7 @@ export type PlaybookFlowFormData
     & {
     // Common for every component
       name: string;
+      description?: string;
       // Component: CRON
       time?: string;
       period?: string;
@@ -63,8 +64,8 @@ interface PlaybookFlowFormProps {
   selectedNode: PlaybookNode | null;
   playbookComponents: PlaybookComponents;
   componentId: string | null;
-  onConfigAdd: (component: unknown, name: string, config: unknown) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown) => void;
+  onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
   handleClose: () => void;
 }
 
@@ -98,7 +99,7 @@ const PlaybookFlowForm = ({
 
   // Submit function that formats correctly the data for the backend.
   const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
-    const { name, actionsFormValues, ...config } = values;
+    const { name, description, actionsFormValues, ...config } = values;
     let finalConfig: PlaybookConfig = config;
 
     // Special work in case of filters,
@@ -134,9 +135,9 @@ const PlaybookFlowForm = ({
 
     resetForm();
     if (nodeData?.component?.id && (action === 'config' || action === 'replace')) {
-      onConfigReplace(selectedComponent, name, finalConfig);
+      onConfigReplace(selectedComponent, name, finalConfig, description);
     } else {
-      onConfigAdd(selectedComponent, name, finalConfig);
+      onConfigAdd(selectedComponent, name, finalConfig, description);
     }
   };
 
@@ -150,11 +151,13 @@ const PlaybookFlowForm = ({
 
   const initialValues: PlaybookFlowFormData = {
     name: '',
+    description: '',
   };
 
   if (!currentConfig) {
     // Get default values from schema.
     initialValues.name = selectedComponent?.name ?? '';
+    initialValues.description = '';
     Object.entries(configurationSchema?.properties ?? {})
       .forEach(([propName, property]) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -167,6 +170,9 @@ const PlaybookFlowForm = ({
     initialValues.name = nodeData?.component?.id === selectedComponent?.id
       ? nodeData?.name ?? ''
       : selectedComponent?.name ?? '';
+    initialValues.description = nodeData?.component?.id === selectedComponent?.id
+      ? nodeData?.description ?? ''
+      : '';
     const actionsFormValues: PlaybookUpdateAction['value'][] = [];
     Object.entries(currentConfig)
       .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
@@ -207,6 +213,16 @@ const PlaybookFlowForm = ({
                 label={t_i18n('Name')}
                 fullWidth
                 required
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="description"
+                label={t_i18n('Description')}
+                placeholder={t_i18n(selectedComponent?.description ?? '')}
+                fullWidth
+                multiline
+                style={fieldSpacingContainerStyle}
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([propName, property]) => {

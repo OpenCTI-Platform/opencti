@@ -164,6 +164,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     position: input.position,
     component_id: input.component_id,
     configuration, // TODO Check valid json
+    description: input.description || undefined,
   });
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   if (relatedComponent.is_entry_point) {
@@ -236,6 +237,7 @@ export const playbookReplaceNode = async (
         position: input.position,
         component_id: input.component_id,
         configuration, // TODO Check valid json
+        description: input.description || undefined,
       };
     }
     return n;
@@ -273,6 +275,7 @@ export const playbookInsertNode = async (
     position: input.position,
     component_id: input.component_id,
     configuration: input.configuration ?? '{}', // TODO Check valid json
+    description: input.description || undefined,
   });
   // Replace node with new position
   definition.nodes = definition.nodes.map((n) => {

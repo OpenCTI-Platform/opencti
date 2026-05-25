@@ -26,7 +26,7 @@ const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA: JSONSchemaType<SendEmailTem
 export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmailTemplateConfiguration> = {
   id: 'PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT',
   name: 'Send email from template',
-  description: 'Send email from template to targets',
+  description: 'Automatically send template email',
   icon: 'emailtemplate',
   category: 'end_playbook',
   is_entry_point: false,

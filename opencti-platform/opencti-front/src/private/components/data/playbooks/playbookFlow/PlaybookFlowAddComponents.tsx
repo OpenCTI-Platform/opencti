@@ -29,8 +29,8 @@ interface PlaybookFlowAddComponentsProps {
   setSelectedNode: (node: null) => void; // null as type because useManipulateComponents is in JS
   setSelectedEdge: (node: null) => void; // null as type because useManipulateComponents is in JS
   playbookComponents: PlaybookComponents;
-  onConfigAdd: (component: unknown, name: string, config: unknown) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown) => void;
+  onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
 }
 
 const PlaybookFlowAddComponents = ({
