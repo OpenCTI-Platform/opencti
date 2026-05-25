@@ -520,7 +520,7 @@ describe('Verify csv ingestion', () => {
     }, 10000, 6); // Wait for the queue result to exist - max 1 minute
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
-    csvLines = await readCsvFromFileStream('./tests/03-integration/04-manager/ingestionManager', 'csv-file-cities.csv');
+    csvLines = await readCsvFromFileStream('./tests/03-integration/10-modules/ingestion/ingestionManager', 'csv-file-cities.csv');
   });
 
   it('should csv ingestion run', async () => {
