@@ -14,7 +14,7 @@ import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { BYPASS, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -490,17 +490,6 @@ export const formSubmit = async (
         authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
       }
 
-      // Ensure the submitter is an admin member of the draft if not already included.
-      // Required for form intakes, where the authorized_members are defined at creation and not afterward.
-      if (!isBypass && authorized_members.length > 0) {
-        const submitterIdx = authorized_members.findIndex((m) => m.id === user.id);
-        if (submitterIdx === -1) {
-          authorized_members.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
-        } else if (authorized_members[submitterIdx].access_right !== MEMBER_ACCESS_RIGHT_ADMIN) {
-          authorized_members[submitterIdx] = { ...authorized_members[submitterIdx], access_right: MEMBER_ACCESS_RIGHT_ADMIN };
-        }
-      }
-
       const draftInput: DraftWorkspaceAddInput = {
         name: finalDraftName,
       };
@@ -510,7 +499,7 @@ export const formSubmit = async (
       if (createdBy) draftInput.createdBy = createdBy;
       if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
 
-      const draft = await addDraftWorkspace(context, user, draftInput);
+      const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
       draftId = draft.id;
     }
     await pushToWorkerForConnector(connectorId, {
