@@ -109,7 +109,7 @@ const Card = ({
   }
 
   return (
-    <Stack sx={{ height: '100%' }}>
+    <Stack sx={{ height: '100%', background: backgroundColor, borderRadius: theme.spacing(0.5) }}>
       {(title || action) && (
         <CardTitle
           action={action}
