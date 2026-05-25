@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
+import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
@@ -26,7 +26,7 @@ import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseRfiDeletion from './CaseRfiDeletion';
 import { PATH_RFI, PATH_RFIS } from '@components/common/routes/paths';
-import { CaseRfiKnowledge_case$data } from './__generated__/CaseRfiKnowledge_case.graphql';
+import type { CaseRfiKnowledge_case$data } from './__generated__/CaseRfiKnowledge_case.graphql';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {

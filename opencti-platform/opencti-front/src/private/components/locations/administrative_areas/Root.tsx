@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';

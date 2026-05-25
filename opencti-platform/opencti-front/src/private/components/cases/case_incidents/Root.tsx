@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useLocation, useParams } from 'react-router-dom';
-import { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
+import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';

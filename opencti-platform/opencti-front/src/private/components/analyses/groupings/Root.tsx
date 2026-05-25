@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
-import { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
+import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
