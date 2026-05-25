@@ -103,7 +103,7 @@ const Playground: React.FC = () => {
           { query: placeholder },
           { query: exampleWithVariables, variables: JSON.stringify(exampleVariables, null, '  ') },
         ]}
-        forcedTheme="dark"
+        forcedTheme="system"
       />
     </Box>
   );
