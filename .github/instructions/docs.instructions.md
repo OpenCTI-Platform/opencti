@@ -99,3 +99,37 @@ Always start with usage and benefits first, then show the execution.
 2. Add the page to the `nav` section in `docs/mkdocs.yml`.
 3. Add cross-links from related pages.
 4. Follow the usage-driven page structure above.
+
+## Known issues and Troubleshooting
+
+### Bullet or ordered lists not rendered properly
+
+```md
+Some text
+- Item 1
+- Item 2
+```
+
+Will not be rendered properly, and displayed as a paragraph.
+To fix this, make sure to add a blank line before the first item in the list:
+
+```md
+Some text
+
+- Item 1
+- Item 2
+```
+
+### Anchored links not working
+
+When linking to a section in the same page, make sure to use the correct anchor link.
+For instance:
+
+```md
+## My (super) section
+```
+Will be accessible with the following anchor: `#my-super-section` (all lowercase, spaces replaced by dashes, and special characters removed).
+
+### Documentation page not accessible from the sidebar
+
+Make sure to always add new documentation pages in the `mkdocs.yml` file under the `nav` section.

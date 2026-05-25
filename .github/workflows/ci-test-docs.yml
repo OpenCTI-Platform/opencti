@@ -1,0 +1,35 @@
+name: Docs build check
+
+on:
+  push:
+    paths:
+      - 'docs/mkdocs.yml'
+      - 'docs/requirements.txt'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - 'docs/mkdocs.yml'
+      - 'docs/requirements.txt'
+      - 'docs/**'
+
+jobs:
+  docs-build:
+    name: Build MkDocs documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install documentation dependencies
+        working-directory: docs
+        run: pip install -r requirements.txt
+
+      - name: Build documentation
+        working-directory: docs
+        run: mkdocs build
