@@ -26,8 +26,12 @@ test.describe('Draft Review Tab Navigation', { tag: ['@ce'] }, () => {
     // 4. Verify successful redirection to the review subroute
     await expect(page).toHaveURL(/\/dashboard\/data\/import\/draft\/.*\/review/);
 
-    // 5. Clean up by deleting the created draft
-    await Drafts.navigate();
+    // 5. Clean up by exiting the draft workspace and deleting it
+    const exitDraftButton = page.getByRole('button', { name: 'Exit draft' });
+    await expect(exitDraftButton).toBeVisible();
+    await exitDraftButton.click();
+    await expect(page).toHaveURL(/\/dashboard\/data\/import\/draft$/);
+
     const draftRow = Drafts.getDraft(draftName);
     await draftRow.getByLabel('Draft popover of actions').click();
     await page.getByRole('menuitem', { name: 'Delete' }).click();
