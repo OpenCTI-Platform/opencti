@@ -212,6 +212,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             name="description"
             label={t_i18n('Description')}
             required={(mandatoryAttributes.includes('description'))}
+            uploadEntityId={securityPlatform.id}
             fullWidth={true}
             multiline={true}
             rows="4"

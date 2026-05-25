@@ -229,6 +229,7 @@ const PositionEditionOverviewComponent = (props) => {
             name="description"
             label={t_i18n('Description')}
             required={(mandatoryAttributes.includes('description'))}
+            uploadEntityId={position.id}
             fullWidth={true}
             multiline={true}
             rows="4"

@@ -206,6 +206,7 @@ const SectorEditionOverviewComponent = (props) => {
             name="description"
             label={t_i18n('Description')}
             required={(mandatoryAttributes.includes('description'))}
+            uploadEntityId={sector.id}
             fullWidth={true}
             multiline={true}
             rows="4"
