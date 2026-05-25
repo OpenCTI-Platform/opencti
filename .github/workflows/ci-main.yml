@@ -72,3 +72,31 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
+
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [wf-build-image, wf-backend-test, wf-frontend-test, wf-client-python-test, wf-license-check]
+    if: always()
+    steps:
+      - name: Verify job results
+        run: |
+          build_image="${{ needs.wf-build-image.result }}"
+          backend_test="${{ needs.wf-backend-test.result }}"
+          frontend_test="${{ needs.wf-frontend-test.result }}"
+          client_python_test="${{ needs.wf-client-python-test.result }}"
+          license_check="${{ needs.wf-license-check.result }}"
+          
+          echo "Build Image: $build_image"
+          echo "Backend Test: $backend_test"
+          echo "Frontend Test: $frontend_test"
+          echo "Client Python Test: $client_python_test"
+          echo "License Check: $license_check"
+          
+          for result in "$build_image" "$backend_test" "$frontend_test" "$client_python_test" "$license_check"; do
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              echo "Error: One or more jobs failed or were cancelled."
+              exit 1
+            fi
+          done
+          echo "All jobs succeeded or were skipped."
