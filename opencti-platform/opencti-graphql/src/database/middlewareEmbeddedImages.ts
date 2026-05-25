@@ -224,7 +224,6 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
   payload: unknown,
   options: RewriteEmbeddedDataUriOptions,
 ): Promise<void> => {
-  const draftContext = getDraftContext(context);
   const allowedMimeTypes = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
   const uploadedUriByDedupeKey = new Map<string, string>();
   const usedLowercaseFilenames = new Set<string>();
@@ -280,31 +279,6 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
             meta: { mimetype: image.mimeType },
           },
         );
-        let storageExists = false;
-        try {
-          const uploadedContent = await getFileContent(uploadedFile.id, 'base64');
-          storageExists = !!uploadedContent;
-        } catch (error) {
-          logApp.error('[OPENCTI] Embedded markdown image post-upload storage check failed', {
-            uploadPath,
-            uploadedFileId: uploadedFile.id,
-            draftContext,
-            entityType: options.entityType,
-            entityId: options.entityId,
-            cause: error,
-          });
-        }
-        if (!storageExists) {
-          logApp.warn('[OPENCTI] Embedded markdown image upload verification failed', {
-            uploadPath,
-            uploadedFileId: uploadedFile.id,
-            uploadedFileName: uploadedFile.name,
-            draftContext,
-            entityType: options.entityType,
-            entityId: options.entityId,
-            storageExists,
-          });
-        }
         replacementUri = `embedded/${uploadedFile.name}`;
         uploadedUriByDedupeKey.set(image.dedupeKey, replacementUri);
       }
