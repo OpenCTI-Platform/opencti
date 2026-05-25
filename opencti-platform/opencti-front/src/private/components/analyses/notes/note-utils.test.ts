@@ -26,6 +26,11 @@ describe('note-utils', () => {
     expect(resolveNoteEmbeddedImageUrl(fullPath, 'note-999')).toBe('/storage/view/embedded/Note/note-123/image-c.png');
   });
 
+  it('does not double-encode already encoded embedded filenames', () => {
+    const encodedPath = 'embedded/Note/note-123/Capture%20e%CC%81cran.png';
+    expect(resolveNoteEmbeddedImageUrl(encodedPath, 'note-999')).toBe('/storage/view/embedded/Note/note-123/Capture%20e%CC%81cran.png');
+  });
+
   it('returns null when embedded path has no filename', () => {
     expect(resolveNoteEmbeddedImageUrl('embedded/', 'note-1')).toBeNull();
   });

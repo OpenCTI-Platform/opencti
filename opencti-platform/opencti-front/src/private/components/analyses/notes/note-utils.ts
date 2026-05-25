@@ -2,7 +2,14 @@ const encodeStoragePath = (storagePath: string): string => {
   return storagePath
     .split('/')
     .filter((segment) => segment.length > 0)
-    .map((segment) => encodeURIComponent(segment))
+    .map((segment) => {
+      try {
+        // Normalize already-encoded segments before re-encoding.
+        return encodeURIComponent(decodeURIComponent(segment));
+      } catch {
+        return encodeURIComponent(segment);
+      }
+    })
     .join('/');
 };
 
