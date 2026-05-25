@@ -31,7 +31,8 @@ import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAI from '../../../../utils/hooks/useAI';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { now } from '../../../../utils/Time';
+import { nowUTC } from '../../../../utils/Time';
+import { buildExportFileName } from './StixCoreObjectFileExportForm.utils';
 import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField';
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
@@ -230,21 +231,16 @@ const StixCoreObjectFileExportForm = ({
             setFieldValue('template', (templates ?? [])[0] ?? null);
           }
         }, [values.connector]);
+
         useEffect(() => {
-          if (values.template) {
-            setFieldValue('exportFileName', `${values.template.label}_${now()}`);
+          if (values.template || values.fileToExport) {
+            setFieldValue('exportFileName', buildExportFileName({
+              entityName: scoName,
+              markings: values.fileMarkings,
+              utcIsoDate: nowUTC(),
+            }));
           }
-        }, [values.template]);
-        useEffect(() => {
-          if (values.fileToExport) {
-            setFieldValue(
-              'exportFileName',
-              values.fileToExport.value === 'mappableContent' && scoName
-                ? `${scoName}_${now()}`
-                : `${values.fileToExport.label.split('.')[0]}_${now()}`,
-            );
-          }
-        }, [values.fileToExport]);
+        }, [values.template, values.fileToExport, values.fileMarkings, scoName, setFieldValue]);
 
         useEffect(() => {
           setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
@@ -423,13 +419,13 @@ const StixCoreObjectFileExportForm = ({
                       )}
                       {((values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
                         || (values.connector.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/')))
-                      && (
-                        <FintelDesignField
-                          name="fintelDesign"
-                          label={t_i18n('Fintel design')}
-                          style={fieldSpacingContainerStyle}
-                        />
-                      )}
+                        && (
+                          <FintelDesignField
+                            name="fintelDesign"
+                            label={t_i18n('Fintel design')}
+                            style={fieldSpacingContainerStyle}
+                          />
+                        )}
                       {!isBuiltInConnector(values.connector.value) && (
                         <Field
                           component={SelectField}
