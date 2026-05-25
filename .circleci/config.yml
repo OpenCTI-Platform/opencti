@@ -928,7 +928,7 @@ jobs:
           name: Restart to redeploy the new rolling image and latest XTM Composer
           command: |
             kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing-octi rollout restart deployment -l app=opencti
-            kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing-octi rollout restart deployment -l app=xtm-composer"
+            kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing-octi rollout restart deployment -l app=xtm-composer
 
   deploy_master-ff:
     docker:
@@ -940,7 +940,7 @@ jobs:
           name: Restart to redeploy the new rolling image and latest XTM Composer
           command: |
             kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_MASTER_FF -n customer-master-ff-octi rollout restart deployment -l app=opencti
-            kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_MASTER_FF -n customer-master-ff-octi rollout restart deployment -l app=xtm-composer"
+            kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_MASTER_FF -n customer-master-ff-octi rollout restart deployment -l app=xtm-composer
 
   notify_rolling:
     docker:
