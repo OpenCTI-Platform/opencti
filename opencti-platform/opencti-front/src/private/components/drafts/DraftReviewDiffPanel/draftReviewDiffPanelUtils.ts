@@ -9,19 +9,34 @@ export interface PatchValue {
 
 export type UpdatesPatch = Record<string, PatchValue>;
 
+/** Render function passed down to change display components to format field values (removed or added). */
 export type RenderChangeValuesFn = (
   values?: readonly string[] | null,
   isRemoved?: boolean,
   idLabelMap?: Record<string, string>,
 ) => React.ReactNode;
 
+/** Fields present in every STIX patch but not meaningful to display in the diff panel. */
 export const EXCLUDED_PATCH_FIELDS = new Set(['standard_id', 'objects']);
 
+/** Matches a STIX ID such as `malware--<uuid>`. */
 export const STIX_ID_REGEX = /^[a-z][a-z0-9-]+--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** Matches a plain UUID (used as internal OpenCTI identifiers). */
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Returns true if the value looks like a STIX ID or UUID that can be resolved to a label. */
 export const isResolvableId = (value: string): boolean => STIX_ID_REGEX.test(value) || UUID_REGEX.test(value);
 
+/**
+ * Parses the raw JSON patch stored in `draft_updates_patch` into a list of `Change` objects
+ * suitable for the ChangesTable component.
+ *
+ * The patch format is a map of field name → `PatchValue`. Two strategies are applied:
+ * - If `replaced_value` is non-empty, the whole value was replaced: initial → replaced.
+ * - Otherwise, individual items were added/removed from the existing list.
+ *
+ * Fields listed in `EXCLUDED_PATCH_FIELDS` are filtered out.
+ */
 export const parseUpdatesPatch = (rawPatch: string | null | undefined): Change[] => {
   if (!rawPatch) return [];
   try {
@@ -54,6 +69,11 @@ export const parseUpdatesPatch = (rawPatch: string | null | undefined): Change[]
   }
 };
 
+/**
+ * Builds a map of `{ fieldName → humanReadableLabel }` from the entity type's attribute
+ * definitions (fetched via the `subType` GraphQL query). Used as a fallback when i18n
+ * does not have a translation for a technical field name.
+ */
 export const buildFieldLabelMap = (
   attributesDefinitions: ReadonlyArray<{ name: string; label: string | null | undefined }> | null | undefined,
 ): Record<string, string> => {
@@ -65,6 +85,12 @@ export const buildFieldLabelMap = (
   );
 };
 
+/**
+ * Resolves a raw field key to a human-readable label using a three-step fallback:
+ * 1. i18n translation (if the result differs from the key itself).
+ * 2. Schema-based `labelMap` built from attribute definitions.
+ * 3. Best-effort formatting: strips the `x_opencti_` prefix and replaces underscores with spaces.
+ */
 export const formatFieldKey = (
   field: string | undefined,
   labelMap: Record<string, string>,
