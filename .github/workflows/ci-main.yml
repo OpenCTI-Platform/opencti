@@ -93,10 +93,19 @@ jobs:
           echo "Client Python Test: $client_python_test"
           echo "License Check: $license_check"
           
-          for result in "$build_image" "$backend_test" "$frontend_test" "$client_python_test" "$license_check"; do
+          jobs="Build-Image:$build_image Backend-Test:$backend_test Frontend-Test:$frontend_test Client-Python-Test:$client_python_test License-Check:$license_check"
+          
+          has_failed=false
+          for job in $jobs; do
+            name="${job%%:*}"
+            result="${job#*:}"
             if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
-              echo "Error: One or more jobs failed or were cancelled."
-              exit 1
+              echo "Error: Job '$name' has status '$result'."
+              has_failed=true
             fi
           done
+          
+          if [ "$has_failed" = "true" ]; then
+            exit 1
+          fi
           echo "All jobs succeeded or were skipped."
