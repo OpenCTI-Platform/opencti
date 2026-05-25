@@ -39,7 +39,7 @@ const ProfileOverviewNewsFeed = ({
         divider={!allUnsubscribed}
         sx={allUnsubscribed ? { padding: '0' } : { padding: '0 0 10px 0' }}
       >
-        <ListItemText primary={t_i18n('Enable news feed notifications')} />
+        <ListItemText primary={t_i18n('Enable News Feed notifications')} />
         <Switch
           checked={!allUnsubscribed}
           onChange={handleGlobalToggle}

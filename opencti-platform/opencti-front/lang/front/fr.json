@@ -1488,7 +1488,7 @@
   "Enable invert colors": "Activer l'inversion des couleurs",
   "Enable LDAP authentication": "Activer l'authentification LDAP",
   "Enable local authentication": "Activer l'authentification locale",
-  "Enable news feed notifications": "Activer les notifications du fil d'actualité",
+  "Enable News Feed notifications": "Activer les notifications du fil d'actualité",
   "Enable OIDC authentication": "Activer l'authentification OIDC",
   "Enable powerful features with OpenCTI Enterprise Edition": "Activer des fonctionnalités puissantes avec OpenCTI Enterprise Edition",
   "Enable public dashboard": "Activer le tableau de bord public",

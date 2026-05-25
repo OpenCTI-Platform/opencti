@@ -1488,7 +1488,7 @@
   "Enable invert colors": "색상 반전 사용",
   "Enable LDAP authentication": "LDAP 인증 활성화",
   "Enable local authentication": "로컬 인증 활성화",
-  "Enable news feed notifications": "뉴스피드 알림 사용 설정하기",
+  "Enable News Feed notifications": "뉴스피드 알림 사용 설정",
   "Enable OIDC authentication": "OIDC 인증 활성화",
   "Enable powerful features with OpenCTI Enterprise Edition": "OpenCTI Enterprise Edition으로 강력한 기능 사용",
   "Enable public dashboard": "공개 대시보드 활성화",
