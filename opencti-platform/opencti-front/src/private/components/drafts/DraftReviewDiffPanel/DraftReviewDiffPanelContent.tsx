@@ -127,33 +127,27 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
         {renderHeader()}
         {renderColumnsHeader()}
         <ErrorBoundary>
-          <Suspense fallback={<Loader />}>
-            <DraftReviewEntityFields
-              draftId={draftId}
-              entityId={entityId}
-              mode={mode}
-              labelMap={labelMap}
-              renderChangeValues={renderChangeValues}
-            />
-          </Suspense>
+          <DraftReviewEntityFields
+            draftId={draftId}
+            entityId={entityId}
+            mode={mode}
+            labelMap={labelMap}
+            renderChangeValues={renderChangeValues}
+          />
         </ErrorBoundary>
         {isContainer && (
           <ErrorBoundary>
-            <Suspense fallback={<Loader />}>
-              <Typography variant="h3" sx={{ fontWeight: 800 }}>
-                {t_i18n('Entities, observables & relations contained into container')}
-              </Typography>
-              <ContainerObjectsTab draftId={draftId} containerId={entityId} />
-            </Suspense>
+            <Typography variant="h3" sx={{ fontWeight: 800 }}>
+              {t_i18n('Entities, observables & relations contained into container')}
+            </Typography>
+            <ContainerObjectsTab draftId={draftId} containerId={entityId} />
           </ErrorBoundary>
         )}
         <ErrorBoundary>
-          <Suspense fallback={<Loader />}>
-            <Typography variant="h3" sx={{ fontWeight: 800 }}>
-              {t_i18n('Relations')}
-            </Typography>
-            <EntityRelationsTab draftId={draftId} entityId={entityId} />
-          </Suspense>
+          <Typography variant="h3" sx={{ fontWeight: 800 }}>
+            {t_i18n('Relations')}
+          </Typography>
+          <EntityRelationsTab draftId={draftId} entityId={entityId} />
         </ErrorBoundary>
       </Box>
     );
@@ -170,14 +164,12 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
         </Typography>
       ) : (
         <ErrorBoundary>
-          <Suspense fallback={<Loader />}>
-            <DraftReviewResolvedChanges
-              draftId={draftId}
-              changes={changes}
-              labelMap={labelMap}
-              renderChangeValues={renderChangeValues}
-            />
-          </Suspense>
+          <DraftReviewResolvedChanges
+            draftId={draftId}
+            changes={changes}
+            labelMap={labelMap}
+            renderChangeValues={renderChangeValues}
+          />
         </ErrorBoundary>
       )}
     </Box>
@@ -189,29 +181,23 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
       {operation !== 'update_linked' && renderFieldsTab()}
       {isContainer && (
         <ErrorBoundary>
-          <Suspense fallback={<Loader />}>
-            <Typography variant="h3" sx={{ fontWeight: 800 }}>
-              {t_i18n('Entities, observables & relations contained into container')}
-            </Typography>
-            <ContainerObjectsTab draftId={draftId} containerId={entityId} />
-          </Suspense>
+          <Typography variant="h3" sx={{ fontWeight: 800 }}>
+            {t_i18n('Entities, observables & relations contained into container')}
+          </Typography>
+          <ContainerObjectsTab draftId={draftId} containerId={entityId} />
         </ErrorBoundary>
       )}
       <ErrorBoundary>
-        <Suspense fallback={<Loader />}>
-          <Typography variant="h3" sx={{ fontWeight: 800 }}>
-            {t_i18n('Relations')}
-          </Typography>
-          <EntityRelationsTab draftId={draftId} entityId={entityId} />
-        </Suspense>
+        <Typography variant="h3" sx={{ fontWeight: 800 }}>
+          {t_i18n('Relations')}
+        </Typography>
+        <EntityRelationsTab draftId={draftId} entityId={entityId} />
       </ErrorBoundary>
       <ErrorBoundary>
-        <Suspense fallback={<Loader />}>
-          <Typography variant="h3" sx={{ fontWeight: 800 }}>
-            {t_i18n('Containers')}
-          </Typography>
-          <EntityContainerRefsTab draftId={draftId} entityId={entityId} />
-        </Suspense>
+        <Typography variant="h3" sx={{ fontWeight: 800 }}>
+          {t_i18n('Containers')}
+        </Typography>
+        <EntityContainerRefsTab draftId={draftId} entityId={entityId} />
       </ErrorBoundary>
     </Box>
   );
