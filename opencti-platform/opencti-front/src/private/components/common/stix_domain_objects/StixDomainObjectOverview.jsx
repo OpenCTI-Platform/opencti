@@ -37,6 +37,7 @@ import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
+import { Box, Divider } from '@mui/material';
 
 const StixDomainObjectOverview = ({
   stixDomainObject,
@@ -141,85 +142,38 @@ const StixDomainObjectOverview = ({
             <ProcessingStatusOverview data={stixDomainObject} />
           )}
         </Grid>
-        <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
-            {stixDomainObject.objectMarking && (
+        <Grid container={true} spacing={0}>
+          {stixDomainObject.objectMarking && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
               <>
                 <Label>{t_i18n('Marking')}</Label>
                 <ItemMarkings
                   markingDefinitions={stixDomainObject.objectMarking ?? []}
                 />
               </>
-            )}
-            <div>
-              <Label sx={{
-                mt:
-                    withPattern
-                    || (!withoutMarking && stixDomainObject.objectMarking)
-                      ? 2
-                      : 0,
-              }}
-              >{t_i18n('Author')}
-              </Label>
-              <ItemAuthor
-                createdBy={stixDomainObject.createdBy ?? null}
-              />
-            </div>
-            {(displayConfidence || displayReliability) && (
-              <Grid container={true} columnSpacing={1}>
-                {displayReliability && (
-                  <Grid item xs={6}>
-                    <Label sx={{ mt: 2 }}>
-                      {t_i18n('Reliability')}
-                      {isReliabilityOfSource && (
-                        <span style={{ fontStyle: 'italic' }}>
-                          {' '}
-                          ({t_i18n('of author')})
-                        </span>
-                      )}
-                    </Label>
-                    <ItemOpenVocab
-                      displayMode="chip"
-                      type="reliability_ov"
-                      value={reliability?.toString()}
-                    />
-                  </Grid>
-                )}
-                {displayConfidence && (
-                  <Grid item xs={6}>
-                    <Label sx={{ marginTop: 2 }}>
-                      {t_i18n('Confidence level')}
-                    </Label>
-                    <ItemConfidence
-                      confidence={stixDomainObject.confidence}
-                      entityType={stixDomainObject.entity_type}
-                    />
-                  </Grid>
-                )}
-              </Grid>
-            )}
-            {displayOpinions && <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />}
-            <Label sx={{ marginTop: 2 }}>
-              {t_i18n('Original creation date')}
-            </Label>
-            {fldt(stixDomainObject.created)}
-            <Label sx={{ marginTop: 2 }}>
-              {t_i18n('Modification date')}
-            </Label>
-            {fldt(stixDomainObject.modified)}
-          </Grid>
-          <Grid item xs={6}>
-            {withPattern && (
+            </Grid>
+          )}
+          {withPattern && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
               <>
                 <Label>
                   {t_i18n('Pattern type')}
                 </Label>
                 <ItemPatternType label={stixDomainObject.pattern_type} />
               </>
-            )}
-            {!isRequestAccessRFI && (
+            </Grid>
+          )}
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Label>{t_i18n('Author')}
+            </Label>
+            <ItemAuthor
+              createdBy={stixDomainObject.createdBy ?? null}
+            />
+          </Grid>
+          {!isRequestAccessRFI && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
               <>
-                <Label sx={{ marginTop: withPattern ? 2 : 0 }}>
+                <Label>
                   {t_i18n('Processing status')}
                 </Label>
                 <ItemStatus
@@ -227,11 +181,41 @@ const StixDomainObjectOverview = ({
                   disabled={!stixDomainObject.workflowEnabled}
                 />
               </>
-            )}
-            {displayAssignees && (
+            </Grid>
+          )}
+          {displayReliability && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Label>
+                {t_i18n('Reliability')}
+                {isReliabilityOfSource && (
+                  <span style={{ fontStyle: 'italic' }}>
+                    {' '}
+                    ({t_i18n('of author')})
+                  </span>
+                )}
+              </Label>
+              <ItemOpenVocab
+                displayMode="chip"
+                type="reliability_ov"
+                value={reliability?.toString()}
+              />
+            </Grid>
+          )}
+          {displayConfidence && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Label>
+                {t_i18n('Confidence level')}
+              </Label>
+              <ItemConfidence
+                confidence={stixDomainObject.confidence}
+                entityType={stixDomainObject.entity_type}
+              />
+            </Grid>
+          )}
+          {displayAssignees && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
               <div data-testid="sdo-overview-assignees">
                 <Label
-                  sx={{ marginTop: 2 }}
                   action={(
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
@@ -253,11 +237,17 @@ const StixDomainObjectOverview = ({
                   stixDomainObjectId={stixDomainObject.id}
                 />
               </div>
-            )}
-            {displayParticipants && (
+            </Grid>
+          )}
+          {displayOpinions && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />
+            </Grid>
+          )}
+          {displayParticipants && (
+            <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
               <div data-testid="sdo-overview-participants">
                 <Label
-                  sx={{ marginTop: 2 }}
                   action={(
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
@@ -279,8 +269,10 @@ const StixDomainObjectOverview = ({
                   stixDomainObjectId={stixDomainObject.id}
                 />
               </div>
-            )}
-            <Label sx={{ marginTop: 2 }}>
+            </Grid>
+          )}
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Label>
               {t_i18n('Revoked')}
             </Label>
             <ItemBoolean
@@ -288,25 +280,31 @@ const StixDomainObjectOverview = ({
               label={stixDomainObject.revoked ? t_i18n('Yes') : t_i18n('No')}
               reverse={true}
             />
+          </Grid>
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
             <StixCoreObjectLabelsView
               labels={stixDomainObject.objectLabel}
               id={stixDomainObject.id}
-              sx={{ marginTop: 2 }}
               entity_type={stixDomainObject.entity_type}
             />
-            <Label sx={{ marginTop: 2 }}>
+          </Grid>
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Label>
               {t_i18n('Platform creation date')}
             </Label>
             {fldt(stixDomainObject.created_at)}
+          </Grid>
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
             <div>
-              <Label sx={{ marginTop: 2 }}>
+              <Label>
                 {t_i18n('Creators')}
               </Label>
               <ItemCreators creators={stixDomainObject.creators ?? []} />
             </div>
-            <div style={{ marginTop: 20 }}>
+          </Grid>
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <div>
               <Label
-                sx={{ marginTop: 2 }}
                 action={(
                   <>
                     <Tooltip
@@ -349,6 +347,18 @@ const StixDomainObjectOverview = ({
                 <ItemCopy content={stixDomainObject.standard_id} />
               </div>
             </div>
+          </Grid>
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Label>
+              {t_i18n('Original creation date')}
+            </Label>
+            {fldt(stixDomainObject.created)}
+          </Grid>
+          <Grid item xs={6} sx={{ paddingY: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Label>
+              {t_i18n('Modification date')}
+            </Label>
+            {fldt(stixDomainObject.modified)}
           </Grid>
         </Grid>
       </Card>

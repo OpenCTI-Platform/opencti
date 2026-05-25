@@ -1,5 +1,5 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
+import { alpha, Box, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -97,11 +97,11 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     selected: boolean,
     showIcon = true,
     fontSize: 'default' | 'small' = 'default',
-    forceShowText = false, // For popover items
+    // forceShowText = false, // For popover items
   ) => {
     const isSubItem = fontSize === 'small';
-    const iconColor = selected ? theme.palette.text.light : theme.palette.text.tertiary;
-    const iconOpacity = isSubItem && selected ? 1 : 0.5;
+    const iconColor = selected ? 'var(--fluent-color-primary)' : theme.palette.text.tertiary;
+    const iconOpacity = 1;
 
     const getTextColor = () => {
       if (isSubItem && draftContext && selected) {
@@ -122,23 +122,45 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     return (
       <>
         {showIcon && itemIcon && (
-          <ListItemIcon
-            sx={{
-              minWidth: '0px!important',
-              mr: 1,
-              opacity: iconOpacity,
-              color: iconColor,
-              ...(isSubItem && { alignSelf: 'flex-start', pt: 0.35 }),
-              '& svg': {
-                fontSize: '16px!important',
-              },
-            }}
-          >
-            {itemIcon}
-          </ListItemIcon>
-        )}
+          <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', alignItems: 'center' }}>
+            <ListItemIcon
+              sx={{
+                minWidth: '0px!important',
+                opacity: iconOpacity,
+                color: iconColor,
+                ...(isSubItem && { alignSelf: 'flex-start', pt: 0.35 }),
+                '& svg': {
+                  fontSize: '24px!important',
+                },
+              }}
+            >
+              {itemIcon}
+            </ListItemIcon>
 
-        {(navOpen || forceShowText) && (
+            {/* {(navOpen || forceShowText) && ( */}
+            <ListItemText
+              primary={itemLabel}
+              sx={{
+                pt: 0.1,
+                ...(isSubItem && { flex: 1, minWidth: 0 }),
+              }}
+              slotProps={{
+                primary: {
+                  fontSize: fontSize === 'default' ? '10px' : '10px',
+                  color: getTextColor(),
+                  ...(isSubItem && {
+                    whiteSpace: 'normal',
+                    lineHeight: 1.35,
+                    wordBreak: 'break-word',
+                  }),
+                },
+              }}
+
+            />
+            {/* )} */}
+          </Box>
+        )}
+        {!showIcon && (
           <ListItemText
             primary={itemLabel}
             sx={{
@@ -147,7 +169,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             }}
             slotProps={{
               primary: {
-                fontSize: fontSize === 'default' ? '14px' : '12px',
+                fontSize: fontSize === 'default' ? '10px' : '10px',
                 color: getTextColor(),
                 ...(isSubItem && {
                   whiteSpace: 'normal',
@@ -170,7 +192,6 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       <MenuItem
         component={Link}
         to={item.link}
-        dense
         onClick={inCollapse ? undefined : onMenuClose}
         sx={{
           alignItems: 'flex-start',
@@ -182,7 +203,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           },
         }}
       >
-        {renderMenuItem(item.icon, item.label, itemSelected, submenuShowIcons, 'small', !inCollapse)}
+        {renderMenuItem(item.icon, item.label, itemSelected, false, 'small')}
       </MenuItem>
     );
 
@@ -199,18 +220,19 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     const draftBg = theme.palette.designSystem.alert.warning.primary;
     const defaultBg = draftContext ? draftBg : theme.palette.primary.main;
     return {
-      px: 2,
+      px: 1,
       pr: 1,
       py: 0,
-      height: '36px',
+      marginInlineStart: 1,
+      height: '56px',
+      borderRadius: '0 !important',
       borderLeft: selected ? `2px solid ${defaultBg}` : '2px solid transparent',
-      backgroundColor: selected ? alpha(defaultBg || '#00FF00', 0.1) : 'transparent',
+      backgroundColor: 'transparent',
+      color: selected ? 'var(--fluent-color-primary)' : 'inherit',
       display: 'flex',
       alignItems: 'center',
       '&:hover': {
-        backgroundColor: selected
-          ? theme.palette.action?.selected
-          : theme.palette.leftBar.hover,
+        color: 'var(--fluent-color-primary)',
       },
     };
   };
@@ -293,7 +315,8 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
               pointerEvents: 'auto',
               minWidth: 200,
               maxWidth: 300,
-              backgroundColor: theme.palette.leftBar.popoverItem,
+              boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+              backgroundColor: 'var(--fluent-color-bg)',
             },
           },
         }}

@@ -122,7 +122,7 @@ import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 import LogoResaaCtip from '../../../static/images/rctip-logo-text.svg';
 import LogoResaaCtipIcon from '../../../static/images/rctip-logo-icon.svg';
-export const SMALL_BAR_WIDTH = 55;
+export const SMALL_BAR_WIDTH = 100;
 export const OPEN_BAR_WIDTH = 180;
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -399,14 +399,8 @@ const LeftBarComponent = ({ queryRef }) => {
     submenuShowIcons: submenu_show_icons,
   };
 
-  const isLightTheme = theme.palette.mode === 'light';
   const getBackground = () => {
-    if (isLightTheme) {
-      return `linear-gradient(100deg, ${THEME_LIGHT_DEFAULT_BACKGROUND} 0%, ${THEME_LIGHT_DEFAULT_PAPER} 100%)`;
-    }
-    const start = theme.palette.background?.gradient?.start ?? theme.palette.background?.default;
-    const end = theme.palette.background?.gradient?.end ?? theme.palette.background?.secondary;
-    return `linear-gradient(100deg, ${start} 0%, ${end} 100%)`;
+    return 'var(--fluent-color-sidebar)';
   };
 
   return (
@@ -838,12 +832,12 @@ const LeftBarComponent = ({ queryRef }) => {
             gap: 2,
           }}
         >
-          <LeftBarItem
+          {/* <LeftBarItem
             {...itemProps}
             icon={navOpen ? <ChevronLeft /> : <ChevronRight />}
             label={t_i18n('Collapse')}
             onClick={handleToggle}
-          />
+          /> */}
           {!data?.settings?.platform_whitemark && (
             <Stack
               direction="row"

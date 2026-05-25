@@ -222,12 +222,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           height: '100%',
-          minHeight: 68,
+          minHeight: 48,
           paddingInlineStart: theme.spacing(3),
           paddingInlineEnd: theme.spacing(3),
           display: 'flex',
           justifyContent: 'space-between',
-          background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
+          background: 'var(--fluent-color-sidebar)',
         }}
       >
         {hasKnowledgeAccess && (

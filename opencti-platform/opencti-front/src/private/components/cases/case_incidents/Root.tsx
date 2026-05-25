@@ -174,12 +174,6 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             />
           ),
         }}
-        extraActions={!isKnowledgeOrContent && (
-          <>
-            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-            <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
-          </>
-        )}
       />
     </div>
   );
