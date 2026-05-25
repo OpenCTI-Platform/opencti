@@ -48,7 +48,7 @@ export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAudi
   }
   return elPaginate(context, user, READ_INDEX_HISTORY, {
     ...args,
-    first: args.first ? args.first : undefined,
+    first: args.first ?? undefined,
     types,
     historyFiltering: true,
   });
