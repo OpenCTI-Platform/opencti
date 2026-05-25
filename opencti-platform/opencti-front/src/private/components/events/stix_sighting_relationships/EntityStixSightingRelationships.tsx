@@ -32,7 +32,7 @@ interface SightingCreationComponentProps {
   entityId: string;
   noPadding?: boolean;
   paginationOptions: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
-  stixCoreObjectTypes: string[];
+  stixCoreObjectTypes?: string[];
   variant?: 'controlledDial' | 'inLine';
 }
 
@@ -83,7 +83,7 @@ interface EntityStixSightingRelationshipsProps {
   isTo: boolean;
   entityId: string;
   noPadding?: boolean;
-  stixCoreObjectTypes: string[];
+  stixCoreObjectTypes?: string[];
   entityLink: string;
   disableExport?: boolean;
 }

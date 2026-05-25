@@ -286,7 +286,6 @@ const CountryKnowledgeComponent = ({
               entityId={country.id}
               entityLink={link}
               isTo={true}
-              stixCoreObjectTypes={[]} // Check
             />
           )}
         />

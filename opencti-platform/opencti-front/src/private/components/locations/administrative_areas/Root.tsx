@@ -189,7 +189,6 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: Roo
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
-                    stixCoreObjectTypes={[]} // Check
                   />
                 ),
                 files: (

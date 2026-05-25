@@ -184,7 +184,6 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
-                    stixCoreObjectTypes={[]}
                   />
                 ),
                 files: (

@@ -190,7 +190,6 @@ const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) =
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
-                    stixCoreObjectTypes={[]} // Check values
                   />
                 ),
                 files: (

@@ -188,7 +188,6 @@ const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps
                 ),
                 sightings: (
                   <EntityStixSightingRelationships
-                    stixCoreObjectTypes={[]} // Check values
                     entityId={country.id}
                     entityLink={link}
                     noPadding={true}
