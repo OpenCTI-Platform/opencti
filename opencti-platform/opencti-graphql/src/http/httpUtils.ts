@@ -117,7 +117,7 @@ export const buildPublicHelmetParameters = () => {
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
   const helmetConfiguration: HelmetOptions = {
-    referrerPolicy: { policy: 'unsafe-url' },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false,
@@ -147,7 +147,7 @@ export const buildPublicHelmetParameters = () => {
 
 export const buildDefaultHelmetParameters = () => {
   const helmetConfiguration: HelmetOptions = {
-    referrerPolicy: { policy: 'unsafe-url' },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false,
