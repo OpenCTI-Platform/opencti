@@ -26,7 +26,7 @@ import { environment } from '../../../../../relay/environment';
 import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
-import useGranted, { BYPASS, INGESTION, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, MODULES } from '../../../../../utils/hooks/useGranted';
+import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
 import CreatedByField from '../../../common/form/CreatedByField';
@@ -151,7 +151,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
-  const isManageAuthMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const { isForcedImportToDraft } = useImportAccess();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -580,7 +579,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
             const showDraftAuthor = isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
             const showDraftAuthorizedMembers = isDraft
               && schema.draftDefaults?.authorizedMembers?.enabled
-              && (isBypass || isManageAuthMembers);
+              && (isBypass || schema.draftDefaults.authorizedMembers.isEditable);
             const showDraftSection = showDraftName
               || showDraftDescription
               || showDraftObjectAssignee

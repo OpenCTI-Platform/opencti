@@ -14,7 +14,7 @@ import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -481,8 +481,8 @@ export const formSubmit = async (
       }
 
       // Apply explicit authorized members from form submission
-      // Bypass users can always override; non-bypass users can override when the field is editable and they have the manage auth members capability
-      const canOverrideAuthorizedMembers = isBypass || (schema.draftDefaults?.authorizedMembers?.isEditable && isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS));
+      // Bypass users can always override; non-bypass users can override when the field is editable
+      const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
       let authorized_members: MemberAccessInput[] = [];
       if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
         authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
