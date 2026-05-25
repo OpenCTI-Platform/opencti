@@ -239,6 +239,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+            uploadEntityId={intrusionSet.id}
           />
           {intrusionSet.workflowEnabled && (
             <StatusField
