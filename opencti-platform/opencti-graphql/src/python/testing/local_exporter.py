@@ -6,7 +6,9 @@ from pycti.api.opencti_api_client import OpenCTIApiClient
 
 
 class TestLocalExporter:
-    def __init__(self, api_url, api_token, entity_id, entity_type, file_name, file_markings):
+    def __init__(
+        self, api_url, api_token, entity_id, entity_type, file_name, file_markings
+    ):
         self.api_url = api_url
         self.api_token = api_token
         self.entity_id = entity_id

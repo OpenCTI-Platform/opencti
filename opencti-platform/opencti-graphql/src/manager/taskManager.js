@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
 import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
@@ -25,6 +25,7 @@ import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
   ACTION_TYPE_ENRICHMENT,
+  ACTION_TYPE_ENROLL_PLAYBOOK,
   ACTION_TYPE_MERGE,
   ACTION_TYPE_PROMOTE,
   ACTION_TYPE_REMOVE,
@@ -139,7 +140,8 @@ const throwErrorInDraftContext = (context, user, actionType) => {
     || actionType === ACTION_TYPE_RULE_APPLY
     || actionType === ACTION_TYPE_RULE_CLEAR
     || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
-    || actionType === ACTION_TYPE_SEND_EMAIL) {
+    || actionType === ACTION_TYPE_SEND_EMAIL
+    || actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };
@@ -152,7 +154,7 @@ const isUnshareAction = (actionType) => {
   return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
 };
 
-const baseOperationBuilder = (actionType, operations, element) => {
+export const baseOperationBuilder = (actionType, operations, element) => {
   const baseOperationObject = {};
   // Knowledge management
   if (actionType === 'KNOWLEDGE_CHANGE') {
@@ -240,6 +242,11 @@ const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_SEND_EMAIL) {
     baseOperationObject.opencti_operation = 'send_email';
     baseOperationObject.template_id = operations[0].context.values;
+  }
+  // Playbook enrollment
+  if (isFeatureEnabled('BULK_ENROLLMENT') && actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
+    baseOperationObject.opencti_operation = 'enroll_playbook';
+    baseOperationObject.playbook_id = operations[0].context.values[0];
   }
   return baseOperationObject;
 };

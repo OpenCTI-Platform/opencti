@@ -3216,6 +3216,18 @@ class OpenCTIStix2:
                 {"type": item["type"]},
             )
 
+    def enroll_playbook(self, item):
+        playbook_id = self.opencti.get_attribute_in_extension("playbook_id", item)
+        if playbook_id is None:
+            playbook_id = item.get("playbook_id")
+        entity_id = self.opencti.get_attribute_in_extension("id", item)
+        if entity_id is None:
+            entity_id = item.get("id")
+        if playbook_id and entity_id:
+            self.opencti.playbook.playbook_execute(
+                playbook_id=playbook_id, entity_id=entity_id
+            )
+
     def element_operation_delete(self, item, operation):
         """Delete an element.
 
@@ -3278,6 +3290,8 @@ class OpenCTIStix2:
             self.element_remove_from_draft(item=item)
         elif operation == "restore":
             self.opencti.trash.restore(item["id"])
+        elif operation == "enroll_playbook":
+            self.enroll_playbook(item=item)
         elif operation == "merge":
             target_id = self.opencti.get_attribute_in_extension("merge_target_id", item)
             if target_id is None:

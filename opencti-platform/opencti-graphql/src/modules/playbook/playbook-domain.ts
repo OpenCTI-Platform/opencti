@@ -85,6 +85,27 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
   return filteredPlaybooks;
 };
 
+export const findPlaybooksForEnrollment = async (
+  context: AuthContext,
+) => {
+  await checkEnterpriseEdition(context);
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  const filteredPlaybooks: BasicStoreEntityPlaybook[] = [];
+  for (const playbook of playbooks) {
+    if (playbook.playbook_definition) {
+      const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+      const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
+      if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
+        const { canEnrollManually } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
+        const isAvailableForManualEnrollment = canEnrollManually ?? true;
+        if (!isAvailableForManualEnrollment) continue;
+        filteredPlaybooks.push(playbook);
+      }
+    }
+  }
+  return filteredPlaybooks;
+};
+
 export const availableComponents = async (context: AuthContext) => {
   await checkEnterpriseEdition(context);
   return Object.values(PLAYBOOK_COMPONENTS);

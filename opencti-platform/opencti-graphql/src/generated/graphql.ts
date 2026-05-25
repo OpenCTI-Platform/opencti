@@ -1780,6 +1780,7 @@ export enum BackgroundTaskActionType {
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
   Enrichment = 'ENRICHMENT',
+  EnrollPlaybook = 'ENROLL_PLAYBOOK',
   Merge = 'MERGE',
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
@@ -24413,6 +24414,7 @@ export type Query = {
   playbookComponents: Array<Maybe<PlaybookComponent>>;
   playbookManagerInfo?: Maybe<PlaybookManager>;
   playbooks?: Maybe<PlaybookConnection>;
+  playbooksForEnrollment?: Maybe<Array<Maybe<Playbook>>>;
   playbooksForEntity?: Maybe<Array<Maybe<Playbook>>>;
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
@@ -48849,6 +48851,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
   playbookManagerInfo?: Resolver<Maybe<ResolversTypes['PlaybookManager']>, ParentType, ContextType>;
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
+  playbooksForEnrollment?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType>;
   playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;

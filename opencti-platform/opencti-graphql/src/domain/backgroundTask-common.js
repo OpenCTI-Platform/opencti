@@ -61,6 +61,7 @@ export const ACTION_TYPE_REMOVE_GROUPS = 'REMOVE_GROUPS';
 export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
+export const ACTION_TYPE_ENROLL_PLAYBOOK = 'ENROLL_PLAYBOOK';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
