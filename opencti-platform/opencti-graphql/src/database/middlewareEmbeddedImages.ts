@@ -16,8 +16,7 @@ import {
   resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
 } from './markdown-embedded-images';
-import { UPDATE_OPERATION_REMOVE } from './utils';
-import { wait } from './utils';
+import { UPDATE_OPERATION_REMOVE, wait } from './utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase } from '../types/store';
 import type { EditInput } from '../generated/graphql';
