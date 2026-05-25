@@ -28,7 +28,7 @@ const DraftReview: FunctionComponent<DraftReviewProps> = ({ draftId }) => {
       }}
     >
       {/* Left column — entity list */}
-      <Box sx={{ flex: 1 }} ref={(r: HTMLDivElement | null) => setContainerRef(r ?? undefined)}>
+      <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }} ref={(r: HTMLDivElement | null) => setContainerRef(r ?? undefined)}>
         <DraftReviewEntityList
           draftId={draftId}
           onSelectEntity={handleSelectEntity}
