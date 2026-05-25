@@ -1,16 +1,21 @@
 html[data-theme="fluent"] {
-  --fluent-color-primary: #006da0;
+  --fluent-color-primary: #533de4;
   --fluent-color-border: #ccd1dd;
   --fluent-color-border-hover: #5d616b;
+  --fluent-color-bg: #fff;
   --fluent-color-label: #21242d;
   --fluent-color-tab: #151515;
+  --fluent-color-sidebar: #f0f0f0;
+  --fluent-color-background: #fafafa;
   body {
     font-family: "IBM Plex Sans", sans-serif;
+    background: var(--fluent-color-background);
     &[data-theme="dark"] {
       --fluent-color-border: #292929;
       --fluent-color-border-hover: #adadad;
       --fluent-color-label: #fff;
       --fluent-color-tab: #fff;
+      --fluent-color-background: #121212;
     }
     a {
       // color: var(--fluent-color-primary);
@@ -55,8 +60,10 @@ html[data-theme="fluent"] {
       }
     }
     &.MuiButton-text {
-      &.MuiButton-textPrimary {
-        color: var(--fluent-color-primary);
+      &:not(.MuiButton-colorPrimary) {
+        &.MuiButton-textPrimary {
+          color: var(--fluent-color-primary);
+        }
       }
     }
   }
@@ -284,7 +291,7 @@ html[data-theme="fluent"] {
     }
   }
   &[dir="rtl"] {
-    body *{
+    body * {
       font-family:
         "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
     }
@@ -301,7 +308,8 @@ html[data-theme="fluent"] {
     }
     .MuiInputBase-input {
       fieldset {
-        font-family: "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+        font-family:
+          "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
       }
     }
     .MuiFormLabel-root {
@@ -524,5 +532,3 @@ html[data-theme="fluent"] {
     url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff) format("woff"),
     url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff2) format("woff2");
 }
-
-

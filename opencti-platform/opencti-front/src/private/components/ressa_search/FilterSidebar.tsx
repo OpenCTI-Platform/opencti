@@ -85,12 +85,12 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        borderRadius: 1,
-        border: '1px solid',
-        borderColor: 'divider',
         backgroundColor: 'background.paper',
         minHeight: 0,
         overflow: 'hidden',
+        boxShadow: 'none',
+        borderRight: '1px solid',
+        borderColor: 'divider',
       }}
     >
       <Box sx={{ padding: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -153,7 +153,32 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
                 }}
                 onClick={() => handleToggleGroup(filter.key)}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
+                      {getFilterLabel(filter.key)}
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        backgroundColor: 'action.hover',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'text.secondary',
+                        }}
+                      >
+                        {filter.values.length}
+                      </Typography>
+                    </Box>
+                  </Box>
                   <IconButton
                     size="small"
                     onClick={(e) => {
@@ -168,18 +193,6 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
                       <ExpandMore fontSize="small" />
                     )}
                   </IconButton>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                    {getFilterLabel(filter.key)}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'text.secondary',
-                      marginInlineStart: 1,
-                    }}
-                  >
-                    {filter.values.length}
-                  </Typography>
                 </Box>
               </Box>
 

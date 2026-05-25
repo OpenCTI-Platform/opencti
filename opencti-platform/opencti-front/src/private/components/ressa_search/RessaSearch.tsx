@@ -76,22 +76,22 @@ interface SearchResult {
 // Function to parse search query and extract filters
 const parseSearchQuery = (query: string): FilterGroup[] => {
   const filterGroups: Record<string, { values: Set<string>; checked: Set<string> }> = {};
-  
+
   // Regular expression to match key: "value" patterns (handles keys with underscores)
   const keyValuePattern = /(\w+(?:_\w+)*):\s*"([^"]+)"/g;
   let match;
-  
+
   while ((match = keyValuePattern.exec(query)) !== null) {
     const key = match[1];
     const value = match[2];
-    
+
     if (!filterGroups[key]) {
       filterGroups[key] = { values: new Set(), checked: new Set() };
     }
     filterGroups[key].values.add(value);
     filterGroups[key].checked.add(value);
   }
-  
+
   // Mock additional values for each filter group to make it look realistic
   const mockValues: Record<string, string[]> = {
     actor: ['Qiam', 'Tapandegan', 'Gonjeshk', 'Alpha Strike Lab', 'SPIDER', 'Another Actor'],
@@ -110,15 +110,15 @@ const parseSearchQuery = (query: string): FilterGroup[] => {
     exploit_available: ['true', 'false'],
     exploit_in_the_wild: ['true', 'false'],
   };
-  
+
   // Convert to FilterGroup array and add mock values
   return Object.entries(filterGroups).map(([key, data]) => {
     const checkedValues = Array.from(data.checked);
     const allValues = mockValues[key] || Array.from(data.values);
-    
+
     // Ensure checked values are included
     const uniqueValues = Array.from(new Set([...allValues, ...checkedValues]));
-    
+
     return {
       key,
       label: key,
@@ -155,7 +155,7 @@ const RessaSearch = () => {
   const inputRef = useRef<HTMLDivElement>(null);
   const saveIconRef = useRef<HTMLButtonElement>(null);
   const filterIconRef = useRef<HTMLButtonElement>(null);
-  
+
   // Mock recent searches data
   const [recentSearches] = useState<RecentSearch[]>([
     { id: '1', query: 'asn: "12" and country: "Iran"', timestamp: '1 minute ago' },
@@ -340,7 +340,7 @@ const RessaSearch = () => {
   const parseQueryToChips = (query: string) => {
     const chips: Array<{ type: 'filter' | 'operator'; key?: string; value?: string; label: string }> = [];
     const parts = query.split(/\s+(and|or)\s+/i);
-    
+
     parts.forEach((part, index) => {
       if (part.toLowerCase() === 'and' || part.toLowerCase() === 'or') {
         chips.push({
@@ -359,7 +359,7 @@ const RessaSearch = () => {
         }
       }
     });
-    
+
     return chips;
   };
 
@@ -403,37 +403,31 @@ const RessaSearch = () => {
 
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('Ressa Search') }]} />
+      {/* <Breadcrumbs elements={[{ label: t_i18n('Ressa Search') }]} /> */}
       <Box sx={{ padding: 0 }}>
-        <Paper
+
+        {/* Global Search Title */}
+        <Typography
+          variant="h4"
           sx={{
-            padding: 2,
-            minHeight: '400px',
-            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+            marginBottom: 3,
+            fontWeight: 600,
           }}
         >
-          {/* Global Search Title */}
-          <Typography
-            variant="h4"
-            sx={{
-              marginBottom: 3,
-              fontWeight: 600,
-            }}
-          >
-            {t_i18n('Global Search')}
-          </Typography>
+          {t_i18n('Global Search')}
+        </Typography>
 
-          {/* Search Bar */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              marginBottom: 3,
-            }}
-          >
-            {/* Search Input */}
-            <Box ref={inputRef} sx={{ width: '100%', position: 'relative' }}>
+        {/* Search Bar */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            marginBottom: 3,
+          }}
+        >
+          {/* Search Input */}
+          <Box ref={inputRef} sx={{ width: '100%', position: 'relative' }}>
             <TextField
               fullWidth
               variant="outlined"
@@ -443,7 +437,7 @@ const RessaSearch = () => {
               onKeyDown={handleKeyDown}
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  height: 56,
+                  height: 40,
                   backgroundColor: 'background.paper',
                   '& fieldset': {
                     borderColor: 'divider',
@@ -565,352 +559,356 @@ const RessaSearch = () => {
                 ),
               }}
             />
-            </Box>
-
-            {/* Search Button */}
-            <Button
-              ref={searchButtonRef}
-              variant="contained"
-              color="primary"
-              onClick={handleSearch}
-              sx={{
-                minWidth: 120,
-                height: 56,
-                textTransform: 'none',
-                fontSize: '1rem',
-                fontWeight: 500,
-                borderRadius: 1,
-              }}
-            >
-              {t_i18n('Search')}
-            </Button>
           </Box>
 
-          {/* Recent Searches Popover */}
-          <SearchListPopover
-            open={Boolean(historyAnchorEl)}
-            anchorEl={historyAnchorEl}
-            onClose={handleCloseHistoryPopover}
-            width={popoverWidth}
-            title={t_i18n('Recent searches')}
-            items={recentSearches}
-            icon={<History fontSize="small" sx={{ color: 'text.secondary' }} />}
-            onSelectItem={handleSelectRecentSearch}
-            onEditItem={handleEditSearch}
-            onSave={handleSave}
-            saveButtonText={t_i18n('Save Search')}
-          />
+          {/* Search Button */}
+          <Button
+            ref={searchButtonRef}
+            variant="contained"
+            color="primary"
+            onClick={handleSearch}
+            sx={{
+              minWidth: 100,
+              height: 40,
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+              borderRadius: 1,
+            }}
+          >
+            {t_i18n('Search')}
+          </Button>
+        </Box>
 
-          {/* Saved Searches Popover */}
-          <SearchListPopover
-            open={Boolean(saveAnchorEl)}
-            anchorEl={saveAnchorEl}
-            onClose={handleCloseSavePopover}
-            width={popoverWidth}
-            title={t_i18n('Saved searches')}
-            items={savedSearches}
-            icon={<Save fontSize="small" sx={{ color: 'text.secondary' }} />}
-            onSelectItem={handleSelectRecentSearch}
-            onEditItem={handleEditSearch}
-            onSave={handleSave}
-            saveButtonText={t_i18n('Save Search')}
-          />
+        {/* Recent Searches Popover */}
+        <SearchListPopover
+          open={Boolean(historyAnchorEl)}
+          anchorEl={historyAnchorEl}
+          onClose={handleCloseHistoryPopover}
+          width={popoverWidth}
+          title={t_i18n('Recent searches')}
+          items={recentSearches}
+          icon={<History fontSize="small" sx={{ color: 'text.secondary' }} />}
+          onSelectItem={handleSelectRecentSearch}
+          onEditItem={handleEditSearch}
+          onSave={handleSave}
+          saveButtonText={t_i18n('Save Search')}
+        />
 
-          {/* Filters Popover */}
-          <FilterPopover
-            open={Boolean(filterAnchorEl)}
-            anchorEl={filterAnchorEl}
-            onClose={handleCloseFilterPopover}
-            width={popoverWidth}
-            title={t_i18n('Filters')}
-            filters={filters}
-            onSelectFilter={handleSelectFilter}
-          />
+        {/* Saved Searches Popover */}
+        <SearchListPopover
+          open={Boolean(saveAnchorEl)}
+          anchorEl={saveAnchorEl}
+          onClose={handleCloseSavePopover}
+          width={popoverWidth}
+          title={t_i18n('Saved searches')}
+          items={savedSearches}
+          icon={<Save fontSize="small" sx={{ color: 'text.secondary' }} />}
+          onSelectItem={handleSelectRecentSearch}
+          onEditItem={handleEditSearch}
+          onSave={handleSave}
+          saveButtonText={t_i18n('Save Search')}
+        />
 
-          {/* No Search State */}
-          {!hasSearched && (
+        {/* Filters Popover */}
+        <FilterPopover
+          open={Boolean(filterAnchorEl)}
+          anchorEl={filterAnchorEl}
+          onClose={handleCloseFilterPopover}
+          width={popoverWidth}
+          title={t_i18n('Filters')}
+          filters={filters}
+          onSelectFilter={handleSelectFilter}
+        />
+
+        {/* No Search State */}
+        {!hasSearched && (
+          <Box
+            sx={{
+              marginTop: 6,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {/* Icon */}
             <Box
               sx={{
-                marginTop: 6,
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                backgroundColor: 'action.hover',
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                marginBottom: 3,
               }}
             >
-              {/* Icon */}
-              <Box
+              <ErrorOutline
                 sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  backgroundColor: 'action.hover',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 3,
+                  fontSize: 48,
+                  color: 'text.secondary',
                 }}
-              >
-                <ErrorOutline
-                  sx={{
-                    fontSize: 48,
-                    color: 'text.secondary',
-                  }}
-                />
-              </Box>
-
-              {/* Title */}
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 600,
-                  marginBottom: 1,
-                  textAlign: 'center',
-                }}
-              >
-                {t_i18n('No search has been performed yet')}
-              </Typography>
-
-              {/* Subtitle */}
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{
-                  marginBottom: 4,
-                  textAlign: 'center',
-                }}
-              >
-                {t_i18n('You can start with the examples below')}
-              </Typography>
-
-              {/* Example Cards */}
-              <Box
-                sx={{
-                  width: '100%',
-                  maxWidth: 800,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2,
-                }}
-              >
-                {searchExamples.map((example, index) => (
-                  <Card
-                    key={index}
-                    sx={{
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      border: '1px solid rgba(0, 0, 0, 0.06)',
-                      '&:hover': {
-                        boxShadow: 3,
-                        transform: 'translateY(-2px)',
-                      },
-                    }}
-                    onClick={() => handleExampleClick(example)}
-                  >
-                    <CardContent>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                        }}
-                      >
-                        <Box sx={{ flex: 1 }}>
-                          <Typography
-                            variant="subtitle1"
-                            sx={{
-                              fontWeight: 500,
-                              marginBottom: 1.5,
-                            }}
-                          >
-                            {example.title}
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              gap: 1,
-                              alignItems: 'center',
-                            }}
-                          >
-                            {example.filters.map((filter, filterIndex) => {
-                              if (filter.type === 'operator') {
-                                return (
-                                  <Chip
-                                    key={filterIndex}
-                                    label={filter.key}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: '#F3F8FF', // Light blue background for "and" operators
-                                      color: '#5C7BF5', // Blue text color
-                                      border: 'none',
-                                      fontWeight: 500,
-                                      borderRadius: '4px',
-                                    }}
-                                  />
-                                );
-                              }
-                              return (
-                                <Chip
-                                  key={filterIndex}
-                                  label={
-                                    <Box component="span">
-                                      {filter.key}: <Box component="span" sx={{ fontWeight: 700 }}>{filter.value}</Box>
-                                    </Box>
-                                  }
-                                  size="small"
-                                  sx={{
-                                    backgroundColor: '#E8E4F7', // Light purple background
-                                    color: '#6B46C1', // Dark purple text
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    '& .MuiChip-label': {
-                                      fontWeight: 500,
-                                    },
-                                  }}
-                                />
-                              );
-                            })}
-                          </Box>
-                        </Box>
-                        <ArrowForward
-                          sx={{
-                            color: 'text.secondary',
-                            fontSize: 20,
-                          }}
-                        />
-                      </Box>
-                    </CardContent>
-                  </Card>
-                ))}
-              </Box>
+              />
             </Box>
-          )}
 
-          {/* Search Results or No Results State */}
-          {hasSearched && (
+            {/* Title */}
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 600,
+                marginBottom: 1,
+                textAlign: 'center',
+              }}
+            >
+              {t_i18n('No search has been performed yet')}
+            </Typography>
+
+            {/* Subtitle */}
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{
+                marginBottom: 4,
+                textAlign: 'center',
+              }}
+            >
+              {t_i18n('You can start with the examples below')}
+            </Typography>
+
+            {/* Example Cards */}
             <Box
               sx={{
-                marginTop: 4,
+                width: '100%',
+                maxWidth: 800,
                 display: 'flex',
-                gap: 3,
-                maxHeight: 'calc(100vh - 300px)',
-                minHeight: 400,
+                flexDirection: 'column',
+                gap: 2,
               }}
             >
-              {/* Filter Sidebar - Left Side for LTR */}
-              {extractedFilters.length > 0 && (
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <FilterSidebar
-                    filters={extractedFilters}
-                    onFilterChange={(filterKey, value, checked) => {
-                      // Update filter state
-                      setExtractedFilters((prev) =>
-                        prev.map((filter) => {
-                          if (filter.key === filterKey) {
-                            return {
-                              ...filter,
-                              values: filter.values.map((v) =>
-                                v.value === value ? { ...v, checked } : v
-                              ),
-                            };
-                          }
-                          return filter;
-                        })
-                      );
-                      // TODO: Trigger new search with updated filters
-                    }}
-                  />
-                </Box>
-              )}
-
-              {/* Main Content Area */}
-              <Box sx={{ flex: 5, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              {searchExamples.map((example, index) => (
                 <Card
+                  key={index}
                   sx={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    minHeight: 0,
-                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    border: '1px solid rgba(0, 0, 0, 0.06)',
+                    '&:hover': {
+                      boxShadow: 3,
+                      transform: 'translateY(-2px)',
+                    },
                   }}
+                  onClick={() => handleExampleClick(example)}
                 >
-                  <CardContent
-                    sx={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      padding: 0,
-                      minHeight: 0,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {/* Results Count and Save Search Button */}
+                  <CardContent>
                     <Box
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: 2,
+                        gap: 2,
                       }}
                     >
-                      {/* Results Count */}
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                        }}
-                      >
-                        {t_i18n('Results found')}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: 500,
+                            marginBottom: 1.5,
+                          }}
+                        >
+                          {example.title}
+                        </Typography>
                         <Box
                           sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: '50%',
-                            backgroundColor: 'primary.main',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 1,
+                            alignItems: 'center',
                           }}
-                        />
+                        >
+                          {example.filters.map((filter, filterIndex) => {
+                            if (filter.type === 'operator') {
+                              return (
+                                <Chip
+                                  key={filterIndex}
+                                  label={filter.key}
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: '#F3F8FF', // Light blue background for "and" operators
+                                    color: '#5C7BF5', // Blue text color
+                                    border: 'none',
+                                    fontWeight: 500,
+                                    borderRadius: '4px',
+                                  }}
+                                />
+                              );
+                            }
+                            return (
+                              <Chip
+                                key={filterIndex}
+                                label={
+                                  <Box component="span">
+                                    {filter.key}: <Box component="span" sx={{ fontWeight: 700 }}>{filter.value}</Box>
+                                  </Box>
+                                }
+                                size="small"
+                                sx={{
+                                  backgroundColor: '#E8E4F7', // Light purple background
+                                  color: '#6B46C1', // Dark purple text
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  '& .MuiChip-label': {
+                                    fontWeight: 500,
+                                  },
+                                }}
+                              />
+                            );
+                          })}
+                        </Box>
+                      </Box>
+                      <ArrowForward
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: 20,
+                        }}
+                      />
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Search Results or No Results State */}
+        {hasSearched && (
+          <Box
+            sx={{
+              marginTop: 4,
+              display: 'flex',
+              gap: 0,
+              maxHeight: 'calc(100vh - 300px)',
+              minHeight: 400,
+              borderRadius: 1,
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            {/* Filter Sidebar - Left Side for LTR */}
+            {extractedFilters.length > 0 && (
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <FilterSidebar
+                  filters={extractedFilters}
+                  onFilterChange={(filterKey, value, checked) => {
+                    // Update filter state
+                    setExtractedFilters((prev) =>
+                      prev.map((filter) => {
+                        if (filter.key === filterKey) {
+                          return {
+                            ...filter,
+                            values: filter.values.map((v) =>
+                              v.value === value ? { ...v, checked } : v
+                            ),
+                          };
+                        }
+                        return filter;
+                      })
+                    );
+                    // TODO: Trigger new search with updated filters
+                  }}
+                />
+              </Box>
+            )}
+
+            {/* Main Content Area */}
+            <Box sx={{ flex: 5, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <Card
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 0,
+                  overflow: 'hidden',
+                  boxShadow: 'none',
+                }}
+              >
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: 0,
+                    minHeight: 0,
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Results Count and Save Search Button */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: 2,
+                    }}
+                  >
+                    {/* Results Count */}
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      {t_i18n('Results found') + ':'}
+                      <Box
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          backgroundColor: 'action.hover',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
                         <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
                           {hasSearched ? totalResults : 0}
                         </Typography>
-                      </Typography>
+                      </Box>
+                    </Typography>
 
-                      {/* Save Search Button */}
-                      <Button
-                        variant="outlined"
-                        startIcon={<Save />}
-                        onClick={handleSave}
-                        sx={{
-                          textTransform: 'none',
-                          paddingX: 2,
-                          paddingY: 1.5,
-                        }}
-                      >
-                        {t_i18n('Save Search')}
-                      </Button>
-                    </Box>
-
-                    {/* Divider */}
-                    <Divider />
-
-                    {/* Results Content */}
-                    <Box
+                    {/* Save Search Button */}
+                    <Button
+                      variant="outlined"
+                      startIcon={<Save />}
+                      onClick={handleSave}
                       sx={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        padding: 2,
-                        minHeight: 0,
-                        overflow: 'auto',
+                        textTransform: 'none',
+                        paddingX: 2,
+                        paddingY: 1,
                       }}
                     >
+                      {t_i18n('Save Search')}
+                    </Button>
+                  </Box>
+
+                  {/* Divider */}
+                  <Divider />
+
+                  {/* Results Content */}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: 2,
+                      minHeight: 0,
+                      overflow: 'auto',
+                    }}
+                  >
                     {hasResults ? (
                       <Box
                         sx={{
@@ -1266,13 +1264,12 @@ const RessaSearch = () => {
                         </Typography>
                       </Box>
                     )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
+                  </Box>
+                </CardContent>
+              </Card>
             </Box>
-          )}
-        </Paper>
+          </Box>
+        )}
       </Box>
 
       {/* Save Search Dialog */}
@@ -1303,7 +1300,6 @@ const RessaSearch = () => {
               required
               value={saveTitle}
               onChange={(e) => setSaveTitle(e.target.value)}
-              variant="outlined"
               placeholder={t_i18n('Enter search title')}
             />
 
