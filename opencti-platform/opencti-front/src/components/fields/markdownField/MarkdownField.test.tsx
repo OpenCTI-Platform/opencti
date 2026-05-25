@@ -6,6 +6,7 @@ import testRender from '../../../utils/tests/test-render';
 import MarkdownField from './MarkdownField';
 
 const commitMutationMock = vi.fn();
+const isFeatureEnableMock = vi.fn(() => true);
 
 vi.mock('../../../relay/environment', async () => {
   const actual = await vi.importActual('../../../relay/environment');
@@ -22,6 +23,12 @@ vi.mock('../../../relay/environment', async () => {
   };
 });
 
+vi.mock('../../../utils/hooks/useHelper', () => ({
+  default: () => ({
+    isFeatureEnable: isFeatureEnableMock,
+  }),
+}));
+
 const renderMarkdownField = (
   initialValue = '',
   props: Record<string, unknown> = {},
@@ -29,7 +36,7 @@ const renderMarkdownField = (
   return testRender(
     <Formik
       initialValues={{ description: initialValue }}
-      onSubmit={() => {}}
+      onSubmit={() => { }}
     >
       <Field
         name="description"
@@ -45,6 +52,8 @@ describe('Component: MarkdownField', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     commitMutationMock.mockReset();
+    isFeatureEnableMock.mockReset();
+    isFeatureEnableMock.mockReturnValue(true);
     commitMutationMock.mockImplementation(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
@@ -428,7 +437,7 @@ describe('Component: MarkdownField', () => {
           }
           return {};
         }}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
       >
         <Field
           name="description"
@@ -440,7 +449,6 @@ describe('Component: MarkdownField', () => {
 
     const textArea = await screen.findByRole('textbox');
     const uploadButton = screen.getByRole('button', { name: 'Paste, drop, or click to add images' });
-
     fireEvent.focus(textArea);
     fireEvent.blur(textArea, { relatedTarget: uploadButton });
     fireEvent.focus(uploadButton);
@@ -460,7 +468,7 @@ describe('Component: MarkdownField', () => {
           }
           return {};
         }}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
       >
         <Field
           name="description"
