@@ -30,6 +30,7 @@ import { NotificationToastUnreadIdsQuery$data } from './__generated__/Notificati
 
 const MAX_VISIBLE_TOASTS = 4;
 const TOAST_DURATION_MS = 20000;
+const UNREAD_COUNT_DEBOUNCE_MS = 400;
 
 type ToastNotification = NonNullable<
   NonNullable<
@@ -238,9 +239,15 @@ const NotificationToast: FunctionComponent = () => {
   const navigate = useNavigate();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const [toasts, setToasts] = useState<DisplayToastNotification[]>([]);
+  const toastsRef = useRef<DisplayToastNotification[]>([]);
+  toastsRef.current = toasts;
   const dismissTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const unreadCountRef = useRef<number | null>(null);
   const pendingUnreadCountRef = useRef<number | null>(null);
+  const pendingCountUpdateRef = useRef<number | null>(null);
+  const countChangeDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFetchingLatestRef = useRef(false);
+  const isSyncingUnreadRef = useRef(false);
   const isInitializedRef = useRef(false);
 
   const clearDismissTimer = useCallback((id: string) => {
@@ -286,42 +293,57 @@ const NotificationToast: FunctionComponent = () => {
   }, [enqueueToast]);
 
   const fetchLatestNotifications = useCallback(async (count: number) => {
-    const fetchCount = Math.min(Math.max(count, 1), MAX_VISIBLE_TOASTS);
-    const data = await fetchQuery(
-      notificationToastLatestQuery,
-      { count: fetchCount },
-    ).toPromise() as NotificationToastLatestQuery$data;
-    const notifications = extractLatestNotifications(data);
-    enqueueNotifications([...notifications].reverse());
+    if (isFetchingLatestRef.current) {
+      return;
+    }
+    isFetchingLatestRef.current = true;
+    try {
+      const fetchCount = Math.min(Math.max(count, 1), MAX_VISIBLE_TOASTS);
+      const data = await fetchQuery(
+        notificationToastLatestQuery,
+        { count: fetchCount },
+      ).toPromise() as NotificationToastLatestQuery$data;
+      const notifications = extractLatestNotifications(data);
+      enqueueNotifications([...notifications].reverse());
+    } finally {
+      isFetchingLatestRef.current = false;
+    }
   }, [enqueueNotifications]);
 
   const syncVisibleToastsWithUnread = useCallback(async () => {
-    const data = await fetchQuery(
-      notificationToastUnreadIdsQuery,
-      {},
-    ).toPromise() as NotificationToastUnreadIdsQuery$data;
-    const unreadIds = new Set(
-      data.myNotifications?.edges
-        ?.map((edge) => edge?.node?.id)
-        .filter((id): id is string => !!id) ?? [],
-    );
-    setToasts((current) => {
-      const next = current.filter((toast) => unreadIds.has(toast.id));
-      current.forEach((toast) => {
-        if (!unreadIds.has(toast.id)) {
-          clearDismissTimer(toast.id);
-        }
-      });
-      return next;
-    });
-  }, [clearDismissTimer]);
-
-  const handleUnreadCountChange = useCallback(async (newCount: number) => {
-    if (!isInitializedRef.current) {
-      pendingUnreadCountRef.current = newCount;
+    if (isSyncingUnreadRef.current || toastsRef.current.length === 0) {
       return;
     }
+    isSyncingUnreadRef.current = true;
+    try {
+      const data = await fetchQuery(
+        notificationToastUnreadIdsQuery,
+        {},
+      ).toPromise() as NotificationToastUnreadIdsQuery$data;
+      const unreadIds = new Set(
+        data.myNotifications?.edges
+          ?.map((edge) => edge?.node?.id)
+          .filter((id): id is string => !!id) ?? [],
+      );
+      setToasts((current) => {
+        const next = current.filter((toast) => unreadIds.has(toast.id));
+        current.forEach((toast) => {
+          if (!unreadIds.has(toast.id)) {
+            clearDismissTimer(toast.id);
+          }
+        });
+        return next;
+      });
+    } finally {
+      isSyncingUnreadRef.current = false;
+    }
+  }, [clearDismissTimer]);
+
+  const applyUnreadCountChange = useCallback(async (newCount: number) => {
     const previousCount = unreadCountRef.current ?? 0;
+    if (newCount === previousCount) {
+      return;
+    }
     unreadCountRef.current = newCount;
     const diff = newCount - previousCount;
     if (diff > 0) {
@@ -332,6 +354,33 @@ const NotificationToast: FunctionComponent = () => {
       await syncVisibleToastsWithUnread();
     }
   }, [fetchLatestNotifications, syncVisibleToastsWithUnread]);
+
+  const flushPendingUnreadCountChange = useCallback(() => {
+    const newCount = pendingCountUpdateRef.current;
+    pendingCountUpdateRef.current = null;
+    if (newCount === null) {
+      return;
+    }
+    void applyUnreadCountChange(newCount);
+  }, [applyUnreadCountChange]);
+
+  const scheduleUnreadCountChange = useCallback((newCount: number) => {
+    if (!isInitializedRef.current) {
+      pendingUnreadCountRef.current = newCount;
+      return;
+    }
+    pendingCountUpdateRef.current = newCount;
+    if (countChangeDebounceTimerRef.current) {
+      clearTimeout(countChangeDebounceTimerRef.current);
+    }
+    countChangeDebounceTimerRef.current = setTimeout(() => {
+      countChangeDebounceTimerRef.current = null;
+      flushPendingUnreadCountChange();
+    }, UNREAD_COUNT_DEBOUNCE_MS);
+  }, [flushPendingUnreadCountChange]);
+
+  const scheduleUnreadCountChangeRef = useRef(scheduleUnreadCountChange);
+  scheduleUnreadCountChangeRef.current = scheduleUnreadCountChange;
 
   useEffect(() => {
     if (!hasKnowledgeAccess) {
@@ -364,6 +413,10 @@ const NotificationToast: FunctionComponent = () => {
   useEffect(() => () => {
     Object.values(dismissTimersRef.current).forEach(clearTimeout);
     dismissTimersRef.current = {};
+    if (countChangeDebounceTimerRef.current) {
+      clearTimeout(countChangeDebounceTimerRef.current);
+      countChangeDebounceTimerRef.current = null;
+    }
   }, []);
 
   useEffect(() => {
@@ -386,9 +439,9 @@ const NotificationToast: FunctionComponent = () => {
       if (newCount === null || newCount === undefined) {
         return;
       }
-      void handleUnreadCountChange(newCount);
+      scheduleUnreadCountChangeRef.current(newCount);
     },
-    [handleUnreadCountChange],
+    [],
   );
 
   const subConfig = useMemo(
