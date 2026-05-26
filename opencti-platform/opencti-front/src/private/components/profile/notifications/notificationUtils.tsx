@@ -1,6 +1,8 @@
 import { deepPurple, green, indigo, red } from '@mui/material/colors';
+import { format, isSameDay } from 'date-fns';
 import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
 import React from 'react';
+import { isNone } from '../../../../components/i18n';
 
 export const colors: Record<string, string> = {
   none: green[500],
@@ -69,6 +71,24 @@ export const getNotificationToastMessage = (notification: NotificationContentSha
     return null;
   }
   return events.at(0)?.message ?? notification.name ?? '';
+};
+
+export const formatNotificationToastTimestamp = (
+  created: string | null | undefined,
+  labels: {
+    today: string;
+    formatShortDate: (date: string) => string;
+  },
+): string => {
+  if (isNone(created)) {
+    return '';
+  }
+  const date = new Date(created);
+  const timeStr = format(date, 'HH:mm:ss');
+  if (isSameDay(date, new Date())) {
+    return `${labels.today} ${timeStr}`;
+  }
+  return `${labels.formatShortDate(created)} ${timeStr}`;
 };
 
 export const iconSelector = (operation: string) => {
