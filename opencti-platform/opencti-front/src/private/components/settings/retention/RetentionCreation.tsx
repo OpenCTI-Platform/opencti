@@ -7,7 +7,6 @@ import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
@@ -27,7 +26,6 @@ import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const RetentionCreationMutation = graphql`
     mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
@@ -60,30 +58,29 @@ interface RetentionFormValues {
   name: string;
   max_retention: string;
   retention_unit: 'minutes' | 'hours' | 'days';
-  scope: string;
   filters: string;
 }
 
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { isActivityHistoryRetentionEnable } = useHelper();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+
   const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const { scope } = values;
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      filters: (scope === 'knowledge' || scope === 'history' || scope === 'activity') ? values.filters : '',
+      scope: 'knowledge',
+      filters: jsonFilters,
     };
-    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCreationMutation,
       variables: {
-        input: { ...finalValues, filters: jsonFilters },
+        input: finalValues,
       },
       updater: (store: RecordSourceSelectorProxy) => {
         insertNode(
@@ -105,17 +102,17 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   };
 
   const handleVerify = (values: RetentionFormValues) => {
-    const { scope } = values;
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      filters: (scope === 'knowledge' || scope === 'history' || scope === 'activity') ? values.filters : '',
+      scope: 'knowledge',
+      filters: jsonFilters,
     };
-    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCheckMutation,
       variables: {
-        input: { ...finalValues, filters: jsonFilters },
+        input: finalValues,
       },
       onCompleted: (data: RetentionCreationCheckMutation$data) => {
         setVerified(true);
@@ -146,7 +143,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, setFieldValue, values: formValues }) => (
+          {({ submitForm, handleReset, isSubmitting, values: formValues }) => (
             <Form>
               <Field
                 component={TextField}
@@ -195,6 +192,17 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   },
                 }}
               />
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="scope"
+                label={t_i18n('Scope')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+                disabled={true}
+              >
+                <MenuItem value="knowledge">{t_i18n('Knowledge')}</MenuItem>
+              </Field>
               <Box sx={{
                 paddingTop: 4,
                 display: 'flex',

@@ -55,6 +55,7 @@ const retentionEditionQuery = graphql`
       max_retention
       filters
       active
+      scope
       ...RetentionEdition_retentionRule
     }
   }
@@ -145,8 +146,9 @@ class RetentionPopover extends Component {
           query={retentionEditionQuery}
           variables={{ id: retentionRuleId }}
           render={({ props }) => {
-            if (props) {
+              if (props) {
               const { retentionRule } = props;
+              const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge';
               return (
                 <>
                   <Menu
@@ -160,9 +162,11 @@ class RetentionPopover extends Component {
                     <MenuItem onClick={() => this.submitToggleActive(retentionRule?.active)}>
                       {retentionRule?.active ? t('Deactivate') : t('Activate')}
                     </MenuItem>
-                    <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-                      {t('Delete')}
-                    </MenuItem>
+                    {!isTechnicalRule && (
+                      <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+                        {t('Delete')}
+                      </MenuItem>
+                    )}
                   </Menu>
                   <RetentionEdition
                     retentionRule={retentionRule}
@@ -180,9 +184,6 @@ class RetentionPopover extends Component {
               >
                 <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
                   {t('Update')}
-                </MenuItem>
-                <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-                  {t('Delete')}
                 </MenuItem>
               </Menu>
             );

@@ -67,6 +67,7 @@ export const up = async (next) => {
     { scope: 'file', name: 'Global files retention' },
     { scope: 'workbench', name: 'All workbenches retention' },
     { scope: 'history', name: 'History retention' },
+    { scope: 'activity', name: 'Activity retention' },
   ];
 
   for (const { scope, name } of technicalScopes) {

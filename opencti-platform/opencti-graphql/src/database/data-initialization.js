@@ -355,6 +355,14 @@ const createDefaultRetentionRules = async (context) => {
     scope: 'history',
     active: false,
   });
+  // Create default disabled retention rule for activity (30 days, inactive)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'Activity retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'activity',
+    active: false,
+  });
 };
 
 const createBasicRolesAndCapabilities = async (context) => {
