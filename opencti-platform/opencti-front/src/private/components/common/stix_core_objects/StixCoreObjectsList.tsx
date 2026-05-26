@@ -457,7 +457,6 @@ interface StixCoreObjectsListProps {
   popover?: ReactNode;
   dataSelection: Widget['dataSelection'];
   widgetId: string;
-
   host?: WidgetHost;
   config: DashboardConfig;
   refreshRate?: number | null;
