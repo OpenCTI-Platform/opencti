@@ -285,16 +285,7 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
   const isShorthandProperty = () => {
     const propertyNode = cursor.node.parent;
     if (!propertyNode || propertyNode.type.name !== 'Property') return false;
-    const child = propertyNode.firstChild;
-    if (!child) return false;
-    let c = child;
-    while (c) {
-      if (c.type.name === 'VariableName') return false;
-      if (c.type.name === 'Equals') return false;
-      c = c.nextSibling ?? null as any;
-      if (!c) break;
-    }
-    return true;
+    return !cursor.node.nextSibling;
   };
 
   const processBracketLeft = () => {

@@ -146,6 +146,7 @@ describe('check safeRender on valid cases', () => {
       <% } %>
     `,
     'object assign': '<% Object.assign({}, {test: 1}) %>',
+    'valid shorthand property': '<% const o = { user }; %>',
     'ejs with comment': '<%# This is a comment %>Hello <%= user.name %>',
     'ejs with multiple comments': `
       <%# Comment at start %>
