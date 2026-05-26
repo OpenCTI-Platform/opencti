@@ -237,8 +237,8 @@ const StixCoreObjectFileExportForm = ({
           if (values.template || values.fileToExport) {
             const selectedEntityName = values.connector?.value === BUILT_IN_HTML_TO_PDF.value
               ? (values.fileToExport?.value === 'mappableContent'
-                ? scoName
-                : normalizeExportSourceEntityName(values.fileToExport?.fileName))
+                  ? scoName
+                  : normalizeExportSourceEntityName(values.fileToExport?.fileName))
               : scoName;
             setFieldValue('exportFileName', buildExportFileName({
               entityName: selectedEntityName,
