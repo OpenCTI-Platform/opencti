@@ -1,6 +1,5 @@
-import { graphql } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
 import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -8,6 +7,10 @@ import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { StixDomainObjectBookmarksListQuery } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksListQuery.graphql';
+import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import React, { Suspense } from 'react';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const stixDomainObjectBookmarksListQuery = graphql`
   query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup) {
@@ -163,54 +166,92 @@ const stixDomainObjectBookmarksListQuery = graphql`
   }
 `;
 
+interface StixDomainObjectBookmarksListComponentProps {
+  queryRef: PreloadedQuery<StixDomainObjectBookmarksListQuery>;
+}
+
+const StixDomainObjectBookmarksListComponent = ({
+  queryRef,
+}: StixDomainObjectBookmarksListComponentProps) => {
+  const data = usePreloadedQuery(stixDomainObjectBookmarksListQuery, queryRef);
+  const edges = data?.bookmarks?.edges ?? [];
+  return edges.length === 0 ? (
+    <WidgetNoData />
+  ) : (
+    <WidgetBookmarks
+      bookmarks={edges}
+    />
+  );
+};
+
+interface StixDomainObjectBookmarksListProps {
+  title?: string;
+  variant?: string;
+  height?: number;
+  parameters?: { title?: string };
+  popover?: React.ReactNode;
+  dataSelection: Widget['dataSelection'];
+  host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
+}
+
+const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[]) => {
+  const selection = resolvedDataSelection[0];
+  return {
+    first: 50,
+    filters: removeEntityTypeAllFromFilterGroup(selection.filters ?? undefined) as StixDomainObjectBookmarksListQuery['variables']['filters'],
+  };
+};
+
 const StixDomainObjectBookmarksList = ({
   variant,
   height,
   dataSelection,
   parameters = {},
   popover,
+  title,
+  config,
+  refreshRate = null,
   host,
-}) => {
+}: StixDomainObjectBookmarksListProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+
+  const {
+    isMissingHostEntity,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixDomainObjectBookmarksListQuery>({
     perspective: 'entities',
     dataSelection,
     host,
+    refreshRate,
+    query: stixDomainObjectBookmarksListQuery,
+    buildQueryVariables,
+    config,
   });
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-    const selection = resolvedDataSelection[0];
-    return (
-      <QueryRenderer
-        query={stixDomainObjectBookmarksListQuery}
-        variables={{
-          first: 50,
-          filters: removeEntityTypeAllFromFilterGroup(selection.filters),
-        }}
-        render={({ props }) => {
-          if (props && props.bookmarks && props.bookmarks.edges.length > 0) {
-            const data = props.bookmarks.edges;
-            return <WidgetBookmarks bookmarks={data} />;
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
+
+  if (isMissingHostEntity) {
+    return <WidgetNoHostEntity host={host} />;
+  }
+
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? t_i18n('Entities list')}
+      title={parameters.title ?? title ?? t_i18n('Bookmarks')}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <div style={{ height: '100%' }}>
+        {queryRef && (
+          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixDomainObjectBookmarksListComponent
+              queryRef={queryRef}
+            />
+          </Suspense>
+        )}
+      </div>
     </WidgetContainer>
   );
 };

@@ -1,5 +1,5 @@
 import { memo, ReactNode } from 'react';
-import StixDomainObjectBookmarksList from '@components/common/stix_domain_objects/StixDomainObjectBookmarksList';
+import StixDomainObjectBookmarksList from '../../private/components/common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsNumber from '@components/common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '@components/common/stix_core_objects/StixCoreObjectsList';
 import StixCoreObjectsDistributionList from '@components/common/stix_core_objects/StixCoreObjectsDistributionList';
@@ -52,6 +52,8 @@ const DashboardEntitiesViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'number':
