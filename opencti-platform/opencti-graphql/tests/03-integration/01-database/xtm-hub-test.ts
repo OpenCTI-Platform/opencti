@@ -55,7 +55,7 @@ describe('XTM hub', () => {
 
       await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'id',
@@ -79,7 +79,7 @@ describe('XTM hub', () => {
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(result.status).toBe(XtmHubRegistrationStatus.Unregistered);
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'id',
@@ -107,7 +107,7 @@ describe('XTM hub', () => {
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(result.status).toBe(XtmHubRegistrationStatus.LostConnectivity);
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'id',
@@ -129,7 +129,7 @@ describe('XTM hub', () => {
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(result.status).toBe(XtmHubRegistrationStatus.Registered);
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'id',
@@ -154,7 +154,7 @@ describe('XTM hub', () => {
 
       await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'id',
@@ -175,7 +175,7 @@ describe('XTM hub', () => {
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(result.status).toBe(XtmHubRegistrationStatus.LostConnectivity);
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'id',
@@ -197,7 +197,7 @@ describe('XTM hub', () => {
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(result.status).toBe(XtmHubRegistrationStatus.Registered);
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'id',
@@ -220,8 +220,8 @@ describe('XTM hub', () => {
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-        expect(sendAdministratorsLostConnectivityEmailSpy).toBeCalled();
-        expect(updateAttributeSpy).toBeCalledWith(
+        expect(sendAdministratorsLostConnectivityEmailSpy).toHaveBeenCalled();
+        expect(updateAttributeSpy).toHaveBeenCalledWith(
           testContext,
           HUB_REGISTRATION_MANAGER_USER,
           'id',
@@ -243,7 +243,7 @@ describe('XTM hub', () => {
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-        expect(sendAdministratorsLostConnectivityEmailSpy).not.toBeCalled();
+        expect(sendAdministratorsLostConnectivityEmailSpy).not.toHaveBeenCalled();
       });
 
       it('should not send connectivity email when email was already sent', async () => {
@@ -259,7 +259,7 @@ describe('XTM hub', () => {
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-        expect(sendAdministratorsLostConnectivityEmailSpy).not.toBeCalled();
+        expect(sendAdministratorsLostConnectivityEmailSpy).not.toHaveBeenCalled();
       });
 
       it('should not send connectivity email when connectivity is active', async () => {
@@ -273,7 +273,7 @@ describe('XTM hub', () => {
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-        expect(sendAdministratorsLostConnectivityEmailSpy).not.toBeCalled();
+        expect(sendAdministratorsLostConnectivityEmailSpy).not.toHaveBeenCalled();
       });
 
       it('should not send connectivity email when email sending is disabled via configuration', async () => {
@@ -290,7 +290,7 @@ describe('XTM hub', () => {
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-        expect(sendAdministratorsLostConnectivityEmailSpy).not.toBeCalled();
+        expect(sendAdministratorsLostConnectivityEmailSpy).not.toHaveBeenCalled();
       });
     });
   });
@@ -376,7 +376,8 @@ describe('XTM hub', () => {
   describe('loadAndSaveLatestNewsFeed', () => {
     let getEntityFromCacheSpy: MockInstance;
     let consumeProvisionedNewsFeedItemsSpy: MockInstance;
-    let addNewsFeedSpy: MockInstance;
+    let upsertNewsFeedSpy: MockInstance;
+    let deleteNewsFeedItemsByExternalIdSpy: MockInstance;
     let updateAttributeSpy: MockInstance;
     let booleanConfSpy: MockInstance;
 
@@ -391,9 +392,19 @@ describe('XTM hub', () => {
     ] as any[];
 
     const mockNewsFeedItems: ProvisionedNewsFeedItem[] = [
-      { title: 'News 1', type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD, tags: [], metadata: [], creation_date: new Date('2026-01-01') },
-      { title: 'News 2', type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD, tags: [], metadata: [], creation_date: new Date('2026-01-02') },
+      { id: 'hub-item-1', title: 'News 1', type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD, tags: [], metadata: [], creation_date: new Date('2026-01-01'), is_deleted: false },
+      { id: 'hub-item-2', title: 'News 2', type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD, tags: [], metadata: [], creation_date: new Date('2026-01-02'), is_deleted: false },
     ];
+
+    const buildExpectedUpsertInput = (feedItem: ProvisionedNewsFeedItem, userId: string) => ({
+      news_feed_item_id: feedItem.id,
+      title: feedItem.title,
+      news_feed_type: feedItem.type,
+      tags: feedItem.tags,
+      metadata: feedItem.metadata,
+      creation_date: feedItem.creation_date,
+      user_id: userId,
+    });
 
     beforeEach(() => {
       getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue(mockSettings as any);
@@ -402,7 +413,8 @@ describe('XTM hub', () => {
         news_feed_items: mockNewsFeedItems,
         available_news_feed_types: ['type-1'],
       } as any);
-      addNewsFeedSpy = vi.spyOn(newsFeedDomain, 'addNewsFeed').mockResolvedValue({} as any);
+      upsertNewsFeedSpy = vi.spyOn(newsFeedDomain, 'upsertNewsFeed').mockResolvedValue({} as any);
+      deleteNewsFeedItemsByExternalIdSpy = vi.spyOn(newsFeedDomain, 'deleteNewsFeedItemsByExternalId').mockResolvedValue(0);
       updateAttributeSpy = vi.spyOn(middleware, 'updateAttribute').mockResolvedValue({} as unknown as any);
       booleanConfSpy = vi.spyOn(conf, 'booleanConf').mockReturnValue(true);
       vi.spyOn(settingsModule, 'getSettings').mockResolvedValue({} as any);
@@ -418,8 +430,8 @@ describe('XTM hub', () => {
 
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(getEntityFromCacheSpy).not.toBeCalled();
-      expect(consumeProvisionedNewsFeedItemsSpy).not.toBeCalled();
+      expect(getEntityFromCacheSpy).not.toHaveBeenCalled();
+      expect(consumeProvisionedNewsFeedItemsSpy).not.toHaveBeenCalled();
     });
 
     it('should do nothing when platform is not registered (no token)', async () => {
@@ -427,8 +439,8 @@ describe('XTM hub', () => {
 
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(consumeProvisionedNewsFeedItemsSpy).not.toBeCalled();
-      expect(addNewsFeedSpy).not.toBeCalled();
+      expect(consumeProvisionedNewsFeedItemsSpy).not.toHaveBeenCalled();
+      expect(upsertNewsFeedSpy).not.toHaveBeenCalled();
     });
 
     it('should update xtm_hub_available_news_feed_types in settings even when there are no news feed items', async () => {
@@ -439,8 +451,8 @@ describe('XTM hub', () => {
 
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(addNewsFeedSpy).not.toBeCalled();
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(upsertNewsFeedSpy).not.toHaveBeenCalled();
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'settings_id',
@@ -452,19 +464,19 @@ describe('XTM hub', () => {
     it('should call loadProvisionedNewsFeedItems with correct platform credentials', async () => {
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(consumeProvisionedNewsFeedItemsSpy).toBeCalledWith('settings_id', 'fake-token');
+      expect(consumeProvisionedNewsFeedItemsSpy).toHaveBeenCalledWith('settings_id', 'fake-token');
     });
 
-    it('should add each news feed item for each user', async () => {
+    it('should upsert each news feed item for each user', async () => {
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(addNewsFeedSpy).toBeCalledTimes(mockNewsFeedItems.length * mockUsers.length);
+      expect(upsertNewsFeedSpy).toHaveBeenCalledTimes(mockNewsFeedItems.length * mockUsers.length);
       for (const feedItem of mockNewsFeedItems) {
         for (const user of mockUsers) {
-          expect(addNewsFeedSpy).toBeCalledWith(
+          expect(upsertNewsFeedSpy).toHaveBeenCalledWith(
             testContext,
             user,
-            { ...feedItem, news_feed_type: feedItem.type, user_id: (user as any).id },
+            buildExpectedUpsertInput(feedItem, user.id),
           );
         }
       }
@@ -473,7 +485,7 @@ describe('XTM hub', () => {
     it('should update xtm_hub_available_news_feed_types in settings after processing', async () => {
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-      expect(updateAttributeSpy).toBeCalledWith(
+      expect(updateAttributeSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
         'settings_id',
@@ -482,17 +494,17 @@ describe('XTM hub', () => {
       );
     });
 
-    it('should continue processing other items when adding a news feed item fails for one user', async () => {
-      addNewsFeedSpy
+    it('should continue processing other items when upserting a news feed item fails for one user', async () => {
+      upsertNewsFeedSpy
         .mockRejectedValueOnce(new Error('Add news feed failed'))
         .mockResolvedValue({} as any);
 
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       // All combinations should still be attempted despite one failure
-      expect(addNewsFeedSpy).toBeCalledTimes(mockNewsFeedItems.length * mockUsers.length);
+      expect(upsertNewsFeedSpy).toHaveBeenCalledTimes(mockNewsFeedItems.length * mockUsers.length);
       // Settings should still be updated
-      expect(updateAttributeSpy).toBeCalled();
+      expect(updateAttributeSpy).toHaveBeenCalled();
     });
 
     describe('unsubscribed_news_feed_types filtering', () => {
@@ -504,8 +516,8 @@ describe('XTM hub', () => {
         await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
         for (const feedItem of mockNewsFeedItems) {
-          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, globallyUnsubscribedUser, expect.objectContaining({ title: feedItem.title }));
-          expect(addNewsFeedSpy).toBeCalledWith(testContext, subscribedUser, { ...feedItem, news_feed_type: feedItem.type, user_id: subscribedUser.id });
+          expect(upsertNewsFeedSpy).not.toHaveBeenCalledWith(testContext, globallyUnsubscribedUser, expect.objectContaining({ title: feedItem.title }));
+          expect(upsertNewsFeedSpy).toHaveBeenCalledWith(testContext, subscribedUser, buildExpectedUpsertInput(feedItem, subscribedUser.id));
         }
       });
 
@@ -521,8 +533,8 @@ describe('XTM hub', () => {
         await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
         for (const feedItem of mockNewsFeedItems) {
-          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, unsubscribedUser, expect.objectContaining({ title: feedItem.title }));
-          expect(addNewsFeedSpy).toBeCalledWith(testContext, subscribedUser, { ...feedItem, news_feed_type: feedItem.type, user_id: subscribedUser.id });
+          expect(upsertNewsFeedSpy).not.toHaveBeenCalledWith(testContext, unsubscribedUser, expect.objectContaining({ title: feedItem.title }));
+          expect(upsertNewsFeedSpy).toHaveBeenCalledWith(testContext, subscribedUser, buildExpectedUpsertInput(feedItem, subscribedUser.id));
         }
       });
 
@@ -536,10 +548,9 @@ describe('XTM hub', () => {
 
         await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-        expect(addNewsFeedSpy).toBeCalledTimes(mockNewsFeedItems.length);
+        expect(upsertNewsFeedSpy).toHaveBeenCalledTimes(mockNewsFeedItems.length);
         for (const feedItem of mockNewsFeedItems) {
-          expect(addNewsFeedSpy).toBeCalledWith(testContext, userUnsubscribedFromOtherType, {
-            ...feedItem, news_feed_type: feedItem.type, user_id: userUnsubscribedFromOtherType.id });
+          expect(upsertNewsFeedSpy).toHaveBeenCalledWith(testContext, userUnsubscribedFromOtherType, buildExpectedUpsertInput(feedItem, userUnsubscribedFromOtherType.id));
         }
       });
 
@@ -556,11 +567,11 @@ describe('XTM hub', () => {
         await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
         // Only the subscribed user should receive all items
-        expect(addNewsFeedSpy).toBeCalledTimes(mockNewsFeedItems.length);
+        expect(upsertNewsFeedSpy).toHaveBeenCalledTimes(mockNewsFeedItems.length);
         for (const feedItem of mockNewsFeedItems) {
-          expect(addNewsFeedSpy).toBeCalledWith(testContext, subscribedUser, { ...feedItem, news_feed_type: feedItem.type, user_id: subscribedUser.id });
-          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, globallyUnsubscribedUser, expect.anything());
-          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, typeUnsubscribedUser, expect.anything());
+          expect(upsertNewsFeedSpy).toHaveBeenCalledWith(testContext, subscribedUser, buildExpectedUpsertInput(feedItem, subscribedUser.id));
+          expect(upsertNewsFeedSpy).not.toHaveBeenCalledWith(testContext, globallyUnsubscribedUser, expect.anything());
+          expect(upsertNewsFeedSpy).not.toHaveBeenCalledWith(testContext, typeUnsubscribedUser, expect.anything());
         }
       });
 
@@ -571,8 +582,8 @@ describe('XTM hub', () => {
           unsubscribed_news_feed_types: ['SOME_OTHER_TYPE'],
         };
         const mixedFeedItems: ProvisionedNewsFeedItem[] = [
-          { title: 'Subscribed item', type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD, tags: [], metadata: [], creation_date: new Date('2026-01-01') },
-          { title: 'Unsubscribed item', type: 'SOME_OTHER_TYPE' as NewsFeedItemType, tags: [], metadata: [], creation_date: new Date('2026-01-02') },
+          { id: 'hub-item-3', title: 'Subscribed item', type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD, tags: [], metadata: [], creation_date: new Date('2026-01-01'), is_deleted: false },
+          { id: 'hub-item-4', title: 'Unsubscribed item', type: 'SOME_OTHER_TYPE' as NewsFeedItemType, tags: [], metadata: [], creation_date: new Date('2026-01-02'), is_deleted: false },
         ];
         vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([partiallyUnsubscribedUser] as any);
         consumeProvisionedNewsFeedItemsSpy.mockResolvedValue({
@@ -582,10 +593,29 @@ describe('XTM hub', () => {
 
         await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
-        expect(addNewsFeedSpy).toBeCalledTimes(1);
-        expect(addNewsFeedSpy).toBeCalledWith(testContext, partiallyUnsubscribedUser, {
-          ...mixedFeedItems[0], news_feed_type: mixedFeedItems[0].type, user_id: partiallyUnsubscribedUser.id });
-        expect(addNewsFeedSpy).not.toBeCalledWith(testContext, partiallyUnsubscribedUser, expect.objectContaining({ title: 'Unsubscribed item' }));
+        expect(upsertNewsFeedSpy).toHaveBeenCalledTimes(1);
+        expect(upsertNewsFeedSpy).toHaveBeenCalledWith(testContext, partiallyUnsubscribedUser, buildExpectedUpsertInput(mixedFeedItems[0], partiallyUnsubscribedUser.id));
+        expect(upsertNewsFeedSpy).not.toHaveBeenCalledWith(testContext, partiallyUnsubscribedUser, expect.objectContaining({ title: 'Unsubscribed item' }));
+      });
+
+      it('should delete all user entries when an item is marked as deleted', async () => {
+        consumeProvisionedNewsFeedItemsSpy.mockResolvedValue({
+          news_feed_items: [{
+            id: 'hub-item-del-1',
+            title: 'Deleted item',
+            type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD,
+            tags: [],
+            metadata: [],
+            creation_date: new Date('2026-01-01'),
+            is_deleted: true,
+          }],
+          available_news_feed_types: [NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD],
+        });
+
+        await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(deleteNewsFeedItemsByExternalIdSpy).toHaveBeenCalledWith(testContext, HUB_REGISTRATION_MANAGER_USER, 'hub-item-del-1');
+        expect(upsertNewsFeedSpy).not.toHaveBeenCalled();
       });
     });
   });

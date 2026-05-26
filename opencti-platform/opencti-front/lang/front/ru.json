@@ -1491,7 +1491,7 @@
   "Enable invert colors": "Включить инвертирование цветов",
   "Enable LDAP authentication": "Включить аутентификацию LDAP",
   "Enable local authentication": "Включить локальную аутентификацию",
-  "Enable news feed notifications": "Включить уведомления о новостной ленте",
+  "Enable News Feed notifications": "Включите уведомления ленты новостей",
   "Enable OIDC authentication": "Включить аутентификацию OIDC",
   "Enable powerful features with OpenCTI Enterprise Edition": "Использование мощных функций с OpenCTI Enterprise Edition",
   "Enable public dashboard": "Включить публичный дашборд",

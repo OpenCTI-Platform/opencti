@@ -477,7 +477,7 @@ const ProfileOverviewComponent = (props) => {
           <HomeDashboardSettings />
         </Card>
       ) : null}
-      {isXTMHubNewsFeedEnabled && settings.xtm_hub_available_news_feed_types?.length > 0 && (
+      {settings.xtm_hub_registration_status === 'registered' && isXTMHubNewsFeedEnabled && settings.xtm_hub_available_news_feed_types?.length > 0 && (
         <ProfileOverviewNewsFeed
           availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
           unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
@@ -652,6 +652,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   settings: graphql`
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
+      xtm_hub_registration_status
       xtm_hub_available_news_feed_types
     }
   `,

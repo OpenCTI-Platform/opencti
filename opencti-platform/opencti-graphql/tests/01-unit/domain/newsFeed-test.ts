@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { addNewsFeed, cleanOldNewsFeedItems, markAllNewsFeedItemsAsRead, myNewsFeedsFind, myUnreadNewsFeedsCount } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
+import {
+  addNewsFeed,
+  deleteNewsFeedItemsByExternalId,
+  markAllNewsFeedItemsAsRead,
+  myNewsFeedsFind,
+  myUnreadNewsFeedsCount,
+  upsertNewsFeed,
+  cleanOldNewsFeedItems,
+} from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
 import { NewsFeedItemType } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 import type { NewsFeedAddInput } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 import { ALREADY_DELETED_ERROR } from '../../../src/config/errors';
@@ -42,6 +50,11 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     ...actual,
     BUS_TOPICS: {
       ...actual.BUS_TOPICS,
+      NewsFeedItem: {
+        ADDED_TOPIC: 'ENTITY_TYPE_NEWS_FEED_ITEM_ADDED_TOPIC',
+        EDIT_TOPIC: 'ENTITY_TYPE_NEWS_FEED_ITEM_EDIT_TOPIC',
+        DELETE_TOPIC: 'ENTITY_TYPE_NEWS_FEED_ITEM_DELETE_TOPIC',
+      },
       NewsFeedNumber: {
         EDIT_TOPIC: 'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
       },
@@ -61,6 +74,7 @@ const mockContext = {} as any;
 const mockUser = { id: 'user-1', name: 'Test User' } as any;
 
 const baseInput: NewsFeedAddInput = {
+  news_feed_item_id: 'hub-item-base',
   title: 'Test news feed item',
   news_feed_type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD,
   tags: ['tag1', 'tag2'],
@@ -461,6 +475,101 @@ describe('News feed', () => {
       // Le 1er fail silencieusement (n'incrémente pas), le 2e réussit
       expect(result).toBe(1);
       expect(mockDeleteElementById).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('upsertNewsFeed', () => {
+    beforeEach(() => {
+      mockFullEntitiesList.mockReset();
+      mockCreateInternalObject.mockReset();
+      mockPatchAttribute.mockReset();
+      mockNotify.mockReset();
+      mockElCount.mockReset();
+      mockElCount.mockResolvedValue(0);
+    });
+
+    it('should update an existing item by news_feed_item_id without changing is_read', async () => {
+      mockFullEntitiesList.mockResolvedValueOnce([
+        { id: 'existing-id', user_id: mockUser.id, is_read: true },
+      ]);
+      mockPatchAttribute.mockResolvedValue({
+        element: {
+          id: 'existing-id',
+          user_id: mockUser.id,
+          is_read: true,
+          title: 'Updated title',
+        },
+      });
+
+      await upsertNewsFeed(mockContext, mockUser, {
+        ...baseInput,
+        news_feed_item_id: 'hub-item-1',
+        title: 'Updated title',
+      });
+
+      expect(mockCreateInternalObject).not.toHaveBeenCalled();
+      expect(mockPatchAttribute).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        'existing-id',
+        'NewsFeedItem',
+        expect.not.objectContaining({ is_read: expect.anything() }),
+      );
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ id: 'existing-id' }),
+        mockUser,
+      );
+    });
+
+    it('should create a new item when no existing item matches by news_feed_item_id', async () => {
+      mockFullEntitiesList.mockResolvedValueOnce([]);
+      mockCreateInternalObject.mockResolvedValue({ id: 'created-id', user_id: mockUser.id });
+
+      await upsertNewsFeed(mockContext, mockUser, {
+        ...baseInput,
+        news_feed_item_id: 'hub-item-2',
+      });
+
+      expect(mockCreateInternalObject).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('deleteNewsFeedItemsByExternalId', () => {
+    beforeEach(() => {
+      mockFullEntitiesList.mockReset();
+      mockDeleteElementById.mockReset();
+      mockElCount.mockReset();
+      mockNotify.mockReset();
+      mockDeleteElementById.mockResolvedValue(undefined);
+      mockElCount.mockResolvedValue(0);
+    });
+
+    it('should delete all matching items and notify unread counts for impacted users', async () => {
+      mockFullEntitiesList.mockResolvedValue([
+        { id: 'item-1', user_id: 'user-a' },
+        { id: 'item-2', user_id: 'user-b' },
+      ]);
+
+      const deletedCount = await deleteNewsFeedItemsByExternalId(mockContext, mockUser, 'hub-item-1');
+
+      expect(deletedCount).toBe(2);
+      expect(mockDeleteElementById).toHaveBeenCalledTimes(2);
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ id: 'item-1' }),
+        mockUser,
+      );
+      expect(mockNotify).toHaveBeenCalledWith(
+        'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
+        expect.objectContaining({ user_id: 'user-a' }),
+        mockUser,
+      );
+      expect(mockNotify).toHaveBeenCalledWith(
+        'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
+        expect.objectContaining({ user_id: 'user-b' }),
+        mockUser,
+      );
     });
   });
 });

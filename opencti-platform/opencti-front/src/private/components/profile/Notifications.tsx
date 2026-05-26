@@ -40,7 +40,8 @@ const newsFeedNumberSubscription = graphql`
 const Notifications: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { isXTMHubAccessible, me } = useAuth();
+  const { settings, me } = useAuth();
+  const isXTMHubRegistered = settings.xtm_hub_registration_status === 'registered';
   const { isFeatureEnable } = useHelper();
   const isXTMHubNewsFeedEnabled = isFeatureEnable('XTMHUB_NEWS_FEED_ENABLED');
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const Notifications: FunctionComponent = () => {
   setTitle(t_i18n('Notifications'));
 
   const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
-  const isNewsFeedTabVisible = isXTMHubAccessible && isXTMHubNewsFeedEnabled && !isUnsubscribedFromAllNewsFeeds;
+  const isNewsFeedTabVisible = isXTMHubRegistered && isXTMHubNewsFeedEnabled && !isUnsubscribedFromAllNewsFeeds;
 
   const data = useLazyLoadQuery<NotificationsUnreadNewsFeedsCountQuery>(
     notificationsUnreadNewsFeedsCountQuery,

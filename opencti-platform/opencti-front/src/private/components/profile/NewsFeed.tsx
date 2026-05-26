@@ -114,6 +114,12 @@ const newsFeedItemSubscription = graphql`
   }
 `;
 
+const newsFeedItemDeletedSubscription = graphql`
+  subscription NewsFeedDeletedSubscription {
+    newsFeedItemDeleted
+  }
+`;
+
 const markAllNewsFeedItemsAsReadMutation = graphql`
   mutation NewsFeedMarkAllAsReadMutation {
     markAllNewsFeedItemsAsRead
@@ -206,6 +212,13 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
     onNext: () => onNewItem(),
   }), [onNewItem]);
   useSubscription(subConfig);
+
+  const deletedSubConfig = useMemo(() => ({
+    subscription: newsFeedItemDeletedSubscription,
+    variables: {},
+    onNext: () => onNewItem(),
+  }), [onNewItem]);
+  useSubscription(deletedSubConfig);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     type: {

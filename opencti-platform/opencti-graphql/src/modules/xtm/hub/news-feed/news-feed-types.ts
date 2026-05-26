@@ -15,6 +15,7 @@ export interface NewsFeedItemMetadata {
 }
 
 export interface BasicStoreEntityNewsFeedItem extends BasicStoreEntity {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];
@@ -25,6 +26,7 @@ export interface BasicStoreEntityNewsFeedItem extends BasicStoreEntity {
 }
 
 export interface StoreEntityNewsFeedItem extends StoreEntity {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];
@@ -35,6 +37,7 @@ export interface StoreEntityNewsFeedItem extends StoreEntity {
 }
 
 export interface StixNewsFeedItem extends StixObject {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];
@@ -48,6 +51,7 @@ export interface StixNewsFeedItem extends StixObject {
 }
 
 export interface NewsFeedAddInput {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];

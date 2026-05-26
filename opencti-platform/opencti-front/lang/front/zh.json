@@ -1491,7 +1491,7 @@
   "Enable invert colors": "启用颜色反转",
   "Enable LDAP authentication": "启用 LDAP 身份验证",
   "Enable local authentication": "启用本地认证",
-  "Enable news feed notifications": "启用新闻源通知",
+  "Enable News Feed notifications": "启用 \"新闻提要 \"通知",
   "Enable OIDC authentication": "启用 OIDC 身份验证",
   "Enable powerful features with OpenCTI Enterprise Edition": "利用 OpenCTI 企业版实现强大功能",
   "Enable public dashboard": "启用公共仪表板",

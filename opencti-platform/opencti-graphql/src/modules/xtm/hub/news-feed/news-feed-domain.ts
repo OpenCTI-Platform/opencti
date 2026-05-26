@@ -8,8 +8,8 @@ import { elCount, elPaginate } from '../../../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../../database/utils';
 import { FilterMode, FilterOperator, type QueryMyNewsFeedsArgs } from '../../../../generated/graphql';
 import { notify } from '../../../../database/redis';
-import { BUS_TOPICS, logApp } from '../../../../config/conf';
 import { deleteElementById, patchAttribute } from '../../../../database/middleware';
+import { BUS_TOPICS, logApp } from '../../../../config/conf';
 import { ALREADY_DELETED_ERROR } from '../../../../config/errors';
 import { promiseMap } from '../../../../utils/promiseUtils';
 
@@ -32,9 +32,17 @@ export const myNewsFeedsFind = (context: AuthContext, user: AuthUser, opts: Quer
   return pageEntitiesConnection<BasicStoreEntityNewsFeedItem>(context, user, [ENTITY_TYPE_NEWS_FEED_ITEM], queryArgs);
 };
 
+const NEWS_FEED_CLEANUP_BATCH_SIZE = 1500;
+const NEWS_FEED_CLEANUP_CONCURRENCY = 5;
+
 export const addNewsFeed = async (context: AuthContext, user: AuthUser, input: NewsFeedAddInput) => {
   const newsFeedToCreate = {
-    ...input,
+    news_feed_item_id: input.news_feed_item_id,
+    title: input.title,
+    news_feed_type: input.news_feed_type,
+    metadata: input.metadata ?? [],
+    creation_date: input.creation_date,
+    user_id: input.user_id,
     is_read: input.is_read ?? false,
     tags: input.tags ?? [],
   };
@@ -42,6 +50,59 @@ export const addNewsFeed = async (context: AuthContext, user: AuthUser, input: N
   const unreadNewsFeedsCount = await myUnreadNewsFeedsCount(context, user, created.user_id);
   await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: unreadNewsFeedsCount, user_id: created.user_id }, user);
   return created;
+};
+
+const findNewsFeedByExternalId = async (context: AuthContext, user: AuthUser, userId: string, newsFeedItemId: string) => {
+  const queryFilters = {
+    mode: FilterMode.And,
+    filters: [
+      { key: ['user_id'], values: [userId] },
+      { key: ['news_feed_item_id'], values: [newsFeedItemId] },
+    ],
+    filterGroups: [],
+  };
+  const existing = await fullEntitiesList<BasicStoreEntityNewsFeedItem>(context, user, [ENTITY_TYPE_NEWS_FEED_ITEM], { filters: queryFilters });
+  return existing[0];
+};
+
+export const upsertNewsFeed = async (context: AuthContext, user: AuthUser, input: NewsFeedAddInput) => {
+  const existing = await findNewsFeedByExternalId(context, user, input.user_id, input.news_feed_item_id);
+  if (!existing) {
+    return addNewsFeed(context, user, input);
+  }
+
+  const patch = {
+    title: input.title,
+    tags: input.tags ?? [],
+    metadata: input.metadata ?? [],
+    creation_date: input.creation_date,
+    news_feed_type: input.news_feed_type,
+  };
+  const { element } = await patchAttribute<StoreEntityNewsFeedItem>(context, user, existing.id, ENTITY_TYPE_NEWS_FEED_ITEM, patch);
+  await notify(BUS_TOPICS[ENTITY_TYPE_NEWS_FEED_ITEM].EDIT_TOPIC, element, user);
+  return element;
+};
+
+export const deleteNewsFeedItemsByExternalId = async (context: AuthContext, user: AuthUser, newsFeedItemId: string): Promise<number> => {
+  const queryFilters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['news_feed_item_id'], values: [newsFeedItemId] }],
+    filterGroups: [],
+  };
+  const toDelete = await fullEntitiesList<BasicStoreEntityNewsFeedItem>(context, user, [ENTITY_TYPE_NEWS_FEED_ITEM], { filters: queryFilters });
+  const impactedUsers = new Set<string>();
+  await promiseMap(toDelete, async (item) => {
+    impactedUsers.add(item.user_id);
+    await deleteElementById(context, user, item.id, ENTITY_TYPE_NEWS_FEED_ITEM);
+    await notify(BUS_TOPICS[ENTITY_TYPE_NEWS_FEED_ITEM].DELETE_TOPIC, item, user);
+  }, 5);
+
+  await promiseMap(Array.from(impactedUsers), async (userId) => {
+    const unreadNewsFeedsCount = await myUnreadNewsFeedsCount(context, user, userId);
+    await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: unreadNewsFeedsCount, user_id: userId }, user);
+  }, 5);
+
+  return toDelete.length;
 };
 
 export const markAllNewsFeedItemsAsRead = async (context: AuthContext, user: AuthUser): Promise<boolean> => {
@@ -59,9 +120,6 @@ export const markAllNewsFeedItemsAsRead = async (context: AuthContext, user: Aut
   await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: remainingUnreadCount, user_id: user.id }, user);
   return true;
 };
-
-const NEWS_FEED_CLEANUP_BATCH_SIZE = 1500;
-const NEWS_FEED_CLEANUP_CONCURRENCY = 5;
 
 export const cleanOldNewsFeedItems = async (
   context: AuthContext,

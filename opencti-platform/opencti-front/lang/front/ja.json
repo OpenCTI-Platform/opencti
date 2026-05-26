@@ -1491,7 +1491,7 @@
   "Enable invert colors": "色の反転を有効にする",
   "Enable LDAP authentication": "LDAP認証を有効にする",
   "Enable local authentication": "ローカル認証を有効にする",
-  "Enable news feed notifications": "ニュースフィード通知を有効にする",
+  "Enable News Feed notifications": "ニュースフィード通知を有効にする",
   "Enable OIDC authentication": "OIDC認証を有効にする",
   "Enable powerful features with OpenCTI Enterprise Edition": "OpenCTI Enterprise Editionで強力な機能を実現",
   "Enable public dashboard": "公開ダッシュボードを有効にする",
