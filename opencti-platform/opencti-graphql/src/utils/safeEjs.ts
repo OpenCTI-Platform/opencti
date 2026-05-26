@@ -279,6 +279,24 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     return parentType === 'MemberExpression' || parentType === 'Property' || parentType === 'PatternProperty';
   };
 
+  /**
+   * Returns true when the current PropertyDefinition node is a shorthand property (e.g., `{ Foo }`).
+   */
+  const isShorthandProperty = () => {
+    const propertyNode = cursor.node.parent;
+    if (!propertyNode || propertyNode.type.name !== 'Property') return false;
+    const child = propertyNode.firstChild;
+    if (!child) return false;
+    let c = child;
+    while (c) {
+      if (c.type.name === 'VariableName') return false;
+      if (c.type.name === 'Equals') return false;
+      c = c.nextSibling ?? null as any;
+      if (!c) break;
+    }
+    return true;
+  };
+
   const processBracketLeft = () => {
     if (isPropertyNameInBracket()) {
       editNode(`${nodeText()}${safeName('property')}(`);
@@ -366,6 +384,11 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
       case 'PropertyDefinition':
       case 'PropertyName':
         processPropertyDefinitionOrName();
+        // GHSA-64j3-qwjh-m4h4: Object shorthand `{ Function }` doesn't produce a VariableName node.
+        // If it's a shorthand property, we must also validate it against the variable allow-list.
+        if (cursor.type.name === 'PropertyDefinition' && isShorthandProperty()) {
+          processVariableName();
+        }
         break;
 
       case 'String':
