@@ -29,6 +29,49 @@ vi.mock('../../../src/database/cache', () => ({
   })),
 }));
 
+// Stub `../config/conf` to guarantee deterministic SMTP module-level constants
+// (auth_type, enabled, ...) regardless of the developer's local config files.
+// Without this, a developer with `smtp.auth_type = "oauth2"` in their
+// development.json would make createSmtpTransporter throw on missing fields
+// before nodemailer.createTransport is invoked, breaking these tests.
+// Partial mock: we keep everything else from the real conf module so the rest
+// of the imported codebase keeps working (TEST_MODE, logger, etc.).
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/config/conf')>();
+  const smtpOverrides: Record<string, unknown> = {
+    'smtp:enabled': true,
+    'smtp:auth_type': 'basic',
+    'smtp:use_ssl': false,
+    'smtp:reject_unauthorized': false,
+    'smtp:hostname': 'localhost',
+    'smtp:port': 25,
+    'smtp:username': '',
+    'smtp:password': '',
+    'smtp:forced_sender_email': '',
+  };
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      get: (key: string) => (key in smtpOverrides ? smtpOverrides[key] : (actual.default as { get: (k: string) => unknown }).get(key)),
+    },
+    booleanConf: (key: string, fallback: boolean) => {
+      const value = smtpOverrides[key];
+      if (typeof value === 'boolean') return value;
+      return actual.booleanConf(key, fallback);
+    },
+  };
+});
+
+// Stub tracing to avoid pulling in the full telemetry stack.
+vi.mock('../../../src/config/tracing', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/config/tracing')>();
+  return {
+    ...actual,
+    meterManager: { ...actual.meterManager, emailSent: vi.fn() },
+  };
+});
+
 import { __resetSmtpCachesForTests, buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
 import {
   sendMail,
