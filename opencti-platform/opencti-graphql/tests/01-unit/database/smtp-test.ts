@@ -1,4 +1,12 @@
-﻿import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
+
+// `openid-client` performs an HTTP discovery + token exchange that we don't
+// want to run during unit tests — stub it so OAuth2 tests stay hermetic.
+vi.mock('openid-client', () => ({
+  discovery: vi.fn(async () => ({})),
+  refreshTokenGrant: vi.fn(async () => ({ access_token: 'refreshed-access-token' })),
+}));
+
 import { buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
 
 type SmtpCredentials = {
@@ -7,7 +15,8 @@ type SmtpCredentials = {
   oauthUser?: string;
   oauthClientId?: string;
   oauthClientSecret?: string;
-  oauthAccessToken?: string;
+  oauthIssuer?: string;
+  oauthRefreshToken?: string;
 };
 
 // The JS source infers all destructured params as required; cast to the intended optional API.
@@ -25,22 +34,23 @@ describe('buildSmtpAuth — OAuth2', () => {
     oauthUser: 'user@example.com',
     oauthClientId: 'my-client-id',
     oauthClientSecret: 'my-client-secret',
-    oauthAccessToken: 'my-access-token',
+    oauthIssuer: 'https://login.example.com/v2.0',
+    oauthRefreshToken: 'my-refresh-token',
   };
 
-  it('should return an OAuth2 auth object when authType is "oauth2"', () => {
-    const result = buildSmtpAuth('oauth2', oauth2Config);
+  it('should return an OAuth2 auth object with a refreshed access token', async () => {
+    const result = await buildSmtpAuth('oauth2', oauth2Config);
     expect(result).toStrictEqual({
       type: 'OAuth2',
       user: 'user@example.com',
       clientId: 'my-client-id',
       clientSecret: 'my-client-secret',
-      accessToken: 'my-access-token',
+      accessToken: 'refreshed-access-token',
     });
   });
 
-  it('should use oauthUser and not username even when both are provided', () => {
-    const result = buildSmtpAuth('oauth2', {
+  it('should use oauthUser and not username even when both are provided', async () => {
+    const result = await buildSmtpAuth('oauth2', {
       ...oauth2Config,
       username: 'legacy@example.com',
       password: 'legacy-pass',
@@ -50,15 +60,35 @@ describe('buildSmtpAuth — OAuth2', () => {
     expect(result).not.toHaveProperty('pass');
   });
 
-  it('should throw an error when oauth_* required fields are missing', () => {
-    expect(() => buildSmtpAuth('oauth2', {})).toThrow(
-      'SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret and oauth_access_token are all required.',
+  it('should throw an error when oauth_* required fields are missing', async () => {
+    await expect(buildSmtpAuth('oauth2', {})).rejects.toThrow(
+      'SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret, oauth_issuer and oauth_refresh_token are all required.',
     );
   });
 
-  it('should throw an error when only some oauth_* fields are provided', () => {
-    expect(() => buildSmtpAuth('oauth2', { oauthUser: 'user@example.com' })).toThrow(
+  it('should throw an error when only some oauth_* fields are provided', async () => {
+    await expect(buildSmtpAuth('oauth2', { oauthUser: 'user@example.com' })).rejects.toThrow(
       'SMTP OAuth2 configuration is incomplete',
+    );
+  });
+
+  it('should work with any OIDC-compliant issuer URL (provider-agnostic)', async () => {
+    const result = await buildSmtpAuth('oauth2', {
+      oauthUser: 'user@example.com',
+      oauthClientId: 'my-client-id',
+      oauthClientSecret: 'my-client-secret',
+      oauthIssuer: 'https://accounts.google.com',
+      oauthRefreshToken: 'my-refresh-token',
+    });
+    expect(result).toHaveProperty('type', 'OAuth2');
+    expect(result).toHaveProperty('accessToken', 'refreshed-access-token');
+  });
+
+  it('should wrap refresh failures in a clear error message', async () => {
+    const { refreshTokenGrant } = await import('openid-client');
+    (refreshTokenGrant as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('boom'));
+    await expect(buildSmtpAuth('oauth2', oauth2Config)).rejects.toThrow(
+      'Unable to refresh SMTP OAuth2 access token: boom',
     );
   });
 });
@@ -68,28 +98,28 @@ describe('buildSmtpAuth — OAuth2', () => {
 // ==========================================================================
 
 describe('buildSmtpAuth — Basic Auth', () => {
-  it('should return a Basic Auth object when authType is "basic" and username is set', () => {
-    const result = buildSmtpAuth('basic', { username: 'user@example.com', password: 'mypassword' });
+  it('should return a Basic Auth object when authType is "basic" and username is set', async () => {
+    const result = await buildSmtpAuth('basic', { username: 'user@example.com', password: 'mypassword' });
     expect(result).toStrictEqual({ user: 'user@example.com', pass: 'mypassword' });
   });
 
-  it('should return a Basic Auth object when authType is not set (defaults to basic)', () => {
-    const result = buildSmtpAuth(undefined, { username: 'user@example.com', password: 'mypassword' });
+  it('should return a Basic Auth object when authType is not set (defaults to basic)', async () => {
+    const result = await buildSmtpAuth(undefined, { username: 'user@example.com', password: 'mypassword' });
     expect(result).toStrictEqual({ user: 'user@example.com', pass: 'mypassword' });
   });
 
-  it('should set pass to empty string when password is absent', () => {
-    const result = buildSmtpAuth('basic', { username: 'user@example.com' });
+  it('should set pass to empty string when password is absent', async () => {
+    const result = await buildSmtpAuth('basic', { username: 'user@example.com' });
     expect(result).toStrictEqual({ user: 'user@example.com', pass: '' });
   });
 
-  it('should return undefined when username is absent', () => {
-    const result = buildSmtpAuth('basic', {});
+  it('should return undefined when username is absent', async () => {
+    const result = await buildSmtpAuth('basic', {});
     expect(result).toBeUndefined();
   });
 
-  it('should return undefined when username is an empty string', () => {
-    const result = buildSmtpAuth('basic', { username: '', password: 'mypassword' });
+  it('should return undefined when username is an empty string', async () => {
+    const result = await buildSmtpAuth('basic', { username: '', password: 'mypassword' });
     expect(result).toBeUndefined();
   });
 });
@@ -99,12 +129,13 @@ describe('buildSmtpAuth — Basic Auth', () => {
 // ==========================================================================
 
 describe('buildSmtpAuth — security', () => {
-  it('should only expose the expected keys in the returned OAuth2 object', () => {
-    const result = buildSmtpAuth('oauth2', {
+  it('should only expose the expected keys in the returned OAuth2 object', async () => {
+    const result = await buildSmtpAuth('oauth2', {
       oauthUser: 'user@example.com',
       oauthClientId: 'client-id',
       oauthClientSecret: 'super-secret',
-      oauthAccessToken: 'super-token',
+      oauthIssuer: 'https://login.example.com/v2.0',
+      oauthRefreshToken: 'refresh-token',
     });
     expect(Object.keys(result ?? {})).toStrictEqual(['type', 'user', 'clientId', 'clientSecret', 'accessToken']);
   });
