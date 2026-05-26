@@ -7,7 +7,35 @@ vi.mock('openid-client', () => ({
   refreshTokenGrant: vi.fn(async () => ({ access_token: 'refreshed-access-token', expires_in: 3600 })),
 }));
 
+// Stub `nodemailer` so transporter creation/verify/sendMail are observable
+// without opening real SMTP connections. `vi.hoisted` is required because
+// `vi.mock` is hoisted to the top of the file — regular `const` would not be
+// initialized when the factory runs.
+const nodemailerMocks = vi.hoisted(() => {
+  const verify = vi.fn(async () => true);
+  const sendMail = vi.fn(async () => ({ messageId: 'stub' }));
+  const createTransport = vi.fn(() => ({ verify, sendMail }));
+  return { verify, sendMail, createTransport };
+});
+vi.mock('nodemailer', () => ({
+  default: { createTransport: nodemailerMocks.createTransport },
+}));
+
+// Stub the cache lookup used by smtpComputeFrom so we don't need a live cache.
+vi.mock('../../../src/database/cache', () => ({
+  getEntityFromCache: vi.fn(async () => ({
+    platform_title: 'OpenCTI',
+    platform_email: 'platform@example.com',
+  })),
+}));
+
 import { __resetSmtpCachesForTests, buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
+import {
+  sendMail,
+  smtpComputeFrom,
+  smtpConfiguredEmail,
+  smtpIsAlive,
+} from '../../../src/database/smtp';
 
 type SmtpCredentials = {
   username?: string;
@@ -265,3 +293,102 @@ describe('buildSmtpAuth — security', () => {
     expect(Object.keys(result ?? {})).toStrictEqual(['type', 'user', 'clientId', 'clientSecret', 'accessToken']);
   });
 });
+
+// ==========================================================================
+// smtpConfiguredEmail
+// ==========================================================================
+
+describe('smtpConfiguredEmail', () => {
+  it('should return the platform email when no forced sender email is configured', () => {
+    // Default config (default.json) sets forced_sender_email to "" → ALLOW_EMAIL_REWRITE is true.
+    const settings = { platform_email: 'platform@example.com' } as unknown as { platform_email: string };
+    expect(smtpConfiguredEmail(settings)).toBe('platform@example.com');
+  });
+});
+
+// ==========================================================================
+// smtpComputeFrom
+// ==========================================================================
+
+describe('smtpComputeFrom', () => {
+  it('should format the From header with the provided sender name and platform email', async () => {
+    const result = await smtpComputeFrom('Acme Notifications');
+    expect(result).toBe('Acme Notifications <platform@example.com>');
+  });
+
+  it('should fall back to platform_title when no sender name is provided', async () => {
+    const result = await smtpComputeFrom();
+    expect(result).toBe('OpenCTI <platform@example.com>');
+  });
+});
+
+// ==========================================================================
+// createSmtpTransporter (covered indirectly via smtpIsAlive / sendMail)
+// ==========================================================================
+
+describe('createSmtpTransporter — non-OAuth2 caching & sendMail / smtpIsAlive', () => {
+  const { createTransport: nodemailerCreateTransport, verify: nodemailerVerify, sendMail: nodemailerSendMail } = nodemailerMocks;
+
+  beforeEach(() => {
+    __resetSmtpCachesForTests();
+    nodemailerCreateTransport.mockClear();
+    nodemailerVerify.mockClear();
+    nodemailerSendMail.mockClear();
+  });
+
+  it('smtpIsAlive should call transporter.verify and log success when SMTP is reachable', async () => {
+    nodemailerVerify.mockResolvedValueOnce(true);
+    const result = await smtpIsAlive();
+    expect(result).toBe(true);
+    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(1);
+    expect(nodemailerVerify).toHaveBeenCalledTimes(1);
+  });
+
+  it('smtpIsAlive should swallow transporter.verify errors and still return true', async () => {
+    nodemailerVerify.mockRejectedValueOnce(new Error('connect ECONNREFUSED'));
+    const result = await smtpIsAlive();
+    expect(result).toBe(true);
+    expect(nodemailerVerify).toHaveBeenCalledTimes(1);
+  });
+
+  it('sendMail should build a transporter and forward the message fields to nodemailer', async () => {
+    await sendMail(
+      {
+        from: 'Sender <sender@example.com>',
+        to: 'rcpt@example.com',
+        bcc: 'bcc@example.com',
+        subject: 'Hello',
+        html: '<p>Hi</p>',
+        attachments: [],
+      },
+      { kind: 'test' },
+    );
+    expect(nodemailerSendMail).toHaveBeenCalledTimes(1);
+    expect(nodemailerSendMail).toHaveBeenCalledWith({
+      from: 'Sender <sender@example.com>',
+      to: 'rcpt@example.com',
+      bcc: 'bcc@example.com',
+      subject: 'Hello',
+      html: '<p>Hi</p>',
+      attachments: [],
+    });
+  });
+
+  it('should reuse the cached non-OAuth2 transporter across calls (no fresh createTransport)', async () => {
+    // First call populates the cache.
+    await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
+    // Subsequent calls must reuse it.
+    await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
+    await smtpIsAlive();
+    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(1);
+  });
+
+  it('should rebuild the transporter on the next call after the cache is reset', async () => {
+    await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
+    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(1);
+    __resetSmtpCachesForTests();
+    await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
+    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(2);
+  });
+});
+
