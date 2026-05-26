@@ -11,7 +11,7 @@ import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__gener
 import { FormikConfig } from 'formik/dist/types';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 import { insertNode } from '../../../utils/store';
-import { handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
+import { handleErrorInForm } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -148,26 +148,26 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: async (response) => {
-        try {
-          const draftId = response?.draftWorkspaceAdd?.id;
-          const hasPendingMarkdownImages = (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
+      onCompleted: (response) => {
+        (async () => {
+          try {
+            const draftId = response?.draftWorkspaceAdd?.id;
+            const hasPendingMarkdownImages = (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
 
-          if (draftId && hasPendingMarkdownImages) {
-            const finalizedDescription = await markdownControllerRef.current?.persistTempImages(draftId);
-            if (typeof finalizedDescription === 'string' && finalizedDescription !== values.description) {
-              await patchDraftDescription(draftId, finalizedDescription);
+            if (draftId && hasPendingMarkdownImages) {
+              const finalizedDescription = await markdownControllerRef.current?.persistTempImages(draftId);
+              if (typeof finalizedDescription === 'string' && finalizedDescription !== values.description) {
+                await patchDraftDescription(draftId, finalizedDescription);
+              }
+            }
+          } finally {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
             }
           }
-        } catch (error) {
-          MESSAGING$.notifyError(t_i18n('Draft created, but embedded images could not be uploaded.'));
-        } finally {
-          setSubmitting(false);
-          resetForm();
-          if (onCompleted) {
-            onCompleted();
-          }
-        }
+        })();
       },
     });
   };
