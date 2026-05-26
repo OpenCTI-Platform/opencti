@@ -44,15 +44,15 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
   return (
     <LoginLayout settings={settings}>
-      <Stack gap={3} sx={{ width: '100%', maxWidth: 420 }}>
-        <Stack gap={1}>
+      <Stack gap={3} sx={{ width: '100%', maxWidth: 360 }}>
+        <Stack gap={1.5}>
           <Typography
             variant="h4"
             sx={{
               fontWeight: 700,
               color: '#111827',
-              fontSize: 28,
-              lineHeight: 1.3,
+              fontSize: 20,
+              lineHeight: 1.25,
             }}
           >
             {t_i18n('Welcome to ResaaCTIP')}
@@ -61,7 +61,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
             variant="body2"
             sx={{
               color: '#6B7280',
-              fontSize: 14,
+              fontSize: 13.5,
               lineHeight: 1.5,
             }}
           >
