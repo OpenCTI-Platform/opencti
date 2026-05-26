@@ -155,7 +155,8 @@ const DataTableBody = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
 
-  const ROW_HEIGHT = 48; // theme.spacing(6)
+  // ROW_HEIGHT represents the theme.spacing(6) (48) + 1px borderBottom from DataTableLine
+  const ROW_HEIGHT = 49;
   const OVERSCAN = 5;
 
   const handleScroll = useCallback(() => {
@@ -198,7 +199,15 @@ const DataTableBody = ({
             resolvedData.length,
             Math.ceil((scrollTop + visibleHeight) / ROW_HEIGHT) + OVERSCAN,
           );
-          const totalHeight = resolvedData.length * ROW_HEIGHT + (isLoading ? Math.max(pageSize, 10) * ROW_HEIGHT : 0);
+          const loadedHeight = resolvedData.length * ROW_HEIGHT;
+          const rowsMissingInViewport = Math.max(
+            0,
+            Math.floor((scrollTop + visibleHeight - loadedHeight) / ROW_HEIGHT),
+          );
+          const loadingRowsToShow = (isLoading && lastVisible >= resolvedData.length)
+            ? Math.min(Math.max(pageSize, 10), rowsMissingInViewport)
+            : 0;
+          const totalHeight = loadedHeight + loadingRowsToShow * ROW_HEIGHT;
           const offsetY = firstVisible * ROW_HEIGHT;
           return (
             <div style={{ height: totalHeight, position: 'relative' }}>
@@ -211,8 +220,8 @@ const DataTableBody = ({
                     onToggleShiftEntity={onToggleShiftEntity}
                   />
                 ))}
-                {isLoading && lastVisible >= resolvedData.length && (
-                  <DataTableLinesDummy number={Math.max(pageSize, 10)} />
+                {loadingRowsToShow > 0 && (
+                  <DataTableLinesDummy number={loadingRowsToShow} />
                 )}
               </div>
             </div>
