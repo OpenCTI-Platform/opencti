@@ -45,6 +45,7 @@ import StixCyberObservable from '../../../static/images/entities/stix-cyber-obse
 import Relationship from '../../../static/images/entities/relationship.svg';
 import { fileUri } from '../../../relay/environment';
 import SecurityPlatform from '../../../static/images/entities/security-platform.svg';
+import SecurityCoverage from '../../../static/images/entities/security-coverage.svg';
 
 interface GraphImage {
   img: HTMLImageElement;
@@ -141,6 +142,10 @@ const GRAPH_IMAGES: GraphImages = {
   Organization: {
     rawImg: Organization,
     img: generateHtmlImageElement(Organization),
+  },
+  'Security-Coverage': {
+    rawImg: SecurityCoverage,
+    img: generateHtmlImageElement(SecurityCoverage),
   },
   SecurityPlatform: {
     rawImg: SecurityPlatform,
