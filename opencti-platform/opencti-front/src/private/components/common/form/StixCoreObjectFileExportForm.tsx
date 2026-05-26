@@ -246,6 +246,11 @@ const StixCoreObjectFileExportForm = ({
           setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
         }, [values.contentMaxMarkings]);
 
+        const shouldDisplayFintelDesign = (
+          (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
+          || (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/'))
+        );
+
         return (
 
           <Dialog
@@ -417,15 +422,13 @@ const StixCoreObjectFileExportForm = ({
                           optionLength={80}
                         />
                       )}
-                      {((values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
-                        || (values.connector.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/')))
-                        && (
-                          <FintelDesignField
-                            name="fintelDesign"
-                            label={t_i18n('Fintel design')}
-                            style={fieldSpacingContainerStyle}
-                          />
-                        )}
+                      {shouldDisplayFintelDesign && (
+                        <FintelDesignField
+                          name="fintelDesign"
+                          label={t_i18n('Fintel design')}
+                          style={fieldSpacingContainerStyle}
+                        />
+                      )}
                       {!isBuiltInConnector(values.connector.value) && (
                         <Field
                           component={SelectField}
