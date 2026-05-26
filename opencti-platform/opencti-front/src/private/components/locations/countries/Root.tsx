@@ -53,6 +53,7 @@ const countryQuery = graphql`
   query RootCountryQuery($id: String!) {
     country(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation

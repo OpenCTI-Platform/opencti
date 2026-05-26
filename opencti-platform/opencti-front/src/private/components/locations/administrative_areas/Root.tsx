@@ -51,6 +51,7 @@ const administrativeAreaQuery = graphql`
   query RootAdministrativeAreaQuery($id: String!) {
     administrativeArea(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation

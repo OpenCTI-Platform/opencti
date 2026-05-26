@@ -53,6 +53,7 @@ const regionQuery = graphql`
   query RootRegionQuery($id: String!) {
     region(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation

@@ -51,6 +51,7 @@ const cityQuery = graphql`
   query RootCityQuery($id: String!) {
     city(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation
