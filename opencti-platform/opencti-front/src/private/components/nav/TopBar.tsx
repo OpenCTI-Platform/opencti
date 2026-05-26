@@ -103,7 +103,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     null,
   );
   const [devToastMenuAnchor, setDevToastMenuAnchor] = useState<null | HTMLElement>(null);
-  const isDevToastSimulatorEnabled = import.meta.env.DEV;
+  // const isDevToastSimulatorEnabled = import.meta.env.DEV;
 
   const runToastSimulation = (payload: SimulateNotificationToastPayload) => {
     void import('./notificationToastDev').then(({ requestSimulatedNotificationToasts }) => {
@@ -296,7 +296,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       </Badge>
                     </IconButton>
                   </Tooltip>
-                  {isDevToastSimulatorEnabled && (
+                  {/* {isDevToastSimulatorEnabled && (
                     <>
                       <Tooltip title={t_i18n('Simulate notification toast (dev)')}>
                         <IconButton
@@ -324,7 +324,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         </MenuItem>
                       </Menu>
                     </>
-                  )}
+                  )} */}
                 </>
               </Security>
             )}

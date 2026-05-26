@@ -41,6 +41,7 @@ export const entitySettingsFragment = graphql`
         }
       }
       approved_status {
+        id
         template {
           id
           name
