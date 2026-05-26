@@ -37,6 +37,7 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
+import logo from '../../../static/images/rctip-logo-text.svg';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -211,7 +212,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       elevation={0}
       sx={{
         marginInlineStart: navOpen ? `${OPEN_BAR_WIDTH}px` : `${SMALL_BAR_WIDTH}px`,
-        width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
+        width: '100%',
         backgroundColor: 'transparent',
         backdropFilter: 'blur(4px)',
       }}
@@ -230,6 +231,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           background: 'var(--fluent-color-sidebar)',
         }}
       >
+        <div>
+          <img src={logo} alt="logo" height={35} />
+        </div>
         {hasKnowledgeAccess && (
           <SearchInput
             onSubmit={handleSearch}
@@ -241,6 +245,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         )}
         <div>
           <Stack direction="row" gap={1} alignItems="center">
+
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
@@ -329,6 +334,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
+
     </AppBar>
   );
 };

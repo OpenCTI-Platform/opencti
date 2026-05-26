@@ -180,7 +180,7 @@ const OpenVocabField = (props: OpenVocabFieldProps) => {
       options={[]}
       renderOption={() => null}
       textfieldprops={{
-        label,
+        placeholder: label,
       }}
     />
   );

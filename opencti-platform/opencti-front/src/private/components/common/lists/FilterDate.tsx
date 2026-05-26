@@ -67,7 +67,6 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   return (
     <DatePicker
       key={filterKey}
-      label={filterLabel}
       value={buildDate(dateState || findFilterFromKey(inputValues, filterKey, operator)?.values[0])}
       onChange={(value) => handleChangeDate(value)}
       onAccept={(value) => handleAcceptDate(value)}
@@ -78,6 +77,9 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
           variant: 'outlined',
           fullWidth: true,
           onKeyDown: (event) => handleValidateDate(event),
+          textField: {
+            placeholder: filterLabel,
+          },
         }),
       }}
     />

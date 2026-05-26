@@ -1,5 +1,6 @@
 html[data-theme="fluent"] {
   --fluent-color-primary: #533de4;
+  --fluent-color-primary-hover: #4026a8;
   --fluent-color-border: #ccd1dd;
   --fluent-color-border-hover: #5d616b;
   --fluent-color-bg: #fff;
@@ -8,7 +9,9 @@ html[data-theme="fluent"] {
   --fluent-color-sidebar: #f0f0f0;
   --fluent-color-background: #fafafa;
   body {
-    font-family: "IBM Plex Sans", sans-serif;
+    * {
+      font-family: "Iranyekan", "IBM Plex Sans", sans-serif !important;
+    }
     background: var(--fluent-color-background);
     &[data-theme="dark"] {
       --fluent-color-border: #292929;
@@ -44,10 +47,6 @@ html[data-theme="fluent"] {
   .MuiButtonBase-root {
     border-radius: 4px;
     box-shadow: none;
-    &.MuiButton-containedPrimary {
-      --variant-containedBg: var(--fluent-color-primary);
-      color: #fff;
-    }
     &.MuiIconButton-colorPrimary {
       color: var(--fluent-color-primary);
     }
