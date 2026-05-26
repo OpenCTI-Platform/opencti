@@ -7,11 +7,13 @@ import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/material/styles';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -25,7 +27,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import { useTheme } from '@mui/material/styles';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const RetentionCreationMutation = graphql`
     mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
@@ -58,21 +60,23 @@ interface RetentionFormValues {
   name: string;
   max_retention: string;
   retention_unit: 'minutes' | 'hours' | 'days';
+  scope: string;
   filters: string;
 }
 
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { isActivityHistoryRetentionEnable } = useHelper();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+    const { scope } = values;
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope,
       filters: (scope === 'knowledge' || scope === 'history' || scope === 'activity') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -101,10 +105,10 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   };
 
   const handleVerify = (values: RetentionFormValues) => {
+    const { scope } = values;
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope,
       filters: (scope === 'knowledge' || scope === 'history' || scope === 'activity') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -137,12 +141,12 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     >
       {({ onClose }) => (
         <Formik
-          initialValues={{ name: '', max_retention: '31', retention_unit: 'days', filters: '' }}
+          initialValues={{ name: '', max_retention: '31', retention_unit: 'days', scope: 'knowledge', filters: '' }}
           validationSchema={RetentionCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values: formValues }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue, values: formValues }) => (
             <Form>
               <Field
                 component={TextField}
@@ -191,81 +195,26 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   },
                 }}
               />
-              <Field
-                component={AutocompleteField}
-                variant="standard"
-                name="scope"
-                style={{ marginTop: 20 }}
-                fullWidth={true}
-                onChange={setFieldValue}
-                options={[
-                  ...(isActivityHistoryRetentionEnable() ? [{ value: 'activity', label: t_i18n('Activity') }] : []),
-                  { value: 'file', label: t_i18n('File') },
-                  ...(isActivityHistoryRetentionEnable() ? [{ value: 'history', label: t_i18n('History') }] : []),
-                  { value: 'knowledge', label: t_i18n('Knowledge') },
-                  { value: 'workbench', label: t_i18n('Workbench') },
-                ]}
-                renderOption={(prop: Record<string, unknown>, option: FieldOption) => (
-                  <li {...prop}>
-                    <div className={classes.text}>{t_i18n(option.label)}</div>
-                  </li>
-                )}
-                textfieldprops={{
-                  label: t_i18n('Scope'),
-                }}
+              <Box sx={{
+                paddingTop: 4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: theme.spacing(1),
+              }}
+              >
+                <Filters
+                  availableFilterKeys={availableFilterKeys}
+                  helpers={helpers}
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                />
+              </Box>
+              <FilterIconButton
+                filters={filters}
+                helpers={helpers}
+                redirection
+                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
-              {formValues.scope?.value === 'activity'
-                && (
-                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                    {t_i18n('The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)')}
-                  </Alert>
-                )
-              }
-              {formValues.scope?.value === 'file'
-                && (
-                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                    {`${t_i18n('The retention policy will be applied on global files (files contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
-                  </Alert>
-                )
-              }
-              {formValues.scope?.value === 'workbench'
-                && (
-                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                    {t_i18n('The retention policy will be applied on all workbenches (both global and entity-attached)')}
-                  </Alert>
-                )
-              }
-              {formValues.scope?.value === 'history'
-                && (
-                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                    {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
-                  </Alert>
-                )
-              }
-              {formValues.scope?.value === 'knowledge' && (
-                <>
-                  <Box sx={{
-                    paddingTop: 4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: theme.spacing(1),
-                    marginBottom: theme.spacing(1),
-                  }}
-                  >
-                    <Filters
-                      availableFilterKeys={availableFilterKeys}
-                      helpers={helpers}
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                    />
-                  </Box>
-                  <FilterIconButton
-                    filters={filters}
-                    helpers={helpers}
-                    redirection
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                  />
-                </>
-              )}
               <FormButtonContainer>
                 <Button
                   variant="secondary"

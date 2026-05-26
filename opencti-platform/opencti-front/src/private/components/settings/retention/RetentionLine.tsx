@@ -4,7 +4,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
-import Slide, { SlideProps } from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
@@ -21,12 +20,6 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 import ItemBoolean from '../../../../components/ItemBoolean';
-
-
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -80,7 +73,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   const { nsdt, n, t_i18n } = useFormatter();
   const data = useFragment(RetentionLineFragment, node);
 
-  const isActive: boolean = (data as unknown as { active?: boolean }).active ?? false;
+  const isActive = data.active;
   const filters = deserializeFilterGroupForFrontend(data.filters);
   let scopeColor = 'warning';
   let appliedOnContent = t_i18n('Everything');
@@ -170,11 +163,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
                   && (
                     <Tooltip
-                      title={
-                        data.scope === 'history'
-                          ? t_i18n('History logs of knowledge entities')
-                          : `${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`
-                      }
+                      title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
                     >
                       <InformationOutline
                         fontSize="small"
