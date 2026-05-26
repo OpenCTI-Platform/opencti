@@ -35,6 +35,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import ArtifactField from '../../common/form/ArtifactField';
@@ -313,6 +314,7 @@ const StixCyberObservableCreation = ({
       }
     },
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -408,6 +410,7 @@ const StixCyberObservableCreation = ({
         createIndicator: values.createIndicator,
         [inputObsType]: {
           ...adaptedValue,
+          ...buildCreationFilesInput(),
           obsContent: values.obsContent?.value,
         },
       };
@@ -797,6 +800,9 @@ const StixCyberObservableCreation = ({
                           multiline={true}
                           rows="4"
                           style={{ marginTop: 20 }}
+                          autoPersistOnBlur={false}
+                          registerMarkdownImagesController={registerMarkdownImagesController}
+                          uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
                         />
                         {attributes.map((attribute) => {
                           if (bulkConf && attribute.value === bulkSelectedKey) {
