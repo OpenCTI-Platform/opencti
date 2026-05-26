@@ -25,19 +25,53 @@ const baseSmtpOptions = {
   },
 };
 
+// OAuth2 caches:
+// - the OIDC discovery result is essentially static for an issuer and can be
+//   reused for the whole lifetime of the process.
+// - the access token is reused until shortly before its expiration, so a busy
+//   platform does not hammer the IdP /.well-known and /token endpoints on
+//   every email (and does not get rate-limited by Entra ID / Google / etc.).
+// - concurrent refresh attempts are coalesced via an in-flight Promise so only
+//   one network roundtrip happens at any given time.
+let cachedDiscoveryConfig;
+let cachedAccessToken;
+let cachedAccessTokenExpiresAt = 0;
+let inFlightRefresh;
+// Refresh the token a bit before it actually expires to absorb clock skew and
+// the duration of the SMTP exchange that follows.
+const ACCESS_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
+
 const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthIssuer, oauthRefreshToken }) => {
-  let tokens;
+  if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_MARGIN_MS) {
+    return cachedAccessToken;
+  }
+  if (inFlightRefresh) {
+    return inFlightRefresh;
+  }
+  inFlightRefresh = (async () => {
+    let tokens;
+    try {
+      if (!cachedDiscoveryConfig) {
+        const issuerUrl = new URL(oauthIssuer);
+        cachedDiscoveryConfig = await oidcDiscovery(issuerUrl, oauthClientId, { client_secret: oauthClientSecret });
+      }
+      tokens = await refreshTokenGrant(cachedDiscoveryConfig, oauthRefreshToken);
+    } catch (err) {
+      throw new Error(`Unable to refresh SMTP OAuth2 access token: ${err.message}`, { cause: err });
+    }
+    if (!tokens?.access_token) {
+      throw new Error('Unable to refresh SMTP OAuth2 access token: refresh token grant did not return an access_token');
+    }
+    cachedAccessToken = tokens.access_token;
+    const expiresInSeconds = typeof tokens.expires_in === 'number' ? tokens.expires_in : 3600;
+    cachedAccessTokenExpiresAt = Date.now() + expiresInSeconds * 1000;
+    return cachedAccessToken;
+  })();
   try {
-    const issuerUrl = new URL(oauthIssuer);
-    const config = await oidcDiscovery(issuerUrl, oauthClientId, { client_secret: oauthClientSecret });
-    tokens = await refreshTokenGrant(config, oauthRefreshToken);
-  } catch (err) {
-    throw new Error(`Unable to refresh SMTP OAuth2 access token: ${err.message}`, { cause: err });
+    return await inFlightRefresh;
+  } finally {
+    inFlightRefresh = null;
   }
-  if (!tokens?.access_token) {
-    throw new Error('Unable to refresh SMTP OAuth2 access token: refresh token grant did not return an access_token');
-  }
-  return tokens.access_token;
 };
 
 export const buildSmtpAuth = async (authType, {
@@ -89,17 +123,45 @@ const getSmtpAuthParams = () => ({
 });
 
 /**
- * Build a fresh nodemailer transporter. For OAuth2 the access token is
- * refreshed at call time so that long-running instances do not fail once the
- * initial token has expired (Microsoft tokens typically live for ~1h).
+ * Build a nodemailer transporter.
+ *
+ * For OAuth2 a fresh transporter is created on every call, but the underlying
+ * access token is cached (see {@link refreshSmtpAccessToken}) so the IdP is
+ * only contacted when the cached token is close to expiration.
+ *
+ * For non-OAuth2 auth types (basic / anonymous) the transporter has no
+ * time-bound credential, so it is built once and cached for the lifetime of
+ * the process — matching the historical singleton behaviour.
  */
+let cachedNonOauthTransporter;
 const createSmtpTransporter = async () => {
+  if (authType !== 'oauth2' && cachedNonOauthTransporter) {
+    return cachedNonOauthTransporter;
+  }
   const options = { ...baseSmtpOptions, tls: { ...baseSmtpOptions.tls } };
   const smtpAuth = await buildSmtpAuth(authType, getSmtpAuthParams());
   if (smtpAuth) {
     options.auth = smtpAuth;
   }
-  return nodemailer.createTransport(options);
+  const transporter = nodemailer.createTransport(options);
+  if (authType !== 'oauth2') {
+    cachedNonOauthTransporter = transporter;
+  }
+  return transporter;
+};
+
+/**
+ * Test-only helper. Resets all module-level caches (OIDC discovery, OAuth2
+ * access token, in-flight refresh, basic-auth transporter) so unit tests can
+ * run independently of each other. Not meant to be called from production code.
+ * @internal
+ */
+export const __resetSmtpCachesForTests = () => {
+  cachedDiscoveryConfig = undefined;
+  cachedAccessToken = undefined;
+  cachedAccessTokenExpiresAt = 0;
+  inFlightRefresh = null;
+  cachedNonOauthTransporter = undefined;
 };
 
 export const smtpConfiguredEmail = (settings) => {

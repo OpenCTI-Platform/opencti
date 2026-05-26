@@ -1,13 +1,13 @@
-﻿import { describe, expect, it, vi } from 'vitest';
+﻿import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // `openid-client` performs an HTTP discovery + token exchange that we don't
 // want to run during unit tests — stub it so OAuth2 tests stay hermetic.
 vi.mock('openid-client', () => ({
   discovery: vi.fn(async () => ({})),
-  refreshTokenGrant: vi.fn(async () => ({ access_token: 'refreshed-access-token' })),
+  refreshTokenGrant: vi.fn(async () => ({ access_token: 'refreshed-access-token', expires_in: 3600 })),
 }));
 
-import { buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
+import { __resetSmtpCachesForTests, buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
 
 type SmtpCredentials = {
   username?: string;
@@ -37,6 +37,13 @@ describe('buildSmtpAuth — OAuth2', () => {
     oauthIssuer: 'https://login.example.com/v2.0',
     oauthRefreshToken: 'my-refresh-token',
   };
+
+  beforeEach(async () => {
+    __resetSmtpCachesForTests();
+    const { discovery, refreshTokenGrant } = await import('openid-client');
+    (discovery as unknown as ReturnType<typeof vi.fn>).mockClear();
+    (refreshTokenGrant as unknown as ReturnType<typeof vi.fn>).mockClear();
+  });
 
   it('should return an OAuth2 auth object with a refreshed access token', async () => {
     const result = await buildSmtpAuth('oauth2', oauth2Config);
@@ -90,6 +97,29 @@ describe('buildSmtpAuth — OAuth2', () => {
     await expect(buildSmtpAuth('oauth2', oauth2Config)).rejects.toThrow(
       'Unable to refresh SMTP OAuth2 access token: boom',
     );
+  });
+
+  it('should cache the access token and skip refresh on subsequent calls within the validity window', async () => {
+    const { discovery, refreshTokenGrant } = await import('openid-client');
+    await buildSmtpAuth('oauth2', oauth2Config);
+    await buildSmtpAuth('oauth2', oauth2Config);
+    await buildSmtpAuth('oauth2', oauth2Config);
+    // OIDC discovery happens once, refresh token grant happens once for three sends.
+    expect(discovery as unknown as ReturnType<typeof vi.fn>).toHaveBeenCalledTimes(1);
+    expect(refreshTokenGrant as unknown as ReturnType<typeof vi.fn>).toHaveBeenCalledTimes(1);
+  });
+
+  it('should coalesce concurrent refresh attempts into a single network call', async () => {
+    const { refreshTokenGrant } = await import('openid-client');
+    const results = await Promise.all([
+      buildSmtpAuth('oauth2', oauth2Config),
+      buildSmtpAuth('oauth2', oauth2Config),
+      buildSmtpAuth('oauth2', oauth2Config),
+      buildSmtpAuth('oauth2', oauth2Config),
+      buildSmtpAuth('oauth2', oauth2Config),
+    ]);
+    expect(refreshTokenGrant as unknown as ReturnType<typeof vi.fn>).toHaveBeenCalledTimes(1);
+    results.forEach((result) => expect(result).toHaveProperty('accessToken', 'refreshed-access-token'));
   });
 });
 

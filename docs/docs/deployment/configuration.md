@@ -269,9 +269,9 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
     Set `smtp:auth_type` to `oauth2` and provide the five `oauth_*` fields. The platform refreshes the access token before every email is sent, so OpenCTI instances stay able to send mail indefinitely once the refresh token is valid.
 
-    Example `oauth_issuer` values:
+!!! note "OAuth2 authentication (provider-specific configuration)"
 
-!!! note "OAuth2 authentication (Microsoft/Office 365)"
+     Some providers require additional configuration for the OAuth2 client. For example, Microsoft 365 requires the client to be registered as a "public client" and to use the "OAuth 2.0 authorization grant flow for devices" (device code flow) to obtain the refresh token. Refer to your provider's documentation for any specific requirements.
 
     !!! warning "Required SMTP scope"
 
