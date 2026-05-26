@@ -75,7 +75,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
 
   const isActive = data.active;
   const filters = deserializeFilterGroupForFrontend(data.filters);
-  let scopeColor = 'warning';
+  let scopeColor = 'success';
   let appliedOnContent = t_i18n('Everything');
   if (data.scope === 'file') {
     scopeColor = 'secondary';
@@ -87,7 +87,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
     scopeColor = 'error';
     appliedOnContent = t_i18n('Knowledge history logs');
   } else if (data.scope === 'activity') {
-    scopeColor = 'success';
+    scopeColor = 'warning';
     appliedOnContent = t_i18n('Activity logs');
   }
   return (
@@ -133,7 +133,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               style={{ width: dataColumns.scope.width }}
             >
               <Chip
-                color={scopeColor as 'warning' | 'secondary' | 'primary' | 'error' | 'success'}
+                color={scopeColor as 'success' | 'secondary' | 'primary' | 'error' | 'warning'}
                 classes={{ root: classes.chipInList }}
                 label={t_i18n(data.scope)}
                 variant="outlined"
