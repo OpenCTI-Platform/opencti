@@ -32,10 +32,11 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useAI from '../../../../utils/hooks/useAI';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { nowUTC } from '../../../../utils/Time';
-import { buildExportFileName } from './StixCoreObjectFileExportForm.utils';
+import { buildExportFileName, normalizeExportSourceEntityName } from './StixCoreObjectFileExportForm.utils';
 import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField';
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
+  fileName?: string;
   fileMarkings: {
     id: string;
     name: string;
@@ -234,8 +235,13 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           if (values.template || values.fileToExport) {
+            const selectedEntityName = values.connector?.value === BUILT_IN_HTML_TO_PDF.value
+              ? (values.fileToExport?.value === 'mappableContent'
+                ? scoName
+                : normalizeExportSourceEntityName(values.fileToExport?.fileName))
+              : scoName;
             setFieldValue('exportFileName', buildExportFileName({
-              entityName: scoName,
+              entityName: selectedEntityName,
               markings: values.fileMarkings,
               utcIsoDate: nowUTC(),
             }));

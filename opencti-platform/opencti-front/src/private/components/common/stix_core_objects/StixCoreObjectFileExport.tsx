@@ -49,6 +49,8 @@ const stixCoreObjectFileExportQuery = graphql`
       }
       objectMarking {
         id
+        definition
+        definition_type
         representative {
           main
         }
@@ -63,6 +65,8 @@ const stixCoreObjectFileExportQuery = graphql`
             }
             objectMarking {
               id
+              definition
+              definition_type
               representative {
                 main
               }
@@ -80,6 +84,8 @@ const stixCoreObjectFileExportQuery = graphql`
             }
             objectMarking {
               id
+              definition
+              definition_type
               representative {
                 main
               }
@@ -102,6 +108,8 @@ const stixCoreObjectFileExportQuery = graphql`
               }
               objectMarking {
                 id
+                definition
+                definition_type
                 representative {
                   main
                 }
@@ -194,6 +202,7 @@ const StixCoreObjectFileExportComponent = ({
     return {
       value: e.node.id,
       label: getMainRepresentative(e.node),
+      fileName: e.node.name,
       fileMarkings: e.node.objectMarking.map((o) => ({
         id: o.id,
         name: getMainRepresentative(o),
@@ -204,6 +213,7 @@ const StixCoreObjectFileExportComponent = ({
   fileOptions.push({
     value: 'mappableContent',
     label: t_i18n('Mappable main content'),
+    fileName: 'mappableContent',
     fileMarkings: (stixCoreObject?.objectMarking ?? []).map((o) => ({
       id: o.id,
       name: getMainRepresentative(o),
@@ -452,7 +462,7 @@ const StixCoreObjectFileExport = (props: StixCoreObjectFileExportProps) => {
   return (
     <>
       {!connectorsQueryRef && (
-        <OpenFormComponent onOpen={() => {}} isExportPossible={false} />
+        <OpenFormComponent onOpen={() => { }} isExportPossible={false} />
       )}
       {connectorsQueryRef && (
         <React.Suspense>

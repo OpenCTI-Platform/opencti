@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildExportFileName, formatExportUtcTimestamp, normalizeMarkingForFileName, sanitizeFileNamePart } from './StixCoreObjectFileExportForm.utils';
+import {
+  buildExportFileName,
+  formatExportUtcTimestamp,
+  normalizeExportSourceEntityName,
+  normalizeMarkingForFileName,
+  sanitizeFileNamePart,
+} from './StixCoreObjectFileExportForm.utils';
 
 describe('StixCoreObjectFileExportForm utils', () => {
   it('sanitizes and truncates entity name to 100 chars', () => {
@@ -81,5 +87,17 @@ describe('StixCoreObjectFileExportForm utils', () => {
     });
 
     expect(fileName).toBe('Export_20260521T1355Z_TLP-CLEAR');
+  });
+
+  it('normalizes source file name by removing extension only for plain files', () => {
+    expect(normalizeExportSourceEntityName('petit coincoin.html')).toBe('petit coincoin');
+  });
+
+  it('normalizes source file name by stripping existing export timestamp and marking suffix', () => {
+    expect(normalizeExportSourceEntityName('petit_coincoin_20260526T1015Z_TLP-RED.html')).toBe('petit_coincoin');
+  });
+
+  it('normalizes source file name by stripping existing export timestamp suffix without marking', () => {
+    expect(normalizeExportSourceEntityName('petit_coincoin_20260526T1015Z.md')).toBe('petit_coincoin');
   });
 });
