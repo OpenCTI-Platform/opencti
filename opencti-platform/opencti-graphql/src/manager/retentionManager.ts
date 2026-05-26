@@ -22,9 +22,6 @@ import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
 
-// Extended type until generated types are regenerated from the updated schema
-type RetentionRuleWithActive = RetentionRule & { active?: boolean | null };
-
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
 // Retention manager responsible to cleanup old data
@@ -90,10 +87,9 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   return result;
 };
 
-export const executeProcessing = async (context: AuthContext, retentionRule: RetentionRuleWithActive) => {
-  const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope } = retentionRule;
-  const active = retentionRule.active;
-  if (active === false) {
+export const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
+  const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope, active } = retentionRule;
+  if (!active) {
     logApp.debug(`[OPENCTI] Skipping inactive retention rule ${name}`);
     return;
   }
@@ -191,7 +187,7 @@ const retentionHandler = async (lock: { signal: AbortSignal; extend: () => Promi
     for (let index = 0; index < retentionRules.length; index += 1) {
       lock.signal.throwIfAborted();
       const retentionRule = retentionRules[index];
-      await executeProcessing(context, retentionRule as unknown as RetentionRuleWithActive);
+      await executeProcessing(context, retentionRule as unknown as RetentionRule);
     }
   }
 };

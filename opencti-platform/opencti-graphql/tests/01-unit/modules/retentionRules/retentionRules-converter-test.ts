@@ -14,6 +14,7 @@ describe('retentionRules converter - convertRetentionRuleToStix', () => {
       max_retention: 30,
       retention_unit: 'days',
       scope: 'knowledge',
+      active: true,
       last_execution_date: '2026-04-01T00:00:00.000Z',
       last_deleted_count: 5,
       remaining_count: 42,
@@ -30,6 +31,7 @@ describe('retentionRules converter - convertRetentionRuleToStix', () => {
     expect(stix.max_retention).toBe(30);
     expect(stix.retention_unit).toBe('days');
     expect(stix.scope).toBe('knowledge');
+    expect(stix.active).toBe(true);
     expect(stix.last_execution_date).toBe('2026-04-01T00:00:00.000Z');
     expect(stix.last_deleted_count).toBe(5);
     expect(stix.remaining_count).toBe(42);
@@ -108,6 +110,13 @@ describe('retentionRules converter - convertRetentionRuleToStix', () => {
 
     expect(stix.max_retention).toBe(120);
     expect(stix.retention_unit).toBe('minutes');
+  });
+
+  it('should convert an inactive retention rule', () => {
+    const instance = buildMockRetentionRule({ active: false });
+    const stix = convertRetentionRuleToStix(instance);
+
+    expect(stix.active).toBe(false);
   });
 
   it('should preserve complex filter strings', () => {
