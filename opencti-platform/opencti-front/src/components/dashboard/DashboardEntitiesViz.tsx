@@ -2,7 +2,7 @@ import { memo, ReactNode } from 'react';
 import StixDomainObjectBookmarksList from '../../private/components/common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsNumber from '../../private/components/common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '@components/common/stix_core_objects/StixCoreObjectsList';
-import StixCoreObjectsDistributionList from '@components/common/stix_core_objects/StixCoreObjectsDistributionList';
+import StixCoreObjectsDistributionList from '../../private/components/common/stix_core_objects/StixCoreObjectsDistributionList';
 import StixCoreObjectsMultiVerticalBars from '@components/common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsMultiLineChart from '@components/common/stix_core_objects/StixCoreObjectsMultiLineChart';
 import StixCoreObjectsMultiAreaChart from '@components/common/stix_core_objects/StixCoreObjectsMultiAreaChart';
@@ -89,13 +89,13 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsDistributionList
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'vertical-bar':

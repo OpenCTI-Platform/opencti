@@ -188,7 +188,7 @@ interface StixDomainObjectBookmarksListProps {
   title?: string;
   variant?: string;
   height?: number;
-  parameters?: { title?: string };
+  parameters: { title?: string };
   popover?: React.ReactNode;
   dataSelection: Widget['dataSelection'];
   host?: WidgetHost;
