@@ -373,14 +373,17 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
         break;
 
       case 'PropertyDefinition':
-      case 'PropertyName':
         processPropertyDefinitionOrName();
         // Object shorthand properties do not produce a VariableName node.
         // If it's a shorthand property, we must also validate the identifier.
-        if (cursor.type.name === 'PropertyDefinition' && isShorthandProperty()) {
+        if (isShorthandProperty()) {
           processVariableName();
         }
         break;
+
+      case 'PropertyName':
+        processPropertyDefinitionOrName();
+        break;        
 
       case 'String':
         processString();
