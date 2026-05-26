@@ -11,7 +11,7 @@ import { Box, Checkbox, FormControlLabel, Stack, Typography } from '@mui/materia
 import { useLoginContext } from './loginContext';
 import { ResetPwdStep } from './ResetPassword';
 import { useEffect, useState } from 'react';
-import { loginFieldSx, LOGIN_BRAND_COLOR } from './loginStyles';
+import { loginFieldGroupSx, loginFieldLabelSx, loginInputSx, loginRememberMeSx, LOGIN_BRAND_COLOR } from './loginStyles';
 
 const REMEMBER_EMAIL_KEY = 'resaactip_remember_email';
 
@@ -43,7 +43,7 @@ const LoginForm = () => {
       setValue('email', savedEmail);
       setRememberMe(true);
     }
-  }, [setValue]);
+  }, []);
 
   const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (
     input,
@@ -91,36 +91,61 @@ const LoginForm = () => {
       {({ isSubmitting, isValid }) => (
         <Form>
           <Stack gap={2.5}>
-            <Field
-              component={TextField}
-              name="email"
-              label={t_i18n('Username')}
-              fullWidth={true}
-              variant="outlined"
-              InputLabelProps={{ shrink: true }}
-              sx={loginFieldSx}
-              onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-                setValue('email', e.currentTarget.value);
-              }}
-            />
-            <Field
-              component={TextField}
-              name="password"
-              label={t_i18n('Password')}
-              type="password"
-              fullWidth={true}
-              variant="outlined"
-              InputLabelProps={{ shrink: true }}
-              sx={loginFieldSx}
-            />
+            <Box sx={loginFieldGroupSx}>
+              <Typography
+                component="label"
+                htmlFor="login-email"
+                sx={loginFieldLabelSx}
+              >
+                {t_i18n('Username')}
+              </Typography>
+              <Field
+                id="login-email"
+                component={TextField}
+                name="email"
+                hiddenLabel
+                fullWidth={true}
+                variant="outlined"
+                sx={loginInputSx}
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                  setValue('email', e.currentTarget.value);
+                }}
+              />
+            </Box>
+            <Box sx={loginFieldGroupSx}>
+              <Typography
+                component="label"
+                htmlFor="login-password"
+                sx={loginFieldLabelSx}
+              >
+                {t_i18n('Password')}
+              </Typography>
+              <Field
+                id="login-password"
+                component={TextField}
+                name="password"
+                type="password"
+                hiddenLabel
+                fullWidth={true}
+                variant="outlined"
+                sx={loginInputSx}
+              />
+            </Box>
 
             <FormControlLabel
               control={(
                 <Checkbox
                   checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setRememberMe(checked);
+                    if (!checked) {
+                      localStorage.removeItem(REMEMBER_EMAIL_KEY);
+                    }
+                  }}
                   size="small"
                   sx={{
+                    p: 0,
                     color: '#D1D5DB',
                     '&.Mui-checked': {
                       color: LOGIN_BRAND_COLOR,
@@ -133,7 +158,7 @@ const LoginForm = () => {
                   {t_i18n('Remember me')}
                 </Typography>
               )}
-              sx={{ ml: 0, mr: 0 }}
+              sx={loginRememberMeSx}
             />
 
             <Button

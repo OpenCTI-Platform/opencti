@@ -16,12 +16,12 @@ const loginAutofillSelectors = [
   '& .MuiInputBase-input:-webkit-autofill:active',
 ].join(', ');
 
-export const loginPanelSx = {
-  backgroundColor: LOGIN_INPUT_BG,
-  color: LOGIN_TEXT_COLOR,
+const loginInputBaseSx = {
   '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
     backgroundColor: `${LOGIN_INPUT_BG} !important`,
     color: `${LOGIN_TEXT_COLOR} !important`,
+    minHeight: 42,
     '& fieldset': {
       borderColor: LOGIN_BORDER_COLOR,
     },
@@ -35,6 +35,11 @@ export const loginPanelSx = {
   '& .MuiInputBase-root': {
     color: `${LOGIN_TEXT_COLOR} !important`,
     backgroundColor: `${LOGIN_INPUT_BG} !important`,
+  },
+  '& .MuiOutlinedInput-input': {
+    padding: '10px 12px',
+    fontSize: 14,
+    lineHeight: 1.4,
   },
   '& .MuiInputBase-input': {
     color: `${LOGIN_TEXT_COLOR} !important`,
@@ -50,47 +55,38 @@ export const loginPanelSx = {
   },
 };
 
-export const loginFieldSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '8px',
-    backgroundColor: `${LOGIN_INPUT_BG} !important`,
-    color: `${LOGIN_TEXT_COLOR} !important`,
-    '& fieldset': {
-      borderColor: LOGIN_BORDER_COLOR,
-    },
-    '&:hover fieldset': {
-      borderColor: LOGIN_BORDER_HOVER_COLOR,
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: LOGIN_BORDER_FOCUS_COLOR,
-    },
+export const loginPanelSx = {
+  backgroundColor: LOGIN_INPUT_BG,
+  color: LOGIN_TEXT_COLOR,
+  ...loginInputBaseSx,
+};
+
+export const loginFieldGroupSx = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 0.75,
+};
+
+export const loginFieldLabelSx = {
+  fontSize: 14,
+  fontWeight: 600,
+  color: '#374151',
+  lineHeight: 1.25,
+};
+
+export const loginInputSx = loginInputBaseSx;
+
+export const loginRememberMeSx = {
+  m: 0,
+  ml: 0,
+  mr: 0,
+  alignItems: 'center',
+  '& .MuiCheckbox-root': {
+    p: 0,
+    marginInlineEnd: 1,
   },
-  '& .MuiInputLabel-root': {
-    position: 'static',
-    transform: 'none',
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#374151',
-    mb: 0.75,
-  },
-  '& .MuiInputLabel-shrink': {
-    transform: 'none',
-  },
-  '& .MuiInputBase-root': {
-    mt: 0,
-    color: `${LOGIN_TEXT_COLOR} !important`,
-    backgroundColor: `${LOGIN_INPUT_BG} !important`,
-  },
-  '& .MuiInputBase-input': {
-    color: `${LOGIN_TEXT_COLOR} !important`,
-    WebkitTextFillColor: `${LOGIN_TEXT_COLOR} !important`,
-    caretColor: `${LOGIN_TEXT_COLOR} !important`,
-  },
-  [loginAutofillSelectors]: {
-    WebkitTextFillColor: `${LOGIN_TEXT_COLOR} !important`,
-    WebkitBoxShadow: `0 0 0 1000px ${LOGIN_INPUT_BG} inset !important`,
-    boxShadow: `0 0 0 1000px ${LOGIN_INPUT_BG} inset !important`,
-    caretColor: `${LOGIN_TEXT_COLOR} !important`,
-    transition: 'background-color 5000s ease-in-out 0s',
+  '& .MuiFormControlLabel-label': {
+    p: 0,
+    m: 0,
   },
 };
