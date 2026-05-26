@@ -116,9 +116,7 @@ export class ExportButtons extends Component {
       if (dashboardButtons) {
         restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
       } else {
-        const exportButtons = document.getElementById('export-buttons');
         if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
-        const viewButtons = document.getElementById('container-view-buttons');
         viewButtons?.setAttribute('style', '');
       }
       setExportTheme(null);
