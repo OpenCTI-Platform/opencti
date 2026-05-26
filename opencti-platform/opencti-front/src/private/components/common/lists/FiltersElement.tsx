@@ -83,7 +83,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         {variant === FiltersVariant.dialog && (
           <Grid item xs={12}>
             <TextField
-              label={t_i18n('Global keyword')}
+              placeholder={t_i18n('Global keyword')}
               variant="outlined"
               size="small"
               fullWidth={true}

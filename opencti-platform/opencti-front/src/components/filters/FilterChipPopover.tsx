@@ -153,7 +153,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     event: SyntheticEvent,
     isSubKey?: boolean,
   ) => Record<string, FilterOptionValue[]>,
-  ];
+    ];
 
   const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
     if (childKey) {
@@ -253,16 +253,16 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
     const getOptions = shouldAddSelfId
       ? [
-          {
-            value: SELF_ID,
-            label: SELF_ID_VALUE,
-            group: 'Instance',
-            parentTypes: [],
-            color: 'primary',
-            type: 'Instance',
-          },
-          ...getEntitiesOptions,
-        ]
+        {
+          value: SELF_ID,
+          label: SELF_ID_VALUE,
+          group: 'Instance',
+          parentTypes: [],
+          color: 'primary',
+          type: 'Instance',
+        },
+        ...getEntitiesOptions,
+      ]
       : getEntitiesOptions;
 
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
@@ -351,7 +351,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   : paramsInput.InputProps.endAdornment,
               },
             }}
-            label={t_i18n(fLabel)}
+            placeholder={t_i18n(fLabel)}
             variant="outlined"
             size="small"
             fullWidth={true}
@@ -463,7 +463,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        { availableOperators.length > 0 && (
+        {availableOperators.length > 0 && (
           <Select
             labelId="change-operator-select-label"
             id="change-operator-select"
@@ -524,50 +524,50 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     >
       {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
         ? (
+          <div
+            style={{
+              width: 250,
+              padding: 8,
+            }}
+          >
+            {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
+            <Chip
+              style={{
+                fontFamily: 'Consolas, monaco, monospace',
+                margin: '10px 10px 15px 0',
+              }}
+              label={t_i18n('WITH')}
+            />
+            {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
+          </div>
+        )
+        : (
+          <div style={{ display: 'inline-flex' }}>
             <div
               style={{
                 width: 250,
                 padding: 8,
               }}
             >
-              {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
-              <Chip
-                style={{
-                  fontFamily: 'Consolas, monaco, monospace',
-                  margin: '10px 10px 15px 0',
-                }}
-                label={t_i18n('WITH')}
-              />
-              {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
+              {displayOperatorAndFilter(filterKey)}
             </div>
-          )
-        : (
-            <div style={{ display: 'inline-flex' }}>
-              <div
-                style={{
-                  width: 250,
-                  padding: 8,
-                }}
-              >
-                {displayOperatorAndFilter(filterKey)}
-              </div>
-              {filterOperator === 'within'
-                && (
-                  <div style={{ width: 150, display: 'inline-flex' }}>
-                    <div style={{
-                      color: theme.palette.text.disabled,
-                      borderLeft: '0.5px solid',
-                      marginInlineStart: '10px',
-                      marginTop: '10px',
-                      marginBottom: '10px',
-                    }}
-                    />
-                    <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
-                  </div>
-                )
-              }
-            </div>
-          )
+            {filterOperator === 'within'
+              && (
+                <div style={{ width: 150, display: 'inline-flex' }}>
+                  <div style={{
+                    color: theme.palette.text.disabled,
+                    borderLeft: '0.5px solid',
+                    marginInlineStart: '10px',
+                    marginTop: '10px',
+                    marginBottom: '10px',
+                  }}
+                  />
+                  <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
+                </div>
+              )
+            }
+          </div>
+        )
       }
     </Popover>
   );

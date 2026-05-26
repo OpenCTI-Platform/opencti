@@ -74,15 +74,15 @@ export const createPrimarySolidStyles = (params: StyleFactoryParams): SxProps<Th
   const { theme, currentColor, selected } = params;
 
   return {
-    backgroundColor: currentColor.main,
-    color: currentColor.text,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
 
     ...(selected && {
-      backgroundColor: currentColor.hover,
+      backgroundColor: theme.palette.primary.dark,
     }),
 
     '&:hover': {
-      backgroundColor: currentColor.hover,
+      backgroundColor: theme.palette.primary.dark,
     },
 
     '&.Mui-disabled': getDisabledSx(theme, 'primary'),

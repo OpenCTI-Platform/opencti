@@ -103,35 +103,35 @@ const DataTablePagination = ({
     },
     ...(redirectionModeEnabled
       ? [
-          {
-            label: t_i18n('Redirection mode'),
-            menuLevel: 0,
-            value: 'redirect-mode',
-            nestedOptions: [
-              {
-                label: t_i18n('Redirecting to the Overview section'),
-                value: 'overview',
-                menuLevel: 1,
-                onClick: () => helpers.handleAddProperty('redirectionMode', 'overview'),
-                selected: redirectionMode === 'overview',
-              },
-              {
-                label: t_i18n('Redirecting to the Knowledge section'),
-                value: 'knowledge',
-                menuLevel: 1,
-                onClick: () => helpers.handleAddProperty('redirectionMode', 'knowledge'),
-                selected: redirectionMode === 'knowledge',
-              },
-              {
-                label: t_i18n('Redirecting to the Content section'),
-                value: 'content',
-                menuLevel: 1,
-                onClick: () => helpers.handleAddProperty('redirectionMode', 'content'),
-                selected: redirectionMode === 'content',
-              },
-            ],
-          },
-        ]
+        {
+          label: t_i18n('Redirection mode'),
+          menuLevel: 0,
+          value: 'redirect-mode',
+          nestedOptions: [
+            {
+              label: t_i18n('Redirecting to the Overview section'),
+              value: 'overview',
+              menuLevel: 1,
+              onClick: () => helpers.handleAddProperty('redirectionMode', 'overview'),
+              selected: redirectionMode === 'overview',
+            },
+            {
+              label: t_i18n('Redirecting to the Knowledge section'),
+              value: 'knowledge',
+              menuLevel: 1,
+              onClick: () => helpers.handleAddProperty('redirectionMode', 'knowledge'),
+              selected: redirectionMode === 'knowledge',
+            },
+            {
+              label: t_i18n('Redirecting to the Content section'),
+              value: 'content',
+              menuLevel: 1,
+              onClick: () => helpers.handleAddProperty('redirectionMode', 'content'),
+              selected: redirectionMode === 'content',
+            },
+          ],
+        },
+      ]
       : []),
   ];
 
@@ -156,6 +156,7 @@ const DataTablePagination = ({
           size="default"
           disabled={firstItem === 1}
           style={{
+            borderLeft: 'none',
             padding: 0,
             borderRight: 'none',
             minWidth: 24,

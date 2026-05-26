@@ -19,14 +19,15 @@ const CardTitle = ({
 
   const containerSx: SxProps = {
     height: alignItems !== 'center' ? 'inherit' : 'auto',
-    marginBottom: theme.spacing(1),
     flex: 0,
+    padding: theme.spacing(2),
+    paddingBottom: 0,
     ...sx,
   };
 
   const titleSx: SxProps = {
     marginBottom: 0,
-    padding: theme.spacing(2),
+    // padding: theme.spacing(2),
     textTransform: 'capitalize',
     color: theme.palette.text.light,
     lineHeight: '24px',
