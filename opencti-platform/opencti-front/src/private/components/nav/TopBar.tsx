@@ -32,8 +32,8 @@ import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from
 import Security from '../../../utils/Security';
 import type { SimulateNotificationToastPayload } from './notificationToastDev';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
-import AskArianeButton from '../chatbox/AskArianeButton';
-import { CGUStatus } from '../settings/Experience';
+// import AskArianeButton from '../chatbox/AskArianeButton';
+// import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
