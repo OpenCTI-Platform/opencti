@@ -159,10 +159,10 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
 
   const formatTimeAgo = (date: Date): string => {
     const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
-    if (diffMin === 0) return t_i18n('Just now');
-    if (diffMin < 60) return `${diffMin} ${t_i18n('min ago')}`;
+    if (diffMin === 0) return 'Just now';
+    if (diffMin < 60) return `${diffMin} min ago`;
     const diffHours = Math.floor(diffMin / 60);
-    return `${diffHours} ${t_i18n('hour(s) ago')}`;
+    return `${diffHours} ${diffHours > 1 ? 'hours ago' : 'hour ago'}`;
   };
 
   useEffect(() => {
