@@ -69,7 +69,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 return
             except (UnroutableError, NackError) as err:
                 retry_count = retry_count + 1
-                self.logger.debug(f"Unable to send bundle, error: {err}")
                 self.logger.info(
                     "Unable to send bundle, retrying...",
                     {
@@ -78,6 +77,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         "is_split_bundle": is_split_bundle,
                     },
                 )
+                self.logger.debug("Unable to send bundle error", {"error": str(err)})
                 time.sleep(10)
 
     def handle_message(
