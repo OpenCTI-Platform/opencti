@@ -16,6 +16,7 @@ import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
 import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
+import { useFormatter } from '../../../../components/i18n';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -97,6 +98,7 @@ interface CustomDashboardProps {
 }
 
 const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
+  const { t_i18n } = useFormatter();
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
@@ -155,14 +157,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const [lastRefreshTime, setLastRefreshTime] = useState(new Date());
   const [timeAgoText, setTimeAgoText] = useState('');
 
-  const formatTimeAgo = (date) => {
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin === 0) return 'just now';
-    if (diffMin < 60) return `${diffMin} min ago`;
+  const formatTimeAgo = (date: Date): string => {
+    const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
+    if (diffMin === 0) return t_i18n('Just now');
+    if (diffMin < 60) return `${diffMin} ${t_i18n('min ago')}`;
     const diffHours = Math.floor(diffMin / 60);
-    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffHours} ${t_i18n('hour(s) ago')}`;
   };
 
   useEffect(() => {
