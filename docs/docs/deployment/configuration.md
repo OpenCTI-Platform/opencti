@@ -248,26 +248,36 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 #### SMTP Service
 
-| Parameter                | Environment variable      | Default value | Description                                            |
-|:-------------------------|:--------------------------|:--------------|:-------------------------------------------------------|
-| smtp:hostname            | SMTP__HOSTNAME            |               | SMTP Server hostname                                   |
-| smtp:port                | SMTP__PORT                | 465           | SMTP Port (25 or 465 for TLS)                          |
-| smtp:use_ssl             | SMTP__USE_SSL             | `false`       | SMTP over TLS                                          |
-| smtp:reject_unauthorized | SMTP__REJECT_UNAUTHORIZED | `false`       | Enable TLS certificate check                           |
-| smtp:username            | SMTP__USERNAME            |               | SMTP Username if authentication is needed (Basic Auth) |
-| smtp:password            | SMTP__PASSWORD            |               | SMTP Password if authentication is needed (Basic Auth) |
-| smtp:auth_type           | SMTP__AUTH_TYPE           | `basic`       | Authentication type: `basic` or `oauth2`               |
-| smtp:oauth_user          | SMTP__OAUTH_USER          |               | OAuth2: email address of the SMTP user                 |
-| smtp:oauth_client_id     | SMTP__OAUTH_CLIENT_ID     |               | OAuth2: Azure AD application (client) ID               |
-| smtp:oauth_client_secret | SMTP__OAUTH_CLIENT_SECRET |               | OAuth2: Azure AD client secret                         |
-| smtp:oauth_access_token  | SMTP__OAUTH_ACCESS_TOKEN  |               | OAuth2: static access token                            |
+| Parameter                  | Environment variable        | Default value | Description                                                                                                          |
+|:---------------------------|:----------------------------|:--------------|:----------------------------------------------------------------------------------------------------------------------------------|
+| smtp:hostname              | SMTP__HOSTNAME              |               | SMTP Server hostname                                                                                                 |
+| smtp:port                  | SMTP__PORT                  | 465           | SMTP Port (25 or 465 for TLS)                                                                                        |
+| smtp:use_ssl               | SMTP__USE_SSL               | `false`       | SMTP over TLS                                                                                                        |
+| smtp:reject_unauthorized   | SMTP__REJECT_UNAUTHORIZED   | `false`       | Enable TLS certificate check                                                                                         |
+| smtp:auth_type             | SMTP__AUTH_TYPE             | `basic`       | Authentication type: `basic` or `oauth2`                                                                             |
+| smtp:username              | SMTP__USERNAME              |               | SMTP username (Basic Auth only)                                                                                      |
+| smtp:password              | SMTP__PASSWORD              |               | SMTP password (Basic Auth only)                                                                                      |
+| smtp:oauth_user            | SMTP__OAUTH_USER            |               | OAuth2: email address of the SMTP mailbox                                                                            |
+| smtp:oauth_client_id       | SMTP__OAUTH_CLIENT_ID       |               | OAuth2: client ID registered with the identity provider                                                              |
+| smtp:oauth_client_secret   | SMTP__OAUTH_CLIENT_SECRET   |               | OAuth2: client secret associated with the client ID                                                                  |
+| smtp:oauth_issuer          | SMTP__OAUTH_ISSUER          |               | OAuth2: OIDC issuer URL of the identity provider (used for discovery and refresh token grant)                        |
+| smtp:oauth_refresh_token   | SMTP__OAUTH_REFRESH_TOKEN   |               | OAuth2: long-lived refresh token used to obtain a fresh access token before each email is sent                       |
+
+!!! note "OAuth2 authentication (provider-agnostic)"
+
+    Many SMTP providers no longer accept Basic Authentication (for example Microsoft 365 deprecated it in 2025). OpenCTI supports OAuth2 with the **Refresh Token Grant** for any OIDC-compliant identity provider: Microsoft Entra ID, Google Workspace, Okta, Keycloak, and others.
+
+    Set `smtp:auth_type` to `oauth2` and provide the five `oauth_*` fields. The platform refreshes the access token before every email is sent, so OpenCTI instances stay able to send mail indefinitely once the refresh token is valid.
+
+    Example `oauth_issuer` values:
 
 !!! note "OAuth2 authentication (Microsoft/Office 365)"
 
-    If your SMTP server requires OAuth2 (e.g. `smtp.office365.com` after Microsoft retired Basic Auth in April 2026),
-    set `smtp:auth_type` to `oauth2` and provide the four `oauth_*` fields.
-    All four fields are required when `oauth2` is selected.
-    Basic Auth (`smtp:auth_type: basic`) remains the default and is unaffected by this change.
+    !!! warning "Required SMTP scope"
+
+        The OAuth2 refresh token must have been granted the scope that allows sending email through SMTP. For Microsoft 365 this is `https://outlook.office.com/SMTP.Send` together with `offline_access`. For Google Workspace this is `https://mail.google.com/`. Refer to your provider's documentation for the exact scope.
+
+    Basic Auth (`smtp:auth_type: basic`) remains the default and is unaffected by this configuration.
 
 #### AI Service
 
