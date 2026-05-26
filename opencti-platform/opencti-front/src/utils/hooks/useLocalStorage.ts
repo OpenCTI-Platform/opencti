@@ -50,7 +50,7 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleRemoveSavedFilters: () => void;
 }
 
-const localStorageToPaginationOptions = (
+export const localStorageToPaginationOptions = (
   { searchTerm, filters, sortBy, orderAsc, ...props }: LocalStorage,
 ): PaginationOptions => {
   // Remove only display options, not query linked
@@ -72,7 +72,7 @@ const localStorageToPaginationOptions = (
   if (searchTerm) {
     basePagination.search = searchTerm;
   }
-  if (orderAsc || sortBy) {
+  if (sortBy !== undefined && sortBy !== null) {
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
@@ -269,6 +269,8 @@ export const usePaginationLocalStorage = <U>(
   const paginationOptions = localStorageToPaginationOptions({
     count: viewStorage.pageSize ? Number.parseInt(viewStorage.pageSize, 10) : 25,
     ...viewStorage,
+    sortBy: viewStorage.sortBy ?? initialValue.sortBy,
+    orderAsc: viewStorage.orderAsc ?? initialValue.orderAsc,
   });
 
   const filterKeysSchema = useFetchFilterKeysSchema();
