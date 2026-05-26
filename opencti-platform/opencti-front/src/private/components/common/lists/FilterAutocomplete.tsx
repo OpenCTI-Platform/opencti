@@ -174,7 +174,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       renderInput={(params) => (
         <TextField
           {...params}
-          label={filterLabel}
+          placeholder={filterLabel}
           variant="outlined"
           size="small"
           fullWidth={true}

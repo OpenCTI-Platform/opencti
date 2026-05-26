@@ -1,10 +1,11 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { alpha, Box, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Theme } from '../../../components/Theme';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
+import { useFormatter } from '../../../components/i18n';
 
 interface SubMenuItem {
   type?: string;
@@ -183,6 +184,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       </>
     );
   };
+  const { t_i18n } = useFormatter();
 
   // Render submenu item
   const renderSubMenuItem = (item: SubMenuItem, inCollapse: boolean) => {
@@ -215,7 +217,6 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       <div key={item.label}>{menuItem}</div>
     );
   };
-
   const getMenuStyles = (selected: boolean): SxProps => {
     const draftBg = theme.palette.designSystem.alert.warning.primary;
     const defaultBg = draftContext ? draftBg : theme.palette.primary.main;
@@ -301,8 +302,8 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         sx={{ pointerEvents: 'none' }}
         open={isMenuOpen}
         anchorEl={anchorRef.current}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        anchorOrigin={{ vertical: 'top', horizontal: t_i18n('direction') === 'rtl' ? 'left' : 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: t_i18n('direction') === 'rtl' ? 'right' : 'left' }}
         onClose={onMenuClose}
         disableRestoreFocus
         disableScrollLock

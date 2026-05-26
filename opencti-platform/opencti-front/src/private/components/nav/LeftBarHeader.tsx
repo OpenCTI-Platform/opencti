@@ -149,7 +149,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           },
         }}
       >
-        <img
+        {/* <img
           src={currentLogo}
           alt="logo"
           style={{
@@ -157,7 +157,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             maxWidth: navOpen ? '110px' : '23px',
             objectFit: 'contain',
           }}
-        />
+        /> */}
 
         {/* {navOpen && (
           <IconButton

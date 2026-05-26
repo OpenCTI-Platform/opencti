@@ -10,7 +10,7 @@ const EE_COLOR = '#00BD94';
 
 export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
 export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
-export const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
+export const THEME_LIGHT_DEFAULT_PRIMARY = '#533DE4';
 const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
 const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
@@ -57,12 +57,12 @@ const ThemeLight = (
       text: { primary: '#881106' },
     },
     success: { main: '#1CA55E', dark: '#0D7E39' },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
+    primary: { main: THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
       lightBackground: hexToRGB('#000000', 0.15),
-      primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
+      primary: hexToRGB((THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
       secondary: '#C2C2C2',
       pagination: hexToRGB('#000000', 0.5),
       paper: hexToRGB('#000000', 0.12),
@@ -129,7 +129,7 @@ const ThemeLight = (
     },
     designSystem: {
       primary: {
-        main: '#0015A8',
+        main: '#533DE4',
         light: '#7587FF',
         dark: '#000842',
       },
@@ -164,7 +164,7 @@ const ThemeLight = (
       gradient: {
         background: 'linear-gradient(100.35deg, #ECECF2 0%, #F7F7F7 100%)',
         ia: 'linear-gradient(90deg, #3C108C 0.67%, #5E1AD5 100.67%)',
-        focus: 'linear-gradient(90deg, #0015A8 -3.68%, #00BD94 106.62%)',
+        focus: 'linear-gradient(90deg, #533DE4 -3.68%, #00BD94 106.62%)',
       },
       alert: {
         info: {

@@ -181,7 +181,7 @@ const ListFilters = ({
                 {...params}
                 variant="outlined"
                 size="small"
-                label={placeholder}
+                placeholder={placeholder}
                 required={required}
               />
             )}

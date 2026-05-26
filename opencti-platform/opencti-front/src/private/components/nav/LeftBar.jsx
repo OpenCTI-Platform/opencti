@@ -432,7 +432,7 @@ const LeftBarComponent = ({ queryRef }) => {
         }),
       }}
     >
-      <LeftBarHeader
+      {/* <LeftBarHeader
         logo={logo}
         logoCollapsed={LogoResaaCtipIcon}
         navOpen={navOpen}
@@ -442,7 +442,13 @@ const LeftBarComponent = ({ queryRef }) => {
         xtmhubUrl={xtmhubUrl}
         xtmhubStatus={xtmhubStatus}
         hasXtmHubAccess={hasXtmHubAccess}
-      />
+      /> */}
+      <div style={{
+        paddingTop: '48px',
+      }}
+      >
+
+      </div>
 
       <div
         ref={ref}
@@ -474,49 +480,49 @@ const LeftBarComponent = ({ queryRef }) => {
                 {...itemProps}
                 id="dashboards"
                 icon={<InsertChartOutlinedOutlined />}
-                label="Dashboards"
+                label={t_i18n('Dashboards')}
                 link="/dashboard/workspaces/dashboards"
                 subItems={[
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards',
-                    label: 'Custom dashboards',
+                    label: t_i18n('Custom dashboards'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_public',
-                    label: 'Public dashboards',
+                    label: t_i18n('Public dashboards'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_ressa_dwm',
-                    label: 'Ressa DWM',
+                    label: t_i18n('Ressa DWM'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_organization_manager',
-                    label: 'Organization Manager Dashboard',
+                    label: t_i18n('Organization Manager Dashboard'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_middle_managers',
-                    label: 'Middle Managers Dashboard',
+                    label: t_i18n('Middle Managers Dashboard'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_operational_managers',
-                    label: 'Operational Managers Dashboard',
+                    label: t_i18n('Operational Managers Dashboard'),
                     exact: true,
                   },
                 ]}
