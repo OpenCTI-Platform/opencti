@@ -46,6 +46,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         routing_key: str,
         data: Any,
         bundle: Any,
+        is_split_bundle=False,
     ):
         text_bundle = json.dumps(bundle)
         data["content"] = base64.b64encode(
@@ -66,10 +67,16 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     ),
                 )
                 return
-            except (UnroutableError, NackError):
+            except (UnroutableError, NackError) as err:
                 retry_count = retry_count + 1
+                self.logger.debug(f"Unable to send bundle, error: {err}")
                 self.logger.info(
-                    "Unable to send bundle, retrying...", {"retry_count": retry_count}
+                    "Unable to send bundle, retrying...",
+                    {
+                        "retry_count": retry_count,
+                        "routing_key": routing_key,
+                        "is_split_bundle": is_split_bundle,
+                    },
                 )
                 time.sleep(10)
 
@@ -185,6 +192,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                     self.push_routing,
                                     data,
                                     bundle,
+                                    True,
                                 )
             # Event type event
             # Specific OpenCTI event operation with specific operation
