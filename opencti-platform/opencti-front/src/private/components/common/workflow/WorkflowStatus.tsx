@@ -205,27 +205,29 @@ const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) =
   );
 };
 
+type WizardStep = 'org-picker' | 'comment' | 'validate';
+
+interface TransitionWizard {
+  event: string;
+  actions: readonly string[];
+  steps: WizardStep[];
+  runtimeParams?: Record<string, unknown>;
+  comment?: string;
+  requiresShareOrg: boolean;
+  requiresUnshareOrg: boolean;
+  commentMode?: string;
+}
+
 export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [validationTransition, setValidationTransition] = useState<{ event: string; actions: readonly string[]; runtimeParams?: Record<string, unknown> } | null>(null);
-  const [commentDialogTransition, setCommentDialogTransition] = useState<{
-    event: string;
-    actions: readonly string[];
-    comment: string;
-  } | null>(null);
+  const [wizard, setWizard] = useState<TransitionWizard | null>(null);
   const [commentValue, setCommentValue] = useState('');
 
   const draft = useFragment(workflowStatusFragment, data);
   const { exitDraft } = useSwitchDraft();
   const canBypassMandatoryFields = useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS]);
-  const [orgPickerTransition, setOrgPickerTransition] = useState<{
-    event: string;
-    actions: readonly string[];
-    requiresShareOrg: boolean;
-    requiresUnshareOrg: boolean;
-  } | null>(null);
 
   const [commit, approving] = useMutation<WorkflowStatusTriggerMutation>(workflowStatusTriggerMutation);
   const [commitRetry, retrying] = useMutation<WorkflowStatusRetryMutation>(workflowStatusRetryMutation);
@@ -307,16 +309,21 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     });
   };
 
-  const showValidationDialogOrFireTransition = (
-    eventName: string,
-    actions: readonly string[],
-    comment?: string,
-    runtimeParams?: Record<string, unknown>,
-  ) => {
-    if (actions.includes('validateDraft')) {
-      setValidationTransition({ event: eventName, actions, runtimeParams });
+  const advance = (patch?: { runtimeParams?: Record<string, unknown>; comment?: string }) => {
+    if (!wizard) return;
+    const next: TransitionWizard = {
+      ...wizard,
+      ...(patch?.runtimeParams !== undefined && {
+        runtimeParams: { ...wizard.runtimeParams, ...patch.runtimeParams },
+      }),
+      ...(patch?.comment !== undefined && { comment: patch.comment }),
+      steps: wizard.steps.slice(1),
+    };
+    if (next.steps.length === 0) {
+      setWizard(null);
+      fireTransition(next.event, next.actions, next.runtimeParams, next.comment);
     } else {
-      fireTransition(eventName, actions, runtimeParams, comment);
+      setWizard(next);
     }
   };
 
@@ -328,57 +335,43 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     requiresUnshareOrg?: boolean | null,
   ) => {
     handleClose();
-    const needsOrgInput = requiresShareOrg || requiresUnshareOrg;
-    if (needsOrgInput) {
-      setOrgPickerTransition({
-        event: eventName,
-        actions,
-        requiresShareOrg: !!requiresShareOrg,
-        requiresUnshareOrg: !!requiresUnshareOrg,
-      });
+    const steps: WizardStep[] = [];
+    if (requiresShareOrg || requiresUnshareOrg) steps.push('org-picker');
+    if (comment === CommentMode.allowed || comment === CommentMode.required) steps.push('comment');
+    if (actions.includes('validateDraft')) steps.push('validate');
+
+    if (steps.length === 0) {
+      fireTransition(eventName, actions);
       return;
     }
-    if (comment === CommentMode.allowed || comment === CommentMode.required) {
-      setCommentValue('');
-      setCommentDialogTransition({ event: eventName, actions, comment });
-      return;
-    }
-    showValidationDialogOrFireTransition(eventName, actions);
-  };
-
-  const handleConfirmComment = () => {
-    if (!commentDialogTransition) return;
-    const { event, actions } = commentDialogTransition;
-    setCommentDialogTransition(null);
-    setCommentValue('');
-    showValidationDialogOrFireTransition(event, actions, commentValue.trim() || undefined);
-  };
-
-  const handleValidateDraft = () => {
-    if (validationTransition) {
-      fireTransition(validationTransition.event, validationTransition.actions, validationTransition.runtimeParams);
-      setValidationTransition(null);
-    }
+    setWizard({
+      event: eventName,
+      actions,
+      steps,
+      requiresShareOrg: !!requiresShareOrg,
+      requiresUnshareOrg: !!requiresUnshareOrg,
+      commentMode: comment ?? undefined,
+    });
   };
 
   const handleOrgPickerSubmit = (
     values: { shareOrganizations: Array<{ value: string }>; unshareOrganizations: Array<{ value: string }> },
     { resetForm }: { resetForm: () => void },
   ) => {
-    if (orgPickerTransition) {
-      const rp: Record<string, string[]> = {};
-      if (orgPickerTransition.requiresShareOrg) rp.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
-      if (orgPickerTransition.requiresUnshareOrg) rp.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
-      const { event, actions } = orgPickerTransition;
-      setOrgPickerTransition(null);
-      resetForm();
-      // If this transition also validates the draft, chain to the confirmation dialog.
-      if (actions.includes('validateDraft')) {
-        setValidationTransition({ event, actions, runtimeParams: rp });
-      } else {
-        fireTransition(event, actions, rp);
-      }
-    }
+    const rp: Record<string, string[]> = {};
+    if (wizard?.requiresShareOrg) rp.shareOrganizationIds = values.shareOrganizations.map((o) => o.value);
+    if (wizard?.requiresUnshareOrg) rp.unshareOrganizationIds = values.unshareOrganizations.map((o) => o.value);
+    resetForm();
+    advance({ runtimeParams: rp });
+  };
+
+  const handleConfirmComment = () => {
+    advance({ comment: commentValue.trim() || undefined });
+    setCommentValue('');
+  };
+
+  const handleValidateDraft = () => {
+    advance();
   };
 
   const handleRetry = () => {
@@ -466,6 +459,8 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     return null;
   }
 
+  const currentStep = wizard?.steps[0] ?? null;
+
   return (
     <>
       <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
@@ -516,18 +511,86 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           </Menu>
         </>
       )}
-      {/* Comment dialog */}
+      {/* Step 1: org picker */}
+      <Formik
+        initialValues={{
+          shareOrganizations: [] as Array<{ value: string; label: string }>,
+          unshareOrganizations: [] as Array<{ value: string; label: string }>,
+        }}
+        validationSchema={Yup.object({
+          shareOrganizations: Yup.array(),
+          unshareOrganizations: Yup.array(),
+        })}
+        onSubmit={handleOrgPickerSubmit}
+        enableReinitialize
+      >
+        {({ submitForm, isSubmitting, resetForm }) => (
+          <Dialog
+            open={currentStep === 'org-picker'}
+            slotProps={{ paper: { elevation: 1 } }}
+            keepMounted={false}
+            slots={{ transition: Transition }}
+            onClose={() => { setWizard(null); resetForm(); }}
+            title={t_i18n('Select organizations')}
+            size="small"
+          >
+            <Form>
+              {wizard?.requiresShareOrg && (
+                <>
+                  <DialogContentText sx={{ mb: 2 }}>
+                    {t_i18n('Select the organizations to share the draft content with during this transition.')}
+                  </DialogContentText>
+                  <ObjectOrganizationField
+                    name="shareOrganizations"
+                    label={t_i18n('Organizations to share with')}
+                    multiple={true}
+                    style={{ width: '100%' }}
+                  />
+                </>
+              )}
+              {wizard?.requiresUnshareOrg && (
+                <>
+                  <DialogContentText sx={{ mb: 2, mt: wizard?.requiresShareOrg ? 2 : 0 }}>
+                    {t_i18n('Select the organizations to unshare the draft content from during this transition.')}
+                  </DialogContentText>
+                  <ObjectOrganizationField
+                    name="unshareOrganizations"
+                    label={t_i18n('Organizations to unshare from')}
+                    multiple={true}
+                    style={{ width: '100%' }}
+                  />
+                </>
+              )}
+              <DialogActions>
+                <Button
+                  variant="secondary"
+                  onClick={() => { setWizard(null); resetForm(); }}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting || approving}
+                >
+                  {t_i18n('Confirm')}
+                </Button>
+              </DialogActions>
+            </Form>
+          </Dialog>
+        )}
+      </Formik>
+      {/* Step 2: comment */}
       <Dialog
-        open={Boolean(commentDialogTransition)}
+        open={currentStep === 'comment'}
         slotProps={{ paper: { elevation: 1 } }}
         keepMounted={false}
         slots={{ transition: Transition }}
-        onClose={() => setCommentDialogTransition(null)}
+        onClose={() => setWizard(null)}
         title={t_i18n('Add a comment')}
         size="large"
       >
         <DialogContentText sx={{ marginBottom: 2 }}>
-          {commentDialogTransition?.comment === CommentMode.required
+          {wizard?.commentMode === CommentMode.required
             ? t_i18n('A comment is required before changing the status.')
             : t_i18n('You can optionally add a comment before changing the status.')}
         </DialogContentText>
@@ -541,32 +604,32 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           onChange={(e) => setCommentValue(e.target.value)}
           variant="outlined"
           size="small"
-          required={commentDialogTransition?.comment === CommentMode.required}
+          required={wizard?.commentMode === CommentMode.required}
           slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
           helperText={`${commentValue.length} / ${COMMENT_MAX_LENGTH}`}
         />
         <DialogActions>
           <Button
             variant="secondary"
-            onClick={() => setCommentDialogTransition(null)}
+            onClick={() => setWizard(null)}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={handleConfirmComment}
-            disabled={commentDialogTransition?.comment === CommentMode.required && commentValue.trim() === '' && !canBypassMandatoryFields}
+            disabled={wizard?.commentMode === CommentMode.required && commentValue.trim() === '' && !canBypassMandatoryFields}
           >
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Validation dialog */}
+      {/* Step 3: validate draft */}
       <Dialog
-        open={Boolean(validationTransition)}
+        open={currentStep === 'validate'}
         slotProps={{ paper: { elevation: 1 } }}
         keepMounted={false}
         slots={{ transition: Transition }}
-        onClose={() => setValidationTransition(null)}
+        onClose={() => setWizard(null)}
         title={t_i18n('Are you sure?')}
         size="small"
       >
@@ -583,7 +646,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         <DialogActions>
           <Button
             variant="secondary"
-            onClick={() => setValidationTransition(null)}
+            onClick={() => setWizard(null)}
           >
             {t_i18n('Cancel')}
           </Button>
@@ -595,81 +658,6 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Organization picker dialog for transitions requiring org input */}
-      <Formik
-        initialValues={{
-          shareOrganizations: [] as Array<{ value: string; label: string }>,
-          unshareOrganizations: [] as Array<{ value: string; label: string }>,
-        }}
-        validationSchema={Yup.object({
-          shareOrganizations: Yup.array(),
-          unshareOrganizations: Yup.array(),
-        })}
-        onSubmit={handleOrgPickerSubmit}
-        enableReinitialize
-      >
-        {({ submitForm, isSubmitting, resetForm }) => (
-          <Dialog
-            open={Boolean(orgPickerTransition)}
-            slotProps={{ paper: { elevation: 1 } }}
-            keepMounted={false}
-            slots={{ transition: Transition }}
-            onClose={() => {
-              setOrgPickerTransition(null);
-              resetForm();
-            }}
-            title={t_i18n('Select organizations')}
-            size="small"
-          >
-            <Form>
-              {orgPickerTransition?.requiresShareOrg && (
-                <>
-                  <DialogContentText sx={{ mb: 2 }}>
-                    {t_i18n('Select the organizations to share the draft content with during this transition.')}
-                  </DialogContentText>
-                  <ObjectOrganizationField
-                    name="shareOrganizations"
-                    label={t_i18n('Organizations to share with')}
-                    multiple={true}
-                    style={{ width: '100%' }}
-                  />
-                </>
-              )}
-              {orgPickerTransition?.requiresUnshareOrg && (
-                <>
-                  <DialogContentText sx={{ mb: 2, mt: orgPickerTransition?.requiresShareOrg ? 2 : 0 }}>
-                    {t_i18n('Select the organizations to unshare the draft content from during this transition.')}
-                  </DialogContentText>
-                  <ObjectOrganizationField
-                    name="unshareOrganizations"
-                    label={t_i18n('Organizations to unshare from')}
-                    multiple={true}
-                    style={{ width: '100%' }}
-                  />
-                </>
-              )}
-              <DialogActions>
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setOrgPickerTransition(null);
-                    resetForm();
-                  }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting || approving}
-                >
-                  {t_i18n('Confirm')}
-                </Button>
-              </DialogActions>
-            </Form>
-          </Dialog>
-        )}
-      </Formik>
     </>
   );
 };
