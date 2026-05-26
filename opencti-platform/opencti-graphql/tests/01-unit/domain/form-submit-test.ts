@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { formSubmit } from '../../../src/modules/form/form-domain';
 import * as draftWorkspaceDomain from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import * as workDomain from '../../../src/domain/work';
-import { BYPASS } from '../../../src/utils/access';
+import { BYPASS, SYSTEM_USER } from '../../../src/utils/access';
 
 const { mockStoreLoadById } = vi.hoisted(() => ({
   mockStoreLoadById: vi.fn(),
@@ -253,13 +253,13 @@ describe('formSubmit', () => {
 
     expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledWith(
       expect.anything(),
-      expect.anything(),
+      SYSTEM_USER,
       expect.objectContaining({
         authorized_members: expect.arrayContaining([
           expect.objectContaining({
             id: mockUser.id,
-            // Submitter is always upgraded to admin so they can manage their own draft.
-            access_right: 'admin',
+            // Access right is determined solely by the form schema (CREATORS rule with 'edit').
+            access_right: 'edit',
             groups_restriction_ids: undefined,
           }),
         ]),

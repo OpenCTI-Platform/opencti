@@ -16,6 +16,7 @@ import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceA
 import { now, nowTime } from '../../utils/format';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
@@ -501,6 +502,8 @@ export const formSubmit = async (
 
       const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
       draftId = draft.id;
+      // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
+      await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
     }
     await pushToWorkerForConnector(connectorId, {
       type: 'bundle',
