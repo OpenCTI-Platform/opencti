@@ -375,8 +375,8 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
       case 'PropertyDefinition':
       case 'PropertyName':
         processPropertyDefinitionOrName();
-        // GHSA-64j3-qwjh-m4h4: Object shorthand `{ Function }` doesn't produce a VariableName node.
-        // If it's a shorthand property, we must also validate it against the variable allow-list.
+        // Object shorthand properties do not produce a VariableName node.
+        // If it's a shorthand property, we must also validate the identifier.
         if (cursor.type.name === 'PropertyDefinition' && isShorthandProperty()) {
           processVariableName();
         }
