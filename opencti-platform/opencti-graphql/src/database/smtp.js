@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { discovery as oidcDiscovery, refreshTokenGrant } from 'openid-client';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { getEntityFromCache } from './cache';
@@ -12,7 +13,7 @@ const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
 const SMTP_ENABLE = booleanConf('smtp:enabled', true);
 
-const smtpOptions = {
+const baseSmtpOptions = {
   host: conf.get('smtp:hostname') || 'localhost',
   port: conf.get('smtp:port') || 25,
   secure: USE_SSL,
@@ -24,17 +25,72 @@ const smtpOptions = {
   },
 };
 
-export const buildSmtpAuth = (authType, { username, password, oauthUser, oauthClientId, oauthClientSecret, oauthAccessToken }) => {
-  if (authType === 'oauth2') {
-    if (!oauthUser || !oauthClientId || !oauthClientSecret || !oauthAccessToken) {
-      throw new Error('SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret and oauth_access_token are all required.');
+// OAuth2 caches:
+let cachedDiscoveryConfig;
+let cachedAccessToken;
+let cachedAccessTokenExpiresAt = 0;
+let inFlightRefresh; // concurrent refresh attempts are coalesced via an in-flight Promise
+
+const ACCESS_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000; // Refresh the token a bit before it actually expires
+
+const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthIssuer, oauthRefreshToken }) => {
+  if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_MARGIN_MS) {
+    return cachedAccessToken;
+  }
+  if (inFlightRefresh) {
+    return inFlightRefresh;
+  }
+  inFlightRefresh = (async () => {
+    let tokens;
+    try {
+      if (!cachedDiscoveryConfig) {
+        const issuerUrl = new URL(oauthIssuer);
+        cachedDiscoveryConfig = await oidcDiscovery(issuerUrl, oauthClientId, { client_secret: oauthClientSecret });
+      }
+      tokens = await refreshTokenGrant(cachedDiscoveryConfig, oauthRefreshToken);
+    } catch (err) {
+      throw new Error(`Unable to refresh SMTP OAuth2 access token: ${err.message}`, { cause: err });
     }
+    if (!tokens?.access_token) {
+      throw new Error('Unable to refresh SMTP OAuth2 access token: refresh token grant did not return an access_token');
+    }
+    cachedAccessToken = tokens.access_token;
+    const expiresInSeconds = typeof tokens.expires_in === 'number' ? tokens.expires_in : 3600;
+    cachedAccessTokenExpiresAt = Date.now() + expiresInSeconds * 1000;
+    return cachedAccessToken;
+  })();
+  try {
+    return await inFlightRefresh;
+  } finally {
+    inFlightRefresh = null;
+  }
+};
+
+export const buildSmtpAuth = async (authType, {
+  username,
+  password,
+  oauthUser,
+  oauthClientId,
+  oauthClientSecret,
+  oauthIssuer,
+  oauthRefreshToken,
+} = {}) => {
+  if (authType === 'oauth2') {
+    if (!oauthUser || !oauthClientId || !oauthClientSecret || !oauthIssuer || !oauthRefreshToken) {
+      throw new Error('SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret, oauth_issuer and oauth_refresh_token are all required.');
+    }
+    const freshAccessToken = await refreshSmtpAccessToken({
+      oauthClientId,
+      oauthClientSecret,
+      oauthIssuer,
+      oauthRefreshToken,
+    });
     return {
       type: 'OAuth2',
       user: oauthUser,
       clientId: oauthClientId,
       clientSecret: oauthClientSecret,
-      accessToken: oauthAccessToken,
+      accessToken: freshAccessToken,
     };
   }
   if (username?.length > 0) {
@@ -47,19 +103,58 @@ export const buildSmtpAuth = (authType, { username, password, oauthUser, oauthCl
 };
 
 const authType = conf.get('smtp:auth_type') || 'basic';
-const smtpAuth = buildSmtpAuth(authType, {
+
+const getSmtpAuthParams = () => ({
   username: conf.get('smtp:username'),
   password: conf.get('smtp:password'),
   oauthUser: conf.get('smtp:oauth_user'),
   oauthClientId: conf.get('smtp:oauth_client_id'),
   oauthClientSecret: conf.get('smtp:oauth_client_secret'),
-  oauthAccessToken: conf.get('smtp:oauth_access_token'),
+  oauthIssuer: conf.get('smtp:oauth_issuer'),
+  oauthRefreshToken: conf.get('smtp:oauth_refresh_token'),
 });
-if (smtpAuth) {
-  smtpOptions.auth = smtpAuth;
-}
 
-export const transporter = nodemailer.createTransport(smtpOptions);
+/**
+ * Build a nodemailer transporter.
+ *
+ * For OAuth2 a fresh transporter is created on every call, but the underlying
+ * access token is cached (see {@link refreshSmtpAccessToken}) so the IdP is
+ * only contacted when the cached token is close to expiration.
+ *
+ * For non-OAuth2 auth types (basic / anonymous) the transporter has no
+ * time-bound credential, so it is built once and cached for the lifetime of
+ * the process — matching the historical singleton behaviour.
+ */
+let cachedNonOauthTransporter;
+const createSmtpTransporter = async () => {
+  if (authType !== 'oauth2' && cachedNonOauthTransporter) {
+    return cachedNonOauthTransporter;
+  }
+  const options = { ...baseSmtpOptions, tls: { ...baseSmtpOptions.tls } };
+  const smtpAuth = await buildSmtpAuth(authType, getSmtpAuthParams());
+  if (smtpAuth) {
+    options.auth = smtpAuth;
+  }
+  const transporter = nodemailer.createTransport(options);
+  if (authType !== 'oauth2') {
+    cachedNonOauthTransporter = transporter;
+  }
+  return transporter;
+};
+
+/**
+ * Test-only helper. Resets all module-level caches (OIDC discovery, OAuth2
+ * access token, in-flight refresh, basic-auth transporter) so unit tests can
+ * run independently of each other. Not meant to be called from production code.
+ * @internal
+ */
+export const __resetSmtpCachesForTests = () => {
+  cachedDiscoveryConfig = undefined;
+  cachedAccessToken = undefined;
+  cachedAccessTokenExpiresAt = 0;
+  inFlightRefresh = null;
+  cachedNonOauthTransporter = undefined;
+};
 
 export const smtpConfiguredEmail = (settings) => {
   return ALLOW_EMAIL_REWRITE ? settings.platform_email : SMTP_FORCED_EMAIL;
@@ -77,6 +172,7 @@ export const smtpIsAlive = async () => {
   logApp.info('[CHECK] Checking if SMTP is available');
   if (SMTP_ENABLE) {
     try {
+      const transporter = await createSmtpTransporter();
       await transporter.verify();
       logApp.info('[CHECK] SMTP is alive');
     } catch {
@@ -91,6 +187,9 @@ export const smtpIsAlive = async () => {
 export const sendMail = async (args, meterMetadata) => {
   if (SMTP_ENABLE) {
     const { from, to, bcc, subject, html, attachments } = args;
+    // For OAuth2 the transporter is recreated so that the access token is
+    // refreshed before each send (avoids failures once the token has expired).
+    const transporter = await createSmtpTransporter();
     await transporter.sendMail({ from, to, bcc, subject, html, attachments });
     meterManager.emailSent(meterMetadata);
   }
