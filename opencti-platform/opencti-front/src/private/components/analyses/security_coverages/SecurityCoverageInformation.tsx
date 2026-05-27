@@ -1,5 +1,4 @@
 import Label from '@common/label/Label';
-import { Box } from '@mui/material';
 import SecurityCoverageScores from './SecurityCoverageScores';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -16,7 +15,7 @@ const SecurityCoverageInformation = ({ coverage_information }: SecurityCoverageI
   const hasCoverageInformation = (coverage_information ?? []).length > 0;
 
   return (
-    <Box sx={{ marginBottom: 2 }}>
+    <div>
       <Label>
         {t_i18n('Is covered')}
       </Label>
@@ -35,7 +34,7 @@ const SecurityCoverageInformation = ({ coverage_information }: SecurityCoverageI
           />
         </>
       )}
-    </Box>
+    </div>
   );
 };
 

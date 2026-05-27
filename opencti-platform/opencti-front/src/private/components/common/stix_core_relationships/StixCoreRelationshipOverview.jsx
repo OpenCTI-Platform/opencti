@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import { Stack, Tooltip, Typography } from '@mui/material';
+import { Stack, Tooltip, Typography, Box } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Divider from '@mui/material/Divider';
@@ -412,7 +412,11 @@ class StixCoreRelationshipContainer extends Component {
                   </Grid>
                   <Grid item xs={6}>
                     {relationship_type === 'has-covered'
-                      && <SecurityCoverageInformation coverage_information={coverage_information} />
+                      && (
+                        <Box sx={{ marginBottom: 2 }}>
+                          <SecurityCoverageInformation coverage_information={coverage_information} />
+                        </Box>
+                      )
                     }
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
