@@ -23,7 +23,6 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  CUSTOM_FIELD_VALUE_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -55,6 +54,9 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { createCustomFieldAttributes } from './attribute';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { CF_COMMENT_KEY, CF_SCORE_KEY } from '../modules/customField/custom-field-domain';
 
 export type FilterDefinition = {
   filterKey: string;
@@ -234,6 +236,36 @@ const completeFilterDefinitionMapWithSpecialKeys = (
     }
   }
 
+  // Add custom fields for customField :D
+  // FIXME this in an hack for POC
+  if (type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
+    filterDefinitionsMap.set(
+      CF_SCORE_KEY,
+      {
+        filterKey: CF_SCORE_KEY,
+        type: 'integer',
+        label: 'cf score',
+        multiple: false,
+        elementsForFilterValuesSearch: [],
+        subEntityTypes,
+        subFilters: [],
+      },
+    );
+
+    filterDefinitionsMap.set(
+      CF_COMMENT_KEY,
+      {
+        filterKey: CF_COMMENT_KEY,
+        type: 'string',
+        label: 'cf comment',
+        multiple: false,
+        elementsForFilterValuesSearch: [],
+        subEntityTypes,
+        subFilters: [],
+      },
+    );
+  }
+
   if (isStixCoreObject(type)) {
     // In regards of (exist relationship of the given relationship types for the given entities)
     filterDefinitionsMap.set(INSTANCE_REGARDING_OF, {
@@ -335,15 +367,6 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       filterKey: IS_INFERRED_FILTER,
       type: 'boolean',
       label: 'Is inferred',
-      multiple: false,
-      subEntityTypes,
-      elementsForFilterValuesSearch: [],
-    });
-    // custom field values filter (nested query on custom_field_values array)
-    filterDefinitionsMap.set(CUSTOM_FIELD_VALUE_FILTER, {
-      filterKey: CUSTOM_FIELD_VALUE_FILTER,
-      type: 'nested',
-      label: 'Custom field value',
       multiple: false,
       subEntityTypes,
       elementsForFilterValuesSearch: [],

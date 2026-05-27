@@ -6,10 +6,7 @@ import {
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
   CUSTOM_FIELD_INT_VALUE_SUBFILTER,
-  CUSTOM_FIELD_NAME_SUBFILTER,
-  CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
   CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
-  CUSTOM_FIELD_VALUE_FILTER,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -63,6 +60,7 @@ import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
+import { CF_COMMENT_KEY, CF_SCORE_KEY } from '../../modules/customField/custom-field-domain';
 
 export const adaptFilterToRegardingOfFilterKey = async (
   context: AuthContext,
@@ -162,7 +160,7 @@ export const adaptFilterToIdsFilterKey = (filter: Filter) => {
   const { key, mode = FilterMode.Or, operator = FilterOperator.Eq } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== IDS_FILTER || arrayKeys.length > 1) {
-    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+    throw UnsupportedError('A filter with these multiple keys is not supported - 1', { keys: arrayKeys });
   }
   if (mode === 'and') {
     throw UnsupportedError('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
@@ -201,7 +199,7 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
   const { key, mode = FilterMode.Or, operator = FilterOperator.Eq } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys.length > 1) {
-    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+    throw UnsupportedError('A filter with these multiple keys is not supported - 2', { keys: arrayKeys });
   }
   // at this point arrayKeys === ['entity_type']
 
@@ -270,7 +268,7 @@ const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUs
   const { key, mode = FilterMode.Or, operator = FilterOperator.Eq, values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys.length > 1) {
-    throw UnsupportedError(`A filter with these multiple keys is not supported : ${arrayKeys}`);
+    throw UnsupportedError(`A filter with these multiple keys is not supported - 3: ${arrayKeys}`);
   }
   if (![WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID].includes(arrayKeys[0])) {
     throw UnsupportedError('The key is not correct', { keys: arrayKeys });
@@ -331,7 +329,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context: AuthContext, use
   const { key, mode = FilterMode.Or, operator = FilterOperator.Eq, values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== SOURCE_RELIABILITY_FILTER || arrayKeys.length > 1) {
-    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+    throw UnsupportedError('A filter with these multiple keys is not supported - 4', { keys: arrayKeys });
   }
   // at this point arrayKey === ['source_reliability']
 
@@ -405,7 +403,7 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
   const { key, operator = FilterOperator.Eq, mode = FilterMode.Or, values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys.length > 1) {
-    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+    throw UnsupportedError('A filter with these multiple keys is not supported - 5', { keys: arrayKeys });
   }
   let nestedKey;
   if (arrayKeys[0] === INSTANCE_RELATION_TYPES_FILTER) {
@@ -562,52 +560,16 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
 };
 
 const adaptFilterToCustomFieldValueFilterKey = (filter: Filter) => {
-  const { values, operator, mode = FilterMode.Or } = filter;
+  const { key, values, operator } = filter;
   const op: string = operator ?? FilterOperator.Eq;
+  const filterKey = Array.isArray(key) ? key[0] : key;
 
-  // --- New encoded-string format: each value is "fieldName|subKey|value" ---
-  // (used by the standard filter bar via useSearchEntities)
-  if (values.length > 0 && typeof values[0] === 'string' && (values[0] as string).includes('|')) {
-    const nestedFilters = values.flatMap((encodedValue: any) => {
-      const parts = (encodedValue as string).split('|');
-      if (parts.length !== 3) return [];
-      const [fieldName, subKey, subValue] = parts;
-      return [{
-        key: ['custom_field_values'],
-        values: [],
-        nested: [
-          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
-          { key: subKey, values: [subValue], operator: op },
-        ],
-      }];
-    });
-    if (nestedFilters.length === 0) {
-      throw FunctionalError('customFieldValue filter has no valid encoded values', { filter });
-    }
-    if (nestedFilters.length === 1) {
-      return { newFilter: nestedFilters[0], newFilterGroup: undefined };
-    }
-    return {
-      newFilter: undefined,
-      newFilterGroup: {
-        mode: mode ?? FilterMode.Or,
-        filters: nestedFilters,
-        filterGroups: [],
-      },
-    };
-  }
+  console.log(`[POC] filters on query: ${JSON.stringify(filter)}`);
 
-  // --- Legacy nested-object format (backward compat) ---
-  const fieldNameSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_NAME_SUBFILTER);
-  const fieldName = fieldNameSubFilter?.values?.[0];
-  if (!fieldName) {
-    throw FunctionalError('customFieldValue filter requires a field_name subfilter', { filter });
-  }
-
-  // --- integer ---
-  const intSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_INT_VALUE_SUBFILTER);
-  if (intSubFilter) {
-    const parsedValues: (number | string)[] = intSubFilter.values.map((v: any) => {
+  // FIXME hardcoded for POC
+  if (filterKey === CF_SCORE_KEY) {
+    // Score is stored as int_value in nested custom_field_values
+    const parsedValues: (number | string)[] = values.map((v: any) => {
       const num = Number(v);
       return Number.isFinite(num) ? num : v;
     });
@@ -622,7 +584,7 @@ const adaptFilterToCustomFieldValueFilterKey = (filter: Filter) => {
         key: ['custom_field_values'],
         values: [],
         nested: [
-          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
+          { key: 'field_name', values: [filterKey], operator: FilterOperator.Eq },
           ...intNestedClauses,
         ],
       },
@@ -630,39 +592,23 @@ const adaptFilterToCustomFieldValueFilterKey = (filter: Filter) => {
     };
   }
 
-  // --- string ---
-  const stringSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_STRING_VALUE_SUBFILTER);
-  if (stringSubFilter) {
+  // FIXME hardcoded for POC
+  if (filterKey === CF_COMMENT_KEY) {
+    // Comment is stored as string_value in nested custom_field_values
     return {
       newFilter: {
         key: ['custom_field_values'],
         values: [],
         nested: [
-          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
-          { key: CUSTOM_FIELD_STRING_VALUE_SUBFILTER, values: stringSubFilter.values, operator: op },
+          { key: 'field_name', values: [filterKey], operator: FilterOperator.Eq },
+          { key: CUSTOM_FIELD_STRING_VALUE_SUBFILTER, values, operator: op },
         ],
       },
       newFilterGroup: undefined,
     };
   }
 
-  // --- select ---
-  const selectSubFilter = filter.values.find((v: any) => v.key === CUSTOM_FIELD_SELECT_VALUE_SUBFILTER);
-  if (selectSubFilter) {
-    return {
-      newFilter: {
-        key: ['custom_field_values'],
-        values: [],
-        nested: [
-          { key: 'field_name', values: [fieldName], operator: FilterOperator.Eq },
-          { key: CUSTOM_FIELD_SELECT_VALUE_SUBFILTER, values: selectSubFilter.values, operator: op },
-        ],
-      },
-      newFilterGroup: undefined,
-    };
-  }
-
-  throw FunctionalError('customFieldValue filter requires an int_value, string_value or select_value subfilter', { filter });
+  throw FunctionalError('customFieldValue filter: unsupported custom field key', { filter, filterKey });
 };
 
 const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
@@ -720,7 +666,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
   const { key, operator = FilterOperator.Eq } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== COMPUTED_RELIABILITY_FILTER || arrayKeys.length > 1) {
-    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+    throw UnsupportedError('A filter with these multiple keys is not supported - 6', { keys: arrayKeys });
   }
   if (!['eq', 'not_eq', 'nil', 'not_nil'].includes(operator as string)) {
     throw UnsupportedError('This operator is not supported for this filter key', { keys: arrayKeys, operator });
@@ -833,7 +779,7 @@ export const completeSpecialFilterKeys = async (
     const arrayKeys = Array.isArray(key) ? key : [key];
     if (arrayKeys.some((filterKey) => isComplexConversionFilterKey(filterKey))) {
       if (arrayKeys.length > 1) {
-        throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+        throw UnsupportedError('A filter with these multiple keys is not supported - 7', { keys: arrayKeys });
       }
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
@@ -936,8 +882,9 @@ export const completeSpecialFilterKeys = async (
         const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
         finalFilters.push(newFilter);
       }
-      if (filterKey === CUSTOM_FIELD_VALUE_FILTER) {
+      if (filterKey === CF_COMMENT_KEY || filterKey === CF_SCORE_KEY) {
         const { newFilter, newFilterGroup } = adaptFilterToCustomFieldValueFilterKey(filter);
+        console.log(`[POC] new filters: ${JSON.stringify(newFilter)}, new filter group: ${JSON.stringify(newFilterGroup)}`);
         if (newFilter) {
           finalFilters.push(newFilter);
         }
@@ -969,7 +916,7 @@ export const completeSpecialFilterKeys = async (
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
-        throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+        throw UnsupportedError('A filter with these multiple keys is not supported - 8', { keys: arrayKeys });
       }
       const definition = schemaAttributesDefinition.getAttributeByName(key[0]) as ComplexAttribute;
       if (definition?.multiple) {

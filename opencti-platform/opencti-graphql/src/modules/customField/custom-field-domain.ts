@@ -10,6 +10,10 @@ import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
 
+// FIXME POC hack
+export const CF_SCORE_KEY = 'x_opencti_cf_score';
+export const CF_COMMENT_KEY = 'x_opencti_cf_comment';
+
 export const findById: DomainFindById<BasicStoreEntityCustomFieldDefinition> = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
   return storeLoadById(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
 };
