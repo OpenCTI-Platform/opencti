@@ -19,6 +19,7 @@ import withRouter from '../utils/compat_router/withRouter';
 import { KNOWLEDGE_KNFRONTENDEXPORT } from '../utils/hooks/useGranted';
 import Security from '../utils/Security';
 import { useExportTheme } from '../utils/ExportThemeContext';
+import { DASHBOARD_BUTTONS_STYLE } from '../private/components/workspaces/workspaceHeader/WorkspaceHeader';
 
 const styles = () => ({
   exportButtons: {
@@ -30,6 +31,14 @@ const styles = () => ({
 });
 
 const DELAY = 1000;
+
+export const EXPORT_BUTTONS_STYLE = { display: 'flex', gap: '8px' };
+
+// Reset an element's inline style and re-apply the given style object
+const restoreStyle = (element, style) => {
+  element.removeAttribute('style');
+  Object.assign(element.style, style);
+};
 
 const wait = async (delay = DELAY) => {
   await new Promise((resolve) => {
@@ -62,6 +71,8 @@ export class ExportButtons extends Component {
     const { pixelRatio = 1, t, setExportTheme } = this.props;
     const exportButtons = document.getElementById('export-buttons');
     const viewButtons = document.getElementById('container-view-buttons');
+    const dashboardButtons = document.getElementById('dashboard-buttons');
+
     try {
       this.setState({ exporting: true });
       this.handleCloseImage();
@@ -73,9 +84,13 @@ export class ExportButtons extends Component {
 
       const container = document.getElementById(domElementId);
 
-      exportButtons?.setAttribute('style', 'display: none');
-
-      viewButtons?.setAttribute('style', 'display: none');
+      // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: none');
+      } else {
+        exportButtons?.setAttribute('style', 'display: none');
+        viewButtons?.setAttribute('style', 'display: none');
+      }
 
       const { offsetWidth, offsetHeight } = container;
       if (this.adjust) {
@@ -98,9 +113,12 @@ export class ExportButtons extends Component {
     } catch {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
-      exportButtons?.setAttribute('style', 'display: block');
-      viewButtons?.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
-
+      if (dashboardButtons) {
+        restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
+      } else {
+        if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
+        viewButtons?.setAttribute('style', '');
+      }
       setExportTheme(null);
 
       this.setState({ exporting: false });
@@ -117,7 +135,8 @@ export class ExportButtons extends Component {
 
   async exportPdf({ domElementId, name, themeNode, background }) {
     const { pixelRatio = 1, t, setExportTheme } = this.props;
-    const buttons = document.getElementById('export-buttons');
+    const exportButtons = document.getElementById('export-buttons');
+    const dashboardButtons = document.getElementById('dashboard-buttons');
     try {
       this.setState({ exporting: true });
       this.handleClosePdf();
@@ -127,7 +146,12 @@ export class ExportButtons extends Component {
 
       setExportTheme(themeNode);
 
-      buttons.setAttribute('style', 'display: none');
+      // Hide buttons: dashboard-buttons wraps everything on dashboards
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: none');
+      } else {
+        exportButtons?.setAttribute('style', 'display: none');
+      }
 
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
@@ -143,9 +167,12 @@ export class ExportButtons extends Component {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf'));
     } finally {
       setExportTheme(null);
-
       this.setState({ exporting: false });
-      buttons.setAttribute('style', 'display: block');
+      if (dashboardButtons) {
+        restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
+      } else {
+        if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
+      }
     }
   }
 
@@ -175,7 +202,7 @@ export class ExportButtons extends Component {
             <div
               className={classes.exportButtons}
               id="export-buttons"
-              style={{ display: 'flex', gap: '8px' }}
+              style={EXPORT_BUTTONS_STYLE}
             >
               {exportToImage && (
                 <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>

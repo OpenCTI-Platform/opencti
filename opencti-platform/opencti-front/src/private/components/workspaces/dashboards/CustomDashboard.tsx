@@ -158,24 +158,30 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             data={workspace}
             variant="dashboard"
           />
+        </Stack>
+      )
+      }
+      <div id="container">
+        {!noToolbar && (
           <Security
             needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
             hasAccess={userCanEdit}
           >
-            <DashboardTimeFilters
-              config={config}
-              handleDateChange={handleDateChange}
-            />
+            <div style={{ marginBottom: 12 }}>
+              <DashboardTimeFilters
+                config={config}
+                handleDateChange={handleDateChange}
+              />
+            </div>
           </Security>
-        </Stack>
-      )
-      }
-      <DashboardContent
-        helpers={helpers}
-        isEditable={userCanEdit}
-        entity={workspace}
-        host={WIDGET_WORKSPACE_HOST}
-      />
+        )}
+        <DashboardContent
+          helpers={helpers}
+          isEditable={userCanEdit}
+          entity={workspace}
+          host={WIDGET_WORKSPACE_HOST}
+        />
+      </div>
     </Stack>
   );
 };

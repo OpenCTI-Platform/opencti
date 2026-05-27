@@ -34,7 +34,6 @@ const DashboardContent = ({
   return (
     <Box
       ref={containerRef}
-      id="container"
       sx={{
         marginBottom: '20px',
         ...(isEditable

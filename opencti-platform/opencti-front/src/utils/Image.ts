@@ -2,7 +2,12 @@ import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
 import pdfMake from 'pdfmake';
 import isSvg from 'is-svg';
+import { TDocumentDefinitions } from 'pdfmake/interfaces';
 
+/**
+ * MUI class names that are excluded from image/PDF exports by default.
+ * Elements with these classes are filtered out unless explicitly marked with EXPORT_KEEP_CLASS.
+ */
 const ignoredClasses = [
   'MuiDialog-root',
   'MuiDrawer-docked',
@@ -10,39 +15,60 @@ const ignoredClasses = [
   'MuiInputBase-root',
 ];
 
-export const exportImage = (
-  domElementId,
-  currentWidth,
-  currentHeight,
-  name,
-  backgroundColor,
+/** CSS class to force a DOM node (and its descendants) to be included in exports. */
+export const EXPORT_KEEP_CLASS = 'export-keep';
+
+/** CSS class to force a DOM node (and its descendants) to be excluded from exports. */
+export const EXPORT_REMOVE_CLASS = 'export-remove';
+
+/**
+ * Determines whether a DOM node should be included in the exported image/PDF.
+ *
+ * - If the node (or an ancestor) has the `export-keep` class → kept
+ * - If the node (or an ancestor) has the `export-remove` class → removed
+ * - If the node has one of the `ignoredClasses` → removed
+ * - Otherwise → kept
+ */
+export const isDomNodeKeptAtExport = (domNode: HTMLElement): boolean => {
+  if (domNode.closest?.(`.${EXPORT_KEEP_CLASS}`)) return true;
+  if (domNode.closest?.(`.${EXPORT_REMOVE_CLASS}`)) return false;
+  if (domNode.className) {
+    for (const ignoredClass of ignoredClasses) {
+      if (domNode.className.toString().includes(ignoredClass)) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+export const exportImage = async (
+  domElementId: string,
+  currentWidth: number,
+  currentHeight: number,
+  name: string,
+  backgroundColor: string | undefined,
   pixelRatio = 1,
-  adjust = null,
-) => {
+  adjust: ((value: boolean) => void) | null = null,
+): Promise<void> => {
   const container = document.getElementById(domElementId);
+  if (!container) return Promise.reject(new Error(`Element #${domElementId} not found`));
   return new Promise((resolve, reject) => {
     htmlToImage
       .toBlob(container, {
         skipFonts: true,
         pixelRatio,
         backgroundColor,
-        style: { margin: '0' },
-        filter: (domNode) => {
-          if (domNode.className) {
-            for (const ignoredClass of ignoredClasses) {
-              if (domNode.className.toString().includes(ignoredClass)) {
-                return false;
-              }
-            }
-          }
-          return true;
-        },
+        style: { margin: '0', paddingTop: '12px', paddingLeft: '12px' },
+        filter: isDomNodeKeptAtExport,
         onImageErrorHandler: () => {
           // We do nothing, it's just to avoid crashing export in case of image error.
         },
       })
       .then((blob) => {
-        fileDownload(blob, `${name}.png`, 'image/png');
+        if (blob) {
+          fileDownload(blob, `${name}.png`, 'image/png');
+        }
         if (adjust) {
           container.setAttribute(
             'style',
@@ -57,14 +83,15 @@ export const exportImage = (
   });
 };
 
-export const exportPdf = (
-  domElementId,
-  name,
-  backgroundColor,
+export const exportPdf = async (
+  domElementId: string,
+  name: string,
+  backgroundColor: string | undefined,
   pixelRatio = 1,
-  adjust = null,
-) => {
+  adjust: ((value: boolean) => void) | null = null,
+): Promise<void> => {
   const container = document.getElementById(domElementId);
+  if (!container) return Promise.reject(new Error(`Element #${domElementId} not found`));
   const { offsetWidth, offsetHeight } = container;
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;
@@ -74,24 +101,15 @@ export const exportPdf = (
         skipFonts: true,
         pixelRatio,
         backgroundColor,
-        style: { margin: '0' },
+        style: { margin: '0', paddingTop: '12px', paddingLeft: '12px' },
         imagePlaceholder: '', // ignore image fetch failure, and display empty area
-        filter: (domNode) => {
-          if (domNode.className) {
-            for (const ignoredClass of ignoredClasses) {
-              if (domNode.className.toString().includes(ignoredClass)) {
-                return false;
-              }
-            }
-          }
-          return true;
-        },
+        filter: isDomNodeKeptAtExport,
         onImageErrorHandler: () => {
           // We do nothing, it's just to avoid crashing export in case of image error.
         },
       })
       .then((image) => {
-        const docDefinition = {
+        const docDefinition: TDocumentDefinitions = {
           pageSize: {
             width: imageWidth,
             height: 'auto',
@@ -135,7 +153,7 @@ export const exportPdf = (
   });
 };
 
-export const getBase64ImageFromURL = (url) => {
+export const getBase64ImageFromURL = async (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.setAttribute('crossOrigin', 'anonymous');
@@ -161,7 +179,12 @@ export const getBase64ImageFromURL = (url) => {
   });
 };
 
-export const isImageFromUrlSvg = async (url) => {
+interface SvgCheckResult {
+  isSvg: boolean;
+  content: string;
+}
+
+export const isImageFromUrlSvg = async (url: string): Promise<SvgCheckResult> => {
   const response = await fetch(url);
   const blob = await response.blob();
   const content = await blob.text();
