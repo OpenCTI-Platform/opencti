@@ -1,8 +1,7 @@
-import React, { ReactNode } from 'react';
-import { graphql } from 'react-relay';
-import { StixCoreObjectsTimelineQuery$data } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
+import React, { ReactNode, Suspense } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { StixCoreObjectsTimelineQuery, OrderingMode, StixCoreObjectsOrdering } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -12,6 +11,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 
 const stixCoreObjectsTimelineQuery = graphql`
   query StixCoreObjectsTimelineQuery(
@@ -66,78 +67,101 @@ const stixCoreObjectsTimelineQuery = graphql`
   }
 `;
 
+interface StixCoreObjectsTimelineComponentProps {
+  queryRef: PreloadedQuery<StixCoreObjectsTimelineQuery>;
+  dataSelection: WidgetDataSelection[];
+}
+
+const StixCoreObjectsTimelineComponent = ({
+  queryRef,
+  dataSelection,
+}: StixCoreObjectsTimelineComponentProps) => {
+  const data = usePreloadedQuery(stixCoreObjectsTimelineQuery, queryRef);
+
+  const edges = data?.stixCoreObjects?.edges ?? [];
+  const selection = dataSelection[0];
+
+  const dateAttribute
+    = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
+
+  return edges.length === 0 ? (
+    <WidgetNoData />
+  ) : (
+    <WidgetTimeline
+      data={edges.map((edge) => {
+        const node = edge.node;
+        return {
+          value: node,
+          link: `${resolveLink(node.entity_type)}/${node.id}`,
+        };
+      })}
+      dateAttribute={dateAttribute}
+    />
+  );
+};
+
 interface StixCoreObjectsTimelineProps {
   variant?: string;
   height?: number;
-  startDate?: string | null;
-  endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;
   host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
 }
+
+const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+) => {
+  const selection = resolvedDataSelection[0];
+  const dateAttribute
+    = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
+  const { startDate, endDate } = computeStartEndDates(config);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute },
+  );
+  return {
+    types: DATA_SELECTION_TYPES,
+    first: selection.number ?? 10,
+    orderBy: dateAttribute as StixCoreObjectsOrdering,
+    orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
+    filters,
+  };
+};
 
 const StixCoreObjectsTimeline = ({
   variant,
   height,
-  startDate,
-  endDate,
   dataSelection,
   parameters = {},
   popover,
   host,
+  config,
+  refreshRate = null,
 }: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
     perspective: 'entities',
     dataSelection,
     host,
+    refreshRate,
+    query: stixCoreObjectsTimelineQuery,
+    config,
+    buildQueryVariables,
   });
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-    const selection = resolvedDataSelection[0];
-    const dataSelectionTypes = ['Stix-Core-Object'];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
-    return (
-      <QueryRenderer
-        query={stixCoreObjectsTimelineQuery}
-        variables={{
-          types: dataSelectionTypes,
-          first: selection.number ?? 10,
-          orderBy: dateAttribute,
-          orderMode: selection.sort_mode ?? 'desc',
-          filters,
-        }}
-        render={({ props }: { props: StixCoreObjectsTimelineQuery$data }) => {
-          if (
-            props
-            && props.stixCoreObjects
-            && props.stixCoreObjects.edges.length > 0
-          ) {
-            const stixCoreObjectsEdges = props.stixCoreObjects.edges;
-            const data = stixCoreObjectsEdges.map((stixCoreObjectEdge) => {
-              const stixCoreObject = stixCoreObjectEdge.node;
-              const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
-              return {
-                value: stixCoreObject,
-                link,
-              };
-            });
-            return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
+  if (isMissingHostEntity) {
+    return <WidgetNoHostEntity host={host} />;
+  }
+
   return (
     <WidgetContainer
       height={height}
@@ -146,7 +170,14 @@ const StixCoreObjectsTimeline = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      {queryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <StixCoreObjectsTimelineComponent
+            queryRef={queryRef}
+            dataSelection={resolvedDataSelection}
+          />
+        </Suspense>
+      )}
     </WidgetContainer>
   );
 };
