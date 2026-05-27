@@ -25,7 +25,7 @@ const draftFragment = graphql`
     }
     ...DraftExitFragment
     ...DraftAuthorizedMembersFragment
-    ...WorkflowStatus_data
+    ...workflowStatus_data
   }
 `;
 
