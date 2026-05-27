@@ -146,7 +146,7 @@ class RetentionPopover extends Component {
           query={retentionEditionQuery}
           variables={{ id: retentionRuleId }}
           render={({ props }) => {
-              if (props) {
+            if (props) {
               const { retentionRule } = props;
               const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge';
               return (
