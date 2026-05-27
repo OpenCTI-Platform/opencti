@@ -139,7 +139,6 @@ nav:
       - Clustering: deployment/clustering.md
       - Indices and rollover: deployment/rollover.md
       - On-premise map server: deployment/map.md
-      - On-premise AI extraction: deployment/ai-import-document.md
       - Rate limiting: deployment/rate-limiting.md
       - Troubleshooting: deployment/troubleshooting.md
     - Breaking changes:
@@ -233,6 +232,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - Cookies: administration/cookies.md
         - Policies: administration/policies.md
         - Users and RBAC:
           - Users and RBAC: administration/users.md
