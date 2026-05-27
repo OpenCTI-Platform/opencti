@@ -379,7 +379,6 @@ describe('XTM hub', () => {
     let upsertNewsFeedSpy: MockInstance;
     let deleteNewsFeedItemsByExternalIdSpy: MockInstance;
     let updateAttributeSpy: MockInstance;
-    let booleanConfSpy: MockInstance;
 
     const mockSettings = {
       id: 'settings_id',
@@ -416,22 +415,12 @@ describe('XTM hub', () => {
       upsertNewsFeedSpy = vi.spyOn(newsFeedDomain, 'upsertNewsFeed').mockResolvedValue({} as any);
       deleteNewsFeedItemsByExternalIdSpy = vi.spyOn(newsFeedDomain, 'deleteNewsFeedItemsByExternalId').mockResolvedValue(0);
       updateAttributeSpy = vi.spyOn(middleware, 'updateAttribute').mockResolvedValue({} as unknown as any);
-      booleanConfSpy = vi.spyOn(conf, 'booleanConf').mockReturnValue(true);
       vi.spyOn(settingsModule, 'getSettings').mockResolvedValue({} as any);
       vi.spyOn(redisModule, 'notify').mockResolvedValue({});
     });
 
     afterEach(() => {
       vi.restoreAllMocks();
-    });
-
-    it('should do nothing when news feed feature is disabled', async () => {
-      booleanConfSpy.mockReturnValue(false);
-
-      await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
-
-      expect(getEntityFromCacheSpy).not.toHaveBeenCalled();
-      expect(consumeProvisionedNewsFeedItemsSpy).not.toHaveBeenCalled();
     });
 
     it('should do nothing when platform is not registered (no token)', async () => {

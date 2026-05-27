@@ -5,7 +5,6 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { Close, OpenInNewOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import useAuth from '../../../utils/hooks/useAuth';
-import useHelper from '../../../utils/hooks/useHelper';
 import NewsFeedToastItem, { NewsFeedToastData, NEWS_FEED_TOAST_WIDTH } from './NewsFeedToastItem';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
@@ -33,15 +32,14 @@ const newsFeedToastDeleteSubscription = graphql`
 const MAX_VISIBLE_TOASTS = 5;
 
 const NewsFeedToastManager: FunctionComponent = () => {
-  const { isXTMHubAccessible, me, settings } = useAuth();
-  const { isFeatureEnable } = useHelper();
+  const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [toasts, setToasts] = useState<NewsFeedToastData[]>([]);
 
-  const isNewsFeedFeatureEnabled = isFeatureEnable('XTMHUB_NEWS_FEED_ENABLED');
+  const isXTMHubRegistered = settings.xtm_hub_registration_status === 'registered';
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
-  const isEnabled = isXTMHubAccessible && isNewsFeedFeatureEnabled && !isAllNewsFeedUnsubscribed;
+  const isEnabled = isXTMHubRegistered && !isAllNewsFeedUnsubscribed;
 
   const handleNewsFeedItem = useCallback((data: { newsFeedItemAdded?: NewsFeedToastData }) => {
     if (!data?.newsFeedItemAdded) return;

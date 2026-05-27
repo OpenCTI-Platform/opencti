@@ -8,7 +8,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useHelper from '../../../utils/hooks/useHelper';
 import { requestSubscription } from '../../../relay/environment';
 import type { NotificationsUnreadNewsFeedsCountQuery } from './__generated__/NotificationsUnreadNewsFeedsCountQuery.graphql';
 import { NotificationsNotificationNumberSubscription$data } from '@components/profile/__generated__/NotificationsNotificationNumberSubscription.graphql';
@@ -42,14 +41,12 @@ const Notifications: FunctionComponent = () => {
   const { setTitle } = useConnectedDocumentModifier();
   const { settings, me } = useAuth();
   const isXTMHubRegistered = settings.xtm_hub_registration_status === 'registered';
-  const { isFeatureEnable } = useHelper();
-  const isXTMHubNewsFeedEnabled = isFeatureEnable('XTMHUB_NEWS_FEED_ENABLED');
   const navigate = useNavigate();
 
   setTitle(t_i18n('Notifications'));
 
   const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
-  const isNewsFeedTabVisible = isXTMHubRegistered && isXTMHubNewsFeedEnabled && !isUnsubscribedFromAllNewsFeeds;
+  const isNewsFeedTabVisible = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds;
 
   const data = useLazyLoadQuery<NotificationsUnreadNewsFeedsCountQuery>(
     notificationsUnreadNewsFeedsCountQuery,
