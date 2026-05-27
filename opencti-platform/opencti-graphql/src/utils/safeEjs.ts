@@ -279,6 +279,15 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     return parentType === 'MemberExpression' || parentType === 'Property' || parentType === 'PatternProperty';
   };
 
+  /**
+   * Returns true when the current PropertyDefinition node is a shorthand property (e.g., `{ Foo }`).
+   */
+  const isShorthandProperty = () => {
+    const propertyNode = cursor.node.parent;
+    if (!propertyNode || propertyNode.type.name !== 'Property') return false;
+    return !cursor.node.nextSibling;
+  };
+
   const processBracketLeft = () => {
     if (isPropertyNameInBracket()) {
       editNode(`${nodeText()}${safeName('property')}(`);
@@ -364,6 +373,14 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
         break;
 
       case 'PropertyDefinition':
+        processPropertyDefinitionOrName();
+        // Object shorthand properties do not produce a VariableName node.
+        // If it's a shorthand property, we must also validate the identifier.
+        if (isShorthandProperty()) {
+          processVariableName();
+        }
+        break;
+
       case 'PropertyName':
         processPropertyDefinitionOrName();
         break;
