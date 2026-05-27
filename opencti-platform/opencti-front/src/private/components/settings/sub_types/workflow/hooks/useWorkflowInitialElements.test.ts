@@ -217,4 +217,89 @@ describe('useWorkflowInitialElements', () => {
     rerender({ def: newDef });
     expect(result.current).not.toBe(firstResult);
   });
+
+  it('should reverse-map asyncBulkAction SHARE to shareWithOrganizations action', () => {
+    const orgId = 'org-a';
+    const defWithShare: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      transitions: [
+        {
+          from: 'status-open',
+          to: 'status-closed',
+          event: 'share_event',
+          conditions: {},
+          comment: null,
+          actions: [
+            {
+              type: 'asyncBulkAction',
+              mode: 'async',
+              params: {
+                scope: 'KNOWLEDGE',
+                actions: [{ type: 'SHARE', context: { values: [orgId] } }],
+              },
+            },
+          ],
+          asyncActions: [],
+          syncActions: [],
+        },
+      ],
+    };
+
+    const mockOrgs: SubTypeWorkflowQuery$data['organizations'] = {
+      edges: [{ node: { id: orgId, name: 'Org Alpha' } }],
+    };
+
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(defWithShare, mockStatusTemplates, mockMembers, mockOrgs, null),
+    );
+
+    const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
+    const action = transitionNode?.data.actions[0];
+    expect(action.type).toBe('shareWithOrganizations');
+    expect(action.params.organizations[0]).toMatchObject({ value: orgId, label: 'Org Alpha' });
+  });
+
+  it('should reverse-map asyncBulkAction UNSHARE to unshareFromOrganizations action', () => {
+    const orgId = 'org-b';
+    const defWithUnshare: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      transitions: [
+        {
+          from: 'status-open',
+          to: 'status-closed',
+          event: 'unshare_event',
+          conditions: {},
+          comment: null,
+          actions: [
+            {
+              type: 'asyncBulkAction',
+              mode: 'async',
+              params: {
+                scope: 'KNOWLEDGE',
+                actions: [{ type: 'UNSHARE', context: { values: [orgId] } }],
+              },
+            },
+          ],
+          asyncActions: [],
+          syncActions: [],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(defWithUnshare, mockStatusTemplates, mockMembers, null, null),
+    );
+
+    const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
+    const action = transitionNode?.data.actions[0];
+    expect(action.type).toBe('unshareFromOrganizations');
+  });
+
+  it('should return empty arrays when workflowDefinition is undefined', () => {
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(undefined as any, mockStatusTemplates, mockMembers, null, null),
+    );
+    expect(result.current.initialNodes).toEqual([]);
+    expect(result.current.initialEdges).toEqual([]);
+  });
 });
