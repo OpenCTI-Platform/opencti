@@ -1,19 +1,6 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useFragment } from 'react-relay';
-import {
-  Alert,
-  AlertTitle,
-  Box,
-  CircularProgress,
-  DialogActions,
-  DialogContentText,
-  Divider,
-  Menu,
-  MenuItem,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
 import { ArrowDropDownOutlined, ErrorOutline, LockOpenOutlined, Refresh } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -224,7 +211,10 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             slotProps={{ paper: { elevation: 1 } }}
             keepMounted={false}
             slots={{ transition: Transition }}
-            onClose={() => { setWizard(null); resetForm(); }}
+            onClose={() => {
+              setWizard(null);
+              resetForm();
+            }}
             title={t_i18n('Select organizations')}
             size="small"
           >
@@ -258,7 +248,10 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               <DialogActions>
                 <Button
                   variant="secondary"
-                  onClick={() => { setWizard(null); resetForm(); }}
+                  onClick={() => {
+                    setWizard(null);
+                    resetForm();
+                  }}
                 >
                   {t_i18n('Cancel')}
                 </Button>

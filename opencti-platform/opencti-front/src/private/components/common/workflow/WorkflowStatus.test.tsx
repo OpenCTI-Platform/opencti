@@ -299,7 +299,7 @@ describe('WorkflowTransitions', () => {
     await user.click(screen.getByText('Confirm'));
     await waitFor(() => {
       expect(mockCommit).toHaveBeenCalledOnce();
-      expect(mockCommit.mock.calls[0][0].variables.comment).toBe(null);
+      expect(mockCommit.mock.calls[0][0].variables.comment).toBeUndefined();
     });
   });
 

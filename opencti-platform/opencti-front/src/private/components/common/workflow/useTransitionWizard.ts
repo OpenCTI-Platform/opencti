@@ -6,11 +6,7 @@ import useSwitchDraft from '../../drafts/useSwitchDraft';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import {
-  workflowStatusTriggerMutation,
-  workflowStatusRetryMutation,
-  workflowStatusClearMutation,
-} from './workflowStatus.graphql';
+import { workflowStatusTriggerMutation, workflowStatusRetryMutation, workflowStatusClearMutation } from './workflowStatus.graphql';
 import type { workflowStatusTriggerMutation as workflowStatusTriggerMutationType } from './__generated__/workflowStatusTriggerMutation.graphql';
 import type { workflowStatusRetryMutation as workflowStatusRetryMutationType } from './__generated__/workflowStatusRetryMutation.graphql';
 import type { workflowStatusClearMutation as workflowStatusClearMutationType } from './__generated__/workflowStatusClearMutation.graphql';
