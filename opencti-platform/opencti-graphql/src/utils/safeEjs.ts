@@ -383,7 +383,7 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
 
       case 'PropertyName':
         processPropertyDefinitionOrName();
-        break;        
+        break;
 
       case 'String':
         processString();
