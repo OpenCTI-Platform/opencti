@@ -31,11 +31,11 @@ const DeployPlaybook = () => {
       variables: { file: importedFile },
       onCompleted: (data) => {
         navigate(`${resolveLink('Playbook')}/${data.playbookImport}`);
-        MESSAGING$.notifySuccess('Playbook successfully imported');
+        MESSAGING$.notifySuccess(t_i18n('Playbook successfully imported'));
       },
       onError: () => {
         navigate('/dashboard/data/processing/automation');
-        MESSAGING$.notifyError('An error occurred while importing playbook');
+        MESSAGING$.notifyError(t_i18n('An error occurred while importing playbook'));
       },
     });
   };
@@ -43,7 +43,7 @@ const DeployPlaybook = () => {
   const onDownloadError = () => {
     navigate('/dashboard');
     MESSAGING$.notifyError(
-      'An error occurred while importing playbook. You have been redirected to home page.',
+      t_i18n('An error occurred while importing playbook. You have been redirected to home page.'),
     );
   };
 
