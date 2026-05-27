@@ -12634,6 +12634,11 @@ type CaseIncidentEdge {
   node: CaseIncident!
 }
 
+type CustomFieldValueInput {
+  cursor: String!
+  node: CaseIncident!
+}
+
 input CaseIncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
@@ -12672,6 +12677,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  custom_field_values: [CustomFieldValueAddInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -16773,6 +16779,14 @@ type RetentionRuleEditMutations {
 }
 
 type CustomFieldValue {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  select_value: String
+}
+
+input CustomFieldValueAddInput {
   field_id: ID!
   field_name: String!
   int_value: Int

@@ -1,6 +1,6 @@
 import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityCustomFieldDefinition, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type StoreEntityCustomFieldDefinition } from './custom-field-types';
-import type { EditInput } from '../../generated/graphql';
+import type { CustomFieldDefinitionAddInput, EditInput } from '../../generated/graphql';
 import { EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -9,24 +9,6 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
-
-// Local type until GraphQL types are regenerated
-interface CustomFieldDefinitionAddInput {
-  name: string;
-  label: string;
-  field_type: string;
-  entity_types?: string[] | null;
-  mandatory: boolean;
-  description?: string | null;
-  created?: Date | null;
-  // Common optional
-  default_value?: string | null;
-  // Integer-specific
-  min_value?: number | null;
-  max_value?: number | null;
-  // Select-specific
-  select_options?: string[] | null;
-}
 
 export const findById: DomainFindById<BasicStoreEntityCustomFieldDefinition> = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
   return storeLoadById(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);

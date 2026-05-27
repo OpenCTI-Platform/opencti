@@ -7,6 +7,14 @@ type CustomFieldValue {
   select_value: String   # value for field_type = select
 }
 
+input CustomFieldValueAddInput {
+  field_id:     ID!      # id of the CustomFieldDefinition
+  field_name:   String!  # ex: "x_opencti_priority"
+  int_value:    Int      # value for field_type = integer
+  string_value: String   # value for field_type = string
+  select_value: String   # value for field_type = select
+}
+
 type CustomFieldDefinition implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!

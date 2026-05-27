@@ -17,7 +17,6 @@ import { EditOperation, FilterMode } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FunctionalError } from '../../../config/errors';
-import { findById as findCustomFieldDefinitionById } from '../../customField/custom-field-domain';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../customField/custom-field-types';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../../customField/custom-field-types';
 
@@ -30,6 +29,8 @@ export const findCaseIncidentPaginated = (context: AuthContext, user: AuthUser, 
 };
 
 export const addCaseIncident = async (context: AuthContext, user: AuthUser, caseIncidentAdd: CaseIncidentAddInput) => {
+  console.log('CASE INCIDENT INPUT', [caseIncidentAdd]);
+
   let caseToCreate = caseIncidentAdd.created ? caseIncidentAdd : { ...caseIncidentAdd, created: now() };
   if (isEmptyField(caseIncidentAdd.createdBy)) {
     const individualId = await resolveUserIndividual(context, user);
@@ -70,6 +71,7 @@ export const setCaseIncidentCustomFieldValue = async (context: AuthContext, user
   // Load current entity to get existing custom_field_values
   const caseIncident = await storeLoadById<BasicStoreEntityCaseIncident>(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
   if (!caseIncident) throw FunctionalError('CaseIncident not found', { caseIncidentId });
+  // eslint-disable-next-line max-len
   const existing: Array<{ field_id: string; field_name: string; int_value?: number; string_value?: string; select_value?: string }> = (caseIncident as any).custom_field_values ?? [];
   const fieldName = `x_opencti_${definition.name}`;
   // Validate and build the new entry based on field_type
@@ -111,4 +113,3 @@ export const removeCaseIncidentCustomFieldValue = async (context: AuthContext, u
   ]);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
 };
-

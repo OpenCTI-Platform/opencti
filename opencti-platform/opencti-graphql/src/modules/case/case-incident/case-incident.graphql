@@ -220,6 +220,11 @@ type Query {
   caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
 }
 
+type CustomFieldValueInput {
+  cursor: String!
+  node: CaseIncident!
+}
+
 # Mutations
 input CaseIncidentAddInput {
   stix_id: StixId
@@ -257,6 +262,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  custom_field_values: [CustomFieldValueAddInput!]
 }
 
 type Mutation {
