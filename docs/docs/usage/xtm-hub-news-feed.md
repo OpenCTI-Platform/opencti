@@ -4,7 +4,7 @@ Use XTM Hub News Feed notifications to stay informed when new content is publish
 
 ## What is this?
 
-XTM Hub News Feed sends notifications in OpenCTI when new XTM Hub content becomes available (for example, a new custom dashboard).
+XTM Hub News Feed sends notifications in OpenCTI when new XTM Hub content becomes available (for example, when a dashboard is published).
 
 These notifications help you quickly detect new content and decide whether to import it.
 
