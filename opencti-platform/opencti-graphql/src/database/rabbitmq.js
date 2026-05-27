@@ -1,6 +1,6 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
@@ -485,7 +485,11 @@ export const metrics = async (context, user) => {
   };
   return telemetry(context, user, 'QUEUE metrics', {
     [ATTR_DB_NAMESPACE]: 'messaging_engine',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'messaging_engine',
     [ATTR_DB_OPERATION_NAME]: 'metrics',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'metrics',
   }, metricApi);
 };
 

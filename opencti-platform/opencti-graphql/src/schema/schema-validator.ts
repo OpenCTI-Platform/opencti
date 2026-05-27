@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import Ajv from 'ajv';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
@@ -100,7 +100,11 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
     [ATTR_DB_NAMESPACE]: 'validation',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'validation',
     [ATTR_DB_OPERATION_NAME]: 'schema_attributes',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'schema_attributes',
   }, validateFormatSchemaAttributesFn);
 };
 
@@ -148,7 +152,11 @@ const validateMandatoryAttributesOnCreation = async (
   };
   return telemetry(context, user, 'MANDATORY CREATION VALIDATION', {
     [ATTR_DB_NAMESPACE]: 'validation',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'validation',
     [ATTR_DB_OPERATION_NAME]: 'mandatory',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'mandatory',
   }, validateMandatoryAttributesOnCreationFn);
 };
 const validateMandatoryAttributesOnUpdate = async (
@@ -166,7 +174,11 @@ const validateMandatoryAttributesOnUpdate = async (
   };
   return telemetry(context, user, 'MANDATORY UPDATE VALIDATION', {
     [ATTR_DB_NAMESPACE]: 'validation',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'validation',
     [ATTR_DB_OPERATION_NAME]: 'mandatory',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'mandatory',
   }, validateMandatoryAttributesOnUpdateFn);
 };
 
@@ -194,7 +206,11 @@ export const validateInputCreation = async (
   };
   return telemetry(context, user, 'CREATION VALIDATION', {
     [ATTR_DB_NAMESPACE]: 'validation',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'validation',
     [ATTR_DB_OPERATION_NAME]: 'creation',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'creation',
   }, validateInputCreationFn);
 };
 
@@ -246,6 +262,10 @@ export const validateInputUpdate = async (
   };
   return telemetry(context, user, 'UPDATE VALIDATION', {
     [ATTR_DB_NAMESPACE]: 'validation',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'validation',
     [ATTR_DB_OPERATION_NAME]: 'update',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'update',
   }, validateInputUpdateFn);
 };

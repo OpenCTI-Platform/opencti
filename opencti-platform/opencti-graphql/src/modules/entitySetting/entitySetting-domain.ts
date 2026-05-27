@@ -1,4 +1,4 @@
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
@@ -43,7 +43,11 @@ export const findByType = async (context: AuthContext, user: AuthUser, targetTyp
   };
   return telemetry(context, user, 'QUERY entitySetting', {
     [ATTR_DB_NAMESPACE]: 'entitySetting_domain',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'entitySetting_domain',
     [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, findByTypeFn);
 };
 
@@ -60,7 +64,11 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
   };
   return telemetry(context, user, 'BATCH entitySettings', {
     [ATTR_DB_NAMESPACE]: 'entitySetting_domain',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'entitySetting_domain',
     [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, findByTypeFn);
 };
 

@@ -1,4 +1,4 @@
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
@@ -69,7 +69,11 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
   };
   return telemetry(context, user, 'QUERY type statuses', {
     [ATTR_DB_NAMESPACE]: 'statuses_domain',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
     [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
 
@@ -92,7 +96,11 @@ export const batchRequestAccessStatusesByType = async (context: AuthContext, use
   };
   return telemetry(context, user, 'BATCH type statuses', {
     [ATTR_DB_NAMESPACE]: 'statuses_domain',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
     [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
 
@@ -113,7 +121,11 @@ export const batchGlobalStatusesByType = async (context: AuthContext, user: Auth
   };
   return telemetry(context, user, 'BATCH type statuses', {
     [ATTR_DB_NAMESPACE]: 'statuses_domain',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
     [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {

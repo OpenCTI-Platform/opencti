@@ -1,6 +1,6 @@
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
@@ -789,7 +789,11 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
   };
   return telemetry(context, user, 'FILTERING store filter', {
     [ATTR_DB_NAMESPACE]: 'search_engine',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'search_engine',
     [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, userFilterStoreElementsFn);
 };
 
