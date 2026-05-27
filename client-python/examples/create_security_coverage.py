@@ -1,8 +1,6 @@
 # coding: utf-8
 import os
-
 from datetime import datetime, timezone
-from typing import Any
 
 from pycti import OpenCTIApiClient
 
@@ -25,7 +23,7 @@ def create_coverage(
     if not report or "id" not in report:
         raise RuntimeError(f"Failed to create report {report_name}")
 
-    coverage: Any = opencti_api_client.security_coverage.create(
+    coverage = opencti_api_client.security_coverage.create(
         name=sc_name,
         description="Super Security Coverage",
         objectCovered=report["id"],
