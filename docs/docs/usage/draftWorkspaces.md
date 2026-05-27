@@ -36,7 +36,7 @@ When entering a draft, the landing page will be the overview of the modification
 
 ![Draft overview](assets/draftWorkspace-draft-overview.png)
 
-This overview is separated into different tabs: entities, observables, relationships, sightings and containers. Each tab contains the list of the modifications applied to an item of this type.
+This overview is separated into different tabs: entities, observables, relationships, sightings, containers and review. Each tab contains the list of the modifications applied to an item of this type.
 
 ### Operation types
 
@@ -59,6 +59,18 @@ In addition to these lists of entities modified, a file tab is also available.
 ![Draft files](assets/draftWorkspace-file-tab.png)
 
 In this tab, additional files can be uploaded and imported within the draft workspace without impacting the main knowledge base. These files will only be visible in the current draft.
+
+### Reviewing changes (Review tab)
+
+To help analysts understand exactly what changes have been made in a draft before it is approved and merged, a **Review** tab is available. This tab displays a summary count of modified items and offers a comprehensive side-by-side comparison interface:
+
+- **Left pane**: Contains a list of all entities, observables, and relationships modified in the draft. You can search and filter this list by entity type, operation type, or name.
+- **Right pane (Diff panel)**: Selecting any item in the left list displays its specific changes:
+  - **Created/Deleted items**: Lists all initial or final field values of the item, along with any associated relations and containers.
+  - **Updated items**: Provides a side-by-side diff comparing the **Original Value** from the main database against the **New Value** introduced in the draft.
+  - **Linked updates**: Displays references and relations that were impacted by changes to linked items.
+
+![Draft review](assets/draftWorkspace-review-tab.png)
 
 ### Top bar actions
 
