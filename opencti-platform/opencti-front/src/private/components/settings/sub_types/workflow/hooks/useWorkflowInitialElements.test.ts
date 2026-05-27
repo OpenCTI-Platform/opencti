@@ -71,7 +71,7 @@ describe('useWorkflowInitialElements', () => {
     ],
     transitions: [
       {
-        from: ['status-open'],
+        from: 'status-open',
         to: 'status-closed',
         event: 'close_event',
         conditions: {},

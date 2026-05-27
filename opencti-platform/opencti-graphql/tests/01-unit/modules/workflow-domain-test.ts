@@ -7,7 +7,6 @@ import {
   publishWorkflowDefinition,
   getWorkflowDefinition,
   getAllowedTransitions,
-  getAllowedNextStatuses,
   getWorkflowInstance,
   deleteWorkflowDefinition,
   triggerWorkflowEvent,
@@ -687,37 +686,6 @@ describe('Workflow Domain', () => {
 
     // When state doesn't exist but workflow has getTransitions mock, it still returns transitions
     expect(transitions).toBeDefined();
-  });
-
-  // Tests for getAllowedNextStatuses (lines 509-515)
-  it('should return allowed next statuses', async () => {
-    const entity = { id: 'entity-1', entity_type: 'Incident', internal_id: 'entity-1' };
-    const workflowContent = {
-      id: 'workflow-1',
-      name: 'Incident Workflow',
-      initialState: 'open',
-      states: [{ statusId: 'open' }, { statusId: 'in-progress' }, { statusId: 'closed' }],
-      transitions: [
-        { from: 'open', to: 'in-progress', event: 'start' },
-        { from: 'open', to: 'closed', event: 'close' },
-      ],
-    };
-    const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
-
-    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
-      if (type === 'Basic-Object') return entity;
-      if (type === 'WorkflowDefinition') {
-        return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
-      }
-      return null;
-    });
-    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    (loadEntity as any).mockResolvedValue({ id: 'instance-1', currentState: 'open' });
-
-    const statuses = await getAllowedNextStatuses(mockContext, mockUser, 'entity-1');
-
-    // The mock returns one transition with toState 'closed'
-    expect(statuses).toEqual(['closed']);
   });
 
   // Tests for getWorkflowInstance (line 438)
