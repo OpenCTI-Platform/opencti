@@ -47,7 +47,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
-import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
+import conf, { booleanConf, extendedErrors, isFeatureEnabled, loadCert, logApp, logMigration } from '../config/conf';
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -200,8 +200,11 @@ import { AbortError } from 'node-fetch';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
+const improvedFuzzyWildActivated = isFeatureEnabled('IMPROVED_SEARCH');
 export const ES_MAX_CONCURRENCY: number = conf.get('elasticsearch:max_concurrency');
+// TODO remove when IMPROVED_SEARCH FF removed
 export const ES_DEFAULT_WILDCARD_PREFIX: boolean = booleanConf('elasticsearch:search_wildcard_prefix', false);
+// TODO remove when IMPROVED_SEARCH FF removed
 export const ES_DEFAULT_FUZZY: boolean = booleanConf('elasticsearch:search_fuzzy', false);
 export const ES_INIT_MAPPING_MIGRATION: string = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
 export const ES_IS_OLD_MAPPING: boolean = ES_INIT_MAPPING_MIGRATION === 'old';
@@ -1831,6 +1834,9 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
+export const specialElasticCharsEscapeWithFF = (query: string) => {
+  return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
+};
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
@@ -2138,10 +2144,10 @@ function processSearch(
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
-    const cleanElement = specialElasticCharsEscape(partialElement);
+    const cleanElement = improvedFuzzyWildActivated ? specialElasticCharsEscapeWithFF(partialElement) : specialElasticCharsEscape(partialElement);
     if (isNotEmptyField(cleanElement)) {
-      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
-      if (ES_DEFAULT_FUZZY) {
+      querySearch.push(`${useWildcardPrefix && !improvedFuzzyWildActivated ? '*' : ''}${cleanElement}*`);
+      if (ES_DEFAULT_FUZZY && !improvedFuzzyWildActivated) {
         querySearch.push(`${cleanElement}~`);
       }
     }

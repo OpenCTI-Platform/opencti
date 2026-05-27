@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useCallback, useMemo } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
@@ -17,6 +17,9 @@ import { useDataTableContext } from './components/DataTableContext';
 import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import useDraftContext from '../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
+import { EnhancedSearchBadge, detectSearchMode, stripSearchMode } from './components/EnhancedSearchSuggestions';
+import useAuth from '../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../utils/platformModulesHelper';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
   | 'contextFilters'
@@ -57,6 +60,20 @@ const DataTableInternalFilters = ({
     },
   } = useDataTableContext();
 
+  const { settings } = useAuth();
+  const isImprovedSearchEnabled = isFeatureEnable(settings, 'IMPROVED_SEARCH');
+
+  const activeSearchMode = useMemo(
+    () => (isImprovedSearchEnabled && searchTerm ? detectSearchMode(searchTerm) : null),
+    [isImprovedSearchEnabled, searchTerm],
+  );
+
+  const handleClearSearchMode = useCallback(() => {
+    if (!searchTerm) return;
+    const rawTerm = stripSearchMode(searchTerm);
+    helpers.handleSearch(rawTerm);
+  }, [searchTerm, helpers]);
+
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
 
   return (
@@ -73,11 +90,19 @@ const DataTableInternalFilters = ({
           }}
         >
           {!hideSearch && (
-            <SearchInput
-              variant="small"
-              onSubmit={helpers.handleSearch}
-              keyword={searchTerm}
-            />
+            <>
+              <SearchInput
+                variant="small"
+                onSubmit={helpers.handleSearch}
+                keyword={searchTerm}
+              />
+              {activeSearchMode && (
+                <EnhancedSearchBadge
+                  mode={activeSearchMode}
+                  onClear={handleClearSearchMode}
+                />
+              )}
+            </>
           )}
 
           {!hideFilters && (
