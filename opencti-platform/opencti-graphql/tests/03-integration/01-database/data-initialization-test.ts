@@ -7,6 +7,8 @@ import { loadEntity } from '../../../src/database/middleware';
 import { setPlatformId } from '../../../src/database/data-initialization';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
 import { RELATION_HAS_CAPABILITY } from '../../../src/schema/internalRelationship';
+import { listRules } from '../../../src/modules/retentionRules/retentionRules-domain';
+import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -128,6 +130,19 @@ describe('Data initialization test', () => {
     const allExpectedGroups = ['Administrators', 'Connectors', 'Default'];
     for (let i = 0; i < allExpectedGroups.length; i += 1) {
       expect(allGroupsNames, `${allExpectedGroups[i]} Group is missing from initialization`).toContain(allExpectedGroups[i]);
+    }
+  });
+
+  it('should create all default disabled retention rules', async () => {
+    const allRules = await listRules(testContext, ADMIN_USER, {}) as BasicStoreEntityRetentionRule[];
+    const expectedScopes = ['file', 'workbench', 'history', 'activity'];
+
+    for (const scope of expectedScopes) {
+      const rule = allRules.find((r) => r.scope === scope);
+      expect(rule, `Default retention rule for scope "${scope}" is missing from initialization`).toBeDefined();
+      expect(rule!.active, `Default retention rule for scope "${scope}" should be inactive`).toBe(false);
+      expect(rule!.max_retention, `Default retention rule for scope "${scope}" should have 30 days max_retention`).toBe(30);
+      expect(rule!.retention_unit, `Default retention rule for scope "${scope}" should use "days" unit`).toBe('days');
     }
   });
 });
