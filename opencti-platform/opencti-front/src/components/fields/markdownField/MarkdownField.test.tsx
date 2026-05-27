@@ -2,17 +2,11 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { Field, Formik } from 'formik';
-import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import testRender from '../../../utils/tests/test-render';
 import MarkdownField from './MarkdownField';
-import { MARKDOWN_IMAGE_UPLOAD } from '../../../utils/platformModulesHelper';
 
 const commitMutationMock = vi.fn();
-
-const markdownImageUploadEnabledUserContext = createMockUserContext({
-  settings: {
-    platform_feature_flags: [{ id: MARKDOWN_IMAGE_UPLOAD, enable: true }],
-  },
-});
+const isFeatureEnableMock = vi.fn(() => true);
 
 vi.mock('../../../relay/environment', async () => {
   const actual = await vi.importActual('../../../relay/environment');
@@ -29,6 +23,12 @@ vi.mock('../../../relay/environment', async () => {
   };
 });
 
+vi.mock('../../../utils/hooks/useHelper', () => ({
+  default: () => ({
+    isFeatureEnable: isFeatureEnableMock,
+  }),
+}));
+
 const renderMarkdownField = (
   initialValue = '',
   props: Record<string, unknown> = {},
@@ -36,7 +36,7 @@ const renderMarkdownField = (
   return testRender(
     <Formik
       initialValues={{ description: initialValue }}
-      onSubmit={() => {}}
+      onSubmit={() => { }}
     >
       <Field
         name="description"
@@ -45,9 +45,6 @@ const renderMarkdownField = (
         {...props}
       />
     </Formik>,
-    {
-      userContext: markdownImageUploadEnabledUserContext,
-    },
   );
 };
 
@@ -55,6 +52,8 @@ describe('Component: MarkdownField', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     commitMutationMock.mockReset();
+    isFeatureEnableMock.mockReset();
+    isFeatureEnableMock.mockReturnValue(true);
     commitMutationMock.mockImplementation(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
@@ -438,7 +437,7 @@ describe('Component: MarkdownField', () => {
           }
           return {};
         }}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
       >
         <Field
           name="description"
@@ -446,14 +445,10 @@ describe('Component: MarkdownField', () => {
           label="Description"
         />
       </Formik>,
-      {
-        userContext: markdownImageUploadEnabledUserContext,
-      },
     );
 
     const textArea = await screen.findByRole('textbox');
     const uploadButton = screen.getByRole('button', { name: 'Paste, drop, or click to add images' });
-
     fireEvent.focus(textArea);
     fireEvent.blur(textArea, { relatedTarget: uploadButton });
     fireEvent.focus(uploadButton);
@@ -461,6 +456,41 @@ describe('Component: MarkdownField', () => {
     await waitFor(() => {
       expect(screen.getByText('Description is required')).toBeInTheDocument();
     });
+  });
+
+  it('does not show validation when clicking internal upload button from textarea', async () => {
+    testRender(
+      <Formik
+        initialValues={{ description: '' }}
+        validate={(values) => {
+          if (!values.description?.trim()) {
+            return { description: 'Description is required' };
+          }
+          return {};
+        }}
+        onSubmit={() => { }}
+      >
+        <Field
+          name="description"
+          component={MarkdownField}
+          label="Description"
+        />
+      </Formik>,
+    );
+
+    const textArea = await screen.findByRole('textbox');
+    const uploadButton = screen.getByRole('button', { name: 'Paste, drop, or click to add images' });
+
+    fireEvent.focus(textArea);
+    fireEvent.mouseDown(uploadButton);
+    fireEvent.blur(textArea, { relatedTarget: uploadButton });
+    fireEvent.click(uploadButton);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.queryByText('Description is required')).not.toBeInTheDocument();
   });
 
   it('does not call onSubmit on blur when value is unchanged', async () => {

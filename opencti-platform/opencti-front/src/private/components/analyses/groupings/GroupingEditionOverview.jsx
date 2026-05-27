@@ -242,6 +242,7 @@ const GroupingEditionOverviewComponent = (props) => {
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               askAi={true}
+              uploadEntityId={grouping.id}
             />
             {grouping.workflowEnabled && (
               <StatusField

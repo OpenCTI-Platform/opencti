@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sanitizeReferer } from '../../../src/http/httpPlatform';
+import { decodeStoragePath, sanitizeReferer } from '../../../src/http/httpPlatform';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
@@ -13,6 +13,24 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
 });
 
 const baseUrl = getBaseUrl();
+
+describe('httpPlatform: decodeStoragePath function', () => {
+  it('should decode encoded path segments containing spaces and accents', () => {
+    const encodedParts = ['embedded', 'Note', 'note-id', 'Capture%20e%CC%81cran%202026-05-20%2012.34.56.png'];
+
+    const decodedPath = decodeStoragePath(encodedParts);
+
+    expect(decodedPath).toBe('embedded/Note/note-id/Capture écran 2026-05-20 12.34.56.png');
+  });
+
+  it('should keep invalid encoded segment unchanged', () => {
+    const encodedParts = ['embedded', 'Note', 'note-id', 'broken%2Gencoding.png'];
+
+    const decodedPath = decodeStoragePath(encodedParts);
+
+    expect(decodedPath).toBe('embedded/Note/note-id/broken%2Gencoding.png');
+  });
+});
 
 describe('httpPlatform: sanitizeReferer function', () => {
   beforeEach(() => {

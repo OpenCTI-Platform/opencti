@@ -16,7 +16,7 @@ import {
   resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
 } from './markdown-embedded-images';
-import { UPDATE_OPERATION_REMOVE } from './utils';
+import { UPDATE_OPERATION_REMOVE, wait } from './utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase } from '../types/store';
 import type { EditInput } from '../generated/graphql';
@@ -24,7 +24,10 @@ import type { InternalEditInput } from '../types/store';
 
 export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
 const TEMP_IMAGE_TOKEN_REGEX = /([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
-const EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS = 3;
+const EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS = 5;
+const EMBEDDED_IMAGE_EXPORT_FETCH_BASE_BACKOFF_MS = 200;
+const EMBEDDED_IMAGE_EXPORT_FETCH_BACKOFF_MULTIPLIER = 2;
+const EMBEDDED_IMAGE_EXPORT_FETCH_MAX_BACKOFF_MS = 1500;
 const ALLOWED_EMBEDDED_IMAGE_MIME_TYPES_SET = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
 const MAX_EMBEDDED_IMAGE_BASENAME_LENGTH = 120;
 
@@ -368,20 +371,62 @@ const resolveEmbeddedImageDataUriForExport = async (
   for (let pathIndex = 0; pathIndex < candidatePaths.length; pathIndex += 1) {
     const candidatePath = candidatePaths[pathIndex];
     for (let attempt = 1; attempt <= fetchAttempts; attempt += 1) {
+      let fetchError: unknown;
       try {
         const base64Data = await getFileContent(candidatePath, 'base64');
         if (base64Data) {
           return `data:${mimeType};base64,${base64Data}`;
         }
       } catch (error) {
-        if (attempt === fetchAttempts) {
-          logApp.warn('[OPENCTI] Unable to fetch embedded markdown image during STIX export', {
+        fetchError = error;
+        if (attempt < fetchAttempts) {
+          const exponentialBackoffMs = EMBEDDED_IMAGE_EXPORT_FETCH_BASE_BACKOFF_MS * (EMBEDDED_IMAGE_EXPORT_FETCH_BACKOFF_MULTIPLIER ** (attempt - 1));
+          const backoffMs = Math.min(
+            EMBEDDED_IMAGE_EXPORT_FETCH_MAX_BACKOFF_MS,
+            exponentialBackoffMs,
+          );
+          logApp.warn('[OPENCTI] Embedded markdown image fetch failed, retrying', {
             storagePath,
             candidatePath,
+            attempt,
             attempts: fetchAttempts,
+            backoffMs,
+            draftContext,
+            candidatePaths,
             cause: error,
           });
         }
+        if (attempt === fetchAttempts) {
+          logApp.error('[OPENCTI] Unable to fetch embedded markdown image during STIX export', {
+            storagePath,
+            candidatePath,
+            attempt,
+            attempts: fetchAttempts,
+            draftContext,
+            candidatePaths,
+            cause: error,
+          });
+        }
+      }
+
+      if (attempt < fetchAttempts) {
+        const exponentialBackoffMs = EMBEDDED_IMAGE_EXPORT_FETCH_BASE_BACKOFF_MS * (EMBEDDED_IMAGE_EXPORT_FETCH_BACKOFF_MULTIPLIER ** (attempt - 1));
+        const backoffMs = Math.min(
+          EMBEDDED_IMAGE_EXPORT_FETCH_MAX_BACKOFF_MS,
+          exponentialBackoffMs,
+        );
+        if (backoffMs > 0) {
+          await wait(backoffMs);
+        }
+      } else if (!fetchError) {
+        logApp.error('[OPENCTI] Embedded markdown image content is empty during STIX export after retries', {
+          storagePath,
+          candidatePath,
+          attempt,
+          attempts: fetchAttempts,
+          draftContext,
+          candidatePaths,
+        });
       }
     }
   }

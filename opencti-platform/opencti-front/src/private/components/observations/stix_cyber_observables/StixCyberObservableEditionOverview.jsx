@@ -328,6 +328,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                     component={MarkdownField}
                     name="x_opencti_description"
                     label={t_i18n('Description')}
+                    uploadEntityId={stixCyberObservable.id}
                     fullWidth={true}
                     multiline={true}
                     rows="4"

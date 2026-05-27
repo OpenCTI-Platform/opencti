@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -33,7 +33,18 @@ const artifactMutation = graphql`
       objectMarking: $objectMarking
       objectLabel: $objectLabel
     ) {
+      id
       ...ArtifactsLine_node
+    }
+  }
+`;
+
+const artifactDescriptionPatchMutation = graphql`
+  mutation ArtifactCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixCyberObservableEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -53,6 +64,8 @@ const ArtifactCreation = ({
     undefined,
     { successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(artifactDescriptionPatchMutation);
+  const markdownControllerRef = useRef(null);
 
   const handleOpen = () => {
     setOpen(true);
@@ -86,10 +99,31 @@ const ArtifactCreation = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        handleClose();
+      onCompleted: async (response) => {
+        try {
+          const artifactId = response?.artifactImport?.id;
+          const hasPendingMarkdownImages = (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
+
+          if (artifactId && hasPendingMarkdownImages) {
+            const finalizedDescription = await markdownControllerRef.current?.persistTempImages(artifactId);
+            if (typeof finalizedDescription === 'string' && finalizedDescription !== values.x_opencti_description) {
+              await new Promise((resolve, reject) => {
+                commitDescriptionPatch({
+                  variables: {
+                    id: artifactId,
+                    input: [{ key: 'x_opencti_description', value: finalizedDescription }],
+                  },
+                  onCompleted: resolve,
+                  onError: reject,
+                });
+              });
+            }
+          }
+        } finally {
+          setSubmitting(false);
+          resetForm();
+          handleClose();
+        }
       },
     });
   };
@@ -144,6 +178,11 @@ const ArtifactCreation = ({
                 multiline={true}
                 rows="4"
                 style={{ marginTop: 20 }}
+                autoPersistOnBlur={false}
+                registerMarkdownImagesController={(controller) => {
+                  markdownControllerRef.current = controller;
+                }}
+                uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
               />
               <CreatedByField
                 name="createdBy"

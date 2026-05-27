@@ -145,7 +145,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
         },
       });
     }
-  }, [enterDraft]);
+  }, [draftContext, draftId, enterDraft, isDraftReadOnly, t_i18n]);
 
   useEffect(() => {
     // Refresh
@@ -322,11 +322,11 @@ const RootDraft = () => {
   const [queryRef, loadQuery] = useQueryLoader<DraftRootQuery>(draftRootQuery);
   useEffect(() => {
     loadQuery({ id: draftId }, { fetchPolicy: 'store-and-network' });
-  }, []);
+  }, [draftId, loadQuery]);
 
   const refetch = React.useCallback(() => {
     loadQuery({ id: draftId }, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
+  }, [draftId, loadQuery]);
 
   return (
     <>

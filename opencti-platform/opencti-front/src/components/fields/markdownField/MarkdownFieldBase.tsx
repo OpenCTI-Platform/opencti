@@ -1,4 +1,4 @@
-import React, { CSSProperties, FocusEvent, ReactElement, useCallback, useRef, useState } from 'react';
+import React, { CSSProperties, FocusEvent, MouseEvent, ReactElement, useCallback, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -78,6 +78,7 @@ const MarkdownFieldBase = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isFieldFocusedRef = useRef(false);
   const initialValueOnFocus = useRef<string | null>(null);
+  const suppressInternalButtonBlurValidationRef = useRef(false);
 
   const showError = !isNil(errorMessage) && showValidationError;
   const activeTab = controlledSelectedTab ?? selectedTab;
@@ -142,6 +143,11 @@ const MarkdownFieldBase = ({
       const nextTarget = event.relatedTarget as HTMLElement | null;
       const movedFromTextareaToButton = blurTarget?.tagName === 'TEXTAREA' && nextTarget?.tagName === 'BUTTON';
 
+      if (movedFromTextareaToButton && suppressInternalButtonBlurValidationRef.current) {
+        suppressInternalButtonBlurValidationRef.current = false;
+        return;
+      }
+
       // Tabbing from editor textarea to internal action buttons should still mark the field
       // as touched so validation feedback appears immediately.
       if (movedFromTextareaToButton) {
@@ -179,6 +185,22 @@ const MarkdownFieldBase = ({
   const markdownPreviewResolver = useCallback((url: string) => {
     return registryRef.current.resolvePreviewImageUrl(url);
   }, []);
+
+  const handleUploadButtonMouseDown = (event: MouseEvent<HTMLButtonElement>) => {
+    suppressInternalButtonBlurValidationRef.current = true;
+    // Prevent the textarea from blurring on mouse click so Formik doesn't mark
+    // the field as touched before the user actually leaves the markdown field.
+    event.preventDefault();
+  };
+
+  const handleUploadButtonMouseLeave = () => {
+    suppressInternalButtonBlurValidationRef.current = false;
+  };
+
+  const handleUploadButtonClickInternal = () => {
+    suppressInternalButtonBlurValidationRef.current = false;
+    handleUploadButtonClick();
+  };
 
   return (
     <div
@@ -268,7 +290,9 @@ const MarkdownFieldBase = ({
           variant="tertiary"
           size="small"
           type="button"
-          onClick={handleUploadButtonClick}
+          onMouseDown={handleUploadButtonMouseDown}
+          onMouseLeave={handleUploadButtonMouseLeave}
+          onClick={handleUploadButtonClickInternal}
           disabled={disabled}
           startIcon={<AddPhotoAlternateOutlined fontSize="small" />}
           sx={{ marginTop: '4px' }}

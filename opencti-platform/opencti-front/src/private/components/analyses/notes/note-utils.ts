@@ -1,3 +1,18 @@
+const encodeStoragePath = (storagePath: string): string => {
+  return storagePath
+    .split('/')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => {
+      try {
+        // Normalize already-encoded segments before re-encoding.
+        return encodeURIComponent(decodeURIComponent(segment));
+      } catch {
+        return encodeURIComponent(segment);
+      }
+    })
+    .join('/');
+};
+
 export const resolveNoteEmbeddedImageUrl = (url: string, noteId: string): string | null => {
   if (!url) {
     return null;
@@ -14,12 +29,12 @@ export const resolveNoteEmbeddedImageUrl = (url: string, noteId: string): string
   }
 
   if (normalizedUrl.split('/').length >= 4) {
-    return `/storage/view/${encodeURIComponent(normalizedUrl)}`;
+    return `/storage/view/${encodeStoragePath(normalizedUrl)}`;
   }
 
   if (!noteId) {
     return null;
   }
 
-  return `/storage/view/${encodeURIComponent(`embedded/Note/${noteId}/${embeddedPath}`)}`;
+  return `/storage/view/${encodeStoragePath(`embedded/Note/${noteId}/${embeddedPath}`)}`;
 };

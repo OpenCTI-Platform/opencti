@@ -6,7 +6,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import TextField from '../../../components/TextField';
-import MarkdownField from '../../../components/SimpleMarkdownField';
+import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { DraftRootFragment$data } from '@components/drafts/__generated__/DraftRootFragment.graphql';
 import CreatedByField from '@components/common/form/CreatedByField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
@@ -144,6 +144,7 @@ const DraftEditionOverviewComponent: FunctionComponent<
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            uploadEntityId={draft.id}
             onSubmit={handleSubmitField}
           />
           <CreatedByField

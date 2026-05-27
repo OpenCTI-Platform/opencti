@@ -1,5 +1,6 @@
 import { UseMutationConfig, graphql } from 'react-relay';
 import { MutationParameters } from 'relay-runtime';
+import { useCallback } from 'react';
 import useApiMutation, { UsiApiMutationOptions } from '../../../utils/hooks/useApiMutation';
 
 const mutation = graphql`
@@ -17,23 +18,23 @@ type ArgsType = Omit<UseMutationConfig<MutationParameters>, 'variables'>;
 const useSwitchDraft = (options?: UsiApiMutationOptions) => {
   const [commit] = useApiMutation(mutation, undefined, options);
 
-  const exitDraft = (args: ArgsType = {}) => {
+  const exitDraft = useCallback((args: ArgsType = {}) => {
     commit({
       ...args,
       variables: {
         input: { key: 'draft_context', value: '' },
       },
     });
-  };
+  }, [commit]);
 
-  const enterDraft = (draftId: string, args: ArgsType = {}) => {
+  const enterDraft = useCallback((draftId: string, args: ArgsType = {}) => {
     commit({
       ...args,
       variables: {
         input: [{ key: 'draft_context', value: [draftId] }],
       },
     });
-  };
+  }, [commit]);
 
   return {
     exitDraft,

@@ -11,6 +11,7 @@ import { uploadToStorage } from '../../../src/database/file-storage';
 import { getFileContent } from '../../../src/database/raw-file-storage';
 import { getDraftContext } from '../../../src/utils/draftContext';
 import { getDraftFilePrefix } from '../../../src/database/draft-utils';
+import { wait } from '../../../src/database/utils';
 
 vi.mock('../../../src/database/file-storage', () => ({
   uploadToStorage: vi.fn(),
@@ -27,6 +28,14 @@ vi.mock('../../../src/utils/draftContext', () => ({
 vi.mock('../../../src/database/draft-utils', () => ({
   getDraftFilePrefix: vi.fn(),
 }));
+
+vi.mock('../../../src/database/utils', async () => {
+  const actual = await vi.importActual('../../../src/database/utils');
+  return {
+    ...actual,
+    wait: vi.fn(),
+  };
+});
 
 describe('middlewareEmbeddedImages temp-token helpers', () => {
   it('should collect temp image UUID tokens in markdown order across nested description fields', () => {
@@ -191,5 +200,50 @@ describe('middlewareEmbeddedImages markdown rewrite helpers', () => {
     expect(rewritten[0].value[0]).toContain('data:image/png;base64,YmFy');
     expect(rewritten[0].value[1]).toEqual({ keep: true });
     expect(rewritten[1].value[0]).toBe('not-markdown-field');
+  });
+
+  it('should apply exponential retry throttle before succeeding to fetch embedded image', async () => {
+    vi.mocked(getFileContent)
+      .mockRejectedValueOnce(new Error('transient-1'))
+      .mockRejectedValueOnce(new Error('transient-2'))
+      .mockResolvedValueOnce('YmFzZTY0LW9r' as any);
+
+    const payload = {
+      description: '![x](embedded/Report/r-5/image-e.png)',
+    };
+
+    const rewritten = await resolveEmbeddedImagesInDescriptionFieldsForExport(
+      {} as any,
+      payload,
+      { entityType: 'Report', entityId: 'r-5' },
+    );
+
+    expect(rewritten.description).toContain('data:image/png;base64,YmFzZTY0LW9r');
+    expect(getFileContent).toHaveBeenCalledTimes(3);
+    expect(wait).toHaveBeenCalledTimes(2);
+    expect(wait).toHaveBeenNthCalledWith(1, 200);
+    expect(wait).toHaveBeenNthCalledWith(2, 400);
+  });
+
+  it('should cap exponential retry throttle at max backoff when fetch keeps failing', async () => {
+    vi.mocked(getFileContent).mockRejectedValue(new Error('always-fails'));
+
+    const payload = {
+      description: '![x](embedded/Report/r-6/image-f.png)',
+    };
+
+    const rewritten = await resolveEmbeddedImagesInDescriptionFieldsForExport(
+      {} as any,
+      payload,
+      { entityType: 'Report', entityId: 'r-6' },
+    );
+
+    expect(rewritten.description).toBe(payload.description);
+    expect(getFileContent).toHaveBeenCalledTimes(5);
+    expect(wait).toHaveBeenCalledTimes(4);
+    expect(wait).toHaveBeenNthCalledWith(1, 200);
+    expect(wait).toHaveBeenNthCalledWith(2, 400);
+    expect(wait).toHaveBeenNthCalledWith(3, 800);
+    expect(wait).toHaveBeenNthCalledWith(4, 1500);
   });
 });
