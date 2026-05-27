@@ -26,20 +26,12 @@ const baseSmtpOptions = {
 };
 
 // OAuth2 caches:
-// - the OIDC discovery result is essentially static for an issuer and can be
-//   reused for the whole lifetime of the process.
-// - the access token is reused until shortly before its expiration, so a busy
-//   platform does not hammer the IdP /.well-known and /token endpoints on
-//   every email (and does not get rate-limited by Entra ID / Google / etc.).
-// - concurrent refresh attempts are coalesced via an in-flight Promise so only
-//   one network roundtrip happens at any given time.
 let cachedDiscoveryConfig;
 let cachedAccessToken;
 let cachedAccessTokenExpiresAt = 0;
-let inFlightRefresh;
-// Refresh the token a bit before it actually expires to absorb clock skew and
-// the duration of the SMTP exchange that follows.
-const ACCESS_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
+let inFlightRefresh; // concurrent refresh attempts are coalesced via an in-flight Promise
+
+const ACCESS_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000; // Refresh the token a bit before it actually expires
 
 const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthIssuer, oauthRefreshToken }) => {
   if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_MARGIN_MS) {
