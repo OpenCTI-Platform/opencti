@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { filterConnectorsForElementEnrichment } from '../../../src/domain/enrichment';
 import { findById as findMarkingById } from '../../../src/domain/markingDefinition';
 import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR } from '../../utils/testQuery';
@@ -8,7 +8,14 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObje
 
 import internalConnectors from '../05-parser/internal-connectors.json';
 
-describe('Enrichment domain filter connector unit testing', async () => {
+describe('Enrichment domain filter connector unit testing', () => {
+  const connectors = [...internalConnectors];
+  beforeAll(async () => {
+    const connector = connectors.find((c) => c.name === 'ImportExternalReference');
+    if (connector) {
+      connector.connector_user_id = (await getAuthUser(USER_EDITOR.id)).internal_id;
+    }
+  });
   const externalReferenceElement = {
     _index: 'opencti_stix_meta_objects',
     source_name: 'AlienVault',
@@ -32,11 +39,6 @@ describe('Enrichment domain filter connector unit testing', async () => {
       'Stix-Meta-Object',
     ],
   };
-  const connectors = [...internalConnectors];
-  const connector = connectors.find((c) => c.name === 'ImportExternalReference');
-  if (connector) {
-    connector.connector_user_id = (await getAuthUser(USER_EDITOR.id)).internal_id;
-  }
   const externalRefScope = ENTITY_TYPE_EXTERNAL_REFERENCE;
   it('should find enrichment connector with filter', async () => {
     const targetConnectors = await filterConnectorsForElementEnrichment(testContext, connectors, externalReferenceElement, externalRefScope);
