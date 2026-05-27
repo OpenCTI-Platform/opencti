@@ -2,6 +2,7 @@ import type Express from 'express';
 import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } from './store';
 import type { Group } from './group';
 import type { ConfidenceLevel } from '../generated/graphql';
+import type { TracingContext } from '../utils/access';
 
 interface UserRole extends BasicStoreIdentifier {
   name: string;

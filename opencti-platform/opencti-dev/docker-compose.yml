@@ -60,7 +60,7 @@ services:
   #     "username": "admin",
   #     "password": "GraceH00per!"
   opencti-dev-opensearch:
-    profiles: [ opensearch ]
+    profiles: [opensearch]
     container_name: opencti-dev-opensearch
     build: ./opensearch
     volumes:
@@ -83,7 +83,7 @@ services:
       - 9201:9200
       - 9600:9600
   opencti-dev-opensearch-dashboards:
-    profiles: [ opensearch ]
+    profiles: [opensearch]
     image: opensearchproject/opensearch-dashboards:3.6.0
     container_name: opencti-dev-opensearch-dashboards
     ports:
@@ -124,7 +124,7 @@ services:
   ## Telemetry + tracing dependencies
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
   opencti-dev-telemetry-pyroscope:
-    container_name: opencti-pyroscope
+    container_name: opencti-dev-telemetry-pyroscope
     image: grafana/pyroscope
     restart: unless-stopped
     ports:
@@ -132,7 +132,7 @@ services:
     profiles:
       - "telemetry"
   opencti-dev-telemetry-jaegertracing:
-    container_name: opencti-dev-jaegertracing
+    container_name: opencti-dev-telemetry-jaegertracing
     image: jaegertracing/all-in-one:latest
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
@@ -142,7 +142,7 @@ services:
     profiles:
       - "telemetry"
   opencti-dev-telemetry-otlp:
-    container_name: opencti-telemetry-otlp
+    container_name: opencti-dev-telemetry-otlp
     image: otel/opentelemetry-collector-contrib:0.152.0
     restart: unless-stopped
     volumes:
@@ -150,32 +150,51 @@ services:
     command:
       - '--config=/etc/config/otlp-config.yaml'
     ports:
-      - "1010:1010"
+      - "1110:1110"
       - "8889:8889"
     profiles:
       - "telemetry"
+  opencti-dev-telemetry-prometheus:
+    container_name: opencti-dev-telemetry-prometheus
+    image: prom/prometheus:v3.11.3
+    restart: unless-stopped
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    profiles:
+      - "telemetry"
+  opencti-dev-telemetry-grafana:
+    image: grafana/grafana:13.1.0-25893932881
+    container_name: opencti-dev-telemetry-grafana
+    ports:
+      - "3100:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - opencti-dev-telemetry-prometheus
 
   # SAML / OpenId provider with keycloak - disabled by default
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
-      profiles: [ keycloak ]
-      image: quay.io/keycloak/keycloak:26.4.5
-      volumes:
-        - keycloakdata:/opt/keycloak/data
-        - ./keycloak-configuration:/opt/keycloak/data/import
-      container_name: opencti-dev-keycloak
-      command: start-dev --import-realm --verbose
-      # use below command to export a configuration. Remember to remove admin user.
-      #command: export --dir /opt/keycloak/data/import/export --users same_file
-      environment:
-        KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
-        KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
-      ports:
-        - "9999:8080"
+    profiles: [keycloak]
+    image: quay.io/keycloak/keycloak:26.4.5
+    volumes:
+      - keycloakdata:/opt/keycloak/data
+      - ./keycloak-configuration:/opt/keycloak/data/import
+    container_name: opencti-dev-keycloak
+    command: start-dev --import-realm --verbose
+    # use below command to export a configuration. Remember to remove admin user.
+    #command: export --dir /opt/keycloak/data/import/export --users same_file
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+      KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
+    ports:
+      - "9999:8080"
 
-  opencti-mokapi:
+  opencti-dev-mokapi:
     image: mokapi/mokapi:latest
-    profiles: [ mokapi ]
+    profiles: [mokapi]
     container_name: opencti-dev-mokapi
     command: mokapi --providers.file.directory=/share
     volumes:

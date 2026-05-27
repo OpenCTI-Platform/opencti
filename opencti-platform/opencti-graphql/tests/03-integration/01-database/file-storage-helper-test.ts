@@ -7,13 +7,12 @@ import { findById as findDocumentById, SUPPORT_STORAGE_PATH } from '../../../src
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
-const adminContext: AuthContext = {
+const adminContext = {
   user: ADMIN_USER,
-  tracing: undefined,
   source: 'file-storage-helper-test',
   otp_mandatory: false,
   user_inside_platform_organization: false,
-};
+} as AuthContext;
 
 describe('File storage upload with marking', () => {
   it('should file upload succeed to S3 and data in elastic have marking stored.', async () => {

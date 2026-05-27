@@ -5,7 +5,7 @@ import Bluebird, { Promise as BluePromise } from 'bluebird';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { compareUnsorted } from 'js-deep-equals';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import nconf from 'nconf';
 import {
@@ -1192,7 +1192,11 @@ export const inputResolveRefs = async (
     return inputResolved;
   };
   return telemetry(context, user, `INPUTS RESOLVE ${type}`, {
+    [ATTR_DB_NAMESPACE]: 'middleware',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'middleware',
+    [ATTR_DB_OPERATION_NAME]: 'resolver',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'resolver',
   }, inputResolveRefsFn);
 };

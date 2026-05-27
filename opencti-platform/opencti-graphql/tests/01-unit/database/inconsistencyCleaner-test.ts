@@ -52,7 +52,6 @@ import { cleanAllEntityInconsistencies } from '../../../src/database/inconsisten
 
 const buildContext = (): AuthContext => ({
   source: 'test',
-  tracing: { traceparent: undefined, tracestate: undefined },
 } as AuthContext);
 
 const buildBypassUser = (): AuthUser => ({

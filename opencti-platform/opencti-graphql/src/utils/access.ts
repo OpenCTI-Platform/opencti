@@ -1,6 +1,6 @@
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
@@ -514,28 +514,22 @@ export const HUB_REGISTRATION_MANAGER_USER: AuthUser = {
 
 export interface AuthorizedMember { id: string; access_right: string; groups_restriction_ids?: string[] | null }
 
-class TracingContext {
-  ctx: Context | undefined;
+export type TracingContext = {
+  getCtx: () => Context | undefined;
+  getTracer: () => Tracer;
+  setCurrentCtx: (span: Span) => void;
+};
 
-  tracer: Tracer;
-
-  constructor(tracer: Tracer) {
-    this.tracer = tracer;
-    this.ctx = undefined;
-  }
-
-  getCtx() {
-    return this.ctx;
-  }
-
-  getTracer() {
-    return this.tracer;
-  }
-
-  setCurrentCtx(span: Span) {
-    this.ctx = trace.setSpan(telemetryContext.active(), span);
-  }
-}
+const createTracingContext = (tracer: Tracer): TracingContext => {
+  let ctx: Context | undefined;
+  return {
+    getCtx: () => ctx,
+    getTracer: () => tracer,
+    setCurrentCtx: (span: Span) => {
+      ctx = trace.setSpan(telemetryContext.active(), span);
+    },
+  };
+};
 
 export const enforceEnableFeatureFlag = (flag: string) => {
   if (!isFeatureEnabled(flag)) {
@@ -545,7 +539,7 @@ export const enforceEnableFeatureFlag = (flag: string) => {
 
 export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
-  const tracing = new TracingContext(tracer);
+  const tracing = createTracingContext(tracer);
   return {
     otp_mandatory: false,
     user_inside_platform_organization: false,
@@ -794,7 +788,11 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
+    [ATTR_DB_NAMESPACE]: 'search_engine',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'search_engine',
+    [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'read',
   }, userFilterStoreElementsFn);
 };

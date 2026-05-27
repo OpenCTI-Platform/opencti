@@ -93,7 +93,7 @@ describe('relationToRelationBuilder applyUpsert function', () => {
         objectMarking: [], // no markings for both the created and the existing relation
       });
     expect(middleware.createInferredRelation).toHaveBeenCalledWith(
-      context,
+      expect.objectContaining({ source: context.source }),
       { fromId: existingRelationSourceId, toId: createdRelationTargetId, relationship_type: RELATION_PARTICIPATE_TO },
       ruleContent,
     );
@@ -141,7 +141,7 @@ describe('relationToRelationBuilder applyUpsert function', () => {
         objectMarking: ['markingA', 'markingB', 'markingC'], // combination of markings from created and existing relations
       });
     expect(middleware.createInferredRelation).toHaveBeenCalledWith(
-      context,
+      expect.objectContaining({ source: context.source }),
       { fromId: createdRelationSourceId, toId: existingRelationTargetId, relationship_type: RELATION_PARTICIPATE_TO },
       ruleContent,
     );
@@ -175,7 +175,7 @@ describe('relationToRelationBuilder applyUpsert function', () => {
     await builtRule.insert(createdRelationship);
     // Check fullRelationsList has been called with correct parameters to check for existing relations matching the right side of the rule definition
     expect(fullRelationsListSpy).toHaveBeenCalledWith(
-      context,
+      expect.objectContaining({ source: context.source }),
       RULE_MANAGER_USER,
       RELATION_PART_OF,
       {
@@ -196,7 +196,7 @@ describe('relationToRelationBuilder applyUpsert function', () => {
         objectMarking: [],
       });
     expect(middleware.createInferredRelation).toHaveBeenCalledWith(
-      context,
+      expect.objectContaining({ source: context.source }),
       { fromId: createdRelationSourceId, toId: existingRelationTargetId, relationship_type: RELATION_PARTICIPATE_TO },
       ruleContent,
     );

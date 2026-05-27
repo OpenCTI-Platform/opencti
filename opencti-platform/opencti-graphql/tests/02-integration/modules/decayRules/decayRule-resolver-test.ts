@@ -5,7 +5,7 @@ import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../../src/schema/stixCyberObservable';
 import { BUILT_IN_DECAY_RULE_IP_URL, checkDecayRules, type DecayRuleConfiguration, FALLBACK_DECAY_RULE, initDecayRules } from '../../../../src/modules/decayRule/decayRule-domain';
 import type { AuthContext } from '../../../../src/types/user';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../tests/utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 import { logApp } from '../../../../src/config/conf';
 import type { BasicNodeEdge } from '../../../../src/types/store';
@@ -109,7 +109,7 @@ const DELETE_QUERY = gql`
 const TEST_IP_DECAY_RULE = BUILT_IN_DECAY_RULE_IP_URL;
 const TEST_FALLBACK_DECAY_RULE = FALLBACK_DECAY_RULE;
 describe('DecayRule resolver standard behavior', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'decay-integration-test', otp_mandatory: false, user_inside_platform_organization: false };
+  const adminContext = { user: ADMIN_USER, source: 'decay-integration-test', otp_mandatory: false, user_inside_platform_organization: false } as AuthContext;
   let customDecayRuleId = '';
   const indicatorsToCleanup: string [] = [];
   let defaultDecayRuleId: string = '';
