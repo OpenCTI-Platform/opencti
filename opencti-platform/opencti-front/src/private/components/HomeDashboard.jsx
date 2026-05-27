@@ -149,6 +149,11 @@ const TargetedCountries = ({ timeField }) => {
 
 const DefaultDashboard = ({ timeField }) => {
   const { t_i18n } = useFormatter();
+
+  const config = {
+    startDate: null,
+    endDate: null,
+  };
   return (
     <Security
       needs={[KNOWLEDGE]}
@@ -160,6 +165,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Intrusion-Set"
+            config={config}
             parameters={{
               title: 'Intrusion-Set',
             }}
@@ -181,6 +187,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Malware"
+            config={config}
             parameters={{
               title: 'Malware',
             }}
@@ -202,6 +209,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Report"
+            config={config}
             parameters={{
               title: 'Report',
             }}
@@ -223,6 +231,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Indicator"
+            config={config}
             parameters={{
               title: 'Indicator',
             }}
@@ -380,6 +389,7 @@ const DefaultDashboard = ({ timeField }) => {
             fallback={(
               <LocationMiniMapTargets
                 title={t_i18n('Targeted countries (Last 3 months)')}
+                config={config}
                 center={[48.8566969, 2.3514616]}
                 zoom={2}
               />
@@ -391,6 +401,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={8}>
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
+            config={config}
             height={410}
             widgetId="default_latest_reports_widget"
             dataSelection={[{
