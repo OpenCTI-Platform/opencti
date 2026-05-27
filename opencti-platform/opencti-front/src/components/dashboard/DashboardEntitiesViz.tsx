@@ -5,7 +5,7 @@ import StixCoreObjectsList from '@components/common/stix_core_objects/StixCoreOb
 import StixCoreObjectsDistributionList from '../../private/components/common/stix_core_objects/StixCoreObjectsDistributionList';
 import StixCoreObjectsMultiVerticalBars from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsMultiLineChart from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiLineChart';
-import StixCoreObjectsMultiAreaChart from '@components/common/stix_core_objects/StixCoreObjectsMultiAreaChart';
+import StixCoreObjectsMultiAreaChart from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiAreaChart';
 import StixCoreObjectsTimeline from '@components/common/stix_core_objects/StixCoreObjectsTimeline';
 import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
 import StixCoreObjectsPolarArea from '@components/common/stix_core_objects/StixCoreObjectsPolarArea';
@@ -128,13 +128,13 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsMultiAreaChart
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'timeline':
