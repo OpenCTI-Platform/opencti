@@ -21,27 +21,25 @@ import { isNotEmptyField } from './database/utils';
 // -- Apply telemetry
 // ------- Tracing
 if (ENABLED_TRACING) {
-  // OTLP - JAEGER ...
   const otlpUri = nconf.get('app:telemetry:tracing:exporter_otlp');
-  if (isNotEmptyField(otlpUri)) {
-    const otlpExporter = new OTLPTraceExporter({ url: otlpUri, headers: {} });
-    const provider = new NodeTracerProvider({
-      resource: defaultResource().merge(resourceFromAttributes({
-        [ATTR_SERVICE_NAME]: 'opencti-platform',
-      })),
-      spanProcessors: [new BatchSpanProcessor(otlpExporter)],
-    });
-    provider.register();
-  }
-  // ZIPKIN
+  const isOtlpExporterSetUp = isNotEmptyField(otlpUri);
   const zipKinUri = nconf.get('app:telemetry:tracing:exporter_zipkin');
-  if (isNotEmptyField(zipKinUri)) {
-    const zipkinExporter = new ZipkinExporter({ url: zipKinUri, headers: {} });
+  const isZipKinExporterSetUp = isNotEmptyField(zipKinUri);
+  if (isOtlpExporterSetUp || isZipKinExporterSetUp) {
+    const otlpProcessors = isOtlpExporterSetUp ? [
+      new BatchSpanProcessor(new OTLPTraceExporter({ url: otlpUri, headers: {} })),
+    ] : [];
+    const zipkinProcessors = isZipKinExporterSetUp ? [
+      new BatchSpanProcessor(new ZipkinExporter({ url: zipKinUri, headers: {} })),
+    ] : [];
     const provider = new NodeTracerProvider({
       resource: defaultResource().merge(resourceFromAttributes({
         [ATTR_SERVICE_NAME]: 'opencti-platform',
       })),
-      spanProcessors: [new BatchSpanProcessor(zipkinExporter)],
+      spanProcessors: [
+        ...otlpProcessors,
+        ...zipkinProcessors,
+      ],
     });
     provider.register();
   }
