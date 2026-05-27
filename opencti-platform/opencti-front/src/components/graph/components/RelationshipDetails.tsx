@@ -26,6 +26,7 @@ import ItemEntityType from '../../ItemEntityType';
 import { GraphLink } from '../graph.types';
 import { EMPTY_VALUE } from '../../../utils/String';
 import Label from '@common/label/Label';
+import SecurityCoverageInformation from '../../../private/components/analyses/security_coverages/SecurityCoverageInformation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -76,6 +77,10 @@ const relationshipDetailsQuery = graphql`
         created_at
         confidence
         relationship_type
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
         from {
           ... on BasicObject {
             id
@@ -561,6 +566,11 @@ const RelationshipDetailsComponent: FunctionComponent<
           {stixRelationship.to?.relationship_type}
         </div>
       )}
+      {stixRelationship.relationship_type === 'has-covered'
+        && (
+          <SecurityCoverageInformation coverage_information={stixRelationship.coverage_information} />
+        )
+      }
       <div>
         <Label>
           {t_i18n('Platform creation date')}
