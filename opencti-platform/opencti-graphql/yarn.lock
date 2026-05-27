@@ -2591,16 +2591,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.4.6":
-  version: 1.4.6
-  resolution: "@langchain/openai@npm:1.4.6"
+"@langchain/openai@npm:1.3.1":
+  version: 1.3.1
+  resolution: "@langchain/openai@npm:1.3.1"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^6.37.0"
+    openai: "npm:^6.27.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.1.47
-  checksum: 10c0/a358282db55840afc8a85732780fb9b2ea664d81826cda7ff5ad7f1b187f16bb0c339752e97f178d7407a6bb7a24c4ee1bf69aff12157489bf61f2cd24d59c34
+    "@langchain/core": ^1.1.36
+  checksum: 10c0/f5053fb4cc0c2077f316193bc706fa6a63c805bd473052aaf04118eaac121d3ea149a0c9664d6f29022ce394df5d547b9d7b1fff64260176f5e06b1e3d3f4e6e
   languageName: node
   linkType: hard
 
@@ -9609,7 +9609,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:6.38.0, openai@npm:^6.37.0":
+"openai@npm:6.38.0":
   version: 6.38.0
   resolution: "openai@npm:6.38.0"
   peerDependencies:
@@ -9623,6 +9623,23 @@ __metadata:
   bin:
     openai: bin/cli
   checksum: 10c0/5557c3f4c33c4232939763bce0f1d548596a7d1dfdb24a59f5177a972a369e583f196cd67e9352e6ca6379ad842e44d83f3ef993c0f320888b457bad878203ba
+  languageName: node
+  linkType: hard
+
+"openai@npm:^6.27.0":
+  version: 6.39.0
+  resolution: "openai@npm:6.39.0"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: 10c0/cc3d07840795be58776b5a4b372d53d3acab88298022a1191cc9471bfd06401663488113ff3002b6c2b89011270969328608dccbf53100357461da71004cb385
   languageName: node
   linkType: hard
 
@@ -9649,7 +9666,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.1.47"
     "@langchain/mistralai": "npm:1.0.8"
-    "@langchain/openai": "npm:1.4.6"
+    "@langchain/openai": "npm:1.3.1"
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.15.1"
