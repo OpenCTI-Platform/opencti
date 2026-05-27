@@ -177,7 +177,7 @@ interface StixCoreRelationshipAddInput {
   }[] | undefined;
 }
 
-const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
+export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
   Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
 > = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate, isCoverage = false }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
@@ -185,7 +185,9 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
   const { t_i18n } = useFormatter();
   const enableReferences = useIsEnforceReference(stixCoreRelationshipType);
 
-  const { editContext } = stixCoreRelationship;
+  const { editContext, relationship_type } = stixCoreRelationship;
+
+  const displayCoverage = isCoverage || relationship_type === 'has-covered';
 
   const basicShape = {
     confidence: Yup.number().nullable(),
@@ -273,7 +275,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
     createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
-    ...(isCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
+    ...(displayCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
   };
   return (
     <Stack>
@@ -354,7 +356,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
                 />
               )}
             />
-            {isCoverage && (
+            {displayCoverage && (
               <CoverageInformationFieldEdit
                 id={stixCoreRelationship.id}
                 name="coverage_information"
