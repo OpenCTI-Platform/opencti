@@ -49,7 +49,8 @@ describe('addDraftWorkspace', () => {
           expect.objectContaining({ id: 'user3', access_right: 'admin', groups_restriction_ids: ['group1'] }),
         ]),
       }),
-      expect.anything(),
+      'DraftWorkspace',
+      expect.objectContaining({ bypassMandatoryAttributes: false }),
     );
     // Ensure groups_restriction_ids is removed for user2
     const callArgs = vi.mocked(middleware.createEntity).mock.calls[0][2];
@@ -86,7 +87,8 @@ describe('addDraftWorkspace', () => {
       expect.objectContaining({
         name: 'Simple Draft',
       }),
-      expect.anything(),
+      'DraftWorkspace',
+      expect.objectContaining({ bypassMandatoryAttributes: false }),
     );
   });
 });

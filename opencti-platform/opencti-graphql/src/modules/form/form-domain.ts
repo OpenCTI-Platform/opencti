@@ -491,7 +491,7 @@ export const formSubmit = async (
         authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
       }
 
-      const draftInput: DraftWorkspaceAddInput = {
+      const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
         name: finalDraftName,
       };
       if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
@@ -499,6 +499,8 @@ export const formSubmit = async (
       if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
       if (createdBy) draftInput.createdBy = createdBy;
       if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
+      // Form intake configuration must override customization mandatory attributes.
+      draftInput.bypassMandatoryAttributes = true;
 
       const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
       draftId = draft.id;

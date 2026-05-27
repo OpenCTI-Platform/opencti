@@ -460,4 +460,18 @@ describe('formSubmit', () => {
     expect(draftInput.objectAssignee).toBeUndefined();
     expect(draftInput.objectParticipant).toBeUndefined();
   });
+
+  it('should bypass mandatory attributes when creating draft from form intake', async () => {
+    const input = {
+      formId: 'form-1',
+      values: JSON.stringify({ name: 'Test Individual' }),
+    };
+
+    mockStoreLoadById.mockResolvedValue(mockForm);
+
+    await formSubmit(mockContext, mockUser, input, true);
+
+    const draftInput = vi.mocked(draftWorkspaceDomain.addDraftWorkspace).mock.calls[0][2] as any;
+    expect(draftInput.bypassMandatoryAttributes).toBe(true);
+  });
 });

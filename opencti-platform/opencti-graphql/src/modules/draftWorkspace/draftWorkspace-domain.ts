@@ -234,11 +234,15 @@ export const listDraftSightingRelations = async (context: AuthContext, user: Aut
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
+  const {
+    bypassMandatoryAttributes = false,
+    ...inputWithBypassedMandatoryAttributes
+  } = input as DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean };
   const defaultOps = {
     created_at: now(),
     draft_status: DRAFT_STATUS_OPEN,
   };
-  let authorizedMembers = input.authorized_members;
+  let authorizedMembers = inputWithBypassedMandatoryAttributes.authorized_members;
   if (authorizedMembers) {
     const filteredInput = sanitizeAuthorizedMembers(authorizedMembers);
     authorizedMembers = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
@@ -249,11 +253,17 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
       return member;
     });
   }
-  const draftWorkspaceInput = { ...input, authorized_members: authorizedMembers, ...defaultOps };
-  const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
-  if (createdDraftWorkspace && input.entity_id) {
+  const draftWorkspaceInput = { ...inputWithBypassedMandatoryAttributes, authorized_members: authorizedMembers, ...defaultOps };
+  const createdDraftWorkspace = await createEntity(
+    context,
+    user,
+    draftWorkspaceInput,
+    ENTITY_TYPE_DRAFT_WORKSPACE,
+    { bypassMandatoryAttributes },
+  );
+  if (createdDraftWorkspace && inputWithBypassedMandatoryAttributes.entity_id) {
     const contextInDraft = { ...context, draft_context: createdDraftWorkspace.id };
-    const draftInEntity = await elLoadById(contextInDraft, user, input.entity_id);
+    const draftInEntity = await elLoadById(contextInDraft, user, inputWithBypassedMandatoryAttributes.entity_id);
     if (draftInEntity) {
       await loadDraftElement(contextInDraft, user, draftInEntity);
     }
@@ -268,7 +278,7 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
     context_data: {
       id: createdDraftWorkspace.id,
       entity_type: ENTITY_TYPE_DRAFT_WORKSPACE,
-      input,
+      input: inputWithBypassedMandatoryAttributes,
     },
   });
 
