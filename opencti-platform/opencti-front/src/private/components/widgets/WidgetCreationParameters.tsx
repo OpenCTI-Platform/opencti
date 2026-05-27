@@ -14,8 +14,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import WidgetColumnsCustomizationInput from '@components/widgets/WidgetColumnsCustomizationInput';
-import { getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import WidgetColumnsCustomizationInput, { WidgetColumnsLayout } from '@components/widgets/WidgetColumnsCustomizationInput';
+import { getCustomAttributesColumns, getDefaultCustomAttributesColumns, getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
@@ -206,6 +206,12 @@ const WidgetCreationParameters = () => {
   const setColumns = (index: number, newColumns: WidgetColumn[]) => {
     const prevSelection = dataSelection[index];
     const newSelection = { ...prevSelection, columns: newColumns };
+    setDataSelectionWithIndex(newSelection, index);
+  };
+
+  const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
+    const prevSelection = dataSelection[index];
+    const newSelection = { ...prevSelection, layout: newLayout };
     setDataSelectionWithIndex(newSelection, index);
   };
 
@@ -918,6 +924,17 @@ const WidgetCreationParameters = () => {
             }
             return null;
           })}
+        {getCurrentCategory(type) === 'custom-attributes' && (
+          <WidgetColumnsCustomizationInput
+            isCustomView
+            layout={dataSelection[0]?.layout ?? '1'}
+            onLayoutChange={(newLayout) => setLayout(0, newLayout)}
+            availableColumns={getCustomAttributesColumns(getCurrentSelectedEntityTypes(0)[0])}
+            defaultColumns={getDefaultCustomAttributesColumns()}
+            value={[...(dataSelection[0]?.columns ?? getDefaultCustomAttributesColumns())]}
+            onChange={(newColumns) => setColumns(0, newColumns)}
+          />
+        )}
       </div>
     </div>
   );

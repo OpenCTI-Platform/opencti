@@ -181,6 +181,24 @@ export type MetricsColumn = {
   readonly metrics: readonly MetricConf[] | null | undefined;
 };
 
+export const getDefaultCustomAttributesColumns = (): WidgetColumn[] => {
+  return defaultWidgetColumns.common;
+};
+
+export const getCustomAttributesColumns = (entityType?: string): WidgetColumn[] => {
+  if (entityType) {
+    const baseColumns = [...availableWidgetColumns.common];
+
+    if (availableWidgetColumns[entityType]) {
+      baseColumns.push(...availableWidgetColumns[entityType]);
+    }
+
+    return baseColumns;
+  }
+
+  return availableWidgetColumns.common;
+};
+
 export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[]): WidgetColumn[] => {
   const { containerTypes, aliasedTypes } = useAttributes();
 
