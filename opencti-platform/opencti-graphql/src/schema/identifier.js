@@ -240,6 +240,12 @@ const stixBaseEntityContribution = {
     value(data) {
       return normalizeName(data);
     },
+    // x_mitre_id is used as a discriminator for Attack Pattern and Course of Action ids.
+    // Normalize it so MITRE-style identifiers (e.g. T1059 / t1059) deduplicate properly,
+    // consistently with how name is normalized for vulnerabilities, etc.
+    x_mitre_id(data) {
+      return normalizeName(data);
+    },
     definition(data) {
       return data.toUpperCase();
     },
