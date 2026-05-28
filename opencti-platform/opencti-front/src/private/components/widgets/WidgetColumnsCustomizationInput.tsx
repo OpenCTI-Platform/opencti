@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useEffect } from 'react';
-import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails, RadioGroup } from '@mui/material';
+import React, { FunctionComponent } from 'react';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
@@ -8,84 +8,36 @@ import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetColumn } from '../../../utils/widget/widget';
 import { Accordion, AccordionSummary } from '../../../components/Accordion';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
+import useWidgetColumnsCustomization from './useWidgetColumnsCustomization';
 
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
   defaultColumns: WidgetColumn[];
   value?: WidgetColumn[];
   onChange: (columns: WidgetColumn[]) => void;
-  isCustomView?: boolean;
-  layout?: WidgetColumnsLayout;
-  onLayoutChange?: (layout: WidgetColumnsLayout) => void;
 };
-
-export type WidgetColumnsLayout = '1' | '2';
 
 const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
   availableColumns,
   defaultColumns,
   value = [],
   onChange,
-  isCustomView = false,
-  onLayoutChange,
-  layout,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  // Ensure columns only include available columns
-  useEffect(() => {
-    const filteredColumns = value.filter((col) => availableColumns.some((availableCol) => availableCol.attribute === col.attribute));
-    if (filteredColumns.length !== value.length) {
-      onChange(filteredColumns);
-    }
-  }, [availableColumns, value]);
-
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-
-    const reorderedColumns = Array.from(value);
-    const [movedColumn] = reorderedColumns.splice(result.source.index, 1);
-    reorderedColumns.splice(result.destination.index, 0, movedColumn);
-
-    onChange(reorderedColumns);
-  };
-
-  const handleToggleColumn = (attribute?: string | null) => {
-    const columnExists = value.some((col) => col.attribute === attribute);
-    if (columnExists) {
-      onChange(value.filter((col) => col.attribute !== attribute));
-    } else {
-      const columnToAdd = availableColumns.find((col) => col.attribute === attribute);
-      if (columnToAdd) {
-        onChange([...value, columnToAdd]);
-      }
-    }
-  };
-
-  const formatColumnName = ({ attribute, label }: WidgetColumn) => (label ? t_i18n(label) : t_i18n(attribute ?? ''));
+  const { handleDragEndSingleColumn, handleToggleColumn, formatColumnName } = useWidgetColumnsCustomization(
+    availableColumns,
+    value,
+    onChange,
+  );
 
   return (
-    <Accordion sx={{ width: '100%' }} defaultExpanded={isCustomView}>
+    <Accordion sx={{ width: '100%' }}>
       <AccordionSummary>
-        <Typography> {t_i18n('Customize columns')} </Typography>
+        <Typography>{t_i18n('Customize columns')}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
-        {isCustomView && onLayoutChange && (
-          <Box sx={{ marginBottom: theme.spacing(2) }}>
-            <Typography variant="h4">{t_i18n('Layout')}</Typography>
-            <RadioGroup
-              row
-              value={layout}
-              onChange={(e) => onLayoutChange(e.target.value as WidgetColumnsLayout)}
-            >
-              <FormControlLabel value="1" control={<Radio size="small" />} label={t_i18n('1 column')} />
-              <FormControlLabel value="2" control={<Radio size="small" />} label={t_i18n('2 columns')} />
-            </RadioGroup>
-          </Box>
-        )}
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
@@ -105,7 +57,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                     checked={value.some((col) => col.attribute === column.attribute)}
                     onChange={() => handleToggleColumn(column.attribute)}
                   />
-                  <ListItemText primary={formatColumnName(column)} />
+                  <ListItemText primary={t_i18n(formatColumnName(column))} />
                 </ListItem>
               ))}
             </List>
@@ -114,7 +66,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
           {/* Selected Columns */}
           <Box sx={{ flex: 1, height: '100%' }}>
             <Typography variant="h4">{`${t_i18n('Selected columns')} (${value.length})`}</Typography>
-            <DragDropContext onDragEnd={handleDragEnd}>
+            <DragDropContext onDragEnd={handleDragEndSingleColumn}>
               <Droppable droppableId="selected_columns">
                 {(providedDrop) => (
                   <List
@@ -147,8 +99,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                             <ListItemIcon {...providedDrag.dragHandleProps}>
                               <DragIndicatorOutlined />
                             </ListItemIcon>
-
-                            <ListItemText primary={formatColumnName(column)} />
+                            <ListItemText primary={t_i18n(formatColumnName(column))} />
                           </ListItem>
                         )}
                       </Draggable>
