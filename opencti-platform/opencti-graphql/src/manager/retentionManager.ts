@@ -89,8 +89,8 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
 
 export const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope, active } = retentionRule;
-  if (!active) {
-    logApp.debug(`[OPENCTI] Skipping inactive retention rule ${name}`);
+  if (active === false) {
+    logApp.info(`[OPENCTI] Retention manager skipping inactive rule "${name}"`);
     return;
   }
   if ((scope === 'history' || scope === 'activity') && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {

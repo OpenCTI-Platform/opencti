@@ -37,7 +37,7 @@ type RetentionRule {
   last_deleted_count: Int
   remaining_count: Int
   scope: RetentionRuleScope!
-  active: Boolean!
+  active: Boolean
 }
 type RetentionRuleConnection {
   pageInfo: PageInfo!

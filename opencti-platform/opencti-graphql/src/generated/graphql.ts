@@ -28603,7 +28603,7 @@ export type ResolvedInstanceFilter = {
 
 export type RetentionRule = {
   __typename?: 'RetentionRule';
-  active: Scalars['Boolean']['output'];
+  active?: Maybe<Scalars['Boolean']['output']>;
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   last_deleted_count?: Maybe<Scalars['Int']['output']>;
@@ -49456,7 +49456,7 @@ export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extend
 }>;
 
 export type RetentionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRule'] = ResolversParentTypes['RetentionRule']> = ResolversObject<{
-  active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_deleted_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
