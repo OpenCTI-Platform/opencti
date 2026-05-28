@@ -38,21 +38,27 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const [inputValue, setInputValue] = useState<string>('');
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
 
+  const myFiltersGroupLabel = t_i18n('My filters');
+
   const options: AutocompleteOptionType[] = data.map((item) => {
-    console.log('NAME----', item.name);
-    console.log('item.authorizedMembers', item.authorizedMembers);
     const ownerMember = item.authorizedMembers?.find((m) => m.access_right === 'admin');
     const isOwner = ownerMember?.member_id === me.id;
-    console.log('isOwner', isOwner);
     const ownerName = ownerMember?.name ?? '';
 
     return {
       label: item.name,
       value: item,
-      group: isOwner ? t_i18n('My filters') : t_i18n('Shared with me'),
+      group: isOwner ? myFiltersGroupLabel : t_i18n('Shared with me'),
       ownerName: isOwner ? undefined : ownerName,
       canManage: item.currentUserAccessRight === 'admin',
     };
+  });
+
+  // Sort options: "My filters" first, then "Shared with me"
+  const sortedOptions = [...options].sort((a, b) => {
+    if (a.group === myFiltersGroupLabel && b.group !== myFiltersGroupLabel) return -1;
+    if (a.group !== myFiltersGroupLabel && b.group === myFiltersGroupLabel) return 1;
+    return 0;
   });
 
   const handleReset = () => {
@@ -64,7 +70,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   useEffect(() => {
     if (savedFilters) {
-      const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
+      const currentSavedFilters = sortedOptions.find((item) => item.value.id === savedFilters.id);
       if (!currentSavedFilters || !data.length) {
         helpers.handleRemoveSavedFilters();
         return;
@@ -78,7 +84,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   useEffect(() => {
     if (currentSavedFilter && !selectedSavedFilter) {
-      const found = options.find((o) => o.value.id === currentSavedFilter.id);
+      const found = sortedOptions.find((o) => o.value.id === currentSavedFilter.id);
       if (found) {
         setSelectedSavedFilter(found);
         setInputValue(found.label);
@@ -114,7 +120,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     <>
       <SavedFiltersAutocomplete
         isDisabled={isDisabled}
-        options={options}
+        options={sortedOptions}
         onDelete={handleDelete}
         onChange={handleChange}
         onInputChange={onInputChange}
