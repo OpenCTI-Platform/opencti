@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
 import { handleErrorInForm } from '../../../../relay/environment';
-import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import decayRuleValidator from '@components/settings/decay/DecayRuleValidator';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -48,14 +48,14 @@ type DecayRuleCreationFormData = {
   decay_pound: number;
   decay_points: number[];
   decay_revoke_score: number;
-  decay_filters: string;
+  decay_filters?: string;
 };
 
 const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreationFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commit] = useApiMutation(decayRuleCreationFormAddMutation);
-  const [filters, filterHelpers] = useFiltersState(emptyFilterGroup);
+  const [filters, filterHelpers] = useFiltersState();
 
   const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
     const { name, description, order, active, decay_lifetime, decay_pound, decay_points, decay_revoke_score } = values;
@@ -100,7 +100,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
     decay_pound: 1.0,
     decay_points: [],
     decay_revoke_score: 0,
-    decay_filters: '',
+    decay_filters: undefined,
   };
 
   return (

@@ -29,7 +29,6 @@ describe('Delete functional errors behaviors', async () => {
       decay_lifetime: 360,
       decay_pound: 1,
       decay_revoke_score: 10,
-      decay_filters: '',
       name: 'Decay for middleware delete test',
       order: 12,
     };
