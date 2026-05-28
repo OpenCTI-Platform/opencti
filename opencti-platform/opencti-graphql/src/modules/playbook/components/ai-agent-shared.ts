@@ -18,12 +18,8 @@ import xtmOneClient from '../../xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../../../domain/xtm-auth';
 import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import { logApp, PLATFORM_VERSION } from '../../../config/conf';
-import { executionContext, SYSTEM_USER } from '../../../utils/access';
-import { getEntitiesMapFromCache } from '../../../database/cache';
-import { ENTITY_TYPE_USER } from '../../../schema/internalObject';
-import { OPENCTI_ADMIN_UUID } from '../../../schema/general';
-import { UnsupportedError } from '../../../config/errors';
-import type { AuthContext, AuthUser } from '../../../types/user';
+import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
+import type { AuthContext } from '../../../types/user';
 import type { StixBundle } from '../../../types/stix-2-1-common';
 
 // 5 minutes — agent runs may take a while when the LLM has to materialise
@@ -32,29 +28,13 @@ import type { StixBundle } from '../../../types/stix-2-1-common';
 export const AGENT_CALL_TIMEOUT_MS = 5 * 60 * 1000;
 
 /**
- * Resolve the platform admin user from the user cache. Playbooks run as
- * automation but the JWT we mint must roundtrip — XTM One agents call
- * back into OpenCTI through the same JWT (e.g. via the OpenCTI
- * integration), and OpenCTI's incoming-JWT auth requires the email
- * claim to match an existing user. The platform admin is guaranteed to
- * exist (created at platform init) so it is the natural identity for
- * automated agent calls.
+ * Identity used by the AI-agent playbook components to call XTM One.
+ * Reuses the existing platform-internal automation user so the JWT we
+ * mint carries a stable, well-known subject across every playbook run.
  */
-export const getPlaybookAutomationUser = async (
-  context: AuthContext,
-): Promise<AuthUser> => {
-  const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const admin = usersMap.get(OPENCTI_ADMIN_UUID);
-  if (!admin || !admin.user_email) {
-    throw UnsupportedError('Cannot resolve platform admin user for playbook agent call');
-  }
-  return admin;
-};
-
-export const buildPlaybookAutomationContext = async (): Promise<AuthContext> => {
+export const buildPlaybookAutomationContext = (): AuthContext => {
   const context = executionContext('playbook_components');
-  const user = await getPlaybookAutomationUser(context);
-  return { ...context, user };
+  return { ...context, user: AUTOMATION_MANAGER_USER };
 };
 
 /**
@@ -75,17 +55,16 @@ export const buildAgentMessageContent = (bundle: StixBundle, userPrompt?: string
 /**
  * Resolve the dynamic ``oneOf`` list of agents bound to ``intent`` so
  * the playbook form can render the agent picker. Returns an empty list
- * (and logs a warning) when XTM One is unreachable, the platform admin
- * cannot be resolved, or the catalog call itself fails — so the form
- * still renders cleanly instead of failing the whole resolver.
+ * (and logs a warning) when XTM One is unreachable or the catalog call
+ * itself fails — so the form still renders cleanly instead of failing
+ * the whole resolver.
  */
 export const buildAgentSlugOneOf = async (
   intent: string,
 ): Promise<Array<{ const: string; title: string }>> => {
   let agents: Awaited<ReturnType<typeof xtmOneClient.listAgentsForIntent>> = [];
   try {
-    const automationContext = await buildPlaybookAutomationContext();
-    agents = await xtmOneClient.listAgentsForIntent(automationContext, intent);
+    agents = await xtmOneClient.listAgentsForIntent(buildPlaybookAutomationContext(), intent);
   } catch (e: unknown) {
     logApp.warn('[PLAYBOOK AI AGENT] Failed to load agent catalog', {
       intent,
@@ -101,16 +80,16 @@ export const buildAgentSlugOneOf = async (
 /**
  * Synchronous, non-streaming call to XTM One Platform Chat. Returns the
  * raw assistant content or null when the call cannot complete (XTM One
- * not configured, admin user unresolvable, network failure, non-success
- * status). Errors are logged but never thrown — playbook components are
- * responsible for deciding how to react (route to ``unmodified``,
- * swallow at the end of a chain, etc.) instead of crashing the whole
- * run.
+ * not configured, network failure, non-success status). Errors are
+ * logged but never thrown — playbook components are responsible for
+ * deciding how to react (route to ``unmodified``, swallow at the end
+ * of a chain, etc.) instead of crashing the whole run.
  *
- * The JWT is minted on behalf of the platform admin so that it survives
- * the round-trip when the agent calls back into OpenCTI through the
- * OpenCTI integration: OpenCTI's incoming JWT auth resolves the email
- * claim against an existing user, so a synthetic identity would fail.
+ * The JWT is minted on behalf of the platform-internal
+ * ``AUTOMATION_MANAGER_USER`` (the user that already drives every other
+ * playbook side effect: stream events, RabbitMQ work, knowledge
+ * mutations, ...), so XTM One sees the playbook agent calls as coming
+ * from the same identity as the rest of the playbook engine.
  */
 export const callXtmAgent = async (
   agentSlug: string,
@@ -122,9 +101,7 @@ export const callXtmAgent = async (
     return null;
   }
   try {
-    const context = executionContext('playbook_components');
-    const adminUser = await getPlaybookAutomationUser(context);
-    const jwt = await issueXtmJwt(adminUser, xtmOneUrl);
+    const jwt = await issueXtmJwt(AUTOMATION_MANAGER_USER, xtmOneUrl);
     const httpClient = getHttpClient({
       baseURL: xtmOneUrl,
       responseType: 'json',
