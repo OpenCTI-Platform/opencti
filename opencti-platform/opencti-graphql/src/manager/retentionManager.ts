@@ -22,7 +22,7 @@ import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
 
-const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
+const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', true);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
 // Retention manager responsible to cleanup old data
 // Each API will start is retention manager.
@@ -94,6 +94,7 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
     return;
   }
   if ((scope === 'history' || scope === 'activity') && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
+    logApp.warn(`[OPENCTI] Retention rule "${name}" (scope: ${scope}) was skipped because the feature flag ACTIVITY_HISTORY_RETENTION is not enabled. Add "ACTIVITY_HISTORY_RETENTION" to app.enabled_dev_features in your configuration to enable it.`);
     return;
   }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
