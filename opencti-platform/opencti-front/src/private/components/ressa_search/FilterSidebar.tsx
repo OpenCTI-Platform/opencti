@@ -82,12 +82,9 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
     <Paper
       sx={{
         width: '100%',
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: 'background.paper',
-        minHeight: 0,
-        overflow: 'hidden',
         boxShadow: 'none',
         borderRight: '1px solid',
         borderColor: 'divider',
@@ -127,8 +124,6 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
 
       <Box
         sx={{
-          flex: 1,
-          overflowY: 'auto',
           padding: 2,
         }}
       >
