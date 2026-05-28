@@ -21,16 +21,22 @@ import type { ExecutorParameters } from '../../../../../src/modules/playbook/pla
 
 // ── Fixtures ────────────────────────────────────────────────────────────
 
+// Use full <type>--<uuid> STIX IDs (matching `[a-z-]+--[\w-]{36}`) so the
+// minimum-shape validator inside the parser accepts them — STIX 2.1
+// rejects anything looser.
+const ORIGINAL_INDICATOR_ID = 'indicator--11111111-1111-1111-1111-111111111111';
+const TRANSFORMED_INDICATOR_ID = 'indicator--22222222-2222-2222-2222-222222222222';
+
 const ORIGINAL_BUNDLE: StixBundle = {
   id: 'bundle--original',
   spec_version: '2.1',
   type: 'bundle',
   objects: [
-    { id: 'indicator--1', type: 'indicator', spec_version: '2.1' } as any,
+    { id: ORIGINAL_INDICATOR_ID, type: 'indicator', spec_version: '2.1' } as any,
   ],
 };
 
-const TRANSFORMED_BUNDLE_OBJECT = { id: 'indicator--2', type: 'indicator', spec_version: '2.1' };
+const TRANSFORMED_BUNDLE_OBJECT = { id: TRANSFORMED_INDICATOR_ID, type: 'indicator', spec_version: '2.1' };
 
 const buildExecutorParams = (
   configuration: { agent_slug: string; prompt?: string },
@@ -237,6 +243,86 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
 
       expect(result.output_port).toBe('unmodified');
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` when an object in the bundle is an empty `{}` placeholder', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(JSON.stringify({
+        type: 'bundle',
+        id: 'bundle--agent',
+        spec_version: '2.1',
+        objects: [{}],
+      }));
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` when an object is missing the STIX id', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(JSON.stringify({
+        type: 'bundle',
+        id: 'bundle--agent',
+        spec_version: '2.1',
+        objects: [{ type: 'indicator', spec_version: '2.1' }],
+      }));
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` when an object has an id that does not match the STIX <type>--<uuid> pattern', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(JSON.stringify({
+        type: 'bundle',
+        id: 'bundle--agent',
+        spec_version: '2.1',
+        objects: [{ id: 'indicator-42', type: 'indicator', spec_version: '2.1' }],
+      }));
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` when any one object in a mixed-validity bundle is malformed (whole bundle rejected)', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(JSON.stringify({
+        type: 'bundle',
+        id: 'bundle--agent',
+        spec_version: '2.1',
+        objects: [TRANSFORMED_BUNDLE_OBJECT, { id: 'bad-id' }],
+      }));
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should accept an empty `objects: []` bundle (agent legitimately filtered everything out)', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(JSON.stringify({
+        type: 'bundle',
+        id: 'bundle--agent',
+        spec_version: '2.1',
+        objects: [],
+      }));
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(result.output_port).toBe('out');
+      expect(result.bundle.objects).toEqual([]);
     });
 
     it('should forward the bundle and the user prompt to the message builder', async () => {

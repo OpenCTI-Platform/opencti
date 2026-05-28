@@ -20,6 +20,12 @@ import type { StixBundle, StixObject } from '../../../types/stix-2-1-common';
 import { logApp } from '../../../config/conf';
 import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent } from './ai-agent-shared';
 
+// Canonical STIX 2.1 ID shape: `<type>--<uuid>`. Mirrors the `isStixId`
+// helper in `src/schema/schemaUtils.js` — inlined here instead of imported
+// to avoid pulling the full schema module (and its heavy transitive
+// closure) into this unit-testable component.
+const STIX_ID_REGEX = /^[a-z][a-z0-9-]*--[\w-]{36}$/;
+
 interface AiAgentTransformConfiguration {
   agent_slug: string;
   prompt?: string;
@@ -51,6 +57,43 @@ const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA: JSONSchemaType<AiAgentTransf
 };
 
 /**
+ * Minimum STIX 2.1 object shape we accept from the agent: a non-empty
+ * `type` string plus an `id` that matches the canonical `<type>--<uuid>`
+ * pattern. Anything looser is silently corrupted by the agent and should
+ * not be forwarded to the downstream playbook nodes.
+ */
+const isMinimalStixObjectShape = (candidate: unknown): boolean => {
+  if (!candidate || typeof candidate !== 'object') return false;
+  const obj = candidate as { id?: unknown; type?: unknown };
+  return typeof obj.id === 'string'
+    && STIX_ID_REGEX.test(obj.id)
+    && typeof obj.type === 'string'
+    && obj.type.length > 0;
+};
+
+/**
+ * Returns the candidate as a STIX bundle when it has the expected
+ * envelope (`type: 'bundle'`, `objects` is an array) AND every object
+ * in the array passes the minimum STIX shape check. An empty
+ * `objects: []` is treated as valid — the agent legitimately filtered
+ * everything out — but a single malformed object rejects the whole
+ * bundle so we never forward partially-corrupt data to downstream
+ * nodes.
+ */
+const asValidStixBundle = (candidate: unknown): StixBundle | null => {
+  if (
+    candidate
+    && typeof candidate === 'object'
+    && (candidate as { type?: unknown }).type === 'bundle'
+    && Array.isArray((candidate as { objects?: unknown }).objects)
+    && (candidate as { objects: unknown[] }).objects.every(isMinimalStixObjectShape)
+  ) {
+    return candidate as StixBundle;
+  }
+  return null;
+};
+
+/**
  * Extract a STIX bundle JSON object from an LLM response. Agents respond
  * either with a raw JSON object or with the bundle wrapped in a fenced
  * code block; both cases must be handled because we cannot rely on the
@@ -63,15 +106,8 @@ const parseStixBundle = (raw: string): StixBundle | null => {
   const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const candidate = fenceMatch ? fenceMatch[1].trim() : trimmed;
   try {
-    const parsed = JSON.parse(candidate);
-    if (
-      parsed
-      && typeof parsed === 'object'
-      && parsed.type === 'bundle'
-      && Array.isArray(parsed.objects)
-    ) {
-      return parsed as StixBundle;
-    }
+    const validated = asValidStixBundle(JSON.parse(candidate));
+    if (validated) return validated;
   } catch {
     // Fall through and try a best-effort substring extraction.
   }
@@ -80,15 +116,8 @@ const parseStixBundle = (raw: string): StixBundle | null => {
   const lastBrace = candidate.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace > firstBrace) {
     try {
-      const parsed = JSON.parse(candidate.slice(firstBrace, lastBrace + 1));
-      if (
-        parsed
-        && typeof parsed === 'object'
-        && parsed.type === 'bundle'
-        && Array.isArray(parsed.objects)
-      ) {
-        return parsed as StixBundle;
-      }
+      const validated = asValidStixBundle(JSON.parse(candidate.slice(firstBrace, lastBrace + 1)));
+      if (validated) return validated;
     } catch {
       // Ignore — caller will fall back to the unmodified output port.
     }
