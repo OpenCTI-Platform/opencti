@@ -9,7 +9,10 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { APP_BASE_PATH } from '../../../relay/environment';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 import FiligranIcon from '@components/common/FiligranIcon';
+
+const TOP_BAR_HEIGHT = 64;
 
 interface AskArianePanelProps {
   mode: ChatMode;
@@ -31,12 +34,19 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
+  const { me, bannerSettings: { bannerHeightNumber } } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const [xtmOneUrl, setXtmOneUrl] = useState<string | null>(null);
 
-  const topOffset = 64 + settingsMessagesBannerHeight;
+  // Stack all the floating banners that sit above the top bar so the chatbot
+  // panel sticks right under the actual top bar in every configuration.
+  // See `TopBar.tsx` which uses the same sum to offset its toolbar.
+  const topOffset = TOP_BAR_HEIGHT
+    + bannerHeightNumber
+    + topBannerHeight
+    + settingsMessagesBannerHeight;
 
   const firstName = me.user_email?.split('@')[0] ?? 'User';
 
