@@ -78,6 +78,7 @@ const PublicStixRelationshipsTreeMapComponent = ({
         data={[...publicStixRelationshipsDistribution]}
         groupBy={dataSelection[0].attribute ?? 'entity_type'}
         isDistributed={!!parameters?.distributed}
+        mainColor={parameters?.mainColor}
       />
     );
   }

@@ -110,6 +110,7 @@ interface AuditsTreeMapComponentProps {
   queryRef: PreloadedQuery<AuditsTreeMapDistributionQuery>;
   selection: WidgetDataSelection;
   isDistributed?: boolean;
+  mainColor?: string | null;
   onMounted: (chart: ApexCharts) => void;
 }
 
@@ -117,6 +118,7 @@ const AuditsTreeMapComponent: FunctionComponent<AuditsTreeMapComponentProps> = (
   queryRef,
   selection,
   isDistributed,
+  mainColor,
   onMounted,
 }) => {
   const data = usePreloadedQuery<AuditsTreeMapDistributionQuery>(
@@ -130,6 +132,7 @@ const AuditsTreeMapComponent: FunctionComponent<AuditsTreeMapComponentProps> = (
         data={data.auditsDistribution}
         groupBy={selection.attribute!}
         isDistributed={isDistributed}
+        mainColor={mainColor}
         onMounted={onMounted}
       />
     );
@@ -200,6 +203,7 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
   });
   const selection = resolvedDataSelection[0];
   const isDistributed = parameters.distributed ?? undefined;
+  const mainColor = parameters.mainColor ?? undefined;
 
   const renderContent = () => {
     if (isMissingHostEntity) {
@@ -220,6 +224,7 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
           queryRef={queryRef}
           selection={selection}
           isDistributed={isDistributed}
+          mainColor={mainColor}
           onMounted={setChart}
         />
       </Suspense>

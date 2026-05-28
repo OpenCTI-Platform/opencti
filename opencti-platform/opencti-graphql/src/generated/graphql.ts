@@ -37450,6 +37450,7 @@ export type WidgetParameters = {
   distributed?: Maybe<Scalars['Boolean']['output']>;
   interval?: Maybe<Scalars['String']['output']>;
   legend?: Maybe<Scalars['Boolean']['output']>;
+  mainColor?: Maybe<Scalars['String']['output']>;
   stacked?: Maybe<Scalars['Boolean']['output']>;
   title?: Maybe<Scalars['String']['output']>;
 };
@@ -52680,6 +52681,7 @@ export type WidgetParametersResolvers<ContextType = any, ParentType extends Reso
   distributed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   interval?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   legend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  mainColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stacked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;

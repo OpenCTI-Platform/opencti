@@ -120,6 +120,7 @@ const StixRelationshipsTreeMapComponent = ({
       data={distribution}
       groupBy={selection.attribute ?? 'entity_type'}
       isDistributed={parameters?.distributed ?? undefined}
+      mainColor={parameters?.mainColor ?? undefined}
       onMounted={onMounted}
     />
   );

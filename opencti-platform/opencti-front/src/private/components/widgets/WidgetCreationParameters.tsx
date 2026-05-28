@@ -4,6 +4,10 @@ import ReactMde from 'react-mde';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import ButtonBase from '@mui/material/ButtonBase';
+import { useTheme } from '@mui/material/styles';
+import * as muiColors from '@mui/material/colors';
+import { widgetMainColorPalette } from '../../../utils/Charts';
 import { stixCyberObservablesLinesAttributesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -39,6 +43,7 @@ import { Box, Typography } from '@mui/material';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
+  const theme = useTheme();
 
   const { t_i18n } = useFormatter();
   const {
@@ -887,6 +892,39 @@ const WidgetCreationParameters = () => {
           })}
       </>
 
+      {getCurrentAvailableParameters(type).includes('mainColor') && (
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 20 }}>
+          <InputLabel shrink>{t_i18n('Main color')}</InputLabel>
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }} role="group" aria-label={t_i18n('Main color')}>
+            {widgetMainColorPalette.map((colorKey) => {
+              const selected = parameters.mainColor === colorKey;
+              const shade = theme.palette.mode === 'dark' ? 400 : 600;
+              const palette = (muiColors as unknown as Record<string, Record<number, string>>)[colorKey];
+              const hex = palette?.[shade];
+              return (
+                <ButtonBase
+                  key={colorKey}
+                  aria-label={colorKey}
+                  aria-pressed={selected}
+                  title={colorKey}
+                  onClick={() => handleChangeParameter('mainColor', selected ? '' : colorKey)}
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    backgroundColor: hex,
+                    boxShadow: selected ? `0 0 0 2px ${theme.palette.text.primary}` : 'none',
+                    '&.Mui-focusVisible': {
+                      outline: `2px solid ${theme.palette.text.primary}`,
+                      outlineOffset: 2,
+                    },
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
         {getCurrentAvailableParameters(type).includes('stacked') && (
           <FormControlLabel
