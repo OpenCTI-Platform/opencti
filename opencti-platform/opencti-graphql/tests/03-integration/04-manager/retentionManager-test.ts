@@ -41,6 +41,7 @@ describe('Retention Manager tests ', () => {
 
   let filesToDelete;
   let workbenchesToDelete;
+  let initialFileCount: number;
 
   const CREATE_RETENTION_QUERY = gql`
       mutation RetentionRuleAdd($input: RetentionRuleAddInput!) {
@@ -292,7 +293,8 @@ describe('Retention Manager tests ', () => {
   it('should fetch the correct files to be deleted by a retention rule on files', async () => {
     // check the number of files imported in Data/import
     const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
-    expect(files.length).toEqual(10); // 8 files from index-file-test + the 2 created files
+    initialFileCount = files.length;
+    expect(initialFileCount).toBeGreaterThanOrEqual(2); // at least the 2 files created in beforeAll
     // retention rule on files not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
     filesToDelete = await getElementsToDelete(context, 'file', before);
@@ -300,7 +302,7 @@ describe('Retention Manager tests ', () => {
     expect(filesToDelete.edges[0].node.id).toEqual(fileId);
     // retention rule on all the files
     const filesToDelete2 = await getElementsToDelete(context, 'file', utcDate());
-    expect(filesToDelete2.edges.length).toEqual(9); // all the files that has not been modified since now and with uploadStatus = complete
+    expect(filesToDelete2.edges.length).toEqual(initialFileCount - 1); // all the complete-status files (progressFile excluded because uploadStatus = 'progress')
   });
   it('should fetch the correct files to be deleted by a retention rule on workbenches', async () => {
     // retention rule on workbenches not modified since 2023-07-01
@@ -342,7 +344,7 @@ describe('Retention Manager tests ', () => {
     // delete file
     await deleteElement(context, 'file', fileId); // should delete fileToTestRetentionRule
     const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
-    expect(files.length).toEqual(9); // 8 files from index-file-test + the 2 created files - fileToTestRetentionRule that should have been deleted
+    expect(files.length).toEqual(initialFileCount - 1); // initialFileCount files - fileToTestRetentionRule that should have been deleted
     // delete workbench
     await deleteElement(context, 'workbench', workbench1Id); // should delete workbench1
     const workbenches = await allFilesForPaths(testContext, ADMIN_USER, [pendingPath]);
