@@ -48,13 +48,20 @@ vi.mock('../../../src/config/conf', () => ({
   loadCert: vi.fn(() => ''),
 }));
 
-// Mock heavy I/O modules that get pulled in transitively
+// Mock heavy I/O modules that get pulled in transitively. vi.hoisted is
+// required so the mock fns are available when vi.mock is hoisted above imports.
+const { mockRedisGetXtmAgentResponse, mockRedisSetXtmAgentResponse } = vi.hoisted(() => ({
+  mockRedisGetXtmAgentResponse: vi.fn(() => Promise.resolve(null)),
+  mockRedisSetXtmAgentResponse: vi.fn(() => Promise.resolve()),
+}));
 vi.mock('../../../src/database/redis', () => ({
   getClientBase: vi.fn(() => ({ set: vi.fn(), get: vi.fn(), del: vi.fn() })),
   pubSubSubscription: vi.fn(),
   storeNotifiersForStream: vi.fn(),
   redisSetXtmRegistrationResult: vi.fn(),
   redisGetXtmRegistrationResult: vi.fn(() => null),
+  redisGetXtmAgentResponse: mockRedisGetXtmAgentResponse,
+  redisSetXtmAgentResponse: mockRedisSetXtmAgentResponse,
 }));
 
 vi.mock('../../../src/lock/master-lock', () => ({
@@ -164,6 +171,9 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setupAuthenticatedContext();
+    // Default to cache miss so the existing tests exercise the XTM One path.
+    mockRedisGetXtmAgentResponse.mockResolvedValue(null);
+    mockRedisSetXtmAgentResponse.mockResolvedValue(undefined);
     res = buildRes();
   });
 
@@ -302,5 +312,135 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 503, error: 'XTM One is unreachable' });
+  });
+
+  it('should serve a cached response as a single SSE done event without calling XTM One', async () => {
+    mockRedisGetXtmAgentResponse.mockResolvedValue({
+      content: '<p>Cached summary content</p>',
+      cached_at: '2026-05-28T10:00:00.000Z',
+    } as any);
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    await postAgentMessageStream(req, res);
+
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/event-stream');
+    expect(res.write).toHaveBeenCalledTimes(1);
+    const written = (res.write as any).mock.calls[0][0] as string;
+    expect(written).toContain('"type":"done"');
+    expect(written).toContain('"cached":true');
+    expect(written).toContain('Cached summary content');
+    expect(written).toContain('2026-05-28T10:00:00.000Z');
+    expect(res.end).toHaveBeenCalled();
+  });
+
+  it('should bypass the cache when force_refresh is true', async () => {
+    mockRedisGetXtmAgentResponse.mockResolvedValue({
+      content: '<p>Cached summary content</p>',
+      cached_at: '2026-05-28T10:00:00.000Z',
+    } as any);
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello', force_refresh: true });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    expect(mockRedisGetXtmAgentResponse).not.toHaveBeenCalled();
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    expect(fakeStream.pipe).toHaveBeenCalledWith(res);
+  });
+
+  it('should store the final SSE done content in Redis after the stream completes', async () => {
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    // Simulate the upstream stream emitting tokens then a final done event.
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"stream","content":"Hel"}\n\n')));
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"stream","content":"Hello"}\n\n')));
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"done","content":"Hello world"}\n\n')));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).toHaveBeenCalledTimes(1);
+    const [cacheKey, storedContent, ttlSeconds] = mockRedisSetXtmAgentResponse.mock.calls[0] as any;
+    expect(typeof cacheKey).toBe('string');
+    expect(cacheKey).toHaveLength(64); // sha256 hex length
+    expect(storedContent).toBe('Hello world');
+    expect(ttlSeconds).toBeGreaterThan(0);
+  });
+
+  it('should not cache the response when the stream emits an error event', async () => {
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"stream","content":"partial"}\n\n')));
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"error","content":"Quota exceeded"}\n\n')));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
+  it('should not cache the response when the client aborts mid-stream', async () => {
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    const reqOn = vi.fn();
+    (req as any).on = reqOn;
+
+    await postAgentMessageStream(req, res);
+
+    // Trigger client close before the stream emits a done event.
+    const closeHandler = reqOn.mock.calls.find((c: any[]) => c[0] === 'close')?.[1];
+    expect(closeHandler).toBeDefined();
+    closeHandler();
+
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"done","content":"partial"}\n\n')));
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
   });
 });

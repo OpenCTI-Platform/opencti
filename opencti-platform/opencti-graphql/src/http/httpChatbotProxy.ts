@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type Express from 'express';
 import nconf from 'nconf';
 import Busboy from 'busboy';
@@ -14,6 +15,7 @@ import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
+import { redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -25,6 +27,12 @@ const DEFAULT_XTM_TIMEOUT = 2 * 60 * 1000; // 2 minutes.
 // Extended timeout for multipart file-based agent calls (10 minutes).
 // File upload and analysis can take significantly longer than text-based calls.
 const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
+
+// TTL (in minutes) for caching XTM One agent responses in Redis. The cache
+// is keyed by agent_slug + content hash so that reopening AI Insights for the
+// same entity within the window returns instantly. Set to 0 to disable.
+const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number(nconf.get('ai:agents_refresh_timeout') ?? 1440);
+const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60;
 
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
 const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, string>) => {
@@ -434,20 +442,88 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
   }
 };
 
+// ── Agent response cache helpers ────────────────────────────────────────
+
+// Build a stable cache key from the agent slug and the user prompt.
+const buildAgentCacheKey = (agentSlug: string, content: string): string => {
+  return createHash('sha256').update(`${agentSlug}::${content}`).digest('hex');
+};
+
+// Set the SSE response headers once for both cache hits and live streams.
+const writeAgentStreamHeaders = (res: Express.Response): void => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+};
+
+// Parse a buffered SSE stream and return the content of the final `done` event,
+// or null if the stream did not complete successfully (e.g. produced an error
+// event, was aborted, or never emitted a `done`). Used to avoid caching
+// partial / failed responses.
+const extractFinalContent = (raw: string): string | null => {
+  const lines = raw.split('\n');
+  let lastDoneContent: string | null = null;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('data: ')) continue;
+    try {
+      const event = JSON.parse(trimmed.slice(6));
+      if (event.type === 'error') {
+        return null;
+      }
+      if (event.type === 'done' && typeof event.content === 'string') {
+        lastDoneContent = event.content;
+      }
+    } catch {
+      // Skip malformed SSE lines
+    }
+  }
+  return lastDoneContent;
+};
+
 // ── POST /chatbot/agent/stream ──────────────────────────────────────────
 // Streaming agent call: sends a message with stream=true and pipes the
 // SSE event stream back to the client for real-time rendering.
-// Body: { agent_slug, content }
+// Body: { agent_slug, content, force_refresh? }
 // AskIA / Insight (no files), streamed to client
+//
+// Responses are cached in Redis keyed by sha256(agent_slug + content) so that
+// reopening AI Insights for the same entity within the TTL window
+// (ai:agents_refresh_timeout, in minutes, default 1440) returns instantly
+// instead of re-running an expensive agent execution. Pass `force_refresh: true`
+// to bypass the cache (e.g. when the user clicks the retry button).
 export const postAgentMessageStream = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
-    const { agent_slug, content } = req.body || {};
+    const { agent_slug, content, force_refresh } = req.body || {};
     if (!agent_slug || !content) {
       res.status(400).json({ error: 'agent_slug and content are required' });
       return;
     }
+
+    writeAgentStreamHeaders(res);
+
+    // Cache lookup — replay as a single `done` event so the client display
+    // logic (which already handles `done`) doesn't need to know about cache.
+    const cacheEnabled = AI_AGENTS_REFRESH_TIMEOUT_SECONDS > 0;
+    const cacheKey = cacheEnabled ? buildAgentCacheKey(agent_slug, content) : null;
+    if (cacheEnabled && cacheKey && !force_refresh) {
+      const cached = await redisGetXtmAgentResponse(cacheKey);
+      if (cached) {
+        logApp.info('Agent response served from cache', { agent_slug });
+        res.write(`data: ${JSON.stringify({
+          type: 'done',
+          content: cached.content,
+          cached: true,
+          generated_at: cached.cached_at,
+        })}\n\n`);
+        res.end();
+        return;
+      }
+    }
+
     const headers = await generateBasicHeaders(req, context);
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/api/v1/platform/chat/messages', {
@@ -458,12 +534,38 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       decompress: false,
       timeout: 0,
     });
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
+
+    // Capture the upstream bytes alongside the pipe so we can persist the
+    // final content to Redis when the stream completes. A 2MB ceiling caps
+    // memory usage for unusually large agent responses.
+    let clientAborted = false;
+    let captureBytes = 0;
+    let captureOverflow = false;
+    const captureLimit = 2 * 1024 * 1024;
+    const captureChunks: Buffer[] = [];
+    response.data.on('data', (chunk: Buffer) => {
+      if (captureOverflow) return;
+      captureBytes += chunk.length;
+      if (captureBytes > captureLimit) {
+        captureOverflow = true;
+        captureChunks.length = 0;
+        return;
+      }
+      captureChunks.push(Buffer.from(chunk));
+    });
+    response.data.on('end', async () => {
+      if (!cacheEnabled || !cacheKey || clientAborted || captureOverflow) return;
+      const raw = Buffer.concat(captureChunks).toString('utf-8');
+      const finalContent = extractFinalContent(raw);
+      if (finalContent !== null && finalContent.length > 0) {
+        await redisSetXtmAgentResponse(cacheKey, finalContent, AI_AGENTS_REFRESH_TIMEOUT_SECONDS);
+      }
+    });
+
     response.data.pipe(res);
+
     req.on('close', () => {
+      clientAborted = true;
       response.data.destroy();
     });
     response.data.on('error', (error: Error) => {

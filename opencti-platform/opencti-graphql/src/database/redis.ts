@@ -864,3 +864,41 @@ export const redisGetXtmRegistrationResult = async (): Promise<object | null> =>
   }
 };
 // endregion - XTM One registration result
+
+// region - XTM agent response cache
+// Caches the full content returned by an XTM One agent stream call so that
+// reopening AI Insights for the same entity within the TTL window returns
+// instantly instead of re-running an expensive agent execution.
+const XTM_AGENT_CACHE_KEY_PREFIX = 'xtm_agent_cache:';
+
+export interface XtmAgentCachedResponse {
+  content: string;
+  cached_at: string;
+}
+
+export const redisGetXtmAgentResponse = async (cacheKey: string): Promise<XtmAgentCachedResponse | null> => {
+  try {
+    const raw = await getClientBase().get(`${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as XtmAgentCachedResponse;
+  } catch (err) {
+    logApp.warn('[XTM One] Agent response cache read failed', { cause: err });
+    return null;
+  }
+};
+
+export const redisSetXtmAgentResponse = async (cacheKey: string, content: string, ttlSeconds: number): Promise<void> => {
+  if (ttlSeconds <= 0) return;
+  try {
+    const value: XtmAgentCachedResponse = { content, cached_at: new Date().toISOString() };
+    await getClientBase().set(
+      `${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`,
+      JSON.stringify(value),
+      'EX',
+      ttlSeconds,
+    );
+  } catch (err) {
+    logApp.warn('[XTM One] Agent response cache write failed', { cause: err });
+  }
+};
+// endregion - XTM agent response cache
