@@ -7,7 +7,7 @@ import IconButton from '@common/button/IconButton';
 import { StorageOutlined } from '@mui/icons-material';
 import { VectorRadius } from 'mdi-material-ui';
 import { Stack } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';

@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
 import { boundaryWrapper } from '../Error';
@@ -38,46 +38,36 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/locations/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/regions"
-          element={boundaryWrapper(Regions)}
-        />
-        <Route
-          path="/regions/:regionId/*"
-          element={boundaryWrapper(RootRegion)}
-        />
-        <Route
-          path="/countries"
-          element={boundaryWrapper(Countries)}
-        />
-        <Route
-          path="/countries/:countryId/*"
-          element={boundaryWrapper(RootCountry)}
-        />
-        <Route
-          path="/administrative_areas"
-          element={boundaryWrapper(AdministrativeAreas)}
-        />
-        <Route
-          path="/administrative_areas/:administrativeAreaId/*"
-          element={boundaryWrapper(RootAdministrativeArea)}
-        />
-        <Route
-          path="/cities"
-          element={boundaryWrapper(Cities)}
-        />
-        <Route
-          path="/cities/:cityId/*"
-          element={boundaryWrapper(RootCity)}
-        />
-        <Route
-          path="/positions"
-          element={boundaryWrapper(Positions)}
-        />
-        <Route
-          path="/positions/:positionId/*"
-          element={boundaryWrapper(RootPosition)}
-        />
+        <Route path="/regions">
+          <Route index element={boundaryWrapper(Regions)} />
+          <Route path=":regionId">
+            <Route path="*" index element={boundaryWrapper(RootRegion)} />
+          </Route>
+        </Route>
+        <Route path="/countries">
+          <Route index element={boundaryWrapper(Countries)} />
+          <Route path=":countryId">
+            <Route path="*" index element={boundaryWrapper(RootCountry)} />
+          </Route>
+        </Route>
+        <Route path="/administrative_areas">
+          <Route index element={boundaryWrapper(AdministrativeAreas)} />
+          <Route path=":administrativeAreaId">
+            <Route path="*" index element={boundaryWrapper(RootAdministrativeArea)} />
+          </Route>
+        </Route>
+        <Route path="/cities">
+          <Route index element={boundaryWrapper(Cities)} />
+          <Route path=":cityId">
+            <Route path="*" index element={boundaryWrapper(RootCity)} />
+          </Route>
+        </Route>
+        <Route path="/positions">
+          <Route index element={boundaryWrapper(Positions)} />
+          <Route path=":positionId">
+            <Route path="*" index element={boundaryWrapper(RootPosition)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

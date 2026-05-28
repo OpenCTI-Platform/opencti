@@ -4,7 +4,7 @@ import { Alert, AlertTitle, Checkbox, DialogActions, FormControlLabel, FormGroup
 import { useTheme } from '@mui/styles';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { QueryRenderer } from '../../../../relay/environment';

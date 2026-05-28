@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router';
 import { boundaryWrapper } from '@components/Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
@@ -35,38 +35,30 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/observations/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/observables"
-          element={boundaryWrapper(StixCyberObservables)}
-        />
-        <Route
-          path="/observables/:observableId/*"
-          element={boundaryWrapper(RootStixCyberObservable)}
-        />
-        <Route
-          path="/artifacts"
-          element={boundaryWrapper(Artifacts)}
-        />
-        <Route
-          path="/artifacts/:observableId/*"
-          element={boundaryWrapper(RootArtifact)}
-        />
-        <Route
-          path="/indicators"
-          element={boundaryWrapper(Indicators)}
-        />
-        <Route
-          path="/indicators/:indicatorId/*"
-          element={boundaryWrapper(RootIndicator)}
-        />
-        <Route
-          path="/infrastructures"
-          element={boundaryWrapper(Infrastructures)}
-        />
-        <Route
-          path="/infrastructures/:infrastructureId/*"
-          element={boundaryWrapper(RootInfrastructure)}
-        />
+        <Route path="/observables">
+          <Route index element={boundaryWrapper(StixCyberObservables)} />
+          <Route path=":observableId">
+            <Route path="*" index element={boundaryWrapper(RootStixCyberObservable)} />
+          </Route>
+        </Route>
+        <Route path="/artifacts">
+          <Route index element={boundaryWrapper(Artifacts)} />
+          <Route path=":observableId">
+            <Route path="*" index element={boundaryWrapper(RootArtifact)} />
+          </Route>
+        </Route>
+        <Route path="/indicators">
+          <Route index element={boundaryWrapper(Indicators)} />
+          <Route path=":indicatorId">
+            <Route path="*" index element={boundaryWrapper(RootIndicator)} />
+          </Route>
+        </Route>
+        <Route path="/infrastructures">
+          <Route index element={boundaryWrapper(Infrastructures)} />
+          <Route path=":infrastructureId">
+            <Route path="*" index element={boundaryWrapper(RootInfrastructure)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

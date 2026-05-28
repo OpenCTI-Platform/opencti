@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router';
 
 import { boundaryWrapper } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
@@ -39,58 +39,43 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/analyses/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/reports"
-          element={boundaryWrapper(Reports)}
-        />
-        <Route
-          path="/reports/:reportId/*"
-          element={boundaryWrapper(RootReport)}
-        />
-        <Route
-          path="/groupings"
-          element={boundaryWrapper(Groupings)}
-        />
-        <Route
-          path="/groupings/:groupingId/*"
-          element={boundaryWrapper(RootGrouping)}
-        />
-        <Route
-          path="/malware_analyses"
-          element={boundaryWrapper(MalwareAnalyses)}
-        />
-        <Route
-          path="/malware_analyses/:malwareAnalysisId/*"
-          element={boundaryWrapper(RootMalwareAnalysis)}
-        />
-        <Route
-          path="/security_coverages"
-          element={boundaryWrapper(SecurityCoverages)}
-        />
-        <Route
-          path="/security_coverages/:securityCoverageId/*"
-          element={boundaryWrapper(RootSecurityCoverages)}
-        />
-        <Route
-          path="/notes"
-          element={boundaryWrapper(Notes)}
-        />
-        <Route
-          path="/notes/:noteId/*"
-          element={boundaryWrapper(RootNote)}
-        />
-        <Route
-          path="/opinions/:opinionId/*"
-          element={boundaryWrapper(RootOpinion)}
-        />
-        <Route
-          path="/external_references"
-          element={boundaryWrapper(ExternalReferences)}
-        />
-        <Route
-          path="/external_references/:externalReferenceId/*"
-          element={boundaryWrapper(RootExternalReference)}
-        />
+        <Route path="/reports">
+          <Route index element={boundaryWrapper(Reports)} />
+          <Route path=":reportId">
+            <Route path="*" index element={boundaryWrapper(RootReport)} />
+          </Route>
+        </Route>
+        <Route path="/groupings">
+          <Route index element={boundaryWrapper(Groupings)} />
+          <Route path=":groupingId">
+            <Route path="*" index element={boundaryWrapper(RootGrouping)} />
+          </Route>
+        </Route>
+        <Route path="/malware_analyses">
+          <Route index element={boundaryWrapper(MalwareAnalyses)} />
+          <Route path=":malwareAnalysisId">
+            <Route path="*" index element={boundaryWrapper(RootMalwareAnalysis)} />
+          </Route>
+        </Route>
+        <Route path="/security_coverages">
+          <Route index element={boundaryWrapper(SecurityCoverages)} />
+          <Route path=":securityCoverageId">
+            <Route path="*" index element={boundaryWrapper(RootSecurityCoverages)} />
+          </Route>
+        </Route>
+        <Route path="/notes">
+          <Route index element={boundaryWrapper(Notes)} />
+          <Route path=":noteId">
+            <Route path="*" index element={boundaryWrapper(RootNote)} />
+          </Route>
+        </Route>
+        <Route path="/opinions/:opinionId/*" element={boundaryWrapper(RootOpinion)} />
+        <Route path="/external_references">
+          <Route index element={boundaryWrapper(ExternalReferences)} />
+          <Route path=":externalReferenceId">
+            <Route path="*" index element={boundaryWrapper(RootExternalReference)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

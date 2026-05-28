@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -147,7 +147,7 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       <Tab
         key={tab}
         component={Link}
-        to={path}
+        to={`../${path}`}
         value={path}
         label={t_i18n(label)}
       />

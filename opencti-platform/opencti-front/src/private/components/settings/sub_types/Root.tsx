@@ -1,6 +1,6 @@
 import EEGuard from '@components/common/entreprise_edition/EEGuard';
 import { Suspense } from 'react';
-import { Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
 import FintelTemplate from './fintel_templates/FintelTemplate';

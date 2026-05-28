@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import Workspaces from './Workspaces';
 import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
@@ -39,26 +39,21 @@ const InvestigationWorkspaceRoute = () => (
 
 const Root = () => (
   <Routes>
-    <Route
-      path="/dashboards/*"
-      element={<DashboardRoute />}
-    />
-    <Route
-      path="/dashboards/:workspaceId/*"
-      element={<DashboardWorkspaceRoute />}
-    />
-    <Route
-      path="/dashboards_public/*"
-      element={<PublicDashboardRoute />}
-    />
-    <Route
-      path="/investigations/*"
-      element={<InvestigationRoute />}
-    />
-    <Route
-      path="/investigations/:workspaceId/*"
-      element={<InvestigationWorkspaceRoute />}
-    />
+    <Route path="/dashboards">
+      <Route index element={<DashboardRoute />} />
+      <Route path=":workspaceId">
+        <Route path="*" index element={<DashboardWorkspaceRoute />} />
+      </Route>
+    </Route>
+    <Route path="/dashboards_public">
+      <Route index element={<PublicDashboardRoute />} />
+    </Route>
+    <Route path="/investigations">
+      <Route index element={<InvestigationRoute />} />
+      <Route path=":workspaceId">
+        <Route path="*" index element={<InvestigationWorkspaceRoute />} />
+      </Route>
+    </Route>
   </Routes>
 );
 

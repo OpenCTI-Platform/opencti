@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import MenuItem from '@mui/material/MenuItem';
 import { DropDownMenu, useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
 import { useCustomViews } from './useCustomViews';
@@ -29,7 +29,7 @@ const CustomViewTabDropDownMenu = ({ displayMode, otherCustomViews: customViews,
             selected={isSelected}
             role="link"
             component={Link}
-            to={path}
+            to={`../${path}`}
             onClick={close}
             sx={{
               '&.Mui-selected': {

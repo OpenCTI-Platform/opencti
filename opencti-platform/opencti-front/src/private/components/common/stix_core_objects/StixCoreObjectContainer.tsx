@@ -18,7 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 import { ChangeEvent, SyntheticEvent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';

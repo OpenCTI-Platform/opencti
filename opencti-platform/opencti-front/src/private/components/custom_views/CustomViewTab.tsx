@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Tab, { TabProps } from '@mui/material/Tab';
 import type { CustomViewDisplayMode } from './useCustomViewTabs';
 import { useCustomViews } from './useCustomViews';
@@ -19,7 +19,7 @@ export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode
       <Tab
         {...tabProps}
         component={Link}
-        to={customViews[0].path}
+        to={`../${customViews[0].path}`}
         value={value}
         label={customViews[0].name}
         sx={{
@@ -68,7 +68,7 @@ export const DefaultCustomViewTab = ({ value, displayMode, defaultCustomView, ..
       {...tabProps}
       key="default-custom-view"
       component={Link}
-      to={defaultCustomView.path}
+      to={`../${defaultCustomView.path}`}
       value={value}
       label={defaultCustomView.name}
       sx={{

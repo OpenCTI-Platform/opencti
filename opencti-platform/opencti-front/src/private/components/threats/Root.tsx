@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
@@ -34,38 +34,30 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/threats/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/threat_actors_group"
-          element={boundaryWrapper(ThreatActorsGroup)}
-        />
-        <Route
-          path="/threat_actors_group/:threatActorGroupId/*"
-          element={boundaryWrapper(RootThreatActorGroup)}
-        />
-        <Route
-          path="/threat_actors_individual"
-          element={boundaryWrapper(ThreatActorsIndividual)}
-        />
-        <Route
-          path="/threat_actors_individual/:threatActorIndividualId/*"
-          element={boundaryWrapper(RootThreatActorIndividual)}
-        />
-        <Route
-          path="/intrusion_sets"
-          element={boundaryWrapper(IntrusionSets)}
-        />
-        <Route
-          path="/intrusion_sets/:intrusionSetId/*"
-          element={boundaryWrapper(RootIntrusionSet)}
-        />
-        <Route
-          path="/campaigns"
-          element={boundaryWrapper(Campaigns)}
-        />
-        <Route
-          path="/campaigns/:campaignId/*"
-          element={boundaryWrapper(RootCampaign)}
-        />
+        <Route path="/threat_actors_group">
+          <Route index element={boundaryWrapper(ThreatActorsGroup)} />
+          <Route path=":threatActorGroupId">
+            <Route path="*" index element={boundaryWrapper(RootThreatActorGroup)} />
+          </Route>
+        </Route>
+        <Route path="/threat_actors_individual">
+          <Route index element={boundaryWrapper(ThreatActorsIndividual)} />
+          <Route path=":threatActorIndividualId">
+            <Route path="*" index element={boundaryWrapper(RootThreatActorIndividual)} />
+          </Route>
+        </Route>
+        <Route path="/intrusion_sets">
+          <Route index element={boundaryWrapper(IntrusionSets)} />
+          <Route path=":intrusionSetId">
+            <Route path="*" index element={boundaryWrapper(RootIntrusionSet)} />
+          </Route>
+        </Route>
+        <Route path="/campaigns">
+          <Route index element={boundaryWrapper(Campaigns)} />
+          <Route path=":campaignId">
+            <Route path="*" index element={boundaryWrapper(RootCampaign)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '@components/Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
@@ -34,38 +34,30 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/arsenal/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/malwares"
-          element={boundaryWrapper(Malwares)}
-        />
-        <Route
-          path="/malwares/:malwareId/*"
-          element={boundaryWrapper(RootMalware)}
-        />
-        <Route
-          path="/channels"
-          element={boundaryWrapper(Channels)}
-        />
-        <Route
-          path="/channels/:channelId/*"
-          element={boundaryWrapper(RootChannel)}
-        />
-        <Route
-          path="/tools"
-          element={boundaryWrapper(Tools)}
-        />
-        <Route
-          path="/tools/:toolId/*"
-          element={boundaryWrapper(RootTool)}
-        />
-        <Route
-          path="/vulnerabilities"
-          element={boundaryWrapper(Vulnerabilities)}
-        />
-        <Route
-          path="/vulnerabilities/:vulnerabilityId/*"
-          element={boundaryWrapper(RootVulnerabilities)}
-        />
+        <Route path="/malwares">
+          <Route index element={boundaryWrapper(Malwares)} />
+          <Route path=":malwareId">
+            <Route path="*" index element={boundaryWrapper(RootMalware)} />
+          </Route>
+        </Route>
+        <Route path="/channels">
+          <Route index element={boundaryWrapper(Channels)} />
+          <Route path=":channelId">
+            <Route path="*" index element={boundaryWrapper(RootChannel)} />
+          </Route>
+        </Route>
+        <Route path="/tools">
+          <Route index element={boundaryWrapper(Tools)} />
+          <Route path=":toolId">
+            <Route path="*" index element={boundaryWrapper(RootTool)} />
+          </Route>
+        </Route>
+        <Route path="/vulnerabilities">
+          <Route index element={boundaryWrapper(Vulnerabilities)} />
+          <Route path=":vulnerabilityId">
+            <Route path="*" index element={boundaryWrapper(RootVulnerabilities)} />
+          </Route>
+        </Route>
       </Routes>
     </Suspense>
   );

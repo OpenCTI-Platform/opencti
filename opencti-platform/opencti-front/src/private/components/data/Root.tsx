@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import useGranted, {
   AUTOMATION_AUTMANAGE,
@@ -149,14 +149,12 @@ const Root = () => {
             </Security>
           )}
         />
-        <Route
-          path="/ingestion/connectors"
-          element={boundaryWrapper(Connectors)}
-        />
-        <Route
-          path="/ingestion/connectors/:connectorId/*"
-          element={<RootConnector />}
-        />
+        <Route path="/ingestion/connectors">
+          <Route index element={boundaryWrapper(Connectors)} />
+          <Route path=":connectorId">
+            <Route path="*" index element={<RootConnector />} />
+          </Route>
+        </Route>
         <Route
           path="/import/*"
           element={boundaryWrapper(RootImport)}

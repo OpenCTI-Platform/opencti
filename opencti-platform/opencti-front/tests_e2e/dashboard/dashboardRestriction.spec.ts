@@ -63,7 +63,7 @@ test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
   // --------------------------------
 
   await dashboardPage.getItemFromList(dashboardName).click();
-  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionsPopover(dashboardName).click();
   await accessRestriction.openFormInMenu();
   await accessRestriction.addAccess('Jean Michel', 'can view');
   await accessRestriction.save();
@@ -78,7 +78,7 @@ test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
   // --------------------------------
 
   await goToDashboardAsAdmin(dashboardName);
-  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionsPopover(dashboardName).click();
   await accessRestriction.openFormInMenu();
   await accessRestriction.editAccess('Jean Michel', 'can edit');
   await accessRestriction.save();
@@ -86,7 +86,7 @@ test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
   await goToDashboardAsJeanMichel(dashboardName);
   await expect(dashboardDetailsPage.getEditButton()).toBeVisible();
   await expect(dashboardDetailsPage.getExportButton()).toBeVisible();
-  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionsPopover(dashboardName).click();
   await expect(dashboardDetailsPage.getActionButton('Duplicate')).toBeVisible();
   await expect(dashboardDetailsPage.getActionButton('Delete')).toBeVisible();
   await page.locator('body').click();
@@ -102,7 +102,7 @@ test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
   await expect(dashboardDetailsPage.getTitle(dashboardName)).toBeVisible();
 
   // Try to duplicate
-  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionsPopover(dashboardName).click();
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
   await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
@@ -126,7 +126,7 @@ test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
   // -------------------------------------
 
   await goToDashboardAsAdmin(dashboardName);
-  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionsPopover(dashboardName).click();
   await accessRestriction.openFormInMenu();
   await accessRestriction.deleteAccess('Jean Michel');
   await accessRestriction.save();
@@ -143,7 +143,7 @@ test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
   // ----------------------------------
 
   await goToDashboardAsAdmin(dashboardName);
-  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionsPopover(dashboardName).click();
   await accessRestriction.openFormInMenu();
   await accessRestriction.addAccess('Jean Michel', 'can manage');
   await accessRestriction.save();

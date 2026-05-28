@@ -1,4 +1,4 @@
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router';
 import { SubTypeQuery } from './__generated__/SubTypeQuery.graphql';
 
 export const SUBTYPE_TAB_WORKFLOW = 'workflow';

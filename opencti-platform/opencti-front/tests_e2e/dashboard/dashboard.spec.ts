@@ -123,7 +123,7 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   // ----------------------------
 
   const duplicateDashboardName = `${updateDashboardName} - copy`;
-  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionsPopover(dashboardName).click();
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
 
