@@ -233,6 +233,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - Cookies: administration/cookies.md
         - Policies: administration/policies.md
         - Users and RBAC:
           - Users and RBAC: administration/users.md
