@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { getVisualizationTypes } from './WidgetCreationTypes';
 
 const ALL_VISUALIZATION_TYPES = [
+  'custom-attributes',
   'attribute',
   'text',
   'number',
