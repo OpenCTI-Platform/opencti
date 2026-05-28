@@ -27,6 +27,7 @@ import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import useHelper from '../../../../../utils/hooks/useHelper';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
 import CreatedByField from '../../../common/form/CreatedByField';
@@ -152,6 +153,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
   const { isForcedImportToDraft } = useImportAccess();
+  const { isFeatureEnable } = useHelper();
+  const isFormIntakeDefaultsEnabled = isFeatureEnable('FORM_INTAKE_DEFAULT_VALUES');
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
@@ -572,12 +575,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           validateOnBlur={true}
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
-            const showDraftName = isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
-            const showDraftDescription = isDraft && !!(schema.draftDefaults?.description && (isBypass || schema.draftDefaults.description.isEditable));
-            const showDraftObjectAssignee = isDraft && !!(schema.draftDefaults?.objectAssignee && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
-            const showDraftObjectParticipant = isDraft && !!(schema.draftDefaults?.objectParticipant && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
-            const showDraftAuthor = isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
-            const showDraftAuthorizedMembers = isDraft
+            const showDraftName = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
+            const showDraftDescription = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.description && (isBypass || schema.draftDefaults.description.isEditable));
+            const showDraftObjectAssignee = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectAssignee && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
+            const showDraftObjectParticipant = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectParticipant && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
+            const showDraftAuthor = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
+            const showDraftAuthorizedMembers = isFormIntakeDefaultsEnabled && isDraft
               && schema.draftDefaults?.authorizedMembers?.enabled
               && (isBypass || schema.draftDefaults.authorizedMembers.isEditable);
             const showDraftSection = showDraftName

@@ -65,7 +65,12 @@ const defaultMockForm = makeMockForm({
 });
 
 // entitySettings: { edges: [] } is required to match what FormView expects from the user context
-const mockUserContext = createMockUserContext({ entitySettings: { edges: [] } });
+const mockUserContext = createMockUserContext({
+  entitySettings: { edges: [] },
+  settings: {
+    platform_feature_flags: [{ id: 'FORM_INTAKE_DEFAULT_VALUES', enable: true }],
+  },
+});
 
 const resolveAndWait = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], form: object) => {
   await waitFor(() => {
