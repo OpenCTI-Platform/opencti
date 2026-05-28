@@ -99,11 +99,11 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_INDICATOR(indicatorId);
   const link = `${basePath}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
   return (
     <CreateRelationshipContextProvider>
       {indicator ? (
-        <div style={{ paddingRight }}>
+        <div style={{ paddingInlineEnd }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
             { label: t_i18n('Indicators'), link: PATH_INDICATORS },

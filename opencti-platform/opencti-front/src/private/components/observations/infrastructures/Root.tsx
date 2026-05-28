@@ -92,12 +92,12 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_INFRASTRUCTURE(infrastructureId);
-  const paddingRight = getPaddingRight(location.pathname, basePath, true);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, true);
   return (
     <CreateRelationshipContextProvider>
       {infrastructure ? (
         <div
-          style={{ paddingRight }}
+          style={{ paddingInlineEnd: paddingInlineEnd }}
           data-testid="infrastructure-details-page"
         >
           <Breadcrumbs elements={[

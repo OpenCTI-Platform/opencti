@@ -627,7 +627,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         status={null}
                       />
                     </ListItem>
-                    <ListItem divider={true}>
+                    {/* <ListItem divider={true}>
                       <ListItemText
                         primary={(
                           <>
@@ -642,8 +642,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         tooltip={aiPoweredTooltip}
                         labelTextTransform="none"
                       />
-                    </ListItem>
-                    <ListItem divider={true}>
+                    </ListItem> */}
+                    {/* <ListItem divider={true}>
                       <ListItemText
                         primary={(
                           <>
@@ -666,7 +666,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                           value,
                         )}
                       />
-                    </ListItem>
+                    </ListItem> */}
                   </List>
                 </Form>
               )}

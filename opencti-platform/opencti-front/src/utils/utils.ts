@@ -73,18 +73,18 @@ export const getCurrentTab = (fullpath: string, basePath: string) => {
 };
 
 export const getPaddingRight = (locationPath: string, entityBasePath: string, applyKnowledgePadding = true) => {
-  let paddingRight = 0;
+  let paddingInlineEnd = 0;
   if (
     applyKnowledgePadding && locationPath.includes(
       `${entityBasePath}/knowledge`,
     )
   ) {
-    paddingRight = 200;
+    paddingInlineEnd = 200;
   }
   if (locationPath.includes(`${entityBasePath}/content`)) {
-    paddingRight = 350;
+    paddingInlineEnd = 350;
   }
-  return paddingRight;
+  return paddingInlineEnd;
 };
 
 export const throttle = (callback: (...a: unknown[]) => unknown, wait: number) => {

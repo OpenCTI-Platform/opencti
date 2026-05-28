@@ -94,13 +94,13 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
   const { forceUpdate } = useForceUpdate();
 
   const basePath = PATH_OBSERVABLE(observableId);
-  const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
   const link = `${basePath}/knowledge`;
 
   return (
     <>
       {stixCyberObservable ? (
-        <div style={{ paddingRight }}>
+        <div style={{ paddingInlineEnd }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
             { label: t_i18n('Observables'), link: PATH_OBSERVABLES },
