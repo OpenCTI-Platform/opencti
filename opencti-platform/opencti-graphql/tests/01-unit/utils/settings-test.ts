@@ -41,4 +41,31 @@ describe('XTM Hub settings helper', () => {
     const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
     expect(data.length).toEqual(2);
   });
+  it('should not complete XTM Data on unregistration (empty token + status unregistered)', () => {
+    const mockInput: InputSettingsData[] = [
+      { key: 'xtm_hub_token', value: [''] },
+      { key: 'xtm_hub_registration_status', value: ['unregistered'] },
+      { key: 'xtm_hub_registration_user_id', value: [''] },
+      { key: 'xtm_hub_registration_user_name', value: [''] },
+      { key: 'xtm_hub_registration_date', value: [''] },
+      { key: 'xtm_hub_last_connectivity_check', value: [''] },
+    ];
+
+    const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
+    expect(data.length).toEqual(mockInput.length);
+    expect(data.find((item) => item.key === 'xtm_hub_registration_user_id')?.value).toEqual(['']);
+    expect(data.find((item) => item.key === 'xtm_hub_registration_user_name')?.value).toEqual(['']);
+    expect(data.find((item) => item.key === 'xtm_hub_registration_date')?.value).toEqual(['']);
+    expect(data.find((item) => item.key === 'xtm_hub_last_connectivity_check')?.value).toEqual(['']);
+    expect(data.find((item) => item.key === 'xtm_hub_should_send_connectivity_email')).toBeUndefined();
+  });
+  it('should not complete XTM Data when token is empty even if status is registered', () => {
+    const mockInput: InputSettingsData[] = [
+      { key: 'xtm_hub_token', value: [''] },
+      { key: 'xtm_hub_registration_status', value: ['registered'] },
+    ];
+
+    const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
+    expect(data.length).toEqual(2);
+  });
 });
