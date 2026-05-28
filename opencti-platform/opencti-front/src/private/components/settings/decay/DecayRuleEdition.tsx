@@ -58,7 +58,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
-  const [filters, filterHelpers] = useFiltersState(deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? emptyFilterGroup);
+  const [filters, filterHelpers] = useFiltersState(deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? undefined);
 
   useEffect(() => {
     commitUpdate({
@@ -274,7 +274,7 @@ const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({
     decay_pound: decayRule.decay_pound,
     decay_points: decayRule.decay_points ? [...decayRule.decay_points] : [],
     decay_revoke_score: decayRule.decay_revoke_score,
-    decay_filters: decayRule.decay_filters ?? '',
+    decay_filters: decayRule.decay_filters,
   };
   return (
     <Drawer

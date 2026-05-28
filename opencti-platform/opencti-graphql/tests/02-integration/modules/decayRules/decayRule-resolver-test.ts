@@ -129,7 +129,6 @@ describe('DecayRule resolver standard behavior', () => {
         expect(decayRule.id).toBeDefined();
         expect(decayRule.name).toBeDefined();
         expect(decayRule.decay_lifetime).toBeDefined();
-        expect(decayRule.decay_filters).toBeDefined();
         expect(decayRule.decay_revoke_score).toBeDefined();
         expect(decayRule.order).toBeDefined();
         logApp.info('One built-in decay rule is', { decayRule });

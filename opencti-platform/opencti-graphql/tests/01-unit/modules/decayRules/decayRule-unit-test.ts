@@ -41,7 +41,7 @@ const TEST_DEFAULT_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 1.0,
   decay_points: [80, 60, 40, 20],
   decay_revoke_score: 0,
-  decay_filters: '', // no filter means all
+  decay_filters: undefined, // no filter means all
   order: 0,
   active: true,
 };
@@ -396,7 +396,7 @@ describe('checkDecayRules testing', () => {
     const getEntitiesMock = vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([
       { id: 'rule-low-priority', order: 1, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
       { id: 'rule-high-priority', order: 5, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
-      { id: 'rule-inactive', order: 10, active: false, decay_filters: '{"mode":"and", "filters":[]}' }
+      { id: 'rule-inactive', order: 10, active: false, decay_filters: '{"mode":"and", "filters":[]}' },
     ] as any);
 
     // Mock filter group match to true so that both active rules match
