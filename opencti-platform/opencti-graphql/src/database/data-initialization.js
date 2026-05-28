@@ -330,7 +330,7 @@ export const createCapabilities = async (context, capabilities, parentName = '')
   }
 };
 
-const createDefaultRetentionRules = async (context) => {
+export const createDefaultRetentionRules = async (context) => {
   // Create default disabled retention rule for global files (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
     name: 'Global files retention',

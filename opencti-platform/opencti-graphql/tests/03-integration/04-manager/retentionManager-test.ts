@@ -585,6 +585,42 @@ describe('Retention Manager tests ', () => {
     // Cleanup rule
     await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
   });
+  it('should skip processing and not patch the rule when active is false', async () => {
+    // Create a rule then call executeProcessing with active: false
+    const ruleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: {
+        input: {
+          name: '[Test] Inactive rule skip',
+          max_retention: 1,
+          retention_unit: 'minutes',
+          scope: 'knowledge',
+          filters: emptyStringFilters,
+        },
+      },
+    });
+    const rule = ruleQuery.data?.retentionRuleAdd;
+    expect(rule).toBeDefined();
+
+    // Execute with active: false – should return immediately without patching
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'knowledge',
+      max_retention: 1,
+      retention_unit: 'minutes',
+      filters: emptyStringFilters,
+      active: false,
+    } as any);
+
+    // Rule must NOT have been patched (last_execution_date stays null)
+    const unchangedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(unchangedRule?.last_execution_date).toBeNull();
+
+    // Cleanup
+    await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
+  });
+
   it('should execute processing for activity scope with no elements: rule patched with 0 deleted', async () => {
     // Create an activity retention rule with a window far in the past (no entries)
     const ruleQuery = await queryAsAdmin({
