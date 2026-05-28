@@ -27,11 +27,11 @@ By doing this, you are actively helping us to improve the quality of the entire 
 
 - [ ] I consider the submitted work as finished
 - [ ] I tested the code for its functionality
-- [ ] I wrote test cases for the relevant uses case (coverage and e2e)
-- [ ] I added/update the relevant documentation (either on github or on notion)
-- [ ] Where necessary I refactored code to improve the overall quality
+- [ ] I wrote test cases for the relevant use cases (coverage and e2e)
+- [ ] I added/updated the relevant documentation (either on GitHub or on Notion)
+- [ ] Where necessary, I refactored code to improve the overall quality
 
-<!-- _NOTE: Test coverage are, by default, mandatory. It will help us to improve stability of the platform. If you consider test are not relevant for this PR, reach out and explain why_ -->
+<!-- _NOTE: Test coverage is, by default, mandatory. It will help us improve the stability of the platform. If you consider tests are not relevant for this PR, reach out and explain why._ -->
 <!-- For completed items, change [ ] to [x]. -->
 
 ### Further comments
