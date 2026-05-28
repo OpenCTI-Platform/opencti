@@ -3,6 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import { ChangeEvent, useState } from 'react';
+import { Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { useFormatter } from 'src/components/i18n';
@@ -10,7 +11,13 @@ import { type SavedFiltersSelectionData } from 'src/components/saved_filters/Sav
 import { SavedFilterCreateDialogMutation$data } from 'src/components/saved_filters/__generated__/SavedFilterCreateDialogMutation.graphql';
 import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
+import useAuth from '../../utils/hooks/useAuth';
+import useGranted, { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
+import useHelper from '../../utils/hooks/useHelper';
+import { type AuthorizedMemberOption } from '../../utils/authorizedMembers';
+import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
+import SavedFilterSharingSection from './SavedFilterSharingSection';
 
 const savedFilterCreateDialogMutation = graphql`
   mutation SavedFilterCreateDialogMutation($input: SavedFilterAddInput!) {
@@ -29,8 +36,19 @@ type SavedFilterDialogProps = {
   setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
+interface SavedFilterFormValues {
+  authorized_members: AuthorizedMembersFieldValue;
+}
+
 const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: SavedFilterDialogProps) => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
+
+  const isShareFilterGranted = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
+  const { isFeatureEnable } = useHelper();
+  const canShare = isShareFilterGranted && isFeatureEnable('SHARE_FILTERS');
+
+  const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
   const {
     useDataTablePaginationLocalStorage: {
@@ -54,13 +72,22 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
     if (event.target.value === '') setFilterName(undefined);
     else setFilterName(event.target.value);
   };
-  const handleSubmitSaveFilter = () => {
+
+  const handleSubmitSaveFilter = (values: SavedFilterFormValues) => {
+    const restrictedMembers = values.authorized_members
+      ? values.authorized_members.map((m: AuthorizedMemberOption) => ({
+        id: m.value,
+        access_right: m.accessRight,
+      }))
+      : undefined;
+
     commit({
       variables: {
         input: {
           name: filterName,
           filters: JSON.stringify(filters),
           scope: localStorageKey,
+          restricted_members: restrictedMembers,
         },
       },
       updater: (store) => {
@@ -84,20 +111,33 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
     <Dialog
       open={isOpen}
       onClose={onClose}
-      size="small"
+      size="medium"
       title={t_i18n('Save filter')}
     >
-      <TextField
-        label={t_i18n('Name')}
-        placeholder={t_i18n('My saved filter')}
-        fullWidth
-        value={filterName}
-        onChange={handleChange}
-      />
-      <DialogActions>
-        <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
-        <Button onClick={handleSubmitSaveFilter} disabled={!filterName}>{t_i18n('Save')}</Button>
-      </DialogActions>
+      <Formik<SavedFilterFormValues>
+        initialValues={{ authorized_members: null }}
+        onSubmit={handleSubmitSaveFilter}
+      >
+        {({ submitForm }) => (
+          <Form>
+            <TextField
+              label={t_i18n('Name')}
+              placeholder={t_i18n('My saved filter')}
+              fullWidth
+              value={filterName}
+              onChange={handleChange}
+            />
+            <SavedFilterSharingSection
+              canShare={canShare}
+              owner={owner}
+            />
+            <DialogActions>
+              <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
+              <Button onClick={submitForm} disabled={!filterName}>{t_i18n('Save')}</Button>
+            </DialogActions>
+          </Form>
+        )}
+      </Formik>
     </Dialog>
   );
 };
