@@ -33,7 +33,9 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: -10,
+    insetInlineEnd: -10,
+    // right: t_i18n('direction') === 'rtl' ? 'auto' : -10,
+    // left: t_i18n('direction') === 'rtl' ? -10 : 'auto',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -68,7 +70,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
               }}
             >
               <span>{node.name}</span>
-              { isSensitive && <DangerZoneChip /> }
+              {isSensitive && <DangerZoneChip />}
             </div>
             <QueryRenderer
               query={groupsSearchQuery}

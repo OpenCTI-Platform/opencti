@@ -328,11 +328,18 @@ html[data-theme="fluent"] {
     .ReactVirtualized__Grid__innerScrollContainer {
       div[role="gridcell"] {
         direction: rtl;
-        .MuiListItemIcon-root:nth-child(4) {
-          left: 10px;
-          right: auto;
-          transform: rotate(180deg);
+        > a {
+          >div {
+            > svg {
+              transform: rotate(180deg);
+            }
+          }
         }
+        // .MuiListItemIcon-root:nth-child(4) {
+        //   left: 10px;
+        //   right: auto;
+        //   transform: rotate(180deg);
+        // }
       }
     }
     svg[name="arrow-right-icon"] {

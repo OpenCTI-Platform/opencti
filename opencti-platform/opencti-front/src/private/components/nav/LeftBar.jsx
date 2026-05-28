@@ -256,9 +256,10 @@ const LeftBarComponent = ({ queryRef }) => {
   const [selectedMenu, setSelectedMenu] = useState(
     JSON.parse(localStorage.getItem('selectedMenu') ?? '[]'),
   );
-  const [navOpen, setNavOpen] = useState(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const navOpen = false;
+  // const [navOpen, setNavOpen] = useState(
+  //   localStorage.getItem('navOpen') === 'true',
+  // );
   const classes = useStyles({ navOpen });
 
   const data = usePreloadedQuery(leftBarQuery, queryRef);
@@ -799,7 +800,7 @@ const LeftBarComponent = ({ queryRef }) => {
         >
           <Separator />
           {!draftContext && (
-            <MenuList component="nav" style={{ marginBottom: 48 }}>
+            <MenuList component="nav">
               <LeftBarItem
                 {...itemProps}
                 id="settings"
@@ -811,78 +812,14 @@ const LeftBarComponent = ({ queryRef }) => {
                   { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: t_i18n('Security') },
                   { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization') },
                   { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
-                  { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
-                  { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
-                  { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
+                  // { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
+                  // { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
+                  // { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
                 ]}
               />
             </MenuList>
           )}
         </Security>
-      </div>
-
-      {/** Bottom **/}
-      <div
-        style={{
-          flexShrink: 0,
-          borderRight: theme.palette.mode === 'dark'
-            ? '1px solid rgba(255, 255, 255, 0.12)'
-            : '1px solid rgba(0, 0, 0, 0.12)',
-          width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-        }}
-      >
-        <MenuList
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-          }}
-        >
-          {/* <LeftBarItem
-            {...itemProps}
-            icon={navOpen ? <ChevronLeft /> : <ChevronRight />}
-            label={t_i18n('Collapse')}
-            onClick={handleToggle}
-          /> */}
-          {!data?.settings?.platform_whitemark && (
-            <Stack
-              direction="row"
-              alignItems="center"
-              gap={0.5}
-              paddingLeft={2.5}
-              marginBottom={1}
-              minHeight={16}
-            >
-              {
-                navOpen && (
-                  <Typography
-                    component="span"
-                    sx={{
-                      fontFamily: 'IBM Plex Sans',
-                      fontSize: '10px',
-                      lineHeight: '16px',
-                      opacity: 0.8,
-                      color: theme.palette.text.tertiary,
-                    }}
-                  >
-                    {t_i18n('Made by')}
-                  </Typography>
-                )
-              }
-              <img
-                alt="logo"
-                src={logoFiligran}
-                width={navOpen ? 48 : 12}
-                height="12"
-                style={{
-                  opacity: 0.8,
-                  objectFit: 'cover',
-                  objectPosition: 'left center',
-                }}
-              />
-            </Stack>
-          )}
-        </MenuList>
       </div>
     </Drawer>
   );
