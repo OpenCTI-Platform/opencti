@@ -361,11 +361,14 @@ const PlaybookFlowForm = ({
                       />
                     );
                   }
+                  const isTextarea = property.format === 'textarea';
                   return (
                     <PlaybookFlowFieldString
                       key={propName}
                       name={propName}
                       label={t_i18n(property.$ref ?? propName)}
+                      multiline={isTextarea}
+                      rows={isTextarea ? 3 : undefined}
                     />
                   );
                 },

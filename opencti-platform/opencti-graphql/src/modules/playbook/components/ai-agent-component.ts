@@ -64,6 +64,10 @@ const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA: JSONSchemaType<AiAgentTransf
       nullable: true,
       default: '',
       $ref: 'Additional instructions (optional, prepended to the STIX bundle)',
+      // `format: 'textarea'` is a UI hint consumed by the playbook form
+      // renderer to display this field as a multi-line text area. AJV
+      // does not enforce the format keyword so this is purely cosmetic.
+      format: 'textarea',
     },
   },
   required: ['agent_slug'],

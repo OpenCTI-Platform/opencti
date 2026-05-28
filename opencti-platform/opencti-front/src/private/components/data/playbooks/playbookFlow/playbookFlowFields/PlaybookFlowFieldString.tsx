@@ -20,11 +20,15 @@ import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 interface PlaybookFlowFieldStringProps {
   name: string;
   label: string;
+  multiline?: boolean;
+  rows?: number;
 }
 
 const PlaybookFlowFieldString = ({
   name,
   label,
+  multiline,
+  rows,
 }: PlaybookFlowFieldStringProps) => {
   return (
     <Field
@@ -34,6 +38,8 @@ const PlaybookFlowFieldString = ({
       variant="standard"
       component={TextField}
       style={fieldSpacingContainerStyle}
+      multiline={multiline}
+      rows={rows}
     />
   );
 };
