@@ -289,10 +289,39 @@ html[data-theme="fluent"] {
       }
     }
   }
+  .MuiToggleButtonGroup-root {
+    .MuiButtonBase-root {
+      border-radius: 0;
+      &:first-child {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+      }
+      &:last-child {
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+      }
+    }
+  }
   &[dir="rtl"] {
     body * {
       font-family:
         "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+    }
+    .MuiToggleButtonGroup-root {
+      .MuiButtonBase-root {
+        &:first-child {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+          border-top-right-radius: 4px;
+          border-bottom-right-radius: 4px;
+        }
+        &:last-child {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+          border-top-left-radius: 4px;
+          border-bottom-left-radius: 4px;
+        }
+      }
     }
     .MuiTypography-root,
     .MuiButtonBase-root,
@@ -329,7 +358,7 @@ html[data-theme="fluent"] {
       div[role="gridcell"] {
         direction: rtl;
         > a {
-          >div {
+          > div {
             > svg {
               transform: rotate(180deg);
             }

@@ -107,10 +107,10 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     return <ErrorNotFound />;
   }
   const basePath = PATH_FEEDBACK(caseId);
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const { canEdit } = useGetCurrentUserAccessRight(feedbackData.currentUserAccessRight);
   return (
-    <div style={{ paddingRight }}>
+    <div style={{ paddingInlineEnd: paddingInlineEnd }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Feedbacks'), link: PATH_FEEDBACKS },

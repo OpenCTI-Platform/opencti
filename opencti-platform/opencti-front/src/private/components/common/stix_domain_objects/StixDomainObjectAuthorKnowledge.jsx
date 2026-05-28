@@ -185,7 +185,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
                         <div className={classes.title}>
                           {t('Total observables')}
                         </div>
-                        <div className={classes.number}>{n(total)}</div>
+                        <div className={classes.number}>20{n(total)}</div>
                         <ItemNumberDifference difference={difference} />
                         <div className={classes.icon}>
                           <HexagonMultipleOutline

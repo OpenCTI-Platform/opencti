@@ -25,7 +25,8 @@ const nbOfRowsToLoad = 50;
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    paddingInlineEnd: '200px',
+    paddingInlineStart: '50px',
   },
 }));
 

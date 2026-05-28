@@ -45,7 +45,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: -10,
+    insetInlineEnd: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],

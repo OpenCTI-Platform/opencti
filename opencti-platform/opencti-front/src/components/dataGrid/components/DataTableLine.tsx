@@ -245,8 +245,8 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton onClick={() => (link ? navigate(link) : undefined)}>
-                <KeyboardArrowRightOutlined />
+              <IconButton onClick={() => (link ? navigate(link) : undefined)} >
+                <KeyboardArrowRightOutlined name="arrow-right-icon" />
               </IconButton>
             )}
           </div>

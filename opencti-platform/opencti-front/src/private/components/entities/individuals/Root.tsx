@@ -132,7 +132,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   const link = `${basePath}/knowledge`;
   let paddingRight = 0;
   if (viewAs === 'knowledge') {
-    paddingRight = getPaddingRight(location.pathname, basePath);
+    paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   }
 
   return (
@@ -163,7 +163,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Individuals'), link: PATH_INDIVIDUALS },

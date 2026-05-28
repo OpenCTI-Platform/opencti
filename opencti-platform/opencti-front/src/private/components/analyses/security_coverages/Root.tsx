@@ -96,12 +96,12 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
   const basePath = PATH_SECURITY_COVERAGE(securityCoverageId);
-  const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
   const isContent = location.pathname.includes('content');
   return (
     <>
       {securityCoverage ? (
-        <div style={{ paddingRight }}>
+        <div style={{ paddingInlineEnd: paddingInlineEnd }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Analyses') },
             { label: t_i18n('Security coverages'), link: PATH_SECURITY_COVERAGES },

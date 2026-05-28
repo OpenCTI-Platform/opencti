@@ -96,9 +96,9 @@ const RootDataComponent = () => {
             if (props.dataComponent) {
               const { dataComponent } = props;
               const basePath = PATH_DATA_COMPONENT(dataComponentId);
-              const paddingRight = getPaddingRight(location.pathname, basePath, false);
+              const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
               return (
-                <div style={{ paddingRight }}>
+                <div style={{ paddingInlineEnd: paddingInlineEnd }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Techniques') },
                     { label: t_i18n('Data components'), link: PATH_DATA_COMPONENTS },

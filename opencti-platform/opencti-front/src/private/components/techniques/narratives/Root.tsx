@@ -100,7 +100,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
   const { forceUpdate } = useForceUpdate();
 
   const basePath = PATH_NARRATIVE(narrativeId);
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -126,7 +126,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
               { label: t_i18n('Narratives'), link: PATH_NARRATIVES },

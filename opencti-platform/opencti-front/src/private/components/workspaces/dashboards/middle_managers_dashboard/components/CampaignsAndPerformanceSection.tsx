@@ -261,7 +261,7 @@ const PerformanceIndicatorsCard: React.FC = () => {
             ? 'rgba(255, 255, 255, .06)'
             : 'rgba(0, 0, 0, .06)',
         strokeDashArray: 4,
-        padding: { left: 0, right: 0, top: -10, bottom: 0 },
+        padding: { insetInlineStart: 0, insetInlineEnd: 0, top: -10, bottom: 0 },
       },
       xaxis: {
         ...base.xaxis,

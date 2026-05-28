@@ -87,11 +87,11 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   const basePath = PATH_DATA_SOURCE(dataSourceId);
-  const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
   return (
     <>
       {dataSource ? (
-        <div style={{ paddingRight }}>
+        <div style={{ paddingInlineEnd: paddingInlineEnd }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Techniques') },
             { label: t_i18n('Data sources'), link: PATH_DATA_SOURCES },

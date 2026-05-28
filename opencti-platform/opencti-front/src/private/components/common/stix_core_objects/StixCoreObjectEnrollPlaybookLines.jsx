@@ -79,7 +79,7 @@ const StixCoreObjectEnrollPlaybook = ({
                   classes={{ root: classes.item }}
                   secondaryAction={(
                     <Security needs={[AUTOMATION]}>
-                      <div style={{ right: 0 }}>
+                      <div style={{ insetInlineEnd: 0 }}>
                         <Tooltip title={t_i18n('Trigger this playbook now')}>
                           <IconButton
                             disabled={isSubmitting}

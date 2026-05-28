@@ -103,7 +103,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
 
   const basePath = PATH_SECTOR(sectorId);
   const isOverview = location.pathname === basePath;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -132,7 +132,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Sectors'), link: PATH_SECTORS },

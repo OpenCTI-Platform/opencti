@@ -35,7 +35,8 @@ import Label from '../../../../components/common/label/Label';
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    // padding: '0 200px 0 0',
+    paddingInlineEnd: '200px',
   },
   gridContainer: {
     marginBottom: 20,

@@ -42,7 +42,8 @@ import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnecte
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    paddingInlineEnd: '200px',
+    paddingInlineStart: '50px',
   },
 }));
 
@@ -93,7 +94,7 @@ export const AuditCSVQuery = graphql`
 const Audit = () => {
   const classes = useStyles();
   const csvLink = useRef<
-  CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }
+    CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }
   >(null);
   const hasPageRendered = useRef(false);
   const [loading, setLoading] = useState(true);

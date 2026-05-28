@@ -76,8 +76,8 @@ const GraphLoadingAlert = () => {
         sx={{
           position: 'absolute',
           bottom: 0,
-          left: 0,
-          right: 0,
+          insetInlineStart: 0,
+          insetInlineEnd: 0,
         }}
         variant="determinate"
         value={normaliseValue}

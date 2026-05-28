@@ -56,7 +56,6 @@ const Playbook = ({ dataPlaybook, playbookComponentsQueryRef }: PlaybookProps) =
         elements={[
           { label: t_i18n('Data') },
           { label: t_i18n('Processing') },
-          { label: t_i18n('Automation'), link: '/dashboard/data/processing/automation' },
           { label: playbook.name, current: true },
         ]}
       />

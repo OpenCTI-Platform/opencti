@@ -34,12 +34,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   icon: {
     position: 'absolute',
-    right: 0,
+    insetInlineEnd: 0,
     top: -3,
   },
   iconInline: {
     position: 'absolute',
-    right: 0,
+    insetInlineEnd: 0,
     top: 0,
   },
 }));

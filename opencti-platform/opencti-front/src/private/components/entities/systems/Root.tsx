@@ -126,7 +126,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
 
   const basePath = PATH_SYSTEM(systemId);
   const link = `${basePath}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {system ? (
@@ -156,7 +156,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Systems'), link: PATH_SYSTEMS },

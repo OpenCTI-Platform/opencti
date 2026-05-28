@@ -21,7 +21,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   return (
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
-        <div style={{ position: 'absolute', top: -32, right: 0 }}>
+        <div style={{ position: 'absolute', top: -32, insetInlineEnd: 0 }}>
           <IconButton onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>

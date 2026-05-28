@@ -39,9 +39,6 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
 
   return (
     <div className="break">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Most recent history')}
-      </Typography>
       {queryRef && (
         <React.Suspense fallback={Fallback}>
           <StixCoreRelationshipHistoryLines

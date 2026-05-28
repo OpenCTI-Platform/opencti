@@ -93,9 +93,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const [platformOrganization, setPlatformOrganization] = useState(
     settings.platform_organization
       ? {
-          label: settings.platform_organization?.name,
-          value: settings.platform_organization?.id,
-        }
+        label: settings.platform_organization?.name,
+        value: settings.platform_organization?.id,
+      }
       : null,
   );
 
@@ -134,7 +134,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     <div
       style={{
         margin: 0,
-        padding: '0 200px 50px 0',
+        paddingInlineEnd: '200px',
+        paddingInlineStart: '50px',
       }}
       data-testid="policies-settings-page"
     >

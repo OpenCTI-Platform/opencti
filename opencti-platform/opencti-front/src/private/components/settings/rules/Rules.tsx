@@ -64,7 +64,7 @@ const Rules = () => {
   );
 
   return (
-    <div style={{ paddingInlineEnd: 200 }} data-testid="rules-page">
+    <div style={{ paddingInlineEnd: '200px' }} data-testid="rules-page">
       <Breadcrumbs elements={breadcrumb} />
 
       {!ruleEngineEnabled && (

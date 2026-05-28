@@ -38,6 +38,7 @@ import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsM
 import CardTitle from '../../../../components/common/card/CardTitle';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
 import { DefaultMarking } from './../../settings/marking_definitions/markingDefinition.types';
+import Card from '@common/card/Card';
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
@@ -310,123 +311,126 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
   defaultMarkings,
   title,
 }) => {
-  const { t_i18n } = useFormatter();
-  const containerRef = useRef<HTMLDivElement>(null);
+    const { t_i18n } = useFormatter();
+    const containerRef = useRef<HTMLDivElement>(null);
 
-  const data = usePreloadedFragment<
-    StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
-    StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
-  >({
-    queryDef: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
-    fragmentDef: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,
-    queryRef,
-  });
-
-  const notes = data?.notes?.edges ?? [];
-
-  const scrollToBottom = () => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    setTimeout(() => {
-      const rect = element.getBoundingClientRect();
-      const targetPosition = rect.bottom + window.pageYOffset + marginTop;
-
-      window.scrollTo({
-        top: targetPosition,
-        behavior: 'smooth',
-      });
-    }, 300);
-  };
-
-  const scrollToTop = () => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    setTimeout(() => {
-      const rect = element.getBoundingClientRect();
-      const OFFSET_TITLE_BLOCK = 100; // arbitrary offset to see the title block
-      const targetPosition = rect.top + window.pageYOffset - marginTop - OFFSET_TITLE_BLOCK;
-
-      window.scrollTo({
-        top: targetPosition,
-        behavior: 'smooth',
-      });
-    }, 100);
-  };
-
-  const handleMore = () => {
-    scrollToBottom();
-  };
-
-  const [commit] = useApiMutation(noteCreationUserMutation);
-
-  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
-    const finalValues = toFinalValues(values, id);
-    commit({
-      variables: {
-        input: finalValues,
-      },
-      updater: (store) => {
-        insertNode(store, 'Pagination_notes', paginationOptions, 'userNoteAdd');
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        scrollToTop();
-      },
+    const data = usePreloadedFragment<
+      StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+      StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
+    >({
+      queryDef: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+      fragmentDef: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,
+      queryRef,
     });
-  };
 
-  return (
-    <div style={{ marginTop, marginBottom: 20 }} ref={containerRef}>
-      <Header
-        data={data}
-        id={id}
-        paginationOptions={paginationOptions}
+    const notes = data?.notes?.edges ?? [];
+
+    const scrollToBottom = () => {
+      const element = containerRef.current;
+      if (!element) return;
+
+      setTimeout(() => {
+        const rect = element.getBoundingClientRect();
+        const targetPosition = rect.bottom + window.pageYOffset + marginTop;
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth',
+        });
+      }, 300);
+    };
+
+    const scrollToTop = () => {
+      const element = containerRef.current;
+      if (!element) return;
+
+      setTimeout(() => {
+        const rect = element.getBoundingClientRect();
+        const OFFSET_TITLE_BLOCK = 100; // arbitrary offset to see the title block
+        const targetPosition = rect.top + window.pageYOffset - marginTop - OFFSET_TITLE_BLOCK;
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth',
+        });
+      }, 100);
+    };
+
+    const handleMore = () => {
+      scrollToBottom();
+    };
+
+    const [commit] = useApiMutation(noteCreationUserMutation);
+
+    const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
+      values,
+      { setSubmitting, resetForm },
+    ) => {
+      const finalValues = toFinalValues(values, id);
+      commit({
+        variables: {
+          input: finalValues,
+        },
+        updater: (store) => {
+          insertNode(store, 'Pagination_notes', paginationOptions, 'userNoteAdd');
+        },
+        onCompleted: () => {
+          setSubmitting(false);
+          resetForm();
+          scrollToTop();
+        },
+      });
+    };
+
+    return (
+      <Card
         title={title}
-      />
+        action={(
+          <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
+            <AddNotesFunctionalComponent
+              stixCoreObjectOrStixCoreRelationshipId={id}
+              stixCoreObjectOrStixCoreRelationshipNotes={data}
+              paginationOptions={paginationOptions}
+            />
+          </Security>
+        )}>
+        <Stack sx={{ border: 'none' }} spacing={2}>
+          {notes.map(({ node }) => (
+            <StixCoreObjectOrStixCoreRelationshipNoteCard
+              key={node.id}
+              data={node}
+              stixCoreObjectOrStixCoreRelationshipId={id}
+              paginationOptions={paginationOptions}
+            />
+          ))}
 
-      <Stack spacing={2}>
-        {notes.map(({ node }) => (
-          <StixCoreObjectOrStixCoreRelationshipNoteCard
-            key={node.id}
-            data={node}
-            stixCoreObjectOrStixCoreRelationshipId={id}
-            paginationOptions={paginationOptions}
-          />
-        ))}
-
-        <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-          <CardAccordion
-            onStateChange={(open) => {
-              if (containerRef.current && open) {
-                scrollToBottom();
-              }
-            }}
-            preview={(
-              <Stack direction="row" spacing={1}>
-                <RateReviewOutlined />
-                <Typography>{t_i18n('Write a note')}</Typography>
-              </Stack>
-            )}
-          >
-            {({ changeState }) => (
-              <NoteForm
-                defaultMarkings={defaultMarkings}
-                onCancel={() => changeState(false)}
-                onToggleMore={handleMore}
-                onSubmit={onSubmit}
-              />
-            )}
-          </CardAccordion>
-        </Security>
-      </Stack>
-    </div>
-  );
-};
+          <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
+            <CardAccordion
+              onStateChange={(open) => {
+                if (containerRef.current && open) {
+                  scrollToBottom();
+                }
+              }}
+              preview={(
+                <Stack direction="row" spacing={1}>
+                  <RateReviewOutlined />
+                  <Typography>{t_i18n('Write a note')}</Typography>
+                </Stack>
+              )}
+            >
+              {({ changeState }) => (
+                <NoteForm
+                  defaultMarkings={defaultMarkings}
+                  onCancel={() => changeState(false)}
+                  onToggleMore={handleMore}
+                  onSubmit={onSubmit}
+                />
+              )}
+            </CardAccordion>
+          </Security>
+        </Stack>
+      </Card >
+    );
+  };
 
 export default StixCoreObjectOrStixCoreRelationshipNotesCards;

@@ -29,7 +29,7 @@ const useStyles = makeStyles<Theme>({
   },
   goIcon: {
     position: 'absolute',
-    right: -10,
+    insetInlineEnd: -10,
   },
 });
 

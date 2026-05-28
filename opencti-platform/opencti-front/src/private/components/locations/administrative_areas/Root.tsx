@@ -96,7 +96,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_ADMINISTRATIVE_AREA(administrativeAreaId);
   const link = `${basePath}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {administrativeArea ? (
@@ -127,7 +127,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
               { label: t_i18n('Administrative areas'), link: PATH_ADMINISTRATIVE_AREAS },

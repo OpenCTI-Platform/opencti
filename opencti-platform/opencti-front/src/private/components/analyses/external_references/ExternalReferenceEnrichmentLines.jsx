@@ -68,8 +68,8 @@ const externalReferenceEnrichmentLinesAskJob = graphql`
 const styles = (theme) => ({
   noResult: {
     top: 10,
-    left: 16,
-    right: 0,
+    insetInlineStart: 16,
+    insetInlineEnd: 0,
     position: 'absolute',
     color: theme.palette.text.primary,
     fontSize: 15,
@@ -161,7 +161,7 @@ const ExternalReferenceEnrichment = (props) => {
                 disablePadding
                 secondaryAction={(
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                    <div style={{ right: 0 }}>
+                    <div style={{ insetInlineEnd: 0 }}>
                       <Tooltip
                         title={t('Refresh the knowledge using this connector')}
                       >
@@ -232,7 +232,7 @@ const ExternalReferenceEnrichment = (props) => {
                         dense={true}
                         divider={true}
                         secondaryAction={(
-                          <div style={{ right: 0 }}>
+                          <div style={{ insetInlineEnd: 0 }}>
                             <IconButton
                               onClick={() => deleteWork(work.id)}
                             >

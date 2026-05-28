@@ -94,7 +94,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   const { city, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_CITY(cityId);
   const link = `${basePath}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {city ? (
@@ -125,7 +125,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
               { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },

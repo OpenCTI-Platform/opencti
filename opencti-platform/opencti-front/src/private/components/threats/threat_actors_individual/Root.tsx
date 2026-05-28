@@ -114,7 +114,7 @@ const RootThreatActorIndividualComponent = ({
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_THREAT_ACTORS_INDIVIDUAL(threatActorIndividualId);
   const isOverview = location.pathname === basePath;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -150,7 +150,7 @@ const RootThreatActorIndividualComponent = ({
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Threat actors (individual)'), link: PATH_THREAT_ACTORS_INDIVIDUALS },

@@ -100,7 +100,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
 
   const basePath = PATH_POSITION(positionId);
   const link = `${basePath}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
 
   return (
     <CreateRelationshipContextProvider>
@@ -132,7 +132,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
               { label: t_i18n('Positions'), link: PATH_POSITIONS },

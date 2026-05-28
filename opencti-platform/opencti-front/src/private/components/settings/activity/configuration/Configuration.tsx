@@ -55,7 +55,8 @@ const useStyles = makeStyles<Theme>(() => ({
   },
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    paddingInlineEnd: '200px',
+    paddingInlineStart: '50px',
   },
 }));
 
@@ -155,7 +156,7 @@ const ConfigurationComponent: FunctionComponent<
                 </Alert>
                 <div>
                   <Formik
-                    onSubmit={() => {}}
+                    onSubmit={() => { }}
                     enableReinitialize={true}
                     initialValues={{ users: '', groups: '', organizations: '' }}
                   >

@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
   },
   bottomNavWithMediumPadding: {
     zIndex: 1100,
-    padding: '0 200px 0 0',
+    paddingInlineEnd: '200px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',

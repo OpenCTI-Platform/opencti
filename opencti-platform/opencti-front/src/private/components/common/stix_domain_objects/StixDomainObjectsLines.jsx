@@ -47,8 +47,8 @@ const styles = (theme) => ({
   },
   noResult: {
     top: 180,
-    left: 50,
-    right: 0,
+    insetInlineStart: 50,
+    insetInlineEnd: 0,
     textAlign: 'center',
     position: 'absolute',
     color: theme.palette.text.primary,

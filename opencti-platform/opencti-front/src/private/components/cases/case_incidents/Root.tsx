@@ -107,11 +107,11 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     return <ErrorNotFound />;
   }
   const basePath = PATH_CASE_INCIDENT(caseId);
-  const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
-    <div style={{ paddingRight }} data-testid="incident-details-page">
+    <div style={{ paddingInlineEnd: paddingInlineEnd }} data-testid="incident-details-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Incident responses'), link: PATH_CASE_INCIDENTS },

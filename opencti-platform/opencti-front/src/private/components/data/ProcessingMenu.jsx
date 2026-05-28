@@ -53,18 +53,6 @@ const ProcessingMenu = () => {
         style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
         sx={{ marginBottom: bannerHeightNumber }}
       >
-        {isAutomationManager && (
-          <MenuItem
-            component={Link}
-            to="/dashboard/data/processing/automation"
-            selected={location.pathname.includes(
-              '/dashboard/data/processing/automation',
-            )}
-            dense={false}
-          >
-            <ListItemText primary={<EEMenu>{t_i18n('Automation')}</EEMenu>} />
-          </MenuItem>
-        )}
         {isKnowledgeUpdater && (
           <MenuItem
             component={Link}

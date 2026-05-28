@@ -101,9 +101,9 @@ class RootCourseOfAction extends Component {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
                 const basePath = PATH_COURSE_OF_ACTION(courseOfActionId);
-                const paddingRight = getPaddingRight(location.pathname, basePath, false);
+                const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
                 return (
-                  <div style={{ paddingRight }}>
+                  <div style={{ paddingInlineEnd: paddingInlineEnd }}>
                     <Breadcrumbs elements={[
                       { label: t('Techniques') },
                       { label: t('Courses of action'), link: PATH_COURSES_OF_ACTION },
