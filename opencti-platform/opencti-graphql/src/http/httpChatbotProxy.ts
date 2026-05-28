@@ -507,8 +507,6 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       return;
     }
 
-    writeAgentStreamHeaders(res);
-
     // Cache lookup — replay as a single `done` event so the client display
     // logic (which already handles `done`) doesn't need to know about cache.
     // The cache is intentionally not namespaced by user identity (matching
@@ -522,6 +520,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       const cached = await redisGetXtmAgentResponse(cacheKey);
       if (cached) {
         logApp.info('Agent response served from cache', { agent_slug });
+        writeAgentStreamHeaders(res);
         res.write(`data: ${JSON.stringify({
           type: 'done',
           content: cached.content,
@@ -543,6 +542,11 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       decompress: false,
       timeout: 0,
     });
+
+    // Only set SSE response headers now that we know the upstream stream is
+    // open. Setting them earlier would leak `Content-Type: text/event-stream`
+    // into the catch branches below that respond with JSON.
+    writeAgentStreamHeaders(res);
 
     // Capture the upstream bytes alongside the pipe so we can persist the
     // final content to Redis when the stream completes. A 2MB ceiling caps

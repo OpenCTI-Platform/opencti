@@ -312,6 +312,10 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 503, error: 'XTM One is unreachable' });
+    // Regression guard: must NOT leak SSE response headers into a JSON
+    // error body. SSE headers are only set once the upstream stream is
+    // actually open (or we hit a cache replay) — never on the JSON 503 path.
+    expect(res.setHeader).not.toHaveBeenCalledWith('Content-Type', 'text/event-stream');
   });
 
   it('should serve a cached response as a single SSE done event without calling XTM One', async () => {
