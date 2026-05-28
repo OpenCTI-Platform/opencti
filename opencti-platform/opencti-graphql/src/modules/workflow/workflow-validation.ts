@@ -281,9 +281,12 @@ export const validateWorkflowDefinitionData = async (
     if (existingWorkflow) {
       let oldDefinitionData;
       try {
-        oldDefinitionData = existingWorkflow.draft_version?.content
-          ? JSON.parse(existingWorkflow.draft_version.content)
-          : null;
+        const rawContent = existingWorkflow.draft_version?.content ?? existingWorkflow.published_version?.content;
+        if (rawContent) {
+          oldDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+        } else {
+          oldDefinitionData = null;
+        }
       } catch (_) {
         oldDefinitionData = null;
       }
