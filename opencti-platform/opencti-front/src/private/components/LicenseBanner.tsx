@@ -16,7 +16,6 @@ import { UserContext } from '../../utils/hooks/useAuth';
 import { daysBetweenDates, now } from '../../utils/Time';
 import { RootSettings$data } from '../__generated__/RootSettings.graphql';
 import TextField from '../../components/TextField';
-import { isNotEmptyField } from '../../utils/utils';
 
 export const LICENSE_OPTION_TRIAL = 'trial';
 
@@ -85,9 +84,11 @@ const computeBannerInfo = (
   if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
     const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
     const bannerColor = getBannerColor(remainingDays);
-    // The "Contact us" button only makes sense when the platform is registered
-    // to XTM Hub (xtm_hub_token present), since the contactUsXtmHub mutation
-    // short-circuits server-side without a token.
+    // The "Contact us" button only makes sense when the platform is actively
+    // registered to XTM Hub, since contactUsXtmHub short-circuits server-side
+    // without a valid Hub token. We rely on the registration status rather than
+    // the token alone, because a stale token can linger after a failed
+    // unregistration handshake.
     const showContactButton = canContactHub;
     return {
       buttonText: showContactButton ? t_i18n('Contact us') : undefined,
@@ -131,7 +132,7 @@ const LicenseBanner = () => {
     });
   };
 
-  const canContactHub = isNotEmptyField(settings?.xtm_hub_token);
+  const canContactHub = settings?.xtm_hub_registration_status === 'registered';
   const bannerInfo = computeBannerInfo(eeSettings, canContactHub, () => {
     setShowFormDialog(true);
   });
