@@ -33,16 +33,25 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
     return (
       <li {...params} key={params.key}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Typography>{option.label}</Typography>
-          <Tooltip title={t_i18n('Delete this saved filter')}>
-            <IconButton
-              color="primary"
-              onClick={handleDelete(option.value)}
-              size="small"
-            >
-              <DeleteOutlined />
-            </IconButton>
-          </Tooltip>
+          <div>
+            <Typography component="span">{option.label}</Typography>
+            {option.ownerName && (
+              <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                ({option.ownerName})
+              </Typography>
+            )}
+          </div>
+          {option.canManage && (
+            <Tooltip title={t_i18n('Delete this saved filter')}>
+              <IconButton
+                color="primary"
+                onClick={handleDelete(option.value)}
+                size="small"
+              >
+                <DeleteOutlined />
+              </IconButton>
+            </Tooltip>
+          )}
         </div>
       </li>
     );
@@ -57,6 +66,7 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
       isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
       inputValue={inputValue}
       options={options ?? []}
+      groupBy={(option) => option.group}
       sx={{
         width: 200,
       }}

@@ -16,6 +16,14 @@ const savedFiltersQuery = graphql`
           name
           filters
           scope
+          currentUserAccessRight
+          authorizedMembers {
+            id
+            name
+            entity_type
+            access_right
+            member_id
+          }
         }
       }
     }

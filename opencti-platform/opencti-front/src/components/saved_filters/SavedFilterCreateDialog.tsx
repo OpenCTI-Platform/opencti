@@ -76,9 +76,9 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   const handleSubmitSaveFilter = (values: SavedFilterFormValues) => {
     const restrictedMembers = values.authorized_members
       ? values.authorized_members.map((m: AuthorizedMemberOption) => ({
-        id: m.value,
-        access_right: m.accessRight,
-      }))
+          id: m.value,
+          access_right: m.accessRight,
+        }))
       : undefined;
 
     commit({

@@ -42,8 +42,6 @@ const FormAuthorizedMembers = ({
   const { t_i18n } = useFormatter();
 
   return (
-
-  return (
     <Formik<FormAuthorizedMembersInputs>
       enableReinitialize
       initialValues={{

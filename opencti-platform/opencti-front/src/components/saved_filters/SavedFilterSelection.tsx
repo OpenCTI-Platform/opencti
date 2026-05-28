@@ -4,6 +4,8 @@ import { useDataTableContext } from 'src/components/dataGrid/components/DataTabl
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
 import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+import useAuth from '../../utils/hooks/useAuth';
+import { useFormatter } from '../i18n';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
@@ -17,9 +19,14 @@ type SavedFilterSelectionProps = {
 export type AutocompleteOptionType = {
   label: string;
   value: SavedFiltersSelectionData;
+  group: string;
+  ownerName?: string;
+  canManage: boolean;
 };
 
 const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrentSavedFilter }: SavedFilterSelectionProps) => {
+  const { me } = useAuth();
+  const { t_i18n } = useFormatter();
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
@@ -31,10 +38,19 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const [inputValue, setInputValue] = useState<string>('');
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
 
-  const options = data.map((item) => ({
-    label: item.name,
-    value: item,
-  }));
+  const options: AutocompleteOptionType[] = data.map((item) => {
+    const ownerMember = item.authorizedMembers?.find((m) => m.access_right === 'admin');
+    const isOwner = ownerMember?.member_id === me.id;
+    const ownerName = ownerMember?.name ?? '';
+
+    return {
+      label: item.name,
+      value: item,
+      group: isOwner ? t_i18n('My filters') : t_i18n('Shared with me'),
+      ownerName: isOwner ? undefined : ownerName,
+      canManage: item.currentUserAccessRight === 'admin',
+    };
+  });
 
   const handleReset = () => {
     setSelectedSavedFilter(undefined);
@@ -59,11 +75,11 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   useEffect(() => {
     if (currentSavedFilter && !selectedSavedFilter) {
-      setSelectedSavedFilter({
-        label: currentSavedFilter.name,
-        value: currentSavedFilter,
-      });
-      setInputValue(currentSavedFilter.name);
+      const found = options.find((o) => o.value.id === currentSavedFilter.id);
+      if (found) {
+        setSelectedSavedFilter(found);
+        setInputValue(found.label);
+      }
     }
     if (!currentSavedFilter && selectedSavedFilter) {
       handleReset();
