@@ -443,4 +443,93 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
     expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
   });
+
+  it('should tolerate malformed SSE lines and still cache the final done content', async () => {
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    // Mix of: a heartbeat comment, a non-`data:` line, a malformed JSON
+    // payload, and finally a valid `done` event.
+    dataHandlers.forEach((h) => h(Buffer.from(': heartbeat\n\n')));
+    dataHandlers.forEach((h) => h(Buffer.from('event: ping\n\n')));
+    dataHandlers.forEach((h) => h(Buffer.from('data: {not valid json}\n\n')));
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"done","content":"final"}\n\n')));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).toHaveBeenCalledTimes(1);
+    const [, storedContent] = mockRedisSetXtmAgentResponse.mock.calls[0] as any;
+    expect(storedContent).toBe('final');
+  });
+
+  it('should not cache when the stream completes without a done event', async () => {
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"stream","content":"partial"}\n\n')));
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
+  it('should skip caching when the upstream response exceeds the 2MB capture limit', async () => {
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    // Push 3MB of bytes — well above the 2MB capture ceiling.
+    const oneMb = Buffer.alloc(1024 * 1024, 0x41);
+    dataHandlers.forEach((h) => h(oneMb));
+    dataHandlers.forEach((h) => h(oneMb));
+    dataHandlers.forEach((h) => h(oneMb));
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"done","content":"final"}\n\n')));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
 });

@@ -6,6 +6,7 @@ import {
   deleteAllPlaybookExecutions,
   delUserContext,
   fetchEditContext,
+  getClientBase,
   getLastPlaybookExecutions,
   getRedisVersion,
   lockResource,
@@ -13,10 +14,12 @@ import {
   redisClearTelemetry,
   redisGetForgotPasswordOtp,
   redisGetTelemetry,
+  redisGetXtmAgentResponse,
   redisInit,
   redisPlaybookUpdate,
   redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
+  redisSetXtmAgentResponse,
   setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
@@ -159,5 +162,51 @@ describe('Redis playbook executions tests', () => {
     await deleteAllPlaybookExecutions(PLAYBOOK_ID);
     const executions = await getLastPlaybookExecutions(PLAYBOOK_ID);
     expect(executions.length).toEqual(0);
+  });
+});
+
+describe('Redis XTM agent response cache', () => {
+  it('should return null when no cached response exists', async () => {
+    const cached = await redisGetXtmAgentResponse(`missing-key-${uuid()}`);
+    expect(cached).toBeNull();
+  });
+
+  it('should store and read back a cached agent response with timestamp', async () => {
+    const cacheKey = `agent-cache-${uuid()}`;
+    await redisSetXtmAgentResponse(cacheKey, '<p>Agent summary</p>', 60);
+    const cached = await redisGetXtmAgentResponse(cacheKey);
+    expect(cached).not.toBeNull();
+    expect(cached.content).toEqual('<p>Agent summary</p>');
+    expect(cached.cached_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it('should expire a cached agent response after the TTL elapses', async () => {
+    const cacheKey = `agent-cache-ttl-${uuid()}`;
+    await redisSetXtmAgentResponse(cacheKey, 'short-lived', 1);
+    const initial = await redisGetXtmAgentResponse(cacheKey);
+    expect(initial?.content).toEqual('short-lived');
+
+    await new Promise((resolve) => {
+      setTimeout(() => resolve(), 1500);
+    });
+
+    const expired = await redisGetXtmAgentResponse(cacheKey);
+    expect(expired).toBeNull();
+  });
+
+  it('should be a no-op when ttl is zero or negative', async () => {
+    const cacheKey = `agent-cache-disabled-${uuid()}`;
+    await redisSetXtmAgentResponse(cacheKey, 'should-not-be-stored', 0);
+    expect(await redisGetXtmAgentResponse(cacheKey)).toBeNull();
+
+    await redisSetXtmAgentResponse(cacheKey, 'should-not-be-stored', -10);
+    expect(await redisGetXtmAgentResponse(cacheKey)).toBeNull();
+  });
+
+  it('should return null and not throw when the cached payload is not valid JSON', async () => {
+    const cacheKey = `agent-cache-corrupt-${uuid()}`;
+    await getClientBase().set(`xtm_agent_cache:${cacheKey}`, 'this is not json', 'EX', 60);
+    const cached = await redisGetXtmAgentResponse(cacheKey);
+    expect(cached).toBeNull();
   });
 });
