@@ -167,12 +167,12 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsPolarArea
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters}
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'horizontal-bar':
