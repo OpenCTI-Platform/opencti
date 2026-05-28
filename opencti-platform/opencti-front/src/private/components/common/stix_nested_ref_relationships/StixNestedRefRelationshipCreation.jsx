@@ -486,7 +486,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   style={{
                     border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
                     top: 10,
-                    right: 0,
+                    insetInlineEnd: 0,
                   }}
                 >
                   <div

@@ -152,13 +152,13 @@
   top: 0;
 }
 .leaflet-right {
-  right: 0;
+  inset-inline-end: 0;
 }
 .leaflet-bottom {
   bottom: 0;
 }
 .leaflet-left {
-  left: 0;
+  inset-inline-start: 0;
 }
 .leaflet-control {
   float: inline-start;
@@ -521,7 +521,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-container a.leaflet-popup-close-button {
   position: absolute;
   top: 0;
-  right: 0;
+  inset-inline-end: 0;
   padding: 4px 4px 0 0;
   border: none;
   text-align: center;
@@ -638,12 +638,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   margin-top: -6px;
 }
 .leaflet-tooltip-left:before {
-  right: 0;
+  inset-inline-end: 0;
   margin-inline-end: -12px;
   border-left-color: #fff;
 }
 .leaflet-tooltip-right:before {
-  left: 0;
+  inset-inline-start: 0;
   margin-inline-start: -12px;
   border-right-color: #fff;
 }

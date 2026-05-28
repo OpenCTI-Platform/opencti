@@ -108,7 +108,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const basePath = PATH_CAMPAIGN(campaignId);
   const link = `${basePath}/knowledge`;
   const isOverview = location.pathname === basePath;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {campaign ? (
@@ -140,7 +140,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Campaigns'), link: PATH_CAMPAIGNS },

@@ -103,7 +103,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_THREAT_ACTORS_GROUP(threatActorGroupId);
   const isOverview = location.pathname === basePath;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -137,7 +137,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs
               elements={[
                 { label: t_i18n('Threats') },

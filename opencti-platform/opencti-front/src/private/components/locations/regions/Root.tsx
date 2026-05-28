@@ -98,7 +98,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   const basePath = PATH_REGION(regionId);
   const link = `${basePath}/knowledge`;
   const isOverview = location.pathname === basePath;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {region ? (
@@ -130,7 +130,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
               { label: t_i18n('Regions'), link: PATH_REGIONS },

@@ -138,7 +138,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
 
   const basePath = PATH_ORGANIZATION(organizationId);
   const link = `${basePath}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, basePath, viewAs === 'knowledge');
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, viewAs === 'knowledge');
   return (
     <CreateRelationshipContextProvider>
       {organization ? (
@@ -172,7 +172,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Organizations'), link: PATH_ORGANIZATIONS },

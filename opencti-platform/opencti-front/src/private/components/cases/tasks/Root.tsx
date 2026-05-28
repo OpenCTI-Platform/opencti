@@ -86,11 +86,11 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
 
   const basePath = PATH_TASK(taskId);
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   return (
     <>
       {data ? (
-        <div style={{ paddingRight }}>
+        <div style={{ paddingInlineEnd: paddingInlineEnd }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Cases') },
             { label: t_i18n('Tasks'), link: PATH_TASKS },

@@ -101,7 +101,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
 
   const basePath = PATH_EVENT(eventId);
   const link = `${basePath}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {event ? (
@@ -129,7 +129,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
               { label: t_i18n('Events'), link: PATH_EVENTS },

@@ -80,7 +80,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   disablePadding
                   secondaryAction={
                     types.includes('manual') && (
-                      <div style={{ right: 0 }}>
+                      <div style={{ insetInlineEnd: 0 }}>
                         <Security needs={[KNOWLEDGE_KNUPDATE]}>
                           <IconButton
                             aria-label="Remove"

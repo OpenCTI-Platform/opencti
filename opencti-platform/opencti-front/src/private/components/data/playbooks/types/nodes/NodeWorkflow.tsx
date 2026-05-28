@@ -86,7 +86,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         </Tooltip>
       </div>
       <div className="clearfix" />
-      <div style={{ position: 'absolute', top: 0, right: 0 }}>
+      <div style={{ position: 'absolute', top: 0, insetInlineEnd: 0 }}>
         <IconButton
           onClick={(event) => setAnchorEl(event.currentTarget)}
           aria-haspopup="true"
@@ -127,7 +127,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         </Menu>
       </div>
       {!data.component?.is_entry_point && (
-        <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
+        <div style={{ position: 'absolute', bottom: 0, insetInlineEnd: 0 }}>
           <Tooltip
             title={t_i18n(
               'Add a new branch at the same level from the parent output',

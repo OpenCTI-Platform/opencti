@@ -100,9 +100,9 @@ class RootArtifact extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
-                const paddingRight = getPaddingRight(location.pathname, basePath, false);
+                const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
                 return (
-                  <div style={{ paddingRight }}>
+                  <div style={{ paddingInlineEnd: paddingInlineEnd }}>
                     <Breadcrumbs elements={[
                       { label: t('Observations') },
                       { label: t('Artifacts'), link: PATH_ARTIFACTS },

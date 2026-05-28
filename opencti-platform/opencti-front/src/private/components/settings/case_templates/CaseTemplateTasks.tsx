@@ -32,7 +32,8 @@ import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLine
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    paddingInlineEnd: '200px',
+    paddingInlineStart: '50px',
   },
 }));
 
@@ -57,7 +58,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   const navigate = useNavigate();
   const [openEdition, setOpenEdition] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const handleClose = () => {};
+  const handleClose = () => { };
 
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);

@@ -191,7 +191,7 @@ const Root = () => {
                 </Security>
               )}
             >
-              <Navigate to={isGrantedToAutomation ? '/dashboard/data/processing/automation' : '/dashboard/data/processing/tasks'} />
+              <Navigate to="/dashboard/data/processing/tasks" />
             </Security>
           )}
         />

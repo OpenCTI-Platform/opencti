@@ -373,7 +373,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
 
   if (variant === 'markdown') {
     return (
-      <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
+      <div style={style || { position: 'absolute', top: 17, insetInlineEnd: 0, paddingTop: 4 }}>
         {fullyActive && renderButton()}
       </div>
     );
@@ -387,7 +387,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   }
 
   return (
-    <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
+    <InputAdornment position="end" style={{ position: 'absolute', insetInlineEnd: 0 }}>
       {fullyActive && renderButton()}
     </InputAdornment>
   );

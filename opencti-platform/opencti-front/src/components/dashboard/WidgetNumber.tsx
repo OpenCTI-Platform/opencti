@@ -64,7 +64,7 @@ const WidgetNumber = ({
           data-testid={`card-number-${label}`}
           style={valueStyle}
         >
-          {n(value)}
+          {value}
         </div>
         {entityType && (
           <ItemIcon

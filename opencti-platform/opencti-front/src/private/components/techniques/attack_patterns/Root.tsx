@@ -101,7 +101,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
   const { forceUpdate } = useForceUpdate();
 
   const basePath = PATH_ATTACK_PATTERN(attackPatternId);
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
 
   return (
     <CreateRelationshipContextProvider>
@@ -130,7 +130,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
               { label: t_i18n('Attack patterns'), link: PATH_ATTACK_PATTERNS },

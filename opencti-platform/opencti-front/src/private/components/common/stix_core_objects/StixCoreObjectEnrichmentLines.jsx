@@ -158,7 +158,7 @@ const StixCoreObjectEnrichment = ({
                 disablePadding
                 secondaryAction={(
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                    <div style={{ right: 0 }}>
+                    <div style={{ insetInlineEnd: 0 }}>
                       <Tooltip
                         title={t('Refresh the knowledge using this connector')}
                       >
@@ -228,7 +228,7 @@ const StixCoreObjectEnrichment = ({
                         disablePadding
                         secondaryAction={(
                           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                            <div style={{ right: 0 }}>
+                            <div style={{ insetInlineEnd: 0 }}>
                               <IconButton
                                 onClick={() => deleteWork(work.id)}
                               >

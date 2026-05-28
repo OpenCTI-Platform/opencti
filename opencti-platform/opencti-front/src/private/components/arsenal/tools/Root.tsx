@@ -102,7 +102,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const { forceUpdate } = useForceUpdate();
 
   const basePath = PATH_TOOL(toolId);
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -132,7 +132,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
               { label: t_i18n('Tools'), link: PATH_TOOLS },

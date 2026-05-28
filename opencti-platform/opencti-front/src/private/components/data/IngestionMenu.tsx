@@ -42,11 +42,11 @@ const IngestionMenu = () => {
         path: '/dashboard/data/ingestion/connectors',
         label: 'Monitoring',
       },
-      {
-        path: '/dashboard/data/ingestion/catalog',
-        label: 'Connectors catalog',
-        isEE: true,
-      },
+      // {
+      //   path: '/dashboard/data/ingestion/catalog',
+      //   label: 'Connectors catalog',
+      //   isEE: true,
+      // },
     );
   }
   return <NavToolbarMenu entries={entries} />;

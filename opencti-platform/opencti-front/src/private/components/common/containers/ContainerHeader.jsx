@@ -507,7 +507,7 @@ const ContainerHeader = (props) => {
     containerStyle = {
       position: 'absolute',
       top: '-75px',
-      right: 0,
+      insetInlineEnd: 0,
     };
   }
 

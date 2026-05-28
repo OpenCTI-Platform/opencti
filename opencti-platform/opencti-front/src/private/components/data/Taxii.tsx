@@ -44,7 +44,8 @@ const Taxii = () => {
   };
 
   const handleSearch = (value: string) => {
-    setTaxiiState({ ...taxiiState,
+    setTaxiiState({
+      ...taxiiState,
       searchTerm: value,
     });
   };
@@ -53,7 +54,8 @@ const Taxii = () => {
     setTaxiiState({
       ...taxiiState,
       sortBy: field,
-      orderAsc });
+      orderAsc
+    });
   };
 
   useEffect(() => {
@@ -126,7 +128,8 @@ const Taxii = () => {
       <Box
         sx={{
           margin: 0,
-          padding: '0 200px 50px 0',
+          paddingInlineEnd: '200px',
+          paddingInlineStart: '50px',
         }}
         aria-label="TaxiiCollections"
       >

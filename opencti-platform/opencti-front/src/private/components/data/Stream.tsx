@@ -33,7 +33,8 @@ const LOCAL_STORAGE_KEY = 'stream';
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    paddingInlineEnd: '200px',
+    paddingInlineStart: '50px',
   },
 }));
 
@@ -204,11 +205,11 @@ const Stream = () => {
         return health.count === 0
           ? <>{EMPTY_VALUE}</>
           : (
-              <Tag
-                label={health.label}
-                color={health.hexColor}
-              />
-            );
+            <Tag
+              label={health.label}
+              color={health.hexColor}
+            />
+          );
       },
     },
     filters: {
@@ -220,13 +221,13 @@ const Stream = () => {
         const deserializedFilters = deserializeFilterGroupForFrontend(filters);
         return isFilterGroupNotEmpty(deserializedFilters)
           ? (
-              <FilterIconButton
-                filters={deserializedFilters}
-                dataColumns={dataColumns}
-                variant="small"
-                entityTypes={['Stix-Filtering']}
-              />
-            )
+            <FilterIconButton
+              filters={deserializedFilters}
+              dataColumns={dataColumns}
+              variant="small"
+              entityTypes={['Stix-Filtering']}
+            />
+          )
           : EMPTY_VALUE;
       },
     },

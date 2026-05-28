@@ -728,7 +728,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   style={{
                     border: `2px solid ${itemColor(toEntityType)}`,
                     top: 10,
-                    right: 0,
+                    insetInlineEnd: 0,
                   }}
                 >
                   <div

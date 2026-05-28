@@ -112,7 +112,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_INTRUSION_SET(intrusionSetId);
   const isOverview = location.pathname === basePath;
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -147,7 +147,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               )}
             />
           </Routes>
-          <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
+          <div style={{ paddingInlineEnd: paddingInlineEnd }} data-testid="intrusionSet-details-page">
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Intrusion sets'), link: PATH_INTRUSION_SETS },

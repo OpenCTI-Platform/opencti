@@ -231,7 +231,7 @@ const StixCoreRelationshipCreationForm = ({
                 style={{
                   border: `2px solid ${itemColor(toEntity.entity_type)}`,
                   top: 10,
-                  right: 0,
+                  insetInlineEnd: 0,
                 }}
               >
                 <div

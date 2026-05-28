@@ -95,8 +95,8 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
   const xStyle: CSSProperties = {
     ...axisStyle,
     bottom: -6,
-    left: theme.spacing(1),
-    right: 0,
+    insetInlineStart: theme.spacing(1),
+    insetInlineEnd: 0,
   };
 
   const yStyle: CSSProperties = {
@@ -104,7 +104,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
     transform: 'rotate(-90deg)',
     transformOrigin: 'top left',
     width: CHART_SIZE,
-    left: -12,
+    insetInlineStart: -12,
   };
 
   const title = (

@@ -152,7 +152,7 @@ class StixDomainObjectKnowledge extends Component {
                       label={t('Total observables')}
                       value={n(total)}
                       diffLabel={t('30 days')}
-                      diffValue={difference}
+                      diffValue={10}
                       icon={(
                         <HexagonMultipleOutline
                           style={{

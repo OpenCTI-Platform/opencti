@@ -69,7 +69,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: -10,
+    insetInlineEnd: -10,
   },
   inputLabel: {
     float: 'inline-start',

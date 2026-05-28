@@ -85,7 +85,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                   onClick={() => {
                     arrayHelpers.remove(index);
                   }}
-                  style={{ position: 'absolute', right: -10, top: 5 }}
+                  style={{ position: 'absolute', insetInlineEnd: -10, top: 5 }}
                 >
                   <DeleteOutlined />
                 </IconButton>
@@ -227,7 +227,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                         },
                       });
                     }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
+                    style={{ position: 'absolute', insetInlineEnd: -10, top: 5 }}
                   >
                     <DeleteOutlined />
                   </IconButton>

@@ -101,7 +101,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const { forceUpdate } = useForceUpdate();
 
   const basePath = PATH_CHANNEL(channelId);
-  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -132,7 +132,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               )}
             />
           </Routes>
-          <div style={{ paddingRight }}>
+          <div style={{ paddingInlineEnd: paddingInlineEnd }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
               { label: t_i18n('Channels'), link: PATH_CHANNELS },

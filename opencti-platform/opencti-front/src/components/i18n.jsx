@@ -169,9 +169,9 @@ export const useFormatter = () => {
   const translate = (message, { id, values } = {}) => intl.formatMessage({ id: id ?? message }, values);
   const formatNumber = (number) => {
     if (number === null || number === '') {
-      return EMPTY_VALUE;
+      return 0;
     }
-    return `${intl.formatNumber(numberFormat(number).number)}${
+    return `${intl.formatNumber(numberFormat(number).number)}test${
       numberFormat(number).symbol
     }`;
   };

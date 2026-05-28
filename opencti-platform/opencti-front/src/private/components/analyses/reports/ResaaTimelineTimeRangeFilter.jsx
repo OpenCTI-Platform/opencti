@@ -731,8 +731,8 @@ const ResaaTimelineTimeRangeFilter = ({
           sx={{
             position: 'absolute',
             top: TIMELINE_RAIL_TOP_OFFSET,
-            left: 0,
-            right: 0,
+            insetInlineStart: 0,
+            insetInlineEnd: 0,
             height: TIMELINE_RAIL_BAND_HEIGHT,
             pointerEvents: 'none',
           }}
@@ -743,8 +743,8 @@ const ResaaTimelineTimeRangeFilter = ({
               margin={{
                 top: SCATTER_MARGIN_TOP,
                 bottom: 0,
-                left: 0,
-                right: 0,
+                insetInlineStart: 0,
+                insetInlineEnd: 0,
               }}
             >
               <XAxis
@@ -779,8 +779,8 @@ const ResaaTimelineTimeRangeFilter = ({
           sx={{
             position: 'absolute',
             top: TIMELINE_RAIL_TOP_OFFSET,
-            left: 0,
-            right: 0,
+            insetInlineStart: 0,
+            insetInlineEnd: 0,
             bottom: 0,
           }}
         >

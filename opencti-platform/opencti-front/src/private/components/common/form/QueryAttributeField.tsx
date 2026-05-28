@@ -130,7 +130,7 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    style={{ position: 'absolute', right: 0, top: 5 }}
+                    style={{ position: 'absolute', insetInlineEnd: 0, top: 5 }}
                   >
                     <DeleteOutlined />
                   </IconButton>

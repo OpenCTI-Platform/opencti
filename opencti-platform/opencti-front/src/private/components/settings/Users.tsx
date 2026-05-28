@@ -214,7 +214,8 @@ const Users = () => {
     <div
       style={{
         margin: 0,
-        padding: '0 200px 50px 0',
+        paddingInlineEnd: '200px',
+        paddingInlineStart: '50px',
       }}
       data-testid="users-settings-page"
     >

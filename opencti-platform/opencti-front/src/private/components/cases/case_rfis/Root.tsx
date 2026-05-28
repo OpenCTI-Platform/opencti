@@ -98,11 +98,11 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     return <ErrorNotFound />;
   }
   const basePath = PATH_RFI(caseId);
-  const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
-    <div style={{ paddingRight }}>
+    <div style={{ paddingInlineEnd: paddingInlineEnd }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
         { label: t_i18n('Requests for information'), link: PATH_RFIS },

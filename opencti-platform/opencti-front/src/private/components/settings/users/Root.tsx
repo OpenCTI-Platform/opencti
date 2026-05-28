@@ -119,7 +119,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {data ? (
-        <div style={{ paddingInlineEnd: 200 }}>
+        <div style={{ paddingInlineEnd: '200px' }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },

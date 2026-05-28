@@ -44,8 +44,8 @@ const styles = (theme) => ({
   },
   noResult: {
     top: 95,
-    left: 16,
-    right: 0,
+    insetInlineStart: 16,
+    insetInlineEnd: 0,
     position: 'absolute',
     color: theme.palette.text.primary,
     fontSize: 15,

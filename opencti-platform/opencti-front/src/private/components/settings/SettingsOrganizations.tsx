@@ -22,7 +22,8 @@ import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    paddingInlineEnd: '200px',
+    paddingInlineStart: '50px',
   },
 }));
 

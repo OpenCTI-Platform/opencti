@@ -80,7 +80,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
             </>
           )}
         />
-        <ListItemIcon style={{ position: 'absolute', right: -10 }}>
+        <ListItemIcon style={{ position: 'absolute', insetInlineEnd: -10 }}>
           <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItemButton>
@@ -108,7 +108,7 @@ export const NarrativeWithSubnarrativeLineDummy: FunctionComponent = () => {
           <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
         }
       />
-      <ListItemIcon style={{ position: 'absolute', right: -10 }}>
+      <ListItemIcon style={{ position: 'absolute', insetInlineEnd: -10 }}>
         <KeyboardArrowRightOutlined color="disabled" />
       </ListItemIcon>
     </ListItem>

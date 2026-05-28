@@ -124,7 +124,9 @@ const Feed = () => {
     <div data-testid="data-sharing-csv-feeds-page">
       <Box sx={{
         margin: 0,
-        padding: '0 200px 50px 0',
+        paddingInlineEnd: '200px',
+        paddingInlineStart: '50px',
+
       }}
       >
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />

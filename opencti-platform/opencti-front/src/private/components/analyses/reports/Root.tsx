@@ -104,11 +104,11 @@ const RootReport = () => {
             if (props.report) {
               const { report } = props;
               const isOverview = location.pathname === basePath;
-              const paddingRight = getPaddingRight(location.pathname, basePath, false);
+              const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
               const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
               const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
               return (
-                <div style={{ paddingRight }} data-testid="report-details-page">
+                <div style={{ paddingInlineEnd: paddingInlineEnd }} data-testid="report-details-page">
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('Reports'), link: PATH_REPORTS },

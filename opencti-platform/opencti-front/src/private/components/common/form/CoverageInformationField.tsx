@@ -136,7 +136,7 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
+                    style={{ position: 'absolute', insetInlineEnd: -10, top: 5 }}
                   >
                     <DeleteOutlined />
                   </IconButton>
@@ -301,7 +301,7 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                           },
                         });
                       }}
-                      style={{ position: 'absolute', right: -10, top: 5 }}
+                      style={{ position: 'absolute', insetInlineEnd: -10, top: 5 }}
                     >
                       <DeleteOutlined />
                     </IconButton>
