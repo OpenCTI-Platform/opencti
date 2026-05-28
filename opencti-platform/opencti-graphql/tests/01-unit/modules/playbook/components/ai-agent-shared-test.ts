@@ -27,6 +27,11 @@ vi.mock('../../../../../src/config/conf', () => ({
   PLATFORM_VERSION: '6.0.0-test',
 }));
 
+vi.mock('../../../../../src/utils/access', () => ({
+  AUTOMATION_MANAGER_USER: { id: 'automation-manager', user_email: 'AUTOMATION MANAGER' },
+  executionContext: vi.fn((source: string) => ({ source })),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────────
 
 import nconf from 'nconf';
