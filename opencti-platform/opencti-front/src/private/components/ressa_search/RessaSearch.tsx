@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -1257,6 +1258,8 @@ const RessaSearch = () => {
                                     <TableCell>{result.registrationDate}</TableCell>
                                     <TableCell>
                                       <Button
+                                        component={Link}
+                                        to={`/dashboard/id/${result.id}`}
                                         size="small"
                                         variant="outlined"
                                         startIcon={<Visibility fontSize="small" />}
