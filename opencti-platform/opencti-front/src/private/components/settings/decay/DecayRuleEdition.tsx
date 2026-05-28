@@ -23,7 +23,7 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { enabledFilters } from './utils/enabledFilters';
 import { useTheme } from '@mui/material/styles';
 
@@ -44,7 +44,7 @@ interface DecayRuleEditionFormData {
   decay_pound: number;
   decay_points: number[];
   decay_revoke_score: number;
-  decay_filters: string;
+  decay_filters?: string | null;
 }
 
 interface DecayRuleEditionFormProps {
