@@ -36,8 +36,8 @@ docker run -d --restart always -v /var/YOUR_DATA_DIR:/data -p 80:80 klokantech/o
 
 Download on your computer the OpenCTI JSON styles (you will have to upload it through the web UI later).
 
-- [OpenCTI Map Dark mode style (filigran-dark2.json)](https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-dark2.json)
-- [OpenCTI Map Light mode style (filigran-light2.json)](https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-light2.json)
+- [OpenCTI Map Dark mode style (filigran-dark2.json)](https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-dark3.json)
+- [OpenCTI Map Light mode style (filigran-light2.json)](https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-light3.json)
 
 Now, you can access to the map server, you should see the following page:
 
