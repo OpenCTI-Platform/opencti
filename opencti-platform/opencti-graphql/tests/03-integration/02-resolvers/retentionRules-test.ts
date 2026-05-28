@@ -1,11 +1,8 @@
-import { afterAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import type { RetentionRuleAddInput } from '../../../src/generated/graphql';
 import { RetentionRuleScope, RetentionUnit } from '../../../src/generated/graphql';
-import { testContext } from '../../utils/testQuery';
-import { checkRetentionRule } from '../../../src/modules/retentionRules/retentionRules-domain';
-import * as conf from '../../../src/config/conf';
 
 // ---------------------------------------------------------------------------
 // GraphQL fragments
@@ -583,40 +580,6 @@ describe('RetentionRules module – integration tests', () => {
 
       const count = response.data?.retentionRuleCheck;
       expect(typeof count).toBe('number');
-    });
-
-    it('should throw UnsupportedError for history scope', async () => {
-      const spy = vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(false);
-      try {
-        const input: RetentionRuleAddInput = {
-          name: 'check history unsupported',
-          filters: emptyFilters,
-          max_retention: 30,
-          retention_unit: RetentionUnit.Days,
-          scope: RetentionRuleScope.History,
-        };
-        await expect(checkRetentionRule(testContext, input))
-          .rejects.toThrow('The history scope for retention rules is not enabled on this platform');
-      } finally {
-        spy.mockRestore();
-      }
-    });
-
-    it('should throw UnsupportedError for activity scope', async () => {
-      const spy = vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(false);
-      try {
-        const input: RetentionRuleAddInput = {
-          name: 'check activity unsupported',
-          filters: emptyFilters,
-          max_retention: 30,
-          retention_unit: RetentionUnit.Days,
-          scope: RetentionRuleScope.Activity,
-        };
-        await expect(checkRetentionRule(testContext, input))
-          .rejects.toThrow('The activity scope for retention rules is not enabled on this platform');
-      } finally {
-        spy.mockRestore();
-      }
     });
   });
 

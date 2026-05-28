@@ -198,31 +198,75 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 name="scope"
                 label={t_i18n('Scope')}
                 fullWidth={true}
-                containerstyle={fieldSpacingContainerStyle}
-                disabled={true}
-              >
-                <MenuItem value="knowledge">{t_i18n('Knowledge')}</MenuItem>
-              </Field>
-              <Box sx={{
-                paddingTop: 4,
-                display: 'flex',
-                alignItems: 'center',
-                gap: theme.spacing(1),
-                marginBottom: theme.spacing(1),
-              }}
-              >
-                <Filters
-                  availableFilterKeys={availableFilterKeys}
-                  helpers={helpers}
-                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                />
-              </Box>
-              <FilterIconButton
-                filters={filters}
-                helpers={helpers}
-                redirection
-                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                onChange={setFieldValue}
+                options={[
+                  { value: 'activity', label: t_i18n('Activity') },
+                  { value: 'file', label: t_i18n('File') },
+                  { value: 'history', label: t_i18n('History') },
+                  { value: 'knowledge', label: t_i18n('Knowledge') },
+                  { value: 'workbench', label: t_i18n('Workbench') },
+                ]}
+                renderOption={(prop: Record<string, unknown>, option: FieldOption) => (
+                  <li {...prop}>
+                    <div className={classes.text}>{t_i18n(option.label)}</div>
+                  </li>
+                )}
+                textfieldprops={{
+                  label: t_i18n('Scope'),
+                }}
               />
+              {formValues.scope?.value === 'activity'
+                && (
+                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                    {t_i18n('The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)')}
+                  </Alert>
+                )
+              }
+              {formValues.scope?.value === 'file'
+                && (
+                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                    {`${t_i18n('The retention policy will be applied on global files (files contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
+                  </Alert>
+                )
+              }
+              {formValues.scope?.value === 'workbench'
+                && (
+                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                    {t_i18n('The retention policy will be applied on all workbenches (both global and entity-attached)')}
+                  </Alert>
+                )
+              }
+              {formValues.scope?.value === 'history'
+                && (
+                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                    {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
+                  </Alert>
+                )
+              }
+              {formValues.scope?.value === 'knowledge' && (
+                <>
+                  <Box sx={{
+                    paddingTop: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: theme.spacing(1),
+                    marginBottom: theme.spacing(1),
+                  }}
+                  >
+                    <Filters
+                      availableFilterKeys={availableFilterKeys}
+                      helpers={helpers}
+                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                    />
+                  </Box>
+                  <FilterIconButton
+                    filters={filters}
+                    helpers={helpers}
+                    redirection
+                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  />
+                </>
+              )}
               <FormButtonContainer>
                 <Button
                   variant="secondary"
