@@ -53,13 +53,13 @@ APP__HTTPS_CERT__COOKIE_SAMESITE=lax
 
 Cookies are removed in the following scenarios:
 
-- **User logout**: when user clicks the logout button, the server destroys the session and instructs the browser to delete the cookie.
+- **User logout**: when the user clicks the logout button, the server destroys the session and instructs the browser to delete the cookie.
 
 - **Session expiry**: Once the server-side session is gone, the cookie is effectively invalid — the next request returns an authentication error and the frontend redirects to the login page.
 
-- **Administrative session kill**: and administrators can forcefully terminate user sessions from the platform UI or API. This destroys the server-side session, making the cookie invalid on the next request.
+- **Administrative session kill**: administrators can forcefully terminate user sessions from the platform UI or API. This destroys the server-side session, making the cookie invalid on the next request.
 
-- **when the user closes the browser window or tab** when `session_cookie: true` configuration is enabled.
+- **Browser window or tab closed**: when the `session_cookie: true` configuration is enabled, the cookie is only removed when the user closes the browser window or tab.
 
 ## What's next?
 
