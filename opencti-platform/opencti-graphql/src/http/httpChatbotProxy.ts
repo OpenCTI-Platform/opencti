@@ -29,8 +29,10 @@ const DEFAULT_XTM_TIMEOUT = 2 * 60 * 1000; // 2 minutes.
 const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
 
 // TTL (in minutes) for caching XTM One agent responses in Redis. The cache
-// is keyed by agent_slug + content hash so that reopening AI Insights for the
-// same entity within the window returns instantly. Set to 0 to disable.
+// is keyed by sha256(agent_slug + opencti-draft-id + content) so reopening
+// AI Insights for the same entity within the window returns instantly, and
+// live-workspace and draft views never share a cache entry. Set to 0 to
+// disable.
 const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number(nconf.get('ai:agents_refresh_timeout') ?? 1440);
 const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60;
 
@@ -492,11 +494,14 @@ const extractFinalContent = (raw: string): string | null => {
 // Body: { agent_slug, content, force_refresh? }
 // AskIA / Insight (no files), streamed to client
 //
-// Responses are cached in Redis keyed by sha256(agent_slug + content) so that
-// reopening AI Insights for the same entity within the TTL window
+// Responses are cached in Redis keyed by
+// sha256(agent_slug + opencti-draft-id + content) so that reopening AI
+// Insights for the same entity within the TTL window
 // (ai:agents_refresh_timeout, in minutes, default 1440) returns instantly
-// instead of re-running an expensive agent execution. Pass `force_refresh: true`
-// to bypass the cache (e.g. when the user clicks the retry button).
+// instead of re-running an expensive agent execution. The draft id is
+// part of the key so live-workspace and draft views never share a cache
+// entry. Pass `force_refresh: true` to bypass the cache (e.g. when the
+// user clicks the retry button).
 export const postAgentMessageStream = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);

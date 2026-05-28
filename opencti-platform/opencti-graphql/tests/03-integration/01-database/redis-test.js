@@ -211,4 +211,28 @@ describe('Redis XTM agent response cache', () => {
     const cached = await redisGetXtmAgentResponse(cacheKey);
     expect(cached).toBeNull();
   });
+
+  it('should return null when the cached payload is valid JSON but the wrong shape', async () => {
+    // Cover the cases a defensive shape check should reject: bare scalars,
+    // arrays, objects missing `content`, and objects whose `content` /
+    // `cached_at` are not strings. Any of these slipping through would
+    // make the consumer emit an SSE `done` event with `content:
+    // undefined`, which is exactly what the validation prevents.
+    const corruptPayloads = [
+      JSON.stringify('a bare string'),
+      JSON.stringify(42),
+      JSON.stringify(null),
+      JSON.stringify(['arr']),
+      JSON.stringify({ cached_at: '2026-05-28T00:00:00.000Z' }), // missing content
+      JSON.stringify({ content: 'x' }), // missing cached_at
+      JSON.stringify({ content: 123, cached_at: '2026-05-28T00:00:00.000Z' }), // non-string content
+      JSON.stringify({ content: 'x', cached_at: 123 }), // non-string cached_at
+    ];
+    for (const payload of corruptPayloads) {
+      const cacheKey = `agent-cache-shape-${uuid()}`;
+      await getClientBase().set(`xtm_agent_cache:${cacheKey}`, payload, 'EX', 60);
+      const cached = await redisGetXtmAgentResponse(cacheKey);
+      expect(cached, `payload ${payload} should be rejected`).toBeNull();
+    }
+  });
 });

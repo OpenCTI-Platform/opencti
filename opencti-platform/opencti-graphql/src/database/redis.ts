@@ -876,11 +876,29 @@ export interface XtmAgentCachedResponse {
   cached_at: string;
 }
 
+const isXtmAgentCachedResponse = (value: unknown): value is XtmAgentCachedResponse => {
+  return !!value
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && typeof (value as XtmAgentCachedResponse).content === 'string'
+    && typeof (value as XtmAgentCachedResponse).cached_at === 'string';
+};
+
 export const redisGetXtmAgentResponse = async (cacheKey: string): Promise<XtmAgentCachedResponse | null> => {
   try {
     const raw = await getClientBase().get(`${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`);
     if (!raw) return null;
-    return JSON.parse(raw) as XtmAgentCachedResponse;
+    const parsed = JSON.parse(raw);
+    // Defensive shape check — Redis can hold any JSON the writer puts in
+    // (legacy entries, manual edits, attacker-set keys), so refuse to
+    // replay anything that isn't a `{ content: string, cached_at: string }`
+    // object instead of letting the consumer emit a `done` SSE event with
+    // `content: undefined`.
+    if (!isXtmAgentCachedResponse(parsed)) {
+      logApp.warn('[XTM One] Agent response cache payload has unexpected shape, ignoring', { cacheKey });
+      return null;
+    }
+    return parsed;
   } catch (err) {
     logApp.warn('[XTM One] Agent response cache read failed', { cause: err });
     return null;
