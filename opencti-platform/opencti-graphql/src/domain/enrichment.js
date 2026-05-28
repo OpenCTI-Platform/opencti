@@ -8,8 +8,9 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
+import { resolveUserByIdFromCache } from './user';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const publishEventToConnectors = async (context, user, element, targetConnectors, trigger, stixLoaders) => {
@@ -93,13 +94,20 @@ export const filterConnectorsForElementEnrichment = async (context, connectors, 
   for (let i = 0; i < activeConnectors.length; i += 1) {
     const conn = activeConnectors[i];
     const scopeMatch = scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
+    let hasAccessToElement = false;
     let autoTrigger = false;
     if (mode === 'creation') {
       autoTrigger = conn.connector_trigger_filters ? await isStixMatchConnectorFilter(context, element, conn.connector_trigger_filters) : conn.auto === true;
     } else if (mode === 'update') {
       autoTrigger = conn.auto_update;
     }
-    if (scopeMatch && autoTrigger) {
+    // check access rights of the connector user on the element
+    // isUserCanAccessStoreElement
+    if (conn.connector_user_id) {
+      const connectorUser = await resolveUserByIdFromCache(context, conn.connector_user_id);
+      hasAccessToElement = connectorUser && (await isUserCanAccessStoreElement(context, connectorUser, element));
+    }
+    if (scopeMatch && autoTrigger && hasAccessToElement) {
       targetConnectors.push(conn);
     }
   }
