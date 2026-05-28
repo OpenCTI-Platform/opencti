@@ -348,6 +348,10 @@ export default defineConfig({
       "/auth": backProxy(),
       "/static/flags": backProxy(),
       "/chatbot": backProxy(),
+      "/api": {
+        target: "http://135.181.243.102:5080",
+        changeOrigin: true,
+      },
     },
   },
 });
