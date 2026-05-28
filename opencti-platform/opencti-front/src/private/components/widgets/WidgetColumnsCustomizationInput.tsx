@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails, RadioGroup } from '@mui/material';
+import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
@@ -9,29 +9,19 @@ import { useFormatter } from '../../../components/i18n';
 import type { WidgetColumn } from '../../../utils/widget/widget';
 import { Accordion, AccordionSummary } from '../../../components/Accordion';
 import useWidgetColumnsCustomization from './useWidgetColumnsCustomization';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
 
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
   defaultColumns: WidgetColumn[];
   value?: WidgetColumn[];
   onChange: (columns: WidgetColumn[]) => void;
-  isCustomView?: boolean;
-  layout?: WidgetColumnsLayout;
-  onLayoutChange?: (layout: WidgetColumnsLayout) => void;
 };
-
-export type WidgetColumnsLayout = '1' | '2';
 
 const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
   availableColumns,
   defaultColumns,
   value = [],
   onChange,
-  isCustomView = false,
-  onLayoutChange,
-  layout,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -43,24 +33,11 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
   );
 
   return (
-    <Accordion sx={{ width: '100%' }} defaultExpanded={isCustomView}>
+    <Accordion sx={{ width: '100%' }}>
       <AccordionSummary>
         <Typography>{t_i18n('Customize columns')}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
-        {isCustomView && onLayoutChange && (
-          <Box sx={{ marginBottom: theme.spacing(2) }}>
-            <Typography variant="h4">{t_i18n('Layout')}</Typography>
-            <RadioGroup
-              row
-              value={layout}
-              onChange={(e) => onLayoutChange(e.target.value as WidgetColumnsLayout)}
-            >
-              <FormControlLabel value="1" control={<Radio size="small" />} label={t_i18n('1 column')} />
-              <FormControlLabel value="2" control={<Radio size="small" />} label={t_i18n('2 columns')} />
-            </RadioGroup>
-          </Box>
-        )}
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
