@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -50,6 +51,7 @@ import FilterPopover from './FilterPopover';
 import FilterSidebar, { FilterGroup } from './FilterSidebar';
 import { RawQueryResponse } from './mockRessaSearchApi';
 import { rawQueryApi } from './ressaSearchApi';
+import { clearRessaSearchSession, loadRessaSearchSession, RESSA_SEARCH_QUERY_PARAM, saveRessaSearchSession } from './ressaSearchSession';
 
 interface SearchExample {
   title: string;
@@ -147,6 +149,9 @@ const parseSearchQuery = (query: string): FilterGroup[] => {
 
 const RessaSearch = () => {
   const { t_i18n } = useFormatter();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const hasRestoredFromUrlRef = useRef(false);
+  const initialQueryRef = useRef(searchParams.get(RESSA_SEARCH_QUERY_PARAM));
   const [searchValue, setSearchValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
@@ -255,20 +260,25 @@ const RessaSearch = () => {
     },
   ];
 
-  const handleSearch = async () => {
-    if (!searchValue.trim() || isSearching) return;
+  const runSearch = useCallback(async (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed || isSearching) return;
+
+    hasRestoredFromUrlRef.current = true;
     setHasSearched(true);
     setSearchError(null);
     setIsSearching(true);
     setSelectedRows([]);
     setPage(0);
 
-    const filters = parseSearchQuery(searchValue);
+    const filters = parseSearchQuery(trimmed);
     setExtractedFilters(filters);
+    setSearchValue(trimmed);
+    setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
 
     try {
       const request = {
-        query: searchValue,
+        query: trimmed,
         maxRelationDepth: 20,
         maxPrimaryDocuments: 20,
         maxRelatedEntities: 20,
@@ -282,14 +292,70 @@ const RessaSearch = () => {
 
       const response = await rawQueryApi(request);
       setRawResponse(response);
+      saveRessaSearchSession({
+        searchValue: trimmed,
+        rawResponse: response,
+        extractedFilters: filters,
+        page: 0,
+        rowsPerPage,
+      });
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       setRawResponse(null);
       setSearchError(message);
+      clearRessaSearchSession();
     } finally {
       setIsSearching(false);
     }
+  }, [isSearching, rowsPerPage, setSearchParams]);
+
+  const handleSearch = () => {
+    runSearch(searchValue);
   };
+
+  const clearSearchState = useCallback(() => {
+    hasRestoredFromUrlRef.current = false;
+    clearRessaSearchSession();
+    setSearchParams({}, { replace: true });
+    setSearchValue('');
+    setHasSearched(false);
+    setExtractedFilters([]);
+    setRawResponse(null);
+    setSearchError(null);
+    setPage(0);
+    setSelectedRows([]);
+  }, [setSearchParams]);
+
+  useEffect(() => {
+    const q = initialQueryRef.current;
+    if (!q || hasRestoredFromUrlRef.current) return;
+    hasRestoredFromUrlRef.current = true;
+
+    const saved = loadRessaSearchSession();
+    if (saved?.searchValue === q && saved.rawResponse) {
+      setSearchValue(saved.searchValue);
+      setRawResponse(saved.rawResponse);
+      setExtractedFilters(saved.extractedFilters);
+      setPage(saved.page ?? 0);
+      setRowsPerPage(saved.rowsPerPage ?? 20);
+      setHasSearched(true);
+      setSearchError(null);
+      return;
+    }
+
+    runSearch(q);
+  }, [runSearch]);
+
+  useEffect(() => {
+    if (!hasSearched || !rawResponse || !searchValue.trim()) return;
+    saveRessaSearchSession({
+      searchValue,
+      rawResponse,
+      extractedFilters,
+      page,
+      rowsPerPage,
+    });
+  }, [page, rowsPerPage, hasSearched, rawResponse, searchValue, extractedFilters]);
 
   const handleSearchIconClick = () => {
     if (inputRef.current) {
@@ -402,14 +468,7 @@ const RessaSearch = () => {
   };
 
   const handleExampleClick = (example: SearchExample) => {
-    setSearchValue(example.query);
-    setHasSearched(false);
-    setExtractedFilters([]);
-    setRawResponse(null);
-    setSearchError(null);
-    setTimeout(() => {
-      handleSearch();
-    }, 0);
+    runSearch(example.query);
   };
 
   return (
@@ -563,13 +622,7 @@ const RessaSearch = () => {
                   <InputAdornment position="end">
                     <IconButton
                       size="small"
-                      onClick={() => {
-                        setSearchValue('');
-                        setHasSearched(false);
-                        setExtractedFilters([]);
-                        setRawResponse(null);
-                        setSearchError(null);
-                      }}
+                      onClick={clearSearchState}
                       sx={{ padding: 0.5 }}
                     >
                       <Close fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -1257,6 +1310,8 @@ const RessaSearch = () => {
                                     <TableCell>{result.registrationDate}</TableCell>
                                     <TableCell>
                                       <Button
+                                        component={Link}
+                                        to={`/dashboard/id/${result.id}`}
                                         size="small"
                                         variant="outlined"
                                         startIcon={<Visibility fontSize="small" />}
