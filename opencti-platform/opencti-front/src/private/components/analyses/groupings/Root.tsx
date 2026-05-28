@@ -109,10 +109,10 @@ const RootGrouping = () => {
             if (props.grouping) {
               const { grouping } = props;
               const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
-              const paddingRight = getPaddingRight(location.pathname, basePath, false);
+              const paddingInlineEnd = getPaddingRight(location.pathname, basePath, false);
               const currentAccessRight = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
               return (
-                <div style={{ paddingRight }}>
+                <div style={{ paddingInlineEnd: paddingInlineEnd }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('Groupings'), link: PATH_GROUPINGS },
