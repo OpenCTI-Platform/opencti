@@ -279,11 +279,11 @@ const RessaSearch = () => {
     try {
       const request = {
         query: trimmed,
-        maxRelationDepth: 20,
-        maxPrimaryDocuments: 20,
-        maxRelatedEntities: 20,
-        maxRelationships: 20,
-        maxRelatedDocuments: 20,
+        maxRelationDepth: 200,
+        maxPrimaryDocuments: 200,
+        maxRelatedEntities: 200,
+        maxRelationships: 200,
+        maxRelatedDocuments: 200,
         includeRelationshipDocuments: true,
         includeNestedObjects: true,
         includeMetadataAndHistory: true,
@@ -870,8 +870,7 @@ const RessaSearch = () => {
               marginTop: 4,
               display: 'flex',
               gap: 0,
-              maxHeight: 'calc(100vh - 300px)',
-              minHeight: 400,
+              alignItems: 'flex-start',
               borderRadius: 1,
               border: '1px solid',
               borderColor: 'divider',
@@ -904,25 +903,15 @@ const RessaSearch = () => {
             )}
 
             {/* Main Content Area */}
-            <Box sx={{ flex: 5, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <Box sx={{ flex: 5, minWidth: 0 }}>
               <Card
                 sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 0,
-                  overflow: 'hidden',
                   boxShadow: 'none',
                 }}
               >
                 <CardContent
                   sx={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
                     padding: 0,
-                    minHeight: 0,
-                    overflow: 'hidden',
                   }}
                 >
                   {/* Results Count and Save Search Button */}
@@ -983,21 +972,16 @@ const RessaSearch = () => {
                   {/* Results Content */}
                   <Box
                     sx={{
-                      flex: 1,
                       display: 'flex',
                       flexDirection: 'column',
                       padding: 2,
-                      minHeight: 0,
-                      overflow: 'auto',
                     }}
                   >
                     {hasResults ? (
                       <Box
                         sx={{
-                          flex: 1,
                           display: 'flex',
                           flexDirection: 'column',
-                          minHeight: 0,
                         }}
                       >
                         {/* Pagination Info */}
@@ -1143,8 +1127,8 @@ const RessaSearch = () => {
                         </Box>
 
                         {/* Table */}
-                        <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
-                          <Table stickyHeader>
+                        <TableContainer>
+                          <Table>
                             <TableHead>
                               <TableRow>
                                 <TableCell padding="checkbox" sx={{ width: 48 }}>

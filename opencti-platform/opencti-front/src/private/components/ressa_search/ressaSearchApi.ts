@@ -21,11 +21,11 @@ const defaultBaseUrl = () => {
 
 const buildRawQueryUrl = (baseUrl: string, request: RawQueryRequest) => {
   const params = new URLSearchParams();
-  params.set('maxRelationDepth', String(request.maxRelationDepth ?? 20));
-  params.set('maxPrimaryDocuments', String(request.maxPrimaryDocuments ?? 20));
-  params.set('maxRelatedEntities', String(request.maxRelatedEntities ?? 20));
-  params.set('maxRelationships', String(request.maxRelationships ?? 20));
-  params.set('maxRelatedDocuments', String(request.maxRelatedDocuments ?? 20));
+  params.set('maxRelationDepth', String(request.maxRelationDepth ?? 200));
+  params.set('maxPrimaryDocuments', String(request.maxPrimaryDocuments ?? 200));
+  params.set('maxRelatedEntities', String(request.maxRelatedEntities ?? 200));
+  params.set('maxRelationships', String(request.maxRelationships ?? 200));
+  params.set('maxRelatedDocuments', String(request.maxRelatedDocuments ?? 200));
   params.set('includeRelationshipDocuments', String(request.includeRelationshipDocuments ?? true));
   params.set('includeNestedObjects', String(request.includeNestedObjects ?? true));
   params.set('includeMetadataAndHistory', String(request.includeMetadataAndHistory ?? true));
