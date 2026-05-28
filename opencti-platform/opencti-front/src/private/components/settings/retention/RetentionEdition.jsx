@@ -277,7 +277,7 @@ const RetentionEditionContainer = (props) => {
                 color="primary"
                 onClick={submitForm}
                 classes={{ root: classes.button }}
-                disabled={!verified || isSubmitting}
+                disabled={(retentionRule.scope === 'knowledge' && !verified) || isSubmitting}
               >
                 {t_i18n('Update')}
               </Button>

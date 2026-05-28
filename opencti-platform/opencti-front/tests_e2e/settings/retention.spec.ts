@@ -83,6 +83,10 @@ test('Retention policy CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await nameInput.fill(updatedName);
   await page.getByRole('textbox', { name: 'Maximum retention' }).fill('60');
 
+  // For knowledge scope, changing max_retention resets verified → must click Verify before Update
+  await retentionPage.getVerifyButton().click();
+  await expect(retentionPage.getDrawerUpdateButton()).toBeEnabled({ timeout: 15000 });
+
   // Submit the update
   await retentionPage.getDrawerUpdateButton().click();
 
