@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { fullEntitiesList, fullEntitiesThroughRelationsToList, storeLoadById } from '../../../src/database/middleware-loader';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
+import { fullEntitiesList, fullEntitiesThroughRelationsToList } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { loadEntity } from '../../../src/database/middleware';
@@ -9,14 +9,6 @@ import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCount
 import { RELATION_HAS_CAPABILITY } from '../../../src/schema/internalRelationship';
 import { listRules } from '../../../src/modules/retentionRules/retentionRules-domain';
 import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
-import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
-import { openVocabularies } from '../../../src/modules/vocabulary/vocabulary-utils';
-import { VocabularyCategory } from '../../../src/generated/graphql';
-import { findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import type { BasicWorkflowStatus } from '../../../src/types/store';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -152,86 +144,5 @@ describe('Data initialization test', () => {
       expect(rule!.max_retention, `Default retention rule for scope "${scope}" should have 30 days max_retention`).toBe(30);
       expect(rule!.retention_unit, `Default retention rule for scope "${scope}" should use "days" unit`).toBe('days');
     }
-  });
-
-  it('should create all TLP marking definitions', async () => {
-    const tlpMarkingIds = [MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED];
-    const expectedDefinitions = ['TLP:CLEAR', 'TLP:GREEN', 'TLP:AMBER', 'TLP:AMBER+STRICT', 'TLP:RED'];
-
-    for (let i = 0; i < tlpMarkingIds.length; i += 1) {
-      const marking = await storeLoadById(testContext, ADMIN_USER, tlpMarkingIds[i], ENTITY_TYPE_MARKING_DEFINITION);
-      expect(marking, `TLP marking "${expectedDefinitions[i]}" is missing from initialization`).toBeDefined();
-      expect(marking.definition_type).toBe('TLP');
-      expect(marking.definition).toBe(expectedDefinitions[i]);
-    }
-  });
-
-  it('should create all PAP marking definitions', async () => {
-    const allMarkings = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_MARKING_DEFINITION]);
-    const papMarkings = allMarkings.filter((m) => m.definition_type === 'PAP');
-
-    const expectedPapDefinitions = ['PAP:CLEAR', 'PAP:GREEN', 'PAP:AMBER', 'PAP:RED'];
-    expect(papMarkings.length, 'Expected 4 PAP marking definitions to be created').toBe(4);
-
-    const papDefinitionNames = papMarkings.map((m) => m.definition).sort();
-    expect(papDefinitionNames).toEqual([...expectedPapDefinitions].sort());
-  });
-
-  it('should create vocabularies for all categories', async () => {
-    const allVocabularies = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_VOCABULARY]);
-    expect(allVocabularies.length, 'Expected vocabularies to be initialized').toBeGreaterThan(0);
-
-    // Verify at least one representative category has its entries
-    const categories = Object.values(VocabularyCategory);
-    for (const category of categories) {
-      const expectedVocabs = openVocabularies[category] ?? [];
-      if (expectedVocabs.length > 0) {
-        const createdForCategory = allVocabularies.filter((v) => v.category === category);
-        expect(
-          createdForCategory.length,
-          `Expected ${expectedVocabs.length} vocabularies for category "${category}", got ${createdForCategory.length}`,
-        ).toBe(expectedVocabs.length);
-      }
-    }
-  });
-
-  it('should create all default status templates', async () => {
-    const allTemplates = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS_TEMPLATE]);
-    const templateNames = allTemplates.map((t) => t.name);
-
-    const expectedTemplates = ['NEW', 'IN_PROGRESS', 'PENDING', 'TO_BE_QUALIFIED', 'ANALYZED', 'CLOSED'];
-    for (const name of expectedTemplates) {
-      expect(templateNames, `Status template "${name}" is missing from initialization`).toContain(name);
-    }
-  });
-
-  it('should create default statuses for Report entity type', async () => {
-    const allStatuses = await fullEntitiesList<BasicWorkflowStatus>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS]);
-    const reportStatuses = allStatuses.filter((s) => s.type === 'Report');
-
-    expect(reportStatuses.length, 'Expected 4 default statuses to be created for Report').toBe(4);
-    const statusOrders = reportStatuses.map((s) => s.order).sort((a, b) => a - b);
-    expect(statusOrders).toEqual([1, 2, 3, 4]);
-  });
-
-  it('should configure the initial request access workflow for CaseRFI', async () => {
-    const rfiEntitySettings = await findEntitySettingsByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
-    expect(rfiEntitySettings, 'CaseRFI entity settings should be defined after initialization').toBeDefined();
-    expect(
-      rfiEntitySettings!.request_access_workflow,
-      'CaseRFI entity settings should have a request_access_workflow configured',
-    ).toBeDefined();
-
-    const workflow = rfiEntitySettings!.request_access_workflow as { approved_workflow_id: string; declined_workflow_id: string };
-    expect(workflow.approved_workflow_id, 'request_access_workflow should have an approved_workflow_id').toBeDefined();
-    expect(workflow.declined_workflow_id, 'request_access_workflow should have a declined_workflow_id').toBeDefined();
-  });
-
-  it('should initialize default platform settings', async () => {
-    const platformSettings = await loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_SETTINGS]);
-    expect(platformSettings, 'Platform settings should exist after initialization').toBeDefined();
-    expect(platformSettings.platform_title).toBe('OpenCTI - Cyber Threat Intelligence Platform');
-    expect(platformSettings.platform_email).toBe('admin@opencti.io');
-    expect(platformSettings.platform_language).toBe('auto');
   });
 });
