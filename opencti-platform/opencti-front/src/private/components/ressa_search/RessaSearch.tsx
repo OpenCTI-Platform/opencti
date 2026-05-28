@@ -2,7 +2,6 @@ import React, { useMemo, useState, useRef } from 'react';
 import {
   Box,
   Typography,
-  Paper,
   TextField,
   Button,
   InputAdornment,
@@ -19,7 +18,6 @@ import {
   TableHead,
   TableRow,
   Checkbox,
-  TablePagination,
   Select,
   MenuItem,
   FormControl,
@@ -37,8 +35,6 @@ import {
   History,
   ErrorOutline,
   ArrowForward,
-  Edit,
-  Refresh,
   FilterList,
   DescriptionOutlined,
   Close,
@@ -49,14 +45,15 @@ import {
   Settings,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import SearchListPopover from './SearchListPopover';
 import FilterPopover from './FilterPopover';
 import FilterSidebar, { FilterGroup } from './FilterSidebar';
-import { mockRawQueryApi, RawQueryResponse } from './mockRessaSearchApi';
+import { RawQueryResponse } from './mockRessaSearchApi';
+import { rawQueryApi } from './ressaSearchApi';
 
 interface SearchExample {
   title: string;
+  query: string;
   filters: Array<{ key: string; value: string; type?: 'operator' }>;
 }
 
@@ -82,9 +79,22 @@ const parseSearchQuery = (query: string): FilterGroup[] => {
 
   // Regular expression to match key: "value" patterns (handles keys with underscores)
   const keyValuePattern = /(\w+(?:_\w+)*):\s*"([^"]+)"/g;
+  // SPL-like pattern used by the raw query API: key="value"
+  const splEqualsPattern = /(\w+(?:_\w+)*)="([^"]+)"/g;
   let match;
 
   while ((match = keyValuePattern.exec(query)) !== null) {
+    const key = match[1];
+    const value = match[2];
+
+    if (!filterGroups[key]) {
+      filterGroups[key] = { values: new Set(), checked: new Set() };
+    }
+    filterGroups[key].values.add(value);
+    filterGroups[key].checked.add(value);
+  }
+
+  while ((match = splEqualsPattern.exec(query)) !== null) {
     const key = match[1];
     const value = match[2];
 
@@ -137,9 +147,7 @@ const parseSearchQuery = (query: string): FilterGroup[] => {
 
 const RessaSearch = () => {
   const { t_i18n } = useFormatter();
-  const [searchValue, setSearchValue] = useState(
-    'actor: "Alpha Strike Lab" cve: "CVE-2025-27865" or country: "Iran" and entity_type: "vulnerability" and last_seen: ">=30d" and exploit_available: "true" and exploit_in_the_wild: "true"'
-  );
+  const [searchValue, setSearchValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
   const [page, setPage] = useState(0);
@@ -161,29 +169,29 @@ const RessaSearch = () => {
   const saveIconRef = useRef<HTMLButtonElement>(null);
   const filterIconRef = useRef<HTMLButtonElement>(null);
 
+  const observedDataUrlCredentialsQuery
+    = 'type="observed-data" | spath path=objects{} output=obj | mvexpand obj | spath input=obj path=type output=obj_type | search obj_type="url" | spath input=obj path=extensions{}.login output=login | spath input=obj path=extensions{}.password output=password | spath input=obj path=extensions{}.cookie output=cookie | search login=true AND password=true AND cookie=true | table obj.value login password cookie';
+
   // Mock recent searches data
   const [recentSearches] = useState<RecentSearch[]>([
-    { id: '1', query: 'asn: "12" and country: "Iran"', timestamp: '1 minute ago' },
-    { id: '2', query: 'country: "Iran"', timestamp: 'a week ago' },
-    { id: '3', query: 'severity: "high"', timestamp: '2 weeks ago' },
+    { id: '1', query: observedDataUrlCredentialsQuery, timestamp: '1 minute ago' },
+    { id: '2', query: 'type="report" | table name entity_type created_at updated_at', timestamp: 'a week ago' },
+    { id: '3', query: 'type="vulnerability" | table name standard_id created_at updated_at', timestamp: '2 weeks ago' },
   ]);
 
   // Mock saved searches data
   const [savedSearches] = useState<RecentSearch[]>([
-    { id: '1', query: 'asn: "12" and country: "Iran"', timestamp: '1 minute ago' },
-    { id: '2', query: 'country: "Iran"', timestamp: 'a week ago' },
-    { id: '3', query: 'severity: "high"', timestamp: '2 weeks ago' },
+    { id: '1', query: observedDataUrlCredentialsQuery, timestamp: '1 minute ago' },
+    { id: '2', query: 'type="observed-data" | table internal_id standard_id entity_type', timestamp: 'a week ago' },
+    { id: '3', query: 'type="indicator" | table name standard_id created_at updated_at', timestamp: '2 weeks ago' },
   ]);
 
   // Mock filters data
   const [filters] = useState([
-    { id: '1', name: 'actor', label: ':actor' },
-    { id: '2', name: 'country', label: ':country' },
-    { id: '3', name: 'cve', label: ':cve' },
-    { id: '4', name: 'last_seen', label: ':last_seen' },
-    { id: '5', name: 'org', label: ':org' },
-    { id: '6', name: 'asn', label: ':asn' },
-    { id: '7', name: 'country_code', label: ':country_code' },
+    { id: '1', name: 'type', label: ':type' },
+    { id: '2', name: 'entity_type', label: ':entity_type' },
+    { id: '3', name: 'objects{}', label: ':objects{}' },
+    { id: '4', name: 'extensions{}', label: ':extensions{}' },
   ]);
 
   const searchResults: SearchResult[] = useMemo(() => {
@@ -212,38 +220,37 @@ const RessaSearch = () => {
   }, [rawResponse]);
 
   const totalResults = rawResponse?.stats?.primaryDocumentCount ?? searchResults.length;
+  const pageCount = Math.max(1, Math.ceil(totalResults / rowsPerPage));
+  const safePage = Math.min(page, pageCount - 1);
 
   const searchExamples: SearchExample[] = [
     {
       title: t_i18n('Important banking threats'),
+      query: observedDataUrlCredentialsQuery,
       filters: [
-        { key: 'severity', value: '"high"' },
-        { type: 'operator', key: 'and', value: '' },
-        { key: 'last_seen', value: '"<= 7 days"' },
-        { type: 'operator', key: 'and', value: '' },
-        { key: 'country', value: '"Iran"' },
-        { type: 'operator', key: 'and', value: '' },
-        { key: 'entity_type', value: '"vulnerability"' },
+        { key: 'type', value: '"observed-data"' },
+        { type: 'operator', key: '|', value: '' },
+        { key: 'search', value: 'obj_type="url"' },
+        { type: 'operator', key: '|', value: '' },
+        { key: 'table', value: 'obj.value login password cookie' },
       ],
     },
     {
       title: t_i18n('Important energy threats'),
+      query: 'type="observed-data" | table internal_id standard_id entity_type created_at updated_at',
       filters: [
-        { key: 'severity', value: '"high"' },
-        { type: 'operator', key: 'and', value: '' },
-        { key: 'last_seen', value: '"<= 7 days"' },
-        { type: 'operator', key: 'and', value: '' },
-        { key: 'country', value: '"Iran"' },
-        { type: 'operator', key: 'and', value: '' },
-        { key: 'entity_type', value: '"vulnerability"' },
+        { key: 'type', value: '"observed-data"' },
+        { type: 'operator', key: '|', value: '' },
+        { key: 'table', value: 'internal_id standard_id entity_type created_at updated_at' },
       ],
     },
     {
       title: t_i18n('New vulnerabilities'),
+      query: 'type="vulnerability" | table name standard_id created_at updated_at',
       filters: [
-        { key: 'entity_type', value: '"vulnerability"' },
-        { type: 'operator', key: 'and', value: '' },
-        { key: 'status', value: '"new"' },
+        { key: 'type', value: '"vulnerability"' },
+        { type: 'operator', key: '|', value: '' },
+        { key: 'table', value: 'name standard_id created_at updated_at' },
       ],
     },
   ];
@@ -260,7 +267,7 @@ const RessaSearch = () => {
     setExtractedFilters(filters);
 
     try {
-      const response = await mockRawQueryApi({
+      const request = {
         query: searchValue,
         maxRelationDepth: 20,
         maxPrimaryDocuments: 20,
@@ -271,7 +278,9 @@ const RessaSearch = () => {
         includeNestedObjects: true,
         includeMetadataAndHistory: true,
         multilineOutput: true,
-      });
+      } as const;
+
+      const response = await rawQueryApi(request);
       setRawResponse(response);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
@@ -282,14 +291,14 @@ const RessaSearch = () => {
     }
   };
 
-  const handleSearchIconClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleSearchIconClick = () => {
     if (inputRef.current) {
       setHistoryAnchorEl(inputRef.current);
       setPopoverWidth(inputRef.current.offsetWidth);
     }
   };
 
-  const handleSaveIconClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleSaveIconClick = () => {
     if (inputRef.current) {
       setSaveAnchorEl(inputRef.current);
       setPopoverWidth(inputRef.current.offsetWidth);
@@ -304,7 +313,7 @@ const RessaSearch = () => {
     setSaveAnchorEl(null);
   };
 
-  const handleFilterIconClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleFilterIconClick = () => {
     if (inputRef.current) {
       setFilterAnchorEl(inputRef.current);
       setPopoverWidth(inputRef.current.offsetWidth);
@@ -323,6 +332,7 @@ const RessaSearch = () => {
 
   const handleSelectRecentSearch = (query: string) => {
     setSearchValue(query);
+    setExtractedFilters(parseSearchQuery(query));
     setHistoryAnchorEl(null);
     setSaveAnchorEl(null);
     setHasSearched(true);
@@ -331,6 +341,7 @@ const RessaSearch = () => {
   const handleEditSearch = (query: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setSearchValue(query);
+    setExtractedFilters(parseSearchQuery(query));
     setHistoryAnchorEl(null);
     setSaveAnchorEl(null);
   };
@@ -340,7 +351,7 @@ const RessaSearch = () => {
     const chips: Array<{ type: 'filter' | 'operator'; key?: string; value?: string; label: string }> = [];
     const parts = query.split(/\s+(and|or)\s+/i);
 
-    parts.forEach((part, index) => {
+    parts.forEach((part, _index) => {
       if (part.toLowerCase() === 'and' || part.toLowerCase() === 'or') {
         chips.push({
           type: 'operator',
@@ -384,11 +395,6 @@ const RessaSearch = () => {
     setSaveDescription('');
   };
 
-  const handleHistory = () => {
-    // TODO: Implement history functionality
-    console.log('Show search history');
-  };
-
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
       handleSearch();
@@ -396,8 +402,14 @@ const RessaSearch = () => {
   };
 
   const handleExampleClick = (example: SearchExample) => {
-    // TODO: Apply example filters to search
-    console.log('Applying example:', example);
+    setSearchValue(example.query);
+    setHasSearched(false);
+    setExtractedFilters([]);
+    setRawResponse(null);
+    setSearchError(null);
+    setTimeout(() => {
+      handleSearch();
+    }, 0);
   };
 
   return (
@@ -594,14 +606,6 @@ const RessaSearch = () => {
           </Box>
         )}
 
-        {hasSearched && rawResponse?.warnings?.length ? (
-          <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {rawResponse.warnings.slice(0, 3).map((w, idx) => (
-              <Alert severity="warning" key={idx}>{w}</Alert>
-            ))}
-          </Box>
-        ) : null}
-
         {/* Recent Searches Popover */}
         <SearchListPopover
           open={Boolean(historyAnchorEl)}
@@ -769,11 +773,14 @@ const RessaSearch = () => {
                             return (
                               <Chip
                                 key={filterIndex}
-                                label={
+                                label={(
                                   <Box component="span">
-                                    {filter.key}: <Box component="span" sx={{ fontWeight: 700 }}>{filter.value}</Box>
+                                    {filter.key}:{' '}
+                                    <Box component="span" sx={{ fontWeight: 700 }}>
+                                      {filter.value}
+                                    </Box>
                                   </Box>
-                                }
+                                )}
                                 size="small"
                                 sx={{
                                   backgroundColor: '#E8E4F7', // Light purple background
@@ -830,12 +837,12 @@ const RessaSearch = () => {
                           return {
                             ...filter,
                             values: filter.values.map((v) =>
-                              v.value === value ? { ...v, checked } : v
+                              v.value === value ? { ...v, checked } : v,
                             ),
                           };
                         }
                         return filter;
-                      })
+                      }),
                     );
                     // TODO: Trigger new search with updated filters
                   }}
@@ -990,25 +997,54 @@ const RessaSearch = () => {
                             <IconButton
                               size="small"
                               onClick={() => setPage((prev) => Math.max(0, prev - 1))}
-                              disabled={page === 0}
+                              disabled={safePage === 0}
                             >
                               <ChevronLeft />
                             </IconButton>
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                              <Button
-                                key={num}
-                                size="small"
-                                variant={page + 1 === num ? 'contained' : 'outlined'}
-                                onClick={() => setPage(num - 1)}
-                                sx={{ minWidth: 32, height: 32 }}
-                              >
-                                {num}
-                              </Button>
-                            ))}
+                            {(() => {
+                              const current = safePage + 1;
+                              const total = pageCount;
+                              const windowSize = 7;
+                              const half = Math.floor(windowSize / 2);
+                              let start = Math.max(1, current - half);
+                              const end = Math.min(total, start + windowSize - 1);
+                              start = Math.max(1, end - windowSize + 1);
+
+                              const pages: Array<number | 'ellipsis'> = [];
+                              if (start > 1) pages.push(1);
+                              if (start > 2) pages.push('ellipsis');
+                              for (let p = start; p <= end; p += 1) pages.push(p);
+                              if (end < total - 1) pages.push('ellipsis');
+                              if (end < total) pages.push(total);
+
+                              return pages.map((p, idx) => {
+                                if (p === 'ellipsis') {
+                                  return (
+                                    <Box
+                                      key={`ellipsis-${idx}`}
+                                      sx={{ px: 0.5, color: 'text.secondary' }}
+                                    >
+                                      …
+                                    </Box>
+                                  );
+                                }
+                                return (
+                                  <Button
+                                    key={p}
+                                    size="small"
+                                    variant={safePage + 1 === p ? 'contained' : 'outlined'}
+                                    onClick={() => setPage(p - 1)}
+                                    sx={{ minWidth: 32, height: 32 }}
+                                  >
+                                    {p}
+                                  </Button>
+                                );
+                              });
+                            })()}
                             <IconButton
                               size="small"
-                              onClick={() => setPage((prev) => prev + 1)}
-                              disabled={(page + 1) * rowsPerPage >= totalResults}
+                              onClick={() => setPage((prev) => Math.min(pageCount - 1, prev + 1))}
+                              disabled={safePage >= pageCount - 1}
                             >
                               <ChevronRight />
                             </IconButton>
