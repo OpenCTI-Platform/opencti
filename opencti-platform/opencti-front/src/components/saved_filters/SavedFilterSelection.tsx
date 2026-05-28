@@ -39,8 +39,11 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
 
   const options: AutocompleteOptionType[] = data.map((item) => {
+    console.log('NAME----', item.name);
+    console.log('item.authorizedMembers', item.authorizedMembers);
     const ownerMember = item.authorizedMembers?.find((m) => m.access_right === 'admin');
     const isOwner = ownerMember?.member_id === me.id;
+    console.log('isOwner', isOwner);
     const ownerName = ownerMember?.name ?? '';
 
     return {

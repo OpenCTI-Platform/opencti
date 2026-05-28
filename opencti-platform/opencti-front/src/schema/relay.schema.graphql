@@ -15399,7 +15399,7 @@ input SavedFilterAddInput {
   name: String!
   filters: String!
   scope: String!
-  restricted_members: [MemberAccessInput!]
+  authorized_members: [MemberAccessInput!]
 }
 
 enum RequestAccessType {

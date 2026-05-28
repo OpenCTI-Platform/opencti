@@ -29192,9 +29192,9 @@ export type SavedFilter = BasicObject & InternalObject & {
 };
 
 export type SavedFilterAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   filters: Scalars['String']['input'];
   name: Scalars['String']['input'];
-  restricted_members?: InputMaybe<Array<MemberAccessInput>>;
   scope: Scalars['String']['input'];
 };
 

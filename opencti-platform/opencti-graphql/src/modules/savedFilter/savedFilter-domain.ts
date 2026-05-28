@@ -4,16 +4,11 @@ import { updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter } from './savedFilter-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { MemberAccessInput, MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
+import type { InputMaybe, MemberAccessInput, MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { getUserAccessRight, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isFeatureEnabled } from '../../config/conf';
-
-// Extended input type until codegen is regenerated with the new restricted_members field
-interface SavedFilterAddInputWithMembers extends SavedFilterAddInput {
-  restricted_members?: MemberAccessInput[] | null;
-}
 
 const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
@@ -22,13 +17,31 @@ const findById = (context: AuthContext, user: AuthUser, id: string) => {
 export const findSaveFilterPaginated = (context: AuthContext, user: AuthUser, args: QuerySavedFiltersArgs) => {
   return pageEntitiesConnection<BasicStoreEntitySavedFilter>(context, user, [ENTITY_TYPE_SAVED_FILTER], args);
 };
-export const addSavedFilter = (context: AuthContext, user: AuthUser, input: SavedFilterAddInputWithMembers) => {
+
+const initializeAuthorizedMembers = (
+  authorizedMembers: InputMaybe<MemberAccessInput[]> | undefined,
+  user: AuthUser,
+) => {
+  const initializedAuthorizedMembers = authorizedMembers ?? [];
+  if (!authorizedMembers?.some((e) => e.id === user.id)) {
+    // add creator to authorized_members on creation
+    initializedAuthorizedMembers.push({
+      id: user.id,
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN,
+    });
+  }
+  return initializedAuthorizedMembers;
+};
+
+export const addSavedFilter = (context: AuthContext, user: AuthUser, input: SavedFilterAddInput) => {
   // Force context out of draft to force creation in live index
   const contextOutOfDraft = { ...context, draft_context: '' };
-  const restrictedMembers = input.restricted_members?.length
-    ? input.restricted_members
-    : [{ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
-  const savedFiltersToCreate = { ...input, restricted_members: restrictedMembers };
+  // construct final creation input
+  const authorizedMembers = initializeAuthorizedMembers(
+    input.authorized_members,
+    user,
+  );
+  const savedFiltersToCreate = { ...input, restricted_members: authorizedMembers };
   return createInternalObject<StoreEntitySavedFilter>(contextOutOfDraft, user, savedFiltersToCreate, ENTITY_TYPE_SAVED_FILTER);
 };
 export const deleteSavedFilter = (context: AuthContext, user: AuthUser, savedFilterId: string) => {

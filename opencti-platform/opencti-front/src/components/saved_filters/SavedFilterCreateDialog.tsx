@@ -26,6 +26,14 @@ const savedFilterCreateDialogMutation = graphql`
       name
       filters
       scope
+      currentUserAccessRight
+      authorizedMembers {
+        id
+        name
+        entity_type
+        access_right
+        member_id
+      }
     }
   }
 `;
@@ -87,7 +95,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
           name: filterName,
           filters: JSON.stringify(filters),
           scope: localStorageKey,
-          restricted_members: restrictedMembers,
+          authorized_members: restrictedMembers,
         },
       },
       updater: (store) => {
