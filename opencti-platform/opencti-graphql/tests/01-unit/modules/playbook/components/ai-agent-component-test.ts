@@ -6,6 +6,7 @@ vi.mock('../../../../../src/modules/playbook/components/ai-agent-shared', () => 
   buildAgentMessageContent: vi.fn(),
   buildAgentSlugOneOf: vi.fn(),
   callXtmAgent: vi.fn(),
+  isAgentBoundToIntent: vi.fn(),
 }));
 
 vi.mock('../../../../../src/config/conf', () => ({
@@ -15,7 +16,7 @@ vi.mock('../../../../../src/config/conf', () => ({
 // ── Imports (after mocks) ───────────────────────────────────────────────
 
 import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from '../../../../../src/modules/playbook/components/ai-agent-component';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent } from '../../../../../src/modules/playbook/components/ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
 import type { ExecutorParameters } from '../../../../../src/modules/playbook/playbook-types';
 
@@ -63,6 +64,10 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(buildAgentMessageContent).mockReturnValue('built content');
+    // Default to "agent slug is bound to the right intent" so existing
+    // tests exercise the live agent-call path; tests that need the
+    // negative branch override this explicitly.
+    vi.mocked(isAgentBoundToIntent).mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -114,6 +119,29 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
       expect(callXtmAgent).not.toHaveBeenCalled();
       expect(result.output_port).toBe('unmodified');
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` and not call XTM One when the slug is not bound to the cti.stix_transformer intent (defense in depth)', async () => {
+      vi.mocked(isAgentBoundToIntent).mockResolvedValue(false);
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-not-bound-to-transformer' }),
+      );
+
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-not-bound-to-transformer');
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should validate the slug against cti.stix_transformer before each agent call', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(null);
+
+      await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x');
     });
 
     it('should route to `unmodified` when XTM One call fails (callXtmAgent returns null)', async () => {
@@ -291,6 +319,49 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
 
       expect(result.output_port).toBe('unmodified');
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` when the id type prefix does not match the object type field', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(JSON.stringify({
+        type: 'bundle',
+        id: 'bundle--agent',
+        spec_version: '2.1',
+        objects: [{
+          id: 'malware--33333333-3333-3333-3333-333333333333',
+          type: 'indicator',
+          spec_version: '2.1',
+        }],
+      }));
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` when the UUID segment is not a valid 8-4-4-4-12 hex (e.g. underscores, wrong length)', async () => {
+      const invalidUuids = [
+        'indicator--12345678_1234_1234_1234_123456789012', // underscores instead of hyphens
+        'indicator--zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz', // non-hex characters
+        'indicator--1234-1234-1234-1234-1234567890ab', // wrong segment lengths
+      ];
+      for (const id of invalidUuids) {
+        vi.mocked(callXtmAgent).mockResolvedValue(JSON.stringify({
+          type: 'bundle',
+          id: 'bundle--agent',
+          spec_version: '2.1',
+          objects: [{ id, type: 'indicator', spec_version: '2.1' }],
+        }));
+
+        const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+          buildExecutorParams({ agent_slug: 'agent-x' }),
+        );
+
+        expect(result.output_port, `id ${id} should be rejected`).toBe('unmodified');
+        expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+      }
     });
 
     it('should route to `unmodified` when any one object in a mixed-validity bundle is malformed (whole bundle rejected)', async () => {

@@ -78,6 +78,37 @@ export const buildAgentSlugOneOf = async (
 };
 
 /**
+ * Runtime defense in depth: re-check that ``slug`` is currently bound to
+ * the expected ``intent`` in the XTM One catalog before the executor
+ * actually invokes the agent. AJV validation at playbook save time only
+ * guards saves that go through the schema resolver — direct DB writes,
+ * future bulk-import paths, or an agent that gets unbound from the
+ * intent after save would otherwise let the executor run an arbitrary
+ * agent under the platform-internal ``AUTOMATION_MANAGER_USER`` JWT.
+ *
+ * Returns ``false`` (and logs a warning) on catalog failure / unknown
+ * slug, so the executor falls through to its safe terminal branch
+ * (``unmodified`` / fire-and-wait) instead of calling the agent.
+ */
+export const isAgentBoundToIntent = async (
+  intent: string,
+  slug: string,
+): Promise<boolean> => {
+  if (!slug) return false;
+  try {
+    const agents = await xtmOneClient.listAgentsForIntent(buildPlaybookAutomationContext(), intent);
+    return (agents ?? []).some((a) => a.agent_slug === slug);
+  } catch (e: unknown) {
+    logApp.warn('[PLAYBOOK AI AGENT] Failed to validate agent intent binding', {
+      intent,
+      slug,
+      cause: (e as Error).message,
+    });
+    return false;
+  }
+};
+
+/**
  * Synchronous, non-streaming call to XTM One Platform Chat. Returns the
  * raw assistant content or null when the call cannot complete (XTM One
  * not configured, network failure, non-success status). Errors are

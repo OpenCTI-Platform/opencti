@@ -17,7 +17,7 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from './ai-agent-shared';
 
 interface AiAgentSendConfiguration {
   agent_slug: string;
@@ -82,6 +82,20 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
     const { agent_slug, prompt } = playbookNode.configuration;
     if (!agent_slug) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] No agent configured, dropping playbook step', { playbookId });
+      return { output_port: undefined, bundle, forceBundleTracking: true };
+    }
+    // Defense in depth: re-check that the configured slug is currently
+    // bound to the consumer intent before invoking it. AJV `oneOf`
+    // validation only covers saves that go through the schema resolver
+    // — a crafted playbook update or an agent that was unbound after
+    // save would otherwise let us run an arbitrary XTM One agent under
+    // the platform automation identity.
+    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug))) {
+      logApp.warn('[PLAYBOOK AI AGENT SEND] Configured agent is not bound to the consumer intent, dropping playbook step', {
+        playbookId,
+        agentSlug: agent_slug,
+        intent: PLAYBOOK_AI_AGENT_SEND_INTENT,
+      });
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     const content = buildAgentMessageContent(bundle, prompt);

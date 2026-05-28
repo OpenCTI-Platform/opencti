@@ -45,6 +45,7 @@ import {
   buildAgentSlugOneOf,
   buildPlaybookAutomationContext,
   callXtmAgent,
+  isAgentBoundToIntent,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
 
@@ -138,6 +139,45 @@ describe('ai-agent-shared', () => {
       const result = await buildAgentSlugOneOf('cti.stix_transformer');
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('isAgentBoundToIntent', () => {
+    it('should return false (without calling XTM One) when the slug is empty', async () => {
+      const result = await isAgentBoundToIntent('cti.stix_transformer', '');
+      expect(result).toBe(false);
+      expect(xtmOneClient.listAgentsForIntent).not.toHaveBeenCalled();
+    });
+
+    it('should return true when the slug is in the intent catalog', async () => {
+      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([
+        { agent_id: '1', agent_name: 'A', agent_slug: 'agent-a', agent_description: null, priority: 0 },
+        { agent_id: '2', agent_name: 'B', agent_slug: 'agent-b', agent_description: null, priority: 0 },
+      ]);
+
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-b');
+
+      expect(result).toBe(true);
+      const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
+      expect(passedContext.user).toBe(AUTOMATION_MANAGER_USER);
+    });
+
+    it('should return false when the slug is NOT in the intent catalog (defense-in-depth check fails closed)', async () => {
+      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([
+        { agent_id: '1', agent_name: 'A', agent_slug: 'agent-a', agent_description: null, priority: 0 },
+      ]);
+
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-not-bound');
+
+      expect(result).toBe(false);
+    });
+
+    it('should fail closed (return false) when the catalog call throws', async () => {
+      vi.mocked(xtmOneClient.listAgentsForIntent).mockRejectedValue(new Error('XTM One down'));
+
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a');
+
+      expect(result).toBe(false);
     });
   });
 

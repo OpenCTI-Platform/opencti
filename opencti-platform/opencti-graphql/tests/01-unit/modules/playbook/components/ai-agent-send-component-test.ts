@@ -6,6 +6,7 @@ vi.mock('../../../../../src/modules/playbook/components/ai-agent-shared', () => 
   buildAgentMessageContent: vi.fn(),
   buildAgentSlugOneOf: vi.fn(),
   callXtmAgent: vi.fn(),
+  isAgentBoundToIntent: vi.fn(),
 }));
 
 vi.mock('../../../../../src/config/conf', () => ({
@@ -15,7 +16,7 @@ vi.mock('../../../../../src/config/conf', () => ({
 // ── Imports (after mocks) ───────────────────────────────────────────────
 
 import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from '../../../../../src/modules/playbook/components/ai-agent-send-component';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent } from '../../../../../src/modules/playbook/components/ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
 import type { ExecutorParameters } from '../../../../../src/modules/playbook/playbook-types';
 
@@ -50,6 +51,10 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(buildAgentMessageContent).mockReturnValue('built content');
+    // Default to "agent slug is bound to the consumer intent" so the
+    // existing tests exercise the live path; tests that need the
+    // negative branch override this explicitly.
+    vi.mocked(isAgentBoundToIntent).mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -90,6 +95,30 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
       expect(result.forceBundleTracking).toBe(true);
+    });
+
+    it('should drop the step (no agent call) when the slug is not bound to the cti.stix_consumer intent (defense in depth)', async () => {
+      vi.mocked(isAgentBoundToIntent).mockResolvedValue(false);
+
+      const result = await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-not-bound-to-consumer' }),
+      );
+
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-not-bound-to-consumer');
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBeUndefined();
+      expect(result.bundle).toBe(BUNDLE);
+      expect(result.forceBundleTracking).toBe(true);
+    });
+
+    it('should validate the slug against cti.stix_consumer before each agent call', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue('reply');
+
+      await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-x');
     });
 
     it('should call the agent and still terminate cleanly (bundle tracked) when the agent responds', async () => {

@@ -18,13 +18,16 @@ import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import type { StixBundle, StixObject } from '../../../types/stix-2-1-common';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from './ai-agent-shared';
 
-// Canonical STIX 2.1 ID shape: `<type>--<uuid>`. Mirrors the `isStixId`
-// helper in `src/schema/schemaUtils.js` — inlined here instead of imported
-// to avoid pulling the full schema module (and its heavy transitive
-// closure) into this unit-testable component.
-const STIX_ID_REGEX = /^[a-z][a-z0-9-]*--[\w-]{36}$/;
+// Canonical STIX 2.1 ID shape: `<type>--<uuid>` where the UUID is the
+// 8-4-4-4-12 hex layout. Stricter than the loose `[\w-]{36}` pattern in
+// `src/schema/schemaUtils.js` (which accepts underscores) so that we
+// reject malformed agent output instead of forwarding it as a "bundle".
+// Inlined here as a regex constant to keep the component unit-testable
+// without dragging the schema module's transitive closure into the
+// test runner.
+const STIX_UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface AiAgentTransformConfiguration {
   agent_slug: string;
@@ -58,17 +61,23 @@ const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA: JSONSchemaType<AiAgentTransf
 
 /**
  * Minimum STIX 2.1 object shape we accept from the agent: a non-empty
- * `type` string plus an `id` that matches the canonical `<type>--<uuid>`
- * pattern. Anything looser is silently corrupted by the agent and should
- * not be forwarded to the downstream playbook nodes.
+ * `type` string AND an `id` of the canonical `<type>--<uuid>` shape
+ * where the prefix before `--` matches the object's own `type` field
+ * exactly and the suffix is a strict 8-4-4-4-12 hex UUID. Anything
+ * looser (mismatched type prefix, underscores in the UUID, missing
+ * separator, ...) is silently corrupted by the agent and should not be
+ * forwarded to the downstream playbook nodes.
  */
 const isMinimalStixObjectShape = (candidate: unknown): boolean => {
   if (!candidate || typeof candidate !== 'object') return false;
   const obj = candidate as { id?: unknown; type?: unknown };
-  return typeof obj.id === 'string'
-    && STIX_ID_REGEX.test(obj.id)
-    && typeof obj.type === 'string'
-    && obj.type.length > 0;
+  if (typeof obj.type !== 'string' || obj.type.length === 0) return false;
+  if (typeof obj.id !== 'string') return false;
+  const separatorIndex = obj.id.indexOf('--');
+  if (separatorIndex <= 0) return false;
+  const idTypePrefix = obj.id.slice(0, separatorIndex);
+  const idUuid = obj.id.slice(separatorIndex + 2);
+  return idTypePrefix === obj.type && STIX_UUID_REGEX.test(idUuid);
 };
 
 /**
@@ -147,6 +156,19 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
     const { agent_slug, prompt } = playbookNode.configuration;
     if (!agent_slug) {
       logApp.warn('[PLAYBOOK AI AGENT] No agent configured, returning bundle unmodified');
+      return { output_port: 'unmodified', bundle };
+    }
+    // Defense in depth: re-check that the configured slug is currently
+    // bound to the transformer intent. AJV `oneOf` validation only
+    // covers saves that go through the schema resolver — a crafted
+    // playbook update or an agent that was unbound after save would
+    // otherwise let us run an arbitrary XTM One agent under the
+    // platform automation identity.
+    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_TRANSFORM_INTENT, agent_slug))) {
+      logApp.warn('[PLAYBOOK AI AGENT] Configured agent is not bound to the transformer intent, returning bundle unmodified', {
+        agentSlug: agent_slug,
+        intent: PLAYBOOK_AI_AGENT_TRANSFORM_INTENT,
+      });
       return { output_port: 'unmodified', bundle };
     }
     const content = buildAgentMessageContent(bundle, prompt);
