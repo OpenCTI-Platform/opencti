@@ -12,6 +12,7 @@ import {
   collectDataUriImagesFromMarkdown,
   DEFAULT_MAX_EMBEDDED_IMAGE_SIZE_BYTES,
   DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES,
+  encodeEmbeddedStoragePathForMarkdownUrl,
   extractMarkdownImageReferences,
   resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
@@ -266,7 +267,9 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
           filename: fileName,
           mimeType: image.mimeType,
         };
+
         const uploadPath = `embedded/${options.entityType}/${options.entityId}`;
+
         const { upload: uploadedFile } = await uploadToStorage(
           context,
           user,
@@ -279,10 +282,9 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
             meta: { mimetype: image.mimeType },
           },
         );
-        replacementUri = `embedded/${uploadedFile.name}`;
+        replacementUri = `embedded/${encodeEmbeddedStoragePathForMarkdownUrl(uploadedFile.name)}`;
         uploadedUriByDedupeKey.set(image.dedupeKey, replacementUri);
       }
-
       replacementByDataUri.set(image.dataUri, replacementUri);
     }
 
@@ -298,6 +300,7 @@ export const rewriteEmbeddedDataUriImagesInDescriptions = async (
       for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
         const key = MARKDOWN_FIELD_KEYS[i];
         const value = valueByKey[key];
+
         if (typeof value === 'string') {
           valueByKey[key] = await rewriteMarkdownDataUris(value);
         }

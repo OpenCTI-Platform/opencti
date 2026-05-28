@@ -233,7 +233,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
 import {
   collectTempImageTokensFromDescriptionFields,
   resolveEmbeddedImagesInDescriptionFieldsForExport,
@@ -3862,7 +3862,7 @@ const internalCreateEntityRaw = async (
         );
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
         if (embedded) {
-          embeddedImageUrls.push(`embedded/${uploadedFile.name}`);
+          embeddedImageUrls.push(`embedded/${encodeEmbeddedStoragePathForMarkdownUrl(uploadedFile.name)}`);
         }
         // Add external references from files if necessary
         if (shouldCreateExternalReference) {

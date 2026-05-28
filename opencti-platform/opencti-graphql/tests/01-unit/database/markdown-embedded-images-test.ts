@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  encodeEmbeddedStoragePathForMarkdownUrl,
   collectDataUriImagesFromMarkdown,
   extractMarkdownImageReferences,
   findRemovedEmbeddedStoragePathsFromMarkdownFields,
@@ -49,6 +50,22 @@ describe('markdown-embedded-images utility', () => {
     expect(refs).toHaveLength(1);
     expect(refs[0].isEmbeddedStorage).toBe(true);
     expect(refs[0].embeddedStoragePath).toBe('embedded/upload_image_example.png');
+  });
+
+  it('should decode percent-encoded embedded storage paths from markdown URLs', () => {
+    const markdown = '![accent](embedded/Report/r-1/coucou%20%C3%A9%C3%A9%C3%A9.png)';
+
+    const refs = extractMarkdownImageReferences(markdown);
+
+    expect(refs).toHaveLength(1);
+    expect(refs[0].isEmbeddedStorage).toBe(true);
+    expect(refs[0].embeddedStoragePath).toBe('embedded/Report/r-1/coucou ééé.png');
+  });
+
+  it('should encode embedded storage paths for markdown URLs', () => {
+    const encoded = encodeEmbeddedStoragePathForMarkdownUrl('embedded/Report/r-1/coucou ééé.png');
+
+    expect(encoded).toBe('embedded/Report/r-1/coucou%20%C3%A9%C3%A9%C3%A9.png');
   });
 
   it('should rewrite only embedded storage image links', () => {
