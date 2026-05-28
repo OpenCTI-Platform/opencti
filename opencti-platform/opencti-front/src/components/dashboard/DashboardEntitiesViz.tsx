@@ -11,7 +11,7 @@ import StixCoreObjectsDonut from '../../private/components/common/stix_core_obje
 import StixCoreObjectsPolarArea from '@components/common/stix_core_objects/StixCoreObjectsPolarArea';
 import StixCoreObjectsMultiHorizontalBars from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
 import StixCoreObjectsHorizontalBars from '../../private/components/common/stix_core_objects/StixCoreObjectsHorizontalBars';
-import StixCoreObjectsRadar from '@components/common/stix_core_objects/StixCoreObjectsRadar';
+import StixCoreObjectsRadar from '../../private/components/common/stix_core_objects/StixCoreObjectsRadar';
 import StixCoreObjectsMultiHeatMap from '@components/common/stix_core_objects/StixCoreObjectsMultiHeatMap';
 import StixCoreObjectsTreeMap from '@components/common/stix_core_objects/StixCoreObjectsTreeMap';
 import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixCoreObjectsWordCloud';
@@ -209,13 +209,13 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsRadar
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'heatmap':
