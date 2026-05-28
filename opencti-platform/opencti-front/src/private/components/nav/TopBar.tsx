@@ -1,7 +1,7 @@
 import IconButton from '@common/button/IconButton';
 import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
-import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined, ScienceOutlined } from '@mui/icons-material';
 import { alpha, Badge, Stack } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
@@ -30,9 +30,10 @@ import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hoo
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import Security from '../../../utils/Security';
+import type { SimulateNotificationToastPayload } from './notificationToastDev';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
-import AskArianeButton from '../chatbox/AskArianeButton';
-import { CGUStatus } from '../settings/Experience';
+// import AskArianeButton from '../chatbox/AskArianeButton';
+// import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
@@ -102,6 +103,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
+  const [devToastMenuAnchor, setDevToastMenuAnchor] = useState<null | HTMLElement>(null);
+  // const isDevToastSimulatorEnabled = import.meta.env.DEV;
+
+  const runToastSimulation = (payload: SimulateNotificationToastPayload) => {
+    void import('./notificationToastDev').then(({ requestSimulatedNotificationToasts }) => {
+      requestSimulatedNotificationToasts(payload);
+      setDevToastMenuAnchor(null);
+    });
+  };
   const [isNLQLoading, setIsNLQLoading] = useState(false);
   const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
 
@@ -291,6 +301,35 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       </Badge>
                     </IconButton>
                   </Tooltip>
+                  {/* {isDevToastSimulatorEnabled && (
+                    <>
+                      <Tooltip title={t_i18n('Simulate notification toast (dev)')}>
+                        <IconButton
+                          aria-haspopup="true"
+                          size="default"
+                          aria-label={t_i18n('Simulate notification toast (dev)')}
+                          onClick={(event) => setDevToastMenuAnchor(event.currentTarget)}
+                        >
+                          <ScienceOutlined fontSize="medium" />
+                        </IconButton>
+                      </Tooltip>
+                      <Menu
+                        anchorEl={devToastMenuAnchor}
+                        open={Boolean(devToastMenuAnchor)}
+                        onClose={() => setDevToastMenuAnchor(null)}
+                      >
+                        <MenuItem onClick={() => runToastSimulation({ count: 1, scenario: 'single' })}>
+                          {t_i18n('Simulate 1 notification')}
+                        </MenuItem>
+                        <MenuItem onClick={() => runToastSimulation({ count: 1, scenario: 'digest' })}>
+                          {t_i18n('Simulate digest notification')}
+                        </MenuItem>
+                        <MenuItem onClick={() => runToastSimulation({ count: 3, scenario: 'single' })}>
+                          {t_i18n('Simulate 3 notifications')}
+                        </MenuItem>
+                      </Menu>
+                    </>
+                  )} */}
                 </>
               </Security>
             )}

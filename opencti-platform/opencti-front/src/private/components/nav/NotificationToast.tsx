@@ -14,9 +14,11 @@ import { graphql, useSubscription } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
-import { fetchQuery } from '../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import type { DevToastNotification } from './notificationToastDev';
 import {
+  formatNotificationToastTimestamp,
   getNotificationToastMessage,
   getNotificationToastTitle,
   getNotificationViewTarget,
@@ -28,6 +30,7 @@ import { NotificationToastUnreadIdsQuery$data } from './__generated__/Notificati
 
 const MAX_VISIBLE_TOASTS = 4;
 const TOAST_DURATION_MS = 20000;
+const UNREAD_COUNT_DEBOUNCE_MS = 400;
 
 type ToastNotification = NonNullable<
   NonNullable<
@@ -48,6 +51,7 @@ const notificationToastLatestQuery = graphql`
         node {
           id
           name
+          created
           is_read
           notification_type
           notification_content {
@@ -93,10 +97,12 @@ const notificationToastNumberSubscription = graphql`
   }
 `;
 
+type DisplayToastNotification = ToastNotification | DevToastNotification;
+
 interface NotificationToastItemProps {
-  notification: ToastNotification;
+  notification: DisplayToastNotification;
   onDismiss: (id: string) => void;
-  onView: (notification: ToastNotification) => void;
+  onView: (notification: DisplayToastNotification) => void;
 }
 
 const NotificationToastItem: FunctionComponent<NotificationToastItemProps> = ({
@@ -105,7 +111,7 @@ const NotificationToastItem: FunctionComponent<NotificationToastItemProps> = ({
   onView,
 }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const primaryColor = theme.palette.primary.main ?? theme.palette.text.primary ?? '#1976d2';
 
   const title = getNotificationToastTitle(notification);
@@ -113,40 +119,49 @@ const NotificationToastItem: FunctionComponent<NotificationToastItemProps> = ({
   const message = rawMessage === null
     ? t_i18n('Digest with multiple notifiers')
     : rawMessage;
+  const timestamp = formatNotificationToastTimestamp(notification.created, {
+    today: t_i18n('Today'),
+    formatShortDate: fsd,
+  });
 
   return (
     <Paper
-      elevation={4}
+      elevation={0}
       sx={{
         width: 420,
         maxWidth: 'calc(100vw - 32px)',
-        p: 2,
-        borderRadius: 2,
+        p: 1.75,
+        borderRadius: 1.5,
+        border: `1px solid ${alpha(primaryColor, 0.22)}`,
+        boxShadow: theme.shadows[4],
         backgroundColor: theme.palette.background.paper,
       }}
     >
-      <Stack spacing={1.5}>
-        <Stack direction="row" spacing={1.5} alignItems="flex-start">
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              flexShrink: 0,
-              backgroundColor: alpha(primaryColor, 0.12),
-              color: primaryColor,
-            }}
-          >
-            <NotificationsOutlined fontSize="small" />
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0, pt: 0.25 }}>
+      <Stack direction="row" spacing={1.25} alignItems="flex-start">
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            flexShrink: 0,
+            backgroundColor: alpha(primaryColor, 0.12),
+            color: primaryColor,
+          }}
+        >
+          <NotificationsOutlined sx={{ fontSize: 20 }} />
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Stack spacing={0.75}>
             <Typography
-              variant="subtitle2"
-              fontWeight={600}
+              component="div"
               sx={{
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                lineHeight: 1.35,
+                color: theme.palette.text.primary,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
@@ -156,39 +171,56 @@ const NotificationToastItem: FunctionComponent<NotificationToastItemProps> = ({
             >
               {title || t_i18n('Notification')}
             </Typography>
-          </Box>
-          <IconButton
-            aria-label={t_i18n('Close')}
-            size="small"
-            onClick={() => onDismiss(notification.id)}
-            sx={{ mt: -0.5, mr: -0.5 }}
-          >
-            <Close fontSize="small" />
-          </IconButton>
-        </Stack>
-        {message && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-            }}
-          >
-            {message}
-          </Typography>
-        )}
-        <Stack direction="row" spacing={1}>
-          <Button variant="tertiary" size="small" onClick={() => onView(notification)}>
-            {t_i18n('View')}
-          </Button>
-          <Button variant="tertiary" size="small" onClick={() => onDismiss(notification.id)}>
-            {t_i18n('Dismiss')}
-          </Button>
-        </Stack>
+            {message && (
+              <Typography
+                component="div"
+                sx={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 400,
+                  lineHeight: 1.4,
+                  color: theme.palette.text.primary,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                }}
+              >
+                {message}
+              </Typography>
+            )}
+            {timestamp && (
+              <Typography
+                component="div"
+                sx={{
+                  fontSize: '0.75rem',
+                  fontWeight: 400,
+                  lineHeight: 1.35,
+                  color: theme.palette.text.secondary,
+                  pt: message ? 0.25 : 0,
+                }}
+              >
+                {timestamp}
+              </Typography>
+            )}
+            <Stack direction="row" spacing={1.5} sx={{ pt: 0.25 }}>
+              <Button variant="tertiary" size="small" onClick={() => onView(notification)}>
+                {t_i18n('View')}
+              </Button>
+              <Button variant="tertiary" size="small" onClick={() => onDismiss(notification.id)}>
+                {t_i18n('Dismiss')}
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
+        <IconButton
+          aria-label={t_i18n('Close')}
+          size="small"
+          onClick={() => onDismiss(notification.id)}
+          sx={{ mt: -0.25, mr: -0.5, flexShrink: 0 }}
+        >
+          <Close sx={{ fontSize: 18 }} />
+        </IconButton>
       </Stack>
     </Paper>
   );
@@ -206,10 +238,16 @@ const NotificationToast: FunctionComponent = () => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
-  const [toasts, setToasts] = useState<ToastNotification[]>([]);
+  const [toasts, setToasts] = useState<DisplayToastNotification[]>([]);
+  const toastsRef = useRef<DisplayToastNotification[]>([]);
+  toastsRef.current = toasts;
   const dismissTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const unreadCountRef = useRef<number | null>(null);
   const pendingUnreadCountRef = useRef<number | null>(null);
+  const pendingCountUpdateRef = useRef<number | null>(null);
+  const countChangeDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFetchingLatestRef = useRef(false);
+  const isSyncingUnreadRef = useRef(false);
   const isInitializedRef = useRef(false);
 
   const clearDismissTimer = useCallback((id: string) => {
@@ -232,7 +270,7 @@ const NotificationToast: FunctionComponent = () => {
     }, TOAST_DURATION_MS);
   }, [clearDismissTimer, dismissToast]);
 
-  const enqueueToast = useCallback((notification: ToastNotification) => {
+  const enqueueToast = useCallback((notification: DisplayToastNotification) => {
     setToasts((current) => {
       const withoutDuplicate = current.filter((toast) => toast.id !== notification.id);
       const next = [...withoutDuplicate, notification];
@@ -255,42 +293,57 @@ const NotificationToast: FunctionComponent = () => {
   }, [enqueueToast]);
 
   const fetchLatestNotifications = useCallback(async (count: number) => {
-    const fetchCount = Math.min(Math.max(count, 1), MAX_VISIBLE_TOASTS);
-    const data = await fetchQuery(
-      notificationToastLatestQuery,
-      { count: fetchCount },
-    ).toPromise() as NotificationToastLatestQuery$data;
-    const notifications = extractLatestNotifications(data);
-    enqueueNotifications([...notifications].reverse());
+    if (isFetchingLatestRef.current) {
+      return;
+    }
+    isFetchingLatestRef.current = true;
+    try {
+      const fetchCount = Math.min(Math.max(count, 1), MAX_VISIBLE_TOASTS);
+      const data = await fetchQuery(
+        notificationToastLatestQuery,
+        { count: fetchCount },
+      ).toPromise() as NotificationToastLatestQuery$data;
+      const notifications = extractLatestNotifications(data);
+      enqueueNotifications([...notifications].reverse());
+    } finally {
+      isFetchingLatestRef.current = false;
+    }
   }, [enqueueNotifications]);
 
   const syncVisibleToastsWithUnread = useCallback(async () => {
-    const data = await fetchQuery(
-      notificationToastUnreadIdsQuery,
-      {},
-    ).toPromise() as NotificationToastUnreadIdsQuery$data;
-    const unreadIds = new Set(
-      data.myNotifications?.edges
-        ?.map((edge) => edge?.node?.id)
-        .filter((id): id is string => !!id) ?? [],
-    );
-    setToasts((current) => {
-      const next = current.filter((toast) => unreadIds.has(toast.id));
-      current.forEach((toast) => {
-        if (!unreadIds.has(toast.id)) {
-          clearDismissTimer(toast.id);
-        }
-      });
-      return next;
-    });
-  }, [clearDismissTimer]);
-
-  const handleUnreadCountChange = useCallback(async (newCount: number) => {
-    if (!isInitializedRef.current) {
-      pendingUnreadCountRef.current = newCount;
+    if (isSyncingUnreadRef.current || toastsRef.current.length === 0) {
       return;
     }
+    isSyncingUnreadRef.current = true;
+    try {
+      const data = await fetchQuery(
+        notificationToastUnreadIdsQuery,
+        {},
+      ).toPromise() as NotificationToastUnreadIdsQuery$data;
+      const unreadIds = new Set(
+        data.myNotifications?.edges
+          ?.map((edge) => edge?.node?.id)
+          .filter((id): id is string => !!id) ?? [],
+      );
+      setToasts((current) => {
+        const next = current.filter((toast) => unreadIds.has(toast.id));
+        current.forEach((toast) => {
+          if (!unreadIds.has(toast.id)) {
+            clearDismissTimer(toast.id);
+          }
+        });
+        return next;
+      });
+    } finally {
+      isSyncingUnreadRef.current = false;
+    }
+  }, [clearDismissTimer]);
+
+  const applyUnreadCountChange = useCallback(async (newCount: number) => {
     const previousCount = unreadCountRef.current ?? 0;
+    if (newCount === previousCount) {
+      return;
+    }
     unreadCountRef.current = newCount;
     const diff = newCount - previousCount;
     if (diff > 0) {
@@ -301,6 +354,33 @@ const NotificationToast: FunctionComponent = () => {
       await syncVisibleToastsWithUnread();
     }
   }, [fetchLatestNotifications, syncVisibleToastsWithUnread]);
+
+  const flushPendingUnreadCountChange = useCallback(() => {
+    const newCount = pendingCountUpdateRef.current;
+    pendingCountUpdateRef.current = null;
+    if (newCount === null) {
+      return;
+    }
+    void applyUnreadCountChange(newCount);
+  }, [applyUnreadCountChange]);
+
+  const scheduleUnreadCountChange = useCallback((newCount: number) => {
+    if (!isInitializedRef.current) {
+      pendingUnreadCountRef.current = newCount;
+      return;
+    }
+    pendingCountUpdateRef.current = newCount;
+    if (countChangeDebounceTimerRef.current) {
+      clearTimeout(countChangeDebounceTimerRef.current);
+    }
+    countChangeDebounceTimerRef.current = setTimeout(() => {
+      countChangeDebounceTimerRef.current = null;
+      flushPendingUnreadCountChange();
+    }, UNREAD_COUNT_DEBOUNCE_MS);
+  }, [flushPendingUnreadCountChange]);
+
+  const scheduleUnreadCountChangeRef = useRef(scheduleUnreadCountChange);
+  scheduleUnreadCountChangeRef.current = scheduleUnreadCountChange;
 
   useEffect(() => {
     if (!hasKnowledgeAccess) {
@@ -333,7 +413,23 @@ const NotificationToast: FunctionComponent = () => {
   useEffect(() => () => {
     Object.values(dismissTimersRef.current).forEach(clearTimeout);
     dismissTimersRef.current = {};
+    if (countChangeDebounceTimerRef.current) {
+      clearTimeout(countChangeDebounceTimerRef.current);
+      countChangeDebounceTimerRef.current = null;
+    }
   }, []);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !hasKnowledgeAccess) {
+      return undefined;
+    }
+    const subscription = MESSAGING$.simulateNotificationToast.subscribe(
+      (notification: DevToastNotification) => {
+        enqueueToast(notification);
+      },
+    );
+    return () => subscription.unsubscribe();
+  }, [enqueueToast, hasKnowledgeAccess]);
 
   const handleNotificationsNumberEvent = useCallback(
     (response: NotificationToastNumberSubscription$data | null | undefined | unknown) => {
@@ -343,9 +439,9 @@ const NotificationToast: FunctionComponent = () => {
       if (newCount === null || newCount === undefined) {
         return;
       }
-      void handleUnreadCountChange(newCount);
+      scheduleUnreadCountChangeRef.current(newCount);
     },
-    [handleUnreadCountChange],
+    [],
   );
 
   const subConfig = useMemo(
@@ -359,7 +455,7 @@ const NotificationToast: FunctionComponent = () => {
 
   useSubscription(subConfig);
 
-  const handleView = (notification: ToastNotification) => {
+  const handleView = (notification: DisplayToastNotification) => {
     const target = getNotificationViewTarget(notification);
     if (target.type === 'entity') {
       navigate(`/dashboard/id/${target.instanceId}`);
