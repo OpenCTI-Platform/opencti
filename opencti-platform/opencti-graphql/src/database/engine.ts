@@ -3288,7 +3288,11 @@ export const elPaginate = async <T extends BasicStoreBase>(
   if (withoutRels) { // Force denorm rel security
     query.docvalue_fields = REL_DEFAULT_FETCH;
   }
-  logApp.debug('[SEARCH] paginate', { query });
+  if (JSON.stringify(query).includes('x_opencti_cf_score')) {
+    // FIXME debugging, do not keep
+    logApp.info('[SEARCH] paginate', { query: JSON.stringify(query) });
+  }
+
   try {
     const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
     const elements = await elConvertHits<T>(hits);

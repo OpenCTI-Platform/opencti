@@ -16,6 +16,7 @@ describe('CustomFieldDefinition — domain coverage', () => {
   let commentCfField: BasicStoreEntityCustomFieldDefinition;
   let caseIncidentOneCustomField: BasicStoreEntityCaseIncident;
   let caseIncidentAllCustomFields: BasicStoreEntityCaseIncident;
+  let caseIncidentAllCustomFields2: BasicStoreEntityCaseIncident;
   let caseIncidentNoCustomFields: BasicStoreEntityCaseIncident;
 
   it('should create a CustomFieldDefinition with field_type=integer', async () => {
@@ -64,7 +65,7 @@ describe('CustomFieldDefinition — domain coverage', () => {
     caseIncidentOneCustomField = await addCaseIncident(testContext, ADMIN_USER, input1);
 
     const input2: CaseIncidentAddInput = {
-      name: `Cf Case Incident ALL CF - ${Date.now()}`,
+      name: `Cf Case Incident ALL CF 42 & nice - ${Date.now()}`,
       custom_field_values: [
         {
           field_id: CF_SCORE_KEY,
@@ -79,6 +80,23 @@ describe('CustomFieldDefinition — domain coverage', () => {
       confidence: 80,
     };
     caseIncidentAllCustomFields = await addCaseIncident(testContext, ADMIN_USER, input2);
+
+    const input21: CaseIncidentAddInput = {
+      name: `Cf Case Incident ALL CF 72 & bis - ${Date.now()}`,
+      custom_field_values: [
+        {
+          field_id: CF_SCORE_KEY,
+          field_name: CF_SCORE_KEY,
+          int_value: 12,
+        }, {
+          field_id: CF_COMMENT_KEY,
+          field_name: CF_COMMENT_KEY,
+          string_value: 'What a nice comment bis !',
+        },
+      ],
+      confidence: 80,
+    };
+    caseIncidentAllCustomFields2 = await addCaseIncident(testContext, ADMIN_USER, input21);
 
     const input3: CaseIncidentAddInput = {
       name: `Cf Case Incident NO CF - ${Date.now()}`,
@@ -118,6 +136,42 @@ describe('CustomFieldDefinition — domain coverage', () => {
   });
 
   it('should filter Case Incident list with it', async () => {
+    // FIXME search on text fields with operator like contains does not work
+    /* Need to implement this kind of query
+{"query": {
+  "bool": {
+    "must": [
+      {
+        "nested": {
+          "path": "custom_field_values",
+          "query": {
+            "bool": {
+              "must": [
+                { "match": { "custom_field_values.field_name.keyword": "x_opencti_cf_comment" } },
+                { "match": { "custom_field_values.string_value":  "nice" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "nested": {
+          "path": "custom_field_values",
+          "query": {
+            "bool": {
+              "must": [
+                { "match": { "custom_field_values.field_name.keyword": "x_opencti_cf_score" } },
+                { "range": { "custom_field_values.int_value": { "gt": 20 } } }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+}
+     */
     const opts: EntityOptions<BasicStoreEntityCaseIncident> = {
       filters: { mode: FilterMode.And,
         filters: [{ key: ['entity_type'], values: ['Case-Incident'], operator: FilterOperator.Eq, mode: FilterMode.Or }],
@@ -133,12 +187,13 @@ describe('CustomFieldDefinition — domain coverage', () => {
     console.log('Case incident filter - allCasesFiltered:', myIncident);
   });
 
-  it.skip('should wait', async () => {
-    await waitInSec(300);
+  it('should wait', async () => {
+    await waitInSec(3000);
   });
 
   it.todo('should cleanup', async () => {
     await deleteElementById(testContext, ADMIN_USER, caseIncidentAllCustomFields.id, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+    await deleteElementById(testContext, ADMIN_USER, caseIncidentAllCustomFields2.id, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     await deleteElementById(testContext, ADMIN_USER, caseIncidentOneCustomField.id, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     await deleteElementById(testContext, ADMIN_USER, caseIncidentNoCustomFields.id, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     await deleteElementById(testContext, ADMIN_USER, scoreCfField.id, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
