@@ -22,7 +22,7 @@ import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
 
-const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', true);
+const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
 // Retention manager responsible to cleanup old data
 // Each API will start is retention manager.
