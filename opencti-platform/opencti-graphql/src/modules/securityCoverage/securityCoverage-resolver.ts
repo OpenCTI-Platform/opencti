@@ -5,6 +5,7 @@ import {
   securityCoverageDelete,
   securityCoverageStixBundle,
   objectCovered,
+  getSecurityCoverageResultProperty,
 } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
@@ -26,6 +27,11 @@ const SecurityCoverageResolvers: Resolvers = {
   SecurityCoverage: {
     objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
     toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
+    coverage_last_result: (SecurityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, SecurityCoverage.id, 'coverage_last_result'),
+    coverage_valid_from: (SecurityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, SecurityCoverage.id, 'coverage_valid_from'),
+    coverage_valid_to: (SecurityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, SecurityCoverage.id, 'coverage_valid_to'),
+    coverage_information: (SecurityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, SecurityCoverage.id, 'coverage_information'),
+    external_uri: (SecurityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, SecurityCoverage.id, 'external_uri'),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),

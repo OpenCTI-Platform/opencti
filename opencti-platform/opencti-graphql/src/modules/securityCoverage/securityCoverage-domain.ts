@@ -1,12 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type EntityOptions, fullRelationsList, loadEntityThroughRelationsPaginated, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  type EntityOptions,
+  fullEntitiesList,
+  fullRelationsList,
+  loadEntityThroughRelationsPaginated,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, RELATION_COVERED, type StoreEntitySecurityCoverage } from './securityCoverage-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
-import type { SecurityCoverageAddInput } from '../../generated/graphql';
+import { FilterMode, FilterOperator, type SecurityCoverageAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity, StoreObject, StoreRelation } from '../../types/store';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
@@ -22,8 +29,8 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
 import { deleteSecurityCoverageResultsByResultOf } from './securityCoverageResult/securityCoverageResult-domain';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-types';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
@@ -180,3 +187,37 @@ export const securityCoverageDelete = async (context: AuthContext, user: AuthUse
   return securityCoverageId;
 };
 // endregion
+
+export const getSecurityCoverageResultProperty = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverageId: string,
+  property: keyof BasicStoreEntitySecurityCoverageResult,
+) => {
+  // TODO : replace with function from chunk 2 : listSecurityCoverageResultsByResultOf
+  const results = await fullEntitiesList<BasicStoreEntitySecurityCoverageResult>(
+    context,
+    user,
+    [ENTITY_TYPE_SECURITY_COVERAGE_RESULT],
+    {
+      filters: {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [
+          {
+            mode: FilterMode.Or,
+            operator: FilterOperator.Eq,
+            key: [INPUT_RESULT_OF],
+            values: [securityCoverageId],
+          },
+        ],
+      },
+    },
+  );
+
+  if (!results[0]) {
+    return undefined;
+  }
+
+  return results[0][property];
+};
