@@ -105,10 +105,10 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           />
         </div>
         {!decayRule.built_in && (
-          <>
+          <div style={{ display: 'flex', gap: theme.spacing(1) }}>
             <DecayRulePopover decayRule={decayRule} />
             <DecayRuleEdition decayRule={decayRule} />
-          </>
+          </div>
         )}
       </div>
       <Grid
