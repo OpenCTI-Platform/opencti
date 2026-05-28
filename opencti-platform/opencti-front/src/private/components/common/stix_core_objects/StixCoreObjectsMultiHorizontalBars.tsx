@@ -487,8 +487,8 @@ interface StixCoreObjectsMultiHorizontalBarsProps {
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 
 const buildQueryVariables = (
-    resolvedDataSelection: WidgetDataSelection[],
-    config: DashboardConfig,
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
 ): StixCoreObjectsMultiHorizontalBarsDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
   const subSelection = resolvedDataSelection[1];
@@ -496,12 +496,12 @@ const buildQueryVariables = (
   const { startDate, endDate } = computeStartEndDates(config);
 
   const dateAttribute = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
+    ? selection.date_attribute
+    : 'created_at';
 
   const subDateAttribute = subSelection?.date_attribute?.length
-      ? subSelection.date_attribute
-      : 'created_at';
+    ? subSelection.date_attribute
+    : 'created_at';
 
   const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, {
     startDate,
@@ -510,12 +510,12 @@ const buildQueryVariables = (
   });
 
   const { filters: subFilters } = buildFiltersAndOptionsForWidgets(
-      subSelection?.filters,
-      {
-        startDate,
-        endDate,
-        dateAttribute: subDateAttribute,
-      },
+    subSelection?.filters,
+    {
+      startDate,
+      endDate,
+      dateAttribute: subDateAttribute,
+    },
   );
 
   return {

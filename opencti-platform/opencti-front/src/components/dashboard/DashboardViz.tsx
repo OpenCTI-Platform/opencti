@@ -41,6 +41,7 @@ const DashboardViz = ({
             config={config}
             popover={popover}
             host={host}
+            refreshRate={refreshRate}
           />
         )}
         {perspective === 'audits' && (

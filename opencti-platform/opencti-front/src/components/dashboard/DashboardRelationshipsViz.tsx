@@ -1,5 +1,5 @@
 import { memo, ReactNode } from 'react';
-import StixRelationshipsNumber from '@components/common/stix_relationships/StixRelationshipsNumber';
+import StixRelationshipsNumber from '../../private/components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '@components/common/stix_relationships/StixRelationshipsList';
 import StixRelationshipsDistributionList from '@components/common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsMultiVerticalBars from '@components/common/stix_relationships/StixRelationshipsMultiVerticalBars';
@@ -24,6 +24,7 @@ interface DashboardRelationshipsVizProps {
   popover?: ReactNode;
   config: DashboardConfig;
   host?: WidgetHost;
+  refreshRate?: number | null;
 }
 
 const DashboardRelationshipsViz = ({
@@ -31,6 +32,7 @@ const DashboardRelationshipsViz = ({
   popover,
   config,
   host,
+  refreshRate,
 }: DashboardRelationshipsVizProps) => {
   const startDate = config.relativeDate
     ? computeRelativeDate(config.relativeDate)
@@ -46,13 +48,13 @@ const DashboardRelationshipsViz = ({
         <StixRelationshipsNumber
           variant={undefined}
           height={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'list':
