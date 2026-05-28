@@ -7,9 +7,9 @@ import StixCoreObjectsMultiVerticalBars from '../../private/components/common/st
 import StixCoreObjectsMultiLineChart from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiLineChart';
 import StixCoreObjectsMultiAreaChart from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiAreaChart';
 import StixCoreObjectsTimeline from '@components/common/stix_core_objects/StixCoreObjectsTimeline';
-import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
+import StixCoreObjectsDonut from '../../private/components/common/stix_core_objects/StixCoreObjectsDonut';
 import StixCoreObjectsPolarArea from '@components/common/stix_core_objects/StixCoreObjectsPolarArea';
-import StixCoreObjectsMultiHorizontalBars from '@components/common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
+import StixCoreObjectsMultiHorizontalBars from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
 import StixCoreObjectsHorizontalBars from '@components/common/stix_core_objects/StixCoreObjectsHorizontalBars';
 import StixCoreObjectsRadar from '@components/common/stix_core_objects/StixCoreObjectsRadar';
 import StixCoreObjectsMultiHeatMap from '@components/common/stix_core_objects/StixCoreObjectsMultiHeatMap';
@@ -154,13 +154,13 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsDonut
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined}
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'polar-area':
@@ -183,13 +183,13 @@ const DashboardEntitiesViz = ({
         return (
           <StixCoreObjectsMultiHorizontalBars
             variant={undefined}
-            endDate={endDate}
-            startDate={startDate}
             dataSelection={widget.dataSelection}
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
             popover={popover}
             host={host}
+            refreshRate={refreshRate}
+            config={config}
           />
         );
       }

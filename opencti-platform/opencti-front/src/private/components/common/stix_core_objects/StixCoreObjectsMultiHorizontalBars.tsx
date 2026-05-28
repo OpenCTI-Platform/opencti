@@ -1,8 +1,7 @@
-import { graphql } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import Chart from '../charts/Chart';
-import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
@@ -12,9 +11,16 @@ import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filt
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import { useState } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import {
+  StixCoreObjectsMultiHorizontalBarsDistributionQuery,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHorizontalBarsDistributionQuery.graphql';
+import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import { ReactNode, Suspense } from 'react';
+import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { ApexOptions } from 'apexcharts';
 
 const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
   query StixCoreObjectsMultiHorizontalBarsDistributionQuery(
@@ -376,145 +382,186 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
+interface StixCoreObjectsMultiHorizontalBarsComponentProps {
+  queryRef: PreloadedQuery<StixCoreObjectsMultiHorizontalBarsDistributionQuery>;
+  dataSelection: Widget['dataSelection'];
+  parameters: {
+    distributed?: boolean;
+  };
+}
+
+const StixCoreObjectsMultiHorizontalBarsComponent = ({
+  queryRef,
+  dataSelection,
+  parameters,
+}: StixCoreObjectsMultiHorizontalBarsComponentProps) => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const { t_i18n } = useFormatter();
+  const { stixCoreObjectsDistribution } = usePreloadedQuery(
+    stixCoreObjectsMultiHorizontalBarsDistributionQuery,
+    queryRef,
+  );
+  const selection = dataSelection[0];
+  const data = stixCoreObjectsDistribution ?? [];
+
+  if (data.length === 0) {
+    return <WidgetNoData />;
+  }
+
+  const chartData = (data ?? [])
+    .filter((n): n is NonNullable<typeof n> => n != null)
+    .map((n) => {
+      let color = isFieldForIdentifier(selection.attribute ?? '')
+        ? itemColor(n.entity?.entity_type)
+        : itemColor(n.label);
+
+      if (n.entity?.color) {
+        color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+          ? '#000000'
+          : n.entity.color;
+      }
+
+      if (n.entity?.x_opencti_color) {
+        color = theme.palette.mode === 'light' && n.entity.x_opencti_color === '#ffffff'
+          ? '#000000'
+          : n.entity.x_opencti_color;
+      }
+
+      if (n.entity?.template?.color) {
+        color = theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
+          ? '#000000'
+          : n.entity.template.color;
+      }
+
+      return {
+        x:
+        selection.attribute?.endsWith('_id')
+          ? getMainRepresentative(n.entity, t_i18n('Restricted'))
+          : selection.attribute === 'entity_type'
+            ? t_i18n(`entity_${n.label}`)
+            : n.label,
+        y: n.value,
+        fillColor: color,
+      };
+    });
+
+  return (
+    <Chart
+      options={horizontalBarsChartOptions(
+        theme,
+        true,
+        simpleNumberFormat,
+        undefined,
+        parameters.distributed,
+        navigate,
+        undefined,
+      ) as ApexOptions}
+      series={[
+        {
+          name: selection.label ?? t_i18n('Number of entities'),
+          data: chartData,
+        },
+      ]}
+      type="bar"
+      width="100%"
+      height="100%"
+    />
+  );
+};
+
+interface StixCoreObjectsMultiHorizontalBarsProps {
+  variant?: string;
+  height?: number;
+  dataSelection: Widget['dataSelection'];
+  parameters?: {
+    title?: string;
+    distributed?: boolean;
+  };
+  popover?: ReactNode;
+  host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
+}
+
+const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
+
+const buildQueryVariables = (
+    resolvedDataSelection: WidgetDataSelection[],
+    config: DashboardConfig,
+): StixCoreObjectsMultiHorizontalBarsDistributionQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const subSelection = resolvedDataSelection[1];
+
+  const { startDate, endDate } = computeStartEndDates(config);
+
+  const dateAttribute = selection.date_attribute?.length
+      ? selection.date_attribute
+      : 'created_at';
+
+  const subDateAttribute = subSelection?.date_attribute?.length
+      ? subSelection.date_attribute
+      : 'created_at';
+
+  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, {
+    startDate,
+    endDate,
+    dateAttribute,
+  });
+
+  const { filters: subFilters } = buildFiltersAndOptionsForWidgets(
+      subSelection?.filters,
+      {
+        startDate,
+        endDate,
+        dateAttribute: subDateAttribute,
+      },
+  );
+
+  return {
+    types: DATA_SELECTION_TYPES,
+    field: selection.attribute ?? 'entity_type',
+    operation: 'count',
+    startDate,
+    endDate,
+    dateAttribute,
+    filters,
+    limit: selection.number ?? 10,
+    subDistributionField: subSelection?.attribute ?? 'entity_type',
+    subDistributionOperation: 'count',
+    subDistributionStartDate: startDate,
+    subDistributionEndDate: endDate,
+    subDistributionDateAttribute: subDateAttribute,
+    subDistributionTypes: DATA_SELECTION_TYPES,
+    subDistributionFilters: subFilters,
+    subDistributionLimit: subSelection?.number ?? 10,
+  };
+};
+
 const stixCoreObjectsMultiHorizontalBars = ({
   variant,
   height,
-  startDate,
-  endDate,
   dataSelection,
   parameters = {},
   popover,
+  config,
+  refreshRate = null,
   host,
-}) => {
-  const theme = useTheme();
+}: StixCoreObjectsMultiHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const [chart, setChart] = useState();
-  const navigate = useNavigate();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
+    refreshRate,
+    query: stixCoreObjectsMultiHorizontalBarsDistributionQuery,
+    config,
+    buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-    const selection = resolvedDataSelection[0];
-    const dataSelectionTypes = ['Stix-Core-Object'];
-    const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
-    const subSelection = resolvedDataSelection[1];
-    const subSelectionDataSelectionTypes = ['Stix-Core-Object'];
-    const { filters: subSelectionFilters, dataSelectionToTypes: subSelectionDataSelectionToTypes } = buildFiltersAndOptionsForWidgets(subSelection.filters);
-    return (
-      <QueryRenderer
-        query={stixCoreObjectsMultiHorizontalBarsDistributionQuery}
-        variables={{
-          objectId: dataSelectionElementId,
-          toTypes: dataSelectionToTypes,
-          types: dataSelectionTypes,
-          field: selection.attribute,
-          operation: 'count',
-          startDate,
-          endDate,
-          dateAttribute:
-            selection.date_attribute && selection.date_attribute.length > 0
-              ? selection.date_attribute
-              : 'created_at',
-          filters,
-          limit: selection.number ?? 10,
-          subDistributionToTypes: subSelectionDataSelectionToTypes,
-          subDistributionField: subSelection.attribute,
-          subDistributionStartDate: startDate,
-          subDistributionEndDate: endDate,
-          subDistributionDateAttribute:
-            subSelection.date_attribute
-            && subSelection.date_attribute.length > 0
-              ? subSelection.date_attribute
-              : 'created_at',
-          subDistributionOperation: 'count',
-          subDistributionLimit: subSelection.number ?? 10,
-          subDistributionTypes: subSelectionDataSelectionTypes,
-          subDistributionFilters: subSelectionFilters,
-        }}
-        render={({ props }) => {
-          if (
-            props
-            && props.stixCoreObjectsDistribution
-            && props.stixCoreObjectsDistribution.length > 0
-          ) {
-            const data = props.stixCoreObjectsDistribution.map((n) => {
-              let color = isFieldForIdentifier(selection.attribute)
-                ? itemColor(n.entity?.entity_type)
-                : itemColor(n.label);
-              if (n.entity?.color) {
-                color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
-                  ? '#000000'
-                  : n.entity.color;
-              }
-              if (n.entity?.x_opencti_color) {
-                color = theme.palette.mode === 'light'
-                  && n.entity.x_opencti_color === '#ffffff'
-                  ? '#000000'
-                  : n.entity.x_opencti_color;
-              }
-              if (n.entity?.template?.color) {
-                color = theme.palette.mode === 'light'
-                  && n.entity.template.color === '#ffffff'
-                  ? '#000000'
-                  : n.entity.template.color;
-              }
-              return {
-                x:
-
-                  selection.attribute.endsWith('_id')
-                    ? getMainRepresentative(n.entity, t_i18n('Restricted'))
-                    : selection.attribute === 'entity_type'
-                      ? t_i18n(`entity_${n.label}`)
-                      : n.label,
-                y: n.value,
-                fillColor: color,
-              };
-            });
-            const chartData = [
-              {
-                name: selection.label || t_i18n('Number of entities'),
-                data,
-              },
-            ];
-            const redirectionUtils = selection.attribute === 'name'
-              ? props.stixCoreObjectsDistribution.map((n) => ({
-                  id: n.entity?.id,
-                  entity_type: n.entity?.entity_type,
-                }))
-              : null;
-            return (
-              <Chart
-                options={horizontalBarsChartOptions(
-                  theme,
-                  true,
-                  simpleNumberFormat,
-                  null,
-                  parameters.distributed,
-                  navigate,
-                  redirectionUtils,
-                )}
-                series={chartData}
-                type="bar"
-                width="100%"
-                height="100%"
-                onMounted={setChart}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
+  if (isMissingHostEntity) {
+    return <WidgetNoHostEntity host={host} />;
+  }
 
   return (
     <WidgetContainer
@@ -522,11 +569,18 @@ const stixCoreObjectsMultiHorizontalBars = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
-      chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      {queryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <StixCoreObjectsMultiHorizontalBarsComponent
+            queryRef={queryRef}
+            dataSelection={resolvedDataSelection}
+            parameters={parameters}
+          />
+        </Suspense>
+      )}
     </WidgetContainer>
   );
 };
