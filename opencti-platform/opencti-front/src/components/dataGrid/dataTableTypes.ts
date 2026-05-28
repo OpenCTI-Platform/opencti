@@ -156,6 +156,7 @@ export interface DataTableProps {
   actionsColumnWidth?: number;
   enableInfiniteScroll?: boolean;
   hideHeaders?: boolean;
+  hideSavedFilters?: boolean;
   message?: string;
   isLocalStorageEnabled?: boolean;
   emptyStateMessage?: string;
@@ -193,6 +194,7 @@ export interface DataTableFiltersProps {
   currentView?: string;
   additionalHeaderButtons?: ReactNode[];
   additionalHeaderToggleButtons?: ReactNode[];
+  hideSavedFilters?: boolean;
 }
 
 export interface DataTableHeadersProps {

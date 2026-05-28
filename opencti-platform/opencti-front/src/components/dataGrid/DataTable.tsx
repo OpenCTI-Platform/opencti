@@ -20,7 +20,8 @@ import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
   | 'contextFilters'
-  | 'entityTypes'> & {
+  | 'entityTypes'
+  | 'hideSavedFilters'> & {
     hideSearch?: boolean;
     hideFilters?: boolean;
     availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes'];
@@ -46,6 +47,7 @@ const DataTableInternalFilters = ({
   additionalHeaderToggleButtons: additionalToggleButtons,
   currentView,
   exportContext,
+  hideSavedFilters,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
   const {
@@ -93,6 +95,7 @@ const DataTableInternalFilters = ({
               additionalHeaderButtons={additionalHeaderButtons}
               additionalHeaderToggleButtons={additionalToggleButtons}
               currentView={currentView}
+              hideSavedFilters={hideSavedFilters}
             />
           )}
         </div>
@@ -241,6 +244,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     currentView,
     hideSearch,
     hideFilters,
+    hideSavedFilters,
     taskScope,
     removeAuthMembersEnabled,
     removeFromDraftEnabled,
@@ -287,6 +291,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             availableRelationFilterTypes={availableRelationFilterTypes}
             hideFilters={hideFilters}
             hideSearch={hideSearch}
+            hideSavedFilters={hideSavedFilters}
             availableRelationshipTypes={availableRelationshipTypes}
             currentView={currentView}
             exportContext={exportContext}
