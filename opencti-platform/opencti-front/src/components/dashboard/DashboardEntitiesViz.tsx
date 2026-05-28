@@ -14,7 +14,7 @@ import StixCoreObjectsHorizontalBars from '../../private/components/common/stix_
 import StixCoreObjectsRadar from '../../private/components/common/stix_core_objects/StixCoreObjectsRadar';
 import StixCoreObjectsMultiHeatMap from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiHeatMap';
 import StixCoreObjectsTreeMap from '../../private/components/common/stix_core_objects/StixCoreObjectsTreeMap';
-import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixCoreObjectsWordCloud';
+import StixCoreObjectsWordCloud from '../../private/components/common/stix_core_objects/StixCoreObjectsWordCloud';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { DashboardConfig } from './dashboard-types';
@@ -248,13 +248,13 @@ const DashboardEntitiesViz = ({
       return (
         <StixCoreObjectsWordCloud
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined}
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     default:
