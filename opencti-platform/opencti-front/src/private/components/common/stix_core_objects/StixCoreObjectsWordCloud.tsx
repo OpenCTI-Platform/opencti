@@ -1,19 +1,17 @@
-import React, {ReactNode, Suspense} from 'react';
-import {graphql, PreloadedQuery, usePreloadedQuery} from 'react-relay';
-import {useFormatter} from '../../../../components/i18n';
+import React, { ReactNode, Suspense } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
-import Loader, {LoaderVariant} from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import {
-  StixCoreObjectsWordCloudDistributionQuery
-} from "@components/common/stix_core_objects/__generated__/StixCoreObjectsWordCloudDistributionQuery.graphql";
-import {WidgetDataSelection, WidgetHost, WidgetParameters} from "../../../../utils/widget/widget";
-import {DashboardConfig} from "../../../../components/dashboard/dashboard-types";
-import {computeStartEndDates} from "../../../../components/dashboard/dashboard-viz-utils";
-import {buildFiltersAndOptionsForWidgets} from "../../../../utils/filters/filtersUtils";
+import { StixCoreObjectsWordCloudDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsWordCloudDistributionQuery.graphql';
+import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const stixCoreObjectsWordCloudDistributionQuery = graphql`
   query StixCoreObjectsWordCloudDistributionQuery(

@@ -16,7 +16,7 @@ import StixCoreObjectsMultiHeatMap from '../../private/components/common/stix_co
 import StixCoreObjectsTreeMap from '../../private/components/common/stix_core_objects/StixCoreObjectsTreeMap';
 import StixCoreObjectsWordCloud from '../../private/components/common/stix_core_objects/StixCoreObjectsWordCloud';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
-import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardEntitiesVizProps {
@@ -35,7 +35,7 @@ const DashboardEntitiesViz = ({
   refreshRate,
 }: DashboardEntitiesVizProps) => {
   const startDate = config.relativeDate
-    ? computeRelativeDate(config.relativeDate)
+    ? computerRelativeDate(config.relativeDate)
     : config.startDate;
 
   const endDate = config.relativeDate
