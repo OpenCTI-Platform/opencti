@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -28,6 +28,8 @@ import {
   DialogContent,
   DialogActions,
   TextareaAutosize,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   Search,
@@ -51,6 +53,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import SearchListPopover from './SearchListPopover';
 import FilterPopover from './FilterPopover';
 import FilterSidebar, { FilterGroup } from './FilterSidebar';
+import { mockRawQueryApi, RawQueryResponse } from './mockRessaSearchApi';
 
 interface SearchExample {
   title: string;
@@ -66,11 +69,11 @@ interface RecentSearch {
 interface SearchResult {
   id: string;
   title: string;
-  attacker: string;
-  source: string;
   tags: string[];
   publicationDate: string;
   registrationDate: string;
+  entityType: string;
+  standardId: string;
 }
 
 // Function to parse search query and extract filters
@@ -138,8 +141,6 @@ const RessaSearch = () => {
     'actor: "Alpha Strike Lab" cve: "CVE-2025-27865" or country: "Iran" and entity_type: "vulnerability" and last_seen: ">=30d" and exploit_available: "true" and exploit_in_the_wild: "true"'
   );
   const [hasSearched, setHasSearched] = useState(false);
-  // Change this to false to see "no results" state
-  const [hasResults, setHasResults] = useState(true);
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
@@ -151,6 +152,10 @@ const RessaSearch = () => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveTitle, setSaveTitle] = useState('');
   const [saveDescription, setSaveDescription] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [rawResponse, setRawResponse] = useState<RawQueryResponse | null>(null);
+  const hasResults = (rawResponse?.stats?.primaryDocumentCount ?? 0) > 0;
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const saveIconRef = useRef<HTMLButtonElement>(null);
@@ -181,56 +186,32 @@ const RessaSearch = () => {
     { id: '7', name: 'country_code', label: ':country_code' },
   ]);
 
-  // Mock search results data
-  const [searchResults] = useState<SearchResult[]>([
-    {
-      id: '1',
-      title: 'Digikala user database leak report - Digikala.com',
-      attacker: 'Qiyam',
-      source: 'Dark Web',
-      tags: ['Report', 'Leak', 'Digikala', 'Employees'],
-      publicationDate: 'Yesterday',
-      registrationDate: 'Yesterday',
-    },
-    {
-      id: '2',
-      title: 'ransom_2024.exe',
-      attacker: 'Tapndegan',
-      source: 'Russian Market',
-      tags: ['Ransomware', 'cve', 'node.js'],
-      publicationDate: '2 days ago',
-      registrationDate: '2 days ago',
-    },
-    {
-      id: '3',
-      title: 'CVE.2025.234581',
-      attacker: 'Alpha Strike Lab',
-      source: 'Human Analyst',
-      tags: ['Healthcare', 'Iran', 'APT'],
-      publicationDate: '20 Dec 2024',
-      registrationDate: '20 Dec 2024',
-    },
-    {
-      id: '4',
-      title: 'APT28',
-      attacker: 'SPIDER',
-      source: 'Automated Feeds',
-      tags: ['Financial', 'Customer', 'Saman Bank'],
-      publicationDate: '3 days ago',
-      registrationDate: '3 days ago',
-    },
-    {
-      id: '5',
-      title: 'Bank account leak - 15K records',
-      attacker: 'Gonjeshk',
-      source: 'Dark Web',
-      tags: ['Report', 'Leak', 'Financial'],
-      publicationDate: '1 week ago',
-      registrationDate: '1 week ago',
-    },
-  ]);
+  const searchResults: SearchResult[] = useMemo(() => {
+    if (!rawResponse) return [];
+    return rawResponse.primaryDocuments.map((doc) => {
+      const src = (doc.source ?? {}) as Record<string, unknown>;
+      const name = typeof src.name === 'string' ? src.name : undefined;
+      const title = name ?? doc.standardId ?? doc.internalId;
+      const createdAt = typeof src.created_at === 'string' ? src.created_at : undefined;
+      const updatedAt = typeof src.updated_at === 'string' ? src.updated_at : undefined;
+      const labels = Array.isArray(src.labels)
+        ? (src.labels.filter((x) => typeof x === 'string') as string[])
+        : [];
+      const entityType = typeof src.entity_type === 'string' ? src.entity_type : doc.entityType;
 
-  const totalResults = 54; // Mock total count
+      return {
+        id: doc.internalId,
+        title,
+        tags: Array.from(new Set([entityType, ...labels])).slice(0, 8),
+        publicationDate: updatedAt ?? '',
+        registrationDate: createdAt ?? '',
+        entityType: doc.entityType,
+        standardId: doc.standardId,
+      };
+    });
+  }, [rawResponse]);
+
+  const totalResults = rawResponse?.stats?.primaryDocumentCount ?? searchResults.length;
 
   const searchExamples: SearchExample[] = [
     {
@@ -267,19 +248,37 @@ const RessaSearch = () => {
     },
   ];
 
-  const handleSearch = () => {
-    if (searchValue.trim()) {
-      setHasSearched(true);
-      // Parse the search query to extract filters
-      const filters = parseSearchQuery(searchValue);
-      setExtractedFilters(filters);
-      // TODO: Implement actual search functionality
-      // Determine if results should be shown based on query
-      // Query with "Alpha Strike Lab" and "CVE-2025-27865" shows no results
-      // Other queries show results
-      const hasNoResultsQuery = searchValue.includes('Alpha Strike Lab') && searchValue.includes('CVE-2025-27865');
-      setHasResults(!hasNoResultsQuery);
-      console.log('Searching for:', searchValue);
+  const handleSearch = async () => {
+    if (!searchValue.trim() || isSearching) return;
+    setHasSearched(true);
+    setSearchError(null);
+    setIsSearching(true);
+    setSelectedRows([]);
+    setPage(0);
+
+    const filters = parseSearchQuery(searchValue);
+    setExtractedFilters(filters);
+
+    try {
+      const response = await mockRawQueryApi({
+        query: searchValue,
+        maxRelationDepth: 20,
+        maxPrimaryDocuments: 20,
+        maxRelatedEntities: 20,
+        maxRelationships: 20,
+        maxRelatedDocuments: 20,
+        includeRelationshipDocuments: true,
+        includeNestedObjects: true,
+        includeMetadataAndHistory: true,
+        multilineOutput: true,
+      });
+      setRawResponse(response);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      setRawResponse(null);
+      setSearchError(message);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -435,6 +434,7 @@ const RessaSearch = () => {
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               onKeyDown={handleKeyDown}
+              disabled={isSearching}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   height: 40,
@@ -522,9 +522,14 @@ const RessaSearch = () => {
                       <Tooltip title={t_i18n('Search')}>
                         <IconButton
                           size="small"
+                          onClick={handleSearch}
                           sx={{ padding: 0.5 }}
                         >
-                          <Search fontSize="small" sx={{ color: 'text.secondary' }} />
+                          {isSearching ? (
+                            <CircularProgress size={16} />
+                          ) : (
+                            <Search fontSize="small" sx={{ color: 'text.secondary' }} />
+                          )}
                         </IconButton>
                       </Tooltip>
                       <Divider
@@ -550,6 +555,8 @@ const RessaSearch = () => {
                         setSearchValue('');
                         setHasSearched(false);
                         setExtractedFilters([]);
+                        setRawResponse(null);
+                        setSearchError(null);
                       }}
                       sx={{ padding: 0.5 }}
                     >
@@ -567,6 +574,7 @@ const RessaSearch = () => {
             variant="contained"
             color="primary"
             onClick={handleSearch}
+            disabled={isSearching || !searchValue.trim()}
             sx={{
               minWidth: 100,
               height: 40,
@@ -576,9 +584,23 @@ const RessaSearch = () => {
               borderRadius: 1,
             }}
           >
-            {t_i18n('Search')}
+            {isSearching ? t_i18n('Searching...') : t_i18n('Search')}
           </Button>
         </Box>
+
+        {hasSearched && searchError && (
+          <Box sx={{ mb: 2 }}>
+            <Alert severity="error">{searchError}</Alert>
+          </Box>
+        )}
+
+        {hasSearched && rawResponse?.warnings?.length ? (
+          <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {rawResponse.warnings.slice(0, 3).map((w, idx) => (
+              <Alert severity="warning" key={idx}>{w}</Alert>
+            ))}
+          </Box>
+        ) : null}
 
         {/* Recent Searches Popover */}
         <SearchListPopover
@@ -875,7 +897,7 @@ const RessaSearch = () => {
                         }}
                       >
                         <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
-                          {hasSearched ? totalResults : 0}
+                          {totalResults}
                         </Typography>
                       </Box>
                     </Typography>
@@ -1052,11 +1074,10 @@ const RessaSearch = () => {
                                   />
                                 </TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Title')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Attacker')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Source')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Entity Type')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Tags')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Publication Date')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Registration Date')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Updated')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Created')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600, width: 100 }}>{t_i18n('View')}</TableCell>
                               </TableRow>
                             </TableHead>
@@ -1080,6 +1101,9 @@ const RessaSearch = () => {
                                     <TableCell>
                                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                         <Typography variant="body2">{result.title}</Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          {result.standardId}
+                                        </Typography>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                           {result.tags.map((tag, index) => (
                                             <Chip
@@ -1136,8 +1160,7 @@ const RessaSearch = () => {
                                         </Box>
                                       </Box>
                                     </TableCell>
-                                    <TableCell>{result.attacker}</TableCell>
-                                    <TableCell>{result.source}</TableCell>
+                                    <TableCell>{result.entityType}</TableCell>
                                     <TableCell>
                                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                         {result.tags.map((tag, index) => (
