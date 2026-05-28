@@ -2385,7 +2385,7 @@ class OpenCTIStix2:
                     "version": file["metaData"].get("version", None),
                     "object_marking_refs": [],
                 }
-                for file_marking_definition in file["objectMarking"]:
+                for file_marking_definition in file.get("objectMarking", []):
                     if file_marking_definition["definition_type"] == "TLP":
                         created = "2017-01-20T00:00:00.000Z"
                     else:
