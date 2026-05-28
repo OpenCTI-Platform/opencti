@@ -26,6 +26,7 @@ import { type EditInput, type PlaybookAddInput, type PlaybookAddLinkInput, type 
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS, type StreamConfiguration } from './playbook-components';
+import xtmOneClient from '../xtm/one/xtm-one-client';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -106,9 +107,23 @@ export const findPlaybooksForEnrollment = async (
   return filteredPlaybooks;
 };
 
+// IDs of playbook components that delegate their work to an XTM One agent
+// and therefore only make sense to expose to playbook authors when an
+// XTM One token is configured. Same gating contract as the Ask Ariane
+// chatbot and the AI Insights drawers — listing them in the picker when
+// the platform cannot reach XTM One would only let authors build nodes
+// that no-op at runtime.
+const XTM_ONE_DEPENDENT_COMPONENT_IDS: ReadonlySet<string> = new Set([
+  'PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT',
+  'PLAYBOOK_AI_AGENT_SEND_COMPONENT',
+]);
+
 export const availableComponents = async (context: AuthContext) => {
   await checkEnterpriseEdition(context);
-  return Object.values(PLAYBOOK_COMPONENTS);
+  const xtmOneConfigured = xtmOneClient.isConfigured();
+  return Object.values(PLAYBOOK_COMPONENTS).filter((component) => {
+    return xtmOneConfigured || !XTM_ONE_DEPENDENT_COMPONENT_IDS.has(component.id);
+  });
 };
 
 export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
