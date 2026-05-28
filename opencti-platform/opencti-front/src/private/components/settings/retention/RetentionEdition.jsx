@@ -265,21 +265,19 @@ const RetentionEditionContainer = (props) => {
               )
             }
             <div className={classes.buttons}>
-              {retentionRule.scope === 'knowledge' && (
-                <Button
-                  color="secondary"
-                  onClick={() => handleVerify(values)}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t_i18n('Verify')}
-                </Button>
-              )}
+              <Button
+                color="secondary"
+                onClick={() => handleVerify(values)}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t_i18n('Verify')}
+              </Button>
               <Button
                 color="primary"
                 onClick={submitForm}
                 classes={{ root: classes.button }}
-                disabled={(retentionRule.scope === 'knowledge' && !verified) || isSubmitting}
+                disabled={!verified || isSubmitting}
               >
                 {t_i18n('Update')}
               </Button>
