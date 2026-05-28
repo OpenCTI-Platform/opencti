@@ -25,10 +25,10 @@ const ALL_VISUALIZATION_TYPES = [
 
 describe('getVisualizationTypes', () => {
   describe('when host is a workspace', () => {
-    it('all visualization types but attribute are available', () => {
+    it('all visualization types but attribute or custom-attributes are available', () => {
       expect(getVisualizationTypes({
         kind: 'workspace',
-      }).map(({ key }) => key)).toStrictEqual(ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute'));
+      }).map(({ key }) => key)).toStrictEqual(ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' || 'custom-attributes'));
     });
   });
 
