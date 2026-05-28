@@ -72,6 +72,10 @@ vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
   createAuthenticatedContext: vi.fn(),
 }));
 
+vi.mock('../../../src/http/httpServer-draft', () => ({
+  checkDraftInContext: vi.fn(),
+}));
+
 vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
@@ -135,6 +139,7 @@ import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedC
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
 import { postAgentMessageStream } from '../../../src/http/httpChatbotProxy';
+import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -154,9 +159,9 @@ const buildRes = () => {
 };
 
 /** Configure all mocks so that authentication + license + CGU pass. */
-const setupAuthenticatedContext = () => {
+const setupAuthenticatedContext = (overrides: Record<string, unknown> = {}) => {
   const fakeUser = { id: 'user-1', name: 'Test User' };
-  const fakeContext = { user: fakeUser };
+  const fakeContext = { user: fakeUser, ...overrides };
   vi.mocked(createAuthenticatedContext).mockResolvedValue(fakeContext as any);
   vi.mocked(getEntityFromCache).mockResolvedValue({ filigran_chatbot_ai_cgu_status: 'enabled' } as any);
   vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: 'pem-data' } as any);
@@ -174,6 +179,8 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     // Default to cache miss so the existing tests exercise the XTM One path.
     mockRedisGetXtmAgentResponse.mockResolvedValue(null);
     mockRedisSetXtmAgentResponse.mockResolvedValue(undefined);
+    // Default the draft check to a no-op (live workspace, no draft).
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
     res = buildRes();
   });
 
@@ -504,6 +511,70 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     await Promise.all(endHandlers.map((h) => h()));
 
     expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
+  it('should reject with 400 when the draft context fails validation, without calling cache or upstream', async () => {
+    // Simulate a caller passing an `opencti-draft-id` they do not have access
+    // to (or that is closed). The REST proxy MUST refuse — without this guard
+    // a cached response (or a fresh agent run) computed for another draft
+    // could be replayed across draft authorization boundaries.
+    setupAuthenticatedContext({ draft_context: 'forged-draft-id' });
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Could not find draft workspace'));
+    mockRedisGetXtmAgentResponse.mockResolvedValue({
+      content: '<p>This MUST NEVER be replayed</p>',
+      cached_at: '2026-05-28T10:00:00.000Z',
+    } as any);
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    await postAgentMessageStream(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Could not find draft workspace' });
+    expect(mockRedisGetXtmAgentResponse).not.toHaveBeenCalled();
+    expect(mockPost).not.toHaveBeenCalled();
+    // Also verify no SSE headers leaked into the JSON 400 response.
+    expect(res.setHeader).not.toHaveBeenCalledWith('Content-Type', 'text/event-stream');
+  });
+
+  it('should derive the cache key from context.draft_context, not the raw header', async () => {
+    // Two requests with the same agent + prompt but different
+    // `context.draft_context` values must produce different cache keys, so a
+    // live-workspace cache hit cannot leak into a draft view (and vice-versa).
+    // We capture the cache key written on stream completion and assert the
+    // two are distinct.
+    const captureCacheKey = async (draftContext: string | undefined) => {
+      vi.clearAllMocks();
+      setupAuthenticatedContext(draftContext === undefined ? {} : { draft_context: draftContext });
+      vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
+      mockRedisGetXtmAgentResponse.mockResolvedValue(null);
+      mockRedisSetXtmAgentResponse.mockResolvedValue(undefined);
+      const dataHandlers: ((chunk: Buffer) => void)[] = [];
+      const endHandlers: (() => void | Promise<void>)[] = [];
+      const fakeStream = {
+        pipe: vi.fn(),
+        destroy: vi.fn(),
+        on: vi.fn((event: string, handler: any) => {
+          if (event === 'data') dataHandlers.push(handler);
+          if (event === 'end') endHandlers.push(handler);
+          return fakeStream;
+        }),
+      };
+      mockPost.mockResolvedValue({ data: fakeStream });
+      const req = buildReq({ agent_slug: 'same-agent', content: 'same prompt' });
+      (req as any).on = vi.fn();
+      const localRes = buildRes();
+      await postAgentMessageStream(req, localRes);
+      dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"done","content":"final"}\n\n')));
+      await Promise.all(endHandlers.map((h) => h()));
+      const [cacheKey] = mockRedisSetXtmAgentResponse.mock.calls[0] as any;
+      return cacheKey as string;
+    };
+
+    const liveKey = await captureCacheKey(undefined);
+    const draftKey = await captureCacheKey('draft-123');
+    expect(liveKey).toHaveLength(64);
+    expect(draftKey).toHaveLength(64);
+    expect(liveKey).not.toEqual(draftKey);
   });
 
   it('should skip caching when the upstream response exceeds the 2MB capture limit', async () => {

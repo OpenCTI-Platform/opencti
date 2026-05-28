@@ -16,6 +16,7 @@ import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
 import { redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
+import { checkDraftInContext } from './httpServer-draft';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -32,8 +33,13 @@ const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
 // is keyed by sha256(agent_slug + opencti-draft-id + content) so reopening
 // AI Insights for the same entity within the window returns instantly, and
 // live-workspace and draft views never share a cache entry. Set to 0 to
-// disable.
-const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number(nconf.get('ai:agents_refresh_timeout') ?? 1440);
+// disable. A non-numeric or negative override is treated as a misconfiguration
+// and falls back to the default rather than silently disabling the cache.
+const AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES = 1440;
+const parsedAgentsRefreshTimeoutMinutes = Number(nconf.get('ai:agents_refresh_timeout'));
+const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTimeoutMinutes) && parsedAgentsRefreshTimeoutMinutes >= 0
+  ? parsedAgentsRefreshTimeoutMinutes
+  : AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES;
 const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60;
 
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
@@ -512,13 +518,31 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       return;
     }
 
+    // REST routes don't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before either serving a cached
+    // response or hitting the upstream agent. Without this guard a caller could
+    // pass an arbitrary `opencti-draft-id` header and get a cached response (or
+    // a fresh agent run) for a draft they don't have access to, bypassing draft
+    // authorization entirely. `checkDraftInContext` is a no-op when the
+    // authenticated context has no draft, so the live-workspace path is
+    // unaffected.
+    try {
+      await checkDraftInContext(context);
+    } catch (draftErr: unknown) {
+      logApp.warn('Agent stream rejected due to invalid draft context', { cause: draftErr });
+      res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+      return;
+    }
+
     // Cache lookup — replay as a single `done` event so the client display
     // logic (which already handles `done`) doesn't need to know about cache.
     // The cache is intentionally not namespaced by user identity (matching
     // the pre-XTM-One in-memory `aiResponseCache` in `domain/container.js`),
     // but it MUST be namespaced by draft so live and draft views never
-    // contaminate each other.
-    const draftId = (req.headers['opencti-draft-id'] as string) || '';
+    // contaminate each other. We read the draft id from `context.draft_context`
+    // (rather than the raw header) so that the value has gone through the same
+    // shape validation the rest of the platform uses.
+    const draftId = context.draft_context ?? '';
     const cacheEnabled = AI_AGENTS_REFRESH_TIMEOUT_SECONDS > 0;
     const cacheKey = cacheEnabled ? buildAgentCacheKey(agent_slug, draftId, content) : null;
     if (cacheEnabled && cacheKey && !force_refresh) {
