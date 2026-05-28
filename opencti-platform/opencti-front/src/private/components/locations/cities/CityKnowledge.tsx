@@ -1,6 +1,3 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
@@ -68,8 +65,6 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityId={city.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
-              defaultStartTime={city.startTime}
-              defaultStopTime={city.stopTime}
               allDirections
             />
           )}

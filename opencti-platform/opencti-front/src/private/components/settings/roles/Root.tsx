@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { FunctionComponent, useState } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
@@ -22,6 +20,8 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 import PopoverMenu from '../../../../components/PopoverMenu';
 import type { Theme } from '../../../../components/Theme';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import { RootRoleEditionQuery } from './__generated__/RootRoleEditionQuery.graphql';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const roleQuery = graphql`
   query RootRoleQuery($id: String!) {
@@ -45,9 +45,10 @@ const roleEditionQuery = graphql`
 
 interface RootRoleComponentProps {
   queryRef: PreloadedQuery<RootRoleQuery>;
+  roleId: string;
 }
 
-const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef }) => {
+const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef, roleId }) => {
   const data = usePreloadedQuery(roleQuery, queryRef);
   const { role } = data;
   const { t_i18n } = useFormatter();
@@ -58,84 +59,87 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
 
-  const { isAllowed, isSensitive } = useSensitiveModifications('roles', role.standard_id);
-  const roleEditionData = useLazyLoadQuery<RoleEditionQuery>(
+  const { isAllowed, isSensitive } = useSensitiveModifications('roles', role?.standard_id);
+  const roleEditionData = useLazyLoadQuery<RootRoleEditionQuery>(
     roleEditionQuery,
-    { id: role.id },
+    { id: roleId },
   );
 
   const groupsQueryRef = useQueryLoading<GroupsSearchQuery>(
     groupsSearchQuery,
     {
-      count: 50,
-      orderBy: 'name',
-      orderMode: 'asc',
+      groupsOrderBy: 'name',
+      groupsOrderMode: 'asc',
     },
   );
 
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
-      <>
-        <Breadcrumbs
-          isSensitive={isSensitive}
-          elements={[
-            { label: t_i18n('Settings') },
-            { label: t_i18n('Security') },
-            { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
-            { label: role.name, current: true },
-          ]}
-        />
-        <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
-          <TitleMainEntity sx={{ flex: 1 }}>
-            {role.name}
-          </TitleMainEntity>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
-            {canDelete && (
-              <PopoverMenu>
-                {({ closeMenu }) => (
-                  <Box>
-                    <MenuItem
-                      disabled={!isAllowed && isSensitive}
-                      onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
-                    >
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  </Box>
-                )}
-              </PopoverMenu>
-            )}
-          </div>
-          <RoleDeletionDialog
-            roleId={role.id}
-            isOpen={openDelete}
-            handleClose={handleCloseDelete}
-          />
-          <RoleEdition
-            roleEditionData={roleEditionData}
-            disabled={!isAllowed && isSensitive}
-          />
-        </Stack>
+      {role ? (
         <>
-          {groupsQueryRef ? (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <Routes>
-                <Route
-                  path="/"
-                  element={(
-                    <Role roleData={role} groupsQueryRef={groupsQueryRef} />
+          <Breadcrumbs
+            isSensitive={isSensitive}
+            elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Security') },
+              { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
+              { label: role.name, current: true },
+            ]}
+          />
+          <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+            <TitleMainEntity sx={{ flex: 1 }}>
+              {role.name}
+            </TitleMainEntity>
+            <div style={{ marginRight: theme.spacing(0.5) }}>
+              {canDelete && (
+                <PopoverMenu>
+                  {({ closeMenu }) => (
+                    <Box>
+                      <MenuItem
+                        disabled={!isAllowed && isSensitive}
+                        onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    </Box>
                   )}
-                />
-              </Routes>
-            </React.Suspense>
-          ) : (
-            <Loader variant={LoaderVariant.inElement} />
-          )
-          }
+                </PopoverMenu>
+              )}
+            </div>
+            <RoleDeletionDialog
+              roleId={role.id}
+              isOpen={openDelete}
+              handleClose={handleCloseDelete}
+            />
+            <RoleEdition
+              roleEditionData={roleEditionData}
+              disabled={!isAllowed && isSensitive}
+            />
+          </Stack>
+          <>
+            {groupsQueryRef ? (
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <Routes>
+                  <Route
+                    path="/"
+                    element={(
+                      <Role roleData={role} groupsQueryRef={groupsQueryRef} />
+                    )}
+                  />
+                </Routes>
+              </React.Suspense>
+            ) : (
+              <Loader variant={LoaderVariant.inElement} />
+            )
+            }
+          </>
         </>
-      </>
+      ) : (
+        <ErrorNotFound />
+      )}
     </Security>
   );
 };

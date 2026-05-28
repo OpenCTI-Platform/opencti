@@ -1,7 +1,3 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationshipsIndicators from '@components/common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
@@ -79,8 +75,6 @@ const IncidentKnowledge = ({
               entityId={incident.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
-              defaultStartTime={incident.startTime}
-              defaultStopTime={incident.stopTime}
               allDirections
             />
           )}
@@ -136,7 +130,7 @@ const IncidentKnowledge = ({
               stixDomainObjectId={incident.id}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
-              disableExport={undefined}
+              disableExport={false}
               entityType={incident.entity_type}
             />
           )}

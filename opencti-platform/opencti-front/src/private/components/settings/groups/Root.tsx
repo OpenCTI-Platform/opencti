@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
@@ -22,6 +20,7 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 import PopoverMenu from '../../../../components/PopoverMenu';
 import type { Theme } from '../../../../components/Theme';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
     subscription RootGroupsSubscription($id: ID!) {
@@ -76,62 +75,66 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   const data = usePreloadedQuery(groupQuery, queryRef);
   const { group } = data;
 
-  const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
+  const { isAllowed, isSensitive } = useSensitiveModifications('groups', group?.standard_id);
 
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
-      <>
-        <Breadcrumbs
-          isSensitive={isSensitive}
-          elements={[
-            { label: t_i18n('Settings') },
-            { label: t_i18n('Security') },
-            { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },
-            { label: group.name, current: true },
-          ]}
-        />
-        <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
-          <TitleMainEntity sx={{ flex: 1 }}>
-            {group.name}
-          </TitleMainEntity>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
-            {canDelete && (
-              <PopoverMenu>
-                {({ closeMenu }) => (
-                  <Box>
-                    <MenuItem
-                      disabled={!isAllowed && isSensitive}
-                      onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
-                    >
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  </Box>
-                )}
-              </PopoverMenu>
-            )}
-          </div>
-          <GroupDeletionDialog
-            groupId={group.id}
-            isOpen={openDelete}
-            handleClose={handleCloseDelete}
+      {group ? (
+        <>
+          <Breadcrumbs
+            isSensitive={isSensitive}
+            elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Security') },
+              { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },
+              { label: group.name, current: true },
+            ]}
           />
-          <GroupEdition
-            groupId={group.id}
-            disabled={!isAllowed && isSensitive}
-          />
-        </Stack>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Group groupData={group} />
-            }
-          />
-        </Routes>
-      </>
+          <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+            <TitleMainEntity sx={{ flex: 1 }}>
+              {group.name}
+            </TitleMainEntity>
+            <div style={{ marginRight: theme.spacing(0.5) }}>
+              {canDelete && (
+                <PopoverMenu>
+                  {({ closeMenu }) => (
+                    <Box>
+                      <MenuItem
+                        disabled={!isAllowed && isSensitive}
+                        onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    </Box>
+                  )}
+                </PopoverMenu>
+              )}
+            </div>
+            <GroupDeletionDialog
+              groupId={group.id}
+              isOpen={openDelete}
+              handleClose={handleCloseDelete}
+            />
+            <GroupEdition
+              groupId={group.id}
+              disabled={!isAllowed && isSensitive}
+            />
+          </Stack>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Group groupData={group} />
+              }
+            />
+          </Routes>
+        </>
+      ) : (
+        <ErrorNotFound />
+      )}
     </Security>
   );
 };

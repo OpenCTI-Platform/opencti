@@ -1,10 +1,7 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
@@ -29,6 +26,7 @@ import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseRfiDeletion from './CaseRfiDeletion';
 import { PATH_RFI, PATH_RFIS } from '@components/common/routes/paths';
+import type { CaseRfiKnowledge_case$data } from './__generated__/CaseRfiKnowledge_case.graphql';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -81,7 +79,12 @@ const caseRfiQuery = graphql`
   }
 `;
 
-const RootCaseRfiComponent = ({ queryRef, caseId }) => {
+interface RootCaseRfiComponentProps {
+  queryRef: PreloadedQuery<RootCaseRfiCaseQuery>;
+  caseId: string;
+}
+
+const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
   >(
@@ -108,6 +111,10 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
+  const CaseRfiKnowledgeComponent = CaseRfiKnowledge as React.ComponentType<{
+    caseData: FragmentRef<CaseRfiKnowledge_case$data>;
+    enableReferences: boolean;
+  }>;
   return (
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
@@ -139,7 +146,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         pages={{
           overview: <CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />,
           knowledge: (
-            <CaseRfiKnowledge
+            <CaseRfiKnowledgeComponent
               caseData={caseData}
               enableReferences={enableReferences}
             />
