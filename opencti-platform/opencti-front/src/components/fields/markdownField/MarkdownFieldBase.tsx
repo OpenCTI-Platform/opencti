@@ -1,18 +1,16 @@
+import { AddPhotoAlternateOutlined } from '@mui/icons-material';
+import FormHelperText from '@mui/material/FormHelperText';
+import InputLabel from '@mui/material/InputLabel';
+import { isNil } from 'ramda';
 import React, { CSSProperties, FocusEvent, MouseEvent, ReactElement, useCallback, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
-import InputLabel from '@mui/material/InputLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import { AddPhotoAlternateOutlined } from '@mui/icons-material';
-import { isNil } from 'ramda';
-import Button from '../../common/button/Button';
-import useAI from '../../../utils/hooks/useAI';
-import useHelper from '../../../utils/hooks/useHelper';
 import TextFieldAskAI from '../../../private/components/common/form/TextFieldAskAI';
+import useAI from '../../../utils/hooks/useAI';
+import Button from '../../common/button/Button';
 import { useFormatter } from '../../i18n';
 import MarkdownDisplay from '../../markdownDisplay/MarkdownDisplay';
 import type { MarkdownImagesController } from './core/markdownImagesController';
 import useMarkdownImages from './hooks/useMarkdownImages';
-import { MARKDOWN_IMAGE_UPLOAD } from '../../../utils/platformModulesHelper';
 
 export type MarkdownTab = 'write' | 'preview';
 
@@ -70,8 +68,6 @@ const MarkdownFieldBase = ({
 }: MarkdownFieldBaseProps): ReactElement => {
   const { t_i18n } = useFormatter();
   const { enabled, configured } = useAI();
-  const { isFeatureEnable } = useHelper();
-  const isImageUploadEnabled = isFeatureEnable(MARKDOWN_IMAGE_UPLOAD);
   const [selectedTab, setSelectedTab] = useState<MarkdownTab>('write');
   const [draftValue, setDraftValue] = useState(value ?? '');
 
@@ -122,7 +118,6 @@ const MarkdownFieldBase = ({
     uploadFileMarkings,
     tempCleanupDelayMs: TEMP_CLEANUP_DELAY_MS,
     maxImageSizeBytes: MAX_IMAGE_SIZE_BYTES,
-    isImageUploadEnabled,
   });
 
   const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
@@ -285,7 +280,7 @@ const MarkdownFieldBase = ({
         minPreviewHeight={140}
       />
 
-      {activeTab === 'write' && isImageUploadEnabled && (
+      {activeTab === 'write' && (
         <Button
           variant="tertiary"
           size="small"
@@ -301,13 +296,13 @@ const MarkdownFieldBase = ({
         </Button>
       )}
 
-      {activeTab === 'write' && isImageUploadEnabled && dragFeedback === 'valid' && (
+      {activeTab === 'write' && dragFeedback === 'valid' && (
         <FormHelperText sx={{ marginTop: '2px', color: 'success.main' }}>
           {t_i18n('Release to upload images')}
         </FormHelperText>
       )}
 
-      {activeTab === 'write' && isImageUploadEnabled && dragFeedback === 'invalid' && (
+      {activeTab === 'write' && dragFeedback === 'invalid' && (
         <FormHelperText error={true} sx={{ marginTop: '2px' }}>
           {t_i18n('SVG files are not supported. Use PNG, JPG, GIF, or WEBP.')}
         </FormHelperText>

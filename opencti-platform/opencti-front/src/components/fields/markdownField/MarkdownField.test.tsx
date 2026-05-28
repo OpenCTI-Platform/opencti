@@ -6,7 +6,6 @@ import testRender from '../../../utils/tests/test-render';
 import MarkdownField from './MarkdownField';
 
 const commitMutationMock = vi.fn();
-const isFeatureEnableMock = vi.fn(() => true);
 
 vi.mock('../../../relay/environment', async () => {
   const actual = await vi.importActual('../../../relay/environment');
@@ -22,12 +21,6 @@ vi.mock('../../../relay/environment', async () => {
     }) => commitMutationMock(config),
   };
 });
-
-vi.mock('../../../utils/hooks/useHelper', () => ({
-  default: () => ({
-    isFeatureEnable: isFeatureEnableMock,
-  }),
-}));
 
 const renderMarkdownField = (
   initialValue = '',
@@ -52,8 +45,6 @@ describe('Component: MarkdownField', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     commitMutationMock.mockReset();
-    isFeatureEnableMock.mockReset();
-    isFeatureEnableMock.mockReturnValue(true);
     commitMutationMock.mockImplementation(({ onCompleted }) => {
       onCompleted?.({
         stixCoreObjectEdit: {
