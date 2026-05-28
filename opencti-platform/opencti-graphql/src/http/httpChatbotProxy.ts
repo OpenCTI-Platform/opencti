@@ -444,9 +444,13 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
 
 // ── Agent response cache helpers ────────────────────────────────────────
 
-// Build a stable cache key from the agent slug and the user prompt.
-const buildAgentCacheKey = (agentSlug: string, content: string): string => {
-  return createHash('sha256').update(`${agentSlug}::${content}`).digest('hex');
+// Build a stable cache key from the agent slug, the draft context, and the
+// user prompt. The draft id is part of the key because the same prompt run
+// against the live workspace vs a draft would return different stats from
+// the agent's OpenCTI-side callbacks, and replaying a live cache hit to a
+// draft viewer (or vice-versa) would be incorrect.
+const buildAgentCacheKey = (agentSlug: string, draftId: string, content: string): string => {
+  return createHash('sha256').update(`${agentSlug}::${draftId}::${content}`).digest('hex');
 };
 
 // Set the SSE response headers once for both cache hits and live streams.
@@ -507,8 +511,13 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
 
     // Cache lookup — replay as a single `done` event so the client display
     // logic (which already handles `done`) doesn't need to know about cache.
+    // The cache is intentionally not namespaced by user identity (matching
+    // the pre-XTM-One in-memory `aiResponseCache` in `domain/container.js`),
+    // but it MUST be namespaced by draft so live and draft views never
+    // contaminate each other.
+    const draftId = (req.headers['opencti-draft-id'] as string) || '';
     const cacheEnabled = AI_AGENTS_REFRESH_TIMEOUT_SECONDS > 0;
-    const cacheKey = cacheEnabled ? buildAgentCacheKey(agent_slug, content) : null;
+    const cacheKey = cacheEnabled ? buildAgentCacheKey(agent_slug, draftId, content) : null;
     if (cacheEnabled && cacheKey && !force_refresh) {
       const cached = await redisGetXtmAgentResponse(cacheKey);
       if (cached) {

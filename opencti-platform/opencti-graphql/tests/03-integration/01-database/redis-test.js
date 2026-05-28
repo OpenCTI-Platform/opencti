@@ -182,12 +182,14 @@ describe('Redis XTM agent response cache', () => {
 
   it('should expire a cached agent response after the TTL elapses', async () => {
     const cacheKey = `agent-cache-ttl-${uuid()}`;
-    await redisSetXtmAgentResponse(cacheKey, 'short-lived', 1);
+    const ttlSeconds = 1;
+    await redisSetXtmAgentResponse(cacheKey, 'short-lived', ttlSeconds);
     const initial = await redisGetXtmAgentResponse(cacheKey);
     expect(initial?.content).toEqual('short-lived');
 
+    // Wait ttl + 1s to absorb Redis scheduling jitter under CI load.
     await new Promise((resolve) => {
-      setTimeout(() => resolve(), 1500);
+      setTimeout(() => resolve(), (ttlSeconds + 1) * 1000);
     });
 
     const expired = await redisGetXtmAgentResponse(cacheKey);
