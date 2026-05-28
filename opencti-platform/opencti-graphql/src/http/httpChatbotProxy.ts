@@ -562,6 +562,14 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     }
 
     const headers = await generateBasicHeaders(req, context);
+    // Force the upstream `opencti-draft-id` header to match the validated
+    // `context.draft_context` used for the cache key. `generateBasicHeaders`
+    // forwards the raw request header, but `context.draft_context` falls back
+    // to `user.draft_context` when the request header is absent — without this
+    // override, a user with an active session draft and no explicit header
+    // would run the agent in the live workspace while the response gets
+    // cached under the draft key (and vice-versa on the next cache hit).
+    headers['opencti-draft-id'] = draftId;
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/api/v1/platform/chat/messages', {
       agent_slug,

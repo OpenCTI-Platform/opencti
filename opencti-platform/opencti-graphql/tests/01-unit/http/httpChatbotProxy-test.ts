@@ -577,6 +577,34 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(liveKey).not.toEqual(draftKey);
   });
 
+  it('should forward context.draft_context to XTM One even when the request header is empty', async () => {
+    // Regression guard for the cache-vs-upstream draft mismatch:
+    // `context.draft_context` falls back to `user.draft_context` when the
+    // request omits `opencti-draft-id`, so without the explicit override
+    // `generateBasicHeaders` would forward an empty draft header while the
+    // cache key was scoped to the user's session draft — running the agent
+    // live but storing the result under the draft key.
+    setupAuthenticatedContext({ draft_context: 'user-session-draft-id' });
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    // The mocked HTTP client factory is invoked with the headers we want to assert
+    // on, but we only have access to the post() mock. Instead, verify by checking
+    // that the http-client `getHttpClient` mock was called with headers including
+    // the right draft id.
+    const { getHttpClient } = await import('../../../src/utils/http-client');
+    const headerCalls = vi.mocked(getHttpClient).mock.calls
+      .map((c) => c[0]?.headers)
+      .filter((h): h is Record<string, string> => !!h && 'opencti-draft-id' in h);
+    expect(headerCalls.length).toBeGreaterThan(0);
+    expect(headerCalls[headerCalls.length - 1]['opencti-draft-id']).toBe('user-session-draft-id');
+  });
+
   it('should skip caching when the upstream response exceeds the 2MB capture limit', async () => {
     const dataHandlers: ((chunk: Buffer) => void)[] = [];
     const endHandlers: (() => void | Promise<void>)[] = [];
