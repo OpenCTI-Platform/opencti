@@ -57,6 +57,7 @@ import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remo
 import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from './components/create-indicator-component';
 import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observable-component';
 import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from './components/ai-agent-component';
+import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from './components/ai-agent-send-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -699,4 +700,5 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id]: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT,
   [PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT.id]: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT,
   [PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.id]: PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT,
+  [PLAYBOOK_AI_AGENT_SEND_COMPONENT.id]: PLAYBOOK_AI_AGENT_SEND_COMPONENT,
 };

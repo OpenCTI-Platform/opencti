@@ -14,18 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import * as R from 'ramda';
-import nconf from 'nconf';
 import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import type { StixBundle, StixObject } from '../../../types/stix-2-1-common';
-import xtmOneClient from '../../xtm/one/xtm-one-client';
-import { issueXtmJwt } from '../../../domain/xtm-auth';
-import { getHttpClient, getResponseError } from '../../../utils/http-client';
-import { logApp, PLATFORM_VERSION } from '../../../config/conf';
-import { AUTOMATION_MANAGER_USER_UUID, executionContext } from '../../../utils/access';
-import type { AuthContext, AuthUser } from '../../../types/user';
-
-// ─── Configuration ─────────────────────────────────────────────────────────
+import { logApp } from '../../../config/conf';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent } from './ai-agent-shared';
 
 interface AiAgentTransformConfiguration {
   agent_slug: string;
@@ -34,29 +27,13 @@ interface AiAgentTransformConfiguration {
 
 const PLAYBOOK_AI_AGENT_TRANSFORM_INTENT = 'cti.stix_transformer';
 
-// Identity used by the playbook executor when calling XTM One. The local
-// part is stable so XTM One auto-provisions a single "OpenCTI Playbook
-// Automation" user per deployment; the .invalid TLD (RFC 6761) makes it
-// unmistakably non-human and impossible to collide with a real account.
-const PLAYBOOK_AUTOMATION_EMAIL = 'opencti-playbook-automation@opencti.invalid';
-
-const buildAutomationUser = (): Pick<AuthUser, 'id' | 'user_email'> => ({
-  id: AUTOMATION_MANAGER_USER_UUID,
-  user_email: PLAYBOOK_AUTOMATION_EMAIL,
-});
-
-// 5 minutes — agent runs may take a while when the LLM has to materialise
-// a large STIX bundle. Keep well above the default 2-minute httpClient cap
-// used by the chatbot proxy.
-const AGENT_CALL_TIMEOUT_MS = 5 * 60 * 1000;
-
 const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA: JSONSchemaType<AiAgentTransformConfiguration> = {
   type: 'object',
   properties: {
     agent_slug: {
       type: 'string',
       $ref: 'AI agent',
-      // Populated dynamically from XTM One intent catalog at schema() time.
+      // Populated dynamically from the XTM One intent catalog at schema() time.
       oneOf: [],
     },
     prompt: {
@@ -72,8 +49,6 @@ const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA: JSONSchemaType<AiAgentTransf
   },
   required: ['agent_slug'],
 };
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
 
 /**
  * Extract a STIX bundle JSON object from an LLM response. Agents respond
@@ -121,64 +96,6 @@ const parseStixBundle = (raw: string): StixBundle | null => {
   return null;
 };
 
-const buildAgentPrompt = (bundle: StixBundle, userPrompt?: string): string => {
-  const instruction = (userPrompt ?? '').trim();
-  const bundleJson = JSON.stringify(bundle, null, 2);
-  if (!instruction) {
-    return `--- STIX BUNDLE ---\n${bundleJson}`;
-  }
-  return `${instruction}\n\n--- STIX BUNDLE ---\n${bundleJson}`;
-};
-
-/**
- * Synchronous, non-streaming call to XTM One Platform Chat. Returns the
- * raw assistant content or null when the call cannot complete (XTM One
- * not configured, network failure, non-success status). Errors are
- * logged but never thrown — playbook execution falls back to the
- * unmodified output port instead of crashing the whole run.
- */
-const callAgent = async (
-  agentSlug: string,
-  content: string,
-): Promise<string | null> => {
-  const xtmOneUrl = nconf.get('xtm:xtm_one_url');
-  if (!xtmOneUrl || !xtmOneClient.isConfigured()) {
-    logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, skipping agent call');
-    return null;
-  }
-
-  try {
-    const jwt = await issueXtmJwt(buildAutomationUser() as AuthUser, xtmOneUrl);
-    const httpClient = getHttpClient({
-      baseURL: xtmOneUrl,
-      responseType: 'json',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-        'X-Platform-Product': 'opencti',
-        'X-Platform-Version': PLATFORM_VERSION,
-      },
-    });
-    const response = await httpClient.post(
-      '/api/v1/platform/chat/messages',
-      { agent_slug: agentSlug, content, stream: false },
-      { timeout: AGENT_CALL_TIMEOUT_MS },
-    );
-    return response.data?.content ?? null;
-  } catch (e: unknown) {
-    const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? (e as Error)?.message;
-    logApp.error('[PLAYBOOK AI AGENT] Agent call failed', {
-      agentSlug,
-      status: httpErr?.status,
-      detail,
-    });
-    return null;
-  }
-};
-
-// ─── Component ─────────────────────────────────────────────────────────────
-
 export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTransformConfiguration> = {
   id: 'PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT',
   name: 'Transform with AI agent',
@@ -190,29 +107,7 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA,
   schema: async () => {
-    // Resolve the list of agents bound to the cti.stix_transformer intent
-    // in XTM One so the playbook author can pick from a curated catalog
-    // (built-in agents + user/group/company-managed agents the caller
-    // is allowed to see). Falls back to an empty oneOf if XTM One is
-    // unreachable so the form still renders cleanly.
-    const context: AuthContext = executionContext('playbook_components');
-    const automationContext: AuthContext = {
-      ...context,
-      user: buildAutomationUser() as AuthUser,
-    };
-    let agents: Awaited<ReturnType<typeof xtmOneClient.listAgentsForIntent>> = [];
-    try {
-      agents = await xtmOneClient.listAgentsForIntent(
-        automationContext,
-        PLAYBOOK_AI_AGENT_TRANSFORM_INTENT,
-      );
-    } catch (e: unknown) {
-      logApp.warn('[PLAYBOOK AI AGENT] Failed to load agent catalog', { cause: (e as Error).message });
-    }
-    const elements = (agents ?? [])
-      .filter((a) => !!a.agent_slug)
-      .map((a) => ({ const: a.agent_slug as string, title: a.agent_name }))
-      .sort((a, b) => (a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1));
+    const elements = await buildAgentSlugOneOf(PLAYBOOK_AI_AGENT_TRANSFORM_INTENT);
     const schemaElement = { properties: { agent_slug: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<AiAgentTransformConfiguration>, any>(
       PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA,
@@ -225,8 +120,8 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
       logApp.warn('[PLAYBOOK AI AGENT] No agent configured, returning bundle unmodified');
       return { output_port: 'unmodified', bundle };
     }
-    const content = buildAgentPrompt(bundle, prompt);
-    const rawResponse = await callAgent(agent_slug, content);
+    const content = buildAgentMessageContent(bundle, prompt);
+    const rawResponse = await callXtmAgent(agent_slug, content);
     if (rawResponse === null) {
       return { output_port: 'unmodified', bundle };
     }
