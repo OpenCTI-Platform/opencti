@@ -1,7 +1,6 @@
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { LockOutlined } from '@mui/icons-material';
 import { Field } from 'formik';
 import React from 'react';
 import { Accordion, AccordionSummary } from '../Accordion';
@@ -19,16 +18,8 @@ const SavedFilterSharingSection = ({
 }: SavedFilterSharingSectionProps) => {
   const { t_i18n } = useFormatter();
 
-
   if (!canShare) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16 }}>
-        <LockOutlined fontSize="small" color="disabled" />
-        <Typography variant="body2" color="text.secondary">
-          {t_i18n('Private')}
-        </Typography>
-      </div>
-    );
+    return null;
   }
 
   return (
