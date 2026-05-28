@@ -1,8 +1,7 @@
-import React, { useRef } from 'react';
-import { graphql } from 'react-relay';
+import React, { ReactNode, Suspense, useRef } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -10,44 +9,14 @@ import WidgetListRelationships from '../../../../components/dashboard/WidgetList
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-
-export const stixRelationshipsListSearchQuery = graphql`
-  query StixRelationshipsListSearchQuery(
-    $search: String
-    $fromId: [String]
-    $toId: [String]
-    $relationship_type: [String]
-    $count: Int!
-    $filters: FilterGroup
-    $dynamicFrom: FilterGroup
-    $dynamicTo: FilterGroup
-    $orderBy: StixRelationshipsOrdering
-    $orderMode: OrderingMode
-  ) {
-    stixRelationships(
-      search: $search
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-      first: $count
-      filters: $filters
-      dynamicFrom: $dynamicFrom
-      dynamicTo: $dynamicTo
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) {
-      edges {
-        node {
-          id
-          standard_id
-          entity_type
-          parent_types
-          relationship_type
-        }
-      }
-    }
-  }
-`;
+import type {
+  FilterGroup as GQLFilterGroup,
+  StixRelationshipsListQuery,
+  StixRelationshipsOrdering,
+} from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
+import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { OrderingMode } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 
 export const stixRelationshipsListQuery = graphql`
   query StixRelationshipsListQuery(
@@ -4510,77 +4479,110 @@ export const stixRelationshipsListQuery = graphql`
   }
 `;
 
+interface StixRelationshipsListComponentProps {
+  queryRef: PreloadedQuery<StixRelationshipsListQuery>;
+  dataSelection: WidgetDataSelection[];
+  widgetId: string;
+  rootRef: React.RefObject<HTMLDivElement | null>;
+}
+
+const StixRelationshipsListComponent = ({
+  queryRef,
+  dataSelection,
+  widgetId,
+  rootRef,
+}: StixRelationshipsListComponentProps) => {
+  const data = usePreloadedQuery(stixRelationshipsListQuery, queryRef);
+
+  const selection = dataSelection[0];
+  const columns
+    = selection.columns ?? getDefaultWidgetColumns('relationships');
+  const edges = data?.stixRelationships?.edges ?? [];
+
+  if (!edges.length) {
+    return <WidgetNoData />;
+  }
+  return (
+    <WidgetListRelationships
+      data={edges}
+      widgetId={widgetId}
+      columns={columns}
+      rootRef={rootRef.current ?? undefined}
+    />
+  );
+};
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+): StixRelationshipsListQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const dateAttribute = selection.date_attribute?.length
+    ? selection.date_attribute
+    : 'created_at';
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    {
+      dateAttribute,
+      isKnowledgeRelationshipWidget: true,
+    },
+  );
+
+  return {
+    first: selection.number ?? 50,
+    orderBy: (dateAttribute as StixRelationshipsOrdering),
+    orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
+    filters: filters
+      ? (filters as unknown as GQLFilterGroup)
+      : undefined,
+
+    dynamicFrom: selection.dynamicFrom
+      ? (selection.dynamicFrom as unknown as GQLFilterGroup)
+      : undefined,
+
+    dynamicTo: selection.dynamicTo
+      ? (selection.dynamicTo as unknown as GQLFilterGroup)
+      : undefined,
+  };
+};
+
+interface StixRelationshipsListProps {
+  variant?: string;
+  height?: number;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
+  widgetId: string;
+}
+
 const StixRelationshipsList = ({
   variant,
   height,
-  startDate,
-  endDate,
   dataSelection,
   widgetId,
   parameters = {},
   popover,
   host,
-}) => {
+  config,
+  refreshRate = null,
+}: StixRelationshipsListProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
+    refreshRate,
+    query: stixRelationshipsListQuery,
+    config,
+    buildQueryVariables,
   });
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-    if (!resolvedDataSelection) {
-      return 'No data selection';
-    }
-    const selection = resolvedDataSelection[0];
-    const columns = selection.columns ?? getDefaultWidgetColumns('relationships');
+  if (isMissingHostEntity) {
+    return <WidgetNoHostEntity host={host} />;
+  }
 
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute, isKnowledgeRelationshipWidget: true });
-
-    const rootRef = useRef(null);
-
-    return (
-      <div ref={rootRef} style={{ height: '100%', width: '100%' }}>
-        <QueryRenderer
-          query={stixRelationshipsListQuery}
-          variables={{
-            first: selection.number ?? 50,
-            orderBy: dateAttribute,
-            orderMode: selection.sort_mode ?? 'desc',
-            filters,
-            dynamicFrom: selection.dynamicFrom,
-            dynamicTo: selection.dynamicTo,
-          }}
-          render={({ props }) => {
-            if (
-              props
-              && props.stixRelationships
-              && props.stixRelationships.edges.length > 0
-            ) {
-              const data = props.stixRelationships.edges;
-              return (
-                <WidgetListRelationships
-                  data={data}
-                  widgetId={widgetId}
-                  columns={columns}
-                  rootRef={rootRef.current ?? undefined}
-                />
-              );
-            }
-            if (props) {
-              return <WidgetNoData />;
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      </div>
-    );
-  };
   return (
     <WidgetContainer
       padding="horizontal"
@@ -4590,7 +4592,18 @@ const StixRelationshipsList = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <div ref={rootRef} style={{ height: '100%' }}>
+        {queryRef && (
+          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixRelationshipsListComponent
+              queryRef={queryRef}
+              dataSelection={resolvedDataSelection}
+              widgetId={widgetId}
+              rootRef={rootRef}
+            />
+          </Suspense>
+        )}
+      </div>
     </WidgetContainer>
   );
 };
