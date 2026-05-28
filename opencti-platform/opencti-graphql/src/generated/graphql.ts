@@ -7137,7 +7137,7 @@ export type DecayRule = BasicObject & InternalObject & {
   built_in?: Maybe<Scalars['Boolean']['output']>;
   created_at: Scalars['DateTime']['output'];
   decaySettingsChartData?: Maybe<DecayData>;
-  decay_filters: Scalars['String']['output'];
+  decay_filters?: Maybe<Scalars['String']['output']>;
   decay_lifetime: Scalars['Int']['output'];
   decay_points?: Maybe<Array<Scalars['Int']['output']>>;
   decay_pound: Scalars['Float']['output'];
@@ -7156,7 +7156,7 @@ export type DecayRule = BasicObject & InternalObject & {
 
 export type DecayRuleAddInput = {
   active: Scalars['Boolean']['input'];
-  decay_filters: Scalars['String']['input'];
+  decay_filters?: InputMaybe<Scalars['String']['input']>;
   decay_lifetime: Scalars['Int']['input'];
   decay_points?: InputMaybe<Array<Scalars['Int']['input']>>;
   decay_pound: Scalars['Float']['input'];
@@ -43380,7 +43380,7 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   built_in?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   decaySettingsChartData?: Resolver<Maybe<ResolversTypes['DecayData']>, ParentType, ContextType>;
-  decay_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  decay_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   decay_lifetime?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   decay_points?: Resolver<Maybe<Array<ResolversTypes['Int']>>, ParentType, ContextType>;
   decay_pound?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
