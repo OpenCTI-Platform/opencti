@@ -5,6 +5,7 @@ import {
   ArchitectureOutlined,
   AssignmentOutlined,
   AutoAwesomeMotion,
+  AutoAwesomeOutlined,
   BackupTableOutlined,
   BiotechOutlined,
   BugReportOutlined,
@@ -467,6 +468,8 @@ const iconSelector = (
       );
     case 'console':
       return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'ai-agent':
+      return <AutoAwesomeOutlined style={style} fontSize={fontSize} role="img" />;
     case 'storage':
       return (
         <DriveFolderUploadOutlined
