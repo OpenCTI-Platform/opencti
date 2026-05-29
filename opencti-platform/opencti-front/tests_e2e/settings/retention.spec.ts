@@ -52,7 +52,7 @@ test('Retention policy CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await expect(retentionItem.getByText('Active')).toBeVisible();
 
   // Verify the retention unit is visible (days by default)
-  await expect(retentionItem.getByText(/90/)).toBeVisible();
+  await expect(retentionItem.getByText(/90 days/)).toBeVisible();
 
   // ─── Open popover and test Deactivate ────────────────────────────────────────
   await retentionPage.getPopoverButton(retentionItem).click();
@@ -93,7 +93,7 @@ test('Retention policy CRUD', { tag: ['@ce'] }, async ({ page }) => {
   // ─── Verify the updated rule is in the list ──────────────────────────────────
   const updatedRetentionItem = retentionPage.getItemFromList(updatedName);
   await expect(updatedRetentionItem).toBeVisible();
-  await expect(updatedRetentionItem.getByText(/60/)).toBeVisible();
+  await expect(updatedRetentionItem.getByText(/60 days/)).toBeVisible();
 
   // ─── Open popover and test Delete ────────────────────────────────────────────
   await retentionPage.getPopoverButton(updatedRetentionItem).click();
