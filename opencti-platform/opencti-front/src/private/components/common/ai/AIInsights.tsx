@@ -135,28 +135,29 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick }: AiInsi
   const buttonLabel = t_i18n('AI Insights');
 
   return (
-    <Tooltip title={buttonLabel}>
-      {onlyIcon ? (
-        <IconButton
-          size="small"
-          onClick={onClick}
-          className={floating ? classes.chipFloating : classes.chip}
-        >
-          <FiligranIcon icon={LogoXtmOneIcon} size="small" />
-        </IconButton>
-      ) : (
-        <Button
-          variant="tertiary"
-          size="small"
-          onClick={onClick}
-          intent="ai"
-          aria-label={buttonLabel}
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
-        >
-          {buttonLabel}
-        </Button>
-      )}
-    </Tooltip>
+    <div></div>
+    // <Tooltip title={buttonLabel}>
+    //   {onlyIcon ? (
+    //     <IconButton
+    //       size="small"
+    //       onClick={onClick}
+    //       className={floating ? classes.chipFloating : classes.chip}
+    //     >
+    //       <FiligranIcon icon={LogoXtmOneIcon} size="small" />
+    //     </IconButton>
+    //   ) : (
+    //     <Button
+    //       variant="tertiary"
+    //       size="small"
+    //       onClick={onClick}
+    //       intent="ai"
+    //       aria-label={buttonLabel}
+    //       startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+    //     >
+    //       {buttonLabel}
+    //     </Button>
+    //   )}
+    // </Tooltip>
   );
 };
 
