@@ -45,6 +45,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
+      'DraftWorkspace',
     ];
     searchContext = { entityTypes: ['Stix-Core-Object'] };
   }
