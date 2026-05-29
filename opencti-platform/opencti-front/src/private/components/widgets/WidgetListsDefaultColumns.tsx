@@ -149,6 +149,14 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_organization_type', label: 'Organization type' },
     { attribute: 'x_opencti_score', label: 'Score' },
   ],
+  DraftWorkspace: [
+    { attribute: 'name', label: 'Name' },
+    { attribute: 'draft_status', label: 'Status' },
+    { attribute: 'created_at', label: 'Platform creation date' },
+    { attribute: 'creators', label: 'Creators' },
+    { attribute: 'objectAssignee' },
+    { attribute: 'objectParticipant' },
+  ],
 };
 
 type WidgetEntityType = 'relationships' | 'entities';
@@ -189,6 +197,10 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, me
   }
 
   if (type === 'entities') {
+    if (entityType === 'DraftWorkspace') {
+      return availableWidgetColumns.DraftWorkspace;
+    }
+
     if (entityType) {
       const baseColumns = [...availableWidgetColumns.common];
 
