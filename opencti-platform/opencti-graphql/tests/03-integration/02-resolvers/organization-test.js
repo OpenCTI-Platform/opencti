@@ -286,7 +286,7 @@ describe('Organization default_dashboard user cache refresh', () => {
   `;
 
   const ORGANIZATION_FIELD_PATCH_QUERY = gql`
-    mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+    mutation OrganizationEdit($id: ID!, $input: [EditInput!]!) {
       organizationFieldPatch(id: $id, input: $input) {
         id
         default_dashboard {

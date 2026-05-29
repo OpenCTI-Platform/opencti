@@ -842,7 +842,7 @@ describe('User has no settings capability and is organization admin query behavi
     `;
 
   const UPDATE_ORGANIZATION_QUERY = gql`
-    mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+    mutation OrganizationEdit($id: ID!, $input: [EditInput!]!) {
       organizationFieldPatch(id: $id, input: $input) {
         id
         name
