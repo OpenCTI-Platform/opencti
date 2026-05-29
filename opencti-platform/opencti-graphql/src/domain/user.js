@@ -997,7 +997,14 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push(input);
     }
   }
-  const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
+  // Editing the draft context (entering/exiting a draft) is a navigation action performed on the
+  // user's own entity, which is never part of the draft data. It must run outside of any draft
+  // context, otherwise a user who entered a draft they cannot edit would be blocked by the draft
+  // authorized-members access check and would be unable to exit it (see issue #16273).
+  const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
+  const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
+  const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
+  const { element } = await updateAttribute(editContext, editUser, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
