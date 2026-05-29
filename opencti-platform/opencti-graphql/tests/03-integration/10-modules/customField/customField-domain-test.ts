@@ -2,14 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { CF_COMMENT_KEY, CF_SCORE_KEY, customFieldDefinitionAdd, findCustomFieldDefinitionsPaginated } from '../../../../src/modules/customField/custom-field-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type CaseIncidentAddInput, type CustomFieldDefinitionAddInput, FilterMode, FilterOperator } from '../../../../src/generated/graphql';
-import { type BasicStoreEntityCaseIncident, ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
+import {
+  type BasicStoreEntityCaseIncident,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  type StoreEntityCaseIncident,
+} from '../../../../src/modules/case/case-incident/case-incident-types';
 import { type BasicStoreEntityCustomFieldDefinition, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../../../../src/modules/customField/custom-field-types';
 import { addCaseIncident, findCaseIncidentPaginated } from '../../../../src/modules/case/case-incident/case-incident-domain';
 import { waitInSec } from '../../../../src/database/utils';
 import { getSchemaAttributes } from '../../../../src/domain/attribute';
-import { deleteElementById } from '../../../../src/database/middleware';
+import { deleteElementById, storeLoadByIdWithRefs } from '../../../../src/database/middleware';
 import { generateFilterKeysSchema } from '../../../../src/domain/filterKeysSchema';
 import type { EntityOptions } from '../../../../src/database/middleware-loader';
+import { convertCaseIncidentToStix_2_1 } from '../../../../src/modules/case/case-incident/case-incident-converter';
+import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 
 describe('CustomFieldDefinition — domain coverage', () => {
   let scoreCfField: BasicStoreEntityCustomFieldDefinition;
@@ -108,7 +114,6 @@ describe('CustomFieldDefinition — domain coverage', () => {
   it('should custom field be visible on schema attribute for Case Incident', async () => {
     const fullShemas = getSchemaAttributes();
     const incidentShemas = fullShemas.find((shema) => shema.type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
-    console.log('Case incident shema:', incidentShemas);
 
     const theScore = incidentShemas?.attributes.find((attr) => attr.name === CF_SCORE_KEY);
     expect(theScore).toBeDefined();
@@ -122,15 +127,12 @@ describe('CustomFieldDefinition — domain coverage', () => {
   it('should custom field be visible on filterKeysSchema for Case Incident', async () => {
     const fullFilters = await generateFilterKeysSchema();
     const incidentFilters = fullFilters.find((filter) => filter.entity_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
-    console.log('Case incident filter:', incidentFilters);
 
     const theScore = incidentFilters?.filters_schema.find((filter) => filter.filterDefinition.filterKey === CF_SCORE_KEY);
-    console.log('Case incident filter - theScore:', theScore);
     expect(theScore).toBeDefined();
     expect(theScore?.filterDefinition.type).toBe('integer');
 
     const theComment = incidentFilters?.filters_schema.find((filter) => filter.filterDefinition.filterKey === CF_COMMENT_KEY);
-    console.log('Case incident filter - theComment:', theComment);
     expect(theComment).toBeDefined();
     expect(theComment?.filterDefinition.type).toBe('string');
   });
@@ -187,7 +189,23 @@ describe('CustomFieldDefinition — domain coverage', () => {
     console.log('Case incident filter - allCasesFiltered:', myIncident);
   });
 
-  it('should wait', async () => {
+  it('should custom field be visible stix export', async () => {
+    const caseIncidentStore = await storeLoadByIdWithRefs<StoreEntityCaseIncident>(
+      testContext, ADMIN_USER, caseIncidentAllCustomFields.id, { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT });
+    if (caseIncidentStore) {
+      const stixExport = convertCaseIncidentToStix_2_1(caseIncidentStore);
+      console.log('Case incident stix export:', stixExport);
+      expect(stixExport).toBeDefined();
+      const extensions = stixExport.extensions[STIX_EXT_OCTI] as Record<string, any>;
+      console.log('Case incident stix export:', { ext: extensions });
+      expect(extensions[CF_SCORE_KEY]).toBe(42);
+      expect(extensions[CF_COMMENT_KEY]).toBe('What a nice comment !');
+    } else {
+      throw new Error('Case incident not found, there is an issue.');
+    }
+  });
+
+  it.skip('should wait', async () => {
     await waitInSec(3000);
   });
 

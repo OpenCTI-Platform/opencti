@@ -220,10 +220,6 @@ type Query {
   caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
 }
 
-type CustomFieldValueInput {
-  cursor: String!
-  node: CaseIncident!
-}
 
 # Mutations
 input CaseIncidentAddInput {

@@ -62,14 +62,6 @@ const caseIncidentMutation = graphql`
   }
 `;
 
-const setCustomFieldValueMutation = graphql`
-  mutation CaseIncidentCreationSetCustomFieldMutation($id: ID!, $fieldId: ID!, $value: String!) {
-    caseIncidentSetCustomFieldValue(id: $id, fieldId: $fieldId, value: $value) {
-      id
-    }
-  }
-`;
-
 const customFieldDefinitionsQuery = graphql`
   query CaseIncidentCreationCustomFieldDefinitionsQuery($filters: FilterGroup) {
     customFieldDefinitions(filters: $filters) {
@@ -232,12 +224,25 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     { successMessage: `${t_i18n('entity_Case-Incident')} ${t_i18n('successfully created')}` },
   );
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const [commitSetCustomField] = useApiMutation<any>(setCustomFieldValueMutation);
 
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    // Build custom_field_values from the form's customFields record
+    const customFieldEntries = Object.entries(values.customFields).filter(([, v]) => v !== '');
+    const customFieldValuesInput = customFieldEntries.map(([fieldId, value]) => {
+      const def = customFieldDefs.find((d) => d.id === fieldId);
+      const fieldName = def ? def.name : fieldId;
+      if (def?.field_type === 'integer') {
+        return { field_id: fieldId, field_name: fieldName, int_value: parseInt(value, 10) };
+      }
+      if (def?.field_type === 'select') {
+        return { field_id: fieldId, field_name: fieldName, select_value: value };
+      }
+      return { field_id: fieldId, field_name: fieldName, string_value: value };
+    });
+
     const input: CaseIncidentAddInput = {
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
@@ -255,6 +260,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      ...(customFieldValuesInput.length > 0 && { custom_field_values: customFieldValuesInput }),
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
@@ -275,24 +281,12 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        const createdId = response.caseIncidentAdd?.id;
-        // Set each non-empty custom field value after creation
-        const customFieldEntries = Object.entries(values.customFields).filter(([, v]) => v !== '');
-        const setAll = customFieldEntries.map(([fieldId, value]) => new Promise<void>((resolve) => {
-          commitSetCustomField({
-            variables: { id: createdId, fieldId, value },
-            onCompleted: () => resolve(),
-            onError: () => resolve(), // best-effort for POC
-          });
-        }));
-        Promise.all(setAll).then(() => {
-          setSubmitting(false);
-          resetForm();
-          if (onClose) onClose();
-          if (mapAfter) {
-            navigate(`/dashboard/cases/incidents/${createdId}/content/mapping`);
-          }
-        });
+        setSubmitting(false);
+        resetForm();
+        if (onClose) onClose();
+        if (mapAfter) {
+          navigate(`/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`);
+        }
       },
     });
   };
@@ -502,7 +496,10 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             </Button>
             {values.content.length > 0 && (
               <Button
-                onClick={() => { setMapAfter(true); submitForm(); }}
+                onClick={() => {
+                  setMapAfter(true);
+                  submitForm();
+                }}
                 disabled={isSubmitting}
               >
                 {t_i18n('Create and map')}

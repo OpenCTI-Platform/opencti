@@ -4,6 +4,14 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_CUSTOM_FIELD_DEFINITION = 'CustomFieldDefinition';
 
+export interface CustomFieldValue {
+  field_id: string;
+  field_name: string;
+  int_value?: number;
+  string_value?: string;
+  select_value?: string;
+}
+
 export interface BasicStoreEntityCustomFieldDefinition extends BasicStoreEntity {
   name: string;
   description: string;

@@ -25,13 +25,10 @@ export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: 
 };
 
 export const findCaseIncidentPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseIncident>) => {
-  console.log(`CASE INCIDENT list opts ${JSON.stringify(opts)}`);
   return pageEntitiesConnection<BasicStoreEntityCaseIncident>(context, user, [ENTITY_TYPE_CONTAINER_CASE_INCIDENT], opts);
 };
 
 export const addCaseIncident = async (context: AuthContext, user: AuthUser, caseIncidentAdd: CaseIncidentAddInput) => {
-  console.log('CASE INCIDENT INPUT', { caseIncidentAdd });
-
   let caseToCreate = caseIncidentAdd.created ? caseIncidentAdd : { ...caseIncidentAdd, created: now() };
   if (isEmptyField(caseIncidentAdd.createdBy)) {
     const individualId = await resolveUserIndividual(context, user);
