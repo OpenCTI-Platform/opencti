@@ -1,3 +1,4 @@
+import { logApp } from '../../../config/conf';
 import { deleteElementById } from '../../../database/middleware';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../../generated/graphql';
@@ -63,13 +64,14 @@ export const deleteSecurityCoverageResultsByResultOf = async (
     resultOfId,
   );
   for (const result of results) {
+    logApp.info(`[SECURITY-COVERAGE-RESULT][${resultOfId}] SCR to delete: ${result.standard_id}`);
     const deleted = await deleteElementById<StoreEntitySecurityCoverageResult>(
       context,
       user,
       result.id,
       ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
     );
-    deletedIds.push(deleted.id);
+    deletedIds.push(deleted.standard_id);
   }
   return deletedIds;
 };
