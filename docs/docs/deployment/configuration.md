@@ -278,8 +278,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 | Parameter              | Environment variable        | Default value | Description                                                                   |
 |:-----------------------|:----------------------------|:--------------|:------------------------------------------------------------------------------|
-| ai:enabled             | AI__ENABLED                 | true          | Enable AI capabilities                                                        |
-| ai:type                | AI__TYPE                    | mistralai     | AI type (`openai`, `mistralai` or `azureopenai`)                              |              |
+| ai:type                | AI__TYPE                    | mistralai     | AI type (`openai`, `mistralai` or `azureopenai`)                              |              
 | ai:endpoint            | AI__ENDPOINT                |               | Endpoint URL (empty means default cloud service)                              |
 | ai:token               | AI__TOKEN                   |               | Token for endpoint credentials                                                |
 | ai:model               | AI__MODEL                   |               | Model to be used for text generation (depending on type)                      |
