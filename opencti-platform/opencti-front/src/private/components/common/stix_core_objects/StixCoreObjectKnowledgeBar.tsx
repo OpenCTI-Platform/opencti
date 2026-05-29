@@ -141,7 +141,7 @@ const StixCoreObjectKnowledgeBar = ({
       ...(item?.label ? { [item.label]: item.value || 0 } : {}),
     }), {}) || {}
   );
-
+  const { t_i18n } = useFormatter();
   const distributions = {
     withoutRelated: indexEntities(relationshipsWithoutRelatedToDistribution),
     related: indexEntities(relationshipsRelatedDistribution),
@@ -426,7 +426,8 @@ const StixCoreObjectKnowledgeBar = ({
             <MenuList component="nav" key={index} style={{ paddingBlock: 0 }}>
               {section.title && (
                 <ListSubheader style={{ height: 35 }}>
-                  {section.title}
+                  {t_i18n(section.title)}
+                  {/* {section.title} */}
                 </ListSubheader>
               )}
               {section.items.map(({ path, label, iconType, count }) => (

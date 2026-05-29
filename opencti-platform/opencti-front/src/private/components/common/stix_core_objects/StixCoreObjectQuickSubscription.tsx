@@ -449,7 +449,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                     </ListItemIcon>
                     <ListItemText primary={recipient.name} />
                     <ListItemIcon sx={{ justifyContent: 'flex-end' }}>
-                      <KeyboardArrowRightOutlined />
+                      <KeyboardArrowRightOutlined name="arrow-right-icon" />
                     </ListItemIcon>
                   </ListItemButton>
                 ))}

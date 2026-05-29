@@ -113,7 +113,7 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -170,7 +170,7 @@ export const CityLineDummy = ({
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined color="disabled" />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

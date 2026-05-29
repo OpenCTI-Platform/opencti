@@ -121,7 +121,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -162,7 +162,7 @@ class RoleLineDummyComponent extends Component {
         divider={true}
         secondaryAction={(
           <Box sx={{ root: classes.itemIconDisabled }}>
-            <KeyboardArrowRightOutlined />
+            <KeyboardArrowRightOutlined name="arrow-right-icon" />
           </Box>
         )}
       >

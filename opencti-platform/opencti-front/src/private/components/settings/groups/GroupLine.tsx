@@ -129,7 +129,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -162,7 +162,7 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
       divider={true}
       secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <KeyboardArrowRightOutlined />
+          <KeyboardArrowRightOutlined name="arrow-right-icon" />
         </Box>
       )}
     >

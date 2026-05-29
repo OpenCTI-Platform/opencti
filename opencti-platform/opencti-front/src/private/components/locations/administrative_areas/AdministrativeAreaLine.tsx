@@ -112,7 +112,7 @@ export const AdministrativeAreaLine: FunctionComponent<
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -169,7 +169,7 @@ export const AdministrativeAreaLineDummy = ({
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined color="disabled" />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

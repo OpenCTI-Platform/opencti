@@ -127,7 +127,7 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -200,7 +200,7 @@ export const IndividualLineDummy = ({
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" />
       </ListItemIcon>
     </ListItem>
   );
