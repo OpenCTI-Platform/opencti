@@ -152,7 +152,7 @@ class OpinionLineComponent extends Component {
           )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
+          <KeyboardArrowRightOutlined name="arrow-right-icon" />
         </ListItemIcon>
       </ListItemButton>
     );
@@ -320,7 +320,7 @@ class OpinionLineDummyComponent extends Component {
           )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
+          <KeyboardArrowRightOutlined name="arrow-right-icon" />
         </ListItemIcon>
       </ListItem>
     );

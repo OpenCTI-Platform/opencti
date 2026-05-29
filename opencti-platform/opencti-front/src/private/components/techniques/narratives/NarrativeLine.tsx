@@ -168,7 +168,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
         )}
       />
       <ListItemIcon style={{ position: 'absolute', insetInlineEnd: -10 }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" />
       </ListItemIcon>
     </ListItem>
   );
@@ -230,7 +230,7 @@ export const NarrativeLineDummy = ({
         )}
       />
       <ListItemIcon style={{ position: 'absolute', insetInlineEnd: -10 }}>
-        <KeyboardArrowRightOutlined color="disabled" />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

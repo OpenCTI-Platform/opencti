@@ -113,7 +113,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined  name="arrow-right-icon" />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -172,7 +172,7 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
         )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined color="disabled" />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

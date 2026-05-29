@@ -98,7 +98,7 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
                     </ListItemIcon>
                     <ListItemText primary={recipient.name} />
                     <ListItemIcon classes={{ root: classes.goIcon }}>
-                      <KeyboardArrowRightOutlined />
+                      <KeyboardArrowRightOutlined name="arrow-right-icon" />
                     </ListItemIcon>
                   </ListItemButton>
                 ))}

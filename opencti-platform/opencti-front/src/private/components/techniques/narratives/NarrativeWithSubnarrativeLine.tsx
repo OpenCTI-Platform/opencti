@@ -81,7 +81,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
           )}
         />
         <ListItemIcon style={{ position: 'absolute', insetInlineEnd: -10 }}>
-          <KeyboardArrowRightOutlined />
+          <KeyboardArrowRightOutlined name="arrow-right-icon" />
         </ListItemIcon>
       </ListItemButton>
       {subNarratives && subNarratives.length > 0 && (
@@ -109,7 +109,7 @@ export const NarrativeWithSubnarrativeLineDummy: FunctionComponent = () => {
         }
       />
       <ListItemIcon style={{ position: 'absolute', insetInlineEnd: -10 }}>
-        <KeyboardArrowRightOutlined color="disabled" />
+        <KeyboardArrowRightOutlined name="arrow-right-icon" color="disabled" />
       </ListItemIcon>
     </ListItem>
   );
