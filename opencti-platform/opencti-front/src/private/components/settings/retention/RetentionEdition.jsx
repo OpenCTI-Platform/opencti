@@ -89,7 +89,7 @@ const RetentionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit', 'active'], retentionRule);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
-  const [verified, setVerified] = useState(true);
+  const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
 
   const retentionValidation = Yup.object().shape({
@@ -160,6 +160,7 @@ const RetentionEditionContainer = (props) => {
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              onChange={() => setVerified(false)}
               fullWidth={true}
             />
             <Field
@@ -169,6 +170,7 @@ const RetentionEditionContainer = (props) => {
               label={t_i18n('Unit')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
+              onChange={() => setVerified(false)}
             >
               <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
               <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
@@ -277,7 +279,7 @@ const RetentionEditionContainer = (props) => {
                 color="primary"
                 onClick={submitForm}
                 classes={{ root: classes.button }}
-                disabled={(retentionRule.scope === 'knowledge' && !verified) || isSubmitting}
+                disabled={!verified || isSubmitting}
               >
                 {t_i18n('Update')}
               </Button>
