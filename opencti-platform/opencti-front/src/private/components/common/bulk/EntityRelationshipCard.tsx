@@ -20,7 +20,7 @@ const EntityRelationshipCard: FunctionComponent<EntityRelationshipCardProps> = (
         height: 80,
         borderRadius: 4,
         top: 10,
-        right: 10,
+        insetInlineEnd: 10,
         border: `1px solid ${itemColor(entityType)}`,
       }}
       >

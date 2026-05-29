@@ -436,7 +436,7 @@ const TasksList = ({ data, options }) => {
                   <br />
                 </Grid>
                 <Button
-                  style={{ position: 'absolute', right: 10, top: 10 }}
+                  style={{ position: 'absolute', insetInlineEnd: 10, top: 10 }}
                   variant={taskErrors.length > 0 ? 'contained' : 'outlined'}
                   color="error"
                   disabled={taskErrors.length === 0}
@@ -448,7 +448,7 @@ const TasksList = ({ data, options }) => {
                 {task.scope // if task.scope exists = it is list task or a query task
                   ? (
                       <Button
-                        style={{ position: 'absolute', right: 10, bottom: 10 }}
+                        style={{ position: 'absolute', insetInlineEnd: 10, bottom: 10 }}
                         variant="secondary"
                         onClick={() => handleDeleteTask(task.id)}
                         size="small"
@@ -460,7 +460,7 @@ const TasksList = ({ data, options }) => {
                   : (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                         <Button
-                          style={{ position: 'absolute', right: 10, bottom: 10 }}
+                          style={{ position: 'absolute', insetInlineEnd: 10, bottom: 10 }}
                           variant="outlined"
                           onClick={() => handleDeleteTask(task.id)}
                           size="small"

@@ -97,7 +97,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     itemLabel: string,
     selected: boolean,
     showIcon = true,
-    fontSize: 'default' | 'small' = 'default',
+    fontSize: string = '10px',
     // forceShowText = false, // For popover items
   ) => {
     const isSubItem = fontSize === 'small';
@@ -147,7 +147,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
               }}
               slotProps={{
                 primary: {
-                  fontSize: fontSize === 'default' ? '10px' : '10px',
+                  fontSize: fontSize,
                   color: getTextColor(),
                   ...(isSubItem && {
                     whiteSpace: 'normal',
@@ -170,7 +170,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             }}
             slotProps={{
               primary: {
-                fontSize: fontSize === 'default' ? '10px' : '10px',
+                fontSize: fontSize,
                 color: getTextColor(),
                 ...(isSubItem && {
                   whiteSpace: 'normal',
@@ -205,7 +205,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           },
         }}
       >
-        {renderMenuItem(item.icon, item.label, itemSelected, false, 'small')}
+        {renderMenuItem(item.icon, item.label, itemSelected, false, '14px')}
       </MenuItem>
     );
 

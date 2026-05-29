@@ -230,7 +230,7 @@ const AttackerCard: React.FC<{ attacker: AttackerProfile }> = ({ attacker }) => 
         {/* More Details */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}>
           <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>{t_i18n('More details')}</Typography>
-          <ChevronRightIcon sx={{ fontSize: 14 }} />
+          <ChevronRightIcon name="arrow-right-icon" sx={{ fontSize: 14 }} />
         </Box>
       </CardContent>
     </Card>

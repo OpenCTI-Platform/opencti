@@ -96,7 +96,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     alignItems: 'center',
     textWrap: 'nowrap',
     position: 'absolute',
-    right: 10,
+    insetInlineEnd: 10,
     fontWeight: 500,
     justifyContent: 'center',
     fontSize: 12,
