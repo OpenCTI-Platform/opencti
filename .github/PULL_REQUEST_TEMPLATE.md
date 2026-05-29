@@ -11,9 +11,11 @@ Thus already a BIG THANK YOU upfront to you for choosing to help with your PR.
 *
 
 ### Related issues
-<!-- Please attach your PR to related issues in the Development widget on the right -->
-*
-*
+<!-- Please attach your PR to related issues in the Development widget on the right or use closes keyword-->
+* closes
+
+### How to test this PR
+<!-- please give example or instruction for the reviewer to test this PR -->
 
 ### Checklist
 

@@ -48,6 +48,8 @@ For general suggestions or questions about the project or the documentation, you
 
 * If you are interested in contributing to developing OpenCTI, please refer to the [detailed documentation](https://docs.opencti.io/latest/). It can be either a to fix an issue which is meaningful to you, or to develop a feature requested by others.
 
+### Pull requests focus
+
 * All Pull Request title messages must be formatted as: `[component] Message (#issuenumber)` where component should be:
   * backend
   * frontend
@@ -59,6 +61,12 @@ For general suggestions or questions about the project or the documentation, you
   * ci
 
 * All commit must be signed, if you need to configure your git environment please see [Github documentation on signed commit][https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits]
+
+* All Pull Request must be linked to an issue and either fix a bug, implement a feature or improve documentation.
+
+* Documentation should be inside the Pull Request in the `docs` folder.
+
+* As much as possible, provide advices on how to test the feature or the bug fix you implemented in the Pull Request.
 
 ### How can you get in touch for other questions?
 
