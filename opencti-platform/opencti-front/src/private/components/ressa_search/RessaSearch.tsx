@@ -1036,7 +1036,7 @@ const RessaSearch = () => {
                               onClick={() => setPage((prev) => Math.max(0, prev - 1))}
                               disabled={safePage === 0}
                             >
-                              <ChevronLeft />
+                              <ChevronLeft name="arrow-right-icon" />
                             </IconButton>
                             {(() => {
                               const current = safePage + 1;
@@ -1083,7 +1083,7 @@ const RessaSearch = () => {
                               onClick={() => setPage((prev) => Math.min(pageCount - 1, prev + 1))}
                               disabled={safePage >= pageCount - 1}
                             >
-                              <ChevronRight />
+                              <ChevronRight name="arrow-right-icon" />
                             </IconButton>
                             <Divider
                               orientation="vertical"

@@ -11,9 +11,13 @@ import { commitMutation } from '../../relay/environment';
 import withRouter from '../../utils/compat_router/withRouter';
 
 // Highest level of error catching, do not rely on any tierce (intl, theme, ...) pure fallback
-export const HighLevelError = () => (
-  <Alert severity="error">An unknown error occurred. Please contact your administrator or OpenCTI maintainers</Alert>
-);
+export const HighLevelError = () => {
+  const { t_i18n } = useFormatter();
+
+  return (
+    <Alert severity="error">{t_i18n('An unknown error occurred. Please contact your administrator or OpenCTI maintainers')}</Alert>
+  );
+};
 
 // Really simple error display
 export const SimpleError = () => {
