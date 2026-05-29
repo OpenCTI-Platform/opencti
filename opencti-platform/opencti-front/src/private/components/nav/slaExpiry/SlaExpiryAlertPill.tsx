@@ -79,6 +79,7 @@ const SlaExpiryAlertPill: FunctionComponent<SlaExpiryAlertPillProps> = ({
       </Box>
       <SlaExpiryCountdown
         countdown={countdown}
+        phase={phaseStyle.phase}
         color={phaseStyle.main}
         softBackground={phaseStyle.soft}
       />

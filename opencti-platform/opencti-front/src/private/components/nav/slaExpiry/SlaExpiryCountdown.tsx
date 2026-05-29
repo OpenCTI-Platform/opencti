@@ -1,10 +1,11 @@
 import { Box, Typography } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import type { SlaExpiryCountdown as SlaExpiryCountdownValue } from './slaExpiryTypes';
-import { padCountdownUnit } from './slaExpiryUtils';
+import type { SlaExpiryCountdown as SlaExpiryCountdownValue, SlaExpiryPhase } from './slaExpiryTypes';
+import { formatSlaExpiryCountdownUnits } from './slaExpiryUtils';
 
 interface SlaExpiryCountdownProps {
   countdown: SlaExpiryCountdownValue;
+  phase: SlaExpiryPhase;
   color: string;
   softBackground: string;
 }
@@ -13,7 +14,8 @@ const CountdownUnit: FunctionComponent<{
   value: string;
   color: string;
   softBackground: string;
-}> = ({ value, color, softBackground }) => (
+  isExpired: boolean;
+}> = ({ value, color, softBackground, isExpired }) => (
   <Box
     sx={{
       display: 'flex',
@@ -32,7 +34,8 @@ const CountdownUnit: FunctionComponent<{
         fontWeight: 700,
         lineHeight: 1,
         color,
-        fontVariantNumeric: 'tabular-nums',
+        fontVariantNumeric: isExpired ? undefined : 'tabular-nums',
+        letterSpacing: isExpired ? '-0.04em' : undefined,
       }}
     >
       {value}
@@ -42,21 +45,23 @@ const CountdownUnit: FunctionComponent<{
 
 const SlaExpiryCountdown: FunctionComponent<SlaExpiryCountdownProps> = ({
   countdown,
+  phase,
   color,
   softBackground,
 }) => {
-  const units = [
-    padCountdownUnit(countdown.days),
-    padCountdownUnit(countdown.hours),
-    padCountdownUnit(countdown.minutes),
-    padCountdownUnit(countdown.seconds),
-  ];
+  const units = formatSlaExpiryCountdownUnits(countdown, phase);
+  const isExpired = phase === 'brown';
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
       {units.map((unit, index) => (
         <React.Fragment key={index}>
-          <CountdownUnit value={unit} color={color} softBackground={softBackground} />
+          <CountdownUnit
+            value={unit}
+            color={color}
+            softBackground={softBackground}
+            isExpired={isExpired}
+          />
           {index < units.length - 1 && (
             <Typography
               component="span"

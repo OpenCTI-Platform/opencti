@@ -73,6 +73,24 @@ export const getSlaExpiryCountdown = (
 
 export const padCountdownUnit = (value: number): string => String(value).padStart(2, '0');
 
+export const SLA_EXPIRY_EXPIRED_UNIT_DISPLAY = '--';
+
+export const formatSlaExpiryCountdownUnits = (
+  countdown: SlaExpiryCountdown,
+  phase: SlaExpiryPhase,
+): string[] => {
+  if (phase === 'brown') {
+    return Array.from({ length: 4 }, () => SLA_EXPIRY_EXPIRED_UNIT_DISPLAY);
+  }
+
+  return [
+    padCountdownUnit(countdown.days),
+    padCountdownUnit(countdown.hours),
+    padCountdownUnit(countdown.minutes),
+    padCountdownUnit(countdown.seconds),
+  ];
+};
+
 export const compareSlaExpiryUrgency = (
   a: SlaExpiryWindow,
   b: SlaExpiryWindow,
