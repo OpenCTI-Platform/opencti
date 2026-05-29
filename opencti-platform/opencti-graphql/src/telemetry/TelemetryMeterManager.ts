@@ -279,6 +279,7 @@ export class TelemetryMeterManager {
   setConnectorDeployedCount(n: number) {
     this.connectorDeployedCount = n;
   }
+
   setUserLoginCount(n: number) {
     this.userLoginCount = n;
   }
