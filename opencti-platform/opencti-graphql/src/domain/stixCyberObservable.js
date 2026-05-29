@@ -451,7 +451,9 @@ export const artifactImport = async (context, user, args) => {
   };
   const artifact = await addStixCyberObservable(context, user, artifactData);
   const meta = { version, mimetype };
-  await uploadToStorage(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
+  // The artifact is already modelized (the Artifact observable IS the file), so importing it
+  // must not trigger an automatic file import on the uploaded binary.
+  await uploadToStorage(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta, noTriggerImport: true });
   return artifact;
 };
 
