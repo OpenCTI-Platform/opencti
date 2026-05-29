@@ -10613,7 +10613,7 @@ type Mutation {
   decayExclusionRuleDelete(id: ID!): ID
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
-  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization
+  organizationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Organization
   organizationContextPatch(id: ID!, input: EditContext!): Organization
   organizationContextClean(id: ID!): Organization
   organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
