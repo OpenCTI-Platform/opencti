@@ -214,7 +214,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
       },
     });
   };
-  const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
