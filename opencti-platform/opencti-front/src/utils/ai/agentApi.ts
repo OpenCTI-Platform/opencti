@@ -29,6 +29,27 @@ export const fetchAgentsForIntent = async (intent: string): Promise<AgentOption[
   }
 };
 
+/**
+ * Best-effort JSON `{ error }` body extraction for non-OK fetch responses.
+ * The chatbot proxy returns `400 { error: '...' }` for body-validation and
+ * draft-authorization failures, and `503 { error: '...' }` when XTM One is
+ * unreachable — surfacing those messages in the UI is much more actionable
+ * than a generic "Bad Request" derived from `response.statusText`. Falls
+ * back to `statusText` if the body is not JSON, has no `error` field, or
+ * has already been consumed.
+ */
+const readAgentErrorBody = async (response: Response): Promise<string> => {
+  try {
+    const data = await response.clone().json();
+    if (data && typeof data.error === 'string' && data.error.length > 0) {
+      return data.error;
+    }
+  } catch {
+    // Body is not JSON or already consumed — fall through to statusText.
+  }
+  return `Agent call failed: ${response.statusText}`;
+};
+
 export const callAgent = async (agentSlug: string, content: string): Promise<AgentResponse> => {
   const response = await fetch('/chatbot/agent', {
     method: 'POST',
@@ -36,7 +57,7 @@ export const callAgent = async (agentSlug: string, content: string): Promise<Age
     body: JSON.stringify({ agent_slug: agentSlug, content }),
   });
   if (!response.ok) {
-    return { content: '', status: 'error', error: `Agent call failed: ${response.statusText}`, code: response.status };
+    return { content: '', status: 'error', error: await readAgentErrorBody(response), code: response.status };
   }
   const data = await response.json();
   return {
@@ -70,7 +91,7 @@ export const callAgentStream = async (
   });
 
   if (!response.ok) {
-    return { content: '', status: 'error', error: `Agent call failed: ${response.statusText}`, code: response.status };
+    return { content: '', status: 'error', error: await readAgentErrorBody(response), code: response.status };
   }
 
   const reader = response.body?.getReader();

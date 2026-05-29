@@ -605,6 +605,41 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(headerCalls[headerCalls.length - 1]['opencti-draft-id']).toBe('user-session-draft-id');
   });
 
+  it('should not cache when the upstream stream emits a Node `error` event', async () => {
+    // Belt-and-suspenders guard for transport errors. Node typically does
+    // not emit `'end'` after `'error'`, but if a future runtime/library
+    // version reordered events, we'd otherwise risk caching a partial or
+    // failed response. Simulate the upstream emitting a fully-formed `done`
+    // SSE chunk, then a Node-level `'error'`, then `'end'` — we MUST not
+    // call `redisSetXtmAgentResponse` even though `extractFinalContent`
+    // would otherwise return a non-null value.
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const errorHandlers: ((error: Error) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'error') errorHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    dataHandlers.forEach((h) => h(Buffer.from('data: {"type":"done","content":"complete"}\n\n')));
+    errorHandlers.forEach((h) => h(new Error('socket hang up')));
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
   it('should skip caching when the upstream response exceeds the 2MB capture limit', async () => {
     const dataHandlers: ((chunk: Buffer) => void)[] = [];
     const endHandlers: (() => void | Promise<void>)[] = [];

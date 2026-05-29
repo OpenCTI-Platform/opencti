@@ -35,12 +35,16 @@ const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
 // live-workspace and draft views never share a cache entry. Set to 0 to
 // disable. A non-numeric or negative override is treated as a misconfiguration
 // and falls back to the default rather than silently disabling the cache.
+// The seconds value is floored to an integer because Redis `SET ... EX` only
+// accepts integer TTLs — a fractional minute override (e.g. `0.01`) would
+// otherwise produce a `0.6s` TTL and fail with `ERR value is not an integer`,
+// silently turning caching off.
 const AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES = 1440;
 const parsedAgentsRefreshTimeoutMinutes = Number(nconf.get('ai:agents_refresh_timeout'));
 const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTimeoutMinutes) && parsedAgentsRefreshTimeoutMinutes >= 0
   ? parsedAgentsRefreshTimeoutMinutes
   : AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES;
-const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60;
+const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60);
 
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
 const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, string>) => {
@@ -589,6 +593,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     // final content to Redis when the stream completes. A 2MB ceiling caps
     // memory usage for unusually large agent responses.
     let clientAborted = false;
+    let streamErrored = false;
     let captureBytes = 0;
     let captureOverflow = false;
     const captureLimit = 2 * 1024 * 1024;
@@ -604,7 +609,13 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       captureChunks.push(Buffer.from(chunk));
     });
     response.data.on('end', async () => {
-      if (!cacheEnabled || !cacheKey || clientAborted || captureOverflow) return;
+      // Skip caching on transport errors (Node `'error'` event), client
+      // aborts, capture overflow, or when the cache is disabled. Node
+      // typically does not emit `'end'` after `'error'`, but the explicit
+      // `streamErrored` guard is cheap insurance against caching a partial
+      // or transport-failed response if a future Node / undici / axios
+      // version reorders events.
+      if (!cacheEnabled || !cacheKey || clientAborted || streamErrored || captureOverflow) return;
       const raw = Buffer.concat(captureChunks).toString('utf-8');
       const finalContent = extractFinalContent(raw);
       if (finalContent !== null && finalContent.length > 0) {
@@ -619,6 +630,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       response.data.destroy();
     });
     response.data.on('error', (error: Error) => {
+      streamErrored = true;
       logApp.error('Stream error in agent stream proxy', { cause: error });
       if (!res.headersSent) {
         res.status(500).send({ status: 'error', error: error.message });
