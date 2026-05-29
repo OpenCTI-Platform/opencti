@@ -6,6 +6,13 @@ import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 
 const message = '[MIGRATION] Add active field to retention rules and create default disabled technical rules';
 
+const DEFAULT_RULE_NAMES = [
+  'Global files retention',
+  'All workbenches retention',
+  'History retention',
+  'Activity retention',
+];
+
 /**
  * For a given scope, if multiple rules exist, keep the one with the shortest max_retention
  * and delete all others. Returns the kept rule (or undefined if none).
@@ -32,7 +39,9 @@ export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
-  // Set all existing retention rules as active = true
+  // ── 1. Backward compat: set active=true on all pre-existing rules ─────────
+  // Rules created before the active field was introduced have active=null.
+  // We mark them as active so they keep running as before.
   const activateExistingQuery = {
     script: {
       source: `
@@ -52,17 +61,14 @@ export const up = async (next) => {
   );
   logMigration.info(`${message} > Set all existing retention rules as active = true`);
 
-  // Get all existing rules
+  // ── 2. Deduplicate and create missing technical rules ─────────────────────
   const existingRules = await listRules(context, SYSTEM_USER, {});
-
-  // Group rules by scope
   const rulesByScope = existingRules.reduce((acc, rule) => {
     if (!acc[rule.scope]) acc[rule.scope] = [];
     acc[rule.scope].push(rule);
     return acc;
   }, {});
 
-  // Deduplicate and create missing technical rules
   const technicalScopes = [
     { scope: 'file', name: 'Global files retention' },
     { scope: 'workbench', name: 'All workbenches retention' },
@@ -84,13 +90,42 @@ export const up = async (next) => {
       });
       logMigration.info(`${message} > Created disabled ${scope} retention rule (365 days, inactive)`);
     } else if (scopeRules.length > 1) {
-      // Multiple rules: keep the one with the shortest retention, delete the rest
       logMigration.info(`${message} > Found ${scopeRules.length} rules for scope "${scope}", deduplicating...`);
       await deduplicateScopeRules(context, scopeRules);
     } else {
       logMigration.info(`${message} > ${scope} retention rule already exists (1 rule), skipping`);
     }
   }
+
+  // ── 3. Deactivate default rules that have never run ───────────────────────
+  // Step 1 set active=true on all pre-existing rules for backward compat.
+  // However, the 4 technical rules above (file, workbench, history, activity)
+  // are "opt-in by design": they should start as inactive so admins consciously
+  // enable them. We set active=false only on those that have never been executed,
+  // meaning the admin has not touched them yet.
+  const deactivateDefaultsQuery = {
+    script: {
+      source: 'ctx._source.active = false;',
+    },
+    query: {
+      bool: {
+        must: [
+          { term: { 'entity_type.keyword': { value: 'RetentionRule' } } },
+          { terms: { 'name.keyword': DEFAULT_RULE_NAMES } },
+          { term: { active: true } },
+        ],
+        must_not: [
+          { exists: { field: 'last_execution_date' } },
+        ],
+      },
+    },
+  };
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Deactivate default retention rules that have never run',
+    READ_INDEX_INTERNAL_OBJECTS,
+    deactivateDefaultsQuery,
+  );
+  logMigration.info(`${message} > Set default retention rules that have never run to active = false`);
 
   logMigration.info(`${message} > done`);
   next();
