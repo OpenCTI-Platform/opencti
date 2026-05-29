@@ -620,7 +620,7 @@ class StixCoreObjectContentComponent extends Component {
                     }}
                     format="html"
                     variant="html"
-                    style={{ position: 'absolute', top: 0, right: 10 }}
+                    style={{ position: 'absolute', top: 0, insetInlineEnd: 10 }}
                   />
                 </div>
               </>

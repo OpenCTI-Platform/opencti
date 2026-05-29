@@ -549,7 +549,7 @@ const StixCoreRelationshipCreation = ({
                 style={{
                   border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
                   top: 10,
-                  right: 10,
+                  insetInlineEnd: 10,
                 }}
               >
                 <div
@@ -641,7 +641,7 @@ const StixCoreRelationshipCreation = ({
               style={{
                 backgroundColor: theme.palette.background.accent,
                 top: 10,
-                right: 10,
+                insetInlineEnd: 10,
               }}
             >
               <div

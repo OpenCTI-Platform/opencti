@@ -131,62 +131,35 @@ const LoginForm = () => {
                 sx={loginInputSx}
               />
             </Box>
-
-            <FormControlLabel
-              control={(
-                <Checkbox
-                  checked={rememberMe}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setRememberMe(checked);
-                    if (!checked) {
-                      localStorage.removeItem(REMEMBER_EMAIL_KEY);
-                    }
-                  }}
-                  size="small"
-                  sx={{
-                    p: 0,
-                    color: '#D1D5DB',
-                    '&.Mui-checked': {
-                      color: LOGIN_BRAND_COLOR,
-                    },
-                  }}
-                />
-              )}
-              label={(
-                <Typography variant="body2" sx={{ color: '#6B7280', fontSize: 14 }}>
-                  {t_i18n('Remember me')}
-                </Typography>
-              )}
-              sx={loginRememberMeSx}
-            />
-
-            <Button
-              type="submit"
-              disabled={isSubmitting || !isValid}
-              fullWidth
-              sx={{
-                mt: 0.5,
-                py: 1.25,
-                borderRadius: '8px',
-                backgroundColor: `${LOGIN_BRAND_COLOR} !important`,
-                color: '#FFFFFF !important',
-                fontWeight: 600,
-                fontSize: 15,
-                textTransform: 'none',
-                '&:hover': {
-                  backgroundColor: '#4330C4 !important',
-                },
-                '&.Mui-disabled': {
-                  backgroundColor: '#C4B5FD !important',
-                  color: '#FFFFFF !important',
-                },
-              }}
-            >
-              {t_i18n('Login')}
-            </Button>
-
-            <Box textAlign="center">
+            <Box textAlign="center" sx={{display: 'flex', justifyContent: 'space-between'}}>
+              <FormControlLabel
+                control={(
+                  <Checkbox
+                    checked={rememberMe}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setRememberMe(checked);
+                      if (!checked) {
+                        localStorage.removeItem(REMEMBER_EMAIL_KEY);
+                      }
+                    }}
+                    size="small"
+                    sx={{
+                      p: 0,
+                      color: '#D1D5DB',
+                      '&.Mui-checked': {
+                        color: LOGIN_BRAND_COLOR,
+                      },
+                    }}
+                  />
+                )}
+                label={(
+                  <Typography variant="body2" sx={{ color: '#5D616B', fontSize: 14, paddingTop: '2px' }}>
+                    {t_i18n('Remember me')}
+                  </Typography>
+                )}
+                sx={loginRememberMeSx}
+              />
               <Button
                 variant="tertiary"
                 onClick={goToResetPwd}
@@ -206,6 +179,32 @@ const LoginForm = () => {
                 {t_i18n('I forgot my password')}
               </Button>
             </Box>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting || !isValid}
+              fullWidth
+              sx={{
+                mt: 0.5,
+                py: 1.25,
+                borderRadius: '8px',
+                height: '40px',
+                backgroundColor: `${LOGIN_BRAND_COLOR} !important`,
+                color: '#FFFFFF !important',
+                fontWeight: 600,
+                fontSize: 15,
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: '#4330C4 !important',
+                },
+                '&.Mui-disabled': {
+                  backgroundColor: '#C4B5FD !important',
+                  color: '#FFFFFF !important',
+                },
+              }}
+            >
+              {t_i18n('Login')}
+            </Button>
           </Stack>
         </Form>
       )}
