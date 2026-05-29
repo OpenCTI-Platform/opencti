@@ -3,25 +3,36 @@ import { callAgent, callAgentStream } from './agentApi';
 
 const buildJsonResponse = (status: number, body: unknown, ok = status >= 200 && status < 300): Response => {
   const json = JSON.stringify(body);
-  return {
+  let statusText = 'OK';
+  if (status === 400) statusText = 'Bad Request';
+  if (status === 503) statusText = 'Service Unavailable';
+  const response = {
     ok,
     status,
-    statusText: status === 400 ? 'Bad Request' : status === 503 ? 'Service Unavailable' : 'OK',
+    statusText,
     json: async () => JSON.parse(json),
-    clone() { return buildJsonResponse(status, body, ok); },
+    clone() {
+      return buildJsonResponse(status, body, ok);
+    },
     body: null,
-  } as unknown as Response;
+  };
+  return response as unknown as Response;
 };
 
 const buildPlainResponse = (status: number, text: string, ok = status >= 200 && status < 300): Response => {
-  return {
+  const response = {
     ok,
     status,
     statusText: 'Bad Request',
-    json: async () => { throw new SyntaxError('Unexpected token in JSON'); },
-    clone() { return buildPlainResponse(status, text, ok); },
+    json: async () => {
+      throw new SyntaxError('Unexpected token in JSON');
+    },
+    clone() {
+      return buildPlainResponse(status, text, ok);
+    },
     body: null,
-  } as unknown as Response;
+  };
+  return response as unknown as Response;
 };
 
 const buildSseStreamResponse = (chunks: string[]): Response => {
@@ -37,14 +48,17 @@ const buildSseStreamResponse = (chunks: string[]): Response => {
     }),
     releaseLock: vi.fn(),
   };
-  return {
+  const response = {
     ok: true,
     status: 200,
     statusText: 'OK',
     body: { getReader: () => reader },
     json: async () => ({}),
-    clone() { return this as Response; },
-  } as unknown as Response;
+    clone() {
+      return response as unknown as Response;
+    },
+  };
+  return response as unknown as Response;
 };
 
 describe('agentApi', () => {
