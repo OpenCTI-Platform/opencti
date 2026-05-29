@@ -1,7 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { afterAll, beforeAll, expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_EDITOR, TEST_ORGANIZATION, USER_SECURITY } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
@@ -136,7 +136,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization.standard_id).toEqual('identity--732421a0-8471-52de-8d9f-18c8b260813c');
     expect(queryResult.data.organization.sectors.edges.length).toEqual(1);
     expect(queryResult.data.organization.sectors.edges[0].node.standard_id).toEqual(
-      'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff'
+      'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff',
     );
   });
   it('should organization sub-organizations be accurate', async () => {
@@ -149,7 +149,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization).not.toBeNull();
     expect(queryResult.data.organization.subOrganizations.edges.length).toEqual(1);
     expect(queryResult.data.organization.subOrganizations.edges[0].node.standard_id).toEqual(
-      'identity--8c641a55-16b5-503d-9cc3-bf68ef0c40cc'
+      'identity--8c641a55-16b5-503d-9cc3-bf68ef0c40cc',
     );
   });
   it('should list organizations', async () => {
@@ -267,5 +267,154 @@ describe('Organization resolver standard behavior', () => {
       query: DELETE_QUERY,
       variables: { id: TEST_ORGANIZATION.id },
     }, 'Cannot delete an organization that has members.', 'FUNCTIONAL_ERROR');
+  });
+});
+
+describe('Organization default_dashboard user cache refresh', () => {
+  let testOrganizationId;
+  let dashboardId;
+  let dashboardUpdatedId;
+  const dashboardToDeleteIds = [];
+
+  const CREATE_DASHBOARD_QUERY = gql`
+    mutation CreateDashboard($input: WorkspaceAddInput!) {
+      workspaceAdd(input: $input) {
+        id
+        name
+      }
+    }
+  `;
+
+  const ORGANIZATION_FIELD_PATCH_QUERY = gql`
+    mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+      organizationFieldPatch(id: $id, input: $input) {
+        id
+        default_dashboard {
+          id
+          name
+        }
+      }
+    }
+  `;
+
+  const ME_DEFAULT_DASHBOARDS_QUERY = gql`
+    query MeDefaultDashboards {
+      me {
+        id
+        default_dashboards {
+          id
+          name
+        }
+      }
+    }
+  `;
+
+  beforeAll(async () => {
+    // Resolve the TEST_ORGANIZATION internal id
+    const orgResult = await elLoadById(testContext, ADMIN_USER, TEST_ORGANIZATION.id);
+    testOrganizationId = orgResult.internal_id;
+
+    // Create a first dashboard
+    const dashboardCreation = await queryAsAdmin({
+      query: CREATE_DASHBOARD_QUERY,
+      variables: { input: { type: 'dashboard', name: 'orga-dashboard-test' } },
+    });
+    dashboardId = dashboardCreation.data.workspaceAdd.id;
+    dashboardToDeleteIds.push(dashboardId);
+  });
+
+  afterAll(async () => {
+    // Remove default_dashboard from the organization
+    await queryAsAdmin({
+      query: ORGANIZATION_FIELD_PATCH_QUERY,
+      variables: {
+        id: testOrganizationId,
+        input: [{ key: 'default_dashboard', value: [null] }],
+      },
+    });
+    // Delete created dashboards
+    for (const id of dashboardToDeleteIds) {
+      await queryAsAdmin({
+        query: gql`
+          mutation workspaceDelete($id: ID!) {
+            workspaceDelete(id: $id)
+          }
+        `,
+        variables: { id },
+      });
+    }
+  });
+
+  it('should set default_dashboard on organization and refresh user cache', async () => {
+    // Set default_dashboard on the organization
+    const patchResult = await queryAsAdmin({
+      query: ORGANIZATION_FIELD_PATCH_QUERY,
+      variables: {
+        id: testOrganizationId,
+        input: [{ key: 'default_dashboard', value: dashboardId }],
+      },
+    });
+    expect(patchResult.data.organizationFieldPatch.default_dashboard).not.toBeNull();
+    expect(patchResult.data.organizationFieldPatch.default_dashboard.id).toEqual(dashboardId);
+    expect(patchResult.data.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-test');
+
+    // Verify that USER_EDITOR (member of TEST_ORGANIZATION) sees the dashboard in default_dashboards
+    const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_DEFAULT_DASHBOARDS_QUERY,
+    });
+    expect(userResult.data.me).not.toBeNull();
+    const dashboardIds = userResult.data.me.default_dashboards.map((d) => d.id);
+    expect(dashboardIds).toContain(dashboardId);
+  });
+
+  it('should update default_dashboard on organization and refresh user cache', async () => {
+    // Create a new dashboard
+    const newDashboardCreation = await queryAsAdmin({
+      query: CREATE_DASHBOARD_QUERY,
+      variables: { input: { type: 'dashboard', name: 'orga-dashboard-updated' } },
+    });
+    dashboardUpdatedId = newDashboardCreation.data.workspaceAdd.id;
+    dashboardToDeleteIds.push(dashboardUpdatedId);
+
+    // Update default_dashboard to the new dashboard
+    const patchResult = await queryAsAdmin({
+      query: ORGANIZATION_FIELD_PATCH_QUERY,
+      variables: {
+        id: testOrganizationId,
+        input: [{ key: 'default_dashboard', value: [dashboardUpdatedId] }],
+      },
+    });
+    expect(patchResult.data.organizationFieldPatch.default_dashboard).not.toBeNull();
+    expect(patchResult.data.organizationFieldPatch.default_dashboard.id).toEqual(dashboardUpdatedId);
+    expect(patchResult.data.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-updated');
+
+    // Verify user cache was refreshed: USER_EDITOR should now see the updated dashboard
+    const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_DEFAULT_DASHBOARDS_QUERY,
+    });
+    expect(userResult.data.me).not.toBeNull();
+    const dashboardIds = userResult.data.me.default_dashboards.map((d) => d.id);
+    expect(dashboardIds).toContain(dashboardUpdatedId);
+    expect(dashboardIds).not.toContain(dashboardId);
+  });
+
+  it('should remove default_dashboard from organization and refresh user cache', async () => {
+    // Remove default_dashboard
+    const patchResult = await queryAsAdmin({
+      query: ORGANIZATION_FIELD_PATCH_QUERY,
+      variables: {
+        id: testOrganizationId,
+        input: [{ key: 'default_dashboard', value: [null] }],
+      },
+    });
+    expect(patchResult.data.organizationFieldPatch.default_dashboard).toBeNull();
+
+    // Verify user cache was refreshed: USER_EDITOR should no longer have the dashboard
+    const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_DEFAULT_DASHBOARDS_QUERY,
+    });
+    expect(userResult.data.me).not.toBeNull();
+    const dashboardIds = userResult.data.me.default_dashboards.map((d) => d.id);
+    expect(dashboardIds).not.toContain(dashboardUpdatedId);
   });
 });

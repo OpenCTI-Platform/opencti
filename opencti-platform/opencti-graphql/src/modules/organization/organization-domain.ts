@@ -18,13 +18,13 @@ import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicObject, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
+import type { BasicObject, EditInput, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
 import { AlreadyDeletedError, FunctionalError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
 import { checkScore } from '../../utils/format';
-import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
+import { stixDomainObjectDelete, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -53,6 +53,35 @@ export const editAuthorizedAuthorities = async (context: AuthContext, user: Auth
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
 };
 
+/**
+ * Refreshes the user cache for all members belonging to the given organization.
+ * This ensures user sessions are reloaded with up-to-date organization data.
+ */
+const organizationUsersCacheRefresh = async (context: AuthContext, user: AuthUser, organizationId: string) => {
+  const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(
+    context,
+    user,
+    organizationId,
+    RELATION_PARTICIPATE_TO,
+    ENTITY_TYPE_USER,
+  );
+  if (members.length > 0) {
+    await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
+  }
+};
+
+export const organizationEditField = async (
+  context: AuthContext,
+  user: AuthUser,
+  organizationId: string,
+  input: EditInput[],
+  opts = {},
+) => {
+  const result = await stixDomainObjectEditField(context, user, organizationId, input, opts);
+  await organizationUsersCacheRefresh(context, user, organizationId);
+  return result;
+};
+
 export const organizationAdminAdd = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
   // Get organization and members
   const organization = await findById(context, user, organizationId);
@@ -75,7 +104,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
     message: `Promoting \`${updatedUser.name}\` as admin organization of \`${organization.name}\``,
     context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } },
   });
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, updatedUser, user);
+  await organizationUsersCacheRefresh(context, user, organizationId);
   return updated;
 };
 
@@ -103,7 +132,7 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
     message: `Demoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
     context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } },
   });
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, updatedUser, user);
+  await organizationUsersCacheRefresh(context, user, organizationId);
   return updated;
 };
 

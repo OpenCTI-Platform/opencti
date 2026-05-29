@@ -23,9 +23,15 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 export const GROUP_DEFAULT = 'Default';
 
+/**
+ * Refreshes the user cache for all members belonging to the given group.
+ * This ensures user sessions are reloaded with up-to-date group permissions.
+ */
 const groupUsersCacheRefresh = async (context, user, groupId) => {
   const members = await fullEntitiesThroughRelationsFromList(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
+  if (members.length > 0) {
+    await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
+  }
 };
 
 export const findById = (context, user, groupId) => {

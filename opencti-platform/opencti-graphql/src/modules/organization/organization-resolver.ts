@@ -10,17 +10,12 @@ import {
   organizationAdminAdd,
   organizationAdminRemove,
   organizationDelete,
+  organizationEditField,
   organizationMembersPaginated,
   organizationSectorsPaginated,
   parentOrganizationsPaginated,
 } from './organization-domain';
-import {
-  stixDomainObjectAddRelation,
-  stixDomainObjectCleanContext,
-  stixDomainObjectDeleteRelation,
-  stixDomainObjectEditContext,
-  stixDomainObjectEditField,
-} from '../../domain/stixDomainObject';
+import { stixDomainObjectAddRelation, stixDomainObjectCleanContext, stixDomainObjectDeleteRelation, stixDomainObjectEditContext } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 import type { BasicStoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
@@ -50,7 +45,7 @@ const organizationResolvers: Resolvers = {
     organizationAdd: (_, { input }, context) => addOrganization(context, context.user, input),
     organizationDelete: (_, { id }, context) => organizationDelete(context, context.user, id),
     organizationFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return organizationEditField(context, context.user, id, input, { commitMessage, references });
     },
     organizationContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
     organizationContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
