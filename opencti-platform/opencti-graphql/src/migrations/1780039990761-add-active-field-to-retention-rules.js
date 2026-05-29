@@ -70,25 +70,25 @@ export const up = async (next) => {
   }, {});
 
   const technicalScopes = [
-    { scope: 'file', name: 'Global files retention' },
-    { scope: 'workbench', name: 'All workbenches retention' },
-    { scope: 'history', name: 'History retention' },
-    { scope: 'activity', name: 'Activity retention' },
+    { scope: 'file', name: 'Global files retention', max_retention: 30 },
+    { scope: 'workbench', name: 'All workbenches retention', max_retention: 30 },
+    { scope: 'history', name: 'History retention', max_retention: 30 },
+    { scope: 'activity', name: 'Activity retention', max_retention: 30 },
   ];
 
-  for (const { scope, name } of technicalScopes) {
+  for (const { scope, name, max_retention } of technicalScopes) {
     const scopeRules = rulesByScope[scope] ?? [];
 
     if (scopeRules.length === 0) {
-      // No rule for this scope: create a disabled one with 365 days
+      // No rule for this scope: create a disabled one
       await createRetentionRule(context, SYSTEM_USER, {
         name,
-        max_retention: 365,
+        max_retention,
         retention_unit: 'days',
         scope,
         active: false,
       });
-      logMigration.info(`${message} > Created disabled ${scope} retention rule (365 days, inactive)`);
+      logMigration.info(`${message} > Created disabled ${scope} retention rule (${max_retention} days, inactive)`);
     } else if (scopeRules.length > 1) {
       logMigration.info(`${message} > Found ${scopeRules.length} rules for scope "${scope}", deduplicating...`);
       await deduplicateScopeRules(context, scopeRules);
