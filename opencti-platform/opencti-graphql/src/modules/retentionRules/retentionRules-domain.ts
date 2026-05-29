@@ -9,7 +9,6 @@ import { utcDate } from '../../utils/format';
 import { RETENTION_MANAGER_USER } from '../../utils/access';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { addRetentionHistoryCreationCount } from '../../manager/telemetryManager';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import { FEATURE_ACTIVITY_HISTORY_RETENTION, isFeatureEnabled, logApp } from '../../config/conf';
 import { BASE_TYPE_ENTITY } from '../../schema/general';
@@ -99,9 +98,6 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     message: `creates retention rule \`${retentionRule.name}\``,
     context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input },
   });
-  if (input.scope === 'history') {
-    addRetentionHistoryCreationCount();
-  }
   return retentionRule;
 };
 

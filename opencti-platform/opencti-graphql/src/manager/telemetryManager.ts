@@ -26,6 +26,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/secur
 import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
+import { listRules } from '../modules/retentionRules/retentionRules-domain';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -67,7 +68,6 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
-export const TELEMETRY_RETENTION_HISTORY = 'retentionHistoryCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 
@@ -159,11 +159,6 @@ export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
 };
-
-export const addRetentionHistoryCreationCount = () => {
-  redisSetTelemetryAdd(TELEMETRY_RETENTION_HISTORY, 1).catch((reason) => logApp.info('Error add retention history creation in telemetry', { reason }));
-};
-
 // End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
@@ -290,6 +285,19 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setPirCount(pirs.length);
     // endregion
 
+    // region History retention rule status
+    const retentionRules = await listRules(context, TELEMETRY_MANAGER_USER);
+    const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history');
+    manager.setIsHistoryRetentionRuleActive(hasActiveHistoryRetentionRule ? 1 : 0);
+    const hasActiveActivityRetentionRule = retentionRules.some((rule) => rule.scope === 'activity');
+    manager.setIsActivityRetentionRuleActive(hasActiveActivityRetentionRule ? 1 : 0);
+    // endregion
+
+    // region Activity status
+    const hasActivityListeners = (settings.activity_listeners_ids ?? []).length > 0;
+    manager.setIsActivityEnabled(hasActivityListeners ? 1 : 0);
+    // endregion
+
     manager.setSsoLocalStrategyEnabled(settings.local_auth?.enabled ? 1 : 0);
     manager.setSsoCertStrategyEnabled(settings.cert_auth?.enabled ? 1 : 0);
     manager.setSsoHeaderStrategyEnabled(settings.headers_auth?.enabled ? 1 : 0);
@@ -355,8 +363,6 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
-    const retentionHistoryCreationCountInRedis = await redisGetTelemetry(TELEMETRY_RETENTION_HISTORY);
-    manager.setRetentionHistoryCreationCount(retentionHistoryCreationCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);

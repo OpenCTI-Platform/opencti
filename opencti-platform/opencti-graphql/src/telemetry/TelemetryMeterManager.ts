@@ -74,9 +74,6 @@ export class TelemetryMeterManager {
   // Number of connectors deployed
   connectorDeployedCount = 0;
 
-  // Number of retention rules created with scope history
-  retentionHistoryCreationCount = 0;
-
   // +1 when a user that login into application, does not count token authentication
   userLoginCount = 0;
 
@@ -97,6 +94,15 @@ export class TelemetryMeterManager {
 
   // Number of decay rules created
   decayRuleCreationCount = 0;
+
+  // Whether a history retention rule is active on the platform (0 or 1)
+  isHistoryRetentionRuleActive = 0;
+
+  // Whether an activity retention rule is active on the platform (0 or 1)
+  isActivityRetentionRuleActive = 0;
+
+  // Whether activity is enabled on the platform (0 or 1) - has activity listeners configured
+  isActivityEnabled = 0;
 
   // Region Telemetry on SSO providers usage
   // True when the strategy is configured and enabled. False if not.
@@ -273,11 +279,6 @@ export class TelemetryMeterManager {
   setConnectorDeployedCount(n: number) {
     this.connectorDeployedCount = n;
   }
-
-  setRetentionHistoryCreationCount(n: number) {
-    this.retentionHistoryCreationCount = n;
-  }
-
   setUserLoginCount(n: number) {
     this.userLoginCount = n;
   }
@@ -304,6 +305,18 @@ export class TelemetryMeterManager {
 
   setDecayRuleCreationCount(n: number) {
     this.decayRuleCreationCount = n;
+  }
+
+  setIsHistoryRetentionRuleActive(n: number) {
+    this.isHistoryRetentionRuleActive = n;
+  }
+
+  setIsActivityRetentionRuleActive(n: number) {
+    this.isActivityRetentionRuleActive = n;
+  }
+
+  setIsActivityEnabled(n: number) {
+    this.isActivityEnabled = n;
   }
 
   setCustomViewCreatedCount(n: number) {
@@ -356,7 +369,6 @@ export class TelemetryMeterManager {
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
     this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
-    this.registerGauge('retention_history_creation_count', 'Number of retention rules created with scope history', 'retentionHistoryCreationCount');
     this.registerGauge('user_login_count', 'Number of user that logs-in into application', 'userLoginCount');
     this.registerGauge('form_intake_created_count', 'Number of form intakes created', 'formIntakeCreatedCount');
     this.registerGauge('form_intake_updated_count', 'Number of form intakes updated', 'formIntakeUpdatedCount');
@@ -364,6 +376,9 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
+    this.registerGauge('is_history_retention_rule_active', 'Whether a history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
+    this.registerGauge('is_activity_retention_rule_active', 'Whether an activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
+    this.registerGauge('is_activity_enabled', 'Whether activity is enabled on the platform (has activity listeners)', 'isActivityEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_local_strategy_enabled', 'LocalStrategy is configured and enabled', 'ssoLocalStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_openid_strategy_enabled', 'OpenidStrategy is configured and enabled', 'ssoOpenidStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_ldap_strategy_enabled', 'LDAPStrategy is configured and enabled', 'ssoLDAPStrategyEnabled', { unit: 'boolean' });
