@@ -185,7 +185,9 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
     // Build lookup: item id → group index (gap is between groups, not between items)
     const groupOf: Record<string, number> = {};
     itemGroups.forEach((group, gi) => {
-      group.forEach((id) => { groupOf[id] = gi; });
+      group.forEach((id) => {
+        groupOf[id] = gi;
+      });
     });
 
     const INTER_GROUP_GAP = 4; // gap: 0.5 = 4px between group Boxes
