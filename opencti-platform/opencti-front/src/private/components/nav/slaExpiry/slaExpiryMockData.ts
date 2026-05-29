@@ -15,6 +15,17 @@ const windowWithElapsedProgress = (
 };
 
 /**
+ * 4-minute SLA window with phase boundaries every minute.
+ * Picks a random starting phase so the next color change happens in ~1 minute.
+ */
+const createTransitionDemoWindow = (): { startTime: string; endTime: string } => {
+  const totalMinutes = 4;
+  const phaseStarts = [0, 0.25, 0.5, 0.75] as const;
+  const elapsedFraction = phaseStarts[Math.floor(Math.random() * phaseStarts.length)];
+  return windowWithElapsedProgress(totalMinutes, elapsedFraction);
+};
+
+/**
  * Sample data until the SLA expiry API is available.
  * Replace `fetchSlaExpiryAlerts` in useSlaExpiryAlerts with the real endpoint.
  */
@@ -32,10 +43,10 @@ export const MOCK_SLA_EXPIRY_ALERTS: SlaExpiryAlertItem[] = [
     ...windowWithElapsedProgress(360, 0.37),
   },
   {
-    id: 'sla-mock-orange',
+    id: 'sla-mock-transition',
     categoryLabel: 'CASES',
     title: '',
-    ...windowWithElapsedProgress(240, 0.62),
+    ...createTransitionDemoWindow(),
   },
   {
     id: 'sla-mock-red',
