@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { fetchQuery } from 'src/relay/environment';
 import Security from 'src/utils/Security';
-import { nowUTC } from 'src/utils/Time';
+import { nowUTC } from '../../../../utils/Time';
 import { EXPLORE_EXUPDATE } from 'src/utils/hooks/useGranted';
 import ExportButtons from 'src/components/ExportButtons';
 import { useGetCurrentUserAccessRight } from 'src/utils/authorizedMembers';

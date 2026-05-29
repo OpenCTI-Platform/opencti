@@ -74,8 +74,8 @@ interface IncidentEditionDetailsProps {
 interface IncidentEditionDetailsFormValues {
   message?: string;
   references?: FieldOption[];
-  first_seen?: FieldOption;
-  last_seen?: FieldOption;
+  first_seen?: string;
+  last_seen?: string;
 }
 const IncidentEditionDetails: FunctionComponent<
   IncidentEditionDetailsProps

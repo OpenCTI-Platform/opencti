@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import fileDownload from 'js-file-download';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 import { Widget } from 'src/utils/widget/widget';
-import { dayAgo, formatDate } from 'src/utils/Time';
+import { dayAgo, formatDate } from '../../utils/Time';
 import { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 import useDashboard from './useDashboard';
 

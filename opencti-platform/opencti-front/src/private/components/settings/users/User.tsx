@@ -298,7 +298,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       ttl: s?.ttl ?? 0,
     }))
     .sort(
-      (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
+      (a: Session, b: Session) => (timestamp(a.created) ?? 0) - (timestamp(b.created) ?? 0),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
   const isServiceAccount = user.user_service_account;

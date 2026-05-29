@@ -43,7 +43,7 @@ interface PirCreationFormGeneralSettingsProps {
 const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGeneralSettingsProps) => {
   const { t_i18n, fld } = useFormatter();
   const dataRedis = usePreloadedQuery(redisStreamQuery, redisQueryRef);
-  const firstEventDate = dataRedis.redisStreamInfo?.firstEventDate;
+  const firstEventDate = dataRedis.redisStreamInfo?.firstEventDate ?? new Date();
 
   const { values } = useFormikContext<PirCreationFormData>();
   const { pir_rescan_days } = values;

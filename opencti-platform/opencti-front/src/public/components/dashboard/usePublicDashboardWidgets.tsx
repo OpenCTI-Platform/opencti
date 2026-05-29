@@ -1,7 +1,7 @@
 import React from 'react';
 import WidgetText from '../../../components/dashboard/WidgetText';
 import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
+import { computeRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
 import PublicStixCoreObjectsNumber from './stix_core_objects/PublicStixCoreObjectsNumber';
 import PublicStixCoreObjectsList from './stix_core_objects/PublicStixCoreObjectsList';
 import PublicStixCoreObjectsDistributionList from './stix_core_objects/PublicStixCoreObjectsDistributionList';
@@ -39,7 +39,7 @@ import Card from '../../../components/common/card/Card';
 const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => {
   const { t_i18n } = useFormatter();
 
-  const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
+  const startDate = config?.relativeDate ? computeRelativeDate(config.relativeDate) : config?.startDate;
   const endDate = config?.relativeDate ? formatDate(dayStartDate(null, false)) : config?.endDate;
 
   const entityWidget = (widget: Widget) => {

@@ -1,4 +1,3 @@
-import moment from 'moment/moment';
 import React, { useContext, useState } from 'react';
 import { graphql } from 'react-relay';
 import DialogActions from '@mui/material/DialogActions';
@@ -82,7 +81,7 @@ const computeBannerInfo = (
     };
   }
   if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
-    const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
+    const remainingDays = daysBetweenDates(now(), eeSettings.license_expiration_date);
     const bannerColor = getBannerColor(remainingDays);
     // The "Contact us" button only makes sense when the platform is actively
     // registered to XTM Hub, since contactUsXtmHub short-circuits server-side

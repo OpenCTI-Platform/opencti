@@ -64,7 +64,7 @@ export interface GraphEntity {
   id: string;
   confidence?: number | null | undefined;
   createdBy?: unknown | null | undefined;
-  published?: unknown | null | undefined;
+  published?: string | null | undefined;
   objectMarking?: readonly DefaultMarking[] | null | undefined;
 }
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import { useFormatter } from 'src/components/i18n';
-import { FIVE_SECONDS } from 'src/utils/Time';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 import useInterval from 'src/utils/hooks/useInterval';
 import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
 import ListItem from '@mui/material/ListItem';
