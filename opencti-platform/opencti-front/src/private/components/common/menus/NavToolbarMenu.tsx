@@ -15,6 +15,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../../../../components/Theme';
 import { useTheme } from '@mui/styles';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
 
 const StyledDrawer = styled(Drawer)(() => ({
   '& .MuiDrawer-paper': {
@@ -76,6 +77,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
   const location = useLocation();
   const { bannerSettings } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
 
   const bannerHeight = bannerSettings.bannerHeightNumber;
 
@@ -98,7 +100,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
   return (
     <StyledDrawer variant="permanent" anchor="right">
       <ToolbarSpacer />
-      <MenuList component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight, marginBottom: bannerHeight }}>
+      <MenuList component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
         {entries.map((entry, idx) => {
           const isSelected = location.pathname.startsWith(entry.path);
           const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
