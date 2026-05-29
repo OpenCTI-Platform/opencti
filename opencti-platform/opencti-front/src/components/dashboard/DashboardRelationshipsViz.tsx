@@ -1,7 +1,7 @@
 import { memo, ReactNode } from 'react';
 import StixRelationshipsNumber from '../../private/components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '../../private/components/common/stix_relationships/StixRelationshipsList';
-import StixRelationshipsDistributionList from '@components/common/stix_relationships/StixRelationshipsDistributionList';
+import StixRelationshipsDistributionList from '../../private/components/common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsMultiVerticalBars from '@components/common/stix_relationships/StixRelationshipsMultiVerticalBars';
 import StixRelationshipsMultiLineChart from '@components/common/stix_relationships/StixRelationshipsMultiLineChart';
 import StixRelationshipsMultiAreaChart from '@components/common/stix_relationships/StixRelationshipsMultiAreaChart';
@@ -75,16 +75,13 @@ const DashboardRelationshipsViz = ({
       return (
         <StixRelationshipsDistributionList // TODO idem
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
-          title={undefined} // because calling js component in ts
-          field={undefined} // because calling js component in ts
-          overflow={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'vertical-bar':

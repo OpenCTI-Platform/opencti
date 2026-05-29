@@ -359,9 +359,14 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixRelationshipsDistributionList
             overflow="hidden"
-            title={t_i18n('Most active vulnerabilities (Last 3 months)')}
+            parameters={{
+              title: t_i18n('Most active vulnerabilities (Last 3 months)'),
+            }}
             height={400}
-            startDate={monthsAgo(3)}
+            config={{
+              startDate: monthsAgo(3),
+              endDate: null,
+            }}
             dataSelection={[{
               attribute: 'internal_id',
               isTo: true,
@@ -389,7 +394,6 @@ const DefaultDashboard = ({ timeField }) => {
             fallback={(
               <LocationMiniMapTargets
                 title={t_i18n('Targeted countries (Last 3 months)')}
-                config={config}
                 center={[48.8566969, 2.3514616]}
                 zoom={2}
               />
