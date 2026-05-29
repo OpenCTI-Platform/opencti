@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type Express from 'express';
 import nconf from 'nconf';
 import Busboy from 'busboy';
@@ -14,6 +15,8 @@ import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
+import { redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
+import { checkDraftInContext } from './httpServer-draft';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -25,6 +28,23 @@ const DEFAULT_XTM_TIMEOUT = 2 * 60 * 1000; // 2 minutes.
 // Extended timeout for multipart file-based agent calls (10 minutes).
 // File upload and analysis can take significantly longer than text-based calls.
 const MULTIPART_XTM_TIMEOUT = 10 * 60 * 1000; // 10 minutes.
+
+// TTL (in minutes) for caching XTM One agent responses in Redis. The cache
+// is keyed by sha256(agent_slug + opencti-draft-id + content) so reopening
+// AI Insights for the same entity within the window returns instantly, and
+// live-workspace and draft views never share a cache entry. Set to 0 to
+// disable. A non-numeric or negative override is treated as a misconfiguration
+// and falls back to the default rather than silently disabling the cache.
+// The seconds value is floored to an integer because Redis `SET ... EX` only
+// accepts integer TTLs — a fractional minute override (e.g. `0.01`) would
+// otherwise produce a `0.6s` TTL and fail with `ERR value is not an integer`,
+// silently turning caching off.
+const AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES = 1440;
+const parsedAgentsRefreshTimeoutMinutes = Number(nconf.get('ai:agents_refresh_timeout'));
+const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTimeoutMinutes) && parsedAgentsRefreshTimeoutMinutes >= 0
+  ? parsedAgentsRefreshTimeoutMinutes
+  : AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES;
+const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60);
 
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
 const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, string>) => {
@@ -434,21 +454,126 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
   }
 };
 
+// ── Agent response cache helpers ────────────────────────────────────────
+
+// Build a stable cache key from the agent slug, the draft context, and the
+// user prompt. The draft id is part of the key because the same prompt run
+// against the live workspace vs a draft would return different stats from
+// the agent's OpenCTI-side callbacks, and replaying a live cache hit to a
+// draft viewer (or vice-versa) would be incorrect.
+const buildAgentCacheKey = (agentSlug: string, draftId: string, content: string): string => {
+  return createHash('sha256').update(`${agentSlug}::${draftId}::${content}`).digest('hex');
+};
+
+// Set the SSE response headers once for both cache hits and live streams.
+const writeAgentStreamHeaders = (res: Express.Response): void => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+};
+
+// Parse a buffered SSE stream and return the content of the final `done` event,
+// or null if the stream did not complete successfully (e.g. produced an error
+// event, was aborted, or never emitted a `done`). Used to avoid caching
+// partial / failed responses.
+const extractFinalContent = (raw: string): string | null => {
+  const lines = raw.split('\n');
+  let lastDoneContent: string | null = null;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('data: ')) continue;
+    try {
+      const event = JSON.parse(trimmed.slice(6));
+      if (event.type === 'error') {
+        return null;
+      }
+      if (event.type === 'done' && typeof event.content === 'string') {
+        lastDoneContent = event.content;
+      }
+    } catch {
+      // Skip malformed SSE lines
+    }
+  }
+  return lastDoneContent;
+};
+
 // ── POST /chatbot/agent/stream ──────────────────────────────────────────
 // Streaming agent call: sends a message with stream=true and pipes the
 // SSE event stream back to the client for real-time rendering.
-// Body: { agent_slug, content }
+// Body: { agent_slug, content, force_refresh? }
 // AskIA / Insight (no files), streamed to client
+//
+// Responses are cached in Redis keyed by
+// sha256(agent_slug + opencti-draft-id + content) so that reopening AI
+// Insights for the same entity within the TTL window
+// (ai:agents_refresh_timeout, in minutes, default 1440) returns instantly
+// instead of re-running an expensive agent execution. The draft id is
+// part of the key so live-workspace and draft views never share a cache
+// entry. Pass `force_refresh: true` to bypass the cache (e.g. when the
+// user clicks the retry button).
 export const postAgentMessageStream = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
-    const { agent_slug, content } = req.body || {};
+    const { agent_slug, content, force_refresh } = req.body || {};
     if (!agent_slug || !content) {
       res.status(400).json({ error: 'agent_slug and content are required' });
       return;
     }
+
+    // REST routes don't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before either serving a cached
+    // response or hitting the upstream agent. Without this guard a caller could
+    // pass an arbitrary `opencti-draft-id` header and get a cached response (or
+    // a fresh agent run) for a draft they don't have access to, bypassing draft
+    // authorization entirely. `checkDraftInContext` is a no-op when the
+    // authenticated context has no draft, so the live-workspace path is
+    // unaffected.
+    try {
+      await checkDraftInContext(context);
+    } catch (draftErr: unknown) {
+      logApp.warn('Agent stream rejected due to invalid draft context', { cause: draftErr });
+      res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+      return;
+    }
+
+    // Cache lookup — replay as a single `done` event so the client display
+    // logic (which already handles `done`) doesn't need to know about cache.
+    // The cache is intentionally not namespaced by user identity (matching
+    // the pre-XTM-One in-memory `aiResponseCache` in `domain/container.js`),
+    // but it MUST be namespaced by draft so live and draft views never
+    // contaminate each other. We read the draft id from `context.draft_context`
+    // (rather than the raw header) so that the value has gone through the same
+    // shape validation the rest of the platform uses.
+    const draftId = context.draft_context ?? '';
+    const cacheEnabled = AI_AGENTS_REFRESH_TIMEOUT_SECONDS > 0;
+    const cacheKey = cacheEnabled ? buildAgentCacheKey(agent_slug, draftId, content) : null;
+    if (cacheEnabled && cacheKey && !force_refresh) {
+      const cached = await redisGetXtmAgentResponse(cacheKey);
+      if (cached) {
+        logApp.info('Agent response served from cache', { agent_slug });
+        writeAgentStreamHeaders(res);
+        res.write(`data: ${JSON.stringify({
+          type: 'done',
+          content: cached.content,
+          cached: true,
+          generated_at: cached.cached_at,
+        })}\n\n`);
+        res.end();
+        return;
+      }
+    }
+
     const headers = await generateBasicHeaders(req, context);
+    // Force the upstream `opencti-draft-id` header to match the validated
+    // `context.draft_context` used for the cache key. `generateBasicHeaders`
+    // forwards the raw request header, but `context.draft_context` falls back
+    // to `user.draft_context` when the request header is absent — without this
+    // override, a user with an active session draft and no explicit header
+    // would run the agent in the live workspace while the response gets
+    // cached under the draft key (and vice-versa on the next cache hit).
+    headers['opencti-draft-id'] = draftId;
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/api/v1/platform/chat/messages', {
       agent_slug,
@@ -458,15 +583,54 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       decompress: false,
       timeout: 0,
     });
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
+
+    // Only set SSE response headers now that we know the upstream stream is
+    // open. Setting them earlier would leak `Content-Type: text/event-stream`
+    // into the catch branches below that respond with JSON.
+    writeAgentStreamHeaders(res);
+
+    // Capture the upstream bytes alongside the pipe so we can persist the
+    // final content to Redis when the stream completes. A 2MB ceiling caps
+    // memory usage for unusually large agent responses.
+    let clientAborted = false;
+    let streamErrored = false;
+    let captureBytes = 0;
+    let captureOverflow = false;
+    const captureLimit = 2 * 1024 * 1024;
+    const captureChunks: Buffer[] = [];
+    response.data.on('data', (chunk: Buffer) => {
+      if (captureOverflow) return;
+      captureBytes += chunk.length;
+      if (captureBytes > captureLimit) {
+        captureOverflow = true;
+        captureChunks.length = 0;
+        return;
+      }
+      captureChunks.push(Buffer.from(chunk));
+    });
+    response.data.on('end', async () => {
+      // Skip caching on transport errors (Node `'error'` event), client
+      // aborts, capture overflow, or when the cache is disabled. Node
+      // typically does not emit `'end'` after `'error'`, but the explicit
+      // `streamErrored` guard is cheap insurance against caching a partial
+      // or transport-failed response if a future Node / undici / axios
+      // version reorders events.
+      if (!cacheEnabled || !cacheKey || clientAborted || streamErrored || captureOverflow) return;
+      const raw = Buffer.concat(captureChunks).toString('utf-8');
+      const finalContent = extractFinalContent(raw);
+      if (finalContent !== null && finalContent.length > 0) {
+        await redisSetXtmAgentResponse(cacheKey, finalContent, AI_AGENTS_REFRESH_TIMEOUT_SECONDS);
+      }
+    });
+
     response.data.pipe(res);
+
     req.on('close', () => {
+      clientAborted = true;
       response.data.destroy();
     });
     response.data.on('error', (error: Error) => {
+      streamErrored = true;
       logApp.error('Stream error in agent stream proxy', { cause: error });
       if (!res.headersSent) {
         res.status(500).send({ status: 'error', error: error.message });

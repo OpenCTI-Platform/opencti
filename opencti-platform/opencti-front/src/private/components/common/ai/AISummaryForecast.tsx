@@ -177,13 +177,13 @@ const XtmOneForecast = ({ id, loading, setLoading, selectedAgent }: XtmOneForeca
     setLoading(streamLoading);
   }, [streamLoading, setLoading]);
 
-  const executeCall = useCallback(() => {
+  const executeCall = useCallback((forceRefresh = false) => {
     if (!selectedAgent) return;
     const prompt = `Forecast the future activity of the OpenCTI entity with ID: ${id}. `
       + 'Get ranked distribution of related entities and time-series statistics. '
       + 'Based on current trends, provide a forward-looking assessment of expected activity evolution. '
       + `Answer using ${language} language.`;
-    execute(selectedAgent.slug, prompt);
+    execute(selectedAgent.slug, prompt, forceRefresh);
   }, [selectedAgent, id, language, execute]);
 
   useEffect(() => {
@@ -202,7 +202,7 @@ const XtmOneForecast = ({ id, loading, setLoading, selectedAgent }: XtmOneForeca
       loading={loading}
       content={content}
       generatedAt={generatedAt}
-      onRetry={executeCall}
+      onRetry={() => executeCall(true)}
     />
   );
 };

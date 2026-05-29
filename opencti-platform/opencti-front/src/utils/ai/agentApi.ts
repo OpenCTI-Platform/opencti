@@ -13,6 +13,10 @@ export interface AgentResponse {
   status: 'success' | 'error';
   error?: string;
   code?: number;
+  /** ISO timestamp returned by the backend when the response was served from cache. */
+  generatedAt?: string;
+  /** True when the backend served the response from cache. */
+  fromCache?: boolean;
 }
 
 export const fetchAgentsForIntent = async (intent: string): Promise<AgentOption[]> => {
@@ -25,6 +29,27 @@ export const fetchAgentsForIntent = async (intent: string): Promise<AgentOption[
   }
 };
 
+/**
+ * Best-effort JSON `{ error }` body extraction for non-OK fetch responses.
+ * The chatbot proxy returns `400 { error: '...' }` for body-validation and
+ * draft-authorization failures, and `503 { error: '...' }` when XTM One is
+ * unreachable — surfacing those messages in the UI is much more actionable
+ * than a generic "Bad Request" derived from `response.statusText`. Falls
+ * back to `statusText` if the body is not JSON, has no `error` field, or
+ * has already been consumed.
+ */
+const readAgentErrorBody = async (response: Response): Promise<string> => {
+  try {
+    const data = await response.clone().json();
+    if (data && typeof data.error === 'string' && data.error.length > 0) {
+      return data.error;
+    }
+  } catch {
+    // Body is not JSON or already consumed — fall through to statusText.
+  }
+  return `Agent call failed: ${response.statusText}`;
+};
+
 export const callAgent = async (agentSlug: string, content: string): Promise<AgentResponse> => {
   const response = await fetch('/chatbot/agent', {
     method: 'POST',
@@ -32,7 +57,7 @@ export const callAgent = async (agentSlug: string, content: string): Promise<Age
     body: JSON.stringify({ agent_slug: agentSlug, content }),
   });
   if (!response.ok) {
-    return { content: '', status: 'error', error: `Agent call failed: ${response.statusText}`, code: response.status };
+    return { content: '', status: 'error', error: await readAgentErrorBody(response), code: response.status };
   }
   const data = await response.json();
   return {
@@ -48,22 +73,25 @@ export const callAgent = async (agentSlug: string, content: string): Promise<Age
  * as each text chunk arrives. Returns the final AgentResponse.
  *
  * @param signal - optional AbortSignal to cancel the stream
+ * @param forceRefresh - bypass the backend response cache (set when the user
+ *   explicitly retries to force a fresh agent execution).
  */
 export const callAgentStream = async (
   agentSlug: string,
   content: string,
   onChunk: (partialContent: string) => void,
   signal?: AbortSignal,
+  forceRefresh?: boolean,
 ): Promise<AgentResponse> => {
   const response = await fetch('/chatbot/agent/stream', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ agent_slug: agentSlug, content }),
+    body: JSON.stringify({ agent_slug: agentSlug, content, force_refresh: forceRefresh === true }),
     signal,
   });
 
   if (!response.ok) {
-    return { content: '', status: 'error', error: `Agent call failed: ${response.statusText}`, code: response.status };
+    return { content: '', status: 'error', error: await readAgentErrorBody(response), code: response.status };
   }
 
   const reader = response.body?.getReader();
@@ -75,6 +103,8 @@ export const callAgentStream = async (
   let accumulated = '';
   let buffer = '';
   let lastError: string | undefined;
+  let generatedAt: string | undefined;
+  let fromCache = false;
 
   try {
     for (;;) {
@@ -100,6 +130,12 @@ export const callAgentStream = async (
           } else if (event.type === 'done' && typeof event.content === 'string') {
             // Final message — use authoritative full content
             accumulated = event.content;
+            if (typeof event.generated_at === 'string') {
+              generatedAt = event.generated_at;
+            }
+            if (event.cached === true) {
+              fromCache = true;
+            }
             onChunk(accumulated);
           } else if (event.type === 'error') {
             lastError = event.content ?? 'Unknown error';
@@ -117,5 +153,5 @@ export const callAgentStream = async (
   if (lastError) {
     return { content: lastError, status: 'error', error: lastError };
   }
-  return { content: accumulated, status: 'success' };
+  return { content: accumulated, status: 'success', generatedAt, fromCache };
 };

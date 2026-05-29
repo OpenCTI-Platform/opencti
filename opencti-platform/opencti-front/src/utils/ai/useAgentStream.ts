@@ -12,7 +12,11 @@ interface UseAgentStreamReturn {
   loading: boolean;
   error: string | undefined;
   generatedAt: string | null;
-  execute: (agentSlug: string, prompt: string) => void;
+  /**
+   * Trigger an agent stream. Pass `forceRefresh: true` to bypass the
+   * backend response cache (used by the Retry button).
+   */
+  execute: (agentSlug: string, prompt: string, forceRefresh?: boolean) => void;
   abort: () => void;
 }
 
@@ -45,7 +49,7 @@ const useAgentStream = (options?: UseAgentStreamOptions): UseAgentStreamReturn =
     abortRef.current?.abort();
   }, []);
 
-  const execute = useCallback((agentSlug: string, prompt: string) => {
+  const execute = useCallback((agentSlug: string, prompt: string, forceRefresh?: boolean) => {
     abortRef.current?.abort();
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
@@ -73,6 +77,7 @@ const useAgentStream = (options?: UseAgentStreamOptions): UseAgentStreamReturn =
         }
       },
       controller.signal,
+      forceRefresh,
     )
       .then((result) => {
         if (rafRef.current !== null) {
@@ -83,7 +88,10 @@ const useAgentStream = (options?: UseAgentStreamOptions): UseAgentStreamReturn =
           setError(result.error ?? 'An unknown error occurred');
         } else {
           setContent(transform(result.content));
-          setGeneratedAt(new Date().toISOString());
+          // Prefer the backend-provided timestamp (set on cache hits) so the
+          // UI shows when the response was originally generated rather than
+          // the time it was replayed from cache.
+          setGeneratedAt(result.generatedAt ?? new Date().toISOString());
         }
         setLoading(false);
       })
