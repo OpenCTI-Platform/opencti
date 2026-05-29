@@ -26,6 +26,13 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
 
       const isUserCanAccess = await isUserCanAccessStoreElement(executeContext, executeContext.user, draftWorkspace);
       if (!isUserCanAccess) {
+        if (executeContext.user.draft_context === executeContext.draft_context) {
+          // If user is stuck in a draft they cannot access, remove draft context from user so they are not trapped
+          await userEditField(executeContext, executeContext.user, executeContext.user.id, [{
+            key: 'draft_context',
+            value: '',
+          }]);
+        }
         throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
       }
 
