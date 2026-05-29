@@ -45,7 +45,7 @@ export type PlatformLang
     | 'zh-cn'
     | 'ru-ru';
 
-const defaultLang: PlatformLang = 'en-us';
+const defaultLang: PlatformLang = 'fa-ir';
 
 export interface UserContextType {
   me: RootMe_data$data | undefined;

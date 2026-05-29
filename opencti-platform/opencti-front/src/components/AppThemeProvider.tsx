@@ -136,7 +136,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   // Determine current language: user language > platform language > default
   // Use useMemo to recalculate when UserContext updates
   const direction: 'rtl' | 'ltr' = useMemo(() => {
-    let currentLang = 'en-us';
+    let currentLang = 'fa-ir';
     if (userLanguage && userLanguage !== 'auto') {
       currentLang = userLanguage;
     } else if (platformLanguage && platformLanguage !== 'auto') {

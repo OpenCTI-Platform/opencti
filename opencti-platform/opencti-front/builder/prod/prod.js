@@ -56,13 +56,13 @@ const buildPath = "./builder/prod/build";
   const jsImport = (await readdir(`${buildPath}/static/js`))
     .filter((f) => f.endsWith(".js"))
     .map(
-      (f) => `<script defer="defer" src="%BASE_PATH%/static/js/${f}"></script>`
+      (f) => `<script defer="defer" src="%BASE_PATH%/static/js/${f}"></script>`,
     )
     .join("\n");
 
   const indexHtml = `
     <!doctype html>
-    <html lang="en" data-theme="fluent">
+    <html lang="fa" data-theme="fluent">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <meta http-equiv="X-UA-Compatible" content="IE=edge">
