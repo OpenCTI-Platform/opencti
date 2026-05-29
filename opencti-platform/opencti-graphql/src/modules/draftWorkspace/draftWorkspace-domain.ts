@@ -3,7 +3,16 @@ import { FunctionalError, UnsupportedError, ForbiddenAccess } from '../../config
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
 import { elAggregationCount, elCount, elFindByIds, elList, elLoadById, loadDraftElement } from '../../database/engine';
-import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, stixLoadByIds, updateAttribute } from '../../database/middleware';
+import {
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  distributionEntities,
+  stixLoadByIds,
+  timeSeriesEntities,
+  updateAttribute,
+} from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { notify, setEditContext } from '../../database/redis';
@@ -75,6 +84,21 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findDraftWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+};
+
+export const draftWorkspacesNumber = (context: AuthContext, user: AuthUser, args: any) => {
+  return {
+    count: elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+    total: elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+  };
+};
+
+export const draftWorkspacesTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+};
+
+export const draftWorkspacesDistribution = (context: AuthContext, user: AuthUser, args: any) => {
+  return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
 };
 
 export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {

@@ -9764,6 +9764,9 @@ type Query {
   draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]!
   draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]!
   draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]!
+  draftWorkspacesNumber(dateAttribute: String, startDate: DateTime, endDate: DateTime, filters: FilterGroup, search: String): Number
+  draftWorkspacesTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, filters: FilterGroup, search: String): [TimeSeries]
+  draftWorkspacesDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, filters: FilterGroup, search: String): [Distribution]
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
