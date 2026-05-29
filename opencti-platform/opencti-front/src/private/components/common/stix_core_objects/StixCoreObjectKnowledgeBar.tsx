@@ -46,6 +46,7 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
         "technology"
         "technology-to"
         "technology-from"
+        "interpreted-by"
       ]
     ) {
       label
