@@ -1,7 +1,10 @@
 import { Box, Typography } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import type { SlaExpiryCountdown as SlaExpiryCountdownValue, SlaExpiryPhase } from './slaExpiryTypes';
-import { formatSlaExpiryCountdownUnits } from './slaExpiryUtils';
+import {
+  formatSlaExpiryCountdownUnits,
+  SLA_EXPIRY_EXPIRED_PREFIX,
+} from './slaExpiryUtils';
 
 interface SlaExpiryCountdownProps {
   countdown: SlaExpiryCountdownValue;
@@ -14,8 +17,7 @@ const CountdownUnit: FunctionComponent<{
   value: string;
   color: string;
   softBackground: string;
-  isExpired: boolean;
-}> = ({ value, color, softBackground, isExpired }) => (
+}> = ({ value, color, softBackground }) => (
   <Box
     sx={{
       display: 'flex',
@@ -25,6 +27,7 @@ const CountdownUnit: FunctionComponent<{
       height: 28,
       borderRadius: '50%',
       backgroundColor: softBackground,
+      flexShrink: 0,
     }}
   >
     <Typography
@@ -34,8 +37,7 @@ const CountdownUnit: FunctionComponent<{
         fontWeight: 700,
         lineHeight: 1,
         color,
-        fontVariantNumeric: isExpired ? undefined : 'tabular-nums',
-        letterSpacing: isExpired ? '-0.04em' : undefined,
+        fontVariantNumeric: 'tabular-nums',
       }}
     >
       {value}
@@ -49,18 +51,41 @@ const SlaExpiryCountdown: FunctionComponent<SlaExpiryCountdownProps> = ({
   color,
   softBackground,
 }) => {
-  const units = formatSlaExpiryCountdownUnits(countdown, phase);
   const isExpired = phase === 'brown';
+  const units = formatSlaExpiryCountdownUnits(countdown);
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+    <Box
+      component="bdi"
+      dir="ltr"
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        flexShrink: 0,
+      }}
+    >
+      <Typography
+        component="span"
+        aria-hidden={!isExpired}
+        sx={{
+          fontSize: '0.8125rem',
+          fontWeight: 700,
+          lineHeight: 1,
+          color,
+          mr: 0.5,
+          visibility: isExpired ? 'visible' : 'hidden',
+          flexShrink: 0,
+        }}
+      >
+        {SLA_EXPIRY_EXPIRED_PREFIX}
+      </Typography>
       {units.map((unit, index) => (
         <React.Fragment key={index}>
           <CountdownUnit
             value={unit}
             color={color}
             softBackground={softBackground}
-            isExpired={isExpired}
           />
           {index < units.length - 1 && (
             <Typography

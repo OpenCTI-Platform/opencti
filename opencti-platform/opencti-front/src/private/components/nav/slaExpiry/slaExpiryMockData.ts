@@ -20,21 +20,33 @@ const windowWithElapsedProgress = (
  */
 export const MOCK_SLA_EXPIRY_ALERTS: SlaExpiryAlertItem[] = [
   {
-    id: 'sla-mock-1',
+    id: 'sla-mock-green',
     categoryLabel: 'CASES',
-    title: 'SLA Expiring Soon',
-    ...windowWithElapsedProgress(120, 0.82),
+    title: '',
+    ...windowWithElapsedProgress(480, 0.12),
   },
   {
-    id: 'sla-mock-2',
+    id: 'sla-mock-yellow',
     categoryLabel: 'CASES',
-    title: 'SLA Expiring Soon',
-    ...windowWithElapsedProgress(240, 0.4),
+    title: '',
+    ...windowWithElapsedProgress(360, 0.37),
   },
   {
-    id: 'sla-mock-3',
+    id: 'sla-mock-orange',
     categoryLabel: 'CASES',
-    title: 'SLA Expiring Soon',
+    title: '',
+    ...windowWithElapsedProgress(240, 0.62),
+  },
+  {
+    id: 'sla-mock-red',
+    categoryLabel: 'CASES',
+    title: '',
+    ...windowWithElapsedProgress(120, 0.87),
+  },
+  {
+    id: 'sla-mock-brown',
+    categoryLabel: 'CASES',
+    title: '',
     startTime: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
     endTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
   },
@@ -46,7 +58,7 @@ export const mapSlaExpiryApiWindows = (
 ): SlaExpiryAlertItem[] => windows.map(([startTime, endTime], index) => ({
   id: `sla-${index}-${endTime}`,
   categoryLabel: 'CASES',
-  title: 'SLA Expiring Soon',
+  title: '',
   startTime,
   endTime,
 }));

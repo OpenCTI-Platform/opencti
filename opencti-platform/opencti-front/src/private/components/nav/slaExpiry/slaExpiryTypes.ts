@@ -1,4 +1,4 @@
-export type SlaExpiryPhase = 'green' | 'blue' | 'orange' | 'red' | 'brown';
+export type SlaExpiryPhase = 'green' | 'yellow' | 'orange' | 'red' | 'brown';
 
 export interface SlaExpiryWindow {
   startTime: string;
