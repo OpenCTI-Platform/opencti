@@ -2,7 +2,7 @@ import IconButton from '@common/button/IconButton';
 import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined, ScienceOutlined } from '@mui/icons-material';
-import { alpha, Badge, Stack } from '@mui/material';
+import { alpha, Badge, Box, Stack } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -40,6 +40,8 @@ import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import logo from '../../../static/images/rctip-logo-text.svg';
 import logo_fa from '../../../static/images/rctip-logo-text-fa.svg';
+import SlaExpiryAlerts from './slaExpiry/SlaExpiryAlerts';
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -225,6 +227,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         width: '100%',
         backgroundColor: 'transparent',
         backdropFilter: 'blur(4px)',
+        overflow: 'visible',
       }}
     >
       {/* Header and Footer Banners containing classification level of system */}
@@ -238,6 +241,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           paddingInlineEnd: theme.spacing(3),
           display: 'flex',
           justifyContent: 'space-between',
+          overflow: 'visible',
           background: 'var(--fluent-color-sidebar)',
         }}
       >
@@ -245,13 +249,23 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           <img src={t_i18n('direction') == 'rtl' ? logo_fa : logo} alt="logo" height={35} />
         </div>
         {hasKnowledgeAccess && (
-          <SearchInput
-            onSubmit={handleSearch}
-            keyword={keyword}
-            variant="topBar"
-            placeholder={`${t_i18n('Search the platform')}...`}
-            isNLQLoading={isNLQLoading}
-          />
+          <Box
+            sx={{
+              position: 'relative',
+              display: 'inline-flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <SearchInput
+              onSubmit={handleSearch}
+              keyword={keyword}
+              variant="topBar"
+              placeholder={`${t_i18n('Search the platform')}...`}
+              isNLQLoading={isNLQLoading}
+            />
+            <SlaExpiryAlerts />
+          </Box>
         )}
         <div>
           <Stack direction="row" gap={1} alignItems="center">
