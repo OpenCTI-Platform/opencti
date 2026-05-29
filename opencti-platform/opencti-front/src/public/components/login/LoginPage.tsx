@@ -49,8 +49,8 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
           <Typography
             variant="h4"
             sx={{
-              fontWeight: 700,
-              color: '#111827',
+              fontWeight: 600,
+              color: '#101828',
               fontSize: 20,
               lineHeight: 1.25,
             }}
@@ -60,8 +60,8 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
           <Typography
             variant="body2"
             sx={{
-              color: '#6B7280',
-              fontSize: 13.5,
+              color: '#475467',
+              fontSize: 16,
               lineHeight: 1.5,
             }}
           >

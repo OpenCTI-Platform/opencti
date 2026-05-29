@@ -39,7 +39,7 @@ import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBa
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import logo from '../../../static/images/rctip-logo-text.svg';
-
+import logo_fa from '../../../static/images/rctip-logo-text-fa.svg';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -242,7 +242,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         }}
       >
         <div>
-          <img src={logo} alt="logo" height={35} />
+          <img src={t_i18n('direction') == 'rtl' ? logo_fa : logo} alt="logo" height={35} />
         </div>
         {hasKnowledgeAccess && (
           <SearchInput

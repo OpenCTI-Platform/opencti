@@ -140,7 +140,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
             size="small"
             component={Link}
             to={`/dashboard/cases/tasks/${task.id}`}
-            style={{ position: 'absolute', right: 10 }}
+            style={{ position: 'absolute', insetInlineEnd: 10 }}
           >
             <NorthEastOutlined />
           </IconButton>
