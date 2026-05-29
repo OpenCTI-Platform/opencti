@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
@@ -12,7 +9,7 @@ import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
@@ -31,42 +28,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useTheme } from '@mui/material/styles';
 import SwitchField from '../../../../components/fields/SwitchField';
 
-const styles = (theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    borderBottom: '1px solid #5c5c5c',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  title: {
-    float: 'left',
-  },
-});
-
 const retentionMutationFieldPatch = graphql`
     mutation RetentionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
         retentionRuleEdit(id: $id) {
@@ -84,10 +45,15 @@ const RetentionCheckMutation = graphql`
 `;
 
 const RetentionEditionContainer = (props) => {
-  const { classes, open, handleClose, retentionRule } = props;
+  const { open, handleClose, retentionRule } = props;
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit', 'active'], retentionRule);
+  const initialValues = {
+    name: retentionRule.name,
+    max_retention: retentionRule.max_retention,
+    retention_unit: retentionRule.retention_unit,
+    active: retentionRule.active,
+  };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
@@ -267,7 +233,7 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
-            <div className={classes.buttons}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
               <Button
                 color="secondary"
                 onClick={async () => {
@@ -278,32 +244,24 @@ const RetentionEditionContainer = (props) => {
                   }
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Verify')}
               </Button>
               <Button
                 color="primary"
                 onClick={submitForm}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: theme.spacing(2) }}
                 disabled={!verified || isSubmitting}
               >
                 {t_i18n('Update')}
               </Button>
-            </div>
+            </Box>
           </Form>
         )}
       </Formik>
     </Drawer>
   );
-};
-
-RetentionEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  retentionRule: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const RetentionEditionFragment = createFragmentContainer(
@@ -323,7 +281,4 @@ const RetentionEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(RetentionEditionFragment);
+export default RetentionEditionFragment;
