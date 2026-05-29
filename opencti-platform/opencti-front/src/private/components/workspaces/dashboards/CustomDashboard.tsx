@@ -201,22 +201,35 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
             hasAccess={userCanEdit}
           >
-            <div style={{ marginBottom: 12 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 1.5,
+              }}
+            >
               <DashboardTimeFilters
                 config={config}
                 handleDateChange={handleDateChange}
               />
-            </div>
+              {refreshRate && (
+                <Box sx={{ color: 'text.secondary', marginRight: 3 }}>
+                  {t_i18n('Last refreshed')}: {timeAgoText}
+                </Box>
+              )}
+            </Box>
           </Security>
         )
-      }
-      <DashboardContent
-        helpers={helpers}
-        isEditable={userCanEdit}
-        entity={workspace}
-        host={WIDGET_WORKSPACE_HOST}
-        refreshRate={refreshRate}
-      /></div>
+        }
+        <DashboardContent
+          helpers={helpers}
+          isEditable={userCanEdit}
+          entity={workspace}
+          host={WIDGET_WORKSPACE_HOST}
+          refreshRate={refreshRate}
+        />
+      </div>
     </Stack>
   );
 };
