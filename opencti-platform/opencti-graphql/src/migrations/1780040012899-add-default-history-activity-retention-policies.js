@@ -81,4 +81,3 @@ export const up = async (next) => {
 export const down = async (next) => {
   next();
 };
-
