@@ -1,13 +1,12 @@
-import { Box, Stack } from '@mui/material';
+import { Box, Collapse, Fade, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import type { Theme } from '../../../../components/Theme';
 import SlaExpiryAlertPill from './SlaExpiryAlertPill';
-import { compareSlaExpiryUrgency } from './slaExpiryUtils';
+import { compareSlaExpiryUrgency, SLA_ALERT_PILL_WIDTH_PX } from './slaExpiryUtils';
 import useSlaExpiryAlerts from './useSlaExpiryAlerts';
 
-/** Matches SlaExpiryAlertPill minWidth so centering does not shift on toggle. */
-const SLA_ALERT_PILL_WIDTH_PX = 380;
+const EXPAND_TRANSITION_MS = 280;
 
 const STACKED_SHADOW_LAYER = {
   bottom: -3,
@@ -63,6 +62,7 @@ const SlaExpiryAlerts: FunctionComponent = () => {
   }
 
   const primaryItem = sortedItems[0];
+  const additionalItems = sortedItems.slice(1);
   const isStacked = sortedItems.length > 1;
 
   const handleToggle = () => {
@@ -90,38 +90,50 @@ const SlaExpiryAlerts: FunctionComponent = () => {
         position: 'relative',
         width: '100%',
         cursor: 'pointer',
-        // Reserve space for the stacked shadow layer in both collapsed and expanded states.
         pb: 0.5,
       }}
       aria-expanded={expanded}
       aria-label={`${sortedItems.length} SLA alerts`}
     >
-      {!expanded && (
-        <SlaExpiryStackedShadow
-          bottom={STACKED_SHADOW_LAYER.bottom}
-          insetX={STACKED_SHADOW_LAYER.insetX}
-        />
-      )}
-      {expanded ? (
+      <Fade in={!expanded} timeout={EXPAND_TRANSITION_MS} unmountOnExit>
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <SlaExpiryStackedShadow
+            bottom={STACKED_SHADOW_LAYER.bottom}
+            insetX={STACKED_SHADOW_LAYER.insetX}
+          />
+        </Box>
+      </Fade>
+      <Box sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
+        <SlaExpiryAlertPill item={primaryItem} nowMs={nowMs} />
+      </Box>
+      <Collapse
+        in={expanded}
+        timeout={EXPAND_TRANSITION_MS}
+        unmountOnExit
+        sx={{
+          width: '100%',
+        }}
+      >
         <Stack
           spacing={1}
           sx={{
-            position: 'relative',
-            zIndex: 1,
+            pt: 1,
             width: '100%',
-            maxHeight: 'min(50vh, 360px)',
+            maxHeight: 'min(50vh, 280px)',
             overflowY: 'auto',
           }}
         >
-          {sortedItems.map((item) => (
+          {additionalItems.map((item) => (
             <SlaExpiryAlertPill key={item.id} item={item} nowMs={nowMs} />
           ))}
         </Stack>
-      ) : (
-        <Box sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
-          <SlaExpiryAlertPill item={primaryItem} nowMs={nowMs} />
-        </Box>
-      )}
+      </Collapse>
     </Box>
   );
 
