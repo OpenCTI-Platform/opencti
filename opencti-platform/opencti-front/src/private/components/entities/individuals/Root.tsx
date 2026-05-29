@@ -130,7 +130,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
 
   const basePath = PATH_INDIVIDUAL(individualId);
   const link = `${basePath}/knowledge`;
-  let paddingRight = 0;
+  let paddingInlineEnd = 0;
   if (viewAs === 'knowledge') {
     paddingInlineEnd = getPaddingRight(location.pathname, basePath);
   }
