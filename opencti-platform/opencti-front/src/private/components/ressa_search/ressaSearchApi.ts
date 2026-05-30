@@ -39,23 +39,28 @@ export async function rawQueryApi(
   request: RawQueryRequest,
   options: RawQueryApiOptions = {},
 ): Promise<RawQueryResponse> {
-  const baseUrl = normalizeBaseUrl(options.baseUrl ?? defaultBaseUrl());
+  try {
+    const baseUrl = normalizeBaseUrl(options.baseUrl ?? defaultBaseUrl());
 
-  const url = buildRawQueryUrl(baseUrl, request);
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-      'Content-Type': 'text/plain',
-    },
-    body: request.query,
-    signal: options.signal,
-  });
+    const url = buildRawQueryUrl(baseUrl, request);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'text/plain',
+      },
+      body: request.query,
+      signal: options.signal,
+    });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Request failed (${res.status}): ${text || res.statusText}`);
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Request failed (${res.status}): ${text || res.statusText}`);
+    }
+
+    return (await res.json()) as RawQueryResponse;
+  } catch (e) {
+    console.log('rawQueryApi error', e);
+    throw e;
   }
-
-  return (await res.json()) as RawQueryResponse;
 }
