@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { fetchCaseRfiNodeIds } from '@components/cases/caseRfiNodeIdsApi';
 import type { SlaExpiryAlertItem } from './slaExpiryTypes';
-import { fetchSlaExpiryAlerts } from './slaExpiryMockData';
+import { fetchCaseRfiSlaByIds } from './caseRfiSlaApi';
+import { mapCaseRfiSlaResponseToAlerts } from './slaExpiryMapper';
 
 const useSlaExpiryAlerts = (): SlaExpiryAlertItem[] => {
+  const { pathname } = useLocation();
   const [items, setItems] = useState<SlaExpiryAlertItem[]>([]);
 
   useEffect(() => {
@@ -10,7 +14,10 @@ const useSlaExpiryAlerts = (): SlaExpiryAlertItem[] => {
 
     const load = async () => {
       try {
-        const alerts = await fetchSlaExpiryAlerts();
+        const openctiIds = await fetchCaseRfiNodeIds();
+        const slaResponse = await fetchCaseRfiSlaByIds(openctiIds);
+        const alerts = mapCaseRfiSlaResponseToAlerts(slaResponse);
+
         if (!cancelled) {
           setItems(alerts);
         }
@@ -26,7 +33,7 @@ const useSlaExpiryAlerts = (): SlaExpiryAlertItem[] => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pathname]);
 
   return items;
 };

@@ -65,21 +65,32 @@ const SlaExpiryCountdown: FunctionComponent<SlaExpiryCountdownProps> = ({
         flexShrink: 0,
       }}
     >
-      <Typography
+      <Box
         component="span"
         aria-hidden={!isExpired}
         sx={{
-          fontSize: '0.8125rem',
-          fontWeight: 700,
-          lineHeight: 1,
-          color,
+          width: 10,
+          minWidth: 10,
           mr: 0.5,
-          visibility: isExpired ? 'visible' : 'hidden',
           flexShrink: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        {SLA_EXPIRY_EXPIRED_PREFIX}
-      </Typography>
+        <Typography
+          component="span"
+          sx={{
+            fontSize: '0.8125rem',
+            fontWeight: 700,
+            lineHeight: 1,
+            color,
+            visibility: isExpired ? 'visible' : 'hidden',
+          }}
+        >
+          {SLA_EXPIRY_EXPIRED_PREFIX}
+        </Typography>
+      </Box>
       {units.map((unit, index) => (
         <React.Fragment key={index}>
           <CountdownUnit

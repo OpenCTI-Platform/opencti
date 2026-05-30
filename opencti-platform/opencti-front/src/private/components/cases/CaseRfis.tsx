@@ -11,7 +11,7 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
-import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import usePreloadedPaginationFragment, { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
@@ -192,24 +192,24 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
       {queryRef && (
         <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: CaseRfisLinesCases_data$data) => data.caseRfis?.edges?.map((n) => n?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          contextFilters={contextFilters}
-          preloadedPaginationProps={preloadedPaginationProps}
-          lineFragment={caseFragment}
-          exportContext={{ entity_type: 'Case-Rfi' }}
-          additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
-              <StixCoreObjectForms entityType="Case-Rfi" />
-            </Security>,
-          ]}
-          createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <CaseRfiCreation paginationOptions={queryPaginationOptions} />
-            </Security>
-          )}
+            dataColumns={dataColumns}
+            resolvePath={(data: CaseRfisLinesCases_data$data) => data.caseRfis?.edges?.map((n) => n?.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            preloadedPaginationProps={preloadedPaginationProps}
+            lineFragment={caseFragment}
+            exportContext={{ entity_type: 'Case-Rfi' }}
+            additionalHeaderButtons={[
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+                <StixCoreObjectForms entityType="Case-Rfi" />
+              </Security>,
+            ]}
+            createButton={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <CaseRfiCreation paginationOptions={queryPaginationOptions} />
+              </Security>
+            )}
         />
       )}
     </div>
