@@ -1,9 +1,6 @@
 import type { CaseRfiSlaApiResponse, SlaCycleMetrics } from './caseRfiSlaTypes';
 import type { SlaExpiryAlertItem } from './slaExpiryTypes';
-
-const hasCycleMetrics = (cycle?: SlaCycleMetrics | null): cycle is SlaCycleMetrics => (
-  Boolean(cycle?.goalDuration?.millis)
-);
+import { hasCycleMetrics } from './caseRfiSlaMetricsUtils';
 
 const buildAlertItem = (
   result: CaseRfiSlaApiResponse['results'][number],
