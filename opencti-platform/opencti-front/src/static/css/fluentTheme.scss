@@ -1,5 +1,4 @@
 html[data-theme="fluent"] {
-  
   --fluent-color-primary: #533de4;
   --fluent-color-primary-hover: #4026a8;
   --fluent-color-border: #ccd1dd;
@@ -381,11 +380,10 @@ html[data-theme="fluent"] {
   }
 }
 html[dir="rtl"] {
-  .MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation1.MuiDrawer-paper.MuiDrawer-paperAnchorLeft.mui-style-rtl-dtobo2-MuiPaper-root-MuiDrawer-paper {
+  .MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation1.MuiDrawer-paper.MuiDrawer-paperAnchorLeft {
     left: 0;
     right: auto;
   }
-  
 }
 @font-face {
   font-family: "IranYekan";
