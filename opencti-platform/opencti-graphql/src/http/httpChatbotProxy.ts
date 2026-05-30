@@ -356,6 +356,124 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
   }
 };
 
+// ── GET /chatbot/files/:fileId/download ─────────────────────────────────
+// Streams an agent-generated file from XTM One back to the browser.
+//
+// The OpenCTI user is authenticated here (platform session) and the XTM One
+// JWT is minted server-side via `generateBasicHeaders` → `issueXtmJwt`. The
+// user therefore never authenticates to XTM One directly: the embedded
+// chatbot points its download URL at this proxy (relative to its
+// `apiBaseUrl` of `${APP_BASE_PATH}/chatbot`), not at XTM One.
+const FILE_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+export const getChatbotFileDownload = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+
+    // `req.params` values are typed `string | string[]` in this codebase; a
+    // single route segment is always a string at runtime, but coerce
+    // defensively so a malformed value simply fails the UUID check below.
+    const fileId = String(req.params.fileId ?? '');
+    if (!fileId || !FILE_ID_RE.test(fileId)) {
+      res.status(400).json({ error: 'Invalid file id' });
+      return;
+    }
+
+    // REST routes don't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before forwarding upstream.
+    // Without this guard a caller could forge an `opencti-draft-id` header and
+    // download files scoped to a draft they don't have access to, bypassing
+    // draft authorization. `checkDraftInContext` is a no-op when the
+    // authenticated context has no draft, so the live-workspace path is
+    // unaffected.
+    try {
+      await checkDraftInContext(context);
+    } catch (draftErr: unknown) {
+      logApp.warn('Chatbot file download rejected due to invalid draft context', { cause: draftErr });
+      res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+      return;
+    }
+
+    const headers = await generateBasicHeaders(req, context);
+    // Force the upstream `opencti-draft-id` to the validated `context.draft_context`
+    // (which falls back to the user's session draft when the request omits the
+    // header) so the download resolves in the same workspace the rest of the
+    // platform would use, rather than trusting the raw request header. File
+    // downloads are frequently triggered without custom headers, so without this
+    // a draft user would otherwise hit the live workspace and 404 on a
+    // draft-scoped file.
+    headers['opencti-draft-id'] = context.draft_context ?? '';
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.get(`/api/v1/chat/files/${fileId}/download`, {
+      decompress: false,
+      // Streaming pipe — no response timeout (matches the other streaming
+      // proxy calls). A 2-minute cap could abort a large/slow download
+      // prematurely; the stream ends naturally and `req.on('close')` below
+      // tears it down if the client disconnects.
+      timeout: 0,
+    });
+
+    // Forward the content headers so the browser saves the file with the
+    // right name and type. `content-disposition` is built CRLF-safe by XTM One.
+    // `content-encoding` MUST be forwarded because `decompress: false` leaves a
+    // gzip/br payload compressed — the browser needs the header to decode it.
+    const forwardHeaders = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
+    Object.entries(response.headers).forEach(([key, value]) => {
+      if (forwardHeaders.includes(key.toLowerCase()) && value) {
+        res.setHeader(key, value as string);
+      }
+    });
+
+    response.data.pipe(res);
+
+    req.on('close', () => {
+      response.data.destroy();
+    });
+
+    response.data.on('error', (error: Error) => {
+      logApp.error('Stream error in chatbot file download proxy', { cause: error });
+      if (!res.headersSent) {
+        res.status(500).send({ status: 'error', error: error.message });
+      } else {
+        res.end();
+      }
+    });
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot file download proxy', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    setCookieError(res, message);
+    if (httpErr) {
+      // Surface the upstream `detail` (e.g. "File not found" / "Access denied")
+      // instead of the generic axios "Request failed with status code N".
+      // With responseType 'stream' the error body may arrive as a stream, so
+      // handle both the parsed-object and stream cases (matches the
+      // `postChatbotMessage` error path).
+      let detail = message;
+      try {
+        if (typeof httpErr.data === 'object' && httpErr.data !== null) {
+          if ('detail' in httpErr.data) {
+            detail = httpErr.data.detail;
+          } else if (typeof httpErr.data.pipe === 'function') {
+            const chunks: Buffer[] = [];
+            for await (const chunk of httpErr.data) {
+              chunks.push(Buffer.from(chunk));
+            }
+            const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+            detail = body.detail ?? message;
+          }
+        }
+      } catch {
+        // If parsing fails, fall back to the generic error message.
+      }
+      res.status(httpErr.status).json({ error: detail });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
 // ── POST /chatbot/agent ─────────────────────────────────────────────────
 // Non-streaming agent call.
 // Accepts two Content-Type modes:

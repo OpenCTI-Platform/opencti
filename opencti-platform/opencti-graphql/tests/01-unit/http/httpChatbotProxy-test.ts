@@ -138,7 +138,7 @@ vi.mock('../../../src/utils/http-client', () => ({
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
-import { postAgentMessageStream } from '../../../src/http/httpChatbotProxy';
+import { getChatbotFileDownload, postAgentMessageStream } from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -669,5 +669,142 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     await Promise.all(endHandlers.map((h) => h()));
 
     expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+});
+
+describe('httpChatbotProxy: getChatbotFileDownload', () => {
+  const VALID_FILE_ID = '11111111-1111-1111-1111-111111111111';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildDownloadReq = (fileId: string) => ({ params: { fileId }, headers: {}, on: vi.fn() } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    // Default the draft check to a no-op (live workspace, no draft).
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID file id without calling XTM One', async () => {
+    await getChatbotFileDownload(buildDownloadReq('../etc/passwd'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid file id' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should reject with 400 when the draft context fails validation, without calling XTM One', async () => {
+    // Simulate a caller forging an `opencti-draft-id` they cannot access (or a
+    // closed draft). The REST proxy MUST refuse before reaching XTM One —
+    // without this guard a draft-scoped file could be downloaded across draft
+    // authorization boundaries.
+    setupAuthenticatedContext({ draft_context: 'forged-draft-id' });
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Could not find draft workspace'));
+
+    await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Could not find draft workspace' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the validated context.draft_context to XTM One, not the raw request header', async () => {
+    // File downloads are frequently triggered without custom headers, so the
+    // upstream draft id must come from the validated `context.draft_context`
+    // (which falls back to the user's session draft) rather than the raw
+    // request header — otherwise a draft user would hit the live workspace.
+    setupAuthenticatedContext({ draft_context: 'user-session-draft-id' });
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockGet.mockResolvedValue({ data: fakeStream, headers: {} });
+
+    await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    const { getHttpClient } = await import('../../../src/utils/http-client');
+    const headerCalls = vi.mocked(getHttpClient).mock.calls
+      .map((c) => c[0]?.headers)
+      .filter((h): h is Record<string, string> => !!h && 'opencti-draft-id' in h);
+    expect(headerCalls.length).toBeGreaterThan(0);
+    expect(headerCalls[headerCalls.length - 1]['opencti-draft-id']).toBe('user-session-draft-id');
+    expect(mockGet).toHaveBeenCalledTimes(1);
+  });
+
+  it('should stream the file and forward content headers on success', async () => {
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockGet.mockResolvedValue({
+      data: fakeStream,
+      headers: {
+        'content-type': 'text/csv',
+        'content-disposition': 'attachment; filename="iocs.csv"',
+        'content-length': '21',
+        'content-encoding': 'gzip',
+        'cache-control': 'private, max-age=86400',
+        'x-should-not-forward': 'secret',
+      },
+    });
+
+    const req = buildDownloadReq(VALID_FILE_ID);
+    await getChatbotFileDownload(req, res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockGet.mock.calls[0];
+    expect(url).toBe(`/api/v1/chat/files/${VALID_FILE_ID}/download`);
+    expect(opts.timeout).toBe(0);
+    expect(opts.decompress).toBe(false);
+
+    expect(res.setHeader).toHaveBeenCalledWith('content-type', 'text/csv');
+    expect(res.setHeader).toHaveBeenCalledWith('content-disposition', 'attachment; filename="iocs.csv"');
+    expect(res.setHeader).toHaveBeenCalledWith('content-length', '21');
+    expect(res.setHeader).toHaveBeenCalledWith('content-encoding', 'gzip');
+    expect(res.setHeader).toHaveBeenCalledWith('cache-control', 'private, max-age=86400');
+    // Non-allowlisted upstream headers must not be forwarded.
+    expect(res.setHeader).not.toHaveBeenCalledWith('x-should-not-forward', 'secret');
+    expect(fakeStream.pipe).toHaveBeenCalledWith(res);
+  });
+
+  it('should destroy the upstream stream when the client disconnects', async () => {
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockGet.mockResolvedValue({ data: fakeStream, headers: {} });
+
+    const req = buildDownloadReq(VALID_FILE_ID);
+    await getChatbotFileDownload(req, res);
+
+    const closeHandler = req.on.mock.calls.find((c: any[]) => c[0] === 'close')?.[1];
+    expect(closeHandler).toBeDefined();
+    closeHandler();
+    expect(fakeStream.destroy).toHaveBeenCalled();
+  });
+
+  it('should propagate the upstream status and detail message on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'File not found' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: 'File not found' });
+  });
+
+  it('should return 503 when a non-HTTP error is thrown', async () => {
+    mockGet.mockRejectedValue(new Error('Network failure'));
+
+    await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ error: 'XTM One is unreachable' });
   });
 });

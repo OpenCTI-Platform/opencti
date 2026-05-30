@@ -125,6 +125,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
         messages: '/messages',
         sessions: '/sessions',
         upload: '/upload',
+        download: '/files',
       }}
       user={{ firstName }}
       disableFileManagement={false}

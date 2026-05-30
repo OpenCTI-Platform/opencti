@@ -38,6 +38,7 @@ import {
   postChatbotSession,
   postChatbotMessage,
   postChatbotUpload,
+  getChatbotFileDownload,
   postAgentMessage,
   postAgentMessageStream,
   getLegacyChatbotProxy,
@@ -538,6 +539,7 @@ const createApp = async (app, schema) => {
   app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
+  app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);
   app.post(`${basePath}/chatbot/agent/stream`, postAgentMessageStream);
   // Legacy Flowise proxy (used when xtm_one_token is NOT set)
