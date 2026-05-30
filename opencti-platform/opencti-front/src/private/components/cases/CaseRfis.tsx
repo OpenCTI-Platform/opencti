@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { graphql } from 'react-relay';
 import { CaseRfisLinesCasesPaginationQuery, CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
 import { CaseRfisLinesCases_data$data } from '@components/cases/__generated__/CaseRfisLinesCases_data.graphql';
@@ -7,14 +7,18 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
+import CaseRfiRemainingTimeCell from './case_rfis/CaseRfiRemainingTimeCell';
+import useCaseRfiSlaRemainingById from './case_rfis/useCaseRfiSlaRemainingById';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import usePreloadedPaginationFragment, { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
+import { EMPTY_VALUE } from '../../../utils/String';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -154,13 +158,39 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     caseRfisLinesQuery,
     queryPaginationOptions,
   );
+  const slaRemainingById = useCaseRfiSlaRemainingById();
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const dataColumns = {
+  const dataColumns = useMemo(() => ({
     name: {
       label: 'Name',
-      percentWidth: 20,
+      percentWidth: 18,
       isSortable: true,
+    },
+    remaining_time: {
+      label: 'Remaining Time',
+      percentWidth: 16,
+      isSortable: false,
+      render: (data: { id: string }) => {
+        const snapshot = slaRemainingById[data.id];
+        if (!snapshot) {
+          return defaultRender(EMPTY_VALUE);
+        }
+        return (
+          <CaseRfiRemainingTimeCell
+            snapshot={snapshot}
+            nowMs={nowMs}
+          />
+        );
+      },
     },
     priority: {},
     severity: {},
@@ -177,7 +207,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     objectMarking: {
       isSortable: isRuntimeSort,
     },
-  };
+  }), [isRuntimeSort, nowMs, slaRemainingById]);
 
   const preloadedPaginationProps = {
     linesQuery: caseRfisLinesQuery,
