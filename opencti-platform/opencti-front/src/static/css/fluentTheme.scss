@@ -259,8 +259,8 @@ html[data-theme="fluent"] {
       border: 1px solid var(--fluent-color-border) !important;
       background-color: #fff !important;
       opacity: 1 !important;
-      width: 100% !important;
-      height: 20px !important;
+      // width: 100% !important;
+      // height: 20px !important;
       border-radius: 10px !important;
       padding: 1px 2px !important;
       display: block;
@@ -305,7 +305,7 @@ html[data-theme="fluent"] {
     }
   }
   .MuiButtonBase-root {
-    position: unset;
+    // position: unset;
     .MuiChip-deleteIcon {
       color: var(--fluent-color-label);
       width: 18px;

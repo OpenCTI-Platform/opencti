@@ -103,6 +103,7 @@ const LoginForm = () => {
                 id="login-email"
                 component={TextField}
                 name="email"
+                autoComplete="username"
                 hiddenLabel
                 fullWidth={true}
                 variant="outlined"
@@ -125,6 +126,7 @@ const LoginForm = () => {
                 component={TextField}
                 name="password"
                 type="password"
+                autoComplete="current-password"
                 hiddenLabel
                 fullWidth={true}
                 variant="outlined"
