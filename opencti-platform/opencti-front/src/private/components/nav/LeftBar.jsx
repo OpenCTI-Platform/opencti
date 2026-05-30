@@ -498,34 +498,34 @@ const LeftBarComponent = ({ queryRef }) => {
                     label: t_i18n('Public dashboards'),
                     exact: true,
                   },
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards_ressa_dwm',
-                    label: t_i18n('Ressa DWM'),
-                    exact: true,
-                  },
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards_organization_manager',
-                    label: t_i18n('Organization Manager Dashboard'),
-                    exact: true,
-                  },
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards_middle_managers',
-                    label: t_i18n('Middle Managers Dashboard'),
-                    exact: true,
-                  },
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards_operational_managers',
-                    label: t_i18n('Operational Managers Dashboard'),
-                    exact: true,
-                  },
+                  // {
+                  //   granted: isGrantedToExplore,
+                  //   type: 'Dashboard',
+                  //   link: '/dashboard/workspaces/dashboards_ressa_dwm',
+                  //   label: t_i18n('Ressa DWM'),
+                  //   exact: true,
+                  // },
+                  // {
+                  //   granted: isGrantedToExplore,
+                  //   type: 'Dashboard',
+                  //   link: '/dashboard/workspaces/dashboards_organization_manager',
+                  //   label: t_i18n('Organization Manager Dashboard'),
+                  //   exact: true,
+                  // },
+                  // {
+                  //   granted: isGrantedToExplore,
+                  //   type: 'Dashboard',
+                  //   link: '/dashboard/workspaces/dashboards_middle_managers',
+                  //   label: t_i18n('Middle Managers Dashboard'),
+                  //   exact: true,
+                  // },
+                  // {
+                  //   granted: isGrantedToExplore,
+                  //   type: 'Dashboard',
+                  //   link: '/dashboard/workspaces/dashboards_operational_managers',
+                  //   label: t_i18n('Operational Managers Dashboard'),
+                  //   exact: true,
+                  // },
                 ]}
               />
             )}
@@ -551,7 +551,7 @@ const LeftBarComponent = ({ queryRef }) => {
             />
           )}
 
-          <Security needs={[PIRAPI]}>
+          {/* <Security needs={[PIRAPI]}>
             {!draftContext && (
               <LeftBarItem
                 {...itemProps}
@@ -560,7 +560,7 @@ const LeftBarComponent = ({ queryRef }) => {
                 link="/dashboard/pirs"
               />
             )}
-          </Security>
+          </Security> */}
           {!draftContext && (
             <LeftBarItem
               {...itemProps}
