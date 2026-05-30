@@ -1,4 +1,5 @@
 html[data-theme="fluent"] {
+  
   --fluent-color-primary: #533de4;
   --fluent-color-primary-hover: #4026a8;
   --fluent-color-border: #ccd1dd;
@@ -280,7 +281,7 @@ html[data-theme="fluent"] {
         .MuiSwitch-thumb {
           width: 16px;
           height: 16px;
-          transform: translateX(16px) !important;
+          transform: translateX(-16px) !important;
           background: #fff;
         }
       }
@@ -378,6 +379,13 @@ html[data-theme="fluent"] {
       transform: rotate(180deg);
     }
   }
+}
+html[dir="rtl"] {
+  .MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation1.MuiDrawer-paper.MuiDrawer-paperAnchorLeft.mui-style-rtl-dtobo2-MuiPaper-root-MuiDrawer-paper {
+    left: 0;
+    right: auto;
+  }
+  
 }
 @font-face {
   font-family: "IranYekan";

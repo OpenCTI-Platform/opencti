@@ -41,12 +41,12 @@ const EnterpriseEditionButton = ({
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   return (
     <>
-      <EnterpriseEditionAgreement
+      {/* <EnterpriseEditionAgreement
         open={openEnterpriseEditionConsent}
         onClose={() => setOpenEnterpriseEditionConsent(false)}
         settingsId={settingsId}
-      />
-      {isAdmin ? (
+      /> */}
+      {/* {isAdmin ? (
         <Button
           size="small"
           variant="secondary"
@@ -72,7 +72,7 @@ const EnterpriseEditionButton = ({
         >
           {t_i18n('Create a feedback')}
         </Button>
-      )}
+      )} */}
       <FeedbackCreation
         openDrawer={feedbackCreation}
         handleCloseDrawer={() => setFeedbackCreation(false)}

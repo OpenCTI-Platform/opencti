@@ -18,7 +18,7 @@ import EnterpriseEditionAgreement from '../private/components/common/entreprise_
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
 import Loader from './Loader';
 import useAI from '../utils/hooks/useAI';
-
+import { SearchOutlined } from '@mui/icons-material';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
@@ -243,7 +243,20 @@ const SearchInput = (props) => {
                 {isNLQActivated && isNLQLoading && (
                   <Loader variant="inline" />
                 )}
-
+ <Tooltip title={t_i18n('Ressa Search')}>
+                  <IconButton
+                    onClick={handleRemoveAskAI}
+                    component={Link}
+                    to="/dashboard/ressa-search"
+                    selected={
+                      location.pathname.includes(
+                        '/dashboard/search_bulk',
+                      ) && !isNLQActivated
+                    }
+                  >
+                    <SearchOutlined />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title={t_i18n('Advanced search')}>
                   <IconButton
                     onClick={handleRemoveAskAI}
@@ -260,7 +273,7 @@ const SearchInput = (props) => {
                     <TuneOutlined />
                   </IconButton>
                 </Tooltip>
-
+               
                 <Tooltip title={t_i18n('Bulk search')}>
                   <IconButton
                     onClick={handleRemoveAskAI}
@@ -275,6 +288,9 @@ const SearchInput = (props) => {
                     <ManageSearchOutlined />
                   </IconButton>
                 </Tooltip>
+                {/* label={t_i18n('Ressa Search')}
+              icon={<SearchOutlined />} */}
+                
 
                 {fullyActive && (
                   <EETooltip

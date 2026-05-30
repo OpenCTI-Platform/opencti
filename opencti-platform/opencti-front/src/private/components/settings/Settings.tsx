@@ -674,17 +674,17 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Card>
         </Grid>
 
-        <Grid size={8}>
+        <Grid size={12}>
           <SettingsMessages settings={settings} />
         </Grid>
-        <Grid size={4}>
+        {/* <Grid size={4}>
           <SettingsAnalytics
             settings={settings}
             handleChangeFocus={handleChangeFocus}
             handleSubmitField={handleSubmitField}
             isEnterpriseEdition={isEnterpriseEditionValid}
           />
-        </Grid>
+        </Grid> */}
 
         <Grid size={6}>
           <ThemeManager

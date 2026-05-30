@@ -561,14 +561,14 @@ const LeftBarComponent = ({ queryRef }) => {
               />
             )}
           </Security> */}
-          {!draftContext && (
+          {/* {!draftContext && (
             <LeftBarItem
               {...itemProps}
               label={t_i18n('Ressa Search')}
               icon={<SearchOutlined />}
               link="/dashboard/ressa-search"
             />
-          )}
+          )} */}
         </MenuList>
 
         <Separator />
