@@ -19,7 +19,7 @@ const Tick = ({
 
   const tickLabelStyle = showUnitTickMarkers
     ? {
-      left: `${tick.percent}%`,
+      insetInlineStart: `${tick.percent}%`,
       transform: 'translateX(-50%)',
       width: 'max-content',
       marginInlineStart: 0,
@@ -35,14 +35,14 @@ const Tick = ({
     : {
       marginInlineStart: `${-(100 / count) / 2}%`,
       width: `${100 / count}%`,
-      left: `${tick.percent}%`,
+      insetInlineStart: `${tick.percent}%`,
     };
 
   return (
     <>
       <div
         className={`react_time_range__tick_marker${showLabel ? '__large' : ''}`}
-        style={{ left: `${tick.percent}%` }}
+        style={{ insetInlineStart: `${tick.percent}%` }}
       />
       {showLabel && (
         <div className="react_time_range__tick_label" style={tickLabelStyle}>

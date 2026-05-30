@@ -84,14 +84,14 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               }
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={6} alignSelf="bottom">
             <Select
               fullWidth
               labelId={name}
               value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
               disabled={finalDisabled}
-              sx={{ marginTop: 2 }} // to align field with the number input, that has a label
+              sx={{ marginTop: '24px' }}
             >
               {marks.map((mark, i: number) => {
                 return (
@@ -143,7 +143,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             value={currentLevel.level.value?.toString() ?? ''}
             onChange={(event) => setFieldValue(name, event.target.value)}
             disabled={disabled}
-            sx={{ marginTop: 2 }}
+            sx={{ marginTop: '24px' }}
           >
             {marks.map((mark, i: number) => {
               return (

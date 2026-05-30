@@ -6,6 +6,7 @@ import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 import { GenericContext } from '../model/GenericContextModel';
 import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -57,24 +58,29 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
   const userEffectiveMaxConfidence = custom_max_level ?? getEffectiveConfidenceLevel(entityType);
 
-  const Slider = (
-    <Field
-      component={InputSliderField}
-      variant={variant}
-      containerstyle={containerStyle}
-      fullWidth={true}
-      entityType={entityType}
-      attributeName={name}
-      name={name}
-      label={finalLabel}
-      onFocus={onFocus}
-      onSubmit={onSubmit}
-      editContext={editContext}
-      disabled={disabled}
-      maxLimit={userEffectiveMaxConfidence}
-      helperText={helperText}
-    />
-  );
+  const Slider = () => {
+    return (
+      <div>
+        {/* <Label sx={{ marginBottom: 0, }}>{finalLabel}</Label> */}
+        <Field
+          component={InputSliderField}
+          variant={variant}
+          containerstyle={containerStyle}
+          fullWidth={true}
+          entityType={entityType}
+          attributeName={name}
+          name={name}
+          label={finalLabel}
+          onFocus={onFocus}
+          onSubmit={onSubmit}
+          editContext={editContext}
+          disabled={disabled}
+          maxLimit={userEffectiveMaxConfidence}
+          helperText={helperText}
+        />
+      </div>
+    );
+  };
 
   return showAlert ? (
     <Alert
@@ -85,7 +91,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
       style={{ position: 'relative' }}
       aria-label={finalLabel}
     >
-      {Slider}
+      <Slider />
     </Alert>
   ) : Slider;
 };
