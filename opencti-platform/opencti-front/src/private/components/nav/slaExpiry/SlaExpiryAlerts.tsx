@@ -141,7 +141,7 @@ const SlaExpiryAlerts: FunctionComponent = () => {
     <Box
       sx={{
         position: 'absolute',
-        top: '100%',
+        top: '0',
         left: '50%',
         width: SLA_ALERT_PILL_WIDTH_PX,
         mt: 1,
