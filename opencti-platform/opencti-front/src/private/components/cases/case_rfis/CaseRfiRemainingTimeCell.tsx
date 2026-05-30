@@ -31,6 +31,7 @@ const CaseRfiRemainingTimeCell: FunctionComponent<CaseRfiRemainingTimeCellProps>
         gap: 1,
         width: '100%',
         minWidth: 0,
+        direction: 'rtl',
       }}
     >
       <Box

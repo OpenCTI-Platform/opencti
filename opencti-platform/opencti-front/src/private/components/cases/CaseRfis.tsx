@@ -172,12 +172,10 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const dataColumns = useMemo(() => ({
     name: {
       label: 'Name',
-      percentWidth: 18,
       isSortable: true,
     },
     remaining_time: {
       label: 'Remaining Time',
-      percentWidth: 16,
       isSortable: false,
       render: (data: { id: string }) => {
         const snapshot = slaRemainingById[data.id];
