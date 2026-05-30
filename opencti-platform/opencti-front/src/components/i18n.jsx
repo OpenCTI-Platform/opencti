@@ -171,7 +171,7 @@ export const useFormatter = () => {
     if (number === null || number === '') {
       return 0;
     }
-    return `${intl.formatNumber(numberFormat(number).number)}test${
+    return `${intl.formatNumber(numberFormat(number).number)}${
       numberFormat(number).symbol
     }`;
   };
