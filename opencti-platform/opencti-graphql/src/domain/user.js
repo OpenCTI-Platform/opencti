@@ -1,8 +1,8 @@
-import bcrypt from 'bcryptjs';
-import * as R from 'ramda';
-import { uniq } from 'ramda';
-import { v4 as uuid } from 'uuid';
-import { DateTime } from 'luxon';
+import bcrypt from "bcryptjs";
+import * as R from "ramda";
+import { uniq } from "ramda";
+import { v4 as uuid } from "uuid";
+import { DateTime } from "luxon";
 import conf, {
   ACCOUNT_STATUS_ACTIVE,
   ACCOUNT_STATUS_EXPIRED,
@@ -13,11 +13,31 @@ import conf, {
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
   logApp,
-} from '../config/conf';
-import { AuthenticationFailure, ConfigurationError, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
-import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
+} from "../config/conf";
+import {
+  AuthenticationFailure,
+  ConfigurationError,
+  DatabaseError,
+  DraftLockedError,
+  ForbiddenAccess,
+  FunctionalError,
+  UnsupportedError,
+} from "../config/errors";
+import {
+  getEntitiesListFromCache,
+  getEntitiesMapFromCache,
+  getEntityFromCache,
+} from "../database/cache";
+import { elLoadBy, elRawDeleteByQuery } from "../database/engine";
+import {
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  patchAttribute,
+  updateAttribute,
+  updatedInputsToData,
+} from "../database/middleware";
 import {
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
@@ -28,9 +48,13 @@ import {
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
-} from '../database/middleware-loader';
-import { delEditContext, notify, setEditContext } from '../database/redis';
-import { findUserSessions, killSessions, killUserSessions } from '../database/session';
+} from "../database/middleware-loader";
+import { delEditContext, notify, setEditContext } from "../database/redis";
+import {
+  findUserSessions,
+  killSessions,
+  killUserSessions,
+} from "../database/session";
 import {
   buildPagination,
   isEmptyField,
@@ -39,14 +63,27 @@ import {
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
   UPDATE_OPERATION_REPLACE,
-} from '../database/utils';
-import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { publishUserAction } from '../listener/UserActionListener';
-import { authorizedMembers } from '../schema/attribute-definition';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { getTokensUsage, updateTokenUsage } from '../database/redis/token_usage';
+} from "../database/utils";
+import { extractEntityRepresentativeName } from "../database/entity-representative";
+import { publishUserAction } from "../listener/UserActionListener";
+import { authorizedMembers } from "../schema/attribute-definition";
+import {
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  OPENCTI_ADMIN_UUID,
+} from "../schema/general";
+import { generateStandardId } from "../schema/identifier";
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
+} from "../schema/internalObject";
+import {
+  getTokensUsage,
+  updateTokenUsage,
+} from "../database/redis/token_usage";
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -55,9 +92,9 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
   RELATION_PARTICIPATE_TO,
-} from '../schema/internalRelationship';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+} from "../schema/internalRelationship";
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from "../schema/stixDomainObject";
+import { ENTITY_TYPE_MARKING_DEFINITION } from "../schema/stixMetaObject";
 import {
   buildUserOrganizationRestrictedFiltersOptions,
   BYPASS,
@@ -77,37 +114,61 @@ import {
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
   VIRTUAL_ORGANIZATION_ADMIN,
-} from '../utils/access';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
-import { now, utcDate } from '../utils/format';
-import { addGroup } from './grant';
-import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups } from './group';
-import { addIndividual } from './individual';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { addFilter, extractFilterKeys } from '../utils/filtering/filtering-utils';
-import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
-import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
-import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
-import { cleanMarkings } from '../utils/markingDefinition-utils';
-import { UnitSystem } from '../generated/graphql';
-import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
-import { sendMail, smtpComputeFrom } from '../database/smtp';
-import { checkEnterpriseEdition } from '../enterprise-edition/ee';
-import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
-import { doYield } from '../utils/eventloop-utils';
-import { disablePublicSharingForDeletedUser } from '../modules/dataSharing/dataSharing-utils';
-import { sanitizeUser } from '../utils/templateContextSanitizer';
-import { safeRender } from '../utils/safeEjs.client';
-import { totp } from '../utils/totp';
-import { pushAll } from '../utils/arrayUtil';
-import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
-import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
-import { verifyXtmJwt, isOwnIssuer } from './xtm-auth';
-import { getSettings } from './settings';
-import passport from 'passport';
+} from "../utils/access";
+import {
+  ASSIGNEE_FILTER,
+  CREATOR_FILTER,
+  PARTICIPANT_FILTER,
+} from "../utils/filtering/filtering-constants";
+import { now, utcDate } from "../utils/format";
+import { addGroup } from "./grant";
+import {
+  defaultMarkingDefinitionsFromGroups,
+  findGroupPaginated as findGroups,
+} from "./group";
+import { addIndividual } from "./individual";
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../modules/organization/organization-types";
+import { ENTITY_TYPE_WORKSPACE } from "../modules/workspace/workspace-types";
+import {
+  addFilter,
+  extractFilterKeys,
+} from "../utils/filtering/filtering-utils";
+import {
+  testFilterGroup,
+  testStringFilter,
+} from "../utils/filtering/boolean-logic-engine";
+import { computeUserEffectiveConfidenceLevel } from "../utils/confidence-level";
+import {
+  STATIC_NOTIFIER_EMAIL,
+  STATIC_NOTIFIER_UI,
+} from "../modules/notifier/notifier-statics";
+import { cleanMarkings } from "../utils/markingDefinition-utils";
+import { UnitSystem } from "../generated/graphql";
+import { DRAFT_STATUS_OPEN } from "../modules/draftWorkspace/draftStatuses";
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from "../modules/draftWorkspace/draftWorkspace-types";
+import {
+  addCapabilitiesInDraftUpdatedCount,
+  addServiceAccountIntoUserCount,
+  addUserEmailSendCount,
+  addUserIntoServiceAccountCount,
+} from "../manager/telemetryManager";
+import { sendMail, smtpComputeFrom } from "../database/smtp";
+import { checkEnterpriseEdition } from "../enterprise-edition/ee";
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from "../modules/emailTemplate/emailTemplate-types";
+import { doYield } from "../utils/eventloop-utils";
+import { disablePublicSharingForDeletedUser } from "../modules/dataSharing/dataSharing-utils";
+import { sanitizeUser } from "../utils/templateContextSanitizer";
+import { safeRender } from "../utils/safeEjs.client";
+import { totp } from "../utils/totp";
+import { pushAll } from "../utils/arrayUtil";
+import { apiTokens } from "../modules/attributes/internalObject-registrationAttributes";
+import {
+  addUserTokenByAdmin,
+  generateTokenHmac,
+} from "../modules/user/user-domain";
+import { verifyXtmJwt, isOwnIssuer } from "./xtm-auth";
+import { getSettings } from "./settings";
+import passport from "passport";
 import {
   EnvStrategyType,
   getConfigurationAdminEmail,
@@ -116,43 +177,65 @@ import {
   isLocalAuthForcedEnabledFromEnv,
   LOCAL_STRATEGY_IDENTIFIER,
   PROVIDERS,
-} from '../modules/authenticationProvider/providers-configuration';
-import { addOrganization } from '../modules/organization/organization-domain';
-import validator from 'validator';
-import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
+} from "../modules/authenticationProvider/providers-configuration";
+import { addOrganization } from "../modules/organization/organization-domain";
+import validator from "validator";
+import { logAuthInfo } from "../modules/authenticationProvider/providers-logger";
 
-const BEARER = 'Bearer ';
-const BASIC = 'Basic ';
-export const TAXIIAPI = 'TAXIIAPI';
-const PLATFORM_ORGANIZATION = 'settings_platform_organization';
-const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, 'external'];
-const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
+const BEARER = "Bearer ";
+const BASIC = "Basic ";
+export const TAXIIAPI = "TAXIIAPI";
+const PLATFORM_ORGANIZATION = "settings_platform_organization";
+const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, "external"];
+const PROTECTED_EXTERNAL_ATTRIBUTES = ["user_email", "user_name"];
 const ME_USER_MODIFIABLE_ATTRIBUTES = [
-  'user_email',
-  'user_name',
-  'description',
-  'firstname',
-  'lastname',
-  'theme',
-  'language',
-  'personal_notifiers',
-  'default_dashboard',
-  'default_time_field',
-  'unit_system',
-  'submenu_show_icons',
-  'submenu_auto_collapse',
-  'monochrome_labels',
-  'password',
-  'draft_context',
+  "user_email",
+  "user_name",
+  "description",
+  "firstname",
+  "lastname",
+  "theme",
+  "language",
+  "personal_notifiers",
+  "default_dashboard",
+  "default_time_field",
+  "unit_system",
+  "submenu_show_icons",
+  "submenu_auto_collapse",
+  "monochrome_labels",
+  "password",
+  "draft_context",
 ];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
+const AVAILABLE_LANGUAGES = [
+  "auto",
+  "fa-ir",
+  "es-es",
+  "fr-fr",
+  "ja-jp",
+  "zh-cn",
+  "en-us",
+  "de-de",
+  "ko-kr",
+  "ru-ru",
+  "it-it",
+];
 
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
-  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
+  const groupsRoles = await fullRelationsList(
+    context,
+    user,
+    RELATION_HAS_ROLE,
+    { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] },
+  );
   const groupIds = groupsRoles.map((group) => group.fromId);
   // Get all users for groups
-  const usersGroups = await fullRelationsList(context, user, RELATION_MEMBER_OF, { toId: groupIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const usersGroups = await fullRelationsList(
+    context,
+    user,
+    RELATION_MEMBER_OF,
+    { toId: groupIds, toTypes: [ENTITY_TYPE_GROUP] },
+  );
   const userIds = R.uniq(usersGroups.map((u) => u.fromId));
   // Mark for refresh all impacted sessions
   return internalFindByIds(context, user, userIds);
@@ -170,21 +253,24 @@ export const userWithOrigin = (req, user, originHeaders = {}) => {
   // - In logging system to know the level of the error message
 
   // Additional header from "authentication with header" authentication mode
-  const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
-    .map((header) => ({ [header]: req.header(header) })));
+  const sso_headers_metadata = R.mergeAll(
+    (user.headers_audit ?? []).map((header) => ({
+      [header]: req.header(header),
+    })),
+  );
   const tracing_headers_metadata = getRequestAuditHeaders(req);
 
   const origin = {
-    socket: 'query',
+    socket: "query",
     ip: req?.ip,
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
     user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
     referer: req?.headers.referer,
-    applicant_id: req?.headers['opencti-applicant-id'],
-    call_retry_number: req?.headers['opencti-retry-number'],
-    playbook_id: req?.headers['opencti-playbook-id'],
+    applicant_id: req?.headers["opencti-applicant-id"],
+    call_retry_number: req?.headers["opencti-retry-number"],
+    playbook_id: req?.headers["opencti-playbook-id"],
     ...originHeaders,
   };
   return { ...user, origin };
@@ -199,7 +285,9 @@ const extractInfoFromBasicAuth = (authorization) => {
   const isBasic = authorization && authorization.startsWith(BASIC);
   if (isBasic) {
     const b64auth = authorization.substring(BASIC.length);
-    const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+    const [username, password] = Buffer.from(b64auth, "base64")
+      .toString()
+      .split(":");
     return { username, password };
   }
   return {};
@@ -216,9 +304,21 @@ const extractUserFromBasicAuth = async (authorization) => {
 export const findById = async (context, user, userId) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user administrated organizations
-    const memberOrganizations = await fullEntitiesThroughRelationsToList(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    const myOrganizationsIds = user.administrated_organizations.map((organization) => organization.id);
-    if (!memberOrganizations.map((organization) => organization.id).find((orgaId) => myOrganizationsIds.includes(orgaId))) {
+    const memberOrganizations = await fullEntitiesThroughRelationsToList(
+      context,
+      user,
+      userId,
+      RELATION_PARTICIPATE_TO,
+      ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    );
+    const myOrganizationsIds = user.administrated_organizations.map(
+      (organization) => organization.id,
+    );
+    if (
+      !memberOrganizations
+        .map((organization) => organization.id)
+        .find((orgaId) => myOrganizationsIds.includes(orgaId))
+    ) {
       throw ForbiddenAccess();
     }
   }
@@ -226,41 +326,74 @@ export const findById = async (context, user, userId) => {
     return INTERNAL_USERS[userId];
   }
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-  const withoutPassword = data ? R.dissoc('password', data) : data;
+  const withoutPassword = data ? R.dissoc("password", data) : data;
   return buildCompleteUser(context, withoutPassword);
 };
 
 export const findAllUser = async (context, user, args) => {
-  const { filters, noRegardingOfFilterIdsCheck } = buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
-  return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
+  const { filters, noRegardingOfFilterIdsCheck } =
+    buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
+  return fullEntitiesList(context, user, [ENTITY_TYPE_USER], {
+    ...args,
+    filters,
+    noRegardingOfFilterIdsCheck,
+  });
 };
 
 export const findUserPaginated = async (context, user, args) => {
-  const { filters, noRegardingOfFilterIdsCheck } = buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
-  return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
+  const { filters, noRegardingOfFilterIdsCheck } =
+    buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], {
+    ...args,
+    filters,
+    noRegardingOfFilterIdsCheck,
+  });
 };
 
 const postResolveMembersFunction = (context, user) => {
   return async (usersResult) => {
-    return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE);
+    return filterMembersUsersWithUsersOrgs(
+      context,
+      user,
+      usersResult,
+      FilterMembersMode.EXCLUDE,
+    );
   };
 };
 
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
   const creatorsFilter = postResolveMembersFunction(context, user);
-  return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
+  return fullEntitiesThoughAggregationConnection(
+    context,
+    user,
+    CREATOR_FILTER,
+    ENTITY_TYPE_USER,
+    { ...args, types: entityTypes, postResolveFilter: creatorsFilter },
+  );
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
   const assigneesFilter = postResolveMembersFunction(context, user);
-  return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
+  return fullEntitiesThoughAggregationConnection(
+    context,
+    user,
+    ASSIGNEE_FILTER,
+    ENTITY_TYPE_USER,
+    { ...args, types: entityTypes, postResolveFilter: assigneesFilter },
+  );
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
   const participantsFilter = postResolveMembersFunction(context, user);
-  return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
+  return fullEntitiesThoughAggregationConnection(
+    context,
+    user,
+    PARTICIPANT_FILTER,
+    ENTITY_TYPE_USER,
+    { ...args, types: entityTypes, postResolveFilter: participantsFilter },
+  );
 };
 
 export const findMembersPaginated = async (context, user, args) => {
@@ -273,12 +406,21 @@ export const findAllMembers = async (context, user, args) => {
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
   const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
-  return users.filter((u) => u.capabilities.some((userCapability) => capabilities.some((capability) => capability === userCapability.name)));
+  return users.filter((u) =>
+    u.capabilities.some((userCapability) =>
+      capabilities.some((capability) => capability === userCapability.name),
+    ),
+  );
 };
 
 export const findAllSystemMemberPaginated = () => {
   const members = R.values(INTERNAL_USERS_WITHOUT_REDACTED);
-  return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
+  return buildPagination(
+    0,
+    null,
+    members.map((r) => ({ node: r })),
+    members.length,
+  );
 };
 
 // build only a creator object with what we need to expose of users
@@ -296,31 +438,81 @@ const buildCreatorUser = (user) => {
   };
 };
 export const batchCreator = async (context, user, userIds) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return userIds.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
+  return userIds.map(
+    (id) =>
+      INTERNAL_USERS[id] ||
+      buildCreatorUser(platformUsers.get(id)) ||
+      SYSTEM_USER,
+  );
 };
 
 export const batchCreators = async (context, user, userListIds) => {
   const userIds = userListIds.map((u) => (Array.isArray(u) ? u : [u]));
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER));
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
+  return userIds.map((ids) =>
+    ids.map(
+      (id) =>
+        INTERNAL_USERS[id] ||
+        buildCreatorUser(platformUsers.get(id)) ||
+        SYSTEM_USER,
+    ),
+  );
 };
 
-export const userOrganizationsPaginatedWithoutInferences = async (context, user, userId, opts) => {
+export const userOrganizationsPaginatedWithoutInferences = async (
+  context,
+  user,
+  userId,
+  opts,
+) => {
   const args = { ...opts, withInferences: false };
-  return pageRegardingEntitiesConnection(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    userId,
+    RELATION_PARTICIPATE_TO,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    false,
+    args,
+  );
 };
 
-export const userOrganizationsPaginated = async (context, user, userId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
+export const userOrganizationsPaginated = async (
+  context,
+  user,
+  userId,
+  opts,
+) => {
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    userId,
+    RELATION_PARTICIPATE_TO,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    false,
+    opts,
+  );
 };
 
 export const userRoles = async (context, _user, userId, opts) => {
   const { orderBy, orderMode } = opts;
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   const userLoaded = platformUsers.get(userId);
   if (orderBy) {
-    if (orderMode === 'desc') {
+    if (orderMode === "desc") {
       return R.sortWith([R.descend(R.prop(orderBy))])(userLoaded.roles);
     }
     return R.sortWith([R.ascend(R.prop(orderBy))])(userLoaded.roles);
@@ -329,22 +521,50 @@ export const userRoles = async (context, _user, userId, opts) => {
 };
 
 export const userGroupsPaginated = async (context, user, userId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    userId,
+    RELATION_MEMBER_OF,
+    ENTITY_TYPE_GROUP,
+    false,
+    opts,
+  );
 };
 
 export const groupRolesPaginated = async (context, user, groupId, opts) => {
-  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, opts);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    groupId,
+    RELATION_HAS_ROLE,
+    ENTITY_TYPE_ROLE,
+    false,
+    opts,
+  );
 };
 
 export const batchUserTokens = async (__, _, batchUsers) => {
-  const tokenIds = batchUsers.flatMap((u) => u.api_tokens ?? []).map((token) => token.id);
+  const tokenIds = batchUsers
+    .flatMap((u) => u.api_tokens ?? [])
+    .map((token) => token.id);
   const tokensMap = await getTokensUsage(tokenIds);
-  return batchUsers.map((u) => (u.api_tokens ?? []).map((token) => ({ ...token, last_used_at: tokensMap[token.id] })));
+  return batchUsers.map((u) =>
+    (u.api_tokens ?? []).map((token) => ({
+      ...token,
+      last_used_at: tokensMap[token.id],
+    })),
+  );
 };
 
 export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
   // Get all groups for users
-  const usersGroups = await fullRelationsList(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const usersGroups = await fullRelationsList(
+    context,
+    user,
+    RELATION_MEMBER_OF,
+    { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] },
+  );
   const groupIds = [];
   const usersWithGroups = {};
   usersGroups.forEach((userGroup) => {
@@ -352,7 +572,10 @@ export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
       groupIds.push(userGroup.toId);
     }
     if (usersWithGroups[userGroup.fromId]) {
-      usersWithGroups[userGroup.fromId] = [...usersWithGroups[userGroup.fromId], userGroup.toId];
+      usersWithGroups[userGroup.fromId] = [
+        ...usersWithGroups[userGroup.fromId],
+        userGroup.toId,
+      ];
     } else {
       usersWithGroups[userGroup.fromId] = [userGroup.toId];
     }
@@ -360,18 +583,29 @@ export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
   // Get all roles for groups
   const roleIds = [];
   const groupWithRoles = {};
-  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  const groupsRoles = await fullRelationsList(
+    context,
+    user,
+    RELATION_HAS_ROLE,
+    { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] },
+  );
   groupsRoles.forEach((groupRole) => {
     if (!roleIds.includes(groupRole.toId)) {
       roleIds.push(groupRole.toId);
     }
     if (groupWithRoles[groupRole.fromId]) {
-      groupWithRoles[groupRole.fromId] = [...groupWithRoles[groupRole.fromId], groupRole.toId];
+      groupWithRoles[groupRole.fromId] = [
+        ...groupWithRoles[groupRole.fromId],
+        groupRole.toId,
+      ];
     } else {
       groupWithRoles[groupRole.fromId] = [groupRole.toId];
     }
   });
-  const roles = await fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds });
+  const roles = await fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], {
+    ...opts,
+    ids: roleIds,
+  });
   return userIds.map((u) => {
     const groups = usersWithGroups[u] ?? [];
     const idRoles = uniq(groups.map((g) => groupWithRoles[g] ?? []).flat());
@@ -391,12 +625,16 @@ export const computeAvailableMarkings = (userMarkings, allMarkings) => {
       // Compute accessible lower markings
       const { x_opencti_order: order, definition_type: type } = findMarking;
       const lowerMatchingMarkings = R.filter((m) => {
-        return userMarking.id !== m.id && m.definition_type === type && m.x_opencti_order <= order;
+        return (
+          userMarking.id !== m.id &&
+          m.definition_type === type &&
+          m.x_opencti_order <= order
+        );
       }, allMarkings);
       pushAll(computedMarkings, lowerMatchingMarkings);
     } else {
       const error = { marking: userMarking, available_markings: allMarkings };
-      throw UnsupportedError('[ACCESS] USER MARKING INACCESSIBLE', { error });
+      throw UnsupportedError("[ACCESS] USER MARKING INACCESSIBLE", { error });
     }
   }
   return R.uniqBy((m) => m.id, computedMarkings);
@@ -405,50 +643,123 @@ export const computeAvailableMarkings = (userMarkings, allMarkings) => {
 // Return all the available markings a user can share
 export const getAvailableDataSharingMarkings = async (context, user) => {
   const maxMarkings = user.max_shareable_marking;
-  const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const allMarkings = await getEntitiesListFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
   return computeAvailableMarkings(maxMarkings, allMarkings);
 };
 
-export const checkUserCanShareMarkings = async (context, user, markingsToShare) => {
-  const shareableMarkings = await getAvailableDataSharingMarkings(context, user);
-  const contentMaxMarkingsIsShareable = markingsToShare.every((m) => (
-    shareableMarkings.some((shareableMarking) => m.definition_type === shareableMarking.definition_type && m.x_opencti_order <= shareableMarking.x_opencti_order)));
+export const checkUserCanShareMarkings = async (
+  context,
+  user,
+  markingsToShare,
+) => {
+  const shareableMarkings = await getAvailableDataSharingMarkings(
+    context,
+    user,
+  );
+  const contentMaxMarkingsIsShareable = markingsToShare.every((m) =>
+    shareableMarkings.some(
+      (shareableMarking) =>
+        m.definition_type === shareableMarking.definition_type &&
+        m.x_opencti_order <= shareableMarking.x_opencti_order,
+    ),
+  );
   if (!contentMaxMarkingsIsShareable) {
-    throw ForbiddenAccess('You are not allowed to share these markings', { markings: markingsToShare });
+    throw ForbiddenAccess("You are not allowed to share these markings", {
+      markings: markingsToShare,
+    });
   }
 };
 
-const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarkings, capabilities) => {
+const getUserAndGlobalMarkings = async (
+  context,
+  userId,
+  userGroups,
+  userMarkings,
+  capabilities,
+) => {
   const userCapabilities = capabilities.map((c) => c.name);
-  const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
-  const allMarkingsPromise = getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, userGroups);
+  const shouldBypass =
+    userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
+  const allMarkingsPromise = getEntitiesListFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
+  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(
+    context,
+    userGroups,
+  );
   let computeUserMarkings;
   let maxShareableMarkings;
-  const [all, defaultMarkings] = await Promise.all([allMarkingsPromise, defaultGroupMarkingsPromise]);
-  if (shouldBypass) { // Bypass user have all platform markings and can share all markings
+  const [all, defaultMarkings] = await Promise.all([
+    allMarkingsPromise,
+    defaultGroupMarkingsPromise,
+  ]);
+  if (shouldBypass) {
+    // Bypass user have all platform markings and can share all markings
     computeUserMarkings = all;
     maxShareableMarkings = all;
-  } else { // Standard user have markings related to his groups
+  } else {
+    // Standard user have markings related to his groups
     computeUserMarkings = userMarkings;
-    const notShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none').map(({ type }) => type));
-    maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
-    const allShareableMarkings = all.filter(({ definition_type }) => (
-      !notShareableMarkings.includes(definition_type) && !maxShareableMarkings.some(({ type }) => type === definition_type)
-    )).filter(({ id }) => computeUserMarkings.some((m) => m.id === id)).map(({ id }) => id);
-    maxShareableMarkings = [...maxShareableMarkings.map(({ value }) => value), ...allShareableMarkings];
+    const notShareableMarkings = userGroups.flatMap(
+      ({ max_shareable_markings }) =>
+        max_shareable_markings
+          ?.filter(({ value }) => value === "none")
+          .map(({ type }) => type),
+    );
+    maxShareableMarkings = userGroups
+      .flatMap(({ max_shareable_markings }) =>
+        max_shareable_markings?.filter(({ value }) => value !== "none"),
+      )
+      .filter((m) => !!m);
+    const allShareableMarkings = all
+      .filter(
+        ({ definition_type }) =>
+          !notShareableMarkings.includes(definition_type) &&
+          !maxShareableMarkings.some(({ type }) => type === definition_type),
+      )
+      .filter(({ id }) => computeUserMarkings.some((m) => m.id === id))
+      .map(({ id }) => id);
+    maxShareableMarkings = [
+      ...maxShareableMarkings.map(({ value }) => value),
+      ...allShareableMarkings,
+    ];
   }
   const computedMarkings = computeAvailableMarkings(computeUserMarkings, all);
-  return { user: computedMarkings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
+  return {
+    user: computedMarkings,
+    default: defaultMarkings,
+    max_shareable: await cleanMarkings(context, maxShareableMarkings),
+  };
 };
 
-export const roleCapabilities = async (context, user, roleId, relationshipType = RELATION_HAS_CAPABILITY) => {
-  return await fullEntitiesThroughRelationsToList(context, user, roleId, relationshipType, ENTITY_TYPE_CAPABILITY);
+export const roleCapabilities = async (
+  context,
+  user,
+  roleId,
+  relationshipType = RELATION_HAS_CAPABILITY,
+) => {
+  return await fullEntitiesThroughRelationsToList(
+    context,
+    user,
+    roleId,
+    relationshipType,
+    ENTITY_TYPE_CAPABILITY,
+  );
 };
 
 export const getDefaultHiddenTypes = (entities) => {
-  let userDefaultHiddenTypes = entities.map((entity) => entity.default_hidden_types).flat();
-  userDefaultHiddenTypes = uniq(userDefaultHiddenTypes.filter((type) => type !== undefined));
+  let userDefaultHiddenTypes = entities
+    .map((entity) => entity.default_hidden_types)
+    .flat();
+  userDefaultHiddenTypes = uniq(
+    userDefaultHiddenTypes.filter((type) => type !== undefined),
+  );
   return userDefaultHiddenTypes;
 };
 
@@ -460,42 +771,53 @@ export const findRoles = (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
-export const findCapabilities = async (context, user, args, relationship_type = RELATION_HAS_CAPABILITY) => {
-  const filters = relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT
-    ? addFilter(args.filters, 'name', CAPABILITIES_IN_DRAFT_NAMES)
-    : args.filters;
+export const findCapabilities = async (
+  context,
+  user,
+  args,
+  relationship_type = RELATION_HAS_CAPABILITY,
+) => {
+  const filters =
+    relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT
+      ? addFilter(args.filters, "name", CAPABILITIES_IN_DRAFT_NAMES)
+      : args.filters;
   return await pageEntitiesConnection(context, user, [ENTITY_TYPE_CAPABILITY], {
     ...args,
     filters,
-    orderBy: 'attribute_order',
+    orderBy: "attribute_order",
   });
 };
 
 export const findRolesWithCapabilityInDraft = async (context, user, args) => {
-  return R.uniqBy((relation) => relation.fromId,
-    await fullRelationsList(
-      context,
-      user,
-      RELATION_HAS_CAPABILITY_IN_DRAFT, {
-        ...args,
-        fromTypes: [ENTITY_TYPE_ROLE],
-        toTypes: [ENTITY_TYPE_CAPABILITY],
-      }),
+  return R.uniqBy(
+    (relation) => relation.fromId,
+    await fullRelationsList(context, user, RELATION_HAS_CAPABILITY_IN_DRAFT, {
+      ...args,
+      fromTypes: [ENTITY_TYPE_ROLE],
+      toTypes: [ENTITY_TYPE_CAPABILITY],
+    }),
   );
 };
 
 export const roleDelete = async (context, user, roleId) => {
-  const deleted = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
+  const deleted = await deleteElementById(
+    context,
+    user,
+    roleId,
+    ENTITY_TYPE_ROLE,
+  );
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'delete',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "delete",
+    event_access: "administration",
     message: `deletes role \`${deleted.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: deleted },
   });
   await roleUsersCacheRefresh(context, user, roleId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].DELETE_TOPIC, deleted, user).then(() => roleId);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].DELETE_TOPIC, deleted, user).then(
+    () => roleId,
+  );
 };
 
 export const roleCleanContext = async (context, user, roleId) => {
@@ -513,19 +835,28 @@ export const roleEditContext = async (context, user, roleId, input) => {
 };
 
 const isUserAdministratingOrga = (user, organizationId) => {
-  return user.administrated_organizations.some(({ id }) => id === organizationId);
+  return user.administrated_organizations.some(
+    ({ id }) => id === organizationId,
+  );
 };
 
 const loadUserToUpdateWithAccessCheck = async (context, user, userId) => {
-  const userToUpdate = await internalLoadById(context, user, userId, { type: ENTITY_TYPE_USER });
+  const userToUpdate = await internalLoadById(context, user, userId, {
+    type: ENTITY_TYPE_USER,
+  });
   if (!userToUpdate) {
     throw FunctionalError(`${ENTITY_TYPE_USER} cannot be found.`, { userId });
   }
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // Check in an organization admin edits a user that's not in its administrated organizations
     if (isOnlyOrgaAdmin(user)) {
-      const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
-      if (!userToUpdate[RELATION_PARTICIPATE_TO]?.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+      const myAdministratedOrganizationsIds =
+        user.administrated_organizations.map((orga) => orga.id);
+      if (
+        !userToUpdate[RELATION_PARTICIPATE_TO]?.find((orga) =>
+          myAdministratedOrganizationsIds.includes(orga),
+        )
+      ) {
         throw ForbiddenAccess();
       }
     } else {
@@ -535,7 +866,12 @@ const loadUserToUpdateWithAccessCheck = async (context, user, userId) => {
   return userToUpdate;
 };
 
-export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
+export const assignOrganizationToUser = async (
+  context,
+  user,
+  userId,
+  organizationId,
+) => {
   if (isOnlyOrgaAdmin(user)) {
     // When user is organization admin, we make sure she is also admin of organization added
     if (!isUserAdministratingOrga(user, organizationId)) {
@@ -543,35 +879,60 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     }
   }
   // check the user is accessible
-  const targetUser = await loadUserToUpdateWithAccessCheck(context, user, userId);
+  const targetUser = await loadUserToUpdateWithAccessCheck(
+    context,
+    user,
+    userId,
+  );
 
-  const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
+  const input = {
+    fromId: userId,
+    toId: organizationId,
+    relationship_type: RELATION_PARTICIPATE_TO,
+  };
   const created = await createRelation(context, user, input);
-  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
+  const actionEmail = ENABLED_DEMO_MODE
+    ? REDACTED_USER.user_email
+    : created.from.user_email;
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
     context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
-export const assignOrganizationNameToUser = async (context, user, userId, organizationName) => {
-  const organization = { name: organizationName, identity_class: 'organization' };
-  const generateToId = generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, organization);
+export const assignOrganizationNameToUser = async (
+  context,
+  user,
+  userId,
+  organizationName,
+) => {
+  const organization = {
+    name: organizationName,
+    identity_class: "organization",
+  };
+  const generateToId = generateStandardId(
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    organization,
+  );
   return assignOrganizationToUser(context, user, userId, generateToId);
 };
 
 export const assignGroupToUser = async (context, user, userId, groupName) => {
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
-    throw FunctionalError('Cannot add the relation, User cannot be found.', { userId });
+    throw FunctionalError("Cannot add the relation, User cannot be found.", {
+      userId,
+    });
   }
   // No need for audit log here, only use for provider login
-  const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
+  const generateToId = generateStandardId(ENTITY_TYPE_GROUP, {
+    name: groupName,
+  });
   const assignInput = {
     fromId: userId,
     toId: generateToId,
@@ -594,7 +955,7 @@ export const checkPasswordInlinePolicy = (context, policy, password) => {
   } = policy;
   const errors = [];
   if (isEmptyField(password)) {
-    errors.push('required');
+    errors.push("required");
   }
   if (password_policy_min_length && password_policy_min_length > 0) {
     if (password.length < password_policy_min_length) {
@@ -607,8 +968,13 @@ export const checkPasswordInlinePolicy = (context, policy, password) => {
     }
   }
   if (password_policy_min_symbols && password_policy_min_symbols > 0) {
-    if ((password.match(/[^a-zA-Z0-9]/g) ?? []).length < password_policy_min_symbols) {
-      errors.push(`number of symbols must be >= ${password_policy_min_symbols}`);
+    if (
+      (password.match(/[^a-zA-Z0-9]/g) ?? []).length <
+      password_policy_min_symbols
+    ) {
+      errors.push(
+        `number of symbols must be >= ${password_policy_min_symbols}`,
+      );
     }
   }
   if (password_policy_min_numbers && password_policy_min_numbers > 0) {
@@ -622,68 +988,115 @@ export const checkPasswordInlinePolicy = (context, policy, password) => {
     }
   }
   if (password_policy_min_lowercase && password_policy_min_lowercase > 0) {
-    if ((password.match(/[a-z]/g) ?? []).length < password_policy_min_lowercase) {
-      errors.push(`number of lower chars must be >= ${password_policy_min_lowercase}`);
+    if (
+      (password.match(/[a-z]/g) ?? []).length < password_policy_min_lowercase
+    ) {
+      errors.push(
+        `number of lower chars must be >= ${password_policy_min_lowercase}`,
+      );
     }
   }
   if (password_policy_min_uppercase && password_policy_min_uppercase > 0) {
-    if ((password.match(/[A-Z]/g) ?? []).length < password_policy_min_uppercase) {
-      errors.push(`number of upper chars must be >= ${password_policy_min_uppercase}`);
+    if (
+      (password.match(/[A-Z]/g) ?? []).length < password_policy_min_uppercase
+    ) {
+      errors.push(
+        `number of upper chars must be >= ${password_policy_min_uppercase}`,
+      );
     }
   }
   return errors;
 };
 
 export const checkPasswordFromPolicy = async (context, password) => {
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
   const errors = checkPasswordInlinePolicy(context, settings, password);
   if (errors.length > 0) {
-    throw FunctionalError(`Invalid password: ${errors.join(', ')}`);
+    throw FunctionalError(`Invalid password: ${errors.join(", ")}`);
   }
 };
 
 export const sendEmailToUser = async (context, user, input) => {
   await checkEnterpriseEdition(context);
-  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache(
+    context,
+    user,
+    ENTITY_TYPE_SETTINGS,
+  );
 
   const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
-  const targetUser = users.find((usr) => input.target_user_id === usr.id || input.target_user_id === usr.standard_id);
+  const targetUser = users.find(
+    (usr) =>
+      input.target_user_id === usr.id ||
+      input.target_user_id === usr.standard_id,
+  );
 
   if (!targetUser) {
-    throw UnsupportedError('Target user not found', { id: input.target_user_id });
+    throw UnsupportedError("Target user not found", {
+      id: input.target_user_id,
+    });
   }
 
-  const organizationNames = (targetUser.organizations ?? []).map((org) => org.name);
+  const organizationNames = (targetUser.organizations ?? []).map(
+    (org) => org.name,
+  );
 
-  const emailTemplate = await internalLoadById(context, user, input.email_template_id);
-  if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
-    throw UnsupportedError('Invalid email template', { id: input.email_template_id });
+  const emailTemplate = await internalLoadById(
+    context,
+    user,
+    input.email_template_id,
+  );
+  if (
+    !emailTemplate ||
+    emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE
+  ) {
+    throw UnsupportedError("Invalid email template", {
+      id: input.email_template_id,
+    });
   }
 
   const templateUser = {
     ...sanitizeUser(targetUser),
-    api_token: '', // empty token by default
+    api_token: "", // empty token by default
     account_lock_after_date: targetUser.account_lock_after_date
-      ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd') : '',
+      ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat(
+          "yyyy-MM-dd",
+        )
+      : "",
   };
 
   // If the template asks for a user token, we need to generate a new one.
-  if (emailTemplate.template_body.includes('$user.api_token')) {
-    const inputToken = { name: 'Template generated token' };
-    const token = await addUserTokenByAdmin(context, user, input.target_user_id, inputToken);
+  if (emailTemplate.template_body.includes("$user.api_token")) {
+    const inputToken = { name: "Template generated token" };
+    const token = await addUserTokenByAdmin(
+      context,
+      user,
+      input.target_user_id,
+      inputToken,
+    );
     templateUser.api_token = token.plaintext_token;
   }
 
   const preprocessedTemplate = emailTemplate.template_body
-    .replace(/\$user\.firstname/g, '<%= user.firstname %>')
-    .replace(/\$user\.lastname/g, '<%= user.lastname %>')
-    .replace(/\$user\.name/g, '<%= user.name %>')
-    .replace(/\$user\.user_email/g, '<%= user.user_email %>')
-    .replace(/\$user\.api_token/g, '<%= user.api_token %>')
-    .replace(/\$user\.account_status/g, '<%= user.account_status %>')
-    .replace(/\$user\.objectOrganization/g, '<%= organizationNames.join(", ") %>')
-    .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
-    .replace(/\$settings\.platform_url/g, '<%= platformUrl %>');
+    .replace(/\$user\.firstname/g, "<%= user.firstname %>")
+    .replace(/\$user\.lastname/g, "<%= user.lastname %>")
+    .replace(/\$user\.name/g, "<%= user.name %>")
+    .replace(/\$user\.user_email/g, "<%= user.user_email %>")
+    .replace(/\$user\.api_token/g, "<%= user.api_token %>")
+    .replace(/\$user\.account_status/g, "<%= user.account_status %>")
+    .replace(
+      /\$user\.objectOrganization/g,
+      '<%= organizationNames.join(", ") %>',
+    )
+    .replace(
+      /\$user\.account_lock_after_date/g,
+      "<%= user.account_lock_after_date %>",
+    )
+    .replace(/\$settings\.platform_url/g, "<%= platformUrl %>");
 
   const renderedHtml = await safeRender(preprocessedTemplate, {
     platformUrl: settings.platform_url,
@@ -700,14 +1113,14 @@ export const sendEmailToUser = async (context, user, input) => {
 
   await sendMail(sendMailArgs, {
     identifier: `user-${targetUser.id}`,
-    category: 'user-notification',
+    category: "user-notification",
   });
   await addUserEmailSendCount();
   await publishUserAction({
     user,
-    event_type: 'command',
-    event_scope: 'send',
-    event_access: 'administration',
+    event_type: "command",
+    event_scope: "send",
+    event_access: "administration",
     context_data: {
       id: targetUser.id,
       entity_type: ENTITY_TYPE_USER,
@@ -726,24 +1139,48 @@ export const addUser = async (context, user, newUser) => {
   const userServiceAccount = newUser.user_service_account;
   if (newUser.user_email && !userServiceAccount) {
     userEmail = newUser.user_email.toLowerCase();
-    const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+    const existingUser = await elLoadBy(
+      context,
+      SYSTEM_USER,
+      "user_email",
+      userEmail,
+      ENTITY_TYPE_USER,
+    );
     if (existingUser) {
-      throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+      throw FunctionalError("User already exists", {
+        user_id: existingUser.internal_id,
+      });
     }
   } else if (userServiceAccount) {
-    userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
+    userEmail = newUser.user_email
+      ? newUser.user_email
+      : `automatic+${uuid()}@opencti.invalid`;
   } else {
-    throw FunctionalError('User cannot be created without email');
+    throw FunctionalError("User cannot be created without email");
   }
 
-  if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+  if (
+    isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) &&
+    !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  ) {
     // user is Organization Admin
     // Check organization
-    const myOrganizationIds = user.administrated_organizations.map((organization) => organization.id);
-    if (newUser.objectOrganization.length === 0 || !newUser.objectOrganization.every((orga) => myOrganizationIds.includes(orga))) {
+    const myOrganizationIds = user.administrated_organizations.map(
+      (organization) => organization.id,
+    );
+    if (
+      newUser.objectOrganization.length === 0 ||
+      !newUser.objectOrganization.every((orga) =>
+        myOrganizationIds.includes(orga),
+      )
+    ) {
       throw ForbiddenAccess();
     }
-    const myGroupIds = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+    const myGroupIds = R.uniq(
+      user.administrated_organizations
+        .map((orga) => orga.grantable_groups)
+        .flat(),
+    );
     if (!newUser.groups.every((group) => myGroupIds.includes(group))) {
       throw ForbiddenAccess();
     }
@@ -751,26 +1188,33 @@ export const addUser = async (context, user, newUser) => {
   // Create the user
   let userPassword = newUser.password;
   // If user is external and password is not specified, associate a random password
-  if ((newUser.external === true && isEmptyField(userPassword)) || userServiceAccount) {
+  if (
+    (newUser.external === true && isEmptyField(userPassword)) ||
+    userServiceAccount
+  ) {
     userPassword = uuid();
-  } else { // If local user, check the password policy
+  } else {
+    // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
   let userToCreate = R.pipe(
-    R.assoc('user_email', userEmail),
-    R.assoc('password', bcrypt.hashSync(userPassword)),
-    R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
-    R.assoc('language', newUser.language ? newUser.language : 'auto'),
-    R.assoc('external', newUser.external ? newUser.external : false),
-    R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
-    R.assoc('account_lock_after_date', newUser.account_lock_after_date),
-    R.assoc('unit_system', newUser.unit_system),
-    R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
-    R.assoc('personal_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
-    R.dissoc('roles'),
-    R.dissoc('groups'),
-    R.dissoc('prevent_default_groups'),
-    R.dissoc('email_template_id'),
+    R.assoc("user_email", userEmail),
+    R.assoc("password", bcrypt.hashSync(userPassword)),
+    R.assoc("theme", newUser.theme ? newUser.theme : "default"),
+    R.assoc("language", newUser.language ? newUser.language : "auto"),
+    R.assoc("external", newUser.external ? newUser.external : false),
+    R.assoc(
+      "account_status",
+      newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS,
+    ),
+    R.assoc("account_lock_after_date", newUser.account_lock_after_date),
+    R.assoc("unit_system", newUser.unit_system),
+    R.assoc("user_confidence_level", newUser.user_confidence_level ?? null), // can be null
+    R.assoc("personal_notifiers", [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
+    R.dissoc("roles"),
+    R.dissoc("groups"),
+    R.dissoc("prevent_default_groups"),
+    R.dissoc("email_template_id"),
   )(newUser);
 
   userToCreate = {
@@ -785,7 +1229,13 @@ export const addUser = async (context, user, newUser) => {
     };
   }
 
-  const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    userToCreate,
+    ENTITY_TYPE_USER,
+    { complete: true },
+  );
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
   const relationOrganizations = userOrganizations.map((organizationId) => ({
@@ -793,7 +1243,11 @@ export const addUser = async (context, user, newUser) => {
     toId: organizationId,
     relationship_type: RELATION_PARTICIPATE_TO,
   }));
-  await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
+  await Promise.all(
+    relationOrganizations.map((relation) =>
+      createRelation(context, user, relation),
+    ),
+  );
   // Add the provided groups
   let relationGroups = [];
   if ((newUser.groups ?? []).length > 0) {
@@ -806,11 +1260,13 @@ export const addUser = async (context, user, newUser) => {
   // if prevent_default_groups is not true, assign the default groups to the user
   if (newUser.prevent_default_groups !== true) {
     const defaultAssignationFilter = {
-      mode: 'and',
-      filters: [{ key: 'default_assignation', values: [true] }],
+      mode: "and",
+      filters: [{ key: "default_assignation", values: [true] }],
       filterGroups: [],
     };
-    const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
+    const defaultGroups = await findGroups(context, user, {
+      filters: defaultAssignationFilter,
+    });
     const relationDefaultGroups = defaultGroups.edges
       .filter((e) => !(newUser.groups ?? []).includes(e.node.internal_id)) // remove groups already in new user group input
       .map((e) => ({
@@ -820,17 +1276,25 @@ export const addUser = async (context, user, newUser) => {
       }));
     relationGroups = [...relationGroups, ...relationDefaultGroups];
   }
-  await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
+  await Promise.all(
+    relationGroups.map((relation) => createRelation(context, user, relation)),
+  );
   // Audit log
   if (isCreation) {
-    const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : newUser.user_email;
+    const actionEmail = ENABLED_DEMO_MODE
+      ? REDACTED_USER.user_email
+      : newUser.user_email;
     await publishUserAction({
       user,
-      event_type: 'mutation',
-      event_scope: 'create',
-      event_access: 'administration',
+      event_type: "mutation",
+      event_scope: "create",
+      event_access: "administration",
       message: `creates user \`${actionEmail}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_USER, input: newUser },
+      context_data: {
+        id: element.id,
+        entity_type: ENTITY_TYPE_USER,
+        input: newUser,
+      },
     });
   }
 
@@ -843,20 +1307,29 @@ export const addUser = async (context, user, newUser) => {
     try {
       await sendEmailToUser(context, user, input);
     } catch (_err) {
-      logApp.error('Error sending email on user creation', { createdUserID: user.id, emailTemplateId: newUser.email_template_id });
+      logApp.error("Error sending email on user creation", {
+        createdUserID: user.id,
+        emailTemplateId: newUser.email_template_id,
+      });
     }
   }
   return element;
 };
 
 export const roleEditField = async (context, user, roleId, input) => {
-  const { element } = await updateAttribute(context, user, roleId, ENTITY_TYPE_ROLE, input);
+  const { element } = await updateAttribute(
+    context,
+    user,
+    roleId,
+    ENTITY_TYPE_ROLE,
+    input,
+  );
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for role \`${element.name}\``,
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
+    message: `updates \`${input.map((i) => i.key).join(", ")}\` for role \`${element.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input },
   });
   await roleUsersCacheRefresh(context, user, roleId);
@@ -866,20 +1339,29 @@ export const roleEditField = async (context, user, roleId, input) => {
 export const roleAddRelation = async (context, user, roleId, input) => {
   const role = await storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
-    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`, { id: roleId });
+    throw FunctionalError(
+      `Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`,
+      { id: roleId },
+    );
   }
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
+    throw FunctionalError(
+      `Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`,
+    );
   }
-  const finalInput = R.assoc('fromId', roleId, input);
+  const finalInput = R.assoc("fromId", roleId, input);
   const relationData = await createRelation(context, user, finalInput);
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
     message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentativeName(relationData.to)}\` for role \`${role.name}\``,
-    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: finalInput },
+    context_data: {
+      id: roleId,
+      entity_type: ENTITY_TYPE_ROLE,
+      input: finalInput,
+    },
   });
   await roleUsersCacheRefresh(context, user, roleId);
   if (input.relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
@@ -888,21 +1370,38 @@ export const roleAddRelation = async (context, user, roleId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
 
-export const roleDeleteRelation = async (context, user, roleId, toId, relationshipType) => {
+export const roleDeleteRelation = async (
+  context,
+  user,
+  roleId,
+  toId,
+  relationshipType,
+) => {
   const role = await storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
-    throw FunctionalError('Cannot delete the relation, Role cannot be found.', { id: roleId });
+    throw FunctionalError("Cannot delete the relation, Role cannot be found.", {
+      id: roleId,
+    });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
+    throw FunctionalError(
+      `Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`,
+    );
   }
-  const deleted = await deleteRelationsByFromAndTo(context, user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const deleted = await deleteRelationsByFromAndTo(
+    context,
+    user,
+    roleId,
+    toId,
+    relationshipType,
+    ABSTRACT_INTERNAL_RELATIONSHIP,
+  );
   const input = { fromId: roleId, toId, relationship_type: relationshipType };
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
     message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentativeName(deleted.to)}\` for role \`${role.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input },
   });
@@ -916,19 +1415,32 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 // User related
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
-  const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
+  const userToUpdate = await loadUserToUpdateWithAccessCheck(
+    context,
+    user,
+    userId,
+  );
   let skipThisInput = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
-    if (userToUpdate.external && input.key === 'name') {
-      throw FunctionalError('Name cannot be updated for external user', { userId });
+    if (userToUpdate.external && input.key === "name") {
+      throw FunctionalError("Name cannot be updated for external user", {
+        userId,
+      });
     }
-    if (userToUpdate.external && input.key === 'user_email') {
-      throw FunctionalError('Email cannot be updated for external user', { userId });
+    if (userToUpdate.external && input.key === "user_email") {
+      throw FunctionalError("Email cannot be updated for external user", {
+        userId,
+      });
     }
-    if (input.key === 'password') {
-      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
+    if (input.key === "password") {
+      const userServiceAccountInput = rawInputs.find(
+        (x) => x.key === "user_service_account",
+      );
+      if (
+        userServiceAccountInput &&
+        userToUpdate.user_service_account !== userServiceAccountInput.value[0]
+      ) {
         skipThisInput = true;
       }
 
@@ -937,57 +1449,90 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         await checkPasswordFromPolicy(context, userPassword);
         input.value = [bcrypt.hashSync(userPassword)];
       } else {
-        throw FunctionalError('Cannot update password for Service account', { userId });
+        throw FunctionalError("Cannot update password for Service account", {
+          userId,
+        });
       }
     }
-    if (input.key === 'account_status') {
+    if (input.key === "account_status") {
       // If account status is not active, kill all current user sessions
       if (R.head(input.value) !== ACCOUNT_STATUS_ACTIVE) {
         await killUserSessions(userId);
       }
       // If moving to unexpired status and expiration date is already in the past, reset the value
-      if (R.head(input.value) !== ACCOUNT_STATUS_EXPIRED && userToUpdate.account_lock_after_date
-        && utcDate().isAfter(userToUpdate.account_lock_after_date)) {
-        inputs.push({ key: 'account_lock_after_date', value: [null] });
+      if (
+        R.head(input.value) !== ACCOUNT_STATUS_EXPIRED &&
+        userToUpdate.account_lock_after_date &&
+        utcDate().isAfter(userToUpdate.account_lock_after_date)
+      ) {
+        inputs.push({ key: "account_lock_after_date", value: [null] });
       }
     }
-    if (input.key === 'account_lock_after_date' && utcDate().isAfter(utcDate(R.head(input.value)))) {
-      inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
+    if (
+      input.key === "account_lock_after_date" &&
+      utcDate().isAfter(utcDate(R.head(input.value)))
+    ) {
+      inputs.push({ key: "account_status", value: [ACCOUNT_STATUS_EXPIRED] });
       await killUserSessions(userId);
     }
-    if (input.key === 'draft_context') {
+    if (input.key === "draft_context") {
       // draft context might have changed, we need to check draft context exists and refresh session info
       const draftContext = R.head(input.value)?.toString();
       if (draftContext?.length > 0) {
-        const draftWorkspaces = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
+        const draftWorkspaces = await getEntitiesMapFromCache(
+          context,
+          SYSTEM_USER,
+          ENTITY_TYPE_DRAFT_WORKSPACE,
+        );
         const draftWorkspace = draftWorkspaces.get(draftContext);
-        if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
-        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft not in an open state');
+        if (!draftWorkspace)
+          throw DraftLockedError("Could not find draft workspace");
+        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN)
+          throw DraftLockedError(
+            "Can not move to a draft not in an open state",
+          );
       }
     }
-    if (input.key === 'unit_system') {
+    if (input.key === "unit_system") {
       const unit = R.head(input.value).toString();
-      if (!Object.keys(UnitSystem).map((option) => option.toLowerCase()).includes(unit.toLowerCase())) {
-        throw UnsupportedError('Unsupported unit system', { unit });
+      if (
+        !Object.keys(UnitSystem)
+          .map((option) => option.toLowerCase())
+          .includes(unit.toLowerCase())
+      ) {
+        throw UnsupportedError("Unsupported unit system", { unit });
       }
     }
     // Check language is valid in case of language change
-    if (input.key === 'language') {
-      if (!(input.value.length === 1 && AVAILABLE_LANGUAGES.includes(input.value[0]))) {
-        throw FunctionalError('The language you have provided is not valid');
+    if (input.key === "language") {
+      if (
+        !(
+          input.value.length === 1 &&
+          AVAILABLE_LANGUAGES.includes(input.value[0])
+        )
+      ) {
+        throw FunctionalError("The language you have provided is not valid");
       }
     }
 
     // Turn User into Service Account
-    if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
-      inputs.push({ key: 'password', value: [null] });
+    if (
+      input.key === "user_service_account" &&
+      !userToUpdate.user_service_account &&
+      input.value[0] === true
+    ) {
+      inputs.push({ key: "password", value: [null] });
       await addUserIntoServiceAccountCount();
     }
     // Turn Service Account into User
-    if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
+    if (
+      input.key === "user_service_account" &&
+      userToUpdate.user_service_account &&
+      input.value[0] === false
+    ) {
       const userPassword = uuid();
       await checkPasswordFromPolicy(context, userPassword);
-      inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+      inputs.push({ key: "password", value: [bcrypt.hashSync(userPassword)] });
       await addServiceAccountIntoUserCount();
     }
 
@@ -995,42 +1540,67 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push(input);
     }
   }
-  const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
+  const { element } = await updateAttribute(
+    context,
+    user,
+    userId,
+    ENTITY_TYPE_USER,
+    inputs,
+  );
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
-  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
+  const actionEmail = ENABLED_DEMO_MODE
+    ? REDACTED_USER.user_email
+    : element.user_email;
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
+    message: `updates \`${inputs.map((i) => i.key).join(", ")}\` for ${personalUpdate ? "`themselves`" : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
 export const deleteBookmark = async (context, user, id) => {
-  const currentUser = await storeLoadById(context, user, user.id, ENTITY_TYPE_USER);
+  const currentUser = await storeLoadById(
+    context,
+    user,
+    user.id,
+    ENTITY_TYPE_USER,
+  );
   const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
   const newBookmarks = R.filter((n) => n.id !== id, currentBookmarks);
-  await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
+  await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, {
+    bookmarks: newBookmarks,
+  });
   return id;
 };
 
 export const bookmarks = async (context, user, args) => {
   const { types = [], filters = null } = args;
-  const currentUser = await storeLoadById(context, user, user.id, ENTITY_TYPE_USER);
+  const currentUser = await storeLoadById(
+    context,
+    user,
+    user.id,
+    ENTITY_TYPE_USER,
+  );
   // handle types
-  let bookmarkList = types && types.length > 0
-    ? (currentUser.bookmarks ?? []).filter((n) => types.includes(n.type))
-    : currentUser.bookmarks || [];
+  let bookmarkList =
+    types && types.length > 0
+      ? (currentUser.bookmarks ?? []).filter((n) => types.includes(n.type))
+      : currentUser.bookmarks || [];
   // handle filters
   if (filters) {
     // check filters are supported
     // i.e. filters can only contain filters with key=entity_type
-    if (extractFilterKeys(filters).filter((f) => f !== 'entity_type').length > 0) {
-      throw UnsupportedError('Bookmarks widgets only support filter with key=entity_type.');
+    if (
+      extractFilterKeys(filters).filter((f) => f !== "entity_type").length > 0
+    ) {
+      throw UnsupportedError(
+        "Bookmarks widgets only support filter with key=entity_type.",
+      );
     }
     // filter the bookmark list according to the filters
     const entityTypeBookmarkTester = {
@@ -1039,12 +1609,19 @@ export const bookmarks = async (context, user, args) => {
         return testStringFilter(filter, values);
       },
     };
-    bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
+    bookmarkList = bookmarkList.filter((mark) =>
+      testFilterGroup(mark, filters, entityTypeBookmarkTester),
+    );
   }
   const filteredBookmarks = [];
 
   for (const bookmark of bookmarkList) {
-    const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
+    const loadedBookmark = await storeLoadById(
+      context,
+      user,
+      bookmark.id,
+      bookmark.type,
+    );
     if (isNotEmptyField(loadedBookmark)) {
       filteredBookmarks.push(loadedBookmark);
     } else {
@@ -1060,17 +1637,30 @@ export const bookmarks = async (context, user, args) => {
 };
 
 export const addBookmark = async (context, user, id, type) => {
-  const currentUser = await storeLoadById(context, user, user.id, ENTITY_TYPE_USER);
+  const currentUser = await storeLoadById(
+    context,
+    user,
+    user.id,
+    ENTITY_TYPE_USER,
+  );
   const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
   const newBookmarks = R.append(
     { id, type },
     R.filter((n) => n.id !== id, currentBookmarks),
   );
-  await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
+  await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, {
+    bookmarks: newBookmarks,
+  });
   return storeLoadById(context, user, id, type);
 };
 
-export const meEditField = async (context, user, userId, inputs, password = null) => {
+export const meEditField = async (
+  context,
+  user,
+  userId,
+  inputs,
+  password = null,
+) => {
   inputs.forEach((input) => {
     const { key } = input;
     // Check if field can be updated by the user
@@ -1086,11 +1676,13 @@ export const meEditField = async (context, user, userId, inputs, password = null
       throw ForbiddenAccess();
     }
     // Check password confirmation in case of password change
-    if (key === 'password') {
+    if (key === "password") {
       const dbPassword = user.password;
       const match = bcrypt.compareSync(password, dbPassword);
       if (!match) {
-        throw FunctionalError('The current password you have provided is not valid');
+        throw FunctionalError(
+          "The current password you have provided is not valid",
+        );
       }
     }
   });
@@ -1099,8 +1691,12 @@ export const meEditField = async (context, user, userId, inputs, password = null
 
 export const isUserTheLastAdmin = (userId, authorized_members) => {
   if (authorized_members !== null && authorized_members !== undefined) {
-    const currentUserIsAdmin = authorized_members.some(({ id, access_right }) => id === userId && access_right === 'admin');
-    const anotherUserIsAdmin = authorized_members.some(({ id, access_right }) => id !== userId && access_right === 'admin');
+    const currentUserIsAdmin = authorized_members.some(
+      ({ id, access_right }) => id === userId && access_right === "admin",
+    );
+    const anotherUserIsAdmin = authorized_members.some(
+      ({ id, access_right }) => id !== userId && access_right === "admin",
+    );
 
     return currentUserIsAdmin && !anotherUserIsAdmin;
   }
@@ -1111,10 +1707,14 @@ export const isUserTheLastAdmin = (userId, authorized_members) => {
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   const userToDeleteAuth = await findById(context, authUser, userId);
 
-  const workspacesToDelete = await fullEntitiesList(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE]);
+  const workspacesToDelete = await fullEntitiesList(context, userToDeleteAuth, [
+    ENTITY_TYPE_WORKSPACE,
+  ]);
 
   const workspaceToDeleteIds = workspacesToDelete
-    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.restricted_members))
+    .filter((workspaceEntity) =>
+      isUserTheLastAdmin(userId, workspaceEntity.restricted_members),
+    )
     .map((workspaceEntity) => workspaceEntity.internal_id);
 
   if (workspaceToDeleteIds.length > 0) {
@@ -1125,14 +1725,17 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
         query: {
           bool: {
             must: [
-              { term: { 'entity_type.keyword': { value: 'Workspace' } } },
-              { terms: { 'internal_id.keyword': workspaceToDeleteIds } },
+              { term: { "entity_type.keyword": { value: "Workspace" } } },
+              { terms: { "internal_id.keyword": workspaceToDeleteIds } },
             ],
           },
         },
       },
     }).catch((err) => {
-      throw DatabaseError('[DELETE] Error deleting Workspace for user ', { cause: err, user_id: userId });
+      throw DatabaseError("[DELETE] Error deleting Workspace for user ", {
+        cause: err,
+        user_id: userId,
+      });
     });
   }
   return true;
@@ -1146,12 +1749,14 @@ export const deleteAllTriggerAndDigestByUser = async (userId) => {
       query: {
         bool: {
           must: [
-            { term: { 'entity_type.keyword': { value: 'Trigger' } } },
+            { term: { "entity_type.keyword": { value: "Trigger" } } },
             {
               nested: {
                 path: authorizedMembers.name,
                 query: {
-                  term: { [`${authorizedMembers.name}.id.keyword`]: { value: userId } },
+                  term: {
+                    [`${authorizedMembers.name}.id.keyword`]: { value: userId },
+                  },
                 },
               },
             },
@@ -1160,7 +1765,10 @@ export const deleteAllTriggerAndDigestByUser = async (userId) => {
       },
     },
   }).catch((err) => {
-    throw DatabaseError('[DELETE] Error deleting Trigger for user', { cause: err, user_id: userId });
+    throw DatabaseError("[DELETE] Error deleting Trigger for user", {
+      cause: err,
+      user_id: userId,
+    });
   });
 };
 export const deleteAllNotificationByUser = async (userId) => {
@@ -1171,14 +1779,17 @@ export const deleteAllNotificationByUser = async (userId) => {
       query: {
         bool: {
           must: [
-            { term: { 'entity_type.keyword': { value: 'Notification' } } },
-            { term: { 'user_id.keyword': { value: userId } } },
+            { term: { "entity_type.keyword": { value: "Notification" } } },
+            { term: { "user_id.keyword": { value: userId } } },
           ],
         },
       },
     },
   }).catch((err) => {
-    throw DatabaseError('[DELETE] Error deleting notification for user', { cause: err, user_id: userId });
+    throw DatabaseError("[DELETE] Error deleting notification for user", {
+      cause: err,
+      user_id: userId,
+    });
   });
 };
 
@@ -1204,18 +1815,27 @@ export const userDelete = async (context, user, userId) => {
   await deleteAllWorkspaceForUser(context, user, userId);
   await disablePublicSharingForDeletedUser(context, userId);
 
-  const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
-  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
+  const deleted = await deleteElementById(
+    context,
+    user,
+    userId,
+    ENTITY_TYPE_USER,
+  );
+  const actionEmail = ENABLED_DEMO_MODE
+    ? REDACTED_USER.user_email
+    : deleted.user_email;
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'delete',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "delete",
+    event_access: "administration",
     message: `deletes user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: deleted },
   });
   await killUserSessions(userId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(
+    () => userId,
+  );
 };
 
 export const userAddRelation = async (context, user, userId, input) => {
@@ -1224,58 +1844,105 @@ export const userAddRelation = async (context, user, userId, input) => {
 
   // check the relationship type
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
+    throw FunctionalError(
+      `Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`,
+    );
   }
   // Check in case organization admins adds non-grantable group a user
-  const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+  const myGrantableGroups = R.uniq(
+    user.administrated_organizations
+      .map((orga) => orga.grantable_groups)
+      .flat(),
+  );
   if (isOnlyOrgaAdmin(user)) {
-    if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
+    if (
+      input.relationship_type === "member-of" &&
+      !myGrantableGroups.includes(input.toId)
+    ) {
       throw ForbiddenAccess();
     }
   }
-  const finalInput = R.assoc('fromId', userId, input);
+  const finalInput = R.assoc("fromId", userId, input);
   const relationData = await createRelation(context, user, finalInput);
-  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
+  const actionEmail = ENABLED_DEMO_MODE
+    ? REDACTED_USER.user_email
+    : userData.user_email;
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
     message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for user \`${actionEmail}\``,
-    context_data: { id: userData.id, entity_type: ENTITY_TYPE_USER, input: finalInput },
+    context_data: {
+      id: userData.id,
+      entity_type: ENTITY_TYPE_USER,
+      input: finalInput,
+    },
   });
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(
+    () => relationData,
+  );
 };
 
-export const userDeleteRelation = async (context, user, targetUser, toId, relationshipType) => {
+export const userDeleteRelation = async (
+  context,
+  user,
+  targetUser,
+  toId,
+  relationshipType,
+) => {
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(
+      `Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`,
+    );
   }
-  const { to } = await deleteRelationsByFromAndTo(context, user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const { to } = await deleteRelationsByFromAndTo(
+    context,
+    user,
+    targetUser.id,
+    toId,
+    relationshipType,
+    ABSTRACT_INTERNAL_RELATIONSHIP,
+  );
   const input = { relationship_type: relationshipType, toId };
-  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : targetUser.user_email;
+  const actionEmail = ENABLED_DEMO_MODE
+    ? REDACTED_USER.user_email
+    : targetUser.user_email;
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
     context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
-export const userIdDeleteRelation = async (context, user, userId, toId, relationshipType) => {
+export const userIdDeleteRelation = async (
+  context,
+  user,
+  userId,
+  toId,
+  relationshipType,
+) => {
   // check the user is accessible
   const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
 
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
+    throw FunctionalError(
+      `Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`,
+    );
   }
   return userDeleteRelation(context, user, userData, toId, relationshipType);
 };
 
-export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
+export const userDeleteOrganizationRelation = async (
+  context,
+  user,
+  userId,
+  toId,
+) => {
   if (isOnlyOrgaAdmin(user)) {
     // When user is organization admin, we make sure she is also admin of organization removed
     if (!isUserAdministratingOrga(user, toId)) {
@@ -1283,24 +1950,47 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     }
   }
   // check the user is accessible
-  const targetUser = await loadUserToUpdateWithAccessCheck(context, user, userId);
+  const targetUser = await loadUserToUpdateWithAccessCheck(
+    context,
+    user,
+    userId,
+  );
 
-  const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const { to } = await deleteRelationsByFromAndTo(
+    context,
+    user,
+    userId,
+    toId,
+    RELATION_PARTICIPATE_TO,
+    ABSTRACT_INTERNAL_RELATIONSHIP,
+  );
   if (to.authorized_authorities?.includes(userId)) {
     const indexOfMember = to.authorized_authorities.indexOf(userId);
     to.authorized_authorities.splice(indexOfMember, 1);
     const patch = { authorized_authorities: to.authorized_authorities };
-    const { element } = await patchAttribute(context, user, toId, ENTITY_TYPE_IDENTITY_ORGANIZATION, patch);
-    await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+    const { element } = await patchAttribute(
+      context,
+      user,
+      toId,
+      ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      patch,
+    );
+    await notify(
+      BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC,
+      element,
+      user,
+    );
   }
 
   const input = { relationship_type: RELATION_PARTICIPATE_TO, toId };
-  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : targetUser.user_email;
+  const actionEmail = ENABLED_DEMO_MODE
+    ? REDACTED_USER.user_email
+    : targetUser.user_email;
   await publishUserAction({
     user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
+    event_type: "mutation",
+    event_scope: "update",
+    event_access: "administration",
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
     context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input },
   });
@@ -1308,64 +1998,112 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const { providerGroups = [], providerOrganizations = [], preventDefaultGroups = false } = opts;
+  const {
+    providerGroups = [],
+    providerOrganizations = [],
+    preventDefaultGroups = false,
+  } = opts;
   const { autoCreateGroup = false, autoCreateOrganization = false } = opts;
-  const context = executionContext('login_provider');
+  const context = executionContext("login_provider");
   // region test the groups / organization existence and eventually auto create
   if (providerGroups.length > 0) {
-    const providerGroupsIds = providerGroups.map((groupName) => generateStandardId(ENTITY_TYPE_GROUP, { name: groupName }));
+    const providerGroupsIds = providerGroups.map((groupName) =>
+      generateStandardId(ENTITY_TYPE_GROUP, { name: groupName }),
+    );
     const groupsFilters = {
-      mode: 'and',
-      filters: [{ key: 'standard_id', values: providerGroupsIds }],
+      mode: "and",
+      filters: [{ key: "standard_id", values: providerGroupsIds }],
       filterGroups: [],
     };
-    const foundGroups = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters: groupsFilters });
+    const foundGroups = await fullEntitiesList(
+      context,
+      SYSTEM_USER,
+      [ENTITY_TYPE_GROUP],
+      { filters: groupsFilters },
+    );
     const foundGroupsNames = foundGroups.map((group) => group.name);
     const newGroupsToCreate = [];
     providerGroups.forEach((groupName) => {
       if (!foundGroupsNames.includes(groupName)) {
         if (!autoCreateGroup) {
-          throw ForbiddenAccess('[SSO] Can\'t login. The user has groups that don\'t exist and auto_create_group = false.');
+          throw ForbiddenAccess(
+            "[SSO] Can't login. The user has groups that don't exist and auto_create_group = false.",
+          );
         } else {
-          newGroupsToCreate.push(addGroup(context, SYSTEM_USER, { name: groupName }));
+          newGroupsToCreate.push(
+            addGroup(context, SYSTEM_USER, { name: groupName }),
+          );
         }
       }
     });
     await Promise.all(newGroupsToCreate);
   }
   if (providerOrganizations.length > 0) {
-    const providerOrganizationIds = providerOrganizations.map((orgName) => generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: orgName, identity_class: 'organization' }));
+    const providerOrganizationIds = providerOrganizations.map((orgName) =>
+      generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, {
+        name: orgName,
+        identity_class: "organization",
+      }),
+    );
     const organizationsFilters = {
-      mode: 'and',
-      filters: [{ key: 'standard_id', values: providerOrganizationIds }],
+      mode: "and",
+      filters: [{ key: "standard_id", values: providerOrganizationIds }],
       filterGroups: [],
     };
-    const foundOrganizations = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters: organizationsFilters });
-    const foundOrganizationsNames = foundOrganizations.map((group) => group.name);
+    const foundOrganizations = await fullEntitiesList(
+      context,
+      SYSTEM_USER,
+      [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      { filters: organizationsFilters },
+    );
+    const foundOrganizationsNames = foundOrganizations.map(
+      (group) => group.name,
+    );
     const newOrganizationsToCreate = [];
     providerOrganizations.forEach((organizationName) => {
       if (!foundOrganizationsNames.includes(organizationName)) {
         if (!autoCreateOrganization) {
-          throw ForbiddenAccess('[SSO] Can\'t login. The user has organizations that don\'t exist and auto_create_organization = false.');
+          throw ForbiddenAccess(
+            "[SSO] Can't login. The user has organizations that don't exist and auto_create_organization = false.",
+          );
         } else {
-          newOrganizationsToCreate.push(addOrganization(context, SYSTEM_USER, { name: organizationName }));
+          newOrganizationsToCreate.push(
+            addOrganization(context, SYSTEM_USER, { name: organizationName }),
+          );
         }
       }
     });
     await Promise.all(newOrganizationsToCreate);
   }
   // endregion
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
   const { email, name: providedName, firstname, lastname } = userInfo;
   if (isEmptyField(email)) {
-    throw ForbiddenAccess('User email not provided');
+    throw ForbiddenAccess("User email not provided");
   }
   const userEmail = email.toLowerCase();
   const name = isEmptyField(providedName) ? userEmail : providedName;
-  const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+  const user = await elLoadBy(
+    context,
+    SYSTEM_USER,
+    "user_email",
+    userEmail,
+    ENTITY_TYPE_USER,
+  );
   if (!user) {
     // If user doesn't exist, create it. Providers are trusted
-    const newUser = { name, firstname, lastname, user_email: userEmail, external: true, prevent_default_groups: preventDefaultGroups };
+    const newUser = {
+      name,
+      firstname,
+      lastname,
+      user_email: userEmail,
+      external: true,
+      prevent_default_groups: preventDefaultGroups,
+    };
     return addUser(context, SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
       return loginFromProvider(userInfo, opts);
@@ -1378,16 +2116,34 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
     // 01 - Delete all groups relation from the user
-    const userGroups = await fullEntitiesThroughRelationsToList(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
-    const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    const userGroups = await fullEntitiesThroughRelationsToList(
+      context,
+      SYSTEM_USER,
+      user.id,
+      RELATION_MEMBER_OF,
+      ENTITY_TYPE_GROUP,
+    );
+    const deleteGroups = userGroups.filter(
+      (o) => !providerGroups.includes(o.name),
+    );
     for (let index = 0; index < deleteGroups.length; index += 1) {
       const deleteGroup = deleteGroups[index];
-      await userDeleteRelation(context, SYSTEM_USER, user, deleteGroup.id, RELATION_MEMBER_OF);
+      await userDeleteRelation(
+        context,
+        SYSTEM_USER,
+        user,
+        deleteGroup.id,
+        RELATION_MEMBER_OF,
+      );
     }
     // 02 - Create groups from providers
-    const createGroups = providerGroups.filter((n) => !userGroups.map((o) => o.name).includes(n));
+    const createGroups = providerGroups.filter(
+      (n) => !userGroups.map((o) => o.name).includes(n),
+    );
     if (createGroups.length > 0) {
-      const groupsCreation = createGroups.map((group) => assignGroupToUser(context, SYSTEM_USER, user.id, group));
+      const groupsCreation = createGroups.map((group) =>
+        assignGroupToUser(context, SYSTEM_USER, user.id, group),
+      );
       await Promise.all(groupsCreation);
     }
   }
@@ -1396,20 +2152,46 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // If organizations are specified here, that overwrite the default assignation
   if (providerOrganizations.length > 0) {
     // 01 - Delete all organizations no longer assign to the user
-    const userOrganizations = await fullEntitiesThroughRelationsToList(context, SYSTEM_USER, user.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    const deleteOrganizations = userOrganizations.filter((o) => !providerOrganizations.includes(o.name));
+    const userOrganizations = await fullEntitiesThroughRelationsToList(
+      context,
+      SYSTEM_USER,
+      user.id,
+      RELATION_PARTICIPATE_TO,
+      ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    );
+    const deleteOrganizations = userOrganizations.filter(
+      (o) => !providerOrganizations.includes(o.name),
+    );
     for (let index = 0; index < deleteOrganizations.length; index += 1) {
       const userOrganization = deleteOrganizations[index];
-      await userDeleteRelation(context, SYSTEM_USER, user, userOrganization.id, RELATION_PARTICIPATE_TO);
+      await userDeleteRelation(
+        context,
+        SYSTEM_USER,
+        user,
+        userOrganization.id,
+        RELATION_PARTICIPATE_TO,
+      );
     }
     // 02 - Create organizations if needed
-    const createOrganizations = providerOrganizations.filter((n) => !userOrganizations.map((o) => o.name).includes(n));
+    const createOrganizations = providerOrganizations.filter(
+      (n) => !userOrganizations.map((o) => o.name).includes(n),
+    );
     if (createOrganizations.length > 0) {
       const organizationsCreation = createOrganizations.map((orga) => {
         if (orga === PLATFORM_ORGANIZATION && settings.platform_organization) {
-          return assignOrganizationToUser(context, SYSTEM_USER, user.id, settings.platform_organization);
+          return assignOrganizationToUser(
+            context,
+            SYSTEM_USER,
+            user.id,
+            settings.platform_organization,
+          );
         }
-        return assignOrganizationNameToUser(context, SYSTEM_USER, user.id, orga);
+        return assignOrganizationNameToUser(
+          context,
+          SYSTEM_USER,
+          user.id,
+          orga,
+        );
       });
       await Promise.all(organizationsCreation);
     }
@@ -1419,8 +2201,14 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
 };
 
 export const getUserByEmail = async (email) => {
-  const context = executionContext('login');
-  return await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
+  const context = executionContext("login");
+  return await elLoadBy(
+    context,
+    SYSTEM_USER,
+    "user_email",
+    email,
+    ENTITY_TYPE_USER,
+  );
 };
 
 export const login = async (email, password) => {
@@ -1434,16 +2222,27 @@ export const login = async (email, password) => {
 
 export const otpUserGeneration = (user) => {
   const secret = totp.generateSecret();
-  const uri = totp.generateURI({ label: user.user_email, issuer: 'OpenCTI', secret });
+  const uri = totp.generateURI({
+    label: user.user_email,
+    issuer: "OpenCTI",
+    secret,
+  });
   return { secret, uri };
 };
 
 export const userAddIndividual = async (context, user) => {
   const targetUser = await findById(context, user, user.id);
-  const individualInput = { name: targetUser.name, contact_information: targetUser.user_email };
+  const individualInput = {
+    name: targetUser.name,
+    contact_information: targetUser.user_email,
+  };
   // We need to bypass validation here has we maybe not setup all require fields
-  const individual = await addIndividual(context, targetUser, individualInput, { bypassValidation: true });
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user).then(() => individual);
+  const individual = await addIndividual(context, targetUser, individualInput, {
+    bypassValidation: true,
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user).then(
+    () => individual,
+  );
 };
 
 export const resolveUserIndividual = async (context, user) => {
@@ -1460,13 +2259,25 @@ export const resolveUserIndividual = async (context, user) => {
 export const otpUserActivation = async (context, user, { secret, code }) => {
   // User activation can only be done if otp is not already activated
   if (user.otp_activated) {
-    throw UnsupportedError('You need to deactivate your current 2FA before generating a new one');
+    throw UnsupportedError(
+      "You need to deactivate your current 2FA before generating a new one",
+    );
   }
   const { valid } = await totp.verify({ secret, token: code });
   if (valid) {
-    const uri = totp.generateURI({ label: user.user_email, issuer: 'OpenCTI', secret });
+    const uri = totp.generateURI({
+      label: user.user_email,
+      issuer: "OpenCTI",
+      secret,
+    });
     const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
-    const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
+    const { element } = await patchAttribute(
+      context,
+      user,
+      user.id,
+      ENTITY_TYPE_USER,
+      patch,
+    );
     context.req.session.user.otp_validated = valid;
     return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
   }
@@ -1475,10 +2286,18 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
 
 export const otpUserDeactivation = async (context, user, id) => {
   if (!context.user_with_session) {
-    throw UnsupportedError('You need to deactivate your current 2FA in a valid user session');
+    throw UnsupportedError(
+      "You need to deactivate your current 2FA in a valid user session",
+    );
   }
-  const patch = { otp_activated: false, otp_secret: '', otp_qr: '' };
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_USER, patch);
+  const patch = { otp_activated: false, otp_secret: "", otp_qr: "" };
+  const { element } = await patchAttribute(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_USER,
+    patch,
+  );
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -1489,7 +2308,7 @@ export const sessionLogin = async (context, input) => {
   const deferredErrors = [];
   // Try registered providers first
   const body = { username: input.email, password: input.password };
-  const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
+  const formProviders = R.filter((p) => p.type === "FORM", PROVIDERS);
   for (let index = 0; index < formProviders.length; index += 1) {
     const auth = formProviders[index];
     const { user, provider } = await new Promise((resolve) => {
@@ -1497,9 +2316,15 @@ export const sessionLogin = async (context, input) => {
         if (err || info) {
           const authLogger = passport._strategy(auth.provider).logger;
           if (authLogger) {
-            deferredErrors.push(authLogger.deferError('Authentication error', { info }, err));
+            deferredErrors.push(
+              authLogger.deferError("Authentication error", { info }, err),
+            );
           } else {
-            logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
+            logApp.warn("Token authenticate error", {
+              cause: err,
+              info,
+              provider: auth.provider,
+            });
           }
         }
         resolve({ user: authUser, provider: auth.provider });
@@ -1507,7 +2332,12 @@ export const sessionLogin = async (context, input) => {
     });
     // As soon as credential is validated, stop looking for another provider
     if (user) {
-      loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
+      loggedUser = await sessionAuthenticateUser(
+        context,
+        context.req,
+        user,
+        provider,
+      );
       break;
     }
   }
@@ -1515,16 +2345,34 @@ export const sessionLogin = async (context, input) => {
   if (!loggedUser) {
     const settings = await getSettings(context);
     const { user, provider } = await new Promise((resolve) => {
-      passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err, authUser, info) => {
-        if (err || info) {
-          logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
-        }
-        resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
-      })({ body });
+      passport.authenticate(
+        LOCAL_STRATEGY_IDENTIFIER,
+        {},
+        (err, authUser, info) => {
+          if (err || info) {
+            logApp.warn("Token authenticate error", {
+              cause: err,
+              info,
+              provider: LOCAL_STRATEGY_IDENTIFIER,
+            });
+          }
+          resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
+        },
+      )({ body });
     });
     // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
-    if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
-      loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
+    if (
+      user &&
+      (isLocalAuthForcedEnabledFromEnv() ||
+        settings.local_auth?.enabled ||
+        user.id === OPENCTI_ADMIN_UUID)
+    ) {
+      loggedUser = await sessionAuthenticateUser(
+        context,
+        context.req,
+        user,
+        provider,
+      );
     }
   }
   if (loggedUser) {
@@ -1535,14 +2383,21 @@ export const sessionLogin = async (context, input) => {
   const auditUser = userWithOrigin(context.req, { user_email: input.email });
   await publishUserAction({
     user: auditUser,
-    event_type: 'authentication',
-    event_scope: 'login',
-    event_access: 'administration',
-    status: 'error',
-    context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' },
+    event_type: "authentication",
+    event_scope: "login",
+    event_access: "administration",
+    status: "error",
+    context_data: {
+      username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email,
+      provider: "form",
+    },
   });
   // User cannot be authenticated in any providers
-  logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
+  logAuthInfo(
+    "User cannot be authenticated in any providers",
+    EnvStrategyType.STRATEGY_LOCAL,
+    { username: input.email },
+  );
   throw AuthenticationFailure();
 };
 
@@ -1563,8 +2418,8 @@ const virtualOrganizationAdminCapability = {
   id: uuid(),
   standard_id: `capability--${uuid()}`,
   name: VIRTUAL_ORGANIZATION_ADMIN,
-  entity_type: 'Capability',
-  parent_types: ['Basic-Object', 'Internal-Object'],
+  entity_type: "Capability",
+  parent_types: ["Basic-Object", "Internal-Object"],
   created_at: Date.now(),
   updated_at: Date.now(),
 };
@@ -1573,17 +2428,50 @@ export const isSensitiveChangesAllowed = (userId, roles) => {
   if (userId === OPENCTI_ADMIN_UUID) {
     return true;
   }
-  return roles.some(({ can_manage_sensitive_config }) => can_manage_sensitive_config);
+  return roles.some(
+    ({ can_manage_sensitive_config }) => can_manage_sensitive_config,
+  );
 };
 
 export const buildCompleteUsers = async (context, clients) => {
   const resolvedUsers = [];
-  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
-  const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, noFiltersChecking: true };
-  const individualsPromise = fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
-  const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
-  const relations = await fullRelationsList(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
+  const markingsMap = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
+  const contactInformationFilter = {
+    mode: "and",
+    filters: [
+      { key: "contact_information", values: clients.map((c) => c.user_email) },
+    ],
+    filterGroups: [],
+  };
+  const individualArgs = {
+    indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+    filters: contactInformationFilter,
+    noFiltersChecking: true,
+  };
+  const individualsPromise = fullEntitiesList(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_IDENTITY_INDIVIDUAL],
+    individualArgs,
+  );
+  const authRelationships = [
+    RELATION_PARTICIPATE_TO,
+    RELATION_MEMBER_OF,
+    RELATION_HAS_CAPABILITY,
+    RELATION_HAS_CAPABILITY_IN_DRAFT,
+    RELATION_HAS_ROLE,
+    RELATION_ACCESSES_TO,
+  ];
+  const relations = await fullRelationsList(
+    context,
+    SYSTEM_USER,
+    authRelationships,
+    { indices: READ_RELATIONSHIPS_INDICES },
+  );
   const users = new Map();
   const roleIds = new Set();
   const groupIds = new Set();
@@ -1671,45 +2559,96 @@ export const buildCompleteUsers = async (context, clients) => {
       }
     }
   }
-  const ids = [...Array.from(groupIds), ...Array.from(roleIds), ...Array.from(organizationIds), ...Array.from(capabilityIds)];
-  const resolvedObject = await internalFindByIds(context, SYSTEM_USER, ids, { toMap: true });
+  const ids = [
+    ...Array.from(groupIds),
+    ...Array.from(roleIds),
+    ...Array.from(organizationIds),
+    ...Array.from(capabilityIds),
+  ];
+  const resolvedObject = await internalFindByIds(context, SYSTEM_USER, ids, {
+    toMap: true,
+  });
   const individuals = await individualsPromise;
   const individualMap = new Map();
-  for (let indexIndividual = 0; indexIndividual < individuals.length; indexIndividual += 1) {
+  for (
+    let indexIndividual = 0;
+    indexIndividual < individuals.length;
+    indexIndividual += 1
+  ) {
     const individual = individuals[indexIndividual];
     individualMap.set(individual.contact_information, individual);
   }
   for (let userIndex = 0; userIndex < clients.length; userIndex += 1) {
     const client = clients[userIndex];
     const user = users.get(client.internal_id);
-    const groups = (user?.groupIds ?? []).map((groupId) => resolvedObject[groupId])
+    const groups = (user?.groupIds ?? [])
+      .map((groupId) => resolvedObject[groupId])
       .filter((e) => isNotEmptyField(e));
-    const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat())
-      .map((roleId) => resolvedObject[roleId]).filter((e) => isNotEmptyField(e));
-    const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat())
-      .map((markingId) => markingsMap.get(markingId)).filter((e) => isNotEmptyField(e));
-    const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
-    const capabilities = R.uniq(roles.map((role) => rolesCapabilities.get(role.internal_id)).flat())
-      .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
-    const capabilitiesInDraft = R.uniq(roles.map((role) => rolesCapabilitiesInDraft.get(role.internal_id)).flat())
-      .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
+    const roles = R.uniq(
+      groups.map((group) => groupsRoles.get(group.internal_id)).flat(),
+    )
+      .map((roleId) => resolvedObject[roleId])
+      .filter((e) => isNotEmptyField(e));
+    const markings = R.uniq(
+      groups.map((group) => groupsMarkings.get(group.internal_id)).flat(),
+    )
+      .map((markingId) => markingsMap.get(markingId))
+      .filter((e) => isNotEmptyField(e));
+    const canManageSensitiveConfig = {
+      can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles),
+    };
+    const capabilities = R.uniq(
+      roles.map((role) => rolesCapabilities.get(role.internal_id)).flat(),
+    )
+      .map((capabilityId) => resolvedObject[capabilityId])
+      .filter((e) => isNotEmptyField(e));
+    const capabilitiesInDraft = R.uniq(
+      roles
+        .map((role) => rolesCapabilitiesInDraft.get(role.internal_id))
+        .flat(),
+    )
+      .map((capabilityId) => resolvedObject[capabilityId])
+      .filter((e) => isNotEmptyField(e));
     // Force push the bypass for default admin
     const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
     if (client.internal_id === OPENCTI_ADMIN_UUID && withoutBypass) {
       const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
       capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
     }
-    const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
-    const organizations = (user?.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId])
-      .filter((e) => isNotEmptyField(e) && e.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const isByPass =
+      R.find((s) => s.name === BYPASS, capabilities) !== undefined;
+    const organizations = (user?.organizationIds ?? [])
+      .map((organizationId) => resolvedObject[organizationId])
+      .filter(
+        (e) =>
+          isNotEmptyField(e) &&
+          e.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      );
     const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
     const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
-    const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
-    const administrated_organizations = organizations.filter((o) => (o.authorized_authorities ?? []).includes(client.id));
-    const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
-    const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
-    const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
-    const marking = await getUserAndGlobalMarkings(context, client.id, groups, markings, capabilities);
+    const default_hidden_types = uniq(
+      defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs),
+    );
+    const administrated_organizations = organizations.filter((o) =>
+      (o.authorized_authorities ?? []).includes(client.id),
+    );
+    const effective_confidence_level = computeUserEffectiveConfidenceLevel({
+      ...client,
+      groups,
+      capabilities,
+    });
+    const no_creators =
+      groups.filter((g) => g.no_creators).length === groups.length;
+    const restrict_delete =
+      !isByPass &&
+      groups.filter((g) => g.restrict_delete).length === groups.length;
+    const marking = await getUserAndGlobalMarkings(
+      context,
+      client.id,
+      groups,
+      markings,
+      capabilities,
+    );
     if (administrated_organizations.length > 0) {
       capabilities.push(virtualOrganizationAdminCapability);
     }
@@ -1746,27 +2685,40 @@ export const buildCompleteUser = async (context, client) => {
 
 export const resolveUserByIdFromCache = async (context, id) => {
   if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   return platformUsers.get(id);
 };
 
 export const resolveUserById = async (context, id) => {
   if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
-  const client = await storeLoadById(context, SYSTEM_USER, id, ENTITY_TYPE_USER);
+  const client = await storeLoadById(
+    context,
+    SYSTEM_USER,
+    id,
+    ENTITY_TYPE_USER,
+  );
   return buildCompleteUser(context, client);
 };
 
 export const authenticateUserByBasicAuth = async (context, req, basicAuth) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   const loggedUser = await login(basicAuth.username, basicAuth.password);
   const user = platformUsers.get(loggedUser.id);
   if (user) {
-    if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
-      throw ForbiddenAccess('You are not allowed to use API basic auth');
+    if (!isUserHasCapability(user, "APIACCESS_USEBASICAUTH")) {
+      throw ForbiddenAccess("You are not allowed to use API basic auth");
     }
     return internalAuthenticateUser(context, req, user);
   }
-  throw FunctionalError('Cannot identify user with basic auth');
+  throw FunctionalError("Cannot identify user with basic auth");
 };
 
 export const authenticateUserByJWT = async (context, req, token) => {
@@ -1776,14 +2728,14 @@ export const authenticateUserByJWT = async (context, req, token) => {
   // Own token: sub is the user id
   if (isOwnIssuer(iss)) {
     if (!sub) {
-      throw AuthenticationFailure('JWT missing sub claim');
+      throw AuthenticationFailure("JWT missing sub claim");
     }
     return await authenticateUserByUserId(context, req, sub);
   }
 
   // External trusted issuer: resolve user through email claim
   if (!email) {
-    throw AuthenticationFailure('Trusted issuer JWT missing email claim');
+    throw AuthenticationFailure("Trusted issuer JWT missing email claim");
   }
   return await authenticateUserByEmail(context, req, email);
 };
@@ -1791,72 +2743,97 @@ export const authenticateUserByJWT = async (context, req, token) => {
 const authenticateUserByEmail = async (context, req, email) => {
   const user = await getUserByEmail(email);
   if (!user) {
-    throw AuthenticationFailure('JWT email does not match any user', { email });
+    throw AuthenticationFailure("JWT email does not match any user", { email });
   }
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   const cacheUser = platformUsers.get(user.id);
   if (!cacheUser) {
-    throw AuthenticationFailure('Cannot identify user with email', { email });
+    throw AuthenticationFailure("Cannot identify user with email", { email });
   }
   return internalAuthenticateUser(context, req, cacheUser);
 };
 
 export const authenticateUserByToken = async (context, req, token) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   const hashedToken = await generateTokenHmac(token);
   const user = platformUsers.get(hashedToken);
   if (user) {
-    if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
-      throw ForbiddenAccess('You are not allowed to use API Access Tokens');
+    if (!isUserHasCapability(user, "APIACCESS_USETOKEN")) {
+      throw ForbiddenAccess("You are not allowed to use API Access Tokens");
     }
     // User found by hash, finding the specific token to check expiration
     // Although we found the user, we need to ensure the token hasn't expired
     const userTokens = user.api_tokens || [];
     const matchingToken = userTokens.find((t) => t.hash === hashedToken);
     if (!matchingToken) {
-      throw FunctionalError('Cannot identify user with not comparable token');
+      throw FunctionalError("Cannot identify user with not comparable token");
     }
     // Checking expiration
     if (matchingToken.expires_at) {
       const now = new Date();
       const expiresAt = new Date(matchingToken.expires_at);
       if (now >= expiresAt) {
-        throw FunctionalError('Token expired');
+        throw FunctionalError("Token expired");
       }
     }
     // Update token usage
     await updateTokenUsage(matchingToken);
     return internalAuthenticateUser(context, req, user);
   }
-  throw FunctionalError('Cannot identify user with token');
+  throw FunctionalError("Cannot identify user with token");
 };
 
 export const authenticateUserByUserId = async (context, req, userId) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   if (platformUsers.has(userId)) {
     const user = platformUsers.get(userId);
     return internalAuthenticateUser(context, req, user);
   }
-  throw FunctionalError('Cannot identify user with id');
+  throw FunctionalError("Cannot identify user with id");
 };
 
 const internalAuthenticateUser = async (context, req, user) => {
   let authenticatedUser = user;
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const synchronizedUpsert = req.headers['synchronized-upsert'] === 'true';
+  const settings = await getEntityFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
+  const synchronizedUpsert = req.headers["synchronized-upsert"] === "true";
   if (synchronizedUpsert && !isBypassUser(authenticatedUser)) {
-    throw FunctionalError('Cant use synchronized-upsert header without bypass capability');
+    throw FunctionalError(
+      "Cant use synchronized-upsert header without bypass capability",
+    );
   }
-  const applicantId = req.headers['opencti-applicant-id'];
+  const applicantId = req.headers["opencti-applicant-id"];
   if (applicantId && isBypassUser(authenticatedUser)) {
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
+    const platformUsers = await getEntitiesMapFromCache(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_USER,
+    );
+    authenticatedUser =
+      platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
     if (!authenticatedUser) {
       throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
     }
   }
   validateUser(authenticatedUser, settings);
-  return userWithOrigin(req, authenticatedUser, { synchronized_upsert: synchronizedUpsert });
+  return userWithOrigin(req, authenticatedUser, {
+    synchronized_upsert: synchronizedUpsert,
+  });
 };
 
 /**
@@ -1868,11 +2845,19 @@ const internalAuthenticateUser = async (context, req, user) => {
  */
 const validateUser = (user, settings) => {
   // Check organization consistency
-  if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
-    throw AuthenticationFailure('You can\'t login without an organization');
+  if (
+    !isBypassUser(user) &&
+    settings.platform_organization &&
+    user.organizations.length === 0 &&
+    !user.user_service_account
+  ) {
+    throw AuthenticationFailure("You can't login without an organization");
   }
   // Check account expiration date
-  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
+  if (
+    user.account_lock_after_date &&
+    utcDate().isAfter(utcDate(user.account_lock_after_date))
+  ) {
     throw AuthenticationFailure(ACCOUNT_STATUSES.Expired);
   }
   // Validate user's account status
@@ -1882,7 +2867,10 @@ const validateUser = (user, settings) => {
 };
 
 export const enforceSessionLimit = async (user, settings) => {
-  if (settings.platform_session_max_concurrent && settings.platform_session_max_concurrent > 0) {
+  if (
+    settings.platform_session_max_concurrent &&
+    settings.platform_session_max_concurrent > 0
+  ) {
     const sessions = await findUserSessions(user.id);
     if (sessions.length >= settings.platform_session_max_concurrent) {
       const sortedSessions = sessions.sort((a, b) => {
@@ -1894,7 +2882,10 @@ export const enforceSessionLimit = async (user, settings) => {
         }
         return 0;
       });
-      const sessionsToKill = sortedSessions.slice(0, sessions.length - settings.platform_session_max_concurrent + 1);
+      const sessionsToKill = sortedSessions.slice(
+        0,
+        sessions.length - settings.platform_session_max_concurrent + 1,
+      );
       await killSessions(sessionsToKill.map((s) => s.id));
       return sessionsToKill.length;
     }
@@ -1903,38 +2894,57 @@ export const enforceSessionLimit = async (user, settings) => {
 };
 
 export const sessionAuthenticateUser = async (context, req, user, provider) => {
-  let platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  let platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   let logged = platformUsers.get(user.internal_id);
   if (!logged) {
-    logApp.warn('[CACHE] Missing user in cache', { user: user.internal_id });
+    logApp.warn("[CACHE] Missing user in cache", { user: user.internal_id });
     // Ensure all nodes known about this user
     await notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, user, user);
     // Get the user in a refreshed cache
-    platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    platformUsers = await getEntitiesMapFromCache(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_USER,
+    );
     logged = platformUsers.get(user.internal_id);
   }
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
   validateUser(logged, settings);
   const withOrigin = userWithOrigin(req, logged);
-  const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
+  const numberOfKilledSessions = await enforceSessionLimit(
+    withOrigin,
+    settings,
+  );
   // Build and save the session
-  req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
+  req.session.user = {
+    id: user.id,
+    session_creation: now(),
+    otp_validated: false,
+  };
   req.session.session_provider = provider;
   req.session.save();
   // Publish the login event
   const userOrigin = withOrigin;
   await publishUserAction({
     user: userOrigin,
-    event_type: 'authentication',
-    event_access: 'administration',
-    event_scope: 'login',
+    event_type: "authentication",
+    event_access: "administration",
+    event_scope: "login",
     session_kill: numberOfKilledSessions,
     context_data: { provider },
   });
   return userOrigin;
 };
 
-export const JWT_TOKEN_PREFIX = 'ey';
+export const JWT_TOKEN_PREFIX = "ey";
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context, req) => {
@@ -1946,7 +2956,7 @@ export const authenticateUserFromRequest = async (context, req) => {
       try {
         return authenticateUserByJWT(context, req, bearerToken);
       } catch (err) {
-        logApp.warn('Error resolving user by JWT', { cause: err });
+        logApp.warn("Error resolving user by JWT", { cause: err });
         return undefined;
       }
     }
@@ -1955,9 +2965,9 @@ export const authenticateUserFromRequest = async (context, req) => {
       return await authenticateUserByToken(context, req, bearerToken);
     } catch (err) {
       const tokenPrefix = bearerToken.substring(0, 20);
-      const userAgent = req.headers['user-agent'] || 'unknown';
-      const origin = req.headers.origin || req.headers.referer || 'unknown';
-      logApp.warn('Error resolving user by token', {
+      const userAgent = req.headers["user-agent"] || "unknown";
+      const origin = req.headers.origin || req.headers.referer || "unknown";
+      logApp.warn("Error resolving user by token", {
         cause: err,
         token_prefix: `${tokenPrefix}...`,
         user_agent: userAgent,
@@ -1969,7 +2979,11 @@ export const authenticateUserFromRequest = async (context, req) => {
   const sessionUser = req.session?.user;
   // region If user already have a session
   if (sessionUser) {
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const platformUsers = await getEntitiesMapFromCache(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_USER,
+    );
     const logged = platformUsers.get(sessionUser.id);
     const authUser = { ...sessionUser, ...logged };
     return userWithOrigin(req, authUser);
@@ -1982,7 +2996,7 @@ export const authenticateUserFromRequest = async (context, req) => {
     try {
       return await authenticateUserByBasicAuth(context, req, basicAuth);
     } catch (err) {
-      logApp.warn('Error resolving user by basic auth', { cause: err });
+      logApp.warn("Error resolving user by basic auth", { cause: err });
       return undefined;
     }
   }
@@ -1992,28 +3006,38 @@ export const authenticateUserFromRequest = async (context, req) => {
 };
 
 const initAdmin = async (context, email, password, tokenValue) => {
-  const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
+  const isExternallyManaged = conf.get("app:admin:externally_managed") === true;
   let existingAdmin = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
       user_email: email,
       password: bcrypt.hashSync(password.toString()),
-      account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
+      account_status: isExternallyManaged
+        ? ACCOUNT_STATUS_LOCKED
+        : ACCOUNT_STATUS_ACTIVE,
       external: true,
     };
-    await patchAttribute(context, SYSTEM_USER, existingAdmin.id, ENTITY_TYPE_USER, patch);
+    await patchAttribute(
+      context,
+      SYSTEM_USER,
+      existingAdmin.id,
+      ENTITY_TYPE_USER,
+      patch,
+    );
   } else {
     // Create user
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
       external: true,
       user_email: email.toLowerCase(),
-      account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
-      name: 'admin',
-      firstname: 'Admin',
-      lastname: 'OpenCTI',
-      description: 'Principal admin account',
+      account_status: isExternallyManaged
+        ? ACCOUNT_STATUS_LOCKED
+        : ACCOUNT_STATUS_ACTIVE,
+      name: "admin",
+      firstname: "Admin",
+      lastname: "OpenCTI",
+      description: "Principal admin account",
       password: password.toString(),
       user_confidence_level: {
         max_confidence: 100,
@@ -2023,19 +3047,33 @@ const initAdmin = async (context, email, password, tokenValue) => {
     existingAdmin = await addUser(context, SYSTEM_USER, userToCreate);
   }
   // Create base token if needed
-  const tokenId = 'base_token_' + OPENCTI_ADMIN_UUID;
-  const tokensWithoutBaseOne = (existingAdmin.api_tokens ?? []).filter((t) => t.id !== tokenId);
+  const tokenId = "base_token_" + OPENCTI_ADMIN_UUID;
+  const tokensWithoutBaseOne = (existingAdmin.api_tokens ?? []).filter(
+    (t) => t.id !== tokenId,
+  );
   const now = DateTime.now().toUTC().toString();
   const newToken = {
     id: tokenId,
-    name: 'Base token',
+    name: "Base token",
     hash: await generateTokenHmac(tokenValue),
     created_at: now,
     masked_token: `****${tokenValue.slice(-4)}`,
   };
   tokensWithoutBaseOne.push(newToken);
-  const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE }];
-  await updateAttribute(context, SYSTEM_USER, OPENCTI_ADMIN_UUID, ENTITY_TYPE_USER, updates);
+  const updates = [
+    {
+      key: apiTokens.name,
+      value: tokensWithoutBaseOne,
+      operation: UPDATE_OPERATION_REPLACE,
+    },
+  ];
+  await updateAttribute(
+    context,
+    SYSTEM_USER,
+    OPENCTI_ADMIN_UUID,
+    ENTITY_TYPE_USER,
+    updates,
+  );
 };
 
 // Admin user initialization
@@ -2043,28 +3081,39 @@ export const initializeAdminUser = async (context) => {
   const adminEmail = getConfigurationAdminEmail();
   const adminPassword = getConfigurationAdminPassword();
   const adminToken = getConfigurationAdminToken();
-  if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
-    || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE) {
-    throw ConfigurationError('You need to configure the environment vars');
+  if (
+    isEmptyField(adminEmail) ||
+    isEmptyField(adminPassword) ||
+    isEmptyField(adminToken) ||
+    adminPassword === DEFAULT_INVALID_CONF_VALUE ||
+    adminToken === DEFAULT_INVALID_CONF_VALUE
+  ) {
+    throw ConfigurationError("You need to configure the environment vars");
   } else {
     // Check fields
     if (!validator.isEmail(adminEmail)) {
-      throw ConfigurationError('Email must be a valid email address');
+      throw ConfigurationError("Email must be a valid email address");
     }
     if (!validator.isUUID(adminToken)) {
-      throw ConfigurationError('Token must be a valid UUID');
+      throw ConfigurationError("Token must be a valid UUID");
     }
     // Initialize the admin account
     await initAdmin(context, adminEmail, adminPassword, adminToken);
-    logApp.info('[INIT] admin user initialized');
+    logApp.info("[INIT] admin user initialized");
   }
 };
 
 export const findDefaultDashboards = async (context, user, currentUser) => {
-  const groupsDashboardIds = (currentUser.groups ?? []).map(({ default_dashboard }) => default_dashboard);
-  const orgaDashboardIds = (currentUser.organizations ?? []).map(({ default_dashboard }) => default_dashboard);
+  const groupsDashboardIds = (currentUser.groups ?? []).map(
+    ({ default_dashboard }) => default_dashboard,
+  );
+  const orgaDashboardIds = (currentUser.organizations ?? []).map(
+    ({ default_dashboard }) => default_dashboard,
+  );
   const ids = [...orgaDashboardIds, ...groupsDashboardIds].filter((id) => id);
-  const dashboards = await internalFindByIds(context, user, ids, { type: ENTITY_TYPE_WORKSPACE });
+  const dashboards = await internalFindByIds(context, user, ids, {
+    type: ENTITY_TYPE_WORKSPACE,
+  });
   // Sort dashboards the same order as the fetched ids
   return dashboards.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 };
@@ -2083,7 +3132,12 @@ export const userEditContext = async (context, user, userId, input) => {
 };
 // endregion
 
-const buildCompleteUserFromCacheOrDb = async (context, user, userToLoad, cachedUsers) => {
+const buildCompleteUserFromCacheOrDb = async (
+  context,
+  user,
+  userToLoad,
+  cachedUsers,
+) => {
   const cachedUser = cachedUsers.get(userToLoad.id);
   let completeUser;
   if (cachedUser) {
@@ -2094,18 +3148,32 @@ const buildCompleteUserFromCacheOrDb = async (context, user, userToLoad, cachedU
       groups: cachedUser.groups,
       capabilities: cachedUser.capabilities,
     };
-  } else { // in case we need to resolve user effective confidence level on creation.
+  } else {
+    // in case we need to resolve user effective confidence level on creation.
     completeUser = await findById(context, user, userToLoad.id);
   }
   return completeUser;
 };
 
-export const batchUserEffectiveConfidenceLevel = async (context, user, batchUsers) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+export const batchUserEffectiveConfidenceLevel = async (
+  context,
+  user,
+  batchUsers,
+) => {
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   const completeUsers = [];
   for (let i = 0; i < batchUsers.length; i += 1) {
     const batchUser = batchUsers[i];
-    const completeUser = await buildCompleteUserFromCacheOrDb(context, user, batchUser, platformUsers);
+    const completeUser = await buildCompleteUserFromCacheOrDb(
+      context,
+      user,
+      batchUser,
+      platformUsers,
+    );
     completeUsers.push(completeUser);
   }
   return completeUsers.map((u) => computeUserEffectiveConfidenceLevel(u));
@@ -2113,7 +3181,16 @@ export const batchUserEffectiveConfidenceLevel = async (context, user, batchUser
 
 export const getUserEffectiveConfidenceLevel = async (user, context) => {
   // we load the user from cache to have the complete user with groupos
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const completeUser = await buildCompleteUserFromCacheOrDb(context, context.user, user, platformUsers);
+  const platformUsers = await getEntitiesMapFromCache(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
+  const completeUser = await buildCompleteUserFromCacheOrDb(
+    context,
+    context.user,
+    user,
+    platformUsers,
+  );
   return computeUserEffectiveConfidenceLevel(completeUser);
 };
