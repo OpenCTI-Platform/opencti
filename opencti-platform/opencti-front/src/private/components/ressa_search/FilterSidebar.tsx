@@ -151,7 +151,7 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                      {getFilterLabel(filter.key)}
+                      {t_i18n(`${getFilterLabel(filter.key)}`)}
                     </Typography>
                     <Box
                       sx={{

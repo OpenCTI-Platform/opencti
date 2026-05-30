@@ -262,6 +262,7 @@ const RessaSearch = () => {
 
   const runSearch = useCallback(async (query: string) => {
     const trimmed = query.trim();
+    console.log('trimmed query', trimmed);
     if (!trimmed || isSearching) return;
 
     hasRestoredFromUrlRef.current = true;
@@ -277,6 +278,8 @@ const RessaSearch = () => {
     setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
 
     try {
+      console.log('search started');
+
       const request = {
         query: trimmed,
         maxRelationDepth: 200,
@@ -291,6 +294,7 @@ const RessaSearch = () => {
       } as const;
 
       const response = await rawQueryApi(request);
+      console.log('search response received');
       setRawResponse(response);
       saveRessaSearchSession({
         searchValue: trimmed,
@@ -300,12 +304,15 @@ const RessaSearch = () => {
         rowsPerPage,
       });
     } catch (e) {
+      console.log('search error', e);
       const message = e instanceof Error ? e.message : 'Unknown error';
       setRawResponse(null);
       setSearchError(message);
       clearRessaSearchSession();
     } finally {
+      console.log('search finished');
       setIsSearching(false);
+      console.log('search finished');
     }
   }, [isSearching, rowsPerPage, setSearchParams]);
 
