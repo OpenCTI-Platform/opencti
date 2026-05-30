@@ -302,6 +302,18 @@ html[data-theme="fluent"] {
       }
     }
   }
+  .MuiButtonBase-root {
+    .MuiChip-deleteIcon {
+      color: var(--fluent-color-label);
+      width: 18px;
+      margin: 0;
+    }
+  }
+  .MuiAutocomplete-hasPopupIcon {
+    & + .MuiButtonBase-root {
+      bottom: 8px;
+    }
+  }
   &[dir="rtl"] {
     body * {
       font-family:
@@ -383,9 +395,6 @@ html[dir="rtl"] {
   .MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation1.MuiDrawer-paper.MuiDrawer-paperAnchorLeft {
     left: 0;
     right: auto;
-  }
-  .MuiFormControlLabel-root.MuiFormControlLabel-labelPlacementEnd {
-    padding-right: 11px;
   }
 }
 @font-face {

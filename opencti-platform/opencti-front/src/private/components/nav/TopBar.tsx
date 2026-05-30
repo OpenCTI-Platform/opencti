@@ -245,28 +245,30 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           background: 'var(--fluent-color-sidebar)',
         }}
       >
-        <div>
-          <img src={t_i18n('direction') == 'rtl' ? logo_fa : logo} alt="logo" height={35} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src={t_i18n('direction') == 'rtl' ? logo_fa : logo} alt="logo" height={30} />
+          {hasKnowledgeAccess && (
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'inline-flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <SearchInput
+                onSubmit={handleSearch}
+                keyword={keyword}
+                variant="topBar"
+                placeholder={`${t_i18n('Search the platform')}...`}
+                isNLQLoading={isNLQLoading}
+              />
+            </Box>
+          )}
         </div>
-        {hasKnowledgeAccess && (
-          <Box
-            sx={{
-              position: 'relative',
-              display: 'inline-flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <SearchInput
-              onSubmit={handleSearch}
-              keyword={keyword}
-              variant="topBar"
-              placeholder={`${t_i18n('Search the platform')}...`}
-              isNLQLoading={isNLQLoading}
-            />
-            <SlaExpiryAlerts />
-          </Box>
-        )}
+        <div>
+          <SlaExpiryAlerts />
+        </div>
         <div>
           <Stack direction="row" gap={1} alignItems="center">
 

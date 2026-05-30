@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 4,
     padding: '1px 10px 0 10px',
     marginInlineEnd: 5,
-    minWidth: 550,
+    minWidth: 350,
     width: '50%',
   },
   searchRootInDrawer: {
