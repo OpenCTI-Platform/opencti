@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChatPanel, ChatMode } from '@filigran/chatbot';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import type { Theme } from '../../../components/Theme';
@@ -32,6 +32,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   onResizeEnd,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { me, bannerSettings: { bannerHeightNumber } } = useAuth();
@@ -73,6 +74,14 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   const draftBorderColor = draftId
     ? theme.palette.designSystem.alert.warning.primary
     : undefined;
+
+  // Forward the user's current in-app location so the agent is always aware
+  // of the page (URI) the question is being asked from. The router uses
+  // `basename={APP_BASE_PATH}`, so `location.pathname` is already
+  // app-relative (e.g. `/dashboard/analyses/reports/<id>/overview`). The
+  // shape is intentionally extensible — more context (page title, selected
+  // entity, etc.) can be added here later.
+  const pageContext = { url: `${location.pathname}${location.search}` };
 
   const handleRelativeLinkClick = (href: string) => {
     const normalizedHref = APP_BASE_PATH && href.startsWith(APP_BASE_PATH)
@@ -140,6 +149,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       onResizeStart={onResizeStart}
       onResizeEnd={onResizeEnd}
       requestHeaders={requestHeaders}
+      pageContext={pageContext}
       onRelativeLinkClick={handleRelativeLinkClick}
     />,
     container,
