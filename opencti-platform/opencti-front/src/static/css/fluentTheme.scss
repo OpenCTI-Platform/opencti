@@ -260,7 +260,7 @@ html[data-theme="fluent"] {
       width: 100% !important;
       height: 20px !important;
       border-radius: 10px !important;
-      padding: 1px 4px !important;
+      padding: 1px 2px !important;
       display: block;
       transition: all 0.3s;
       .MuiSwitch-thumb {
@@ -280,7 +280,7 @@ html[data-theme="fluent"] {
         .MuiSwitch-thumb {
           width: 16px;
           height: 16px;
-          transform: translateX(-16px) !important;
+          transform: translateX(-18px) !important;
           background: #fff;
         }
       }
@@ -383,6 +383,9 @@ html[dir="rtl"] {
   .MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation1.MuiDrawer-paper.MuiDrawer-paperAnchorLeft {
     left: 0;
     right: auto;
+  }
+  .MuiFormControlLabel-root.MuiFormControlLabel-labelPlacementEnd {
+    padding-right: 11px;
   }
 }
 @font-face {
