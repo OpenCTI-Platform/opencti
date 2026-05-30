@@ -371,7 +371,10 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
 
-    const { fileId } = req.params;
+    // `req.params` values are typed `string | string[]` in this codebase; a
+    // single route segment is always a string at runtime, but coerce
+    // defensively so a malformed value simply fails the UUID check below.
+    const fileId = String(req.params.fileId ?? '');
     if (!fileId || !FILE_ID_RE.test(fileId)) {
       res.status(400).json({ error: 'Invalid file id' });
       return;
