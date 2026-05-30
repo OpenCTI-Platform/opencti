@@ -1,8 +1,9 @@
 import type {
+  SlaDurationSnapshot,
+  SlaExpiryAlertItem,
   SlaExpiryCountdown,
   SlaExpiryPhase,
   SlaExpiryPhaseStyle,
-  SlaExpiryWindow,
 } from './slaExpiryTypes';
 
 /** Fixed pill width so expand/collapse does not shift horizontally under the search field. */
@@ -16,27 +17,35 @@ const PHASE_COLORS: Record<SlaExpiryPhase, { main: string; soft: string }> = {
   brown: { main: '#975321', soft: '#F2EAE4' },
 };
 
-export const getSlaExpiryPhase = (
-  startTime: string,
-  endTime: string,
+export interface SlaDurationMetrics {
+  goalDurationMs: number;
+  elapsedTimeMs: number;
+  remainingTimeMs: number;
+}
+
+export const getSlaDurationMetricsAt = (
+  duration: SlaDurationSnapshot,
   nowMs: number = Date.now(),
+): SlaDurationMetrics => {
+  const deltaMs = nowMs - duration.fetchedAtMs;
+  return {
+    goalDurationMs: duration.goalDurationMs,
+    elapsedTimeMs: duration.elapsedTimeMs + deltaMs,
+    remainingTimeMs: duration.remainingTimeMs - deltaMs,
+  };
+};
+
+export const getSlaExpiryPhaseFromMetrics = (
+  goalDurationMs: number,
+  elapsedTimeMs: number,
+  remainingTimeMs: number,
+  breached: boolean = false,
 ): SlaExpiryPhase => {
-  const startMs = new Date(startTime).getTime();
-  const endMs = new Date(endTime).getTime();
-
-  if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs <= startMs) {
+  if (breached || remainingTimeMs <= 0 || goalDurationMs <= 0) {
     return 'brown';
   }
 
-  if (nowMs >= endMs) {
-    return 'brown';
-  }
-
-  if (nowMs < startMs) {
-    return 'green';
-  }
-
-  const progress = (nowMs - startMs) / (endMs - startMs);
+  const progress = elapsedTimeMs / goalDurationMs;
 
   if (progress < 0.25) {
     return 'green';
@@ -51,37 +60,42 @@ export const getSlaExpiryPhase = (
 };
 
 export const getSlaExpiryPhaseStyle = (
-  window: SlaExpiryWindow,
+  item: SlaExpiryAlertItem,
   nowMs: number = Date.now(),
 ): SlaExpiryPhaseStyle => {
-  const phase = getSlaExpiryPhase(window.startTime, window.endTime, nowMs);
+  const metrics = getSlaDurationMetricsAt(item.duration, nowMs);
+  const phase = getSlaExpiryPhaseFromMetrics(
+    metrics.goalDurationMs,
+    metrics.elapsedTimeMs,
+    metrics.remainingTimeMs,
+    item.duration.breached ?? false,
+  );
   return { phase, ...PHASE_COLORS[phase] };
 };
 
 const msToCountdown = (durationMs: number): SlaExpiryCountdown => {
   const totalSeconds = Math.floor(Math.max(0, durationMs) / 1000);
   return {
-    days: Math.floor(totalSeconds / 86400),
-    hours: Math.floor((totalSeconds % 86400) / 3600),
+    hours: Math.floor(totalSeconds / 3600),
     minutes: Math.floor((totalSeconds % 3600) / 60),
     seconds: totalSeconds % 60,
   };
 };
 
-export const getSlaExpiryCountdown = (
-  endTime: string,
+export const getSlaExpiryRemainingCountdown = (
+  item: SlaExpiryAlertItem,
   nowMs: number = Date.now(),
 ): SlaExpiryCountdown => {
-  const endMs = new Date(endTime).getTime();
-  return msToCountdown(endMs - nowMs);
+  const { remainingTimeMs } = getSlaDurationMetricsAt(item.duration, nowMs);
+  return msToCountdown(remainingTimeMs);
 };
 
-export const getSlaExpiryOverdueElapsed = (
-  endTime: string,
+export const getSlaExpiryOverdueCountdown = (
+  item: SlaExpiryAlertItem,
   nowMs: number = Date.now(),
 ): SlaExpiryCountdown => {
-  const endMs = new Date(endTime).getTime();
-  return msToCountdown(nowMs - endMs);
+  const { remainingTimeMs } = getSlaDurationMetricsAt(item.duration, nowMs);
+  return msToCountdown(Math.abs(remainingTimeMs));
 };
 
 export const padCountdownUnit = (value: number): string => String(value).padStart(2, '0');
@@ -107,25 +121,22 @@ export const getSlaExpiryTitleMessageKey = (phase: SlaExpiryPhase): string => {
 export const formatSlaExpiryCountdownUnits = (
   countdown: SlaExpiryCountdown,
 ): string[] => [
-  padCountdownUnit(countdown.days),
   padCountdownUnit(countdown.hours),
   padCountdownUnit(countdown.minutes),
   padCountdownUnit(countdown.seconds),
 ];
 
 export const compareSlaExpiryUrgency = (
-  a: SlaExpiryWindow,
-  b: SlaExpiryWindow,
+  a: SlaExpiryAlertItem,
+  b: SlaExpiryAlertItem,
   nowMs: number = Date.now(),
 ): number => {
-  const endA = new Date(a.endTime).getTime();
-  const endB = new Date(b.endTime).getTime();
-  const remainingA = endA - nowMs;
-  const remainingB = endB - nowMs;
+  const remainingA = getSlaDurationMetricsAt(a.duration, nowMs).remainingTimeMs;
+  const remainingB = getSlaDurationMetricsAt(b.duration, nowMs).remainingTimeMs;
 
   if (remainingA !== remainingB) {
     return remainingA - remainingB;
   }
 
-  return endA - endB;
+  return a.id.localeCompare(b.id);
 };

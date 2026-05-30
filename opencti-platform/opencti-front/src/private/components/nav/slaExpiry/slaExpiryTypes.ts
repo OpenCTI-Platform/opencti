@@ -1,18 +1,21 @@
 export type SlaExpiryPhase = 'green' | 'yellow' | 'orange' | 'red' | 'brown';
 
-export interface SlaExpiryWindow {
-  startTime: string;
-  endTime: string;
+export interface SlaDurationSnapshot {
+  goalDurationMs: number;
+  elapsedTimeMs: number;
+  remainingTimeMs: number;
+  fetchedAtMs: number;
+  breached?: boolean;
 }
 
-export interface SlaExpiryAlertItem extends SlaExpiryWindow {
+export interface SlaExpiryAlertItem {
   id: string;
   categoryLabel: string;
   title: string;
+  duration: SlaDurationSnapshot;
 }
 
 export interface SlaExpiryCountdown {
-  days: number;
   hours: number;
   minutes: number;
   seconds: number;

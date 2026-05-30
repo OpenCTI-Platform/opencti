@@ -1,9 +1,9 @@
 import { Box, Collapse, Fade, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import type { Theme } from '../../../../components/Theme';
 import SlaExpiryAlertPill from './SlaExpiryAlertPill';
-import { compareSlaExpiryUrgency, SLA_ALERT_PILL_WIDTH_PX } from './slaExpiryUtils';
+import { SLA_ALERT_PILL_WIDTH_PX } from './slaExpiryUtils';
 import useSlaExpiryAlerts from './useSlaExpiryAlerts';
 
 const EXPAND_TRANSITION_MS = 280;
@@ -52,18 +52,13 @@ const SlaExpiryAlerts: FunctionComponent = () => {
     return () => window.clearInterval(timer);
   }, []);
 
-  const sortedItems = useMemo(
-    () => [...items].sort((a, b) => compareSlaExpiryUrgency(a, b, nowMs)),
-    [items, nowMs],
-  );
-
-  if (sortedItems.length === 0) {
+  if (items.length === 0) {
     return null;
   }
 
-  const primaryItem = sortedItems[0];
-  const additionalItems = sortedItems.slice(1);
-  const isStacked = sortedItems.length > 1;
+  const primaryItem = items[0];
+  const additionalItems = items.slice(1);
+  const isStacked = items.length > 1;
 
   const handleToggle = () => {
     if (isStacked) {
@@ -93,7 +88,7 @@ const SlaExpiryAlerts: FunctionComponent = () => {
         pb: 0.5,
       }}
       aria-expanded={expanded}
-      aria-label={`${sortedItems.length} SLA alerts`}
+      aria-label={`${items.length} SLA alerts`}
     >
       <Fade in={!expanded} timeout={EXPAND_TRANSITION_MS} unmountOnExit>
         <Box
@@ -125,8 +120,6 @@ const SlaExpiryAlerts: FunctionComponent = () => {
           sx={{
             pt: 1,
             width: '100%',
-            maxHeight: 'min(50vh, 280px)',
-            overflowY: 'auto',
           }}
         >
           {additionalItems.map((item) => (

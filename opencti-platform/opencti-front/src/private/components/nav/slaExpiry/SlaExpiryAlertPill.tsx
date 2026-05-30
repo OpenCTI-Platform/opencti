@@ -7,9 +7,9 @@ import type { Theme } from '../../../../components/Theme';
 import type { SlaExpiryAlertItem } from './slaExpiryTypes';
 import SlaExpiryCountdown from './SlaExpiryCountdown';
 import {
-  getSlaExpiryCountdown,
-  getSlaExpiryOverdueElapsed,
+  getSlaExpiryOverdueCountdown,
   getSlaExpiryPhaseStyle,
+  getSlaExpiryRemainingCountdown,
   getSlaExpiryTitleMessageKey,
 } from './slaExpiryUtils';
 
@@ -29,8 +29,8 @@ const SlaExpiryAlertPill: FunctionComponent<SlaExpiryAlertPillProps> = ({
   const { t_i18n } = useFormatter();
   const phaseStyle = getSlaExpiryPhaseStyle(item, nowMs);
   const countdown = phaseStyle.phase === 'brown'
-    ? getSlaExpiryOverdueElapsed(item.endTime, nowMs)
-    : getSlaExpiryCountdown(item.endTime, nowMs);
+    ? getSlaExpiryOverdueCountdown(item, nowMs)
+    : getSlaExpiryRemainingCountdown(item, nowMs);
   const title = t_i18n(getSlaExpiryTitleMessageKey(phaseStyle.phase));
 
   return (
@@ -50,13 +50,23 @@ const SlaExpiryAlertPill: FunctionComponent<SlaExpiryAlertPillProps> = ({
         boxShadow: '0 4px 14px rgba(15, 23, 42, 0.08)',
       }}
     >
-      <ReportProblem
+      <Box
         sx={{
-          fontSize: SLA_ALERT_ICON_SIZE_PX,
-          color: phaseStyle.main,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: SLA_ALERT_ICON_SIZE_PX,
+          height: SLA_ALERT_ICON_SIZE_PX,
           flexShrink: 0,
         }}
-      />
+      >
+        <ReportProblem
+          sx={{
+            fontSize: SLA_ALERT_ICON_SIZE_PX,
+            color: phaseStyle.main,
+          }}
+        />
+      </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           component="div"
@@ -89,14 +99,6 @@ const SlaExpiryAlertPill: FunctionComponent<SlaExpiryAlertPillProps> = ({
         phase={phaseStyle.phase}
         color={phaseStyle.main}
         softBackground={phaseStyle.soft}
-      />
-      <Box
-        aria-hidden
-        sx={{
-          width: SLA_ALERT_ICON_SIZE_PX,
-          height: SLA_ALERT_ICON_SIZE_PX,
-          flexShrink: 0,
-        }}
       />
     </Box>
   );
