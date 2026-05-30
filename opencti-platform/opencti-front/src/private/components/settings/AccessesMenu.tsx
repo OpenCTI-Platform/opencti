@@ -92,12 +92,12 @@ const AccessesMenu: FunctionComponent = () => {
   if (setMarkings) {
     menuEntries.push(...markingEntries);
   }
-  if (setDissemination) {
-    menuEntries.push(...disseminationEntries);
-  }
-  if (setAccess) {
-    menuEntries.push(...emailTemplateEntries);
-  }
+  // if (setDissemination) {
+  //   menuEntries.push(...disseminationEntries);
+  // }
+  // if (setAccess) {
+  //   menuEntries.push(...emailTemplateEntries);
+  // }
   if (!setAccess && isOrgaAdmin) {
     menuEntries.push(
       ...[

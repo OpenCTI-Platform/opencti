@@ -152,7 +152,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             {({ values, setFieldValue }) => (
               <Form>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  {/* <Grid item xs={6}>
                     <DangerZoneBlock
                       type="platform_organization"
                       title={<>{t_i18n('Platform main organization')} <EEChip /></>}
@@ -227,7 +227,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         </Card>
                       )}
                     />
-                  </Grid>
+                  </Grid> */}
 
                   <GroupSetDefaultGroupForIngestionUsers />
                   <Grid item xs={6}>
