@@ -44,7 +44,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
   return (
     <LoginLayout settings={settings}>
-      <Stack gap={3} sx={{ width: '100%', maxWidth: 360 }}>
+      <Stack gap={4} sx={{ width: '100%', maxWidth: 360 }}>
         <Stack gap={1.5}>
           <Typography
             variant="h4"
