@@ -3049,6 +3049,7 @@
   "Powered by": "نیرو گرفته از",
   "Query": "کوئری",
   "Select All": "انتخاب همه",
+  "Obj type":"نوع موجودیت",
   "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "پیش‌پرس‌وجو برای دریافت داده‌هایی که به عنوان موجودیت مبدأ رابطه استفاده می‌شوند (محدود به ۵۰۰۰)",
   "Pre-query to get data to be used as target entity of the relationship (limited to 5000)": "پیش‌پرس‌وجو برای دریافت داده‌هایی که به عنوان موجودیت مقصد رابطه استفاده می‌شوند (محدود به ۵۰۰۰)",
   "Prevention": "پیشگیری",
