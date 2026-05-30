@@ -193,16 +193,18 @@ const ListFilters = ({
               setCurrentSavedFilter={setCurrentSavedFilter}
             />
           )}
-          <Tooltip title={t_i18n('Clear filters')}>
-            <IconButton
-              color={color}
-              onClick={handleClearFilters}
-              size="small"
-              disabled={disabled}
-            >
-              <FilterListOffOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          <div>
+            <Tooltip title={t_i18n('Clear filters')}>
+              <IconButton
+                color={color}
+                onClick={handleClearFilters}
+                size="small"
+                disabled={disabled}
+              >
+                <FilterListOffOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </div>
           {isDatatable && variant === 'default' && (
             <SavedFilterButton
               currentSavedFilter={currentSavedFilter}

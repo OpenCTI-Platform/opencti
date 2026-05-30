@@ -286,11 +286,11 @@ const RessaSearch = () => {
 
       const request = {
         query: trimmed,
-        maxRelationDepth: 1,
-        maxPrimaryDocuments: 1,
-        maxRelatedEntities: 1,
-        maxRelationships: 1,
-        maxRelatedDocuments: 1,
+        maxRelationDepth: 200,
+        maxPrimaryDocuments: 200,
+        maxRelatedEntities: 200,
+        maxRelationships: 200,
+        maxRelatedDocuments: 200,
         includeRelationshipDocuments: true,
         includeNestedObjects: true,
         includeMetadataAndHistory: true,
