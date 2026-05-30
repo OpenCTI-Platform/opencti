@@ -206,7 +206,8 @@ const RessaSearch = () => {
     if (!rawResponse) return [];
     return rawResponse.primaryDocuments.map((doc) => {
       const src = (doc.source ?? {}) as Record<string, unknown>;
-      const name = typeof src.name === 'string' ? src.name : undefined;
+      const name = (typeof src.name === 'string' ? src.name : undefined)
+        || (typeof src.value === 'string' ? src.value : undefined);
       const title = name ?? doc.standardId ?? doc.internalId;
       const createdAt = typeof src.created_at === 'string' ? src.created_at : undefined;
       const updatedAt = typeof src.updated_at === 'string' ? src.updated_at : undefined;

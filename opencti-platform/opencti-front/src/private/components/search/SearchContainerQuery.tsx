@@ -55,7 +55,7 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
             value="knowledge"
             label={t_i18n('Knowledge search')}
           />
-          <Tab
+          {/* <Tab
             component={Link}
             to={`/dashboard/search/files/${encodedKeyword ?? ''}`}
             value="files"
@@ -69,7 +69,7 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
                 </div>
               </Badge>
             )}
-          />
+          /> */}
         </Tabs>
       </Box>
       <Suspense fallback={<Loader />}>
