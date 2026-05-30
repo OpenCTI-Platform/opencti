@@ -3,7 +3,7 @@ import React from 'react';
 
 const getTrackConfig = ({ error, source, target, disabled = false }) => {
   const basicStyle = {
-    left: `${source.percent}%`,
+    insetInlineStart: `${source.percent}%`,
     width: `${target.percent - source.percent}%`,
   };
 

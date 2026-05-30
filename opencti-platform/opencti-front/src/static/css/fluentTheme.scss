@@ -97,6 +97,7 @@ html[data-theme="fluent"] {
       }
     }
     .MuiInputBase-root {
+      height: 40px;
       &::after {
         border-bottom: 1px solid var(--fluent-color-primary);
       }
@@ -110,6 +111,7 @@ html[data-theme="fluent"] {
         border-bottom-color: var(--fluent-color-border-hover) !important;
         border-radius: 4px !important;
         padding: 6px 12px !important;
+
       }
     }
   }
@@ -303,21 +305,35 @@ html[data-theme="fluent"] {
     }
   }
   .MuiButtonBase-root {
+    position: unset;
     .MuiChip-deleteIcon {
       color: var(--fluent-color-label);
       width: 18px;
       margin: 0;
     }
   }
+
   .MuiAutocomplete-hasPopupIcon {
     & + .MuiButtonBase-root {
       bottom: 8px;
     }
   }
+  .MuiInputBase-root.MuiSelect-root {
+    border: 1px solid var(--fluent-color-border) !important;
+    border-width: 1px !important;
+    border-color: var(--fluent-color-border) !important;
+    border-bottom-color: var(--fluent-color-border-hover) !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    height: 40px;
+  }
   &[dir="rtl"] {
     body * {
       font-family:
         "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+    }
+    .MuiSlider-thumb {
+      transform: translate(-50%, -50%);
     }
     .MuiToggleButtonGroup-root {
       .MuiButtonBase-root {
