@@ -78,10 +78,13 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   // Forward the user's current in-app location so the agent is always aware
   // of the page (URI) the question is being asked from. The router uses
   // `basename={APP_BASE_PATH}`, so `location.pathname` is already
-  // app-relative (e.g. `/dashboard/analyses/reports/<id>/overview`). The
-  // shape is intentionally extensible — more context (page title, selected
-  // entity, etc.) can be added here later.
-  const pageContext = { url: `${location.pathname}${location.search}` };
+  // app-relative (e.g. `/dashboard/analyses/reports/<id>/overview`). Only the
+  // pathname is sent — the query string is intentionally omitted because
+  // OpenCTI encodes UI state (filters, view settings, …) there, which would
+  // bloat the payload and could leak more than the agent needs. The shape is
+  // extensible — more context (page title, selected entity, etc.) can be
+  // added here later.
+  const pageContext = { url: location.pathname };
 
   const handleRelativeLinkClick = (href: string) => {
     const normalizedHref = APP_BASE_PATH && href.startsWith(APP_BASE_PATH)
