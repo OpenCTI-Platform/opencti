@@ -380,7 +380,30 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
       return;
     }
 
+    // REST routes don't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before forwarding upstream.
+    // Without this guard a caller could forge an `opencti-draft-id` header and
+    // download files scoped to a draft they don't have access to, bypassing
+    // draft authorization. `checkDraftInContext` is a no-op when the
+    // authenticated context has no draft, so the live-workspace path is
+    // unaffected.
+    try {
+      await checkDraftInContext(context);
+    } catch (draftErr: unknown) {
+      logApp.warn('Chatbot file download rejected due to invalid draft context', { cause: draftErr });
+      res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+      return;
+    }
+
     const headers = await generateBasicHeaders(req, context);
+    // Force the upstream `opencti-draft-id` to the validated `context.draft_context`
+    // (which falls back to the user's session draft when the request omits the
+    // header) so the download resolves in the same workspace the rest of the
+    // platform would use, rather than trusting the raw request header. File
+    // downloads are frequently triggered without custom headers, so without this
+    // a draft user would otherwise hit the live workspace and 404 on a
+    // draft-scoped file.
+    headers['opencti-draft-id'] = context.draft_context ?? '';
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.get(`/api/v1/chat/files/${fileId}/download`, {
       decompress: false,

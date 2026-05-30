@@ -681,6 +681,8 @@ describe('httpChatbotProxy: getChatbotFileDownload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setupAuthenticatedContext();
+    // Default the draft check to a no-op (live workspace, no draft).
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
     res = buildRes();
   });
 
@@ -703,6 +705,41 @@ describe('httpChatbotProxy: getChatbotFileDownload', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Invalid file id' });
     expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should reject with 400 when the draft context fails validation, without calling XTM One', async () => {
+    // Simulate a caller forging an `opencti-draft-id` they cannot access (or a
+    // closed draft). The REST proxy MUST refuse before reaching XTM One —
+    // without this guard a draft-scoped file could be downloaded across draft
+    // authorization boundaries.
+    setupAuthenticatedContext({ draft_context: 'forged-draft-id' });
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Could not find draft workspace'));
+
+    await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Could not find draft workspace' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the validated context.draft_context to XTM One, not the raw request header', async () => {
+    // File downloads are frequently triggered without custom headers, so the
+    // upstream draft id must come from the validated `context.draft_context`
+    // (which falls back to the user's session draft) rather than the raw
+    // request header — otherwise a draft user would hit the live workspace.
+    setupAuthenticatedContext({ draft_context: 'user-session-draft-id' });
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockGet.mockResolvedValue({ data: fakeStream, headers: {} });
+
+    await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    const { getHttpClient } = await import('../../../src/utils/http-client');
+    const headerCalls = vi.mocked(getHttpClient).mock.calls
+      .map((c) => c[0]?.headers)
+      .filter((h): h is Record<string, string> => !!h && 'opencti-draft-id' in h);
+    expect(headerCalls.length).toBeGreaterThan(0);
+    expect(headerCalls[headerCalls.length - 1]['opencti-draft-id']).toBe('user-session-draft-id');
+    expect(mockGet).toHaveBeenCalledTimes(1);
   });
 
   it('should stream the file and forward content headers on success', async () => {
