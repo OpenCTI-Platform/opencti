@@ -248,7 +248,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                 />
                 <GroupField
                   name="groups"
-                  label="Groups"
+                  label={t_i18n('Groups')}
                   style={fieldSpacingContainerStyle}
                   showConfidence={true}
                 />

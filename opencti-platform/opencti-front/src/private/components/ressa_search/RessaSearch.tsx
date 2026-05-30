@@ -35,7 +35,7 @@ import {
   Save,
   History,
   ErrorOutline,
-  ArrowForward,
+  ArrowBack,
   FilterList,
   DescriptionOutlined,
   Close,
@@ -856,7 +856,7 @@ const RessaSearch = () => {
                           })}
                         </Box>
                       </Box>
-                      <ArrowForward
+                      <ArrowBack
                         sx={{
                           color: 'text.secondary',
                           fontSize: 20,

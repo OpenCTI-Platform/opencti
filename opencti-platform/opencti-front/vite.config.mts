@@ -267,22 +267,22 @@ export default defineConfig({
       "@components": path.resolve(__dirname, "./src/private/components"),
       src: path.resolve(__dirname, "./src"),
       "@common": path.resolve(__dirname, "./src/components/common"),
-      "@mui/icons-material-original": path.resolve(
-        __dirname,
-        "node_modules/@mui/icons-material"
-      ),
-      "mdi-material-ui-original": path.resolve(
-        __dirname,
-        "node_modules/mdi-material-ui"
-      ),
-      "src/icon-bridge/mui-icons-mapping": path.resolve(
-        __dirname,
-        "./src/icon-bridge/mui-icons-mapping.jsx"
-      ),
-      "src/icon-bridge/mdi-icons-mapping": path.resolve(
-        __dirname,
-        "./src/icon-bridge/mdi-icons-mapping.jsx"
-      ),
+      // "@mui/icons-material-original": path.resolve(
+      //   __dirname,
+      //   "node_modules/@mui/icons-material"
+      // ),
+      // "mdi-material-ui-original": path.resolve(
+      //   __dirname,
+      //   "node_modules/mdi-material-ui"
+      // ),
+      // "src/icon-bridge/mui-icons-mapping": path.resolve(
+      //   __dirname,
+      //   "./src/icon-bridge/mui-icons-mapping.jsx"
+      // ),
+      // "src/icon-bridge/mdi-icons-mapping": path.resolve(
+      //   __dirname,
+      //   "./src/icon-bridge/mdi-icons-mapping.jsx"
+      // ),
     },
     extensions: [".tsx", ".jsx", ".ts", ".js", ".json"],
   },
@@ -306,7 +306,7 @@ export default defineConfig({
         },
       ]
     }),
-    myIconResolver(),
+    // myIconResolver(),
     {
       name: "html-transform",
       enforce: "pre",
