@@ -39,13 +39,16 @@ import {
   FilterList,
   DescriptionOutlined,
   Close,
-  Visibility,
   ChevronLeft,
   ChevronRight,
   Download,
   Settings,
+  KeyboardArrowLeft,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
+import ItemIcon from '../../../components/ItemIcon';
+import ItemEntityType from '../../../components/ItemEntityType';
+import { resolveLink } from '../../../utils/Entity';
 import SearchListPopover from './SearchListPopover';
 import FilterPopover from './FilterPopover';
 import FilterSidebar, { FilterGroup } from './FilterSidebar';
@@ -148,7 +151,7 @@ const parseSearchQuery = (query: string): FilterGroup[] => {
 };
 
 const RessaSearch = () => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const [searchParams, setSearchParams] = useSearchParams();
   const hasRestoredFromUrlRef = useRef(false);
   const initialQueryRef = useRef(searchParams.get(RESSA_SEARCH_QUERY_PARAM));
@@ -282,11 +285,11 @@ const RessaSearch = () => {
 
       const request = {
         query: trimmed,
-        maxRelationDepth: 200,
-        maxPrimaryDocuments: 200,
-        maxRelatedEntities: 200,
-        maxRelationships: 200,
-        maxRelatedDocuments: 200,
+        maxRelationDepth: 1,
+        maxPrimaryDocuments: 1,
+        maxRelatedEntities: 1,
+        maxRelationships: 1,
+        maxRelatedDocuments: 1,
         includeRelationshipDocuments: true,
         includeNestedObjects: true,
         includeMetadataAndHistory: true,
@@ -553,7 +556,7 @@ const RessaSearch = () => {
                           marginTop: '2px',
                         }}
                       />
-                      <Tooltip title={t_i18n('Save')}>
+                      {/* <Tooltip title={t_i18n('Save')}>
                         <IconButton
                           ref={saveIconRef}
                           size="small"
@@ -562,8 +565,8 @@ const RessaSearch = () => {
                         >
                           <Save fontSize="small" sx={{ color: 'text.secondary' }} />
                         </IconButton>
-                      </Tooltip>
-                      <Divider
+                      </Tooltip> */}
+                      {/* <Divider
                         orientation="vertical"
                         flexItem
                         sx={{
@@ -574,8 +577,8 @@ const RessaSearch = () => {
                           alignSelf: 'center',
                           marginTop: '2px',
                         }}
-                      />
-                      <Tooltip title={t_i18n('Filters')}>
+                      /> */}
+                      {/* <Tooltip title={t_i18n('Filters')}>
                         <IconButton
                           ref={filterIconRef}
                           size="small"
@@ -584,8 +587,8 @@ const RessaSearch = () => {
                         >
                           <FilterList fontSize="small" sx={{ color: 'text.secondary' }} />
                         </IconButton>
-                      </Tooltip>
-                      <Divider
+                      </Tooltip> */}
+                      {/* <Divider
                         orientation="vertical"
                         flexItem
                         sx={{
@@ -596,8 +599,8 @@ const RessaSearch = () => {
                           alignSelf: 'center',
                           marginTop: '2px',
                         }}
-                      />
-                      <Tooltip title={t_i18n('Search')}>
+                      /> */}
+                      {/* <Tooltip title={t_i18n('Search')}>
                         <IconButton
                           size="small"
                           onClick={handleSearch}
@@ -609,8 +612,8 @@ const RessaSearch = () => {
                             <Search fontSize="small" sx={{ color: 'text.secondary' }} />
                           )}
                         </IconButton>
-                      </Tooltip>
-                      <Divider
+                      </Tooltip> */}
+                      {/* <Divider
                         orientation="vertical"
                         flexItem
                         sx={{
@@ -621,7 +624,7 @@ const RessaSearch = () => {
                           alignSelf: 'center',
                           marginTop: '2px',
                         }}
-                      />
+                      /> */}
                     </Box>
                   </InputAdornment>
                 ),
@@ -884,7 +887,7 @@ const RessaSearch = () => {
             }}
           >
             {/* Filter Sidebar - Left Side for LTR */}
-            {extractedFilters.length > 0 && (
+            {/* {extractedFilters.length > 0 && (
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <FilterSidebar
                   filters={extractedFilters}
@@ -907,7 +910,7 @@ const RessaSearch = () => {
                   }}
                 />
               </Box>
-            )}
+            )} */}
 
             {/* Main Content Area */}
             <Box sx={{ flex: 5, minWidth: 0 }}>
@@ -922,16 +925,16 @@ const RessaSearch = () => {
                   }}
                 >
                   {/* Results Count and Save Search Button */}
-                  <Box
+                  {/* <Box
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: 2,
                     }}
-                  >
+                  > */}
                     {/* Results Count */}
-                    <Typography
+                    {/* <Typography
                       variant="h6"
                       color="text.secondary"
                       sx={{
@@ -943,23 +946,22 @@ const RessaSearch = () => {
                       {t_i18n('Results found') + ':'}
                       <Box
                         sx={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
+                          borderRadius: '6px',
                           backgroundColor: 'action.hover',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          padding: '6px',
                         }}
                       >
                         <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
                           {totalResults}
                         </Typography>
                       </Box>
-                    </Typography>
+                    </Typography> */}
 
                     {/* Save Search Button */}
-                    <Button
+                    {/* <Button
                       variant="outlined"
                       startIcon={<Save />}
                       onClick={handleSave}
@@ -970,11 +972,11 @@ const RessaSearch = () => {
                       }}
                     >
                       {t_i18n('Save Search')}
-                    </Button>
-                  </Box>
+                    </Button> */}
+                  {/* </Box> */}
 
                   {/* Divider */}
-                  <Divider />
+                  {/* <Divider /> */}
 
                   {/* Results Content */}
                   <Box
@@ -1092,7 +1094,7 @@ const RessaSearch = () => {
                             >
                               <ChevronRight name="arrow-right-icon" />
                             </IconButton>
-                            <Divider
+                            {/* <Divider
                               orientation="vertical"
                               flexItem
                               sx={{
@@ -1101,8 +1103,8 @@ const RessaSearch = () => {
                                 borderColor: 'divider',
                                 alignSelf: 'center',
                               }}
-                            />
-                            <IconButton
+                            /> */}
+                            {/* <IconButton
                               size="small"
                               onClick={() => {
                                 // TODO: Implement download functionality
@@ -1129,7 +1131,7 @@ const RessaSearch = () => {
                               }}
                             >
                               <Settings fontSize="small" />
-                            </IconButton>
+                            </IconButton> */}
                           </Box>
                         </Box>
 
@@ -1138,7 +1140,7 @@ const RessaSearch = () => {
                           <Table>
                             <TableHead>
                               <TableRow>
-                                <TableCell padding="checkbox" sx={{ width: 48 }}>
+                                {/* <TableCell padding="checkbox" sx={{ width: 48 }}>
                                   <Checkbox
                                     indeterminate={
                                       selectedRows.length > 0 && selectedRows.length < searchResults.length
@@ -1152,38 +1154,59 @@ const RessaSearch = () => {
                                       }
                                     }}
                                   />
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Title')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Entity Type')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Tags')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Updated')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Created')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600, width: 100 }}>{t_i18n('View')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600, width: 48 }} />
                               </TableRow>
                             </TableHead>
                             <TableBody>
                               {searchResults
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((result) => (
-                                  <TableRow key={result.id} hover>
-                                    <TableCell padding="checkbox">
-                                      <Checkbox
-                                        checked={selectedRows.includes(result.id)}
-                                        onChange={(e) => {
-                                          if (e.target.checked) {
-                                            setSelectedRows([...selectedRows, result.id]);
-                                          } else {
-                                            setSelectedRows(selectedRows.filter((id) => id !== result.id));
-                                          }
-                                        }}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                        <Typography variant="body2">{result.title}</Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                          {result.standardId}
-                                        </Typography>
+                                .map((result) => {
+                                  const entityLink = resolveLink(result.entityType);
+                                  const detailLink = entityLink
+                                    ? `${entityLink}/${result.id}`
+                                    : `/dashboard/id/${result.id}`;
+                                  return (
+                                    <TableRow
+                                      key={result.id}
+                                      hover
+                                      component={Link}
+                                      to={detailLink}
+                                      sx={{ textDecoration: 'none', cursor: 'pointer' }}
+                                    >
+                                      {/* <TableCell padding="checkbox">
+                                        <Checkbox
+                                          checked={selectedRows.includes(result.id)}
+                                          onClick={(e) => e.stopPropagation()}
+                                          onChange={(e) => {
+                                            if (e.target.checked) {
+                                              setSelectedRows([...selectedRows, result.id]);
+                                            } else {
+                                              setSelectedRows(selectedRows.filter((id) => id !== result.id));
+                                            }
+                                          }}
+                                        />
+                                      </TableCell> */}
+                                      <TableCell>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <ItemIcon type={result.entityType} size="small" />
+                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{result.title}</Typography>
+                                          </Box>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {result.standardId}
+                                          </Typography>
+                                        </Box>
+                                      </TableCell>
+                                      <TableCell>
+                                        <ItemEntityType entityType={result.entityType} />
+                                      </TableCell>
+                                      <TableCell>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                           {result.tags.map((tag, index) => (
                                             <Chip
@@ -1238,81 +1261,15 @@ const RessaSearch = () => {
                                             />
                                           ))}
                                         </Box>
-                                      </Box>
-                                    </TableCell>
-                                    <TableCell>{result.entityType}</TableCell>
-                                    <TableCell>
-                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                        {result.tags.map((tag, index) => (
-                                          <Chip
-                                            key={index}
-                                            label={tag}
-                                            size="small"
-                                            sx={{
-                                              height: 24,
-                                              fontSize: '0.75rem',
-                                              borderRadius: 1,
-                                              backgroundColor: (theme) => {
-                                                const colors = [
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(76, 175, 80, 0.15)'
-                                                    : 'rgba(76, 175, 80, 0.1)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(255, 152, 0, 0.15)'
-                                                    : 'rgba(255, 152, 0, 0.1)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(33, 150, 243, 0.15)'
-                                                    : 'rgba(33, 150, 243, 0.1)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(244, 67, 54, 0.15)'
-                                                    : 'rgba(244, 67, 54, 0.1)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(156, 39, 176, 0.15)'
-                                                    : 'rgba(156, 39, 176, 0.1)',
-                                                ];
-                                                return colors[index % colors.length];
-                                              },
-                                              border: (theme) => {
-                                                const borderColors = [
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(76, 175, 80, 0.6)'
-                                                    : 'rgba(76, 175, 80, 0.5)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(255, 152, 0, 0.6)'
-                                                    : 'rgba(255, 152, 0, 0.5)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(33, 150, 243, 0.6)'
-                                                    : 'rgba(33, 150, 243, 0.5)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(244, 67, 54, 0.6)'
-                                                    : 'rgba(244, 67, 54, 0.5)',
-                                                  theme.palette.mode === 'dark'
-                                                    ? 'rgba(156, 39, 176, 0.6)'
-                                                    : 'rgba(156, 39, 176, 0.5)',
-                                                ];
-                                                return `1px solid ${borderColors[index % borderColors.length]}`;
-                                              },
-                                            }}
-                                          />
-                                        ))}
-                                      </Box>
-                                    </TableCell>
-                                    <TableCell>{result.publicationDate}</TableCell>
-                                    <TableCell>{result.registrationDate}</TableCell>
-                                    <TableCell>
-                                      <Button
-                                        component={Link}
-                                        to={`/dashboard/id/${result.id}`}
-                                        size="small"
-                                        variant="outlined"
-                                        startIcon={<Visibility fontSize="small" />}
-                                        sx={{ textTransform: 'none' }}
-                                      >
-                                        {t_i18n('View')}
-                                      </Button>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
+                                      </TableCell>
+                                      <TableCell>{result.publicationDate ? fd(result.publicationDate) : ''}</TableCell>
+                                      <TableCell>{result.registrationDate ? fd(result.registrationDate) : ''}</TableCell>
+                                      <TableCell>
+                                        <KeyboardArrowLeft sx={{ color: 'text.secondary' }} />
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
                             </TableBody>
                           </Table>
                         </TableContainer>

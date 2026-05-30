@@ -21,15 +21,15 @@ const defaultBaseUrl = () => {
 
 const buildRawQueryUrl = (baseUrl: string, request: RawQueryRequest) => {
   const params = new URLSearchParams();
-  params.set('maxRelationDepth', String(request.maxRelationDepth ?? 200));
-  params.set('maxPrimaryDocuments', String(request.maxPrimaryDocuments ?? 200));
-  params.set('maxRelatedEntities', String(request.maxRelatedEntities ?? 200));
-  params.set('maxRelationships', String(request.maxRelationships ?? 200));
-  params.set('maxRelatedDocuments', String(request.maxRelatedDocuments ?? 200));
-  params.set('includeRelationshipDocuments', String(request.includeRelationshipDocuments ?? true));
+  params.set('maxRelationDepth', String(request.maxRelationDepth ?? 1));
+  params.set('maxPrimaryDocuments', String(request.maxPrimaryDocuments ?? 1));
+  params.set('maxRelatedEntities', String(request.maxRelatedEntities ?? 500));
+  params.set('maxRelationships', String(request.maxRelationships ?? 1));
+  params.set('maxRelatedDocuments', String(request.maxRelatedDocuments ?? 1));
+  params.set('includeRelationshipDocuments', String(request.includeRelationshipDocuments ?? false));
   params.set('includeNestedObjects', String(request.includeNestedObjects ?? true));
-  params.set('includeMetadataAndHistory', String(request.includeMetadataAndHistory ?? true));
-  params.set('multilineOutput', String(request.multilineOutput ?? true));
+  params.set('includeMetadataAndHistory', String(request.includeMetadataAndHistory ?? false));
+  params.set('multilineOutput', String(request.multilineOutput ?? false));
 
   const prefix = baseUrl ? `${baseUrl}` : '';
   return `${prefix}/api/opencti/query/raw?${params.toString()}`;
