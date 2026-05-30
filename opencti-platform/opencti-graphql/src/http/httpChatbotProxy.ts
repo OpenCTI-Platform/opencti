@@ -381,12 +381,18 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.get(`/api/v1/chat/files/${fileId}/download`, {
       decompress: false,
-      timeout: DEFAULT_XTM_TIMEOUT,
+      // Streaming pipe — no response timeout (matches the other streaming
+      // proxy calls). A 2-minute cap could abort a large/slow download
+      // prematurely; the stream ends naturally and `req.on('close')` below
+      // tears it down if the client disconnects.
+      timeout: 0,
     });
 
     // Forward the content headers so the browser saves the file with the
     // right name and type. `content-disposition` is built CRLF-safe by XTM One.
-    const forwardHeaders = ['content-type', 'content-disposition', 'content-length', 'cache-control'];
+    // `content-encoding` MUST be forwarded because `decompress: false` leaves a
+    // gzip/br payload compressed — the browser needs the header to decode it.
+    const forwardHeaders = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
     Object.entries(response.headers).forEach(([key, value]) => {
       if (forwardHeaders.includes(key.toLowerCase()) && value) {
         res.setHeader(key, value as string);
@@ -413,7 +419,29 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     const httpErr = getResponseError(e);
     setCookieError(res, message);
     if (httpErr) {
-      res.status(httpErr.status).json({ error: message });
+      // Surface the upstream `detail` (e.g. "File not found" / "Access denied")
+      // instead of the generic axios "Request failed with status code N".
+      // With responseType 'stream' the error body may arrive as a stream, so
+      // handle both the parsed-object and stream cases (matches the
+      // `postChatbotMessage` error path).
+      let detail = message;
+      try {
+        if (typeof httpErr.data === 'object' && httpErr.data !== null) {
+          if ('detail' in httpErr.data) {
+            detail = httpErr.data.detail;
+          } else if (typeof httpErr.data.pipe === 'function') {
+            const chunks: Buffer[] = [];
+            for await (const chunk of httpErr.data) {
+              chunks.push(Buffer.from(chunk));
+            }
+            const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+            detail = body.detail ?? message;
+          }
+        }
+      } catch {
+        // If parsing fails, fall back to the generic error message.
+      }
+      res.status(httpErr.status).json({ error: detail });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
