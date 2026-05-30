@@ -294,6 +294,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
       )}
       <ReactGridLayout
         className="layout"
+        style={{ direction: 'ltr' }}
         width={width}
         layout={Object.values(widgetsLayouts)}
         gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
