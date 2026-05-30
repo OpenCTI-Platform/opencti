@@ -356,6 +356,70 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
   }
 };
 
+// ── GET /chatbot/files/:fileId/download ─────────────────────────────────
+// Streams an agent-generated file from XTM One back to the browser.
+//
+// The OpenCTI user is authenticated here (platform session) and the XTM One
+// JWT is minted server-side via `generateBasicHeaders` → `issueXtmJwt`. The
+// user therefore never authenticates to XTM One directly: the embedded
+// chatbot points its download URL at this proxy (relative to its
+// `apiBaseUrl` of `${APP_BASE_PATH}/chatbot`), not at XTM One.
+const FILE_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+export const getChatbotFileDownload = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+
+    const { fileId } = req.params;
+    if (!fileId || !FILE_ID_RE.test(fileId)) {
+      res.status(400).json({ error: 'Invalid file id' });
+      return;
+    }
+
+    const headers = await generateBasicHeaders(req, context);
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.get(`/api/v1/chat/files/${fileId}/download`, {
+      decompress: false,
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+
+    // Forward the content headers so the browser saves the file with the
+    // right name and type. `content-disposition` is built CRLF-safe by XTM One.
+    const forwardHeaders = ['content-type', 'content-disposition', 'content-length', 'cache-control'];
+    Object.entries(response.headers).forEach(([key, value]) => {
+      if (forwardHeaders.includes(key.toLowerCase()) && value) {
+        res.setHeader(key, value as string);
+      }
+    });
+
+    response.data.pipe(res);
+
+    req.on('close', () => {
+      response.data.destroy();
+    });
+
+    response.data.on('error', (error: Error) => {
+      logApp.error('Stream error in chatbot file download proxy', { cause: error });
+      if (!res.headersSent) {
+        res.status(500).send({ status: 'error', error: error.message });
+      } else {
+        res.end();
+      }
+    });
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot file download proxy', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    setCookieError(res, message);
+    if (httpErr) {
+      res.status(httpErr.status).json({ error: message });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
 // ── POST /chatbot/agent ─────────────────────────────────────────────────
 // Non-streaming agent call.
 // Accepts two Content-Type modes:
