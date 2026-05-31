@@ -352,6 +352,10 @@ export default defineConfig({
         target: "http://135.181.243.102:5080",
         changeOrigin: true,
       },
+      "/n8n": {
+        target: "http://135.181.243.102:32771",
+        changeOrigin: true,
+      },
     },
   },
 });

@@ -9,7 +9,7 @@ export async function fetchCaseRfiSlaByIds(
   openctiIds: string[],
   options: CaseRfiSlaApiOptions = {},
 ): Promise<CaseRfiSlaApiResponse> {
-  const baseUrl = options.baseUrl ?? 'http://135.181.243.102:32771';
+  const baseUrl = options.baseUrl ?? '/n8n';
   const url = `${baseUrl}/webhook/frontend/case-sla`;
 
   const response = await fetch(url, {
