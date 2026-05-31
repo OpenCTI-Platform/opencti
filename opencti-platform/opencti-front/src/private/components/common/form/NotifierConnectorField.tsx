@@ -100,15 +100,18 @@ const NotifierConnectorField: FunctionComponent<
         onInputChange={searchNotifierConnectors}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string },
-        ) => (
-          <li {...props}>
-            <div className={classes.icon}>
-              <ItemIcon type="Notifier" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
-        )}
+          option: { label: string; value: string },
+        ) => {
+          const { key, ...rest } = props as typeof props & { key: string };
+          return (
+            <li key={key} {...rest}>
+              <div className={classes.icon}>
+                <ItemIcon type="Notifier" />
+              </div>
+              <div className={classes.text}>{option.label}</div>
+            </li>
+          );
+        }}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>

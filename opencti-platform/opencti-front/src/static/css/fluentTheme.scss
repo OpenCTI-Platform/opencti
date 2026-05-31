@@ -97,7 +97,7 @@ html[data-theme="fluent"] {
       }
     }
     .MuiInputBase-root {
-      height: 40px;
+      // height: 40px;
       &::after {
         border-bottom: 1px solid var(--fluent-color-primary);
       }
@@ -111,7 +111,6 @@ html[data-theme="fluent"] {
         border-bottom-color: var(--fluent-color-border-hover) !important;
         border-radius: 4px !important;
         padding: 6px 12px !important;
-
       }
     }
   }
@@ -325,7 +324,7 @@ html[data-theme="fluent"] {
     border-bottom-color: var(--fluent-color-border-hover) !important;
     border-radius: 4px !important;
     padding: 6px 12px !important;
-    height: 40px;
+    // height: 40px;
   }
   &[dir="rtl"] {
     body * {
