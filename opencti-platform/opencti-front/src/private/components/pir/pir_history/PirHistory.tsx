@@ -16,6 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
+import { Box } from '@mui/material';
+import { HistoryOutlined } from '@mui/icons-material';
 import { PirHistoryLogsFragment$data } from './__generated__/PirHistoryLogsFragment.graphql';
 import { PirHistoryLogsQuery, PirHistoryLogsQuery$variables } from './__generated__/PirHistoryLogsQuery.graphql';
 import { PirHistoryFragment$key } from './__generated__/PirHistoryFragment.graphql';
@@ -30,6 +32,8 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
+import PirTabHeader from '../PirTabHeader';
+import { pirEntityColor } from '../pir-colors';
 
 const pirHistoryLogFragment = graphql`
   fragment PirHistoryLogFragment on Log {
@@ -170,7 +174,10 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         return (
           <Tooltip title={entityTypeLabel}>
             <div style={{ height: 24 }}>
-              <ItemIcon type={context_data?.entity_type} />
+              <ItemIcon
+                type={context_data?.entity_type}
+                color={pirEntityColor(context_data?.entity_type)}
+              />
             </div>
           </Tooltip>
         );
@@ -199,42 +206,51 @@ const PirHistory = ({ data }: PirHistoryProps) => {
     },
   };
 
-  return queryRef && (
-    <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
-      <DataTable
-        rootRef={ref ?? undefined}
-        removeSelectAll
-        disableLineSelection
-        dataColumns={dataColumns}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        contextFilters={contextFilters}
-        lineFragment={pirHistoryLogFragment}
-        entityTypes={['History']}
-        getComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
-          return pirLogRedirectUri(context_data);
-        }}
-        searchContextFinal={{ entityTypes: ['History'], elementType: 'Pir' }}
-        availableFilterKeys={[
-          'timestamp',
-          'contextObjectLabel',
-          'contextObjectMarking',
-          'contextCreator',
-          'contextCreatedBy',
-          'contextEntityType',
-        ]}
-        resolvePath={(d: PirHistoryLogsFragment$data) => {
-          return d.pirLogs?.edges?.map((e) => e?.node);
-        }}
-        preloadedPaginationProps={{
-          linesQuery: pirHistoryLogsQuery,
-          linesFragment: pirHistoryLogsFragment,
-          queryRef,
-          nodePath: ['pirLogs', 'pageInfo', 'globalCount'],
-          setNumberOfElements: helpers.handleSetNumberOfElements,
-        }}
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 250px)' }}>
+      <PirTabHeader
+        icon={<HistoryOutlined />}
+        label={t_i18n('Activity log')}
+        caption={t_i18n('Chronological log of scoring and flagging events for this PIR')}
       />
-    </div>
+      {queryRef && (
+        <Box sx={{ flex: 1, minHeight: 0 }} ref={(r: HTMLDivElement | null) => setRef(r)}>
+          <DataTable
+            rootRef={ref ?? undefined}
+            removeSelectAll
+            disableLineSelection
+            dataColumns={dataColumns}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            lineFragment={pirHistoryLogFragment}
+            entityTypes={['History']}
+            getComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
+              return pirLogRedirectUri(context_data);
+            }}
+            searchContextFinal={{ entityTypes: ['History'], elementType: 'Pir' }}
+            availableFilterKeys={[
+              'timestamp',
+              'contextObjectLabel',
+              'contextObjectMarking',
+              'contextCreator',
+              'contextCreatedBy',
+              'contextEntityType',
+            ]}
+            resolvePath={(d: PirHistoryLogsFragment$data) => {
+              return d.pirLogs?.edges?.map((e) => e?.node);
+            }}
+            preloadedPaginationProps={{
+              linesQuery: pirHistoryLogsQuery,
+              linesFragment: pirHistoryLogsFragment,
+              queryRef,
+              nodePath: ['pirLogs', 'pageInfo', 'globalCount'],
+              setNumberOfElements: helpers.handleSetNumberOfElements,
+            }}
+          />
+        </Box>
+      )}
+    </Box>
   );
 };
 

@@ -14,12 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { graphql, useFragment } from 'react-relay';
-import React from 'react';
+import React, { useState } from 'react';
+import { Box } from '@mui/material';
+import { GpsFixedOutlined } from '@mui/icons-material';
 import PirKnowledgeEntities from '@components/pir/pir_knowledge/PirKnowledgeEntities';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
 import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../components/list_lines';
+import { useFormatter } from '../../../../components/i18n';
+import PirTabHeader from '../PirTabHeader';
 
 const knowledgeFragment = graphql`
   fragment PirKnowledgeFragment on Pir {
@@ -32,6 +36,8 @@ interface PirKnowledgeProps {
 }
 
 const PirKnowledge = ({ data }: PirKnowledgeProps) => {
+  const { t_i18n } = useFormatter();
+  const [ref, setRef] = useState<HTMLDivElement | null>(null);
   const pir = useFragment(knowledgeFragment, data);
   const pirId = pir.id;
   const LOCAL_STORAGE_KEY = `Pir-SourcesFlaggedList-${pirId}`;
@@ -53,14 +59,22 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   );
 
   return (
-    <div>
-      <PirKnowledgeEntities
-        pirId={pirId}
-        localStorage={localStorage}
-        initialValues={initialValues}
-        additionalHeaderButtons={[]}
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 250px)' }}>
+      <PirTabHeader
+        icon={<GpsFixedOutlined />}
+        label={t_i18n('Flagged threats')}
+        caption={t_i18n('Entities flagged for this priority intelligence requirement')}
       />
-    </div>
+      <Box sx={{ flex: 1, minHeight: 0 }} ref={(r: HTMLDivElement | null) => setRef(r)}>
+        <PirKnowledgeEntities
+          pirId={pirId}
+          localStorage={localStorage}
+          initialValues={initialValues}
+          additionalHeaderButtons={[]}
+          rootRef={ref ?? undefined}
+        />
+      </Box>
+    </Box>
   );
 };
 

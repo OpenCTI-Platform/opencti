@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { useTheme } from '@mui/material/styles';
 import React, { useState } from 'react';
 import type { Theme } from '../../../../../components/Theme';
-import { itemColor } from '../../../../../utils/Colors';
+import { pirEntityColor } from '../../pir-colors';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface PirThreatMapLegendProps {
@@ -62,7 +62,7 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
               width: 10,
               height: 10,
               borderRadius: 10,
-              background: itemColor(type),
+              background: pirEntityColor(type),
             }}
           />
           <span>{t_i18n(`entity_${type}`)}</span>

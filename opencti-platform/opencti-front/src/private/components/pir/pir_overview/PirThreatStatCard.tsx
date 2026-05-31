@@ -18,7 +18,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
+import { pirEntityColor } from '../pir-colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import NumberDifference from '../../../../components/NumberDifference';
 
@@ -39,7 +39,7 @@ const PirThreatStatCard = ({
 }: PirThreatStatCardProps) => {
   const theme = useTheme<Theme>();
   const { n } = useFormatter();
-  const accent = itemColor(entityType);
+  const accent = pirEntityColor(entityType);
   const subtleBorder = alpha(theme.palette.text.primary ?? '#ffffff', 0.05);
 
   return (

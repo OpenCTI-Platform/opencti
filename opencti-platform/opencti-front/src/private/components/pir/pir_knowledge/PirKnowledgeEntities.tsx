@@ -146,11 +146,12 @@ interface PirKnowledgeEntitiesProps {
   localStorage: PaginationLocalStorage<PaginationOptions>;
   initialValues: LocalStorage;
   additionalHeaderButtons: ReactNode[];
+  rootRef?: HTMLDivElement;
 }
 
 type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']>;
 
-const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
+const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons, rootRef }: PirKnowledgeEntitiesProps) => {
   const { fd } = useFormatter();
   const computeLink = useComputeLink();
 
@@ -237,6 +238,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
     <>
       {queryRef && (
         <DataTable
+          rootRef={rootRef}
           removeSelectAll
           disableLineSelection
           dataColumns={dataColumns}

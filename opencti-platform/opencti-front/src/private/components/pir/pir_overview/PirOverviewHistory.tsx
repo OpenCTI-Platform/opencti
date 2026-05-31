@@ -21,7 +21,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { alpha, useTheme } from '@mui/material/styles';
 import { pirLogRedirectUri } from '@components/pir/pir-history-utils';
-import { itemColor } from '../../../../utils/Colors';
+import { pirEntityColor } from '../pir-colors';
 import PirHistoryMessage from '../PirHistoryMessage';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -117,7 +117,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
           const { id, context_data, timestamp } = historyItem;
           const redirectURI = pirLogRedirectUri(context_data);
           const entityType = context_data?.entity_type;
-          const accent = itemColor(entityType);
+          const accent = pirEntityColor(entityType);
 
           return (
             <Box

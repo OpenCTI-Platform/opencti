@@ -24,7 +24,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { PirThreatMapFragment$key } from './__generated__/PirThreatMapFragment.graphql';
 import { getNodes } from '../../../../../utils/connection';
 import { uniqueArray } from '../../../../../utils/utils';
-import { itemColor } from '../../../../../utils/Colors';
+import { pirEntityColor } from '../../pir-colors';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useComputeLink } from '../../../../../utils/hooks/useAppData';
 import Card from '../../../../../components/common/card/Card';
@@ -111,7 +111,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
       ) : (
         <Stack gap={0.5}>
           {items.map((item, index) => {
-            const accent = itemColor(item.type);
+            const accent = pirEntityColor(item.type);
             const link = computeLink({ id: item.id, entity_type: item.type }) ?? '';
             const barWidth = `${Math.max(Math.min(item.score, 100), 2)}%`;
 

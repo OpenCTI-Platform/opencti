@@ -15,8 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
-import { Chip, Tooltip, Alert } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Box, Chip, Tooltip, Alert } from '@mui/material';
+import { DescriptionOutlined, HubOutlined } from '@mui/icons-material';
+import { alpha, useTheme } from '@mui/material/styles';
+import PirTabHeader from '../PirTabHeader';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
 import { emptyFilterGroup, getFilterKeyValues, sanitizeFilterGroupKeysForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -160,6 +162,7 @@ interface PirAnalysesProps {
 
 const PirAnalyses = ({ data }: PirAnalysesProps) => {
   const theme = useTheme<Theme>();
+  const primary = theme.palette.primary.main ?? '#0fbcff';
   const { t_i18n } = useFormatter();
   const { id, pir_criteria } = useFragment(analysesFragment, data);
 
@@ -269,8 +272,15 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
           >
             <Chip
               size="small"
+              icon={<HubOutlined style={{ color: primary }} />}
               label={countLabel}
-              sx={{ width: 100, borderRadius: 1 }}
+              sx={{
+                width: 100,
+                borderRadius: 1,
+                fontWeight: 600,
+                background: alpha(primary, 0.12),
+                border: `1px solid ${alpha(primary, 0.3)}`,
+              }}
             />
           </Tooltip>
         );
@@ -295,16 +305,21 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
   };
 
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 250px)' }}>
+      <PirTabHeader
+        icon={<DescriptionOutlined />}
+        label={t_i18n('Related analyses')}
+        caption={t_i18n('Reports and analyses that contain entities flagged in this PIR')}
+      />
       <Alert
         severity="info"
         variant="outlined"
-        sx={{ marginBottom: 3 }}
+        sx={{ marginBottom: 2 }}
       >
         {t_i18n('Pir analyses disclaimer...')}
       </Alert>
       {queryRef && (
-        <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
+        <Box sx={{ flex: 1, minHeight: 0 }} ref={(r: HTMLDivElement | null) => setRef(r)}>
           <DataTable
             rootRef={ref ?? undefined}
             removeSelectAll
@@ -327,9 +342,9 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
               setNumberOfElements: helpers.handleSetNumberOfElements,
             }}
           />
-        </div>
+        </Box>
       )}
-    </>
+    </Box>
   );
 };
 
