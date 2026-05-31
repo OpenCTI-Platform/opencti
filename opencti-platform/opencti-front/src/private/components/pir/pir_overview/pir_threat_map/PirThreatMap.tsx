@@ -13,22 +13,24 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState } from 'react';
+import React, { CSSProperties, useState } from 'react';
+import { ApexOptions } from 'apexcharts';
 import { alpha, useTheme } from '@mui/material/styles';
-import { Box, Stack, Tooltip, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
+import Chart from '@components/common/charts/Chart';
 import { graphql, useFragment } from 'react-relay';
 import { InfoOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import PirThreatMapTooltip from './PirThreatMapTooltip';
+import useBuildScatterData from './useBuildScatterData';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import { PirThreatMapFragment$key } from './__generated__/PirThreatMapFragment.graphql';
 import { getNodes } from '../../../../../utils/connection';
-import { uniqueArray } from '../../../../../utils/utils';
-import { pirEntityColor } from '../../pir-colors';
-import ItemIcon from '../../../../../components/ItemIcon';
-import { useComputeLink } from '../../../../../utils/hooks/useAppData';
-import Card from '../../../../../components/common/card/Card';
+import { daysAgo, now } from '../../../../../utils/Time';
 import PirThreatMapLegend from './PirThreatMapLegend';
+import { uniqueArray } from '../../../../../utils/utils';
+import { PirThreatMapMarker } from './pirThreatMapUtils';
+import Card from '../../../../../components/common/card/Card';
 
 const pirThreatMapFragment = graphql`
   fragment PirThreatMapFragment on Query {
@@ -55,44 +57,144 @@ const pirThreatMapFragment = graphql`
   }
 `;
 
-const MAX_ITEMS = 12;
-
 interface PirThreatMapProps {
   data: PirThreatMapFragment$key;
 }
 
+const CHART_HEIGHT = 360;
+
 const PirThreatMap = ({ data }: PirThreatMapProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fsd } = useFormatter();
-  const computeLink = useComputeLink();
+  const { t_i18n } = useFormatter();
+  const [tooltipData, setTooltipData] = useState<PirThreatMapMarker[]>();
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   const { stixDomainObjects } = useFragment<PirThreatMapFragment$key>(pirThreatMapFragment, data);
-  const nodes = getNodes(stixDomainObjects);
 
-  const entityTypes = uniqueArray(nodes.flatMap((d) => (d?.entity_type ? [d.entity_type] : [])));
+  const entityTypes = uniqueArray(getNodes(stixDomainObjects).flatMap((d) => {
+    return d?.entity_type ? d.entity_type : [];
+  }));
   const [filteredEntityTypes, setFilteredEntityTypes] = useState(entityTypes);
 
-  const items = nodes
-    .flatMap((d) => {
-      const type = d?.entity_type ?? '';
-      if (!filteredEntityTypes.includes(type)) return [];
-      return [{
-        id: d.id,
-        type,
-        name: d?.representative?.main ?? '',
-        score: d?.pirInformation?.pir_score ?? 0,
-        date: d?.refreshed_at,
-      }];
-    })
-    .sort((a, b) => b.score - a.score || (new Date(b.date).getTime() - new Date(a.date).getTime()))
-    .slice(0, MAX_ITEMS);
+  const series = useBuildScatterData({
+    stixDomainObjects,
+    entityTypes: filteredEntityTypes,
+  });
 
-  const trackColor = alpha(theme.palette.text.primary ?? '#ffffff', 0.06);
+  // Bigger bubbles for clusters that group several entities together.
+  const markerSizes = series.map((s) => {
+    const size = s.data[0]?.meta.size ?? 1;
+    return Math.min(8 + (size - 1) * 2.5, 22);
+  });
+
+  const gridColor = alpha(theme.palette.text.primary ?? '#ffffff', 0.06);
+  const bandColor = alpha(theme.palette.warn?.main ?? '#E6700F', 0.07);
+  const strokeColor = theme.palette.background.paper ?? '#09101e';
+
+  const options: ApexOptions = {
+    chart: {
+      type: 'scatter',
+      background: 'transparent',
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      foreColor: theme.palette.text?.tertiary,
+      fontFamily: '"IBM Plex Sans", sans-serif',
+      events: {
+        // Called when mouse hover a node on map.
+        dataPointMouseEnter: (e, _, opts) => {
+          const apexSeries = opts.w.config.series[opts.seriesIndex];
+          const item = apexSeries.data[opts.dataPointIndex].meta.group as PirThreatMapMarker[];
+          setTooltipData(item);
+          setTooltipPos({ x: e.offsetX, y: e.offsetY });
+        },
+      },
+    },
+    theme: { mode: theme.palette.mode },
+    dataLabels: {
+      enabled: true,
+      offsetY: 1,
+      background: { enabled: false },
+      style: { colors: ['#000000'], fontSize: '10px', fontWeight: '700' },
+      formatter: (_, opts) => {
+        const apexSeries = opts.w.config.series[opts.seriesIndex];
+        const item = apexSeries.data[opts.dataPointIndex].meta;
+        return item.size > 1 ? String(item.size) : '';
+      },
+    },
+    grid: {
+      show: true,
+      borderColor: gridColor,
+      strokeDashArray: 4,
+      xaxis: { lines: { show: true } },
+      yaxis: { lines: { show: true } },
+      padding: { top: 4, right: 8, bottom: 4, left: 8 },
+    },
+    legend: { show: false },
+    tooltip: { enabled: false },
+    xaxis: {
+      type: 'datetime',
+      min: new Date(daysAgo(7)).getTime(),
+      max: new Date(now()).getTime(),
+      tickAmount: 7,
+      labels: { show: false },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      show: false,
+      min: 0,
+      max: 100,
+      tickAmount: 5,
+    },
+    markers: {
+      size: markerSizes.length > 0 ? markerSizes : 10,
+      strokeWidth: 1.5,
+      strokeColors: strokeColor,
+      hover: { sizeOffset: 4 },
+    },
+    annotations: {
+      yaxis: [{
+        y: 66,
+        y2: 100,
+        fillColor: bandColor,
+        borderColor: 'transparent',
+      }],
+    },
+  };
+
+  const containerStyle: CSSProperties = {
+    position: 'relative',
+    paddingLeft: theme.spacing(1),
+    paddingBottom: theme.spacing(1.5),
+    fontSize: 12,
+  };
+
+  const axisStyle: CSSProperties = {
+    position: 'absolute',
+    display: 'flex',
+    justifyContent: 'space-between',
+    color: theme.palette.text?.tertiary,
+  };
+
+  const xStyle: CSSProperties = {
+    ...axisStyle,
+    bottom: -6,
+    left: theme.spacing(1),
+    right: 0,
+  };
+
+  const yStyle: CSSProperties = {
+    ...axisStyle,
+    transform: 'rotate(-90deg)',
+    transformOrigin: 'top left',
+    width: CHART_HEIGHT,
+    left: -12,
+  };
 
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-      {t_i18n('Most relevant threats')}
-      <Tooltip title={t_i18n('Threats flagged in this PIR, ranked by their relevance score')}>
+      {t_i18n('Threat map')}
+      <Tooltip title={t_i18n('Threat map explanations...')}>
         <InfoOutlined
           color="primary"
           fontSize="small"
@@ -104,118 +206,35 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
 
   return (
     <Card title={title}>
-      {items.length === 0 ? (
-        <Typography variant="body2" color={theme.palette.text?.tertiary}>
-          {t_i18n('No data has been found.')}
-        </Typography>
-      ) : (
-        <Stack gap={0.5}>
-          {items.map((item, index) => {
-            const accent = pirEntityColor(item.type);
-            const link = computeLink({ id: item.id, entity_type: item.type }) ?? '';
-            const barWidth = `${Math.max(Math.min(item.score, 100), 2)}%`;
-
-            return (
-              <Box
-                key={item.id}
-                sx={{
-                  borderRadius: 1,
-                  transition: 'background 0.15s ease',
-                  '&:hover': { background: theme.palette.background.accent },
-                }}
-              >
-                <Link
-                  to={link}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: theme.spacing(1.5),
-                    padding: theme.spacing(1),
-                    color: 'inherit',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      flexShrink: 0,
-                      width: 18,
-                      textAlign: 'right',
-                      fontSize: 12,
-                      color: theme.palette.text?.tertiary,
-                    }}
-                  >
-                    {index + 1}
-                  </Typography>
-                  <Box
-                    sx={{
-                      flexShrink: 0,
-                      width: 30,
-                      height: 30,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 1,
-                      background: alpha(accent, 0.14),
-                      border: `1px solid ${alpha(accent, 0.35)}`,
-                    }}
-                  >
-                    <ItemIcon type={item.type} color={accent} size="small" />
-                  </Box>
-                  <Box sx={{ flexShrink: 0, minWidth: 0, width: { xs: 110, sm: 180, md: 240 } }}>
-                    <Typography noWrap sx={{ fontSize: 13, fontWeight: 600 }}>
-                      {item.name}
-                    </Typography>
-                    <Typography noWrap sx={{ fontSize: 11, color: theme.palette.text?.tertiary }}>
-                      {t_i18n(`entity_${item.type}`)}
-                      {item.date ? ` · ${fsd(item.date)}` : ''}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      minWidth: 40,
-                      height: 8,
-                      borderRadius: 1,
-                      background: trackColor,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: barWidth,
-                        height: '100%',
-                        borderRadius: 1,
-                        background: `linear-gradient(90deg, ${alpha(accent, 0.45)}, ${accent})`,
-                        boxShadow: `0 0 8px ${alpha(accent, 0.45)}`,
-                      }}
-                    />
-                  </Box>
-                  <Typography
-                    sx={{
-                      flexShrink: 0,
-                      width: 34,
-                      textAlign: 'right',
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: accent,
-                    }}
-                  >
-                    {item.score}
-                  </Typography>
-                </Link>
-              </Box>
-            );
-          })}
-        </Stack>
-      )}
-      {entityTypes.length > 1 && (
-        <Box sx={{ marginTop: 2 }}>
-          <PirThreatMapLegend
-            entityTypes={entityTypes}
-            onFilter={setFilteredEntityTypes}
+      <div style={containerStyle}>
+        <div style={{ height: CHART_HEIGHT }}>
+          <Chart
+            options={options}
+            series={series as ApexAxisChartSeries}
+            type="scatter"
+            width="100%"
+            height="100%"
           />
-        </Box>
-      )}
+        </div>
+        <div style={xStyle}>
+          <span>{t_i18n('One week ago')}</span>
+          <span>{t_i18n('Today')}</span>
+        </div>
+        <div style={yStyle}>
+          <span>{t_i18n('0 - Less relevant')}</span>
+          <span>{t_i18n('Most relevant - 100')}</span>
+        </div>
+      </div>
+      <PirThreatMapLegend
+        entityTypes={entityTypes}
+        onFilter={setFilteredEntityTypes}
+      />
+      <PirThreatMapTooltip
+        data={tooltipData}
+        x={tooltipPos.x}
+        y={tooltipPos.y}
+        onMouseLeave={() => setTooltipData(undefined)}
+      />
     </Card>
   );
 };
