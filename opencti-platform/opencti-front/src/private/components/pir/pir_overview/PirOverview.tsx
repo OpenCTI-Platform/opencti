@@ -84,7 +84,7 @@ const PirOverviewComponent = ({
   const dataThreatMap = usePreloadedQuery(threatMapQuery, threatMapQueryRef);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, paddingBottom: 3 }}>
       {/* Threat intelligence summary */}
       <PirOverviewCounts data={pir} />
 
