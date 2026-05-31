@@ -116,7 +116,7 @@ const AutocompleteField = <
 
   const helperText = textfieldprops?.helperText;
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
-  const fieldProps = fieldToAutocomplete({
+  const rawFieldProps = fieldToAutocomplete({
     ...muiProps,
     renderInput: ({ inputProps: { value, ...inputProps }, InputProps, ...params }) => (
       <TextField
@@ -137,6 +137,12 @@ const AutocompleteField = <
       />
     ),
   });
+  // Ensure value is never undefined to prevent MUI Autocomplete
+  // from switching between uncontrolled and controlled mode
+  const fieldProps = {
+    ...rawFieldProps,
+    value: rawFieldProps.value === undefined ? null : rawFieldProps.value,
+  };
 
   return (
     <div style={{ position: 'relative' }}>
