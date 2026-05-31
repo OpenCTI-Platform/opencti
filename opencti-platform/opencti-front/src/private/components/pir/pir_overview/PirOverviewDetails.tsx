@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Grid2 as Grid, Typography } from '@mui/material';
+import { Box, Grid2 as Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { PirOverviewDetailsRedisFragment$key } from '@components/pir/pir_overview/__generated__/PirOverviewDetailsRedisFragment.graphql';
 import { InformationOutline } from 'mdi-material-ui';
@@ -76,73 +76,86 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
 
   const criteria: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
 
+  const isOnTime = diffInMinutes <= 1;
+  const processingLabel = isOnTime
+    ? t_i18n('ON TIME')
+    : `${stringFormatMinutes(diffInMinutes, t_i18n)} ${t_i18n('behind live stream')}`;
+
   return (
-    <Grid size={{ xs: 12 }}>
-      <CardAccordion
-        title="PIR Details"
-        preview={(
-          <div style={{
+    <CardAccordion
+      title={t_i18n('Configuration')}
+      preview={(
+        <Box
+          data-testid="pir-configuration-summary"
+          sx={{
             flex: 1,
-            display: 'flex',
-            gap: theme.spacing(3),
-            justifyContent: 'space-between',
             marginRight: theme.spacing(5),
+            color: theme.palette.text.tertiary,
+            fontSize: 13,
+            lineHeight: '21px',
           }}
+        >
+          {t_i18n('Rescan period, filters, processing status and criteria')}
+        </Box>
+      )}
+    >
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Label>{t_i18n('Description')}</Label>
+          <ExpandableMarkdown source={pir.description} limit={400} />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Label>{t_i18n('Criteria')}</Label>
+          <PirCriteriaDisplay criteria={criteria} full />
+        </Grid>
+        <Grid size={{ xs: 6, md: 3 }}>
+          <Label>{t_i18n('Rescan period (days)')}</Label>
+          <Typography variant="body2">
+            {pir.pir_rescan_days}
+          </Typography>
+        </Grid>
+        <Grid size={{ xs: 6, md: 3 }}>
+          <Label>{t_i18n('Creation date')}</Label>
+          <Typography variant="body2">
+            {fldt(pir.created_at)}
+          </Typography>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Label>{t_i18n('Filters')}</Label>
+          <FilterIconButton
+            key={pir.pir_filters}
+            filters={JSON.parse(pir.pir_filters)}
+            entityTypes={['Stix-Core-Object']}
+            variant="tag"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Label
+            action={(
+              <Tooltip title={`${t_i18n('Last event processed')}: ${fldt(lastEventDate)}`}>
+                <InformationOutline
+                  fontSize="small"
+                  color="primary"
+                  style={{ cursor: 'default' }}
+                />
+              </Tooltip>
+            )}
           >
-            <div>
-              <Label>{t_i18n('Rescan period (days)')}</Label>
-              <Typography variant="body2" gutterBottom>
-                {pir.pir_rescan_days}
-              </Typography>
-            </div>
-            <div>
-              <Label>{t_i18n('Filters')}</Label>
-              <FilterIconButton
-                key={pir.pir_filters}
-                filters={JSON.parse(pir.pir_filters)}
-                entityTypes={['Stix-Core-Object']}
-                variant="tag"
-              />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <Label>{t_i18n('Processing delay')}</Label>
-              <Typography variant="body2" gutterBottom style={{ display: 'flex' }}>
-                <span>
-                  {diffInMinutes > 1 ? `${stringFormatMinutes(diffInMinutes, t_i18n)} ${t_i18n('behind live stream')}` : t_i18n('ON TIME')}
-                </span>
-                <Tooltip title={`${t_i18n('Last event processed')}: ${fldt(lastEventDate)}`}>
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default', marginLeft: 8 }}
-                  />
-                </Tooltip>
-              </Typography>
-              <Tag label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`} />
-            </div>
-            <div>
-              <Label>{t_i18n('Creation date')}</Label>
-              {fldt(pir.created_at)}
-            </div>
-            <div>
-              <Label>{t_i18n('Creators')}</Label>
-              <ItemCreators creators={pir.creators ?? []} />
-            </div>
-          </div>
-        )}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3) }}>
-          <div>
-            <Label>{t_i18n('Description')}</Label>
-            <ExpandableMarkdown source={pir.description} limit={400} />
-          </div>
-          <div>
-            <Label>{t_i18n('Criteria')}</Label>
-            <PirCriteriaDisplay criteria={criteria} full />
-          </div>
-        </div>
-      </CardAccordion>
-    </Grid>
+            {t_i18n('Processing delay')}
+          </Label>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2">
+              {processingLabel}
+            </Typography>
+            <Tag label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`} />
+          </Box>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Label>{t_i18n('Creators')}</Label>
+          <ItemCreators creators={pir.creators ?? []} />
+        </Grid>
+      </Grid>
+    </CardAccordion>
   );
 };
 

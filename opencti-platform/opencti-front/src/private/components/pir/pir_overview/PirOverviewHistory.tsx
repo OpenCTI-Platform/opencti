@@ -19,8 +19,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { pirLogRedirectUri } from '@components/pir/pir-history-utils';
+import { itemColor } from '../../../../utils/Colors';
 import PirHistoryMessage from '../PirHistoryMessage';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -84,16 +85,30 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   const pir = useFragment(pirFragment, dataPir);
   const { pirLogs } = useFragment(pirHistoryFragment, dataHistory);
   const history = (pirLogs?.edges ?? []).flatMap((e) => e?.node ?? []);
+  const subtleBorder = alpha(theme.palette.text.primary ?? '#ffffff', 0.05);
 
   return (
     <Card
-      fullHeight={false}
       title={t_i18n('News feed')}
-      sx={{ maxHeight: '899px', overflow: 'auto' }}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        minHeight: 360,
+      }}
     >
-      <div style={{ display: 'flex', gap: theme.spacing(0.5), flexDirection: 'column' }}>
+      <Box
+        data-testid="pir-news-feed"
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          marginX: -1,
+          paddingX: 1,
+        }}
+      >
         {history.length === 0 && (
-          <Typography variant="body2">
+          <Typography variant="body2" color={theme.palette.text?.tertiary}>
             {t_i18n('No recent history for this PIR')}
           </Typography>
         )}
@@ -101,13 +116,18 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
         {history.map((historyItem) => {
           const { id, context_data, timestamp } = historyItem;
           const redirectURI = pirLogRedirectUri(context_data);
+          const entityType = context_data?.entity_type;
+          const accent = itemColor(entityType);
 
           return (
             <Box
               key={id}
               sx={{
-                padding: 1,
                 borderRadius: 1,
+                transition: 'background 0.15s ease',
+                '&:not(:last-of-type)': {
+                  borderBottom: `1px solid ${subtleBorder}`,
+                },
                 '&:hover': { background: theme.palette.background.accent },
               }}
             >
@@ -116,29 +136,49 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                 style={{
                   color: 'inherit',
                   display: 'flex',
-                  gap: theme.spacing(2),
-                  alignItems: 'center',
+                  gap: theme.spacing(1.5),
+                  alignItems: 'flex-start',
+                  padding: theme.spacing(1.25),
                 }}
               >
-                <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
-                  <div>
-                    <ItemIcon type={context_data?.entity_type} />
-                  </div>
+                <Tooltip title={t_i18n(displayEntityTypeForTranslation(entityType ?? ''))}>
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      width: 32,
+                      height: 32,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 1,
+                      background: alpha(accent, 0.14),
+                      border: `1px solid ${alpha(accent, 0.35)}`,
+                    }}
+                  >
+                    <ItemIcon type={entityType} color={accent} size="small" />
+                  </Box>
                 </Tooltip>
-                <div>
-                  <Typography variant="body2" color={theme.palette.text?.light}>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text?.tertiary,
+                      fontSize: 11,
+                      marginBottom: 0.25,
+                    }}
+                  >
                     {nsdt(timestamp)}
                   </Typography>
                   <PirHistoryMessage
                     log={historyItem}
                     pirName={pir.name}
                   />
-                </div>
+                </Box>
               </Link>
             </Box>
           );
         })}
-      </div>
+      </Box>
     </Card>
   );
 };

@@ -1,10 +1,8 @@
 import { Page } from '@playwright/test';
 import PirTabsPage from './pirTabs.pageModel';
 import DataTablePage from './DataTable.pageModel';
-import CardPage from './card.pageModel';
 
 export default class PirDetailsPageModel {
-  card = new CardPage(this.page);
   tabs = new PirTabsPage(this.page);
   dataTable = new DataTablePage(this.page);
 
@@ -25,7 +23,7 @@ export default class PirDetailsPageModel {
   }
 
   toggleDetails() {
-    return this.page.getByText('Rescan period (days)').click();
+    return this.page.getByTestId('pir-configuration-summary').click();
   }
 
   getEntityTypeCount(label: string) {
@@ -33,17 +31,14 @@ export default class PirDetailsPageModel {
   }
 
   getTopAuthorEntities(author: string) {
-    return this.card
-      .getTextInCard('Top authors of threat entities', author);
+    return this.page.getByTestId('pir-top-authors-entities').getByText(author);
   }
 
   getTopAuthorRelationships(author: string) {
-    return this.card
-      .getTextInCard('Top authors of relationships from threats', author);
+    return this.page.getByTestId('pir-top-authors-relationships').getByText(author);
   }
 
   getNewsFeedItem(news: string) {
-    return this.card
-      .getTextInCard('News feed', news);
+    return this.page.getByTestId('pir-news-feed').getByText(news);
   }
 }

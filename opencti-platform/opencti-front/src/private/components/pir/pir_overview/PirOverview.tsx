@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import PirThreatMap from './pir_threat_map/PirThreatMap';
@@ -83,20 +84,33 @@ const PirOverviewComponent = ({
   const dataThreatMap = usePreloadedQuery(threatMapQuery, threatMapQueryRef);
 
   return (
-    <Grid container spacing={3}>
-      <Grid size={{ xs: 12 }} container direction="column" spacing={3}>
-        <PirOverviewDetails data={pir} dataStream={dataRedis} />
-        <PirOverviewCounts data={pir} />
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* Threat intelligence summary */}
+      <PirOverviewCounts data={pir} />
+
+      {/* Core intelligence: activity feed + analytics */}
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <PirOverviewCountFlagged data={pir} />
+            <PirOverviewTopSources data={pir} />
+          </Box>
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <Box sx={{ position: 'relative', height: '100%', minHeight: 360 }}>
+            <Box sx={{ position: 'absolute', inset: 0 }}>
+              <PirOverviewHistory dataHistory={dataHistory} dataPir={pir} />
+            </Box>
+          </Box>
+        </Grid>
       </Grid>
-      <Grid size={{ xs: 6 }} container direction="column" spacing={3}>
-        <PirOverviewHistory dataHistory={dataHistory} dataPir={pir} />
-      </Grid>
-      <Grid size={{ xs: 6 }} container direction="column" spacing={3}>
-        <PirThreatMap data={dataThreatMap} />
-        <PirOverviewTopSources data={pir} />
-        <PirOverviewCountFlagged data={pir} />
-      </Grid>
-    </Grid>
+
+      {/* Secondary, more technical visualisation */}
+      <PirThreatMap data={dataThreatMap} />
+
+      {/* Operational configuration, collapsed by default */}
+      <PirOverviewDetails data={pir} dataStream={dataRedis} />
+    </Box>
   );
 };
 

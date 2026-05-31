@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { CSSProperties, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import Grid from '@mui/material/Grid2';
 import { graphql, useFragment } from 'react-relay';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -121,50 +120,48 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
   );
 
   return (
-    <Grid size={{ xs: 12 }}>
-      <Card title={title}>
-        <div style={containerStyle}>
-          <div style={{ height: CHART_SIZE }}>
-            <WidgetScatter
-              series={series}
-              options={{
-                background: theme.palette.background.accent,
-                // Called when mouse hover a node on map.
-                dataPointMouseEnter: (e, _, opts) => {
-                  const apexSeries = opts.w.config.series[opts.seriesIndex];
-                  const item = apexSeries.data[opts.dataPointIndex].meta.group as PirThreatMapMarker[];
-                  setTooltipData(item);
-                  setTooltipPos({ x: e.offsetX, y: e.offsetY });
-                },
-                labelsFormatter: (_, opts) => {
-                  const apexSeries = opts.w.config.series[opts.seriesIndex];
-                  const item = apexSeries.data[opts.dataPointIndex].meta;
-                  return item.size > 1 ? item.size : '';
-                },
-              }}
-            />
-          </div>
-          <div style={xStyle}>
-            <span>{t_i18n('One week ago')}</span>
-            <span>{t_i18n('Today')}</span>
-          </div>
-          <div style={yStyle}>
-            <span>{t_i18n('0 - Less relevant')}</span>
-            <span>{t_i18n('Most relevant - 100')}</span>
-          </div>
+    <Card title={title}>
+      <div style={containerStyle}>
+        <div style={{ height: CHART_SIZE }}>
+          <WidgetScatter
+            series={series}
+            options={{
+              background: theme.palette.background.accent,
+              // Called when mouse hover a node on map.
+              dataPointMouseEnter: (e, _, opts) => {
+                const apexSeries = opts.w.config.series[opts.seriesIndex];
+                const item = apexSeries.data[opts.dataPointIndex].meta.group as PirThreatMapMarker[];
+                setTooltipData(item);
+                setTooltipPos({ x: e.offsetX, y: e.offsetY });
+              },
+              labelsFormatter: (_, opts) => {
+                const apexSeries = opts.w.config.series[opts.seriesIndex];
+                const item = apexSeries.data[opts.dataPointIndex].meta;
+                return item.size > 1 ? item.size : '';
+              },
+            }}
+          />
         </div>
-        <PirThreatMapLegend
-          entityTypes={entityTypes}
-          onFilter={setFilteredEntityTypes}
-        />
-        <PirThreatMapTooltip
-          data={tooltipData}
-          x={tooltipPos.x}
-          y={tooltipPos.y}
-          onMouseLeave={() => setTooltipData(undefined)}
-        />
-      </Card>
-    </Grid>
+        <div style={xStyle}>
+          <span>{t_i18n('One week ago')}</span>
+          <span>{t_i18n('Today')}</span>
+        </div>
+        <div style={yStyle}>
+          <span>{t_i18n('0 - Less relevant')}</span>
+          <span>{t_i18n('Most relevant - 100')}</span>
+        </div>
+      </div>
+      <PirThreatMapLegend
+        entityTypes={entityTypes}
+        onFilter={setFilteredEntityTypes}
+      />
+      <PirThreatMapTooltip
+        data={tooltipData}
+        x={tooltipPos.x}
+        y={tooltipPos.y}
+        onMouseLeave={() => setTooltipData(undefined)}
+      />
+    </Card>
   );
 };
 

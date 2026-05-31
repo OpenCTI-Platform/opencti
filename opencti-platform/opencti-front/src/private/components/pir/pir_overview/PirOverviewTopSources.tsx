@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import Grid from '@mui/material/Grid2';
+import Box from '@mui/material/Box';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
 import PirRelationshipsDonut from '@components/pir/PirRelationshipsDonut';
@@ -57,29 +58,33 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
 
   return (
     <Grid container spacing={3}>
-      <Grid size={{ xs: 6 }}>
+      <Grid size={{ xs: 12, sm: 6 }}>
         <Card
           padding="small"
           title={t_i18n('Top authors of threat entities')}
         >
-          <StixCoreObjectsDonut
-            dataSelection={flaggedEntitiesTopSourcesDataSelection}
-            variant="inLine"
-            height={250}
-            startDate={null}
-            endDate={null}
-            withoutTitle
-            popover={undefined}
-            host={undefined}
-          />
+          <Box data-testid="pir-top-authors-entities">
+            <StixCoreObjectsDonut
+              dataSelection={flaggedEntitiesTopSourcesDataSelection}
+              variant="inLine"
+              height={250}
+              startDate={null}
+              endDate={null}
+              withoutTitle
+              popover={undefined}
+              host={undefined}
+            />
+          </Box>
         </Card>
       </Grid>
-      <Grid size={{ xs: 6 }}>
+      <Grid size={{ xs: 12, sm: 6 }}>
         <Card
           padding="small"
           title={t_i18n('Top authors of relationships from threats')}
         >
-          <PirRelationshipsDonut pirId={id} />
+          <Box data-testid="pir-top-authors-relationships">
+            <PirRelationshipsDonut pirId={id} />
+          </Box>
         </Card>
       </Grid>
     </Grid>

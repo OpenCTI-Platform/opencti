@@ -16,28 +16,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { CSSProperties, Suspense } from 'react';
 import Grid from '@mui/material/Grid2';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirOverviewCountsQuery } from './__generated__/PirOverviewCountsQuery.graphql';
 import { PirOverviewCountsFragment$key } from './__generated__/PirOverviewCountsFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import type { Theme } from '../../../../components/Theme';
-import CardTitle from '../../../../components/common/card/CardTitle';
-import CardNumber from '../../../../components/common/card/CardNumber';
+import PirThreatStatCard from './PirThreatStatCard';
+import PirOverviewSection from './PirOverviewSection';
 
 const PirOverviewCountsDummy = () => {
   const theme = useTheme<Theme>();
   const dummyStyle: CSSProperties = {
-    height: 97,
-    background: theme.palette.background.paper,
+    height: 110,
+    borderRadius: 4,
+    background: theme.palette.background.secondary,
+    border: `1px solid ${alpha(theme.palette.text.primary ?? '#ffffff', 0.05)}`,
   };
   return (
     <>
-      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
-      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
-      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
-      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 6, md: 3 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 6, md: 3 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 6, md: 3 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 6, md: 3 }} style={dummyStyle}></Grid>
     </>
   );
 };
@@ -73,8 +75,8 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
   const { t_i18n } = useFormatter();
 
   return (
-    <Grid key={label} size={{ xs: 3 }}>
-      <CardNumber
+    <Grid key={label} size={{ xs: 6, md: 3 }}>
+      <PirThreatStatCard
         label={t_i18n(`entity_${label}`)}
         entityType={label}
         value={value}
@@ -163,10 +165,10 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
   );
 
   return (
-    <Grid size={{ xs: 12 }}>
-      <CardTitle>
-        {t_i18n('Number of threats')}
-      </CardTitle>
+    <PirOverviewSection
+      label={t_i18n('Threat landscape')}
+      caption={t_i18n('Entities flagged for this priority intelligence requirement')}
+    >
       <Grid container spacing={3}>
         <Suspense fallback={<PirOverviewCountsDummy />}>
           {countsQueryRef && counts24hQueryRef && (
@@ -177,7 +179,7 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
           )}
         </Suspense>
       </Grid>
-    </Grid>
+    </PirOverviewSection>
   );
 };
 
