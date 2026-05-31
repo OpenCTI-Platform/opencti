@@ -1,31 +1,27 @@
 import type { CaseRfiSlaApiResponse } from './caseRfiSlaTypes';
-import mockCaseRfiSlaResponse from './mockCaseRfiSlaResponse.json';
 
 export interface CaseRfiSlaApiOptions {
   signal?: AbortSignal;
   baseUrl?: string;
 }
 
-const MOCK_RESPONSE = mockCaseRfiSlaResponse as CaseRfiSlaApiResponse;
-
-const filterMockResults = (openctiIds: string[]): CaseRfiSlaApiResponse => {
-  if (openctiIds.length === 0) {
-    return MOCK_RESPONSE;
-  }
-
-  const matching = MOCK_RESPONSE.results.filter((result) => openctiIds.includes(result.opencti_id));
-  return {
-    results: matching.length > 0 ? matching : MOCK_RESPONSE.results,
-  };
-};
-
 export async function fetchCaseRfiSlaByIds(
   openctiIds: string[],
-  _options: CaseRfiSlaApiOptions = {},
+  options: CaseRfiSlaApiOptions = {},
 ): Promise<CaseRfiSlaApiResponse> {
-  // TODO: replace with real endpoint once available.
-  await new Promise((resolve) => {
-    setTimeout(resolve, 0);
+  const baseUrl = options.baseUrl ?? 'http://135.181.243.102:32771';
+  const url = `${baseUrl}/webhook/frontend/case-sla`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ case_ids: openctiIds }),
+    signal: options.signal,
   });
-  return filterMockResults(openctiIds);
+
+  if (!response.ok) {
+    throw new Error(`Case SLA API request failed: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json() as Promise<CaseRfiSlaApiResponse>;
 }

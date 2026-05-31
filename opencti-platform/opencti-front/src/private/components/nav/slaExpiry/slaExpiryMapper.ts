@@ -26,7 +26,6 @@ export const mapCaseRfiSlaResponseToAlerts = (
   fetchedAtMs: number = Date.now(),
 ): SlaExpiryAlertItem[] => {
   const alerts: SlaExpiryAlertItem[] = [];
-
   for (const result of response.results) {
     for (const slaValue of result.sla_data.values) {
       if (hasCycleMetrics(slaValue.ongoingCycle)) {

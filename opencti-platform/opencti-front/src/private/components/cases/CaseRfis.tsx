@@ -172,10 +172,12 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const dataColumns = useMemo(() => ({
     name: {
       label: 'Name',
+      percentWidth: 10,
       isSortable: true,
     },
     remaining_time: {
       label: 'Remaining Time',
+      percentWidth: 20,
       isSortable: false,
       render: (data: { id: string }) => {
         const snapshot = slaRemainingById[data.id];
@@ -190,19 +192,30 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         );
       },
     },
-    priority: {},
-    severity: {},
-    objectAssignee: {},
+    priority: {
+      percentWidth: 8,
+    },
+    severity: {
+      percentWidth: 8,
+    },
+    objectAssignee: {
+      percentWidth: 8,
+    },
     creator: {
       percentWidth: 10,
       isSortable: isRuntimeSort,
     },
-    objectLabel: {},
-    created: {
-      percentWidth: 9,
+    objectLabel: {
+      percentWidth: 12,
     },
-    x_opencti_workflow_id: {},
+    created: {
+      percentWidth: 8,
+    },
+    x_opencti_workflow_id: {
+      percentWidth: 8,
+    },
     objectMarking: {
+      percentWidth: 8,
       isSortable: isRuntimeSort,
     },
   }), [isRuntimeSort, nowMs, slaRemainingById]);

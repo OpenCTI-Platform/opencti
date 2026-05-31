@@ -7,7 +7,7 @@ import type {
 } from './slaExpiryTypes';
 
 /** Fixed pill width so expand/collapse does not shift horizontally under the search field. */
-export const SLA_ALERT_PILL_WIDTH_PX = 520;
+export const SLA_ALERT_PILL_WIDTH_PX = 450;
 
 const PHASE_COLORS: Record<SlaExpiryPhase, { main: string; soft: string }> = {
   green: { main: '#12A20D', soft: '#E2F3E1' },

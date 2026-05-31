@@ -19,6 +19,7 @@ const CaseRfiRemainingTimeCell: FunctionComponent<CaseRfiRemainingTimeCellProps>
   snapshot,
   nowMs,
 }) => {
+  debugger;
   const progress = getCaseRfiSlaProgress(snapshot, nowMs);
   const { remainingTimeMs } = getCaseRfiSlaMetricsAt(snapshot, nowMs);
   const remainingLabel = formatCaseRfiSlaDurationDisplay(remainingTimeMs);
