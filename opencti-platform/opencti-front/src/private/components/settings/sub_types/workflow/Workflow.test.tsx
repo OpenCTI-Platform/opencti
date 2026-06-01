@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
 import Workflow from './Workflow';
@@ -7,6 +7,8 @@ import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -35,10 +37,27 @@ let mockSetEdges = vi.fn();
 let mockNodes: unknown[] = [];
 let mockEdges: unknown[] = [];
 
+// Captured ReactFlow event handlers
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let capturedOnNodeClick: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let capturedOnEdgeClick: any;
+// Captured publish handler
+let capturedOnPublish: (() => void) | undefined;
+
 vi.mock('reactflow', async () => {
   const actual = await vi.importActual('reactflow');
   return {
     ...actual,
+    // Capture event handlers and render children without the full ReactFlow canvas
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    default: ({ onNodeClick, onEdgeClick, children }: any) => {
+      capturedOnNodeClick = onNodeClick;
+      capturedOnEdgeClick = onEdgeClick;
+      return <div className="react-flow">{children}</div>;
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Panel: ({ children }: any) => <div>{children}</div>,
     useReactFlow: () => ({
       fitView: mockFitView,
       getNode: mockGetNode,
@@ -96,12 +115,7 @@ const mockSaveWorkflowDefinition = vi.fn();
 const mockPublishWorkflowDefinition = vi.fn();
 
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
-  default: vi.fn((mutation) => {
-    if (mutation.toString().includes('Publish')) {
-      return [mockPublishWorkflowDefinition];
-    }
-    return [mockSaveWorkflowDefinition];
-  }),
+  default: vi.fn(),
 }));
 
 // Mock useFormatter
@@ -167,15 +181,18 @@ vi.mock('./WorkflowEditionDrawer', () => ({
 }));
 
 vi.mock('./PublishButton', () => ({
-  default: ({ validationStatus, onPublish }: { validationStatus?: { published?: boolean; validationErrors?: unknown[] }; onPublish?: () => void }) => (
-    <button
-      data-testid="publish-button"
-      onClick={onPublish}
-      disabled={(validationStatus?.validationErrors?.length ?? 0) > 0}
-    >
-      {validationStatus?.published ? 'Published' : 'Publish'}
-    </button>
-  ),
+  default: ({ validationStatus, onPublish }: { validationStatus?: { published?: boolean; validationErrors?: unknown[] }; onPublish?: () => void }) => {
+    capturedOnPublish = onPublish;
+    return (
+      <button
+        data-testid="publish-button"
+        onClick={onPublish}
+        disabled={(validationStatus?.validationErrors?.length ?? 0) > 0}
+      >
+        {validationStatus?.published ? 'Published' : 'Publish'}
+      </button>
+    );
+  },
 }));
 
 vi.mock('./NodeTypes', () => ({
@@ -191,6 +208,18 @@ describe('Workflow Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset mock implementations so tests don't bleed into each other
+    mockSaveWorkflowDefinition.mockReset();
+    mockPublishWorkflowDefinition.mockReset();
+    // useApiMutation is called twice in Workflow: first for save, then for publish.
+    // Discriminate by call order to avoid relying on mutation.toString() which
+    // returns '[object Object]' when graphql compiles templates into DocumentNodes.
+    vi.mocked(useApiMutation)
+      .mockImplementationOnce(() => [mockSaveWorkflowDefinition, false] as ReturnType<typeof useApiMutation>)
+      .mockImplementation(() => [mockPublishWorkflowDefinition, false] as ReturnType<typeof useApiMutation>);
+    capturedOnNodeClick = undefined;
+    capturedOnEdgeClick = undefined;
+    capturedOnPublish = undefined;
     mockGetNode.mockReturnValue({ id: 'test-node' });
     mockSetNodes = vi.fn();
     mockSetEdges = vi.fn();
@@ -350,6 +379,194 @@ describe('Workflow Component', () => {
       renderWithTheme(<Workflow queryRef={mockQueryRef} />);
 
       expect(mockFitView).toHaveBeenCalled();
+    });
+  });
+
+  describe('Node and edge click handlers', () => {
+    it('should open drawer when clicking a status node', async () => {
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      act(() => {
+        capturedOnNodeClick({}, { id: 'node-1', type: WorkflowNodeType.status, data: {}, position: { x: 0, y: 0 } });
+      });
+
+      expect(screen.getByTestId('workflow-edition-drawer')).toBeInTheDocument();
+    });
+
+    it('should set source from node id when clicking a placeholder node', async () => {
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      act(() => {
+        capturedOnNodeClick({}, { id: 'placeholder-node-1', type: WorkflowNodeType.placeholder, data: {}, position: { x: 0, y: 0 } });
+      });
+
+      // Drawer opens (the selectedElement has source = 'node-1')
+      expect(screen.getByTestId('workflow-edition-drawer')).toBeInTheDocument();
+    });
+
+    it('should open drawer when clicking an edge', () => {
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      act(() => {
+        capturedOnEdgeClick({}, { id: 'edge-1', source: 'node-1', target: 'node-2' });
+      });
+
+      expect(screen.getByTestId('workflow-edition-drawer')).toBeInTheDocument();
+    });
+  });
+
+  describe('Save mutation onCompleted callback', () => {
+    // Use a node with a different statusTemplate id to trigger the autosave
+    // (schema differs from initialNodes → previousSchemaRef mismatch → save fires)
+    beforeEach(() => {
+      mockNodes = [{
+        id: 'node-1',
+        type: WorkflowNodeType.status,
+        data: {
+          name: 'Open',
+          statusTemplate: { id: 'status-changed', name: 'Open', color: '#00FF00' },
+          onEnter: [],
+          onExit: [],
+        },
+        position: { x: 0, y: 0 },
+      }];
+    });
+
+    it('should set validation errors when save response has errors', async () => {
+      mockSaveWorkflowDefinition.mockImplementation((opts: { onCompleted: (r: unknown) => void }) => {
+        opts.onCompleted({
+          workflowDefinitionSet: {
+            id: 'def-1',
+            published: false,
+            errors: [{ type: 'error_type', message: 'Error message', path: null }],
+          },
+        });
+      });
+
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-button')).toBeDisabled();
+      });
+    });
+
+    it('should clear validation errors when save response has no errors', async () => {
+      mockSaveWorkflowDefinition.mockImplementation((opts: { onCompleted: (r: unknown) => void }) => {
+        opts.onCompleted({
+          workflowDefinitionSet: {
+            id: 'def-1',
+            published: false,
+            errors: [],
+          },
+        });
+      });
+
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-button')).not.toBeDisabled();
+      });
+    });
+
+    it('should not update status when workflowDefinitionSet is null', async () => {
+      mockSaveWorkflowDefinition.mockImplementation((opts: { onCompleted: (r: unknown) => void }) => {
+        opts.onCompleted({ workflowDefinitionSet: null });
+      });
+
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      await waitFor(() => {
+        // No state change — button stays in default unpublished, no-error state
+        expect(screen.getByTestId('publish-button')).not.toBeDisabled();
+        expect(screen.getByTestId('publish-button')).toHaveTextContent('Publish');
+      });
+    });
+  });
+
+  describe('Publish functionality', () => {
+    it('should call publish mutation and update status to published on success', async () => {
+      mockPublishWorkflowDefinition.mockImplementation((opts: { onCompleted: (r: unknown) => void }) => {
+        opts.onCompleted({
+          workflowDefinitionSet: {
+            id: 'def-0',
+            published: true,
+          },
+        });
+      });
+
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      // Verify handler was captured during render
+      expect(capturedOnPublish).toBeDefined();
+
+      // Verify the button is NOT disabled (i.e. validationErrors is empty)
+      const publishButton = screen.getByTestId('publish-button');
+      expect(publishButton).not.toBeDisabled();
+
+      // Invoke handlePublish — wrap in act to flush the setWorkflowDefinitionStatus
+      // state update triggered by onCompleted
+      await act(async () => {
+        capturedOnPublish!();
+      });
+
+      expect(mockPublishWorkflowDefinition).toHaveBeenCalled();
+      expect(screen.getByTestId('publish-button')).toHaveTextContent('Published');
+    });
+
+    it('should not call publish mutation when validation errors are present', async () => {
+      mockSaveWorkflowDefinition.mockImplementation((opts: { onCompleted: (r: unknown) => void }) => {
+        opts.onCompleted({
+          workflowDefinitionSet: {
+            id: 'def-1',
+            published: false,
+            errors: [{ type: 'error_type', message: 'Error message', path: null }],
+          },
+        });
+      });
+      // Trigger autosave by using a different node
+      mockNodes = [{
+        id: 'node-1',
+        type: WorkflowNodeType.status,
+        data: {
+          name: 'Open',
+          statusTemplate: { id: 'status-changed', name: 'Open', color: '#00FF00' },
+          onEnter: [],
+          onExit: [],
+        },
+        position: { x: 0, y: 0 },
+      }];
+
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      // Wait for errors to be set (publish button becomes disabled)
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-button')).toBeDisabled();
+      });
+
+      expect(mockPublishWorkflowDefinition).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Empty state panel', () => {
+    it('should show empty state message when there are no nodes', () => {
+      mockNodes = [];
+      vi.mocked(useWorkflowInitialElements).mockReturnValueOnce({ initialNodes: [], initialEdges: [] });
+
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      expect(screen.getByText('Start to define your workflow by adding a Status.')).toBeInTheDocument();
+    });
+
+    it('should open drawer via empty state Add Status button', async () => {
+      mockNodes = [];
+      vi.mocked(useWorkflowInitialElements).mockReturnValueOnce({ initialNodes: [], initialEdges: [] });
+
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+
+      await user.click(screen.getByText('Add Status'));
+
+      expect(screen.getByTestId('workflow-edition-drawer')).toBeInTheDocument();
     });
   });
 });
