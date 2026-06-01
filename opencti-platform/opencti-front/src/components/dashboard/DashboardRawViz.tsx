@@ -39,6 +39,22 @@ const DashboardRawViz = ({
         />
       );
     case 'custom-attributes':
+      return (
+        <StixCoreObjectsCustomAttributes
+          variant={undefined}
+          height={undefined}
+          endDate={endDate ?? undefined}
+          startDate={startDate ?? undefined}
+          widgetId={widget.id}
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters as Record<string, unknown>}
+          title={undefined}
+          popover={popover}
+          host={host}
+          entityId={host?.kind === 'custom-view' ? host.customViewTargetEntityId : undefined}
+        />
+      );
+    case 'custom-attributes':
       if (isCustomAttributesWidgetEnable) {
         return (
           <StixCoreObjectsCustomAttributes
