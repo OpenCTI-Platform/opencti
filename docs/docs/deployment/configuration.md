@@ -139,6 +139,8 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 #### Technical customization
 
+test
+
 | Parameter                                           | Environment variable                                     | Default value | Description                                                                 |
 |:----------------------------------------------------|:---------------------------------------------------------|:--------------|:----------------------------------------------------------------------------|
 | app:graphql:playground:enabled                      | APP__GRAPHQL__PLAYGROUND__ENABLED                        | `true`        | Enable the playground on /public/graphql                                    |
