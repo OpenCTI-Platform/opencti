@@ -232,7 +232,7 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
-            {(retentionRule.scope === 'knowledge')
+            {retentionRule.scope === 'knowledge'
               && (
                 <>
                   <Box
