@@ -95,12 +95,6 @@ export class TelemetryMeterManager {
   // Number of decay rules created
   decayRuleCreationCount = 0;
 
-  // Number of history retention rules created
-  retentionHistoryCreationCount = 0;
-
-  // Number of activity retention rules created
-  retentionActivityCreationCount = 0;
-
   // Whether the history retention rule is active on the platform (0 or 1)
   isHistoryRetentionRuleActive = 0;
 
@@ -314,14 +308,6 @@ export class TelemetryMeterManager {
     this.decayRuleCreationCount = n;
   }
 
-  setRetentionHistoryCreationCount(n: number) {
-    this.retentionHistoryCreationCount = n;
-  }
-
-  setRetentionActivityCreationCount(n: number) {
-    this.retentionActivityCreationCount = n;
-  }
-
   setIsHistoryRetentionRuleActive(n: number) {
     this.isHistoryRetentionRuleActive = n;
   }
@@ -391,8 +377,6 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
-    this.registerGauge('retention_history_creation_count', 'Number of history retention rules created', 'retentionHistoryCreationCount');
-    this.registerGauge('retention_activity_creation_count', 'Number of activity retention rules created', 'retentionActivityCreationCount');
     this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_enabled', 'Whether activity is enabled on the platform (has activity listeners)', 'isActivityEnabled', { unit: 'boolean' });
