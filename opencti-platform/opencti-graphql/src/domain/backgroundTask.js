@@ -46,7 +46,18 @@ export const findById = async (context, user, taskId) => {
 };
 
 export const findBackgroundTaskPaginated = (context, user, args) => {
-  return pageEntitiesConnection(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
+  const initiatorFilter = {
+    mode: 'and',
+    filters: [{ key: ['initiator_id'], values: [user.internal_id] }],
+    filterGroups: [],
+  };
+  const updatedArgs = {
+    ...args,
+    filters: args.filters
+      ? { mode: 'and', filters: [], filterGroups: [args.filters, initiatorFilter] }
+      : initiatorFilter,
+  };
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_BACKGROUND_TASK], updatedArgs);
 };
 
 export const findBackgroundTask = (context, user, args) => {
