@@ -5635,10 +5635,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-disposition@npm:2.0.0":
-  version: 2.0.0
-  resolution: "content-disposition@npm:2.0.0"
-  checksum: 10c0/4e6fa11e3296c5295bec5a72dbe03dcfcf245f88e196cd245be31b204cda06657be644a1c152d27dbdc8dc75c4f790d93042c9438b4095b1baf6ebca3d14406e
+"content-disposition@npm:2.0.1":
+  version: 2.0.1
+  resolution: "content-disposition@npm:2.0.1"
+  checksum: 10c0/8ba0e1f95102343a69a9a4b6f17728209d4ff0402b830b7cda91dcdfbb12eed0201dcd02aaa1e56f9bcf1c5b8ccef4a70e83b58292cf26588d8d5f7d05a0c006
   languageName: node
   linkType: hard
 
@@ -9706,7 +9706,7 @@ __metadata:
     body-parser: "npm:2.2.2"
     canonicalize: "npm:3.0.0"
     compression: "npm:1.8.1"
-    content-disposition: "npm:2.0.0"
+    content-disposition: "npm:2.0.1"
     content-type: "npm:2.0.0"
     convert: "npm:7.0.0"
     cors: "npm:2.8.6"
