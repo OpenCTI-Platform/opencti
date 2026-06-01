@@ -347,6 +347,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       <ItemOperations draftOperation={draftVersion?.draft_operation} />
     ),
   },
+  workflowInstance: {
+    id: 'workflowInstance',
+    label: 'Workflow status',
+    percentWidth: 12,
+    isSortable: false,
+    render: ({ workflowInstance }) => (
+      <ItemStatus status={workflowInstance?.currentStatus ?? null} disabled={!workflowInstance?.currentStatus} />
+    ),
+  },
   due_date: {
     id: 'due_date',
     label: 'Due Date',

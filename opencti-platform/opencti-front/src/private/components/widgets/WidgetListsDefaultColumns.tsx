@@ -152,6 +152,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   DraftWorkspace: [
     { attribute: 'name', label: 'Name' },
     { attribute: 'draft_status', label: 'Status' },
+    { attribute: 'workflowInstance', label: 'Workflow status' },
     { attribute: 'created_at', label: 'Platform creation date' },
     { attribute: 'creators', label: 'Creators' },
     { attribute: 'objectAssignee' },
