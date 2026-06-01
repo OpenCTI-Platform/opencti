@@ -43,6 +43,8 @@ describe('useWorkflowInitialElements', () => {
   const mockWorkflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'] = {
     id: 'workflow-1',
     name: 'Sample Workflow',
+    published: false,
+    errors: [],
     initialState: 'status-open',
     states: [
       {
@@ -168,6 +170,8 @@ describe('useWorkflowInitialElements', () => {
       name: mockWorkflowDefinition!.name,
       initialState: mockWorkflowDefinition!.initialState,
       states: [],
+      errors: [],
+      published: false,
     };
     rerender({ def: newDef });
     expect(result.current).not.toBe(firstResult);

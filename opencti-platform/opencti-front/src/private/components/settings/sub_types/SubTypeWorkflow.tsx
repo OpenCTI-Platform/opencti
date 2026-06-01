@@ -8,10 +8,19 @@ import Loader from '../../../../components/Loader';
 import { Suspense } from 'react';
 
 export const workflowQuery = graphql`
-  query SubTypeWorkflowQuery($entityType: String!) {
-    workflowDefinition(entityType: $entityType) {
+  query SubTypeWorkflowQuery($entityType: String!, $allowDraft: Boolean) {
+    workflowDefinition(entityType: $entityType, allowDraft: $allowDraft) {
       id
       name
+      published
+      errors {
+        type
+        message
+        path {
+          id
+          entity_type
+        }
+      }
       initialState
       states {
         statusId
@@ -63,7 +72,7 @@ export const workflowQuery = graphql`
 const SubTypeWorkflow = () => {
   const workflowQueryRef = useQueryLoading<SubTypeWorkflowQuery>(
     workflowQuery,
-    { entityType: 'DraftWorkspace' },
+    { entityType: 'DraftWorkspace', allowDraft: true },
   );
 
   if (!workflowQueryRef) {

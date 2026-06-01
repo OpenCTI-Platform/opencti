@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import 'reactflow/dist/style.css';
 import WorkflowEditionDrawer from './WorkflowEditionDrawer';
@@ -7,7 +7,6 @@ import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Typography } from '@mui/material';
-import { SaveOutlined } from '@mui/icons-material';
 import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { workflowQuery } from '../SubTypeWorkflow';
@@ -20,11 +19,37 @@ import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
+import PublishButton from './PublishButton';
+
+export interface WorkflowValidationError {
+  type: string;
+  message: string;
+  path?: Array<{ id: string; entity_type: string }> | null;
+}
 
 const workflowDefinitionSetMutation = graphql`
   mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
     workflowDefinitionSet(entityType: $entityType, definition: $definition) {
       id
+      published
+      errors {
+        type
+        message
+        path {
+          id
+          entity_type
+        }
+      }
+    }
+  }
+`;
+
+const workflowDefinitionPublishMutation = graphql`
+  mutation WorkflowPublishMutation($entityType: String!) {
+    workflowDefinitionPublish(entityType: $entityType) {
+      id
+      workflow_id
+      published
     }
   }
 `;
@@ -71,16 +96,85 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
   }, [nodes, edges, fitView]);
 
   // Update workflow definition
-  const [saveWorkflowDefinition] = useApiMutation<WorkflowDefinitionMutation>(
-    workflowDefinitionSetMutation,
+  const [saveWorkflowDefinition] = useApiMutation<WorkflowDefinitionMutation>(workflowDefinitionSetMutation);
+
+  // Publish workflow definition
+  const [publishWorkflowDefinition] = useApiMutation(
+    workflowDefinitionPublishMutation,
     undefined,
-    { successMessage: t_i18n('Workflow successfully updated') },
+    { successMessage: t_i18n('Workflow successfully published') },
   );
 
-  const onSave = () => {
+  const [workflowDefinitionStatus, setWorkflowDefinitionStatus] = useState<{
+    published: boolean;
+    validationErrors: WorkflowValidationError[];
+  }>({
+    published: workflowDefinition?.published ?? false,
+    validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
+  });
+
+  // Store previous schema to avoid unnecessary mutations
+  const previousSchemaRef = useRef<string | null>(null);
+
+  // Initialize the previous schema ref on mount to prevent initial mutation
+  useEffect(() => {
+    if (previousSchemaRef.current === null) {
+      const initialSchema = transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition);
+      previousSchemaRef.current = JSON.stringify(initialSchema);
+    }
+  }, []);
+
+  useEffect(() => {
     const finalSchema = transformToWorkflowDefinition(nodes, edges, workflowDefinition);
+    const schemaString = JSON.stringify(finalSchema);
+
+    // Only save if schema has actually changed
+    if (previousSchemaRef.current === schemaString) {
+      return;
+    }
+
+    previousSchemaRef.current = schemaString;
+
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: JSON.stringify(finalSchema) },
+      variables: { entityType: 'DraftWorkspace', definition: schemaString },
+      onCompleted: (response) => {
+        if (response.workflowDefinitionSet) {
+          const { errors } = response.workflowDefinitionSet;
+          if (errors && errors.length > 0) {
+            const validationErrors = errors
+              .filter((e) => e !== null && e !== undefined)
+              .map((e) => ({
+                type: e!.type,
+                message: e!.message,
+                path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
+              }));
+            setWorkflowDefinitionStatus({
+              published: false,
+              validationErrors,
+            });
+          } else {
+            // No errors, but stay in draft mode until explicitly published
+            setWorkflowDefinitionStatus({ published: false, validationErrors: [] });
+          }
+        }
+      },
+    });
+  }, [nodes, edges]);
+
+  // Handle publish action
+  const handlePublish = () => {
+    if (workflowDefinitionStatus.validationErrors.length > 0) {
+      return; // Should not happen as button is disabled
+    }
+    publishWorkflowDefinition({
+      variables: { entityType: 'DraftWorkspace' },
+      onCompleted: () => {
+        // Update status to published
+        setWorkflowDefinitionStatus({
+          published: true,
+          validationErrors: [],
+        });
+      },
     });
   };
 
@@ -141,9 +235,7 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
       >
         {nodes.length ? (
           <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Button onClick={onSave} startIcon={<SaveOutlined />} variant="secondary">
-              {t_i18n('Save')}
-            </Button>
+            <PublishButton validationStatus={workflowDefinitionStatus} onPublish={handlePublish} />
             <Button
               onClick={() => {
                 setSelectedElement({
