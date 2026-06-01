@@ -287,11 +287,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     // region History retention rule status
     const retentionRules = await listRules(context, TELEMETRY_MANAGER_USER);
-    const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history');
+    const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history' && rule.active);
     manager.setIsHistoryRetentionRuleActive(hasActiveHistoryRetentionRule ? 1 : 0);
-    const hasActiveActivityRetentionRule = retentionRules.some((rule) => rule.scope === 'activity');
+    const hasActiveActivityRetentionRule = retentionRules.some((rule) => rule.scope === 'activity' && rule.active);
     manager.setIsActivityRetentionRuleActive(hasActiveActivityRetentionRule ? 1 : 0);
-    // endregion
 
     // region Activity status
     const hasActivityListeners = (settings.activity_listeners_ids ?? []).length > 0;
