@@ -48,8 +48,13 @@ type WorkflowEntityRef {
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
-    published: Boolean
-    errors: [WorkflowValidationError!]
+}
+
+type WorkflowDefinitionMutationResult {
+    id: ID!
+    workflow_id: String
+    published: Boolean!
+    errors: [WorkflowValidationError!]!
 }
 
 type WorkflowTriggerResult {
@@ -97,8 +102,8 @@ extend type Query {
 }
 
 extend type Mutation {
-    workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    workflowDefinitionPublish(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -8726,7 +8726,6 @@ export type EntitySetting = BasicObject & InternalObject & {
   defaultValuesAttributes: Array<DefaultValueAttribute>;
   enforce_reference?: Maybe<Scalars['Boolean']['output']>;
   entity_type: Scalars['String']['output'];
-  errors?: Maybe<Array<WorkflowValidationError>>;
   fintelTemplates?: Maybe<FintelTemplateConnection>;
   id: Scalars['ID']['output'];
   mandatoryAttributes: Array<Scalars['String']['output']>;
@@ -8735,7 +8734,6 @@ export type EntitySetting = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
-  published?: Maybe<Scalars['Boolean']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
   scaleAttributes: Array<ScaleAttribute>;
@@ -17411,8 +17409,8 @@ export type Mutation = {
   workDelete?: Maybe<Scalars['Boolean']['output']>;
   workEdit?: Maybe<WorkEditMutations>;
   workflowDefinitionDelete?: Maybe<EntitySetting>;
-  workflowDefinitionPublish?: Maybe<EntitySetting>;
-  workflowDefinitionSet?: Maybe<EntitySetting>;
+  workflowDefinitionPublish?: Maybe<WorkflowDefinitionMutationResult>;
+  workflowDefinitionSet?: Maybe<WorkflowDefinitionMutationResult>;
   workspaceAdd?: Maybe<Workspace>;
   workspaceConfigurationImport: Scalars['String']['output'];
   workspaceContextClean?: Maybe<Workspace>;
@@ -37901,6 +37899,14 @@ export enum WorkflowActionMode {
   Sync = 'sync'
 }
 
+export type WorkflowDefinitionMutationResult = {
+  __typename?: 'WorkflowDefinitionMutationResult';
+  errors: Array<WorkflowValidationError>;
+  id: Scalars['ID']['output'];
+  published: Scalars['Boolean']['output'];
+  workflow_id?: Maybe<Scalars['String']['output']>;
+};
+
 export type WorkflowEntityRef = {
   __typename?: 'WorkflowEntityRef';
   entity_type: Scalars['String']['output'];
@@ -40324,6 +40330,7 @@ export type ResolversTypes = ResolversObject<{
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
   WorkflowActionMode: WorkflowActionMode;
+  WorkflowDefinitionMutationResult: ResolverTypeWrapper<WorkflowDefinitionMutationResult>;
   WorkflowEntityRef: ResolverTypeWrapper<WorkflowEntityRef>;
   WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
@@ -41301,6 +41308,7 @@ export type ResolversParentTypes = ResolversObject<{
   WorkMessage: WorkMessage;
   WorkTracking: WorkTracking;
   WorkflowActionConfig: WorkflowActionConfig;
+  WorkflowDefinitionMutationResult: WorkflowDefinitionMutationResult;
   WorkflowEntityRef: WorkflowEntityRef;
   WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
   WorkflowLastHistoryEntry: WorkflowLastHistoryEntry;
@@ -44218,7 +44226,6 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   defaultValuesAttributes?: Resolver<Array<ResolversTypes['DefaultValueAttribute']>, ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  errors?: Resolver<Maybe<Array<ResolversTypes['WorkflowValidationError']>>, ParentType, ContextType>;
   fintelTemplates?: Resolver<Maybe<ResolversTypes['FintelTemplateConnection']>, ParentType, ContextType, Partial<EntitySettingFintelTemplatesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mandatoryAttributes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -44227,7 +44234,6 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  published?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
@@ -47532,8 +47538,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
   workflowDefinitionDelete?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionDeleteArgs, 'entityType'>>;
-  workflowDefinitionPublish?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionPublishArgs, 'entityType'>>;
-  workflowDefinitionSet?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionSetArgs, 'definition' | 'entityType'>>;
+  workflowDefinitionPublish?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionPublishArgs, 'entityType'>>;
+  workflowDefinitionSet?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionSetArgs, 'definition' | 'entityType'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
   workspaceConfigurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationWorkspaceConfigurationImportArgs, 'file'>>;
   workspaceContextClean?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextCleanArgs, 'id'>>;
@@ -52674,6 +52680,13 @@ export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends 
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type WorkflowDefinitionMutationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowDefinitionMutationResult'] = ResolversParentTypes['WorkflowDefinitionMutationResult']> = ResolversObject<{
+  errors?: Resolver<Array<ResolversTypes['WorkflowValidationError']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  published?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type WorkflowEntityRefResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowEntityRef'] = ResolversParentTypes['WorkflowEntityRef']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -53564,6 +53577,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkMessage?: WorkMessageResolvers<ContextType>;
   WorkTracking?: WorkTrackingResolvers<ContextType>;
   WorkflowActionConfig?: WorkflowActionConfigResolvers<ContextType>;
+  WorkflowDefinitionMutationResult?: WorkflowDefinitionMutationResultResolvers<ContextType>;
   WorkflowEntityRef?: WorkflowEntityRefResolvers<ContextType>;
   WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;
   WorkflowLastHistoryEntry?: WorkflowLastHistoryEntryResolvers<ContextType>;

@@ -73,11 +73,9 @@ const workflowResolvers = {
       return getWorkflowInstance(context, context.user!, draftId);
     },
   },
-  EntitySetting: {
-    errors: (entitySetting: any) => {
-      // Return errors if they were attached to the entity setting
-      return entitySetting.errors || [];
-    },
+  WorkflowDefinitionMutationResult: {
+    errors: (result: any) => result.errors ?? [],
+    published: (result: any) => result.published ?? false,
   },
 };
 
