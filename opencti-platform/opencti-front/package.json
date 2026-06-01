@@ -109,7 +109,7 @@
     "moment-timezone": "0.6.2",
     "monaco-editor": "0.52.2",
     "monaco-graphql": "1.8.0",
-    "pdfmake": "0.3.8",
+    "pdfmake": "0.3.9",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",
     "ramda": "0.32.0",
