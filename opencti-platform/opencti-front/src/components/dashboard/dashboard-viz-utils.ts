@@ -1,7 +1,7 @@
 import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from '../../utils/widget/widget';
 import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import { type FilterDefinition } from '../../utils/hooks/useAuth';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import { DashboardConfig } from './dashboard-types';
 
 export const resolveDataSelection = ({
@@ -49,7 +49,7 @@ export const resolveDataSelection = ({
 
 export const computeStartEndDates = (config: DashboardConfig) => {
   const startDate = config.relativeDate
-    ? computerRelativeDate(config.relativeDate)
+    ? computeRelativeDate(config.relativeDate)
     : config.startDate;
 
   const endDate = config.relativeDate
