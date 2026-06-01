@@ -4,7 +4,7 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
+import { getUserAccessRight, isBypassUser, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, countAllThings, topEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
@@ -46,6 +46,9 @@ export const findById = async (context, user, taskId) => {
 };
 
 export const findBackgroundTaskPaginated = (context, user, args) => {
+  if (isBypassUser(user)) {
+    return pageEntitiesConnection(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
+  }
   const initiatorFilter = {
     mode: 'and',
     filters: [{ key: ['initiator_id'], values: [user.internal_id] }],
