@@ -47,7 +47,7 @@ export const findById = async (context, user, taskId) => {
 
 export const findBackgroundTaskPaginated = (context, user, args) => {
   if (isBypassUser(user)) {
-    return pageEntitiesConnection(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
+    return pageEntitiesConnection(context, user, [ENTITY_TYPE_BACKGROUND_TASK], { ...args, includeAuthorities: true });
   }
   const initiatorFilter = {
     mode: 'and',
