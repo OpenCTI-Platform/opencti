@@ -2,10 +2,10 @@ import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import type { WidgetColumn } from '../../../utils/widget/widget';
 import type { WidgetColumnsLayout } from './WidgetCustomAttributesColumnsInput';
-import WidgetCustomAttributesCard from './WidgetCustomAttributesCard';
+import WidgetCustomAttributesCard, { StixCoreObject } from './WidgetCustomAttributesCard';
 
 interface WidgetCustomAttributesProps {
-  data: Record<string, unknown>;
+  data: StixCoreObject;
   columns: WidgetColumn[];
   layout?: WidgetColumnsLayout;
 }

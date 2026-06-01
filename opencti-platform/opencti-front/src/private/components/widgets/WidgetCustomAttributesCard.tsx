@@ -21,7 +21,7 @@ import StixCoreObjectLabelsView from '@components/common/stix_core_objects/StixC
 import Tag from '@common/tag/Tag';
 import type { StixCoreObjectsCustomAttributesQuery$data } from './__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 
-type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
+export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
 interface WidgetCustomAttributesCardProps {
   column: WidgetColumn;
