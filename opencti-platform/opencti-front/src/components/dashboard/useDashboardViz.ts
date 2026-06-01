@@ -1,4 +1,4 @@
-import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from '../../utils/widget/widget';
+import type { WidgetHost, WidgetDataSelection, WidgetPerspective, WidgetParameters } from '../../utils/widget/widget';
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboard-viz-utils';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -28,6 +28,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   refreshRate,
   query,
   buildQueryVariables,
+  parameters,
   config,
 }: {
   dataSelection: WidgetDataSelection[];
@@ -36,7 +37,8 @@ const useDashboardViz = <TQuery extends OperationType>({
   refreshRate?: number | null;
   query?: GraphQLTaggedNode;
   config?: DashboardConfig;
-  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig) => TQuery['variables'];
+  parameters?: WidgetParameters;
+  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
   const [queryRef, load] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
   const { filterKeysSchema } = useAuth().schema;
@@ -46,14 +48,17 @@ const useDashboardViz = <TQuery extends OperationType>({
     perspective,
     host,
   }), [filterKeysSchema, dataSelection, perspective, host]);
+
   const reloadData = useCallback(() => {
     if (buildQueryVariables && config) {
-      load(buildQueryVariables(resolvedDataSelection, config), {
+      load(buildQueryVariables(resolvedDataSelection, config, parameters), {
         fetchPolicy: 'store-and-network',
       });
     }
-  }, [load, buildQueryVariables, resolvedDataSelection, config]);
+  }, [load, buildQueryVariables, resolvedDataSelection, config, parameters]);
+
   useWidgetAutoRefresh(reloadData, refreshRate);
+
   return {
     queryRef,
     isPreviewMode,
