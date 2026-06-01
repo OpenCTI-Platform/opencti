@@ -25,7 +25,7 @@ jobs:
         with:
           regexp: '.+\((#[0-9]+)\)$|^\[deps\].+'
           flags: "gm"
-          helpMessage: "Format: 'Message (#issuenumber)' for example '[docs] updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
+          helpMessage: "Format: 'Message (#issuenumber)' for example 'docs: updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
   check-signed-commits:
     name: Check signed commits in PR
     runs-on: ubuntu-latest
