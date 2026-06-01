@@ -1,0 +1,11 @@
+apiVersion: 1
+datasources:
+  - name: OpenCTI Dev Prometheus
+    type: prometheus
+    access: proxy
+    url: http://opencti-dev-telemetry-prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: POST
+      timeInterval: "15s"
