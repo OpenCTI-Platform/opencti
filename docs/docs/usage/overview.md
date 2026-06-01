@@ -139,6 +139,44 @@ The `Indicators` and `Observables` section offers 3 display modes:
 
 The `Content` tab is available for all entities. It allows for uploading and creating outcomes documents related to the content of the current entity (in PDF, text, HTML or markdown files). This specific tab enable to previzualize, manage and write deliverable associated with the entity. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc.
 
+#### Markdown image upload in description
+
+You can insert images directly in markdown editors used for descriptions and content fields.
+
+![markdown-image-upload](assets/markdown-image-upload-1.png)
+
+There are three supported methods:
+
+1. Copy and paste an image into the editor.
+2. Drag and drop an image file into the editor.
+3. Use the image browse/upload action from the editor toolbar.
+
+When you paste, drop, or browse an image in `Write` mode, the image markdown is inserted at the current cursor position (or at the end of the content if no cursor position is available).
+
+After insertion, the image is embedded in your markdown content and stored by the platform when you save or create the entity.
+
+
+
+You can use the `Preview` tab of the editor to visualize inserted images.
+
+When you click an image in `Preview`, a gallery viewer opens so you can browse all images embedded in the markdown more easily.
+
+<figure markdown>
+![markdown-preview-image](assets/markdown-image-preview-1.png)
+<figcaption>Preview gallery image</figcaption>
+</figure>
+
+!!! warning "Image upload constraints"
+    - SVG images are not supported.
+    - Image size must not exceed 5 MB.
+
+!!! tip "Performance considerations"
+    - There is no fixed limit on the number of images you can add in markdown content.
+    - Adding many images, or larger images, can increase processing time when saving content and during related export/import operations.
+
+
+
+
 The `Content mapping view` and the `Suggested mapping view`  are available for a subset of entities: `Report`, `Grouping`, `Incident`, `Incident response`, `Request for Information`, and `Request for Takedown`.
 
 
