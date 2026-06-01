@@ -2652,8 +2652,8 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const filteredList = (updatedInstance[key] || []).filter((d: any) => !isInferredIndex(d.i_relation._index));
-          const currentIds = filteredList.map((o: any) => [o.id, o.standard_id]).flat();
+          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
+          const currentIds = currentRels.map((r: BasicStoreRelation) => r.toId);
           const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
