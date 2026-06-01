@@ -96,7 +96,7 @@
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
     "aws-sdk-v3-proxy": "2.2.0",
-    "axios": "1.15.2",
+    "axios": "1.16.1",
     "axios-cookiejar-support": "6.0.5",
     "bcryptjs": "3.0.3",
     "bluebird": "3.7.2",
@@ -113,7 +113,7 @@
     "eventsource": "2.0.2",
     "eventsource-parser": "3.0.6",
     "express": "5.2.1",
-    "express-rate-limit": "8.3.1",
+    "express-rate-limit": "8.5.1",
     "express-session": "1.19.0",
     "fast-json-patch": "3.1.1",
     "file-type": "21.3.3",
@@ -175,7 +175,7 @@
     "validator": "13.15.26",
     "winston": "3.19.0",
     "winston-daily-rotate-file": "5.0.0",
-    "ws": "8.19.0",
+    "ws": "8.20.1",
     "xml2js": "0.6.2",
     "zod": "3.25.76"
   },
@@ -218,7 +218,7 @@
     "vitest": "3.2.4"
   },
   "resolutions": {
-    "axios": "1.15.2",
+    "axios": "1.16.1",
     "chokidar": "5.0.0",
     "cookie": "1.1.1",
     "cross-fetch": "4.1.0",
