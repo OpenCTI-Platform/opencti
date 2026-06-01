@@ -84,6 +84,7 @@ const renderAttributeValue = (
       return <ItemCreators creators={data.creators ?? []} />;
 
     case 'objectAssignee': {
+      // objectAssignee est présent sur plusieurs types (Report, Task, Case...)
       const assignees = 'objectAssignee' in data
         ? (data as { objectAssignee?: { id: string; name: string; entity_type: string }[] }).objectAssignee ?? []
         : [];
@@ -206,6 +207,7 @@ const renderAttributeValue = (
     }
 
     default: {
+      // Accès générique pour les champs non typés explicitement (aliases, custom fields...)
       const value = (data as Record<string, unknown>)[attribute];
 
       if (value === undefined || value === null || value === '') {
