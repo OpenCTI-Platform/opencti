@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUserWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { deleteWork } from '../../../src/domain/work';
-import { ADMIN_USER, queryInitPlatformAsAdmin, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, queryInitPlatformAsAdmin, testContext, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { getBestBackgroundConnectorId } from '../../../src/database/rabbitmq';
 import { createWorkForBackgroundTask } from '../../../src/domain/backgroundTask-common';
 import type { BackgroundTaskConnectionEdge, ListTask } from '../../../src/generated/graphql';
@@ -62,14 +62,14 @@ describe('Verify deleted works', () => {
 });
 describe('Background task visibility per initiator', () => {
   let taskCreatedByEditor: string;
-  let taskCreatedByParticipate: string;
+  let taskCreatedBySecurity: string;
   it('should USER_EDITOR create a background task', async () => {
     const result = await queryAsUserWithSuccess(USER_EDITOR, {
       query: LIST_TASK_ADD_MUTATION,
       variables: {
         input: {
           description: 'Task created by editor',
-          ids: [], // liste vide pour le test
+          ids: [],
           actions: [{ type: 'DELETE' }],
           scope: 'KNOWLEDGE',
         },
@@ -79,37 +79,37 @@ describe('Background task visibility per initiator', () => {
     expect(taskCreatedByEditor).toBeDefined();
   });
 
-  it('should USER_PARTICIPATE create a background task', async () => {
-    const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
+  it('should USER_SECURITY create a background task', async () => {
+    const result = await queryAsUserWithSuccess(USER_SECURITY, {
       query: LIST_TASK_ADD_MUTATION,
       variables: {
         input: {
-          description: 'Task created by participate',
+          description: 'Task created by security',
           ids: [],
           actions: [{ type: 'DELETE' }],
           scope: 'KNOWLEDGE',
         },
       },
     });
-    taskCreatedByParticipate = (result.data.listTaskAdd as ListTask).id;
-    expect(taskCreatedByParticipate).toBeDefined();
+    taskCreatedBySecurity = (result.data.listTaskAdd as ListTask).id;
+    expect(taskCreatedBySecurity).toBeDefined();
   });
 
-  it('should USER_EDITOR only see its own tasks, not tasks from USER_PARTICIPATE', async () => {
+  it('should USER_EDITOR only see its own tasks, not tasks from USER_SECURITY', async () => {
     const result = await queryAsUserWithSuccess(USER_EDITOR, {
       query: BACKGROUND_TASKS_QUERY,
     });
     const ids = result.data.backgroundTasks.edges.map((e: BackgroundTaskConnectionEdge) => e.node.id);
     expect(ids).toContain(taskCreatedByEditor);
-    expect(ids).not.toContain(taskCreatedByParticipate);
+    expect(ids).not.toContain(taskCreatedBySecurity);
   });
 
-  it('should USER_PARTICIPATE only see its own tasks, not tasks from USER_EDITOR', async () => {
-    const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
+  it('should USER_SECURITY only see its own tasks, not tasks from USER_EDITOR', async () => {
+    const result = await queryAsUserWithSuccess(USER_SECURITY, {
       query: BACKGROUND_TASKS_QUERY,
     });
     const ids = result.data.backgroundTasks.edges.map((e: BackgroundTaskConnectionEdge) => e.node.id);
-    expect(ids).toContain(taskCreatedByParticipate);
+    expect(ids).toContain(taskCreatedBySecurity);
     expect(ids).not.toContain(taskCreatedByEditor);
   });
 
@@ -119,6 +119,6 @@ describe('Background task visibility per initiator', () => {
     });
     const ids = result.data.backgroundTasks.edges.map((e: BackgroundTaskConnectionEdge) => e.node.id);
     expect(ids).toContain(taskCreatedByEditor);
-    expect(ids).toContain(taskCreatedByParticipate);
+    expect(ids).toContain(taskCreatedBySecurity);
   });
 });
