@@ -68,6 +68,7 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
+export const TELEMETRY_RETENTION_HISTORY = 'retentionHistoryCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 
@@ -159,6 +160,11 @@ export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
 };
+
+export const addRetentionHistoryCreationCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_RETENTION_HISTORY, 1).catch((reason) => logApp.info('Error add retention history creation in telemetry', { reason }));
+};
+
 // End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
@@ -291,6 +297,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIsHistoryRetentionRuleActive(hasActiveHistoryRetentionRule ? 1 : 0);
     const hasActiveActivityRetentionRule = retentionRules.some((rule) => rule.scope === 'activity' && rule.active);
     manager.setIsActivityRetentionRuleActive(hasActiveActivityRetentionRule ? 1 : 0);
+    // endregion
 
     // region Activity status
     const hasActivityListeners = (settings.activity_listeners_ids ?? []).length > 0;
@@ -362,6 +369,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
+    const retentionHistoryCreationCountInRedis = await redisGetTelemetry(TELEMETRY_RETENTION_HISTORY);
+    manager.setRetentionHistoryCreationCount(retentionHistoryCreationCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
