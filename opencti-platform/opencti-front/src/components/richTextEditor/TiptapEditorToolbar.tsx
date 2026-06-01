@@ -151,6 +151,8 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
   const [hiddenItems, setHiddenItems] = React.useState<Set<string>>(new Set());
   const cachedWidthsRef = React.useRef<Record<string, number>>({});
 
+  const hasSourceMode = Boolean(onToggleSourceMode);
+
   const itemGroups = React.useMemo(
     () => [
       ['heading-select'],
@@ -159,10 +161,10 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
       ['align', 'bullet-list', 'ordered-list', 'indent', 'outdent', 'task-list'],
       ['link', 'image', 'blockquote', 'code', 'code-block', 'subscript', 'superscript'],
       ['table', 'page-break', 'hr'],
-      ...(onToggleSourceMode ? [['source']] : []),
+      ...(hasSourceMode ? [['source']] : []),
       ['undo', 'redo'],
     ],
-    [Boolean(onToggleSourceMode)],  // eslint-disable-line
+    [hasSourceMode],
   );
 
   const itemIds = React.useMemo(
@@ -208,6 +210,7 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
       }
 
       if (totalNatural <= containerWidth) {
+        setMoreAnchor(null);
         setHiddenItems((prev) => (prev.size === 0 ? prev : new Set()));
         return;
       }
@@ -748,26 +751,30 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
             <ToggleButtonGroup size="small" disabled={disabled}>
               {!hiddenItems.has('undo') && (
                 <Tooltip title="Undo">
-                  <IconButton
-                    size="small"
-                    data-toolbar-item="undo"
-                    onClick={() => editor.chain().focus().undo().run()}
-                    disabled={!editor.can().undo()}
-                  >
-                    <Undo fontSize="small" />
-                  </IconButton>
+                  <span>
+                    <IconButton
+                      size="small"
+                      data-toolbar-item="undo"
+                      onClick={() => editor.chain().focus().undo().run()}
+                      disabled={!editor.can().undo()}
+                    >
+                      <Undo fontSize="small" />
+                    </IconButton>
+                  </span>
                 </Tooltip>
               )}
               {!hiddenItems.has('redo') && (
                 <Tooltip title="Redo">
-                  <IconButton
-                    size="small"
-                    data-toolbar-item="redo"
-                    onClick={() => editor.chain().focus().redo().run()}
-                    disabled={!editor.can().redo()}
-                  >
-                    <Redo fontSize="small" />
-                  </IconButton>
+                  <span>
+                    <IconButton
+                      size="small"
+                      data-toolbar-item="redo"
+                      onClick={() => editor.chain().focus().redo().run()}
+                      disabled={!editor.can().redo()}
+                    >
+                      <Redo fontSize="small" />
+                    </IconButton>
+                  </span>
                 </Tooltip>
               )}
             </ToggleButtonGroup>
@@ -777,6 +784,9 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
           <Tooltip title="More">
             <IconButton
               size="small"
+              aria-label="More"
+              aria-haspopup="menu"
+              aria-expanded={Boolean(moreAnchor)}
               onClick={(e) => setMoreAnchor(moreAnchor ? null : e.currentTarget)}
               sx={{ ml: 0.5 }}
             >
@@ -790,6 +800,7 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
         open={Boolean(moreAnchor)}
         anchorEl={moreAnchor}
         onClose={() => setMoreAnchor(null)}
+        disableRestoreFocus={hiddenItems.size === 0}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{ paper: { sx: { p: 0.5 } } }}
@@ -1169,24 +1180,28 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
             <ToggleButtonGroup size="small" disabled={disabled}>
               {hiddenItems.has('undo') && (
                 <Tooltip title="Undo">
-                  <IconButton
-                    size="small"
-                    onClick={() => editor.chain().focus().undo().run()}
-                    disabled={!editor.can().undo()}
-                  >
-                    <Undo fontSize="small" />
-                  </IconButton>
+                  <span>
+                    <IconButton
+                      size="small"
+                      onClick={() => editor.chain().focus().undo().run()}
+                      disabled={!editor.can().undo()}
+                    >
+                      <Undo fontSize="small" />
+                    </IconButton>
+                  </span>
                 </Tooltip>
               )}
               {hiddenItems.has('redo') && (
                 <Tooltip title="Redo">
-                  <IconButton
-                    size="small"
-                    onClick={() => editor.chain().focus().redo().run()}
-                    disabled={!editor.can().redo()}
-                  >
-                    <Redo fontSize="small" />
-                  </IconButton>
+                  <span>
+                    <IconButton
+                      size="small"
+                      onClick={() => editor.chain().focus().redo().run()}
+                      disabled={!editor.can().redo()}
+                    >
+                      <Redo fontSize="small" />
+                    </IconButton>
+                  </span>
                 </Tooltip>
               )}
             </ToggleButtonGroup>
