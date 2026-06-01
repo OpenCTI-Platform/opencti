@@ -6,6 +6,7 @@ import {
   getAllowedTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
+  publishWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
@@ -14,8 +15,8 @@ const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in open
 
 const workflowResolvers = {
   Query: {
-    workflowDefinition: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      return getWorkflowDefinition(context, context.user!, entityType);
+    workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
+      return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       // Logic for resolving workflowInstance
@@ -31,6 +32,9 @@ const workflowResolvers = {
   Mutation: {
     workflowDefinitionSet: (_: any, { entityType, definition }: { entityType: string; definition: string }, context: AuthContext) => {
       return setWorkflowDefinition(context, context.user!, entityType, definition);
+    },
+    workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return publishWorkflowDefinition(context, context.user!, entityType);
     },
     workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
@@ -68,6 +72,10 @@ const workflowResolvers = {
       const draftId = draft.id || draft.internal_id;
       return getWorkflowInstance(context, context.user!, draftId);
     },
+  },
+  WorkflowDefinitionMutationResult: {
+    errors: (result: any) => result.errors ?? [],
+    published: (result: any) => result.published ?? false,
   },
 };
 

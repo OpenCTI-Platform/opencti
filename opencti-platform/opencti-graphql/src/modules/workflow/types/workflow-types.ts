@@ -97,6 +97,15 @@ export interface TriggerResult {
 }
 
 /**
+ * Workflow validation error structure
+ */
+export interface WorkflowValidationError {
+  type: string;
+  message: string;
+  path?: Array<{ id: string; entity_type: string }>;
+}
+
+/**
  * Serialization models for the database
  */
 export interface WorkflowActionConfig {

@@ -6,6 +6,10 @@ const WORKFLOW_DEFINITION_SET_MUTATION = gql`
   mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
     workflowDefinitionSet(entityType: $entityType, definition: $definition) {
       id
+      errors {
+        type
+        message
+      }
     }
   }
 `;
@@ -37,7 +41,7 @@ describe('Workflow Validation Resolver', () => {
         definition: invalidDefinition,
       },
     });
-    expect(result.errors?.[0].message).toContain('Workflow definition schema validation failed');
+    expect(result.data?.workflowDefinitionSet.errors[0].message).toContain('Workflow definition schema validation failed');
   });
 
   it('should reject workflow for a non-basic object type', async () => {
@@ -81,7 +85,7 @@ describe('Workflow Validation Resolver', () => {
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: { entityType, definition: definition2 },
     });
-    expect(result.errors?.[0].message).toBe('DraftWorkspace workflow must contain at least one validateDraft action');
+    expect(result.data?.workflowDefinitionSet.errors[0].message).toBe('DraftWorkspace workflow must contain at least one validateDraft action');
   });
 
   it('should reject workflow with invalid action type', async () => {
@@ -121,7 +125,7 @@ describe('Workflow Validation Resolver', () => {
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: { entityType, definition },
     });
-    expect(result.errors?.[0].message).toContain('Workflow definition schema validation failed');
+    expect(result.data?.workflowDefinitionSet.errors[0].message).toContain('Workflow definition schema validation failed');
   });
 
   it('should reject workflow with invalid action params', async () => {
@@ -162,7 +166,7 @@ describe('Workflow Validation Resolver', () => {
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: { entityType, definition },
     });
-    expect(result.errors?.[0].message).toContain('Transition \'my_event\' referenced in multiple transitions');
+    expect(result.data?.workflowDefinitionSet.errors[0].message).toContain('Transition \'my_event\' referenced in multiple transitions');
   });
 
   it('should reject workflow with unreachable states', async () => {
@@ -176,7 +180,7 @@ describe('Workflow Validation Resolver', () => {
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: { entityType, definition },
     });
-    expect(result.errors?.[0].message).toContain('DraftWorkspace workflow must contain at least one validateDraft action');
+    expect(result.data?.workflowDefinitionSet.errors[0].message).toContain('DraftWorkspace workflow must contain at least one validateDraft action');
   });
 
   it('should reject workflow with undefined transition state', async () => {
@@ -190,6 +194,6 @@ describe('Workflow Validation Resolver', () => {
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: { entityType, definition },
     });
-    expect(result.errors?.[0].message).toContain('DraftWorkspace workflow must contain at least one validateDraft action');
+    expect(result.data?.workflowDefinitionSet.errors[0].message).toContain('DraftWorkspace workflow must contain at least one validateDraft action');
   });
 });

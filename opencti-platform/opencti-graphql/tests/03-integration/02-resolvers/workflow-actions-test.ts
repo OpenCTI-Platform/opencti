@@ -13,6 +13,16 @@ const WORKFLOW_DEFINITION_SET_MUTATION = gql`
   }
 `;
 
+const WORKFLOW_DEFINITION_PUBLISH_MUTATION = gql`
+  mutation WorkflowDefinitionPublish($entityType: String!) {
+    workflowDefinitionPublish(entityType: $entityType) {
+      id
+      workflow_id
+      published
+    }
+  }
+`;
+
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
   mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
     draftWorkspaceAdd(input: $input) {
@@ -109,7 +119,15 @@ describe('Workflow Actions Resolver', () => {
       },
     });
 
-    // 3. Trigger the event
+    // 3. Publish the workflow definition so it can be used at runtime
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+      variables: {
+        entityType: 'DraftWorkspace',
+      },
+    });
+
+    // 4. Trigger the event
     const triggerResult = await queryAsAdmin({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
       variables: {
@@ -120,7 +138,7 @@ describe('Workflow Actions Resolver', () => {
     expect(triggerResult.data?.triggerWorkflowEvent.success).toBe(true);
     expect(triggerResult.data?.triggerWorkflowEvent.newState).toBe('restricted');
 
-    // 4. Verify authorized members
+    // 5. Verify authorized members
     const workspaceResult = await queryAsAdmin({
       query: DRAFT_WORKSPACE_QUERY,
       variables: { id: draftWorkspaceId },
@@ -132,6 +150,53 @@ describe('Workflow Actions Resolver', () => {
       expect.objectContaining({ member_id: ADMIN_USER.id, access_right: 'admin' }),
       expect.objectContaining({ member_id: TEST_ORGANIZATION.id, access_right: 'view' }),
     ]));
+  });
+
+  it('should not execute actions from draft workflow when not published', async () => {
+    // 1. Create a new workflow with different actions (don't publish)
+    const draftOnlyWorkflow = JSON.stringify({
+      id: 'draft-only-workflow',
+      name: 'Draft Only Workflow',
+      initialState: 'open',
+      states: [
+        { statusId: 'open' },
+        {
+          statusId: 'secret',
+          onEnter: [
+            {
+              type: 'updateAuthorizedMembers',
+              params: {
+                authorized_members: [{ id: ADMIN_USER.id, access_right: 'edit' }],
+              },
+            },
+          ],
+        },
+      ],
+      transitions: [
+        { from: 'open', to: 'secret', event: 'secret_event' },
+      ],
+    });
+
+    // Set but don't publish
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_SET_MUTATION,
+      variables: {
+        entityType: 'DraftWorkspace',
+        definition: draftOnlyWorkflow,
+      },
+    });
+
+    // Try to trigger event - should fail because draft is not published
+    const triggerResult = await queryAsAdmin({
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: {
+        entityId: draftWorkspaceId,
+        eventName: 'secret_event',
+      },
+    });
+
+    // Should fail or not find transition since runtime uses published version
+    expect(triggerResult.data?.triggerWorkflowEvent.success).toBe(false);
   });
 
   it('should cleanup after tests', async () => {
