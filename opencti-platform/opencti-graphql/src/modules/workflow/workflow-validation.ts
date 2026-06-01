@@ -115,7 +115,7 @@ export const validateWorkflowDefinitionData = async (
   try {
     parsed = JSON.parse(definitionStr);
   } catch (_error) {
-    errors.push({ type: 'INVALID_JSON', message: 'Invalid workflow definition JSON' });
+    return [{ type: 'INVALID_JSON', message: 'Invalid workflow definition JSON' }];
   }
 
   const validationResult = workflowDefinitionSchema.safeParse(parsed);

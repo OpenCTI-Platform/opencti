@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
-import { FilterMode } from '../../../generated/graphql';
+import { FilterMode, type EditInput, type WorkflowInstance } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -384,7 +384,7 @@ export const publishWorkflowDefinition = async (
 
   // Validate consistency BEFORE publishing
   const allVersions = workflowDefinitionEntity.all_versions || [];
-  const draftInHistory = allVersions.some((v: any) => v.id === draftVersion.id);
+  const draftInHistory = allVersions.some((version: WorkflowVersion) => version.id === draftVersion.id);
   if (!draftInHistory) {
     throw FunctionalError('Consistency error: Cannot publish draft_version that is not in all_versions', {
       draftVersionId: draftVersion.id,
@@ -393,7 +393,7 @@ export const publishWorkflowDefinition = async (
 
   // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
   // Copy draft_version to published_version and clear the draft (no more unpublished changes).
-  const updates: any[] = [
+  const updates: EditInput[] = [
     { key: 'published_version', value: [draftVersion] },
     { key: 'draft_version', value: [] },
   ];
@@ -505,7 +505,7 @@ export const getAllowedNextStatuses = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
-): Promise<unknown[]> => {
+): Promise<string[]> => {
   const transitions = await getAllowedTransitions(context, user, entityId);
   return transitions.map((transition) => transition.toState).filter((status) => status !== null && status !== undefined);
 };
