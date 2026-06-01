@@ -12,6 +12,16 @@ const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
   }
 `;
 
+const WORKFLOW_DEFINITION_PUBLISH_MUTATION = gql`
+  mutation WorkflowDefinitionPublish($entityType: String!) {
+    workflowDefinitionPublish(entityType: $entityType) {
+      id
+      workflow_id
+      published
+    }
+  }
+`;
+
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
   mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
     draftWorkspaceAdd(input: $input) {
@@ -132,6 +142,14 @@ describe('Workflow Conditions Resolver', () => {
       variables: {
         entityType: 'DraftWorkspace',
         definition: workflowDefinition,
+      },
+    });
+
+    // 3. Publish the workflow definition so it can be used at runtime
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+      variables: {
+        entityType: 'DraftWorkspace',
       },
     });
   });

@@ -9609,7 +9609,7 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
-  workflowDefinition(entityType: String!): WorkflowSchema
+  workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowInstance(entityId: String!): WorkflowInstance
   allowedNextStatuses(entityId: String!): [Status!]!
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
@@ -10447,7 +10447,8 @@ type Mutation {
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
-  workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting
+  workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult!
   channelAdd(input: ChannelAddInput!): Channel
@@ -10793,9 +10794,22 @@ type WorkflowSerializedTransition {
 type WorkflowSchema {
   id: ID!
   name: String!
+  published: Boolean!
+  errors: [WorkflowValidationError!]
   initialState: String!
   states: [WorkflowSerializedState!]!
   transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowValidationError {
+  type: String!
+  message: String!
+  path: [WorkflowEntityRef!]
+}
+
+type WorkflowEntityRef {
+  id: String!
+  entity_type: String!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -10822,6 +10836,14 @@ type EntitySetting implements InternalObject & BasicObject {
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
+}
+
+type WorkflowDefinitionMutationResult {
+  id: ID!
+  workflow_id: String
+  target_type: String
+  published: Boolean!
+  errors: [WorkflowValidationError!]!
 }
 
 type WorkflowTriggerResult {
