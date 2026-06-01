@@ -212,7 +212,13 @@ const WidgetCreationParameters = () => {
 
   const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
     const prevSelection = dataSelection[index];
-    const newSelection = { ...prevSelection, layout: newLayout };
+    const newSelection = {
+      ...prevSelection,
+      layout: newLayout,
+      columns: prevSelection.columns?.length
+        ? prevSelection.columns
+        : getDefaultCustomAttributesColumns(),
+    };
     setDataSelectionWithIndex(newSelection, index);
   };
 
