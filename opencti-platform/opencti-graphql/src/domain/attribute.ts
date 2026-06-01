@@ -21,12 +21,19 @@ export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, 
 };
 
 export const getSchemaAttributeNames = (elementTypes: string[]) => {
+  // FIXME need to add custom field here for Data > Sharing filters
+  // used also for dashboard widgets like donuts
   const attributes = R.uniq(elementTypes.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat());
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
     R.map((n) => ({ node: { id: n, key: elementTypes[0], value: n } })),
   )(attributes);
+  // FIXME POC HACK   stixCoreObjectsDistribution
+  if (elementTypes.some((e) => e === ENTITY_TYPE_CONTAINER_CASE_INCIDENT)) {
+    finalResult.push({ node: { id: 'x_opencti_cf_score', key: elementTypes[0], value: 'x_opencti_cf_score' } });
+    finalResult.push({ node: { id: 'x_opencti_cf_comment', key: elementTypes[0], value: 'x_opencti_cf_comment' } });
+  }
   return buildPagination<Attribute>(0, null, finalResult, finalResult.length);
 };
 

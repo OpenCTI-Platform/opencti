@@ -245,6 +245,13 @@ class CaseIncident:
                     }
                 }
             }
+            custom_field_values {
+                field_id
+                field_name
+                int_value
+                string_value
+                select_value
+              }
         """
         self.properties_with_files = """
             id
@@ -489,6 +496,13 @@ class CaseIncident:
                     }
                 }
             }
+            custom_field_values {
+                field_id
+                field_name
+                int_value
+                string_value
+                select_value
+              }
         """
 
     @staticmethod
@@ -628,6 +642,7 @@ class CaseIncident:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
+        self.opencti.app_logger.info("Reading Case Incident", {"custom_attributes": custom_attributes})
         if id is not None:
             self.opencti.app_logger.info("Reading Case Incident", {"id": id})
             query = (

@@ -16,6 +16,9 @@ import { generateFilterKeysSchema } from '../../../../src/domain/filterKeysSchem
 import type { EntityOptions } from '../../../../src/database/middleware-loader';
 import { convertCaseIncidentToStix_2_1 } from '../../../../src/modules/case/case-incident/case-incident-converter';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import { stixCoreObjectExportPush } from '../../../../src/domain/stixCoreObject';
+import { createReadStream } from 'node:fs';
+import { createUploadFromTestDataFile } from '../../../utils/testQueryHelper';
 
 describe('CustomFieldDefinition — domain coverage', () => {
   let scoreCfField: BasicStoreEntityCustomFieldDefinition;
@@ -189,7 +192,7 @@ describe('CustomFieldDefinition — domain coverage', () => {
     console.log('Case incident filter - allCasesFiltered:', myIncident);
   });
 
-  it('should custom field be visible stix export', async () => {
+  it('should custom field be visible stix conversion', async () => {
     const caseIncidentStore = await storeLoadByIdWithRefs<StoreEntityCaseIncident>(
       testContext, ADMIN_USER, caseIncidentAllCustomFields.id, { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT });
     if (caseIncidentStore) {
@@ -203,6 +206,12 @@ describe('CustomFieldDefinition — domain coverage', () => {
     } else {
       throw new Error('Case incident not found, there is an issue.');
     }
+  });
+
+  it('should custom field be visible stix export', async () => {
+    // This is the function called by export csv connector
+    const file = await createUploadFromTestDataFile('20233010_octi_dashboard_Custom Dash_invalid_type.json', 'invalid-version.json', 'application/json', 'utf8');
+    const exportResult = await stixCoreObjectExportPush(testContext, ADMIN_USER, caseIncidentAllCustomFields.id, { file });
   });
 
   it.skip('should wait', async () => {

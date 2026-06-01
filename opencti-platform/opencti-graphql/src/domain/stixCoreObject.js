@@ -114,6 +114,8 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-typ
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { buildTranslatedIdsMap } from '../database/data-changes';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { CF_COMMENT_KEY, CF_SCORE_KEY } from '../modules/customField/custom-field-domain';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -484,11 +486,13 @@ export const stixCoreObjectsConnectedNumber = async (context, user, stixCoreObje
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {
+  // FIXME need to update here to make donuts works
   const { types } = args;
   return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], args);
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
+  // FIXME need to update here to make donuts works
   const { objectId, types, filters = {
     mode: 'and',
     filters: [],
@@ -541,6 +545,7 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, input) => {
+  console.log('[POC] stixCoreObjectExportAsk export', { stixCoreObjectId, input });
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot ask for export in draft');
   }
@@ -558,14 +563,34 @@ export const stixCoreObjectsExportPush = async (context, user, entity_id, entity
   return true;
 };
 
+// FIXME ICI
 export const stixCoreObjectExportPush = async (context, user, entityId, args) => {
   const previous = await storeLoadByIdWithRefs(context, user, entityId);
+  console.log('[POC] stixCoreObjectExportPush export', { entityId, previous, args });
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
+  // NO NEED ! to be removed
+  // FIXME POC HACK this will need to be in lower level and generic
+  const customFields = {};
+  if (previous.entity_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
+    if (previous.custom_field_values) {
+      const customScore = previous.custom_field_values.find((c) => c.field_name === CF_SCORE_KEY)?.int_value;
+      if (customScore) {
+        customFields['x_opencti_cf_score'] = customScore;
+      }
+      const customComment = previous.custom_field_values.find((c) => c.field_name === CF_COMMENT_KEY)?.string_value;
+      if (customComment) {
+        customFields['x_opencti_cf_comment'] = customComment;
+      }
+    }
+  }
+
+  const fullEntity = { ...previous, ...customFields };
+
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
-  const contextData = buildContextDataForFile(previous, path, up.name);
+  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: fullEntity, file_markings: args.file_markings });
+  const contextData = buildContextDataForFile(fullEntity, path, up.name);
   await publishUserAction({
     user,
     event_type: 'file',

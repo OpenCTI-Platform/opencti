@@ -215,6 +215,19 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, me
         }
       }
 
+      // FIXME need to add custom attributes here for widgets
+      if (entityType === 'Case-Incident') {
+        baseColumns.push({
+          attribute: 'x_opencti_cf_score',
+          label: 'Cf score',
+        });
+
+        baseColumns.push({
+          attribute: 'x_opencti_cf_comment',
+          label: 'Cf comment',
+        });
+      }
+
       return baseColumns;
     }
 

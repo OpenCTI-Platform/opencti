@@ -2814,7 +2814,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
-  customFieldValues?: Maybe<Array<Maybe<CustomFieldValue>>>;
+  custom_field_values?: Maybe<Array<Maybe<CustomFieldValue>>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -17068,8 +17068,6 @@ export type Mutation = {
   caseDelete?: Maybe<Scalars['ID']['output']>;
   caseIncidentAdd?: Maybe<CaseIncident>;
   caseIncidentDelete?: Maybe<Scalars['ID']['output']>;
-  caseIncidentRemoveCustomFieldValue?: Maybe<CaseIncident>;
-  caseIncidentSetCustomFieldValue?: Maybe<CaseIncident>;
   caseRfiAdd?: Maybe<CaseRfi>;
   caseRfiApprove?: Maybe<CaseRfi>;
   caseRfiDecline?: Maybe<CaseRfi>;
@@ -17739,19 +17737,6 @@ export type MutationCaseIncidentAddArgs = {
 
 export type MutationCaseIncidentDeleteArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationCaseIncidentRemoveCustomFieldValueArgs = {
-  fieldId: Scalars['ID']['input'];
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationCaseIncidentSetCustomFieldValueArgs = {
-  fieldId: Scalars['ID']['input'];
-  id: Scalars['ID']['input'];
-  value: Scalars['String']['input'];
 };
 
 
@@ -42539,7 +42524,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  customFieldValues?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomFieldValue']>>>, ParentType, ContextType>;
+  custom_field_values?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomFieldValue']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -47410,8 +47395,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseDeleteArgs, 'id'>>;
   caseIncidentAdd?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentAddArgs, 'input'>>;
   caseIncidentDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseIncidentDeleteArgs, 'id'>>;
-  caseIncidentRemoveCustomFieldValue?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRemoveCustomFieldValueArgs, 'fieldId' | 'id'>>;
-  caseIncidentSetCustomFieldValue?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentSetCustomFieldValueArgs, 'fieldId' | 'id' | 'value'>>;
   caseRfiAdd?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiAddArgs, 'input'>>;
   caseRfiApprove?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiApproveArgs, 'id'>>;
   caseRfiDecline?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiDeclineArgs, 'id'>>;

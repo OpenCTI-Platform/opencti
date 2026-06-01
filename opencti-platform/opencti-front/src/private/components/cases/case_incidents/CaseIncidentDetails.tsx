@@ -25,7 +25,7 @@ const CaseIncidentDetailsFragment = graphql`
     modified
     created_at
     response_types
-    customFieldValues {
+    custom_field_values {
       field_id
       field_name
       int_value
@@ -88,7 +88,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   const { t_i18n } = useFormatter();
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
-  const customFieldValues = data.customFieldValues ?? [];
+  const customFieldValues = data.custom_field_values ?? [];
 
   return (
     <div style={{ height: '100%' }}>

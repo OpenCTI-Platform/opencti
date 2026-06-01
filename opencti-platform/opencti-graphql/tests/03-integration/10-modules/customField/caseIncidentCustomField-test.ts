@@ -81,33 +81,7 @@ const READ_CASE_CUSTOM_FIELDS = gql`
     caseIncident(id: $id) {
       id
       name
-      customFieldValues {
-        field_id
-        field_name
-        int_value
-      }
-    }
-  }
-`;
-
-const SET_CUSTOM_FIELD = gql`
-  mutation TestCISetCustomField($id: ID!, $fieldId: ID!, $value: String!) {
-    caseIncidentSetCustomFieldValue(id: $id, fieldId: $fieldId, value: $value) {
-      id
-      customFieldValues {
-        field_id
-        field_name
-        int_value
-      }
-    }
-  }
-`;
-
-const REMOVE_CUSTOM_FIELD = gql`
-  mutation TestCIRemoveCustomField($id: ID!, $fieldId: ID!) {
-    caseIncidentRemoveCustomFieldValue(id: $id, fieldId: $fieldId) {
-      id
-      customFieldValues {
+      custom_field_values {
         field_id
         field_name
         int_value
@@ -123,7 +97,7 @@ const LIST_CASES_WITH_FILTER = gql`
         node {
           id
           name
-          customFieldValues {
+          custom_field_values {
             field_name
             int_value
           }
@@ -231,35 +205,6 @@ describe('CaseIncident — custom field values (integer type)', () => {
   });
 
   // -------------------------------------------------------------------------
-  // SET — happy path
-  // -------------------------------------------------------------------------
-
-  it('should set int_value = 3 on CaseIncident A', async () => {
-    const result = await queryAsAdmin({
-      query: SET_CUSTOM_FIELD,
-      variables: { id: caseAId, fieldId: definitionId, value: '3' },
-    });
-    expect(result.errors).toBeUndefined();
-    const values = result.data?.caseIncidentSetCustomFieldValue?.customFieldValues;
-    expect(values).toBeDefined();
-    const entry = values.find((v: any) => v.field_id === definitionId);
-    expect(entry).toBeDefined();
-    expect(entry.field_name).toBe(fieldName);
-    expect(entry.int_value).toBe(3);
-  });
-
-  it('should set int_value = 7 on CaseIncident B', async () => {
-    const result = await queryAsAdmin({
-      query: SET_CUSTOM_FIELD,
-      variables: { id: caseBId, fieldId: definitionId, value: '7' },
-    });
-    expect(result.errors).toBeUndefined();
-    const entry = result.data?.caseIncidentSetCustomFieldValue?.customFieldValues
-      .find((v: any) => v.field_id === definitionId);
-    expect(entry?.int_value).toBe(7);
-  });
-
-  // -------------------------------------------------------------------------
   // READ — customFieldValues resolver
   // -------------------------------------------------------------------------
 
@@ -268,7 +213,7 @@ describe('CaseIncident — custom field values (integer type)', () => {
     expect(result.errors).toBeUndefined();
     const ci = result.data?.caseIncident;
     expect(ci).toBeDefined();
-    const entry = ci.customFieldValues?.find((v: any) => v.field_id === definitionId);
+    const entry = ci.custom_field_values?.find((v: any) => v.field_id === definitionId);
     expect(entry).toBeDefined();
     expect(entry.field_name).toBe(fieldName);
     expect(entry.int_value).toBe(3);
@@ -277,95 +222,8 @@ describe('CaseIncident — custom field values (integer type)', () => {
   it('should return empty customFieldValues for CaseIncident C (no value set)', async () => {
     const result = await queryAsAdmin({ query: READ_CASE_CUSTOM_FIELDS, variables: { id: caseCId } });
     expect(result.errors).toBeUndefined();
-    const vals = result.data?.caseIncident?.customFieldValues ?? [];
+    const vals = result.data?.caseIncident?.custom_field_values ?? [];
     expect(vals.find((v: any) => v.field_id === definitionId)).toBeUndefined();
-  });
-
-  // -------------------------------------------------------------------------
-  // SET — overwrite existing value
-  // -------------------------------------------------------------------------
-
-  it('should overwrite int_value on CaseIncident A from 3 to 5', async () => {
-    const result = await queryAsAdmin({
-      query: SET_CUSTOM_FIELD,
-      variables: { id: caseAId, fieldId: definitionId, value: '5' },
-    });
-    expect(result.errors).toBeUndefined();
-    const entry = result.data?.caseIncidentSetCustomFieldValue?.customFieldValues
-      .find((v: any) => v.field_id === definitionId);
-    expect(entry?.int_value).toBe(5);
-    // Reset back to 3 for filter tests that follow
-    await queryAsAdmin({ query: SET_CUSTOM_FIELD, variables: { id: caseAId, fieldId: definitionId, value: '3' } });
-  });
-
-  // -------------------------------------------------------------------------
-  // SET — business rule errors (integer type)
-  // -------------------------------------------------------------------------
-
-  it('should reject a value below min_value (min=1)', async () => {
-    const result = await queryAsAdmin({
-      query: SET_CUSTOM_FIELD,
-      variables: { id: caseAId, fieldId: definitionId, value: '0' },
-    });
-    expect(result.errors).toBeDefined();
-    expect(result.errors![0].message).toMatch(/below min_value/i);
-  });
-
-  it('should reject a value above max_value (max=10)', async () => {
-    const result = await queryAsAdmin({
-      query: SET_CUSTOM_FIELD,
-      variables: { id: caseAId, fieldId: definitionId, value: '99' },
-    });
-    expect(result.errors).toBeDefined();
-    expect(result.errors![0].message).toMatch(/exceeds max_value/i);
-  });
-
-  it('should reject a non-integer value', async () => {
-    const result = await queryAsAdmin({
-      query: SET_CUSTOM_FIELD,
-      variables: { id: caseAId, fieldId: definitionId, value: 'abc' },
-    });
-    expect(result.errors).toBeDefined();
-    expect(result.errors![0].message).toMatch(/integer/i);
-  });
-
-  it('should reject a definition not associated to Case-Incident', async () => {
-    // Create a definition without associating it to Case-Incident
-    const unlinkedDef = await queryAsAdmin({
-      query: CREATE_DEFINITION,
-      variables: {
-        input: { name: 'unlinked_field', label: 'Unlinked', field_type: 'integer', mandatory: false },
-      },
-    });
-    const unlinkedId = unlinkedDef.data?.customFieldDefinitionAdd.id;
-    try {
-      const result = await queryAsAdmin({
-        query: SET_CUSTOM_FIELD,
-        variables: { id: caseAId, fieldId: unlinkedId, value: '5' },
-      });
-      expect(result.errors).toBeDefined();
-      expect(result.errors![0].message).toMatch(/not applicable to Case-Incident/i);
-    } finally {
-      await queryAsAdmin({ query: DELETE_DEFINITION, variables: { id: unlinkedId } });
-    }
-  });
-
-  // -------------------------------------------------------------------------
-  // REMOVE
-  // -------------------------------------------------------------------------
-
-  it('should remove the custom field value from CaseIncident A then re-set it', async () => {
-    // Remove
-    const removeResult = await queryAsAdmin({
-      query: REMOVE_CUSTOM_FIELD,
-      variables: { id: caseAId, fieldId: definitionId },
-    });
-    expect(removeResult.errors).toBeUndefined();
-    const afterRemove = removeResult.data?.caseIncidentRemoveCustomFieldValue?.customFieldValues ?? [];
-    expect(afterRemove.find((v: any) => v.field_id === definitionId)).toBeUndefined();
-
-    // Re-set for following filter tests
-    await queryAsAdmin({ query: SET_CUSTOM_FIELD, variables: { id: caseAId, fieldId: definitionId, value: '3' } });
   });
 
   // -------------------------------------------------------------------------
@@ -551,4 +409,3 @@ describe('CaseIncident — custom field values (integer type)', () => {
 // ---------------------------------------------------------------------------
 // describe('CaseIncident — custom field values (string type)', () => { ... });
 // describe('CaseIncident — custom field values (boolean type)', () => { ... });
-

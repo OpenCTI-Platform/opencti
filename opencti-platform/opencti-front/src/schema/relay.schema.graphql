@@ -10547,8 +10547,6 @@ type Mutation {
   caseTemplateRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTemplate
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident
   caseIncidentDelete(id: ID!): ID
-  caseIncidentSetCustomFieldValue(id: ID!, fieldId: ID!, value: String!): CaseIncident
-  caseIncidentRemoveCustomFieldValue(id: ID!, fieldId: ID!): CaseIncident
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
   caseRfiDelete(id: ID!): ID
   caseRfiApprove(id: ID!): CaseRfi
@@ -12603,7 +12601,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
-  customFieldValues: [CustomFieldValue]
+  custom_field_values: [CustomFieldValue]
 }
 
 enum CaseIncidentsOrdering {

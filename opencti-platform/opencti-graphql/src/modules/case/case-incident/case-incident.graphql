@@ -173,7 +173,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   severity: String
   priority: String
   # Custom Field Values
-  customFieldValues: [CustomFieldValue]
+  custom_field_values: [CustomFieldValue]
 }
 
 # Ordering
@@ -264,6 +264,4 @@ input CaseIncidentAddInput {
 type Mutation {
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
   caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseIncidentSetCustomFieldValue(id: ID!, fieldId: ID!, value: String!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseIncidentRemoveCustomFieldValue(id: ID!, fieldId: ID!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
 }
