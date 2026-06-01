@@ -253,9 +253,11 @@ export const setWorkflowDefinition = async (
       ENTITY_TYPE_WORKFLOW_DEFINITION,
     ) as WorkflowDefinitionEntity | undefined;
     if (existingWorkflow) {
-      // Add to version history (prepend new version to maintain chronological order)
+      // Add to version history (prepend new version to maintain chronological order).
+      // Cap at 100 entries to prevent unbounded growth (e.g. from a save loop triggered by UI hooks).
+      const MAX_VERSIONS = 100;
       const allVersions = existingWorkflow.all_versions || [];
-      const updatedVersions = [versionData, ...allVersions];
+      const updatedVersions = [versionData, ...allVersions].slice(0, MAX_VERSIONS);
 
       // draft_version is always in all_versions
       await updateAttribute(executionContext, executionUser, existingWorkflow.id, ENTITY_TYPE_WORKFLOW_DEFINITION, [
