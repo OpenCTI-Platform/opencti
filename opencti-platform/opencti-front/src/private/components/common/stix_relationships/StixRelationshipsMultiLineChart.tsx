@@ -5,17 +5,17 @@ import { monthsAgo, now } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
+import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { StixRelationshipsMultiLineChartTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiLineChartTimeSeriesQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
-import { StixRelationshipsMultiVerticalBarsTimeSeriesQuery } from './__generated__/StixRelationshipsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
 
-const stixRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
-  query StixRelationshipsMultiVerticalBarsTimeSeriesQuery(
+const stixRelationshipsMultiLineChartTimeSeriesQuery = graphql`
+  query StixRelationshipsMultiLineChartTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -37,22 +37,22 @@ const stixRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   }
 `;
 
-interface StixRelationshipsMultiVerticalBarsComponentProps {
-  queryRef: PreloadedQuery<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>;
+interface StixRelationshipsMultiLineChartComponentProps {
+  queryRef: PreloadedQuery<StixRelationshipsMultiLineChartTimeSeriesQuery>;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted: (chart: unknown) => void;
 }
 
-const StixRelationshipsMultiVerticalBarsComponent = ({
+const StixRelationshipsMultiLineChartComponent = ({
   queryRef,
   dataSelection,
   parameters,
   onMounted,
-}: StixRelationshipsMultiVerticalBarsComponentProps) => {
+}: StixRelationshipsMultiLineChartComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
-    stixRelationshipsMultiVerticalBarsTimeSeriesQuery,
+    stixRelationshipsMultiLineChartTimeSeriesQuery,
     queryRef,
   );
 
@@ -60,24 +60,25 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
     return <WidgetNoData />;
   }
   return (
-    <WidgetVerticalBars
+    <WidgetMultiLines
       series={dataSelection.map((selection, i) => {
         const serie = data.stixRelationshipsMultiTimeSeries?.[i];
+
         return {
           name: selection.label || t_i18n('Number of entities'),
-          data: serie?.data?.flatMap((entry) => {
-            if (!entry) {
-              return [];
-            }
-            return [{
-              x: new Date(entry.date),
-              y: entry.value,
-            }];
-          }) ?? [],
+          data:
+            serie?.data?.flatMap((entry) => {
+              if (!entry) return [];
+              return [
+                {
+                  x: new Date(entry.date),
+                  y: entry.value,
+                },
+              ];
+            }) ?? [],
         };
       })}
       interval={parameters?.interval}
-      isStacked={parameters?.stacked ?? false}
       hasLegend={parameters?.legend ?? false}
       onMounted={onMounted}
     />
@@ -87,7 +88,7 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
-): StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'] => {
+): StixRelationshipsMultiLineChartTimeSeriesQuery['variables'] => {
   const fallbackStart = monthsAgo(12);
   const fallbackEnd = now();
   const startDate = config.startDate ?? fallbackStart;
@@ -95,11 +96,17 @@ const buildQueryVariables = (
   const timeSeriesParameters = resolvedDataSelection.map((selection) => {
     const dateAttribute
       = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters,
-      { startDate, endDate, isKnowledgeRelationshipWidget: true },
-    );
-    type TimeSeriesParam = NonNullable<NonNullable<StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables']['timeSeriesParameters']>[number]>;
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, {
+      startDate,
+      endDate,
+      isKnowledgeRelationshipWidget: true,
+    });
+    type TimeSeriesParam
+      = NonNullable<
+        NonNullable<
+          StixRelationshipsMultiLineChartTimeSeriesQuery['variables']['timeSeriesParameters']
+        >[number]
+      >;
 
     return {
       field: dateAttribute,
@@ -117,11 +124,9 @@ const buildQueryVariables = (
   };
 };
 
-interface StixRelationshipsMultiVerticalBarsProps {
+interface StixRelationshipsMultiLineChartProps {
   variant?: string;
   height?: number;
-  startDate?: string;
-  endDate?: string;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;
@@ -130,7 +135,7 @@ interface StixRelationshipsMultiVerticalBarsProps {
   refreshRate?: number | null;
 }
 
-const StixRelationshipsMultiVerticalBars = ({
+const StixRelationshipsMultiLineChart = ({
   variant,
   height,
   dataSelection,
@@ -139,15 +144,15 @@ const StixRelationshipsMultiVerticalBars = ({
   host,
   config,
   refreshRate = null,
-}: StixRelationshipsMultiVerticalBarsProps) => {
+}: StixRelationshipsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiLineChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
     refreshRate,
-    query: stixRelationshipsMultiVerticalBarsTimeSeriesQuery,
+    query: stixRelationshipsMultiLineChartTimeSeriesQuery,
     config,
     buildQueryVariables,
   });
@@ -168,11 +173,11 @@ const StixRelationshipsMultiVerticalBars = ({
     >
       {queryRef ? (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixRelationshipsMultiVerticalBarsComponent
+          <StixRelationshipsMultiLineChartComponent
             queryRef={queryRef}
             dataSelection={resolvedDataSelection}
             parameters={parameters}
-            onMounted={(chart) => setChart(chart as ApexCharts)}
+            onMounted={(c) => setChart(c as ApexCharts)}
           />
         </Suspense>
       ) : (
@@ -182,4 +187,4 @@ const StixRelationshipsMultiVerticalBars = ({
   );
 };
 
-export default StixRelationshipsMultiVerticalBars;
+export default StixRelationshipsMultiLineChart;
