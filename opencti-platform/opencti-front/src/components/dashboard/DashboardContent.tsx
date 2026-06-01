@@ -50,7 +50,7 @@ const DashboardContent = ({
         className="layout"
         width={width}
         layout={Object.values(widgetsLayouts)}
-        gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12, containerPadding: [0, 0] }}
+        gridConfig={{ margin: [20, 20], rowHeight: 62, cols: 12, containerPadding: [0, 0] }}
         dragConfig={{ enabled: isEditable, cancel: '.noDrag' }}
         resizeConfig={{ enabled: isEditable }}
         onLayoutChange={isEditable ? handleLayoutChange : () => true}
