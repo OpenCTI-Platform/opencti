@@ -652,24 +652,21 @@ describe('workflow-resolvers', () => {
     });
   });
 
-  describe('EntitySetting type resolvers', () => {
+  describe('WorkflowDefinitionMutationResult type resolvers', () => {
     describe('errors', () => {
       it('should return errors when present', () => {
         const errors = [{ message: 'Invalid transition' }];
-        const entitySetting = { errors };
-        const result = workflowResolvers.EntitySetting.errors(entitySetting);
+        const result = workflowResolvers.WorkflowDefinitionMutationResult.errors({ errors });
         expect(result).toBe(errors);
       });
 
       it('should return empty array when errors is not present', () => {
-        const entitySetting = {};
-        const result = workflowResolvers.EntitySetting.errors(entitySetting);
+        const result = workflowResolvers.WorkflowDefinitionMutationResult.errors({});
         expect(result).toEqual([]);
       });
 
       it('should return empty array when errors is null', () => {
-        const entitySetting = { errors: null };
-        const result = workflowResolvers.EntitySetting.errors(entitySetting);
+        const result = workflowResolvers.WorkflowDefinitionMutationResult.errors({ errors: null });
         expect(result).toEqual([]);
       });
     });

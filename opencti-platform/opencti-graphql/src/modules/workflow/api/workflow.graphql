@@ -53,6 +53,7 @@ extend type EntitySetting {
 type WorkflowDefinitionMutationResult {
     id: ID!
     workflow_id: String
+    target_type: String
     published: Boolean!
     errors: [WorkflowValidationError!]!
 }

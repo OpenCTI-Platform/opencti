@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
-import { FilterMode, type EditInput, type WorkflowInstance } from '../../../generated/graphql';
+import { FilterMode, type EditInput } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
