@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { getImageFiles, getImageFilesFromClipboardData, getMarkdownImageDragFeedback, isSvgImageFile } from '../core/markdownImageFieldHelpers';
 import { insertImageAtCursor, MarkdownTempAttachmentRegistry } from '../core/markdownImagePreviewUtils';
@@ -7,11 +7,10 @@ import type { MarkdownImagesTab } from '../core/markdownImagesController';
 type UseMarkdownImageInteractionsArgs = {
   activeTab: MarkdownImagesTab;
   disabled?: boolean;
-  isImageUploadEnabled: boolean;
   t_i18n: (value: string) => string;
-  containerRef: MutableRefObject<HTMLDivElement | null>;
-  latestMarkdownRef: MutableRefObject<string>;
-  registryRef: MutableRefObject<MarkdownTempAttachmentRegistry>;
+  containerRef: RefObject<HTMLDivElement | null>;
+  latestMarkdownRef: RefObject<string>;
+  registryRef: RefObject<MarkdownTempAttachmentRegistry>;
   pushDraftAndSyncLatest: (nextValue: string, shouldValidate?: boolean) => void;
   maxImageSizeBytes: number;
 };
@@ -19,7 +18,6 @@ type UseMarkdownImageInteractionsArgs = {
 const useMarkdownImageInteractions = ({
   activeTab,
   disabled,
-  isImageUploadEnabled,
   t_i18n,
   containerRef,
   latestMarkdownRef,
@@ -67,7 +65,7 @@ const useMarkdownImageInteractions = ({
     }
 
     const imageFiles = getImageFiles(files);
-    if (imageFiles.length === 0 || disabled || !isImageUploadEnabled) {
+    if (imageFiles.length === 0 || disabled) {
       return;
     }
 
@@ -103,7 +101,7 @@ const useMarkdownImageInteractions = ({
         activeTextArea.setSelectionRange(nextCursor, nextCursor);
       }
     });
-  }, [disabled, isImageUploadEnabled, latestMarkdownRef, maxImageSizeBytes, pushDraftAndSyncLatest, registryRef, resolveTextArea, t_i18n]);
+  }, [disabled, latestMarkdownRef, maxImageSizeBytes, pushDraftAndSyncLatest, registryRef, resolveTextArea, t_i18n]);
 
   const handleFilePickerChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files ? Array.from(event.target.files) : [];
@@ -112,34 +110,34 @@ const useMarkdownImageInteractions = ({
   }, [insertImages]);
 
   const handleUploadButtonClick = useCallback(() => {
-    if (disabled || !isImageUploadEnabled || activeTab !== 'write') {
+    if (disabled || activeTab !== 'write') {
       return;
     }
     fileInputRef.current?.click();
-  }, [activeTab, disabled, isImageUploadEnabled]);
+  }, [activeTab, disabled]);
 
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
     resetDragFeedback();
-    if (disabled || !isImageUploadEnabled || activeTab !== 'write') {
+    if (disabled || activeTab !== 'write') {
       return;
     }
     const files = event.dataTransfer.files ? Array.from(event.dataTransfer.files) : [];
     insertImages(files);
-  }, [activeTab, disabled, insertImages, isImageUploadEnabled, resetDragFeedback]);
+  }, [activeTab, disabled, insertImages, resetDragFeedback]);
 
   const handleDragEnter = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    if (disabled || !isImageUploadEnabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
+    if (disabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
     dragDepthRef.current += 1;
     setDragFeedback(getMarkdownImageDragFeedback(event.dataTransfer));
-  }, [activeTab, disabled, isImageUploadEnabled]);
+  }, [activeTab, disabled]);
 
   const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    if (disabled || !isImageUploadEnabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
+    if (disabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
@@ -147,17 +145,17 @@ const useMarkdownImageInteractions = ({
     if (dragDepthRef.current === 0) {
       setDragFeedback('none');
     }
-  }, [activeTab, disabled, isImageUploadEnabled]);
+  }, [activeTab, disabled]);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (!disabled && isImageUploadEnabled && activeTab === 'write' && hasFilePayload(event.dataTransfer)) {
+    if (!disabled && activeTab === 'write' && hasFilePayload(event.dataTransfer)) {
       setDragFeedback(getMarkdownImageDragFeedback(event.dataTransfer));
     }
-  }, [activeTab, disabled, isImageUploadEnabled]);
+  }, [activeTab, disabled]);
 
   const handlePaste = useCallback((event: React.ClipboardEvent<HTMLDivElement>) => {
-    if (disabled || !isImageUploadEnabled || activeTab !== 'write') {
+    if (disabled || activeTab !== 'write') {
       return;
     }
 
@@ -168,7 +166,7 @@ const useMarkdownImageInteractions = ({
 
     event.preventDefault();
     insertImages(files);
-  }, [activeTab, disabled, insertImages, isImageUploadEnabled]);
+  }, [activeTab, disabled, insertImages]);
 
   useEffect(() => {
     if (activeTab !== 'write' && dragFeedback !== 'none') {

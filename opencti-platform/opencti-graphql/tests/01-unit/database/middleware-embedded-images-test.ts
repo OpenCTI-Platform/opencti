@@ -122,6 +122,30 @@ describe('middlewareEmbeddedImages markdown rewrite helpers', () => {
     });
   });
 
+  it('should rewrite embedded markdown URL with encoded filename when uploaded name contains spaces and accents', async () => {
+    vi.mocked(uploadToStorage).mockResolvedValue({
+      upload: { name: 'Report/r-1/coucou ééé.png' },
+    } as any);
+
+    const payload: Record<string, unknown> = {
+      description: `![accent](data:image/png;base64,${Buffer.from('img-encoded').toString('base64')})`,
+    };
+
+    await rewriteEmbeddedDataUriImagesInDescriptions(
+      {} as any,
+      {} as any,
+      payload,
+      {
+        entityType: 'Report',
+        entityId: 'r-1',
+        entity: { internal_id: 'r-1', entity_type: 'Report' } as any,
+        fileMarkings: [],
+      },
+    );
+
+    expect(payload.description).toContain('![accent](embedded/Report/r-1/coucou%20%C3%A9%C3%A9%C3%A9.png)');
+  });
+
   it('should rewrite data URI images in update inputs for upsert/update-like patches', async () => {
     vi.mocked(uploadToStorage).mockResolvedValue({
       upload: { name: 'Report/r-2/image-b.png' },

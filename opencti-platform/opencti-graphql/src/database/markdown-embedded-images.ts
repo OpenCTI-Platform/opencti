@@ -80,6 +80,31 @@ const DATA_URI_IMAGE_REGEX = /^data:([^;,\s]+)(;base64)?,([\s\S]*)$/i;
 
 const normalizeMimeType = (mimeType: string) => mimeType.toLowerCase().trim();
 
+const normalizeEmbeddedStoragePath = (storagePath: string): string => {
+  const normalizedStoragePath = storagePath.replace(/^\/+/, '').split(/[?#]/)[0];
+  try {
+    // Keep encoded separators (e.g. %2F) untouched while decoding readable characters.
+    return decodeURI(normalizedStoragePath);
+  } catch {
+    return normalizedStoragePath;
+  }
+};
+
+export const encodeEmbeddedStoragePathForMarkdownUrl = (storagePath: string): string => {
+  const normalizedStoragePath = storagePath.replace(/^\/+/, '');
+  return normalizedStoragePath
+    .split('/')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => {
+      try {
+        return encodeURIComponent(decodeURIComponent(segment));
+      } catch {
+        return encodeURIComponent(segment);
+      }
+    })
+    .join('/');
+};
+
 const getAllowedMimeTypes = (allowedMimeTypes?: readonly string[]) => {
   if (!allowedMimeTypes) {
     return ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET;
@@ -151,7 +176,7 @@ export const extractEmbeddedStoragePathFromUrl = (url: string): string | undefin
   const trimmed = url.trim();
 
   const extractEmbeddedStoragePath = (storagePath: string): string | undefined => {
-    const normalizedStoragePath = storagePath.replace(/^\/+/, '').split(/[?#]/)[0];
+    const normalizedStoragePath = normalizeEmbeddedStoragePath(storagePath);
     if (normalizedStoragePath.startsWith('embedded/')) {
       return normalizedStoragePath;
     }
@@ -181,7 +206,7 @@ export const resolveEmbeddedStoragePathWithContext = (
   embeddedStoragePath: string,
   context: EmbeddedStoragePathContext = {},
 ): string => {
-  const normalizedPath = embeddedStoragePath.trim().replace(/^\/+/, '').split(/[?#]/)[0];
+  const normalizedPath = normalizeEmbeddedStoragePath(embeddedStoragePath.trim());
   if (!normalizedPath.startsWith('embedded/')) {
     return normalizedPath;
   }
