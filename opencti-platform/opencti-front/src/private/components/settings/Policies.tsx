@@ -40,6 +40,7 @@ const PoliciesFragment = graphql`
     platform_consent_confirm_text
     platform_banner_level
     platform_banner_text
+    platform_no_access_message
     platform_organization {
       id
       name
@@ -74,6 +75,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  platform_no_access_message: Yup.string().nullable(),
 });
 
 interface PoliciesComponentProps {
@@ -128,6 +130,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_consent_confirm_text: settings.platform_consent_confirm_text,
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
+    platform_no_access_message: settings.platform_no_access_message,
     view_all_users: settings.view_all_users ?? false,
   };
   return (
@@ -305,6 +308,22 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         fullWidth
                         style={{ marginTop: 20 }}
                         height={38}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
+                      />
+                    </Card>
+                  </Grid>
+
+                  {/* Full width: Platform error messages */}
+                  <Grid item xs={12}>
+                    <Card title={t_i18n('Platform error messages')}>
+                      <Field
+                        component={MarkdownField}
+                        name="platform_no_access_message"
+                        label={t_i18n('No access to knowledge error message')}
+                        fullWidth
+                        multiline={true}
+                        rows="3"
                         onSubmit={handleSubmitField}
                         variant="standard"
                       />

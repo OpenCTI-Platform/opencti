@@ -31,6 +31,7 @@ const rootSettingsFragment = graphql`
     platform_title
     platform_demo
     platform_banner_text
+    platform_no_access_message
     request_access_enabled
     platform_url
     platform_user_statuses {

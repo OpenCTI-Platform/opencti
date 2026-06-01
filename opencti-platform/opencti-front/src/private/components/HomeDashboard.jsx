@@ -22,6 +22,7 @@ import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRel
 import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
+import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -149,12 +150,13 @@ const TargetedCountries = ({ timeField }) => {
 
 const DefaultDashboard = ({ timeField }) => {
   const { t_i18n } = useFormatter();
+  const { settings } = useAuth();
+  const noAccessMessage = settings.platform_no_access_message
+    || t_i18n('You do not have any access to the knowledge of this OpenCTI instance.');
   return (
     <Security
       needs={[KNOWLEDGE]}
-      placeholder={t_i18n(
-        'You do not have any access to the knowledge of this OpenCTI instance.',
-      )}
+      placeholder={<MarkdownDisplay content={noAccessMessage} />}
     >
       <Grid container={true} spacing={3}>
         <Grid item xs={3}>
