@@ -152,7 +152,7 @@ const DefaultDashboard = ({ timeField }) => {
   const { t_i18n } = useFormatter();
   const { settings } = useAuth();
   const noAccessMessage = settings.platform_no_access_message
-    || t_i18n('You do not have any access to the knowledge of this OpenCTI instance.');
+    ?? t_i18n('You do not have any access to the knowledge of this OpenCTI instance.');
   return (
     <Security
       needs={[KNOWLEDGE]}

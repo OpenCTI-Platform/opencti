@@ -323,7 +323,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         label={t_i18n('No access to knowledge error message')}
                         fullWidth
                         multiline={true}
-                        rows="3"
+                        rows={3}
                         onSubmit={handleSubmitField}
                         variant="standard"
                       />
