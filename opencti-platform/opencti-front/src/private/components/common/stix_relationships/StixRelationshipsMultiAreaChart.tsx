@@ -113,6 +113,8 @@ const buildQueryVariables = (
       dynamicTo: selection.dynamicTo as unknown as TimeSeriesParam['dynamicTo'],
     };
   });
+
+  console.log("parameters?.interval", parameters);
   return {
     operation: 'count',
     startDate,
@@ -145,6 +147,8 @@ const StixRelationshipsMultiAreaChart = ({
 }: StixRelationshipsMultiAreaChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
+  
+
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
@@ -152,6 +156,7 @@ const StixRelationshipsMultiAreaChart = ({
     refreshRate,
     query: stixRelationshipsMultiAreaChartTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
 
