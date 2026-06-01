@@ -12,29 +12,29 @@ description: "Use when: creating a new ElasticSearch database migration file, ad
 
 ### Step 1 — Generate Migration File
 Use the current timestamp (ms) as prefix.
-File: `opencti-platform/opencti-graphql/src/migrations/<timestamp>-<description>.js`.
+File: `opencti-platform/opencti-graphql/src/migrations/<timestamp>-<description>.ts`.
 
 ### Step 2 — Implement Migration Pattern
 Use the standard template with logging and execution context.
 
-```javascript
-import { executionContext, SYSTEM_USER } from '../utils/access';
+```typescript
 import { logMigration } from '../config/conf';
 
 const message = '[MIGRATION] <Description>';
 
-export const up = async (next) => {
+export const up = async (next: any) => {
+  const startTime = Date.now();
   logMigration.info(`${message} > started`);
-  const context = executionContext('migration');
-  
-  // Implementation here
-  // usage: await someDomainFunction(context, SYSTEM_USER, args);
-  
-  logMigration.info(`${message} > done`);
-  next();
-};
 
-export const down = async (next) => {
+  // Implementation here
+  // usage: const context = executionContext('migration');
+  //        await someDomainFunction(context, SYSTEM_USER, args);
+
+  logMigration.info(`${message} > done in ${Date.now() - startTime} ms`);
+  next();
+   };
+
+export const down = async (next: any) => {
   next();
 };
 ```
