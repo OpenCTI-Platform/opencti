@@ -96,6 +96,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       workflow_action_id: slotId,
     });
 
+    // Store the task's input so we can retry if needed
     const taskInput: AsyncActionSlotTaskInput = {
       scope,
       description,

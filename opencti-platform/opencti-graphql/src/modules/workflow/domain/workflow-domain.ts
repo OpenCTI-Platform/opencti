@@ -718,12 +718,11 @@ export const triggerWorkflowEvent = async (
       }));
 
       // Get the serialized transition to persist its syncActions for phase-2 execution.
-      // Use length check instead of ?? because the frontend always serializes syncActions as [] (empty array),
-      // which is truthy and would prevent the fallback to the legacy actions[] field.
       const targetTransitionForSync = definitionData.transitions?.find((t: any) => {
         const fromStates = Array.isArray(t.from) ? t.from : [t.from];
         return fromStates.includes(currentStateId) && t.event === eventName;
       });
+      // fallback on actions if syncActions not explicitly defined on transition (legacy support)
       const serializedTransitions: WorkflowActionConfig[] = (targetTransitionForSync?.syncActions?.length
         ? targetTransitionForSync.syncActions
         : null) ?? targetTransitionForSync?.actions ?? [];
