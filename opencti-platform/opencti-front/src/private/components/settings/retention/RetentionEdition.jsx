@@ -232,7 +232,7 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
-            {(retentionRule.scope === 'knowledge' || retentionRule.scope === 'history')
+            {(retentionRule.scope === 'knowledge')
               && (
                 <>
                   <Box
@@ -261,7 +261,7 @@ const RetentionEditionContainer = (props) => {
             }
             {retentionRule.scope === 'history'
               && (
-                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                <Alert severity="info" style={{ margin: '15px 0 15px 0' }}>
                   {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
                 </Alert>
               )
