@@ -391,7 +391,7 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
     user,
     sdoId,
     stixDomainObject.entity_type,
-    { key: 'x_opencti_files', value: nonResolvedFiles },
+    [{ key: 'x_opencti_files', value: nonResolvedFiles }],
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
 };
