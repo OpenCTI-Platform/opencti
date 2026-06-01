@@ -576,9 +576,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
             const showDraftName = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
-            const showDraftDescription = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.description && (isBypass || schema.draftDefaults.description.isEditable));
-            const showDraftObjectAssignee = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectAssignee && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
-            const showDraftObjectParticipant = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectParticipant && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
+            const showDraftDescription = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.description
+              && (isBypass || schema.draftDefaults.description.isEditable));
+            const showDraftObjectAssignee = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectAssignee
+              && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
+            const showDraftObjectParticipant = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectParticipant
+              && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
             const showDraftAuthor = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
             const showDraftAuthorizedMembers = isFormIntakeDefaultsEnabled && isDraft
               && schema.draftDefaults?.authorizedMembers?.enabled
