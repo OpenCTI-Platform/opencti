@@ -13,6 +13,9 @@ import Dialog from '@common/dialog/Dialog';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 import { workflowStatusFragment, COMMENT_MAX_LENGTH } from './workflowStatus.graphql';
 import { useTransitionWizard } from './useTransitionWizard';
+import { isBypassUser } from '../../../../utils/hooks/useGranted';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { Close } from 'mdi-material-ui';
 
 interface WorkflowTransitionsProps {
   data: workflowStatus_data$key;
@@ -21,6 +24,8 @@ interface WorkflowTransitionsProps {
 export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { me } = useAuth();
+  const isBypass = isBypassUser(me);
 
   const draft = useFragment(workflowStatusFragment, data);
   const {
@@ -91,6 +96,17 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             </Typography>
           )}
           <CircularProgress size={14} thickness={5} />
+          {isBypass && (
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={handleClear}
+              disabled={clearing || retrying}
+              startIcon={<Close />}
+            >
+              {t_i18n('Clear')}
+            </Button>
+          )}
         </Box>
       </>
     );
