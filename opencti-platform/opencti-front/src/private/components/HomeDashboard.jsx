@@ -310,11 +310,13 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={6}>
           <StixRelationshipsMultiAreaChart
-            title={t_i18n('Relationships created')}
             height={300}
-            startDate={yearsAgo(1)}
-            endDate={lastDayOfThePreviousMonth()}
+            config={{
+              startDate: yearsAgo(1),
+              endDate: lastDayOfThePreviousMonth(),
+            }}
             parameters={{
+              title: t_i18n('Relationships created'),
               interval: 'month',
             }}
             dataSelection={[{
