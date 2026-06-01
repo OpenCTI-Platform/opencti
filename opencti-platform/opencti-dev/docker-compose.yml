@@ -118,8 +118,12 @@ services:
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
     ports:
-      - 5672:5672
-      - 15672:15672
+      - "5672:5672"
+      - "15672:15672" # management UI
+      - "15692:15692" # prometheus metrics
+    command: >
+      sh -c "rabbitmq-plugins enable rabbitmq_prometheus && docker-entrypoint.sh
+      rabbitmq-server"
 
   ## Telemetry + tracing dependencies
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
@@ -156,10 +160,14 @@ services:
       - "telemetry"
   opencti-dev-telemetry-prometheus:
     container_name: opencti-dev-telemetry-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-lifecycle
     image: prom/prometheus:v3.12.0
     restart: unless-stopped
     volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./prometheus/rules:/etc/prometheus/rules"
     ports:
       - "9090:9090"
     profiles:
@@ -173,6 +181,10 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - opencti-dev-telemetry-prometheus
+    volumes:
+      - "grafanadata:/var/lib/grafana"
+      - "./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datas\
+        ources.yaml"
 
   # SAML / OpenId provider with keycloak - disabled by default
   # docker compose --profile keycloak up -d
@@ -214,4 +226,6 @@ volumes:
   ossnapshots:
     driver: local
   keycloakdata:
+    driver: local
+  grafanadata:
     driver: local
