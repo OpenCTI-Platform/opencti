@@ -253,41 +253,58 @@ html[data-theme="fluent"] {
     height: 20px;
     padding: 0;
     position: relative;
-    margin-right: 8px;
+    margin: 8px;
+    border-radius: 10000px !important;
     .MuiSwitch-switchBase {
-      border: 1px solid var(--fluent-color-border) !important;
-      background-color: #fff !important;
       opacity: 1 !important;
       // width: 100% !important;
       // height: 20px !important;
-      border-radius: 10px !important;
-      padding: 1px 2px !important;
+      width: 20px;
+      height: 20px;
+      padding: 2px !important;
       display: block;
       transition: all 0.3s;
+      display: inline-flex;
       .MuiSwitch-thumb {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         display: block;
         background: var(--fluent-color-border-hover);
         transition: all 0.3s;
       }
-      .MuiTouchRipple-root {
-        display: none !important;
-      }
       &.Mui-checked {
-        background-color: var(--fluent-color-primary) !important;
-        border-color: var(--fluent-color-primary) !important;
-        transform: none !important;
         .MuiSwitch-thumb {
-          width: 16px;
-          height: 16px;
-          transform: translateX(-18px) !important;
-          background: #fff;
+          background: #fff !important;
+        }
+        + .MuiSwitch-track {
+          border-color: transparent !important;
+          background: var(--fluent-color-primary) !important;
         }
       }
       + .MuiSwitch-track {
-        display: none !important;
+        opacity: 1 !important;
+        border: 1px solid var(--fluent-color-border) !important;
+        border-radius: 10000px !important;
+        background: transparent !important;
       }
+
+      //   // .MuiTouchRipple-root {
+      //   //   display: none !important;
+      //   // }
+      //   // &.Mui-checked {
+      //   //   background-color: var(--fluent-color-primary) !important;
+      //   //   border-color: var(--fluent-color-primary) !important;
+      //   //   transform: none !important;
+      //   //   .MuiSwitch-thumb {
+      //   //     width: 16px;
+      //   //     height: 16px;
+      //   //     transform: translateX(-18px) !important;
+      //   //     background: #fff;
+      //   //   }
+      //   // }
+      //   // + .MuiSwitch-track {
+      //   //   display: none !important;
+      //   // }
     }
   }
   .MuiToggleButtonGroup-root {
