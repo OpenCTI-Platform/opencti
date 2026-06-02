@@ -152,7 +152,7 @@ export const rssHttpClientOptions = (ingestion: BasicStoreEntityIngestionRss) =>
   const httpClientOptions: GetHttpClient = {
     responseType: 'text',
     headers: { 'User-Agent': RSS_FEED_USER_AGENT },
-    rejectUnauthorized: ingestion.ssl_verify ?? true,
+    rejectUnauthorized: ingestion.ssl_verify ?? false,
   };
   return httpClientOptions;
 };
@@ -331,7 +331,7 @@ export const buildTaxiiHttpClientOptions = async (ingestion: BasicStoreEntityIng
     certificates = { cert: decryptedAuthValue.split(':')[0], key: decryptedAuthValue.split(':')[1], ca: decryptedAuthValue.split(':')[2] };
   }
 
-  const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: ingestion.ssl_verify ?? true, responseType: 'json', certificates };
+  const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: ingestion.ssl_verify ?? false, responseType: 'json', certificates };
   return httpClientOptions;
 };
 

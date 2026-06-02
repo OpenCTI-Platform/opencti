@@ -19,7 +19,7 @@ export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
   current_state_date: Date | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StoreEntityIngestionRss extends StoreEntity {
@@ -34,7 +34,7 @@ export interface StoreEntityIngestionRss extends StoreEntity {
   current_state_date: Date | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StixIngestionRss extends StixObject {
@@ -68,7 +68,7 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   ingestion_running: boolean;
   taxii_more: boolean;
   last_execution_date: Date | undefined;
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StoreEntityIngestionTaxii extends StoreEntity {
@@ -87,7 +87,7 @@ export interface StoreEntityIngestionTaxii extends StoreEntity {
   ingestion_running: boolean;
   taxii_more: boolean;
   last_execution_date: Date | undefined;
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StixIngestionTaxii extends StixObject {
@@ -120,7 +120,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
   markings?: string[];
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StoreEntityIngestionCsv extends StoreEntity {
@@ -132,7 +132,7 @@ export interface StoreEntityIngestionCsv extends StoreEntity {
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
   user_id: string | undefined;
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StixIngestionCsv extends StixObject {
@@ -171,7 +171,7 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   pagination_with_sub_page_attribute_path: string;
   pagination_with_sub_page_query_verb?: 'get' | 'post';
   query_attributes?: Array<DataParam>;
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StoreEntityIngestionJson extends StoreEntity {
@@ -195,7 +195,7 @@ export interface StoreEntityIngestionJson extends StoreEntity {
   pagination_with_sub_page_attribute_path: string;
   pagination_with_sub_page_query_verb?: 'get' | 'post';
   query_attributes?: Array<DataParam>;
-  ssl_verify: boolean;
+  ssl_verify: boolean | undefined;
 }
 
 export interface StixIngestionJson extends StixObject {
