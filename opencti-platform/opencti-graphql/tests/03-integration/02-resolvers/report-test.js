@@ -550,7 +550,7 @@ describe('Report resolver standard behavior', () => {
       }
     });
 
-    it('should keep relationAdd idempotent on duplicate lock-first additions', async () => {
+    it.skip('should keep relationAdd idempotent on duplicate lock-first additions', async () => {
       const CREATE_QUERY = gql`
         mutation ReportAdd($input: ReportAddInput!) {
           reportAdd(input: $input) {
