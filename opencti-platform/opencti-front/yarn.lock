@@ -278,7 +278,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.17.8, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.25.7, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.26.7, @babel/runtime@npm:^7.28.4, @babel/runtime@npm:^7.28.6, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.7":
+"@babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.17.8, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.25.7, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.26.7, @babel/runtime@npm:^7.28.4, @babel/runtime@npm:^7.28.6, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.7":
   version: 7.29.7
   resolution: "@babel/runtime@npm:7.29.7"
   checksum: 10c0/ca11572f7146b21e0bde6a9ed4bb6a89eafbee5f0944c7eb54d0d8a2dac962c33638a1d611e14faa71dfbb92b4b5f9236232208568a6b7d5c6f3f39ddb91771e
@@ -8086,15 +8086,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns-jalali@npm:^2.30.0-0":
-  version: 2.30.0-0
-  resolution: "date-fns-jalali@npm:2.30.0-0"
-  dependencies:
-    "@babel/runtime": "npm:^7.21.0"
-  checksum: 10c0/6e5e98e15a54e49abec2601463739c405a4e218ef5c6a22a544cb35ab7f5598cc2d0cccff299839db7e9e3e82e5c461d23764800d36fb5f87a25558d3f8fb095
-  languageName: node
-  linkType: hard
-
 "date-fns@npm:4.1.0":
   version: 4.1.0
   resolution: "date-fns@npm:4.1.0"
@@ -13178,7 +13169,6 @@ __metadata:
     d3-scale: "npm:4.0.2"
     d3-timer: "npm:3.0.1"
     date-fns: "npm:4.1.0"
-    date-fns-jalali: "npm:^2.30.0-0"
     dompurify: "npm:3.4.0"
     esbuild: "npm:0.28.0"
     esbuild-sass-plugin: "npm:^3.3.1"
