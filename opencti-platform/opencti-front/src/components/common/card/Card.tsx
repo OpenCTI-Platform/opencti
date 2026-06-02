@@ -113,7 +113,7 @@ const Card = ({
       {(title || action) && (
         <CardTitle
           action={action}
-          sx={titleSx}
+          sx={{...titleSx,direction:'ltr'}}
           alignItems={titleAlignItems}
         >
           {title} 
