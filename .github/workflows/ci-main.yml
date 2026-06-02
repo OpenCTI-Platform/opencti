@@ -72,3 +72,42 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
+
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [changes, wf-build-image, wf-backend-test, wf-frontend-test, wf-client-python-test, wf-license-check]
+    if: always()
+    steps:
+      - name: Verify job results
+        shell: bash
+        run: |
+          changes="${{ needs.changes.result }}"
+          build_image="${{ needs.wf-build-image.result }}"
+          backend_test="${{ needs.wf-backend-test.result }}"
+          frontend_test="${{ needs.wf-frontend-test.result }}"
+          client_python_test="${{ needs.wf-client-python-test.result }}"
+          license_check="${{ needs.wf-license-check.result }}"
+          
+          echo "Changes: $changes"
+          echo "Build Image: $build_image"
+          echo "Backend Test: $backend_test"
+          echo "Frontend Test: $frontend_test"
+          echo "Client Python Test: $client_python_test"
+          echo "License Check: $license_check"
+          
+          jobs="Changes:$changes Build-Image:$build_image Backend-Test:$backend_test Frontend-Test:$frontend_test Client-Python-Test:$client_python_test License-Check:$license_check"
+          has_failed=false
+          for job in $jobs; do
+            name="${job%%:*}"
+            result="${job#*:}"
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              echo "Error: Job '$name' has status '$result'."
+              has_failed=true
+            fi
+          done
+          
+          if [ "$has_failed" = "true" ]; then
+            exit 1
+          fi
+          echo "All jobs succeeded or were skipped."
