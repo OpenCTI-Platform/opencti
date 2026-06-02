@@ -109,14 +109,14 @@ const Card = ({
   }
 
   return (
-    <Stack sx={{ height: '100%', background: backgroundColor, borderRadius: theme.spacing(0.5), border: '1px solid', borderColor: 'divider' }}>
+    <Stack sx={{ height: '100%', background: backgroundColor, borderRadius: theme.spacing(0.5), border: '1px solid', borderColor: 'divider', direction: 'ltr' }}>
       {(title || action) && (
         <CardTitle
           action={action}
           sx={titleSx}
           alignItems={titleAlignItems}
         >
-          {title}
+          {title} 
         </CardTitle>
       )}
       <CardMui

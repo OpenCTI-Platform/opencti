@@ -31,7 +31,7 @@ const CardTitle = ({
     textTransform: 'capitalize',
     color: theme.palette.text.light,
     lineHeight: '24px',
-    fontSize: '12px',
+    fontSize: '16px',
     fontWeight: 600,
   };
 

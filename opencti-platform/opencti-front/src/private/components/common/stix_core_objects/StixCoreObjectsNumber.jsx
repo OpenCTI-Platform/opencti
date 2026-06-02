@@ -46,7 +46,6 @@ const StixCoreObjectsNumber = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
-
   const title = parameters.title ?? t_i18n('Entities number');
   const translatedTitle = translateEntityType(title);
 
@@ -64,7 +63,7 @@ const StixCoreObjectsNumber = ({
     <WidgetContainer
       padding="medium"
       height={height}
-      title={t_i18n('Entities number')}
+      title={translatedTitle}
       variant={variant}
       action={popover}
     >
@@ -83,7 +82,7 @@ const StixCoreObjectsNumber = ({
             return (
               <WidgetNumber
                 entityType={entityType}
-                label={translatedTitle}
+                label={selection.label}
                 value={total}
                 diffLabel={t_i18n('24 hours')}
                 diffValue={total - count}
