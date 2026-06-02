@@ -57,11 +57,9 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         <FormControl
           size="small"
           style={{ width: 194, marginInlineStart: 20 }}
-          variant="outlined"
         >
           <InputLabel
             id="relative"
-            variant="outlined"
           >
             {t_i18n('Relative time')}
           </InputLabel>
@@ -70,7 +68,6 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
             value={config.relativeDate ?? ''}
             onChange={handleChangeRelativeDate}
             label={t_i18n('Relative time')}
-            variant="outlined"
             sx={{
               '& fieldset': {
                 border: config.relativeDate

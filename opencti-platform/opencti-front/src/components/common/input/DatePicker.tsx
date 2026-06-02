@@ -16,7 +16,6 @@ const DatePicker: React.FC<DatePickerProps<Date>> = ({
       slotProps={{
         ...slotProps,
         textField: {
-          variant: 'outlined',
           size: 'small',
           ...slotProps?.textField,
           sx: {
