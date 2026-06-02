@@ -122,8 +122,7 @@ services:
       - "15672:15672" # management UI
       - "15692:15692" # prometheus metrics
     command: >
-      sh -c "rabbitmq-plugins enable rabbitmq_prometheus && docker-entrypoint.sh
-      rabbitmq-server"
+      sh -c "rabbitmq-plugins enable --offline rabbitmq_prometheus && exec rabbitmq-server"
 
   ## Telemetry + tracing dependencies
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
