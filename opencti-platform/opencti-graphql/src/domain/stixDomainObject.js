@@ -375,7 +375,7 @@ export const stixDomainObjectEditAuthorizedMembers = async (context, user, entit
 
 export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order, description, inCarousel }) => {
   const stixDomainObject = await storeLoadByIdWithRefs(context, user, sdoId);
-  const files = stixDomainObject.x_opencti_files.map((file) => {
+  const files = (stixDomainObject.x_opencti_files ?? []).map((file) => {
     if (file.id === id) {
       return { ...file, order, description, inCarousel };
     }
