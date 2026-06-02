@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 ARG PYTHON_VERSION=3.12

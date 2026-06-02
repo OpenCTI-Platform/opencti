@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM filigran/python-fips:latest
 
 COPY src /opt/opencti-worker
