@@ -147,7 +147,7 @@ jobs:
             pip install -e .[dev,doc]
             while ! nc -z opencti-e2e-start 4100 ; do sleep 1 ; done
             cd /home/workspace/opencti-worker
-            pip install -r src/requirements.txt
+            pip install -r requirements.txt
             python3 src/worker.py
         '
 
