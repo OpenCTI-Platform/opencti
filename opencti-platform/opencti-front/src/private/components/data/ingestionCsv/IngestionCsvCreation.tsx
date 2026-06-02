@@ -265,6 +265,9 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
         setIsCreateDisabled(true);
         resetForm();
       },
+      onError: () => {
+        setSubmitting(false);
+      },
     });
   };
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);

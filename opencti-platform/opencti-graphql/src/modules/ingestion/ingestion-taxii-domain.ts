@@ -7,7 +7,7 @@ import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
-import { addAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, verifyIngestionUri } from './ingestion-common';
 import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { createOnTheFlyUser } from '../user/user-domain';
@@ -30,6 +30,7 @@ export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
+  verifyIngestionUri(input.uri);
   if (input.automatic_user) {
     const onTheFlyCreatedUser = await createOnTheFlyUser(
       context,
@@ -83,6 +84,10 @@ export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, 
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const uriField = input.find((editInput) => editInput.key === 'uri');
+  if (uriField && uriField.value[0]) {
+    verifyIngestionUri(uriField.value[0]);
+  }
   const patchInput = [...input];
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {

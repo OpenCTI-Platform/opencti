@@ -27,7 +27,7 @@ import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } 
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
-import { addAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, verifyIngestionUri, encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -37,7 +37,6 @@ import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { SYSTEM_USER } from '../../utils/access';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
 import { createOnTheFlyUser } from '../user/user-domain';
-import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 import { findDefaultIngestionGroups } from '../../domain/group';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
@@ -70,6 +69,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
+  verifyIngestionUri(input.uri);
   if (input.user_id.length < 2) {
     throw FunctionalError('You have not chosen a user responsible for data creation', {});
   }
@@ -133,6 +133,10 @@ export const patchCsvIngestion = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const uriField = input.find((editInput) => editInput.key === 'uri');
+  if (uriField && uriField.value[0]) {
+    verifyIngestionUri(uriField.value[0]);
+  }
   const parsedInput = await Promise.all(input.map(async (editInput) => {
     if (editInput.key === 'csv_mapper') {
       if (!editInput.value) {
@@ -273,6 +277,7 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
+  verifyIngestionUri(input.uri);
   const csvMapper = input.csv_mapper_type === IngestionCsvMapperType.Inline ? JSON.parse(input.csv_mapper ?? '') : await findCsvMapperById(context, user, input.csv_mapper_id!);
   const parsedMapper = parseCsvMapper(csvMapper);
   const ingestion = {

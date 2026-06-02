@@ -29,3 +29,48 @@ An ingestion manager runs periodically in background, and for each running feeds
 
 Periodicity interval is configured with the manager with `ingestion_manager:interval`.
 Feed can be configured to schedule data fetch on a longer period.
+
+## URI deny list
+
+Platform administrators can restrict which URIs are allowed for ingestion feeds (CSV, RSS, TAXII, and JSON) by configuring a deny list. When a user attempts to create or update an ingestion feed with a URI that matches a denied pattern, the platform rejects the request with an error.
+
+This is useful for preventing ingestion from internal services, known-bad sources, or any other hosts that should not be accessed by the platform.
+
+### Configuration
+
+The deny list is configured via the `ingestion_manager:uri_deny_list` parameter. It accepts a JSON array of URI patterns.
+
+**In the platform configuration file (`default.json` or environment-specific):**
+
+```json
+"ingestion_manager":{
+  "uri_deny_list": [
+    "internal-service.local",
+    "*.corp.internal",
+    "localhost:4200"
+  ]
+}
+```
+
+**Using environment variables:**
+
+```bash
+INGESTION_MANAGER__URI_DENY_LIST='["internal-service.local","*.corp.internal","localhost:4200"]'
+```
+
+### Supported patterns
+
+| Pattern type   | Example          | Matches                                                                                          |
+|:---------------|:-----------------|:-------------------------------------------------------------------------------------------------|
+| Exact match    | `mydomain.com`   | Any URI with host `mydomain.com` (e.g. `https://mydomain.com/feed`)                              |
+| Wildcard       | `*.mydomain.com` | Any subdomain of `mydomain.com` (e.g. `https://sub.mydomain.com/feed`) and `mydomain.com` itself |
+| Host with port | `localhost:4200` | Only the specific host and port combination (e.g. `http://localhost:4200/data`)                  |
+
+!!! note "Pattern matching details"
+
+    - Matching is **case-insensitive**.
+    - The deny list applies to all ingestion feed types: CSV, RSS, TAXII, and JSON.
+    - The check is performed at feed creation, feed update (when the URI changes), and at fetch time.
+    - Wildcard patterns (`*.domain.com`) match both subdomains and the base domain itself.
+
+

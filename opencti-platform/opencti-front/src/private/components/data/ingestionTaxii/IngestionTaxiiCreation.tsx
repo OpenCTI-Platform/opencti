@@ -22,6 +22,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
 import { FormikHelpers } from 'formik/dist/types';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { handleErrorInForm } from '../../../../relay/environment';
 
 const IngestionTaxiiCreationMutation = graphql`
   mutation IngestionTaxiiCreationMutation($input: IngestionTaxiiAddInput!) {
@@ -106,7 +107,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
 
   const [commit] = useApiMutation(IngestionTaxiiCreationMutation);
 
-  const handleSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
+  const handleSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, setErrors, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
     const authenticationValue = getAuthenticationValue(values);
     const userId
       = typeof values.user_id === 'object'
@@ -143,6 +144,10 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+      },
+      onError: (error: Error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
     });
   };

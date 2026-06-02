@@ -214,6 +214,9 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
         setIsCreateDisabled(true);
         resetForm();
       },
+      onError: () => {
+        setSubmitting(false);
+      },
     });
   };
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
