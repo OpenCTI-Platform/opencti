@@ -279,6 +279,7 @@
   "An enumeration of Windows service start types": "Una enumeración de los tipos de inicio de servicio de Windows",
   "An enumeration of Windows service statuses": "Una enumeración de estados de servicio de Windows",
   "An enumeration of Windows service types": "Una enumeración de tipos de servicio Windows",
+  "An error occurred while approving the draft. Please try again or contact your administrator.": "Se ha producido un error al aprobar el borrador. Inténtelo de nuevo o póngase en contacto con su administrador.",
   "An error occurred while creating the connector": "Se ha producido un error al crear el conector",
   "An error occurred while importing playbook": "Se ha producido un error al importar el playbook",
   "An error occurred while importing playbook. You have been redirected to home page.": "Se ha producido un error al importar el playbook. Ha sido redirigido a la página de inicio.",

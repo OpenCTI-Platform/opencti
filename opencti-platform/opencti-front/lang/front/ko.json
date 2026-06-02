@@ -279,6 +279,7 @@
   "An enumeration of Windows service start types": "Windows 서비스 시작 유형 열거",
   "An enumeration of Windows service statuses": "Windows 서비스 상태의 열거형",
   "An enumeration of Windows service types": "Windows 서비스 유형 열거",
+  "An error occurred while approving the draft. Please try again or contact your administrator.": "초안을 승인하는 동안 오류가 발생했습니다. 다시 시도하거나 관리자에게 문의하세요.",
   "An error occurred while creating the connector": "커넥터를 만드는 동안 오류가 발생했습니다",
   "An error occurred while importing playbook": "플레이북을 가져오는 동안 오류가 발생했습니다",
   "An error occurred while importing playbook. You have been redirected to home page.": "플레이북을 가져오는 동안 오류가 발생했습니다. 홈 페이지로 리디렉션되었습니다.",

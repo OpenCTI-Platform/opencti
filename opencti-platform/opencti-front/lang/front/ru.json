@@ -279,6 +279,7 @@
   "An enumeration of Windows service start types": "Перечисление типов запуска служб Windows",
   "An enumeration of Windows service statuses": "Перечисление статусов служб Windows",
   "An enumeration of Windows service types": "Перечисление типов служб Windows",
+  "An error occurred while approving the draft. Please try again or contact your administrator.": "При утверждении проекта произошла ошибка. Пожалуйста, попробуйте еще раз или обратитесь к администратору.",
   "An error occurred while creating the connector": "При создании коннектора произошла ошибка",
   "An error occurred while importing playbook": "Произошла ошибка при импорте плейбука",
   "An error occurred while importing playbook. You have been redirected to home page.": "Произошла ошибка при импорте плейбука. Вы были перенаправлены на главную страницу.",
