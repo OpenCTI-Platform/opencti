@@ -4,6 +4,7 @@ import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import StixCoreObjectsCustomAttributes from '@components/widgets/StixCoreObjectsCustomAttributes';
 import type { DashboardConfig } from './dashboard-types';
 import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import useHelper from '../../utils/hooks/useHelper';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -18,6 +19,8 @@ const DashboardRawViz = ({
   config,
   host,
 }: DashboardRawVizProps) => {
+  const { isCustomAttributesWidgetEnable } = useHelper();
+
   const startDate = config?.relativeDate
     ? computeRelativeDate(config.relativeDate)
     : config?.startDate;
@@ -35,21 +38,24 @@ const DashboardRawViz = ({
         />
       );
     case 'custom-attributes':
-      return (
-        <StixCoreObjectsCustomAttributes
-          variant={undefined}
-          height={undefined}
-          endDate={endDate ?? undefined}
-          startDate={startDate ?? undefined}
-          widgetId={widget.id}
-          dataSelection={widget.dataSelection}
-          parameters={widget.parameters as Record<string, unknown>}
-          title={undefined}
-          popover={popover}
-          host={host}
-          entityId={host?.kind === 'custom-view' ? host.customViewTargetEntityId : undefined}
-        />
-      );
+      if (isCustomAttributesWidgetEnable()) {
+        return (
+          <StixCoreObjectsCustomAttributes
+            variant={undefined}
+            height={undefined}
+            endDate={endDate ?? undefined}
+            startDate={startDate ?? undefined}
+            widgetId={widget.id}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as Record<string, unknown>}
+            title={undefined}
+            popover={popover}
+            host={host}
+            entityId={host?.kind === 'custom-view' ? host.customViewTargetEntityId : undefined}
+          />
+        );
+      }
+      return;
     default:
       return 'Not implemented yet';
   }
