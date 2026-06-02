@@ -3,15 +3,17 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal
 ARG PYTHON_VERSION=3.12
 
 COPY src /opt/opencti-worker
-
 WORKDIR /opt/opencti-worker
 
-RUN set -eux; \
-    microdnf -y --setopt=install_weak_deps=0 -y install python${PYTHON_VERSION} python3-file-magic python${PYTHON_VERSION}-pip git-core; \
-    alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 2; \
-    pip${PYTHON_VERSION} install --no-cache-dir --requirement requirements.txt; \
-    microdnf -y remove python${PYTHON_VERSION}-pip git-core; \
-    microdnf clean all;
+RUN --mount=type=bind,source=requirements.txt,target=requirements.txt <<EOT
+    set -euxo pipefail
+
+    microdnf -y --setopt=install_weak_deps=0 -y install python${PYTHON_VERSION} python3-file-magic python${PYTHON_VERSION}-pip git-core
+    alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 2
+    pip${PYTHON_VERSION} install --no-cache-dir --requirement requirements.txt
+    microdnf -y remove python${PYTHON_VERSION}-pip git-core
+    microdnf clean all
+EOT
 
 ENTRYPOINT ["python3"]
 CMD ["worker.py"]
