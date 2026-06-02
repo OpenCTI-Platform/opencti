@@ -42,8 +42,8 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
-import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { getDraftContext } from '../../utils/draftContext';
+import { editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
+import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
@@ -59,14 +59,6 @@ export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError(`Draft ${draftId} cannot be found`);
   }
   return draft;
-};
-
-const bypassDraftContext = (context: AuthContext): AuthContext => {
-  return {
-    ...context,
-    draft_context: undefined,
-    user: context.user ? { ...context.user, draft_context: undefined } : undefined,
-  };
 };
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -242,15 +234,36 @@ export const listDraftSightingRelations = async (context: AuthContext, user: Aut
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
+  const {
+    bypassMandatoryAttributes = false,
+    ...inputWithBypassedMandatoryAttributes
+  } = input as DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean };
   const defaultOps = {
     created_at: now(),
     draft_status: DRAFT_STATUS_OPEN,
   };
-  const draftWorkspaceInput = { ...input, ...defaultOps };
-  const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
-  if (createdDraftWorkspace && input.entity_id) {
+  let authorizedMembers = inputWithBypassedMandatoryAttributes.authorized_members;
+  if (authorizedMembers) {
+    const filteredInput = sanitizeAuthorizedMembers(authorizedMembers);
+    authorizedMembers = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
+      const member = { id, access_right, groups_restriction_ids };
+      if (!groups_restriction_ids || groups_restriction_ids.length === 0) {
+        delete member.groups_restriction_ids;
+      }
+      return member;
+    });
+  }
+  const draftWorkspaceInput = { ...inputWithBypassedMandatoryAttributes, authorized_members: authorizedMembers, ...defaultOps };
+  const createdDraftWorkspace = await createEntity(
+    context,
+    user,
+    draftWorkspaceInput,
+    ENTITY_TYPE_DRAFT_WORKSPACE,
+    { bypassMandatoryAttributes },
+  );
+  if (createdDraftWorkspace && inputWithBypassedMandatoryAttributes.entity_id) {
     const contextInDraft = { ...context, draft_context: createdDraftWorkspace.id };
-    const draftInEntity = await elLoadById(contextInDraft, user, input.entity_id);
+    const draftInEntity = await elLoadById(contextInDraft, user, inputWithBypassedMandatoryAttributes.entity_id);
     if (draftInEntity) {
       await loadDraftElement(contextInDraft, user, draftInEntity);
     }
@@ -265,7 +278,7 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
     context_data: {
       id: createdDraftWorkspace.id,
       entity_type: ENTITY_TYPE_DRAFT_WORKSPACE,
-      input,
+      input: inputWithBypassedMandatoryAttributes,
     },
   });
 

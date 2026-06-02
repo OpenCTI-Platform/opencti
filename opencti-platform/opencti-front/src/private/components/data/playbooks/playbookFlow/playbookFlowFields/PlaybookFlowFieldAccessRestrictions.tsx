@@ -26,7 +26,7 @@ const PlaybookFlowFieldAccessRestrictions = () => {
       adminDefault
       enableAccesses
       showAllMembersLine
-      dynamicKeysForPlaybooks
+      withDynamicKeys
       name="access_restrictions"
       label={t_i18n('Access restrictions')}
       component={AuthorizedMembersField}
