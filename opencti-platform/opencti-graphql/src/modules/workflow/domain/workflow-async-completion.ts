@@ -129,6 +129,7 @@ export const reportWorkflowAsyncActionResult = async (
     timestamp: new Date().toISOString(),
     event: pendingTransition.event,
     completedAt: new Date().toISOString(),
+    ...(pendingTransition.comment ? { comment: pendingTransition.comment } : {}),
   });
 
   await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [

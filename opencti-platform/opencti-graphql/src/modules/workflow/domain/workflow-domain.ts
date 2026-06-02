@@ -733,6 +733,7 @@ export const triggerWorkflowEvent = async (
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
+        ...(comment ? { comment } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
       };

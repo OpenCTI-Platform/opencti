@@ -56,6 +56,7 @@ export interface WorkflowPendingTransition {
   triggeredBy: string;
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
+  comment?: string;
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
 }
