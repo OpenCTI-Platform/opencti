@@ -28,7 +28,7 @@ describe('getVisualizationTypes', () => {
     it('all visualization types but attribute or custom-attributes are available', () => {
       expect(getVisualizationTypes({
         kind: 'workspace',
-      }).map(({ key }) => key)).toStrictEqual(ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' || 'custom-attributes'));
+      }).map(({ key }) => key)).toStrictEqual(ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'));
     });
   });
 
