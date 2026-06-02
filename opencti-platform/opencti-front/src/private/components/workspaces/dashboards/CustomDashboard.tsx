@@ -9,12 +9,13 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
+import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -153,9 +154,17 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
 
-  const refreshRate = workspace.refresh_rate ? workspace.refresh_rate * 1000 : null;
+  const [localRefreshRateSeconds, setLocalRefreshRateSeconds] = useState<number>(workspace.refresh_rate ?? 0);
+  const refreshRate = localRefreshRateSeconds ? localRefreshRateSeconds * 1000 : null;
   const [lastRefreshTime, setLastRefreshTime] = useState(new Date());
+  const lastRefreshTimeRef = useRef(lastRefreshTime);
+  useEffect(() => {
+    lastRefreshTimeRef.current = lastRefreshTime;
+  }, [lastRefreshTime]);
   const [timeAgoText, setTimeAgoText] = useState('');
+  const [countdownText, setCountdownText] = useState('');
+  const [manualRefreshToken, setManualRefreshToken] = useState(0);
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
 
   const formatTimeAgo = (date: Date): string => {
     const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
@@ -163,6 +172,40 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     if (diffMin < 60) return `${diffMin} min ago`;
     const diffHours = Math.floor(diffMin / 60);
     return `${diffHours} ${diffHours > 1 ? 'hours ago' : 'hour ago'}`;
+  };
+
+  const formatCountdown = (remainingMs: number): string => {
+    const totalSeconds = Math.ceil(remainingMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleRefreshRateChange = (refreshRateInSeconds: number) => {
+    setLocalRefreshRateSeconds(refreshRateInSeconds);
+    setLastRefreshTime(new Date());
+    commitMutation({
+      mutation: workspaceMutationFieldPatch,
+      variables: {
+        id: workspace.id,
+        input: {
+          key: 'refresh_rate',
+          value: refreshRateInSeconds,
+        },
+      },
+      // Remove these once commitMutation gets migrated to TS
+      onCompleted: undefined,
+      onError: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      setSubmitting: undefined,
+      updater: undefined,
+    });
+  };
+
+  const handleManualRefresh = () => {
+    setLastRefreshTime(new Date());
+    setManualRefreshToken((prev) => prev + 1);
   };
 
   useEffect(() => {
@@ -175,11 +218,57 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
 
   useEffect(() => {
     if (!refreshRate) return;
-    const interval = setInterval(() => {
+
+    let resetSpinnerTimeout: ReturnType<typeof setTimeout> | null = null;
+    const triggerAutoRefresh = () => {
+      setIsAutoRefreshing(true);
       setLastRefreshTime(new Date());
-    }, refreshRate);
-    return () => clearInterval(interval);
+      setManualRefreshToken((prev) => prev + 1);
+
+      if (resetSpinnerTimeout) {
+        clearTimeout(resetSpinnerTimeout);
+      }
+      resetSpinnerTimeout = setTimeout(() => {
+        setIsAutoRefreshing(false);
+      }, 1200);
+    };
+
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const msUntilNextTick = Math.max(0, refreshRate - (Date.now() - lastRefreshTimeRef.current.getTime()));
+    const timeout = setTimeout(() => {
+      triggerAutoRefresh();
+      interval = setInterval(() => {
+        triggerAutoRefresh();
+      }, refreshRate);
+    }, msUntilNextTick);
+
+    return () => {
+      clearTimeout(timeout);
+      if (resetSpinnerTimeout !== null) {
+        clearTimeout(resetSpinnerTimeout);
+      }
+      if (interval !== null) {
+        clearInterval(interval);
+      }
+      setIsAutoRefreshing(false);
+    };
   }, [refreshRate]);
+
+  useEffect(() => {
+    if (!refreshRate) {
+      setCountdownText('');
+      return;
+    }
+
+    const updateCountdown = () => {
+      const remaining = Math.max(0, refreshRate - (Date.now() - lastRefreshTime.getTime()));
+      setCountdownText(formatCountdown(remaining));
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [refreshRate, lastRefreshTime]);
 
   return (
     <Stack gap={2}>
@@ -213,16 +302,25 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 config={config}
                 handleDateChange={handleDateChange}
               />
-              {refreshRate && (
-                <Box sx={{ color: 'text.secondary', marginRight: 3 }}>
-                  {t_i18n('Last refreshed')}: {timeAgoText}
-                </Box>
-              )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <DashboardRefreshControl
+                  onRefresh={handleManualRefresh}
+                  interval={localRefreshRateSeconds}
+                  onIntervalChange={handleRefreshRateChange}
+                  isRefreshing={isAutoRefreshing}
+                />
+                {refreshRate && (
+                  <Box sx={{ color: 'text.secondary', marginRight: 3 }}>
+                    {t_i18n('Last refreshed')}: {timeAgoText} - {t_i18n('Next refresh in')}: {countdownText}
+                  </Box>
+                )}
+              </Box>
             </Box>
           </Security>
         )
         }
         <DashboardContent
+          key={`dashboard-content-${manualRefreshToken}`}
           helpers={helpers}
           isEditable={userCanEdit}
           entity={workspace}
