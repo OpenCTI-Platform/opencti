@@ -1,5 +1,5 @@
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { FunctionalError, UnsupportedError, ForbiddenAccess } from '../../config/errors';
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
 import { elAggregationCount, elCount, elFindByIds, elList, elLoadById, loadDraftElement } from '../../database/engine';
@@ -41,7 +41,15 @@ import { resolveEmbeddedImagesInDescriptionFieldsForExport } from '../../databas
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
+import {
+  getUserAccessRight,
+  isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  MEMBER_ACCESS_RIGHT_EDIT,
+  SYSTEM_USER,
+} from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -376,7 +384,13 @@ const deleteDraftContextFromWorks = async (context: AuthContext, user: AuthUser,
 
 export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser, id: string) => {
   if (getDraftContext(context, user)) throw UnsupportedError('Cannot delete draft while in draft context');
-  await checkAndReturnDraft(context, user, id);
+  const draft = await checkAndReturnDraft(context, user, id);
+  const userAccessRight = getUserAccessRight(user, draft);
+  const hasEditOrManage = userAccessRight === MEMBER_ACCESS_RIGHT_EDIT || userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
+  const hasDeleteCapability = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNDELETE);
+  if (!hasEditOrManage || !hasDeleteCapability) {
+    throw ForbiddenAccess();
+  }
   await deleteAllDraftFiles(context, user, id);
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
