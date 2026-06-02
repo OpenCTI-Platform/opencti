@@ -64,7 +64,7 @@ const READ_QUERY = gql`
 `;
 
 const UPDATE_QUERY = gql`
-  mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+  mutation OrganizationEdit($id: ID!, $input: [EditInput!]!) {
     organizationFieldPatch(id: $id, input: $input) {
       id
       name
