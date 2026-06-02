@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { rssDataHandler, rssExecutor } from '../../../../src/manager/ingestionManager';
+import { rssExecutor } from '../../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type IngestionRssAddInput } from '../../../../src/generated/graphql';
 import * as mockConnector from '../../../../src/domain/connector';
