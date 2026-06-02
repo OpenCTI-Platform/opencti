@@ -29,6 +29,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useTheme } from '@mui/material/styles';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const styles = (theme) => ({
   header: {
@@ -86,14 +87,15 @@ const RetentionEditionContainer = (props) => {
   const { classes, open, handleClose, retentionRule } = props;
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit'], retentionRule);
+  const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit', 'active'], retentionRule);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
-  const [verified, setVerified] = useState(true);
+  const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
 
   const retentionValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     max_retention: Yup.number().min(1, t_i18n('This field must be >= 1')),
+    active: Yup.boolean(),
   });
 
   const onSubmit = (values, { setSubmitting }) => {
@@ -158,6 +160,7 @@ const RetentionEditionContainer = (props) => {
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              onChange={() => setVerified(false)}
               fullWidth={true}
             />
             <Field
@@ -167,6 +170,7 @@ const RetentionEditionContainer = (props) => {
               label={t_i18n('Unit')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
+              onChange={() => setVerified(false)}
             >
               <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
               <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
@@ -199,6 +203,13 @@ const RetentionEditionContainer = (props) => {
                   ),
                 },
               }}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="active"
+              label={t_i18n('Active')}
+              containerstyle={{ marginTop: 20 }}
             />
             {retentionRule.scope === 'activity'
               && (
@@ -299,6 +310,7 @@ const RetentionEditionFragment = createFragmentContainer(
                 max_retention
                 filters
                 scope
+                active
             }
         `,
   },

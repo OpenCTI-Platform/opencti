@@ -28603,6 +28603,7 @@ export type ResolvedInstanceFilter = {
 
 export type RetentionRule = {
   __typename?: 'RetentionRule';
+  active?: Maybe<Scalars['Boolean']['output']>;
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   last_deleted_count?: Maybe<Scalars['Int']['output']>;
@@ -28616,6 +28617,7 @@ export type RetentionRule = {
 };
 
 export type RetentionRuleAddInput = {
+  active?: InputMaybe<Scalars['Boolean']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   max_retention: Scalars['Int']['input'];
   name: Scalars['String']['input'];
@@ -28648,6 +28650,7 @@ export type RetentionRuleEditMutationsFieldPatchArgs = {
 
 export enum RetentionRuleOrdering {
   Score = '_score',
+  Active = 'active',
   LastExecutionDate = 'last_execution_date',
   MaxRetention = 'max_retention',
   Name = 'name',
@@ -49454,6 +49457,7 @@ export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extend
 }>;
 
 export type RetentionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRule'] = ResolversParentTypes['RetentionRule']> = ResolversObject<{
+  active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_deleted_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

@@ -330,20 +330,38 @@ export const createCapabilities = async (context, capabilities, parentName = '')
   }
 };
 
-const createDefaultRetentionRules = async (context) => {
-  // Create default retention rule for global files (30 days)
+export const createDefaultRetentionRules = async (context) => {
+  // Create default disabled retention rule for global files (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
     name: 'Global files retention',
     max_retention: 30,
     retention_unit: 'days',
     scope: 'file',
+    active: false,
   });
-  // Create default retention rule for all workbenches (30 days)
+  // Create default disabled retention rule for all workbenches (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
     name: 'All workbenches retention',
     max_retention: 30,
     retention_unit: 'days',
     scope: 'workbench',
+    active: false,
+  });
+  // Create default disabled retention rule for history (30 days, inactive)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'History retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'history',
+    active: false,
+  });
+  // Create default disabled retention rule for activity (30 days, inactive)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'Activity retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'activity',
+    active: false,
   });
 };
 
