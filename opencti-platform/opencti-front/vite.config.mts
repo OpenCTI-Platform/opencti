@@ -354,6 +354,7 @@ export default defineConfig({
       },
       "/n8n": {
         target: "http://135.181.243.102:32771",
+        rewrite: (path) => path.replace(/^\/n8n/, ""),
         changeOrigin: true,
       },
     },
