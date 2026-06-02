@@ -5,6 +5,9 @@ import fileDownload from 'js-file-download';
 import type { Widget, WidgetLayout } from '../../utils/widget/widget';
 import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
 import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
+import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
+
+const LAYOUT_SAVE_DEBOUNCE_MS = 300;
 
 interface useDashboardProps {
   entity: DashboardLike | undefined | null;
@@ -70,7 +73,19 @@ function useDashboard({
     }
   };
 
+  const debouncedSaveLayout = useDebounceCallback(
+    (currentManifest: DashboardManifest, layouts: Record<string, WidgetLayout>) => {
+      saveManifest(currentManifest, { layouts, noRefresh: true });
+    },
+    LAYOUT_SAVE_DEBOUNCE_MS,
+  );
+
+  const cancelPendingLayoutSave = () => {
+    debouncedSaveLayout.cancel();
+  };
+
   const handleDateChange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
+    cancelPendingLayoutSave();
     let newManifest = {
       ...manifest,
       config: {
@@ -99,6 +114,7 @@ function useDashboard({
   };
 
   const handleImportWidget = (widgetConfigFile: File) => {
+    cancelPendingLayoutSave();
     const preparedManifest = prepareManifest(manifest, widgetsLayouts);
     const manifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
     onImportWidget?.(entity?.id ?? '', widgetConfigFile, manifestEncoded);
@@ -125,6 +141,7 @@ function useDashboard({
   };
 
   const handleAddWidget = (widgetConfig: Widget) => {
+    cancelPendingLayoutSave();
     saveManifest({
       ...manifest,
       widgets: {
@@ -146,6 +163,7 @@ function useDashboard({
   };
 
   const handleUpdateWidget = (widgetManifest: DashboardWidget) => {
+    cancelPendingLayoutSave();
     const newManifest = {
       ...manifest,
       widgets: { ...manifest.widgets, [widgetManifest.id]: widgetManifest },
@@ -154,6 +172,7 @@ function useDashboard({
   };
 
   const handleDeleteWidget = (widgetId: string) => {
+    cancelPendingLayoutSave();
     setDeleting(true);
     const newWidgets = { ...manifest.widgets };
     delete newWidgets[widgetId];
@@ -181,7 +200,7 @@ function useDashboard({
     if (R.equals(newLayouts, widgetsLayouts)) return;
 
     setWidgetsLayouts(newLayouts);
-    saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
+    debouncedSaveLayout(manifest, newLayouts);
   };
 
   const config = manifest.config;

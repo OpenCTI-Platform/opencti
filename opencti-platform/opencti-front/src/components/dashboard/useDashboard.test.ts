@@ -465,7 +465,9 @@ describe('useDashboard', () => {
 
   describe('using handleLayoutChange to edit the layout of the dashboard', () => {
     it('applies the layout change and calls onSave with noRefresh=true', () => {
-      const existingWidget = {
+      vi.useFakeTimers();
+      try {
+        const existingWidget = {
         id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
         type: 'text',
         perspective: 'entities',
@@ -505,6 +507,10 @@ describe('useDashboard', () => {
         x: 2,
         w: 7,
       }]));
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
       // Call twice to check noop when layouts are equal
       act(() => result.current.handleLayoutChange([{
         ...existingWidget.layout,
@@ -538,6 +544,9 @@ describe('useDashboard', () => {
           w: 7,
         },
       });
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
