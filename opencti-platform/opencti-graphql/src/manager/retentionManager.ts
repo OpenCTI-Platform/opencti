@@ -50,9 +50,9 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
     // forceDelete: true to clean up orphan ES entries even if S3 file doesn't exist
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId, { forceDelete: true });
   } else if (scope === 'history') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_HISTORY, { forceDelete: true });
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_HISTORY, { forceDelete: true, forceRefresh: false });
   } else if (scope === 'activity') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_ACTIVITY, { forceDelete: true });
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_ACTIVITY, { forceDelete: true, forceRefresh: false });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
