@@ -26,9 +26,9 @@ There are 5 possible scopes for a retention rule:
 
 - **Workbench**: The rule is applied on the global workbenches (i.e. contained in Data > Import). The global workbenches that hasn't been updated for the maximum retention duration will be permanently deleted.
 
-- **History**: The rule is applied on the history logs of all knowledge entities. History log entries older than the maximum retention duration are permanently deleted. This scope requires the `ACTIVITY_HISTORY_RETENTION` feature flag to be enabled (see [History and Activity scopes](#history-and-activity-scopes)).
+- **History**: The rule is applied on the history logs of all knowledge entities. History log entries older than the maximum retention duration are permanently deleted.
 
-- **Activity**: The rule is applied on the platform activity logs (administration events such as login, logout, and security actions). Activity log entries older than the maximum retention duration are permanently deleted. This scope requires the `ACTIVITY_HISTORY_RETENTION` feature flag to be enabled (see [History and Activity scopes](#history-and-activity-scopes)).
+- **Activity**: The rule is applied on the platform activity logs (administration events such as login, logout, and security actions). Activity log entries older than the maximum retention duration are permanently deleted.
 
 ## Enabling and disabling a rule
 
@@ -48,23 +48,7 @@ The active status of a rule is displayed in the retention policies list with a c
 
 ## History and Activity scopes
 
-The **History** and **Activity** scopes target internal platform logs (indices) rather than STIX knowledge objects. Because these logs contain sensitive audit data, these scopes are protected by a dedicated feature flag and must be explicitly enabled on the platform.
-
-### Enabling the feature flag
-
-To use the History or Activity scopes, the `ACTIVITY_HISTORY_RETENTION` feature flag must be added to the platform configuration:
-
-```yaml
-app:
-  enabled_dev_features:
-    - ACTIVITY_HISTORY_RETENTION
-```
-
-If this flag is not set, any attempt to verify or create a retention rule with the History or Activity scope will result in an error:
-
-```
-The history/activity scope for retention rules is not enabled on this platform
-```
+The **History** and **Activity** scopes target internal platform logs rather than STIX knowledge objects.
 
 !!! info "No filters for History and Activity scopes"
 
