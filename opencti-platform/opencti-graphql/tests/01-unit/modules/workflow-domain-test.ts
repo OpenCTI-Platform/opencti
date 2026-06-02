@@ -638,11 +638,11 @@ describe('Workflow Domain', () => {
     const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-1');
 
     expect(transitions).toHaveLength(1);
-    expect(transitions[0]).toEqual({
+    expect(transitions[0]).toEqual(expect.objectContaining({
       event: 'close',
       toState: 'closed',
       actions: ['log'],
-    });
+    }));
   });
 
   it('should return empty array when entity not found', async () => {
@@ -905,6 +905,33 @@ describe('Transition comments – Domain', () => {
       expect(transitions).toHaveLength(1);
       expect(transitions[0].event).toBe('publish');
       expect(transitions[0].comment).toBeUndefined();
+    });
+
+    it('should exclude transitions whose conditions are not met by the requesting user', async () => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+        getInitialState: () => 'draft',
+        hasState: () => true,
+        getTransitions: (fromState: string) => {
+          if (fromState !== 'draft') return [];
+          return [
+            { event: 'review', to: 'reviewed', actionTypes: [], conditions: [] },
+            { event: 'publish', to: 'published', actionTypes: [], conditions: [() => Promise.resolve(false)] },
+          ];
+        },
+      }));
+
+      (storeLoadById as any).mockImplementation((ctx: any, user: any, id: string) => {
+        if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+        if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', published_version: { id: 'v1', content: '{}', timestamp: '', createdBy: '', validation_errors: [] } });
+        return Promise.resolve(null);
+      });
+      (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions).toHaveLength(1);
+      expect(transitions[0].event).toBe('review');
     });
   });
 

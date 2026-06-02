@@ -568,7 +568,7 @@ export const getAllowedTransitions = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
-): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[] }>> => {
+): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
@@ -593,16 +593,25 @@ export const getAllowedTransitions = async (
 
   const transitions = definition.getTransitions(effectiveStateId);
 
-  const resolvedTransitions = transitions.map((transition) => {
-    return {
-      event: transition.event,
-      toState: transition.to,
-      comment: transition.comment,
-      actions: transition.actionTypes || [],
-      requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
-      requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
-    };
-  });
+  // Pre-evaluate conditions against the requesting user so the frontend only
+  // sees transitions the current user is actually allowed to trigger.
+  const conditionContext = { entity, user, triggeringUser: user };
+  const resolvedTransitions = (await Promise.all(
+    transitions.map(async (transition) => {
+      for (const condition of (transition.conditions ?? [])) {
+        const passes = await condition(conditionContext as any);
+        if (!passes) return null;
+      }
+      return {
+        event: transition.event,
+        toState: transition.to,
+        comment: transition.comment,
+        actions: transition.actionTypes || [],
+        requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
+        requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
+      };
+    }),
+  )).filter((t): t is NonNullable<typeof t> => t !== null);
 
   return resolvedTransitions;
 };
