@@ -99,6 +99,7 @@ const IngestionRssEditionContainer = ({
       'object_marking_refs',
       convertMarkingsWithoutEdges(ingestionRss, 'defaultMarkingDefinitions'),
     ),
+    R.assoc('ssl_verify', ingestionRss.ssl_verify ?? true),
     R.pick([
       'name',
       'description',
