@@ -459,6 +459,7 @@ describe('workflow-resolvers', () => {
           'entity-999',
           'close',
           undefined,
+          {},
         );
         expect(result).toBe(mockResult);
       });

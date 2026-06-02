@@ -32,6 +32,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 vi.mock('../../../../utils/hooks/useGranted', () => ({
   default: () => false,
+  isBypassUser: () => false,
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 

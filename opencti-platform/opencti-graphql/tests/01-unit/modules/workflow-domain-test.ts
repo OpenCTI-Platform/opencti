@@ -51,6 +51,7 @@ vi.mock('../../../src/modules/workflow/engine/workflow-factory', () => ({
       ],
     })),
     getInstance: vi.fn(() => ({
+      start: vi.fn().mockResolvedValue(undefined),
       trigger: vi.fn().mockResolvedValue({ success: true }),
       getCurrentState: () => 'closed',
     })),
@@ -1007,11 +1008,11 @@ describe('getWorkflowInstance', () => {
   const makeBaseSetup = () => {
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: JSON.stringify({
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({
         initialState: 'draft',
         states: [{ statusId: 'draft' }],
         transitions: [],
-      }) });
+      }), validation_errors: [] } });
       return Promise.resolve(null);
     });
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
@@ -1062,7 +1063,7 @@ describe('getWorkflowInstance', () => {
     // Work lookup returns null
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }) });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] } });
       return Promise.resolve(null); // Work returns null
     });
 
@@ -1077,7 +1078,7 @@ describe('getWorkflowInstance', () => {
     });
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }) });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] } });
       if (id === 'work-1') return Promise.resolve({ id: 'work-1', background_task_id: 'task-1', received_time: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T01:00:00Z', status: 'progress', errors: [] });
       if (id === 'task-1') return Promise.resolve({ id: 'task-1', task_expected_number: 50, task_processed_number: 25 });
       return Promise.resolve(null);
@@ -1101,7 +1102,7 @@ describe('getWorkflowInstance', () => {
     });
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }) });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] } });
       if (id === 'work-1') return Promise.resolve({ id: 'work-1', background_task_id: null, errors: [] });
       return Promise.resolve(null);
     });
@@ -1140,7 +1141,7 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
   it('returns success:false when pendingStatus is already pending (lock check)', async () => {
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: asyncDefinition });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: asyncDefinition, validation_errors: [] } });
       return Promise.resolve(null);
     });
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
@@ -1157,7 +1158,7 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
   it('wraps unexpected errors and returns success:false', async () => {
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: asyncDefinition });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: asyncDefinition, validation_errors: [] } });
       return Promise.resolve(null);
     });
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
@@ -1237,7 +1238,7 @@ describe('retryPendingWorkflowTransitionActions', () => {
     });
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }) });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] } });
       return Promise.resolve(null);
     });
     (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingStatus: 'error', pendingTransition: pt });
@@ -1289,7 +1290,7 @@ describe('clearWorkflowPendingState', () => {
   it('clears pendingStatus, pendingError, pendingTransition and appends an audit history entry', async () => {
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }) });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] } });
       return Promise.resolve(null);
     });
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
