@@ -1,7 +1,8 @@
 import type { WidgetHost, WidgetDataSelection, WidgetPerspective, WidgetParameters } from '../../utils/widget/widget';
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboard-viz-utils';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useTransition } from 'react';
+import { useDashboardRefreshToken } from './DashboardRefreshContext';
 import { DashboardConfig } from './dashboard-types';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useQueryLoader } from 'react-relay';
@@ -51,6 +52,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
   const [queryRef, load] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
+  const [, startTransition] = useTransition();
   const lastLoadedVariablesSignatureRef = useRef<string | null>(null);
   const { filterKeysSchema } = useAuth().schema;
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useMemo(() => resolveDataSelection({
@@ -82,18 +84,41 @@ const useDashboardViz = <TQuery extends OperationType>({
     }
 
     lastLoadedVariablesSignatureRef.current = queryVariablesSignature;
-    load(queryVariables, {
-      fetchPolicy: 'store-and-network',
+    startTransition(() => {
+      load(queryVariables, {
+        fetchPolicy: 'store-and-network',
+      });
     });
-  }, [load, queryVariables, queryVariablesSignature]);
+  }, [load, startTransition, queryVariables, queryVariablesSignature]);
 
   useEffect(() => {
     reloadData(false);
   }, [reloadData]);
 
+  // Wraps reloadData(true) for use in auto-refresh interval, always bypasses signature cache.
   const forceReloadData = useCallback(() => {
     reloadData(true);
   }, [reloadData]);
+
+  // Keeps a stable ref to the latest reloadData so the token effect below can call it
+  // without adding reloadData as a dependency (which would re-run the effect on every
+  // variable change and cause unwanted refetches).
+  const reloadDataRef = useRef(reloadData);
+  useEffect(() => {
+    reloadDataRef.current = reloadData;
+  }, [reloadData]);
+
+  // refreshToken is an integer provided via context by DashboardContent and incremented
+  // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
+  // regardless of whether query variables changed, so fresh data is always fetched.
+  // prevRefreshTokenRef guards against triggering on the initial mount (token === 0).
+  const refreshToken = useDashboardRefreshToken();
+  const prevRefreshTokenRef = useRef(refreshToken);
+  useEffect(() => {
+    if (prevRefreshTokenRef.current === refreshToken) return;
+    prevRefreshTokenRef.current = refreshToken;
+    reloadDataRef.current(true);
+  }, [refreshToken]);
 
   useWidgetAutoRefresh(forceReloadData, refreshRate);
 
