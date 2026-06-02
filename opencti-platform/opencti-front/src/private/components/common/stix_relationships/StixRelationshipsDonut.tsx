@@ -1,17 +1,18 @@
-import React, { ReactNode, useState } from 'react';
-import { graphql } from 'react-relay';
+import React, { ReactNode, Suspense, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import { StixRelationshipsDonutDistributionQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
-import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { StixRelationshipsDonutDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
+import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 
 export const stixRelationshipsDonutsDistributionQuery = graphql`
   query StixRelationshipsDonutDistributionQuery(
@@ -106,101 +107,121 @@ export const stixRelationshipsDonutsDistributionQuery = graphql`
   }
 `;
 
+interface StixRelationshipsDonutComponentProps {
+  queryRef: PreloadedQuery<StixRelationshipsDonutDistributionQuery>;
+  dataSelection: WidgetDataSelection[];
+  onMounted: (chart: unknown) => void;
+}
+
+const StixRelationshipsDonutComponent = ({
+  queryRef,
+  dataSelection,
+  onMounted,
+}: StixRelationshipsDonutComponentProps) => {
+  const data = usePreloadedQuery(
+    stixRelationshipsDonutsDistributionQuery,
+    queryRef,
+  );
+
+  if (!data?.stixRelationshipsDistribution?.length) {
+    return <WidgetNoData />;
+  }
+  const selection = dataSelection[0];
+  return (
+    <WidgetDonut
+      data={data.stixRelationshipsDistribution}
+      groupBy={selection.attribute ?? 'entity_type'}
+      onMounted={onMounted}
+    />
+  );
+};
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): StixRelationshipsDonutDistributionQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const dateAttribute
+    = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
+  const { startDate, endDate } = computeStartEndDates(config);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute, isKnowledgeRelationshipWidget: true },
+  );
+
+  type QueryFilterGroup
+    = StixRelationshipsDonutDistributionQuery['variables']['dynamicFrom'];
+
+  return {
+    field: selection.attribute ?? 'entity_type',
+    operation: 'count',
+    limit: selection.number ?? 10,
+    filters,
+    isTo: selection.isTo,
+    dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
+    dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
+  };
+};
+
 interface StixRelationshipsDonutProps {
-  title?: string;
   variant?: string;
   height?: number;
   field?: string;
-  startDate?: string | null;
-  endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;
   host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
 }
 
 const StixRelationshipsDonut = ({
-  title,
   variant,
   height,
-  field,
-  startDate,
-  endDate,
   dataSelection,
   parameters = {},
   popover,
   host,
+  config,
+  refreshRate = null,
 }: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDonutDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
+    refreshRate,
+    query: stixRelationshipsDonutsDistributionQuery,
+    config,
+    buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-    let selection;
-    let filtersAndOptions;
-    if (resolvedDataSelection) {
-      selection = resolvedDataSelection[0];
-      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
-    }
-    const finalField = selection?.attribute || field || 'entity_type';
-    const variables = {
-      ...selection,
-      field: finalField,
-      operation: 'count',
-      startDate,
-      endDate,
-      dateAttribute: selection?.date_attribute ?? 'created_at',
-      limit: selection?.number ?? 10,
-      filters: filtersAndOptions?.filters,
-      isTo: selection?.isTo,
-      dynamicFrom: selection?.dynamicFrom,
-      dynamicTo: selection?.dynamicTo,
-    };
-    return (
-      <QueryRenderer
-        query={stixRelationshipsDonutsDistributionQuery}
-        variables={variables}
-        render={({ props }: { props: StixRelationshipsDonutDistributionQuery$data }) => {
-          if (
-            props
-            && props.stixRelationshipsDistribution
-            && props.stixRelationshipsDistribution.length > 0
-          ) {
-            return (
-              <WidgetDonut
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data={props.stixRelationshipsDistribution as any[]}
-                groupBy={finalField}
-                onMounted={setChart}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
+  if (isMissingHostEntity) {
+    return <WidgetNoHostEntity host={host} />;
+  }
+
   return (
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
+      title={parameters.title ?? t_i18n('Relationships distribution')}
       variant={variant}
       chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      {queryRef ? (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <StixRelationshipsDonutComponent
+            queryRef={queryRef}
+            dataSelection={resolvedDataSelection}
+            onMounted={(chart) => setChart(chart as ApexCharts)}
+          />
+        </Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.inElement} />
+      )}
     </WidgetContainer>
   );
 };
