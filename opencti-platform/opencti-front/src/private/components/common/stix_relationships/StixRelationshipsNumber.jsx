@@ -82,7 +82,7 @@ const StixRelationshipsNumber = ({
     <WidgetContainer
       padding="medium"
       height={height}
-      title={t_i18n('Relationships number')}
+      title={translatedTitle}
       variant={variant}
       action={popover}
     >
@@ -102,7 +102,7 @@ const StixRelationshipsNumber = ({
             return (
               <WidgetNumber
                 entityType={entityType}
-                label={translatedTitle}
+                label={selection.label}
                 value={total}
                 diffLabel={t_i18n('24 hours')}
                 diffValue={total - count}
