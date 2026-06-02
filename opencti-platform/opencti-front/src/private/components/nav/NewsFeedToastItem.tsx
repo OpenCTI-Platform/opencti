@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { InsertChartOutlined, NotificationsOutlined, OpenInNewOutlined } from '@mui/icons-material';
+import { InsertChartOutlined, LibraryBooksOutlined, NotificationsOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -15,6 +15,7 @@ export interface NewsFeedToastData {
 
 const NEWS_FEED_ICON_MAP: Record<string, React.ElementType> = {
   RESOURCE_CUSTOM_DASHBOARD: InsertChartOutlined,
+  RESOURCE_PLAYBOOK: LibraryBooksOutlined,
 };
 
 export const NEWS_FEED_TOAST_WIDTH = 450;
@@ -75,6 +76,11 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
         {item.news_feed_type === 'RESOURCE_CUSTOM_DASHBOARD' && (
           <Typography variant="caption" sx={{ color: theme.palette.primary.main, display: 'block' }}>
             {t_i18n('New Custom Dashboard')}
+          </Typography>
+        )}
+        {item.news_feed_type === 'RESOURCE_PLAYBOOK' && (
+          <Typography variant="caption" sx={{ color: theme.palette.primary.main, display: 'block' }}>
+            {t_i18n('New Playbook')}
           </Typography>
         )}
         <Typography variant="body2" sx={{ wordBreak: 'break-word', fontWeight: 700 }}>
