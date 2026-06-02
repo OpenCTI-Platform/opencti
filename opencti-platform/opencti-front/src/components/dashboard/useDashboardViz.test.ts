@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDashboardViz from './useDashboardViz';
 
 const loadMocks: Array<ReturnType<typeof vi.fn>> = [];
+let refreshTokenMockValue = 0;
 
 vi.mock('react-relay', async (importOriginal) => {
   const React = await import('react');
@@ -40,11 +41,16 @@ vi.mock('./dashboard-viz-utils', () => ({
   })),
 }));
 
+vi.mock('./DashboardRefreshContext', () => ({
+  useDashboardRefreshToken: vi.fn(() => refreshTokenMockValue),
+}));
+
 describe('useDashboardViz', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-06-02T10:00:12.345Z'));
     loadMocks.length = 0;
+    refreshTokenMockValue = 0;
   });
 
   afterEach(() => {
@@ -144,5 +150,73 @@ describe('useDashboardViz', () => {
 
     widgetA1.unmount();
     widgetA2.unmount();
+  });
+
+  it('fetches on mount and then refetches when refresh token increments', () => {
+    const buildQueryVariables = vi.fn(() => ({ marker: 'token-refetch' }));
+
+    const hook = renderHook(() => useDashboardViz({
+      dataSelection: [],
+      perspective: 'entities',
+      refreshRate: null,
+      query: {} as never,
+      config: {},
+      parameters: {},
+      buildQueryVariables,
+    }));
+
+    expect(loadMocks).toHaveLength(1);
+    const [loadSpy] = loadMocks;
+    const mountCalls = loadSpy.mock.calls.length;
+    expect(mountCalls).toBeGreaterThanOrEqual(1);
+
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+    expect(loadSpy).toHaveBeenCalledTimes(mountCalls);
+
+    refreshTokenMockValue = 1;
+    hook.rerender();
+
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+
+    expect(loadSpy).toHaveBeenCalledTimes(mountCalls + 1);
+
+    hook.unmount();
+  });
+
+  it('does not refetch again when rerendering with the same refresh token', () => {
+    const buildQueryVariables = vi.fn(() => ({ marker: 'same-token' }));
+
+    const hook = renderHook(() => useDashboardViz({
+      dataSelection: [],
+      perspective: 'entities',
+      refreshRate: null,
+      query: {} as never,
+      config: {},
+      parameters: {},
+      buildQueryVariables,
+    }));
+
+    expect(loadMocks).toHaveLength(1);
+    const [loadSpy] = loadMocks;
+    const baselineCalls = loadSpy.mock.calls.length;
+
+    refreshTokenMockValue = 1;
+    hook.rerender();
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+    expect(loadSpy).toHaveBeenCalledTimes(baselineCalls + 1);
+
+    hook.rerender();
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+    expect(loadSpy).toHaveBeenCalledTimes(baselineCalls + 1);
+
+    hook.unmount();
   });
 });
