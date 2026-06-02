@@ -550,6 +550,94 @@ describe('Report resolver standard behavior', () => {
       }
     });
 
+    it('should still create new objects when some candidates already exist (toId filter regression)', async () => {
+      const CREATE_QUERY = gql`
+        mutation ReportAdd($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const DELETE_QUERY = gql`
+        mutation reportDelete($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const isolatedReport = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            stix_id: `report--${randomUUID()}`,
+            name: `Partial add regression ${now()}`,
+            description: 'Regression: toId filter must not block new candidates',
+            published: '2020-02-26T00:51:35.000Z',
+          },
+        },
+      });
+      const isolatedReportId = isolatedReport.data.reportAdd.id;
+      const alreadyAddedObject = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `Already-added object ${randomUUID()}`,
+        description: 'Object pre-added before stale snapshot is taken',
+      });
+      const newObject = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `New object ${randomUUID()}`,
+        description: 'Object that must be created even when another candidate already exists',
+      });
+      try {
+        // Capture a stale snapshot before alreadyAddedObject is added
+        const staleLoadedReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, isolatedReportId);
+
+        // Add alreadyAddedObject so it now exists in DB (making the snapshot stale for it)
+        await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, [
+          { key: 'objects', operation: 'add', value: [alreadyAddedObject.internal_id] },
+        ]);
+
+        // Now ADD both objects using the stale snapshot.
+        // The toId-filtered query must return only the alreadyAddedObject relation,
+        // so that newObject is still identified as missing and gets created.
+        const partialAddUpdate = await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, [
+          { key: 'objects', operation: 'add', value: [alreadyAddedObject.internal_id, newObject.internal_id] },
+        ]);
+
+        expect(partialAddUpdate.event).not.toBeNull();
+        // Verify final report state: both objects present exactly once, no duplicates
+        const REPORT_OBJECTS_QUERY = gql`
+          query report($id: String!) {
+            report(id: $id) {
+              id
+              objects(first: 200) {
+                edges {
+                  node {
+                    ... on BasicObject {
+                      id
+                    }
+                    ... on BasicRelationship {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+        const reportAfterPartialAdd = await queryAsAdmin({ query: REPORT_OBJECTS_QUERY, variables: { id: isolatedReportId } });
+        const objectEdges = reportAfterPartialAdd?.data?.report?.objects?.edges ?? [];
+        const objectIds = objectEdges.map((e) => e?.node?.id);
+        // newObject must be present (toId filter must not have blocked it)
+        expect(objectIds).toContain(newObject.id);
+        // alreadyAddedObject must still be present exactly once (no duplicate)
+        expect(objectIds.filter((id) => id === alreadyAddedObject.id)).toHaveLength(1);
+        // Total must be exactly 2
+        expect(objectEdges).toHaveLength(2);
+      } finally {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, alreadyAddedObject.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await stixDomainObjectDelete(testContext, ADMIN_USER, newObject.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: isolatedReportId } });
+      }
+    });
+
     it.skip('should keep relationAdd idempotent on duplicate lock-first additions', async () => {
       const CREATE_QUERY = gql`
         mutation ReportAdd($input: ReportAddInput!) {
