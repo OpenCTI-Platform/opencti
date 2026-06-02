@@ -42,17 +42,17 @@ interface DeleteOpts {
 }
 
 export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, opts: DeleteOpts = {}) => {
+  const deleteOpts = { forceDelete: true, forceRefresh: opts.forceRefresh ?? false };
   if (scope === 'knowledge') {
     const { knowledgeType } = opts;
-    const deleteOpts = { forceDelete: true, forceRefresh: opts.forceRefresh ?? false };
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, knowledgeType, deleteOpts);
   } else if (scope === 'file' || scope === 'workbench') {
     // forceDelete: true to clean up orphan ES entries even if S3 file doesn't exist
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId, { forceDelete: true });
   } else if (scope === 'history') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_HISTORY, { forceDelete: true, forceRefresh: false });
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_HISTORY, deleteOpts);
   } else if (scope === 'activity') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_ACTIVITY, { forceDelete: true, forceRefresh: false });
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_ACTIVITY, deleteOpts);
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
