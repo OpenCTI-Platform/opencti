@@ -30,6 +30,31 @@ export const fetchAgentsForIntent = async (intent: string): Promise<AgentOption[
 };
 
 /**
+ * Decide whether an import connector that declares an `xtm_one_intent` must be
+ * treated as unusable ("No agent available") in the import UIs.
+ *
+ * The intent is only a hard requirement when XTM One is actually configured on
+ * the platform. Such connectors keep a legacy (non-XTM One) execution path, so
+ * when XTM One is off they remain usable and must NOT be disabled. This mirrors
+ * the backend gating in `file-storage.ts`
+ * (`connector.xtm_one_intent && xtmOneClient.isConfigured()`).
+ *
+ * @param xtmOneConfigured tri-state flag from the chatbot config (`null` while loading)
+ * @param intent the connector's `xtm_one_intent` (null/undefined for non-AI connectors)
+ * @param agentCount number of agents bound to the intent, or `undefined` while not yet loaded
+ */
+export const isXtmOneIntentWithoutAgents = (
+  xtmOneConfigured: boolean | null,
+  intent: string | null | undefined,
+  agentCount: number | undefined,
+): boolean => {
+  if (xtmOneConfigured !== true) return false;
+  if (!intent) return false;
+  if (agentCount === undefined) return false;
+  return agentCount === 0;
+};
+
+/**
  * Best-effort JSON `{ error }` body extraction for non-OK fetch responses.
  * The chatbot proxy returns `400 { error: '...' }` for body-validation and
  * draft-authorization failures, and `503 { error: '...' }` when XTM One is

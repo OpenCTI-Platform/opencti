@@ -6,9 +6,10 @@ import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFil
 import { useTheme } from '@mui/styles';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesContextQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import { AgentOption, fetchAgentsForIntent } from '../../../../../utils/ai/agentApi';
+import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../../utils/ai/agentApi';
 
 interface ImportFilesListProps {
   connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
@@ -18,9 +19,21 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
   const theme = useTheme<Theme>();
   const { files, setFiles, importMode } = useImportFilesContext();
   const { t_i18n } = useFormatter();
+  const { xtmOneConfigured } = useChatbot();
 
   // Track loaded agents per intent
   const [agentsByIntent, setAgentsByIntent] = useState<Record<string, AgentOption[]>>({});
+
+  // Agent count for an intent, or `undefined` while it has not been fetched yet.
+  const agentCountForIntent = (intent?: string | null): number | undefined => (
+    intent && intent in agentsByIntent ? agentsByIntent[intent].length : undefined
+  );
+
+  // A connector is only blocked when XTM One is configured but the intent has no
+  // agent. When XTM One is off, intent connectors stay usable via their legacy path.
+  const connectorMissingAgent = (intent?: string | null): boolean => (
+    isXtmOneIntentWithoutAgents(xtmOneConfigured, intent, agentCountForIntent(intent))
+  );
 
   // Collect unique xtm_one_intent values from ALL available connectors (not just selected)
   const allIntents = useMemo(() => {
@@ -33,8 +46,10 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
     return Array.from(intents);
   }, [connectorsForImport]);
 
-  // Fetch agents for all intents at mount time
+  // Fetch agents for all intents at mount time. Only when XTM One is configured:
+  // otherwise intent connectors run in legacy mode and need no agent catalog.
   useEffect(() => {
+    if (xtmOneConfigured !== true) return;
     for (const intent of allIntents) {
       if (!agentsByIntent[intent]) {
         fetchAgentsForIntent(intent).then((agents) => {
@@ -42,7 +57,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
         });
       }
     }
-  }, [allIntents]);
+  }, [allIntents, xtmOneConfigured]);
 
   // Auto-preselect first agent for files with XTM One connectors that have no configuration yet
   useEffect(() => {
@@ -254,11 +269,11 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                                     disabled={
                                       !connector?.active
                                       || !connector?.connector_scope?.includes(file.type)
-                                      || (!!connector?.xtm_one_intent && connector.xtm_one_intent in agentsByIntent && agentsByIntent[connector.xtm_one_intent].length === 0)
+                                      || connectorMissingAgent(connector?.xtm_one_intent)
                                     }
                                   >
                                     {connector?.name}
-                                    {connector?.xtm_one_intent && connector.xtm_one_intent in agentsByIntent && agentsByIntent[connector.xtm_one_intent].length === 0
+                                    {connectorMissingAgent(connector?.xtm_one_intent)
                                       ? ` (${t_i18n('No agent available')})`
                                       : ''}
                                   </MenuItem>
