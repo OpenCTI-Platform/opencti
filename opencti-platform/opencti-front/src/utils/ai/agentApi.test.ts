@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { callAgent, callAgentStream } from './agentApi';
+import { callAgent, callAgentStream, isXtmOneIntentWithoutAgents } from './agentApi';
 
 const buildJsonResponse = (status: number, body: unknown, ok = status >= 200 && status < 300): Response => {
   const json = JSON.stringify(body);
@@ -67,6 +67,37 @@ describe('agentApi', () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  describe('isXtmOneIntentWithoutAgents', () => {
+    it('never blocks when XTM One is not configured, regardless of intent/agents', () => {
+      // Mirrors the backend gate (`connector.xtm_one_intent && xtmOneClient.isConfigured()`):
+      // intent connectors keep a legacy execution path when XTM One is off.
+      expect(isXtmOneIntentWithoutAgents(false, 'cti.stix_harvester', 0)).toBe(false);
+      expect(isXtmOneIntentWithoutAgents(false, 'cti.stix_harvester', 3)).toBe(false);
+    });
+
+    it('never blocks while the config is still loading (null tri-state)', () => {
+      expect(isXtmOneIntentWithoutAgents(null, 'cti.stix_harvester', 0)).toBe(false);
+    });
+
+    it('never blocks a connector that declares no intent', () => {
+      expect(isXtmOneIntentWithoutAgents(true, null, 0)).toBe(false);
+      expect(isXtmOneIntentWithoutAgents(true, undefined, 0)).toBe(false);
+      expect(isXtmOneIntentWithoutAgents(true, '', 0)).toBe(false);
+    });
+
+    it('never blocks while the agent catalog has not been fetched yet (undefined count)', () => {
+      expect(isXtmOneIntentWithoutAgents(true, 'cti.stix_harvester', undefined)).toBe(false);
+    });
+
+    it('blocks only when XTM One is configured, an intent is set and zero agents are bound', () => {
+      expect(isXtmOneIntentWithoutAgents(true, 'cti.stix_harvester', 0)).toBe(true);
+    });
+
+    it('does not block when at least one agent is bound to the intent', () => {
+      expect(isXtmOneIntentWithoutAgents(true, 'cti.stix_harvester', 1)).toBe(false);
+    });
   });
 
   describe('callAgent', () => {
