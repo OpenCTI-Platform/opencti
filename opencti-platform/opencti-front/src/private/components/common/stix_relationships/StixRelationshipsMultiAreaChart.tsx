@@ -56,7 +56,7 @@ const StixRelationshipsMultiAreaChartComponent = ({
     stixRelationshipsMultiAreaChartTimeSeriesQuery,
     queryRef,
   );
-  console.log('parametre', parameters);
+
   if (!data?.stixRelationshipsMultiTimeSeries) {
     return <WidgetNoData />;
   }
@@ -114,7 +114,7 @@ const buildQueryVariables = (
     };
   });
 
-  console.log("parameters?.interval", parameters);
+  console.log('parameters?.interval', parameters);
   return {
     operation: 'count',
     startDate,
@@ -147,7 +147,6 @@ const StixRelationshipsMultiAreaChart = ({
 }: StixRelationshipsMultiAreaChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  
 
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
     perspective: 'relationships',
