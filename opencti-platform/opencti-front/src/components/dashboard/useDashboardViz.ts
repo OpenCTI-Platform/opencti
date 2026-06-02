@@ -1,7 +1,7 @@
 import type { WidgetHost, WidgetDataSelection, WidgetPerspective, WidgetParameters } from '../../utils/widget/widget';
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboard-viz-utils';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { DashboardConfig } from './dashboard-types';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useQueryLoader } from 'react-relay';
@@ -9,11 +9,21 @@ import { OperationType } from 'relay-runtime';
 
 const useWidgetAutoRefresh = (reloadData: () => void, refreshInterval?: number | null) => {
   useEffect(() => {
-    const interval = refreshInterval !== null ? setInterval(() => {
+    if (typeof refreshInterval !== 'number' || refreshInterval <= 0) {
+      return () => {};
+    }
+
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const msUntilNextTick = refreshInterval - (Date.now() % refreshInterval);
+    const timeout = setTimeout(() => {
       reloadData();
-    }, refreshInterval) : null;
-    reloadData();
+      interval = setInterval(() => {
+        reloadData();
+      }, refreshInterval);
+    }, msUntilNextTick);
+
     return () => {
+      clearTimeout(timeout);
       if (interval !== null) {
         clearInterval(interval);
       }
@@ -41,6 +51,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
   const [queryRef, load] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
+  const lastLoadedVariablesSignatureRef = useRef<string | null>(null);
   const { filterKeysSchema } = useAuth().schema;
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useMemo(() => resolveDataSelection({
     filterKeysSchema,
@@ -49,15 +60,42 @@ const useDashboardViz = <TQuery extends OperationType>({
     host,
   }), [filterKeysSchema, dataSelection, perspective, host]);
 
-  const reloadData = useCallback(() => {
-    if (buildQueryVariables && config) {
-      load(buildQueryVariables(resolvedDataSelection, config, parameters), {
-        fetchPolicy: 'store-and-network',
-      });
-    }
-  }, [load, buildQueryVariables, resolvedDataSelection, config, parameters]);
+  const queryVariables = useMemo(
+    () => (buildQueryVariables && config
+      ? buildQueryVariables(resolvedDataSelection, config, parameters)
+      : null),
+    [buildQueryVariables, resolvedDataSelection, config, parameters],
+  );
 
-  useWidgetAutoRefresh(reloadData, refreshRate);
+  const queryVariablesSignature = useMemo(
+    () => (queryVariables ? JSON.stringify(queryVariables) : null),
+    [queryVariables],
+  );
+
+  const reloadData = useCallback((force = false) => {
+    if (!queryVariables || !queryVariablesSignature) {
+      return;
+    }
+
+    if (!force && queryVariablesSignature === lastLoadedVariablesSignatureRef.current) {
+      return;
+    }
+
+    lastLoadedVariablesSignatureRef.current = queryVariablesSignature;
+    load(queryVariables, {
+      fetchPolicy: 'store-and-network',
+    });
+  }, [load, queryVariables, queryVariablesSignature]);
+
+  useEffect(() => {
+    reloadData(false);
+  }, [reloadData]);
+
+  const forceReloadData = useCallback(() => {
+    reloadData(true);
+  }, [reloadData]);
+
+  useWidgetAutoRefresh(forceReloadData, refreshRate);
 
   return {
     queryRef,
