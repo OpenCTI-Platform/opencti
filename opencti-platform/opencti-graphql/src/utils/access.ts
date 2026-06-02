@@ -921,6 +921,11 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
     return false;
   }
 
+  // 4.5 DraftWorkspace deletion exception: edit access is enough to delete a draft workspace
+  if (element.entity_type === 'DraftWorkspace' && operation === AccessOperation.DELETE) {
+    return hasUserAccessToOperation(user, element, AccessOperation.EDIT);
+  }
+
   // 5. Check access to the element (entity, container, etc.)
   return hasUserAccessToOperation(user, element, operation);
 };
