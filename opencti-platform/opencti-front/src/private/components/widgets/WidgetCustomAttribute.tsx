@@ -5,7 +5,7 @@ import type { WidgetColumnsLayout } from './WidgetCustomAttributesColumnsInput';
 import WidgetCustomAttributesCard, { StixCoreObject } from './WidgetCustomAttributesCard';
 
 interface WidgetCustomAttributesProps {
-  data: StixCoreObject;
+  data: StixCoreObject | null | undefined;
   columns: WidgetColumn[];
   layout?: WidgetColumnsLayout;
 }

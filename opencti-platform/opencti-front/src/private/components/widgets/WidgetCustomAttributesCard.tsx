@@ -25,16 +25,23 @@ export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$da
 
 interface WidgetCustomAttributesCardProps {
   column: WidgetColumn;
-  data: StixCoreObject;
+  data: StixCoreObject | null | undefined;
 }
 
 const renderAttributeValue = (
   attribute: string,
-  data: StixCoreObject,
+  data: StixCoreObject | null | undefined,
   t_i18n: (s: string) => string,
   fldt: (s: unknown) => string,
 ) => {
-  const entityType = data.entity_type ?? '';
+  const entityType = data?.entity_type ?? '';
+  if (!data) {
+    return (
+      <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
+        —
+      </Typography>
+    );
+  }
 
   switch (attribute) {
     case 'objectMarking':
@@ -68,7 +75,6 @@ const renderAttributeValue = (
       return <ItemCreators creators={data.creators ?? []} />;
 
     case 'objectAssignee': {
-      // objectAssignee est présent sur plusieurs types (Report, Task, Case...)
       const assignees = 'objectAssignee' in data
         ? (data as { objectAssignee?: { id: string; name: string; entity_type: string }[] }).objectAssignee ?? []
         : [];
@@ -215,7 +221,6 @@ const renderAttributeValue = (
     }
 
     default: {
-      // Accès générique pour les champs non typés explicitement (aliases, custom fields...)
       const value = (data as Record<string, unknown>)[attribute];
 
       if (value === undefined || value === null || value === '') {
@@ -272,7 +277,7 @@ const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardPr
   const label = column.label ?? column.attribute ?? '';
 
   return (
-    <Box sx={{ marginBottom: theme.spacing(2) }}>
+    <Box sx={{ marginBottom: theme.spacing(2), paddingTop: theme.spacing(2) }}>
       <Typography variant="h4" sx={{ marginBottom: theme.spacing(0.5) }}>
         {t_i18n(label)}
       </Typography>
