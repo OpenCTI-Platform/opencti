@@ -142,6 +142,7 @@ export const getSettings = async (context) => {
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
+      { id: 'CUSTOM_ATTRIBUTES_WIDGET', enable: booleanConf('feature:custom_attributes_widget', false) },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true }))),
     ],
     playground_enabled: PLAYGROUND_ENABLED,
