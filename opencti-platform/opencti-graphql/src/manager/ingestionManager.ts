@@ -67,7 +67,16 @@ const asArray = (data: unknown) => {
   return [];
 };
 
-const isMustExecuteIteration = (last_execution_date: Date | undefined, scheduling_period: string) => {
+/**
+ * Checks whether the user-configured scheduling period has elapsed since the last execution.
+ * This is schedule as string (e.g. PT1H, PT6H, PT1D).
+ * Returns true (must execute) when:
+ *  - last_execution_date is undefined (never executed before)
+ *  - scheduling_period is empty or set to 'auto'
+ *  - the configured period has fully elapsed since last_execution_date
+ * Used by all ingestion types (RSS, TAXII, CSV, JSON).
+ */
+export const isMustExecuteIteration = (last_execution_date: Date | undefined, scheduling_period: string) => {
   if (isNotEmptyField(scheduling_period) && scheduling_period !== 'auto' && last_execution_date) {
     const schedulingPeriod = schedulingPeriodToMs(scheduling_period);
     const isInRange = isDateInRange(last_execution_date, schedulingPeriod, utcDate());
@@ -76,6 +85,11 @@ const isMustExecuteIteration = (last_execution_date: Date | undefined, schedulin
   return true;
 };
 
+/**
+ * Enforces a system-level minimum interval between executions to prevent
+ * calling external feeds too frequently, regardless of the user scheduling period.
+ * Returns true when no previous execution exists, or at least min_interval_minutes have passed.
+ */
 const shouldExecuteIngestion = (ingestion: BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, min_interval_minutes: number) => {
   const { last_execution_date } = ingestion;
   return !last_execution_date || sinceNowInMinutes(last_execution_date) >= min_interval_minutes;
