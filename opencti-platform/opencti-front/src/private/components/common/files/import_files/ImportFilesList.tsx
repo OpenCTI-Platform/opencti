@@ -25,9 +25,12 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
   const [agentsByIntent, setAgentsByIntent] = useState<Record<string, AgentOption[]>>({});
 
   // Agent count for an intent, or `undefined` while it has not been fetched yet.
-  const agentCountForIntent = (intent?: string | null): number | undefined => (
-    intent && intent in agentsByIntent ? agentsByIntent[intent].length : undefined
-  );
+  // Uses an own-property check so an intent that collides with a prototype key
+  // (e.g. `constructor`, `toString`) can never read a non-array off the prototype.
+  const agentCountForIntent = (intent?: string | null): number | undefined => {
+    if (!intent || !Object.prototype.hasOwnProperty.call(agentsByIntent, intent)) return undefined;
+    return agentsByIntent[intent].length;
+  };
 
   // A connector is only blocked when XTM One is configured but the intent has no
   // agent. When XTM One is off, intent connectors stay usable via their legacy path.
