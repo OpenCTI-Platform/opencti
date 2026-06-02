@@ -40,7 +40,7 @@ vi.mock('react-relay', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-relay')>();
   return {
     ...actual,
-    useMutation: (mutation: any) => {
+    useMutation: (mutation: { __id?: string }) => {
       if (mutation?.__id === 'trigger') return [mockCommit, false];
       if (mutation?.__id === 'retry') return [mockCommitRetry, false];
       if (mutation?.__id === 'clear') return [mockCommitClear, false];

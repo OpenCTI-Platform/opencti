@@ -297,7 +297,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should return empty arrays when workflowDefinition is undefined', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(undefined as any, mockStatusTemplates, mockMembers, null, null),
+      useWorkflowInitialElements(undefined as never, mockStatusTemplates, mockMembers, null, null),
     );
     expect(result.current.initialNodes).toEqual([]);
     expect(result.current.initialEdges).toEqual([]);
