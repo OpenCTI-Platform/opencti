@@ -22,7 +22,7 @@ import { logMigration } from '../config/conf';
 
 const message = '[MIGRATION] <Description>';
 
-export const up = async (next: any) => {
+export const up = async (next: (error?: Error) => void) => {
   const startTime = Date.now();
   logMigration.info(`${message} > started`);
 
@@ -34,7 +34,7 @@ export const up = async (next: any) => {
   next();
    };
 
-export const down = async (next: any) => {
+export const down = async (next: (error?: Error) => void) => {
   next();
 };
 ```
