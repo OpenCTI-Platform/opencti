@@ -4,8 +4,6 @@ import { ADMIN_USER, testContext, USER_EDITOR, TEST_ORGANIZATION, USER_SECURITY 
 import { queryAsAdmin, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
-import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
 const LIST_QUERY = gql`
   query organizations(
@@ -316,10 +314,16 @@ describe('Organization default_dashboard user cache refresh', () => {
     const orgResult = await elLoadById(testContext, ADMIN_USER, TEST_ORGANIZATION.id);
     testOrganizationId = orgResult.internal_id;
 
-    // Create a first dashboard
+    // Create a first dashboard with TEST_ORGANIZATION as authorized member
     const dashboardCreation = await queryAsAdmin({
       query: CREATE_DASHBOARD_QUERY,
-      variables: { input: { type: 'dashboard', name: 'orga-dashboard-test' } },
+      variables: {
+        input: {
+          type: 'dashboard',
+          name: 'orga-dashboard-test',
+          authorized_members: [{ id: testOrganizationId, access_right: 'view' }],
+        },
+      },
     });
     dashboardId = dashboardCreation.data.workspaceAdd.id;
     dashboardToDeleteIds.push(dashboardId);
@@ -360,8 +364,6 @@ describe('Organization default_dashboard user cache refresh', () => {
     expect(patchResult.data.organizationFieldPatch.default_dashboard.id).toEqual(dashboardId);
     expect(patchResult.data.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-test');
 
-    resetCacheForEntity(ENTITY_TYPE_USER);
-
     // Verify that USER_EDITOR (member of TEST_ORGANIZATION) sees the dashboard in default_dashboards
     const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ME_DEFAULT_DASHBOARDS_QUERY,
@@ -375,7 +377,13 @@ describe('Organization default_dashboard user cache refresh', () => {
     // Create a new dashboard
     const newDashboardCreation = await queryAsAdmin({
       query: CREATE_DASHBOARD_QUERY,
-      variables: { input: { type: 'dashboard', name: 'orga-dashboard-updated' } },
+      variables: {
+        input: {
+          type: 'dashboard',
+          name: 'orga-dashboard-updated',
+          authorized_members: [{ id: testOrganizationId, access_right: 'view' }],
+        },
+      },
     });
     newDashboardId = newDashboardCreation.data.workspaceAdd.id;
     dashboardToDeleteIds.push(newDashboardId);
@@ -391,8 +399,6 @@ describe('Organization default_dashboard user cache refresh', () => {
     expect(patchResult.data.organizationFieldPatch.default_dashboard).not.toBeNull();
     expect(patchResult.data.organizationFieldPatch.default_dashboard.id).toEqual(newDashboardId);
     expect(patchResult.data.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-updated');
-
-    resetCacheForEntity(ENTITY_TYPE_USER);
 
     // Verify user cache was refreshed: USER_EDITOR should now see the updated dashboard
     const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
