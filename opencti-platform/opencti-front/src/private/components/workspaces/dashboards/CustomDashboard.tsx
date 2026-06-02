@@ -17,7 +17,6 @@ import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
 import { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
-import { useFormatter } from '../../../../components/i18n';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -99,7 +98,6 @@ interface CustomDashboardProps {
 }
 
 const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
-  const { t_i18n } = useFormatter();
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
@@ -161,25 +159,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   useEffect(() => {
     lastRefreshTimeRef.current = lastRefreshTime;
   }, [lastRefreshTime]);
-  const [timeAgoText, setTimeAgoText] = useState('');
-  const [countdownText, setCountdownText] = useState('');
   const [manualRefreshToken, setManualRefreshToken] = useState(0);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
-
-  const formatTimeAgo = (date: Date): string => {
-    const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
-    if (diffMin === 0) return 'Just now';
-    if (diffMin < 60) return `${diffMin} min ago`;
-    const diffHours = Math.floor(diffMin / 60);
-    return `${diffHours} ${diffHours > 1 ? 'hours ago' : 'hour ago'}`;
-  };
-
-  const formatCountdown = (remainingMs: number): string => {
-    const totalSeconds = Math.ceil(remainingMs / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   const handleRefreshRateChange = (refreshRateInSeconds: number) => {
     setLocalRefreshRateSeconds(refreshRateInSeconds);
@@ -209,21 +190,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   };
 
   useEffect(() => {
-    setTimeAgoText(formatTimeAgo(lastRefreshTime));
-    const interval = setInterval(() => {
-      setTimeAgoText(formatTimeAgo(lastRefreshTime));
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [lastRefreshTime]);
-
-  useEffect(() => {
     if (!refreshRate) return;
 
     let resetSpinnerTimeout: ReturnType<typeof setTimeout> | null = null;
     const triggerAutoRefresh = () => {
       setIsAutoRefreshing(true);
       setLastRefreshTime(new Date());
-      setManualRefreshToken((prev) => prev + 1);
 
       if (resetSpinnerTimeout) {
         clearTimeout(resetSpinnerTimeout);
@@ -253,22 +225,6 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       setIsAutoRefreshing(false);
     };
   }, [refreshRate]);
-
-  useEffect(() => {
-    if (!refreshRate) {
-      setCountdownText('');
-      return;
-    }
-
-    const updateCountdown = () => {
-      const remaining = Math.max(0, refreshRate - (Date.now() - lastRefreshTime.getTime()));
-      setCountdownText(formatCountdown(remaining));
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [refreshRate, lastRefreshTime]);
 
   return (
     <Stack gap={2}>
@@ -308,24 +264,25 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                   interval={localRefreshRateSeconds}
                   onIntervalChange={handleRefreshRateChange}
                   isRefreshing={isAutoRefreshing}
+                  lastRefreshAt={lastRefreshTime.getTime()}
                 />
-                {refreshRate && (
+                {/* {refreshRate && (
                   <Box sx={{ color: 'text.secondary', marginRight: 3 }}>
-                    {t_i18n('Last refreshed')}: {timeAgoText} - {t_i18n('Next refresh in')}: {countdownText}
+                    {t_i18n('Last refreshed')}: {timeAgoText}
                   </Box>
-                )}
+                )} */}
               </Box>
             </Box>
           </Security>
         )
         }
         <DashboardContent
-          key={`dashboard-content-${manualRefreshToken}`}
           helpers={helpers}
           isEditable={userCanEdit}
           entity={workspace}
           host={WIDGET_WORKSPACE_HOST}
           refreshRate={refreshRate}
+          refreshToken={manualRefreshToken}
         />
       </div>
     </Stack>
