@@ -26,6 +26,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/secur
 import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
+import { listRules } from '../modules/retentionRules/retentionRules-domain';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -283,6 +284,19 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region PIR information
     const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
     manager.setPirCount(pirs.length);
+    // endregion
+
+    // region History retention rule status
+    const retentionRules = await listRules(context, TELEMETRY_MANAGER_USER);
+    const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history' && rule.active);
+    manager.setIsHistoryRetentionRuleActive(hasActiveHistoryRetentionRule ? 1 : 0);
+    const hasActiveActivityRetentionRule = retentionRules.some((rule) => rule.scope === 'activity' && rule.active);
+    manager.setIsActivityRetentionRuleActive(hasActiveActivityRetentionRule ? 1 : 0);
+    // endregion
+
+    // region Activity status
+    const hasActivityListeners = (settings.activity_listeners_ids ?? []).length > 0;
+    manager.setIsActivityEnabled(hasActivityListeners ? 1 : 0);
     // endregion
 
     manager.setSsoLocalStrategyEnabled(settings.local_auth?.enabled ? 1 : 0);
