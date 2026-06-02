@@ -3,7 +3,7 @@ import WidgetText from './WidgetText';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import StixCoreObjectsCustomAttributes from '@components/widgets/StixCoreObjectsCustomAttributes';
 import type { DashboardConfig } from './dashboard-types';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -19,7 +19,7 @@ const DashboardRawViz = ({
   host,
 }: DashboardRawVizProps) => {
   const startDate = config?.relativeDate
-    ? computerRelativeDate(config.relativeDate)
+    ? computeRelativeDate(config.relativeDate)
     : config?.startDate;
 
   const endDate = config?.relativeDate
