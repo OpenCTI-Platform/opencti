@@ -2652,9 +2652,10 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
-          const currentIds = currentRels.map((r: BasicStoreRelation) => r.toId);
-          const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
+          const candidateIds = refs.map((r) => r.internal_id);
+          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id, toId: candidateIds });
+          const currentIds = new Set(currentRels.map((r: BasicStoreRelation) => r.toId));
+          const refsToCreate = refs.filter((r) => !currentIds.has(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             pushAll(relationsToCreate, newRelations);
