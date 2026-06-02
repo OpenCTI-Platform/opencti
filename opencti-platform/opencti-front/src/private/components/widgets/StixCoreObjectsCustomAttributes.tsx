@@ -119,7 +119,7 @@ const StixCoreObjectsCustomAttributes = ({
           : !resolvedEntityId
               ? (
                   <WidgetCustomAttributes
-                    data={{}}
+                    data={null}
                     columns={columns as WidgetColumn[]}
                     layout={layout}
                   />
