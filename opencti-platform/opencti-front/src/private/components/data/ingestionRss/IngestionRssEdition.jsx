@@ -78,6 +78,9 @@ const IngestionRssEditionContainer = ({
         if (name === 'user_id') {
           finalValue = value?.value;
         }
+        if (name === 'ssl_verify') {
+          finalValue = value?.value ?? true;
+        }
         commitMutation({
           mutation: ingestionRssMutationFieldPatch,
           variables: {
