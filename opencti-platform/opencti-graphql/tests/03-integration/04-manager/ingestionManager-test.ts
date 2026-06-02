@@ -8,7 +8,7 @@ import {
   type TaxiiResponseData,
 } from '../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
+import { addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-2-1-sdo';
 import { now } from '../../../src/utils/format';

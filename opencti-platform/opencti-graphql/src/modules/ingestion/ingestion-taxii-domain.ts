@@ -29,7 +29,7 @@ export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser
   return fullEntitiesList<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
-export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
+export const addTaxiiIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
   verifyIngestionUri(input.uri);
   if (input.automatic_user) {
     const onTheFlyCreatedUser = await createOnTheFlyUser(

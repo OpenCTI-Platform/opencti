@@ -1,5 +1,5 @@
 import {
-  addIngestion,
+  addTaxiiIngestion,
   findTaxiiIngestionPaginated,
   findById,
   ingestionDelete,
@@ -30,7 +30,7 @@ const ingestionTaxiiResolvers: Resolvers = {
   },
   Mutation: {
     ingestionTaxiiAdd: (_, { input }, context) => {
-      return addIngestion(context, context.user, input);
+      return addTaxiiIngestion(context, context.user, input);
     },
     ingestionTaxiiDelete: (_, { id }, context) => {
       return ingestionDelete(context, context.user, id);
