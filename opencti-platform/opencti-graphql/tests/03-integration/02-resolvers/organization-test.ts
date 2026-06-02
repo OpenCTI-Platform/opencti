@@ -80,7 +80,7 @@ const DELETE_QUERY = gql`
 `;
 
 describe('Organization resolver standard behavior', () => {
-  let organizationInternalId;
+  let organizationInternalId: string;
   const organizationStixId = 'identity--43008345-56bd-4175-adad-312bef2ff6a1';
   it('should organization created', async () => {
     const CREATE_QUERY = gql`
@@ -107,35 +107,35 @@ describe('Organization resolver standard behavior', () => {
       variables: ORGANIZATION_TO_CREATE,
     });
     expect(organization).not.toBeNull();
-    expect(organization.data.organizationAdd).not.toBeNull();
-    expect(organization.data.organizationAdd.name).toEqual('Organization');
-    expect(organization.data.organizationAdd.x_opencti_score).toEqual(50);
-    organizationInternalId = organization.data.organizationAdd.id;
+    expect(organization.data?.organizationAdd).not.toBeNull();
+    expect(organization.data?.organizationAdd.name).toEqual('Organization');
+    expect(organization.data?.organizationAdd.x_opencti_score).toEqual(50);
+    organizationInternalId = organization.data?.organizationAdd.id;
   });
   it('should organization loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: organizationInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.organization).not.toBeNull();
-    expect(queryResult.data.organization.id).toEqual(organizationInternalId);
-    expect(queryResult.data.organization.toStix.length).toBeGreaterThan(5);
+    expect(queryResult.data?.organization).not.toBeNull();
+    expect(queryResult.data?.organization.id).toEqual(organizationInternalId);
+    expect(queryResult.data?.organization.toStix.length).toBeGreaterThan(5);
   });
   it('should organization loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: organizationStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.organization).not.toBeNull();
-    expect(queryResult.data.organization.id).toEqual(organizationInternalId);
+    expect(queryResult.data?.organization).not.toBeNull();
+    expect(queryResult.data?.organization.id).toEqual(organizationInternalId);
   });
   it('should organization sectors be accurate', async () => {
     const organization = await elLoadById(testContext, ADMIN_USER, 'identity--c017f212-546b-4f21-999d-97d3dc558f7b');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: organization.internal_id },
+      variables: { id: organization?.internal_id },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.organization).not.toBeNull();
-    expect(queryResult.data.organization.standard_id).toEqual('identity--732421a0-8471-52de-8d9f-18c8b260813c');
-    expect(queryResult.data.organization.sectors.edges.length).toEqual(1);
-    expect(queryResult.data.organization.sectors.edges[0].node.standard_id).toEqual(
+    expect(queryResult.data?.organization).not.toBeNull();
+    expect(queryResult.data?.organization.standard_id).toEqual('identity--732421a0-8471-52de-8d9f-18c8b260813c');
+    expect(queryResult.data?.organization.sectors.edges.length).toEqual(1);
+    expect(queryResult.data?.organization.sectors.edges[0].node.standard_id).toEqual(
       'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff',
     );
   });
@@ -143,32 +143,32 @@ describe('Organization resolver standard behavior', () => {
     const organization = await elLoadById(testContext, ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: organization.internal_id },
+      variables: { id: organization?.internal_id },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.organization).not.toBeNull();
-    expect(queryResult.data.organization.subOrganizations.edges.length).toEqual(1);
-    expect(queryResult.data.organization.subOrganizations.edges[0].node.standard_id).toEqual(
+    expect(queryResult.data?.organization).not.toBeNull();
+    expect(queryResult.data?.organization.subOrganizations.edges.length).toEqual(1);
+    expect(queryResult.data?.organization.subOrganizations.edges[0].node.standard_id).toEqual(
       'identity--8c641a55-16b5-503d-9cc3-bf68ef0c40cc',
     );
   });
   it('should list organizations', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.organizations.edges.length).toEqual(10);
+    expect(queryResult.data?.organizations.edges.length).toEqual(10);
   });
   it('should update organization', async () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: organizationInternalId, input: { key: 'name', value: ['Organization - test'] } },
     });
-    expect(queryResult.data.organizationFieldPatch.name).toEqual('Organization - test');
+    expect(queryResult.data?.organizationFieldPatch.name).toEqual('Organization - test');
   });
   it('should update score', async () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: organizationInternalId, input: { key: 'x_opencti_score', value: 10 } },
     });
-    expect(queryResult.data.organizationFieldPatch.x_opencti_score).toEqual(10);
+    expect(queryResult.data?.organizationFieldPatch.x_opencti_score).toEqual(10);
   });
   it('should context patch organization', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -182,7 +182,7 @@ describe('Organization resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: organizationInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.organizationContextPatch.id).toEqual(organizationInternalId);
+    expect(queryResult.data?.organizationContextPatch.id).toEqual(organizationInternalId);
   });
   it('should context clean organization', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -196,7 +196,7 @@ describe('Organization resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: organizationInternalId },
     });
-    expect(queryResult.data.organizationContextClean.id).toEqual(organizationInternalId);
+    expect(queryResult.data?.organizationContextClean.id).toEqual(organizationInternalId);
   });
   it('should add relation in organization', async () => {
     const RELATION_ADD_QUERY = gql`
@@ -223,7 +223,7 @@ describe('Organization resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.organizationRelationAdd.from.objectMarking.length).toEqual(1);
+    expect(queryResult.data?.organizationRelationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in organization', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -244,7 +244,7 @@ describe('Organization resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.organizationRelationDelete.objectMarking.length).toEqual(0);
+    expect(queryResult.data?.organizationRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should organization deleted', async () => {
     // Delete the organization
@@ -255,7 +255,7 @@ describe('Organization resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: organizationStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.organization).toBeNull();
+    expect(queryResult.data?.organization).toBeNull();
   });
   it('should not delete organization if it has members', async () => {
     await queryAsUserIsExpectedError(USER_EDITOR, {
@@ -271,10 +271,10 @@ describe('Organization resolver standard behavior', () => {
 });
 
 describe('Organization default_dashboard user cache refresh', () => {
-  let testOrganizationId;
-  let dashboardId;
-  let newDashboardId;
-  const dashboardToDeleteIds = [];
+  let testOrganizationId: string;
+  let dashboardId: string;
+  let newDashboardId: string;
+  const dashboardToDeleteIds: string[] = [];
 
   const CREATE_DASHBOARD_QUERY = gql`
     mutation CreateDashboard($input: WorkspaceAddInput!) {
@@ -312,7 +312,7 @@ describe('Organization default_dashboard user cache refresh', () => {
   beforeAll(async () => {
     // Resolve the TEST_ORGANIZATION internal id
     const orgResult = await elLoadById(testContext, ADMIN_USER, TEST_ORGANIZATION.id);
-    testOrganizationId = orgResult.internal_id;
+    testOrganizationId = orgResult!.internal_id;
 
     // Create a first dashboard with TEST_ORGANIZATION as authorized member
     const dashboardCreation = await queryAsAdmin({
@@ -325,7 +325,7 @@ describe('Organization default_dashboard user cache refresh', () => {
         },
       },
     });
-    dashboardId = dashboardCreation.data.workspaceAdd.id;
+    dashboardId = dashboardCreation.data!.workspaceAdd.id;
     dashboardToDeleteIds.push(dashboardId);
   });
 
@@ -360,16 +360,16 @@ describe('Organization default_dashboard user cache refresh', () => {
         input: [{ key: 'default_dashboard', value: [dashboardId] }],
       },
     });
-    expect(patchResult.data.organizationFieldPatch.default_dashboard).not.toBeNull();
-    expect(patchResult.data.organizationFieldPatch.default_dashboard.id).toEqual(dashboardId);
-    expect(patchResult.data.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-test');
+    expect(patchResult.data?.organizationFieldPatch.default_dashboard).not.toBeNull();
+    expect(patchResult.data?.organizationFieldPatch.default_dashboard.id).toEqual(dashboardId);
+    expect(patchResult.data?.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-test');
 
     // Verify that USER_EDITOR (member of TEST_ORGANIZATION) sees the dashboard in default_dashboards
     const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ME_DEFAULT_DASHBOARDS_QUERY,
     });
     expect(userResult.data.me).not.toBeNull();
-    const dashboardIds = userResult.data.me.default_dashboards.map((d) => d.id);
+    const dashboardIds = userResult.data.me.default_dashboards.map((d: { id: string }) => d.id);
     expect(dashboardIds).toContain(dashboardId);
   });
 
@@ -385,7 +385,7 @@ describe('Organization default_dashboard user cache refresh', () => {
         },
       },
     });
-    newDashboardId = newDashboardCreation.data.workspaceAdd.id;
+    newDashboardId = newDashboardCreation.data!.workspaceAdd.id;
     dashboardToDeleteIds.push(newDashboardId);
 
     // Update default_dashboard to the new dashboard
@@ -396,16 +396,16 @@ describe('Organization default_dashboard user cache refresh', () => {
         input: [{ key: 'default_dashboard', value: [newDashboardId] }],
       },
     });
-    expect(patchResult.data.organizationFieldPatch.default_dashboard).not.toBeNull();
-    expect(patchResult.data.organizationFieldPatch.default_dashboard.id).toEqual(newDashboardId);
-    expect(patchResult.data.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-updated');
+    expect(patchResult.data?.organizationFieldPatch.default_dashboard).not.toBeNull();
+    expect(patchResult.data?.organizationFieldPatch.default_dashboard.id).toEqual(newDashboardId);
+    expect(patchResult.data?.organizationFieldPatch.default_dashboard.name).toEqual('orga-dashboard-updated');
 
     // Verify user cache was refreshed: USER_EDITOR should now see the updated dashboard
     const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ME_DEFAULT_DASHBOARDS_QUERY,
     });
     expect(userResult.data.me).not.toBeNull();
-    const dashboardIds = userResult.data.me.default_dashboards.map((d) => d.id);
+    const dashboardIds = userResult.data.me.default_dashboards.map((d: { id: string }) => d.id);
     expect(dashboardIds).toContain(newDashboardId);
     expect(dashboardIds).not.toContain(dashboardId);
   });
@@ -419,14 +419,14 @@ describe('Organization default_dashboard user cache refresh', () => {
         input: [{ key: 'default_dashboard', value: [null] }],
       },
     });
-    expect(patchResult.data.organizationFieldPatch.default_dashboard).toBeNull();
+    expect(patchResult.data?.organizationFieldPatch.default_dashboard).toBeNull();
 
     // Verify user cache was refreshed: USER_EDITOR should no longer have the dashboard
     const userResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ME_DEFAULT_DASHBOARDS_QUERY,
     });
     expect(userResult.data.me).not.toBeNull();
-    const dashboardIds = userResult.data.me.default_dashboards.map((d) => d.id);
+    const dashboardIds = userResult.data.me.default_dashboards.map((d: { id: string }) => d.id);
     expect(dashboardIds.length).toEqual(0);
   });
 });
