@@ -10,9 +10,6 @@ import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
-import { Box, Switch } from '@mui/material';
-import { REFRESH_INTERVALS } from '@components/workspaces/WorkspaceCreation';
-import MenuItem from '@mui/material/MenuItem';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -67,14 +64,11 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
   const { t_i18n } = useFormatter();
   const initialValues = {
     ...pick(['name', 'description'], workspace),
-    autoReload: !!workspace.refresh_rate,
-    refreshRate: workspace.refresh_rate ?? 60,
   };
 
   const workspaceValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    refresh_rate: Yup.number().nullable(),
   });
 
   const handleChangeFocus = (name) => {
@@ -111,7 +105,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
       validationSchema={workspaceValidation()}
       onSubmit={() => true}
     >
-      {({ values, setFieldValue }) => (
+      {() => (
         <Form>
           <Field
             component={TextField}
@@ -139,44 +133,6 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
-          <Box mt={2}>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <span>{t_i18n('Auto-reload')}</span>
-              <Switch
-                checked={values.autoReload}
-                onChange={(e) => {
-                  const enabled = e.target.checked;
-                  setFieldValue('autoReload', enabled);
-
-                  handleSubmitField(
-                    'refresh_rate',
-                    enabled ? values.refreshRate : null,
-                  );
-                }}
-              />
-            </Box>
-            {values.autoReload && (
-              <Box mt={2}>
-                <Field
-                  name="refreshRate"
-                  component={TextField}
-                  select
-                  fullWidth
-                  label={t_i18n('Interval')}
-                  onChange={(name, value) => {
-                    handleSubmitField('refresh_rate', value);
-                  }}
-                >
-                  {REFRESH_INTERVALS.map((opt) => (
-                    <MenuItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </Field>
-              </Box>
-            )}
-          </Box>
-
         </Form>
       )}
     </Formik>
