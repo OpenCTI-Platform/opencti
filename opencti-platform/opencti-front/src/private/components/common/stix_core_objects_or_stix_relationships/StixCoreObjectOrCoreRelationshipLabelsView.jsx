@@ -254,9 +254,10 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
             slots={{ transition: Transition }}
             onClose={handleCloseAdd}
             fullWidth={true}
+            style={{ paddingTop: 0 }}
           >
-            <DialogTitle>{t_i18n('Add new labels')}</DialogTitle>
-            <DialogContent style={{ overflowY: 'hidden' }}>
+            <DialogTitle style={{ padding: '0 0 24px 0' }}>{t_i18n('Add new labels')}</DialogTitle>
+            <DialogContent style={{ overflowY: 'hidden', padding: 0 }}>
               <Form>
                 <Field
                   component={AutocompleteField}
