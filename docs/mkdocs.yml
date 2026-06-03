@@ -189,6 +189,7 @@ nav:
           - RSS Feed: usage/import/rss-feed.md
           - CSV Feed: usage/import/csv-feed.md
           - JSON Feed: usage/import/json-feed.md
+          - Advanced feed configuration: usage/import/advanced-feed-configuration.md
       - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
       - Create via form: usage/form-intake.md

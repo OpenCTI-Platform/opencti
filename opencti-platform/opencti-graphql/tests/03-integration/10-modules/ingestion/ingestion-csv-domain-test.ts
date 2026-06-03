@@ -1,39 +1,24 @@
 import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
-import gql from 'graphql-tag';
-import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import { PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
-import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
-import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
-import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { findDefaultIngestionGroups, groupEditField } from '../../../src/domain/group';
-import type { BasicGroupEntity } from '../../../src/types/store';
-import { findById as findUserById } from '../../../src/domain/user';
-import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
-import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
+import {
+  addIngestionCsv,
+  deleteIngestionCsv,
+  ingestionCsvAddAutoUser,
+  ingestionCsvEditField,
+  testCsvIngestionMapping,
+} from '../../../../src/modules/ingestion/ingestion-csv-domain';
+import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, USER_EDITOR } from '../../../utils/testQuery';
+import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../../src/generated/graphql';
+import { unSetOrganization, setOrganization } from '../../../utils/testQueryHelper';
+import { getFakeAuthUser, getOrganizationEntity } from '../../../utils/domainQueryHelper';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
+import { findDefaultIngestionGroups, groupEditField } from '../../../../src/domain/group';
+import type { BasicGroupEntity } from '../../../../src/types/store';
+import { findById as findUserById, userDelete } from '../../../../src/domain/user';
+import { executionContext, SYSTEM_USER } from '../../../../src/utils/access';
+import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
+import type { BasicStoreEntityIngestionCsv } from '../../../../src/modules/ingestion/ingestion-types';
+import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
 
-const DELETE_USER_QUERY = gql`
-  mutation userDelete($id: ID!) {
-    userEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-const READ_USER_QUERY = gql`
-  query user($id: String!) {
-    user(id: $id) {
-      id
-      name
-      description
-      user_service_account
-      user_confidence_level {
-        max_confidence
-      }
-    }
-  }
-`;
 describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   const ingestionCreatedIds: string[] = [];
   let ingestionUser: AuthUser;
@@ -87,15 +72,10 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
     expect(createdUser.organizations.length, 'There is no platform org, so user should not have an organization').toBe(0);
-    // Delete just created user
-    await queryAsAdmin({
-      query: DELETE_USER_QUERY,
-      variables: { id: createdUser.id },
-    });
-    // Verify no longer found
-    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).toBeNull();
+
+    await userDelete(testContext, ADMIN_USER, createdUser.id);
+    const userDeleted = await findUserById(testContext, ADMIN_USER, createdUser.id);
+    expect(userDeleted).toBeUndefined();
   });
 
   it('should create a CSV Feed with auto user creation works fine with platform org', async () => {
@@ -130,14 +110,9 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       expect(createdUser.organizations.length, 'There is one platform org, so user should not have organization').toBe(0);
     }
     // Delete just created user
-    await queryAsAdmin({
-      query: DELETE_USER_QUERY,
-      variables: { id: createdUser.id },
-    });
-    // Verify no longer found
-    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).toBeNull();
+    await userDelete(testContext, ADMIN_USER, createdUser.id);
+    const userDeleted = await findUserById(testContext, ADMIN_USER, createdUser.id);
+    expect(userDeleted).toBeUndefined();
   });
 
   it('should create a CSV Feed with System user refused', async () => {
@@ -194,14 +169,9 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
     // Delete just created user
-    await queryAsAdmin({
-      query: DELETE_USER_QUERY,
-      variables: { id: createdUser.id },
-    });
-    // Verify no longer found
-    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).toBeNull();
+    await userDelete(testContext, ADMIN_USER, createdUser.id);
+    const userDeleted = await findUserById(testContext, ADMIN_USER, createdUser.id);
+    expect(userDeleted).toBeUndefined();
   });
 
   it('should a CSV Feed with auto user creation be refused when no default group', async () => {
@@ -250,14 +220,51 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
     // Delete just created user
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, firstIngestionCreated.user_id);
-    await queryAsAdmin({
-      query: DELETE_USER_QUERY,
-      variables: { id: createdUser.id },
-    });
-    // Verify no longer found
-    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).toBeNull();
+    await userDelete(testContext, ADMIN_USER, createdUser.id);
+    const userDeleted = await findUserById(testContext, ADMIN_USER, createdUser.id);
+    expect(userDeleted).toBeUndefined();
+  });
+});
+
+describe('Ingestion CSV domain - Deny list coverage', async () => {
+  let myCsvFeed: BasicStoreEntityIngestionCsv;
+
+  afterAll(async () => {
+    if (myCsvFeed && myCsvFeed.id) {
+      await deleteIngestionCsv(testContext, ADMIN_USER, myCsvFeed.id);
+    }
+  });
+
+  it('should be able to create a CSV feed with an allowed URI, and refused field patch of denied URL', async () => {
+    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+
+    const creationInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Test CSV feed deny list',
+      uri: 'https://example.allowed.com/csv-feed',
+      user_id: ADMIN_USER.id,
+    };
+    myCsvFeed = await addIngestionCsv(testContext, ADMIN_USER, creationInput) as unknown as BasicStoreEntityIngestionCsv;
+
+    const fieldPatchInput: EditInput[] = [{
+      key: 'uri',
+      value: ['https://example.denied.com/csv-feed'],
+    }];
+    await expect(ingestionCsvEditField(testContext, ADMIN_USER, myCsvFeed.id, fieldPatchInput))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+  });
+
+  it('should test be denied when URL is in deny list', async () => {
+    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+
+    const testInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Test CSV feed deny list',
+      uri: 'https://example.denied.com/csv-feed',
+      user_id: ADMIN_USER.id,
+    };
+    await expect(testCsvIngestionMapping(testContext, ADMIN_USER, testInput))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
   });
 });
 
@@ -290,14 +297,9 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
     expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBe(32);
     // Delete just created user
-    await queryAsAdmin({
-      query: DELETE_USER_QUERY,
-      variables: { id: createdUser.id },
-    });
-    // Verify no longer found
-    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).toBeNull();
+    await userDelete(testContext, ADMIN_USER, createdUser.id);
+    const userDeleted = await findUserById(testContext, ADMIN_USER, createdUser.id);
+    expect(userDeleted).toBeUndefined();
   });
 
   it('should create an automatic user and associate it to the ingestion feed', async () => {
@@ -312,13 +314,8 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
     expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBe(63);
     // Delete just created user
-    await queryAsAdmin({
-      query: DELETE_USER_QUERY,
-      variables: { id: createdUser.id },
-    });
-    // Verify no longer found
-    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).toBeNull();
+    await userDelete(testContext, ADMIN_USER, createdUser.id);
+    const userDeleted = await findUserById(testContext, ADMIN_USER, createdUser.id);
+    expect(userDeleted).toBeUndefined();
   });
 });

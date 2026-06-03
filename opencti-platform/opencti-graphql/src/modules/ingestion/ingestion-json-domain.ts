@@ -17,7 +17,7 @@ import * as JSONPath from 'jsonpath-plus';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON, type StoreEntityIngestionJson } from './ingestion-types';
-import { addAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, verifyIngestionUri } from './ingestion-common';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -211,6 +211,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
+  verifyIngestionUri(input.uri);
   const inputToCreate = { ...input };
   if (inputToCreate.authentication_value) {
     inputToCreate.authentication_value = await encryptIngestionCredential(inputToCreate.authentication_value);
@@ -258,6 +259,10 @@ export const editIngestionJson = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionJsonEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const uriField = input.find((editInput) => editInput.key === 'uri');
+  if (uriField && uriField.value[0]) {
+    verifyIngestionUri(uriField.value[0]);
+  }
   const patchInput = [...input];
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
@@ -338,6 +343,7 @@ export const ingestionJsonResetState = async (context: AuthContext, user: AuthUs
 };
 
 export const testJsonIngestionMapping = async (context: AuthContext, _user: AuthUser, input: IngestionJsonAddInput): Promise<JsonMapperTestResult> => {
+  verifyIngestionUri(input.uri);
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
