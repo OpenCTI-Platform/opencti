@@ -39,6 +39,7 @@ const CreatedByField = (props) => {
     dryrun,
     required = false,
     defaultCreatedBy,
+    clearable = false,
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -153,7 +154,7 @@ const CreatedByField = (props) => {
             <div className={classes.text}>{option.label}</div>
           </li>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
+        classes={{ clearIndicator: clearable ? undefined : classes.autoCompleteIndicator }}
       />
       <IdentityCreation
         contextual={true}

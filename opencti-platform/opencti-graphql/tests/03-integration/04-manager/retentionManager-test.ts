@@ -17,7 +17,7 @@ import { deleteElementById } from '../../../src/database/middleware';
 import { canDeleteElement } from '../../../src/database/data-consistency';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
-import { ENTITY_TYPE_ACTIVITY } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { BASE_TYPE_ENTITY } from '../../../src/schema/general';
 import { generateInternalId } from '../../../src/schema/identifier';
 
@@ -386,12 +386,33 @@ describe('Retention Manager tests ', () => {
     expect(historyElements.edges.length).toBeGreaterThan(0);
     const historyEntryId = historyElements.edges[0].node.id;
     // Delete it via the retention manager
-    await deleteElement(context, 'history', historyEntryId);
+    await deleteElement(context, 'history', historyEntryId, { forceRefresh: true });
     // Verify it is no longer findable
     const deleted = await elLoadById(testContext, ADMIN_USER, historyEntryId, { indices: READ_INDEX_HISTORY });
     expect(deleted).toBeUndefined();
   });
   it('should execute processing for history scope: patch the rule and collect deleted entries', async () => {
+    // Insert a synthetic History entry old enough to be caught by a 1-minute retention rule
+    const historyId = generateInternalId();
+    const historyDate = utcDate().subtract(5, 'minutes').toDate();
+    const historyEntry = {
+      internal_id: historyId,
+      standard_id: `history--${historyId}`,
+      base_type: BASE_TYPE_ENTITY,
+      entity_type: ENTITY_TYPE_HISTORY,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_status: 'success',
+      created_at: historyDate,
+      updated_at: historyDate,
+      timestamp: historyDate.toISOString(),
+      user_id: ADMIN_USER.id,
+      group_ids: [],
+      organization_ids: [],
+      context_data: { message: 'test history entry for executeProcessing retention test' },
+    };
+    await elIndex(INDEX_HISTORY, historyEntry);
+
     // Create a history retention rule
     const ruleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
@@ -426,6 +447,8 @@ describe('Retention Manager tests ', () => {
     } finally {
       featureSpy1.mockRestore();
     }
+    // Wait for Elasticsearch automatic index refresh (1s default)
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     // The rule should have been patched with last_execution_date and last_deleted_count
     const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
     expect(updatedRule?.last_execution_date).toBeDefined();
@@ -513,7 +536,7 @@ describe('Retention Manager tests ', () => {
     const indexed = await elLoadById(testContext, ADMIN_USER, activityId, { indices: READ_INDEX_HISTORY });
     expect(indexed).toBeDefined();
     // Delete it via the retention manager
-    await deleteElement(context, 'activity', activityId);
+    await deleteElement(context, 'activity', activityId, { forceRefresh: true });
     // Verify it is no longer findable
     const deleted = await elLoadById(testContext, ADMIN_USER, activityId, { indices: READ_INDEX_HISTORY });
     expect(deleted).toBeUndefined();
@@ -574,6 +597,8 @@ describe('Retention Manager tests ', () => {
     } finally {
       featureSpy3.mockRestore();
     }
+    // Wait for Elasticsearch automatic index refresh (1s default)
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     // The rule should be patched with last_execution_date and last_deleted_count > 0
     const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
     expect(updatedRule?.last_execution_date).toBeDefined();

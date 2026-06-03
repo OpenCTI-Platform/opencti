@@ -23,6 +23,7 @@ export const buildMainStixEntities = async (
   schema: FormSchemaDefinition,
   values: Record<string, any>,
   mainEntityType: string,
+  isBypass: boolean = false,
 ): Promise<{ mainStixEntities: any[]; mainEntityStixId: string | undefined }> => {
   const mainStixEntities = [];
   let mainEntityStixId;
@@ -43,7 +44,9 @@ export const buildMainStixEntities = async (
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         for (let i = 0; i < mainEntityFields.length; i += 1) {
           const field = mainEntityFields[i];
-          const fieldValue = values.mainEntityGroups[index][field.name];
+          const fieldValue = (field.isReadOnly && !isBypass)
+            ? field.defaultValue
+            : values.mainEntityGroups[index][field.name];
           const convertedValue = convertFieldType(fieldValue, field);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
@@ -90,7 +93,9 @@ export const buildMainStixEntities = async (
           const additionalMainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
           for (let i = 0; i < additionalMainEntityFields.length; i += 1) {
             const field = additionalMainEntityFields[i];
-            const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName];
+            const fieldValue = (field.isReadOnly && !isBypass)
+              ? field.defaultValue
+              : values.mainEntityFields[field.attributeMapping.attributeName];
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
               const convertedValue = convertFieldType(fieldValue, field);
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -123,7 +128,9 @@ export const buildMainStixEntities = async (
       let mainEntity = { entity_type: mainEntityType } as StoreEntity;
       for (let i = 0; i < mainEntityFields.length; i += 1) {
         const field = mainEntityFields[i];
-        const fieldValue = values[field.name];
+        const fieldValue = (field.isReadOnly && !isBypass)
+          ? field.defaultValue
+          : values[field.name];
         const convertedValue = convertFieldType(fieldValue, field);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
@@ -154,6 +161,7 @@ export const buildAdditionalEntities = async (
   schema: FormSchemaDefinition,
   values: Record<string, any>,
   bundle: any,
+  isBypass: boolean = false,
 ): Promise<Record<string, string[]>> => {
   const additionalEntitiesMap: Record<string, string[]> = {};
   if (!schema.additionalEntities) return additionalEntitiesMap;
@@ -185,7 +193,9 @@ export const buildAdditionalEntities = async (
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
             for (let i = 0; i < additionalEntityFields.length; i += 1) {
               const field = additionalEntityFields[i];
-              const fieldValue = values[`additional_${additionalEntity.id}_groups`][index2][field.name];
+              const fieldValue = (field.isReadOnly && !isBypass)
+                ? field.defaultValue
+                : values[`additional_${additionalEntity.id}_groups`][index2][field.name];
               const convertedValue = convertFieldType(fieldValue, field);
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
@@ -238,7 +248,9 @@ export const buildAdditionalEntities = async (
             if (values[`additional_${additionalEntity.id}_fields`]) {
               for (let i = 0; i < additionalEntityFields.length; i += 1) {
                 const field = additionalEntityFields[i];
-                const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
+                const fieldValue = (field.isReadOnly && !isBypass)
+                  ? field.defaultValue
+                  : values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
                 if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                   const convertedValue = convertFieldType(fieldValue, field);
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -284,7 +296,9 @@ export const buildAdditionalEntities = async (
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
             for (let i = 0; i < additionalEntityFields.length; i += 1) {
               const field = additionalEntityFields[i];
-              const fieldValue = entityData[field.name];
+              const fieldValue = (field.isReadOnly && !isBypass)
+                ? field.defaultValue
+                : entityData[field.name];
               if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                 const convertedValue = convertFieldType(fieldValue, field);
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

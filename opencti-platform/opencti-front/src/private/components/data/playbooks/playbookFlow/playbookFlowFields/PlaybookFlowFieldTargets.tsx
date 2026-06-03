@@ -26,7 +26,7 @@ const PlaybookFlowFieldTargets = () => {
       name="targets"
       label={t_i18n('Targets')}
       style={fieldSpacingContainerStyle}
-      dynamicKeysForPlaybooks
+      withDynamicKeys
     />
   );
 };

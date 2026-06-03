@@ -28,7 +28,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { AgentOption, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
+import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../utils/ai/agentApi';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 interface LaunchImportDialogProps {
@@ -289,7 +289,11 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   const disabled = !file
                     || (connector?.connector_scope && connector?.connector_scope?.length > 0
                       && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
-                  const noAgents = isXtmOneConfigured && !!connector?.xtm_one_intent && (intentAgentCounts[connector.xtm_one_intent] ?? -1) === 0;
+                  const noAgents = isXtmOneIntentWithoutAgents(
+                    isXtmOneConfigured,
+                    connector?.xtm_one_intent,
+                    connector?.xtm_one_intent ? intentAgentCounts[connector.xtm_one_intent] : undefined,
+                  );
                   return (
                     <MenuItem
                       key={connector?.id}
