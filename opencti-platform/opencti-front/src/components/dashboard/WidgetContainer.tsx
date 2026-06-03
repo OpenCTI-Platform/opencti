@@ -39,7 +39,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const previewColor = theme.palette.designSystem.tertiary.orange['400'];
-  const titleWithWarning = warning
+  const formattedTitle = warning
     ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
           {title}
@@ -63,7 +63,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
             <Card
               title={showPreviewTag ? (
                 <Stack direction="row" alignItems="center" gap={1}>
-                  {titleWithWarning}
+                  {formattedTitle}
                   <Tag
                     label={t_i18n('Preview data')}
                     size="small"
@@ -76,7 +76,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
                     }}
                   />
                 </Stack>
-              ) : titleWithWarning}
+              ) : formattedTitle}
               padding={padding}
               action={(
                 <div>

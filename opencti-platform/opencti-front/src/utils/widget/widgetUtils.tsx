@@ -335,7 +335,7 @@ export const UNIQUE_COUNT_ESTIMATION_WARNING = 'Datasets with more than 40000 di
  * whose value exceeds `UNIQUE_COUNT_ESTIMATION_THRESHOLD`, indicating that counts are
  * approximated and may differ from the actual number of distinct values.
  */
-export const showEstimationWarning = (dataSelection: WidgetDataSelection[], data: WidgetMultiTimeSeries[]) => {
+export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelection[], data: WidgetMultiTimeSeries[]) => {
   return dataSelection.some((selection, i) => (
     selection.unique && data[i]?.data.some((d) => d.value > UNIQUE_COUNT_ESTIMATION_THRESHOLD)
   ));

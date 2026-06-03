@@ -7,7 +7,7 @@ import {
   isWidgetListOrTimeline,
   isDataSelectionNumberValid,
   isWidgetUsingRelationsAggregation,
-  showEstimationWarning,
+  showEstimationWarningForUniqCount,
   UNIQUE_COUNT_ESTIMATION_THRESHOLD,
   WidgetVisualizationTypes,
   workspacesWidgetVisualizationTypes,
@@ -341,7 +341,7 @@ describe('widgetUtils', () => {
       const data: WidgetMultiTimeSeries[] = [
         buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1]),
       ];
-      expect(showEstimationWarning(dataSelection, data)).toBe(true);
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(true);
     });
 
     it('should return false when no unique selection exceeds the threshold', () => {
@@ -351,7 +351,7 @@ describe('widgetUtils', () => {
       const data: WidgetMultiTimeSeries[] = [
         buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD]),
       ];
-      expect(showEstimationWarning(dataSelection, data)).toBe(false);
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(false);
     });
 
     it('should return false when the selection is not flagged as unique even if values exceed the threshold', () => {
@@ -361,7 +361,7 @@ describe('widgetUtils', () => {
       const data: WidgetMultiTimeSeries[] = [
         buildSeries([UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1000]),
       ];
-      expect(showEstimationWarning(dataSelection, data)).toBe(false);
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(false);
     });
 
     it('should return true if at least one of multiple selections triggers the warning', () => {
@@ -373,11 +373,11 @@ describe('widgetUtils', () => {
         buildSeries([UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1]),
         buildSeries([5, UNIQUE_COUNT_ESTIMATION_THRESHOLD + 2]),
       ];
-      expect(showEstimationWarning(dataSelection, data)).toBe(true);
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(true);
     });
 
     it('should return false for empty data selection', () => {
-      expect(showEstimationWarning([], [])).toBe(false);
+      expect(showEstimationWarningForUniqCount([], [])).toBe(false);
     });
   });
 

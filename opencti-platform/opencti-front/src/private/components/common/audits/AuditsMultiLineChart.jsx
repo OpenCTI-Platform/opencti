@@ -27,7 +27,7 @@ import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarning } from '../../../../utils/widget/widgetUtils';
+import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
 
 const auditsMultiLineChartTimeSeriesQuery = graphql`
   query AuditsMultiLineChartTimeSeriesQuery(
@@ -132,7 +132,7 @@ const AuditsMultiLineChart = ({
         variables={variables}
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
-            setShowWarning(showEstimationWarning(dataSelection, props.auditsMultiTimeSeries));
+            setShowWarning(showEstimationWarningForUniqCount(dataSelection, props.auditsMultiTimeSeries));
             return (
               <WidgetMultiLines
                 series={resolvedDataSelection.map((selection, i) => ({

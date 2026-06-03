@@ -233,65 +233,62 @@ const WidgetCreationParameters = () => {
       </Grid>
     );
   };
+  // size of the 'attribute' input
   const attributeSize = (uniqueParameterEnabled = false) => {
-    if (!uniqueParameterEnabled) {
+    if (!uniqueParameterEnabled) { // classical size
       return 12;
-    } else if (dataSelection.length === 1) {
+    } else { // size if 'uniq' is checked (remove the checkbox size)
       return 10;
-    } else {
-      return 10.5;
     }
   };
   const auditAttributeSelectionSection = (uniqueParameterEnabled: boolean, dataSelectionIndex: number) => {
+    const isAttributeSelectionDisabled = uniqueParameterEnabled && !dataSelection[dataSelectionIndex].unique;
     return (
       <Grid container spacing={4} sx={{ width: '100%' }}>
         {uniqueParameterEnabled && (
           uniqueDataCheckbox(dataSelectionIndex, dataSelection.length === 1)
         )}
-        {(dataSelection.length > 1 || dataSelection[dataSelectionIndex].unique || type !== 'number')
-          && (
-            <Grid size={attributeSize(uniqueParameterEnabled)}>
-              <FormControl
-                fullWidth={true}
-              >
-                <InputLabel id="audits-attribute">
-                  {t_i18n('Attribute')}
-                </InputLabel>
-                <Select
-                  labelId="audits-attribute"
-                  value={dataSelection[dataSelectionIndex].attribute ?? 'entity_type'}
-                  onChange={(event) => handleChangeDataValidationParameter(
-                    dataSelectionIndex,
-                    'attribute',
-                    event.target.value,
-                  )
-                  }
+        <Grid size={attributeSize(uniqueParameterEnabled)}>
+          <FormControl
+            fullWidth={true}
+          >
+            <InputLabel id="audits-attribute" disabled={isAttributeSelectionDisabled}>
+              {t_i18n('Attribute')}
+            </InputLabel>
+            <Select
+              labelId="audits-attribute"
+              value={dataSelection[dataSelectionIndex].attribute ?? 'entity_type'}
+              onChange={(event) => handleChangeDataValidationParameter(
+                dataSelectionIndex,
+                'attribute',
+                event.target.value,
+              )
+              }
+              disabled={isAttributeSelectionDisabled}
+            >
+              {['entity_type',
+                'context_data.id',
+                'context_data.created_by_ref_id',
+                'context_data.labels_ids',
+                'context_data.marking_definitions',
+                'context_data.creator_ids',
+                'context_data.search',
+                'event_type',
+                'event_scope',
+                'user_id',
+                'group_ids',
+                'organization_ids',
+              ].map((value) => (
+                <MenuItem
+                  key={value}
+                  value={value}
                 >
-                  {['entity_type',
-                    'context_data.id',
-                    'context_data.created_by_ref_id',
-                    'context_data.labels_ids',
-                    'context_data.marking_definitions',
-                    'context_data.creator_ids',
-                    'context_data.search',
-                    'event_type',
-                    'event_scope',
-                    'user_id',
-                    'group_ids',
-                    'organization_ids',
-                  ].map((value) => (
-                    <MenuItem
-                      key={value}
-                      value={value}
-                    >
-                      {t_i18n(capitalizeFirstLetter(value))}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          )
-        }
+                  {t_i18n(capitalizeFirstLetter(value))}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
       </Grid>
     );
   };
