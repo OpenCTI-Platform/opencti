@@ -264,7 +264,6 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                   interval={localRefreshRateSeconds}
                   onIntervalChange={handleRefreshRateChange}
                   isRefreshing={isAutoRefreshing}
-                  lastRefreshAt={lastRefreshTime.getTime()}
                 />
                 {/* {refreshRate && (
                   <Box sx={{ color: 'text.secondary', marginRight: 3 }}>

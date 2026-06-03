@@ -13,10 +13,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import { AuditsRadarDistributionQuery } from '@components/common/audits/__generated__/AuditsRadarDistributionQuery.graphql';
+import { AuditsRadarDistributionQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsRadarDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -26,8 +26,8 @@ import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsRadarDistributionQuery = graphql`
   query AuditsRadarDistributionQuery(
@@ -113,7 +113,7 @@ const AuditsRadarComponent: FunctionComponent<AuditsRadarComponentProps> = ({
       <WidgetRadar
         data={data.auditsDistribution}
         label={selection.label || t_i18n('Number of history entries')}
-        groupBy={selection.attribute}
+        groupBy={selection.attribute!}
         onMounted={onMounted}
       />
     );
@@ -128,6 +128,8 @@ interface AuditsRadarProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  config: DashboardConfig;
+  refreshRate?: number | null;
   popover?: ReactNode;
   host?: WidgetHost;
 }
@@ -139,6 +141,8 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
   endDate,
   dataSelection,
   parameters = {},
+  config,
+  refreshRate = null,
   popover,
   host,
 }) => {
@@ -146,18 +150,12 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
   const [chart, setChart] = useState<ApexCharts>();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'audits',
-    dataSelection,
-    host,
-  });
-  const selection = resolvedDataSelection[0];
 
-  const queryRef = useQueryLoading<AuditsRadarDistributionQuery>(
-    auditsRadarDistributionQuery,
-    {
+  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsRadarDistributionQuery['variables'] => {
+    const selection = resolvedDataSelection[0];
+    return {
       types: ['History', 'Activity'],
-      field: selection.attribute,
+      field: selection.attribute as string,
       operation: 'count',
       startDate: startDate ?? undefined,
       endDate: endDate ?? undefined,
@@ -165,10 +163,22 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'timestamp',
-      filters: selection.filters,
+      filters: selection.filters as unknown as GqlFilterGroup,
       limit: selection.number ?? 10,
-    },
-  );
+    };
+  }, [startDate, endDate]);
+
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsRadarDistributionQuery>({
+    perspective: 'audits',
+    dataSelection,
+    host,
+    refreshRate,
+    query: auditsRadarDistributionQuery,
+    config,
+    parameters,
+    buildQueryVariables,
+  });
+  const selection = resolvedDataSelection[0];
 
   const renderContent = () => {
     if (isMissingHostEntity) {

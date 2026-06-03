@@ -14,12 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { CSSProperties, ReactNode, useState } from 'react';
+import React, { CSSProperties, ReactNode, Suspense, useCallback, useState } from 'react';
 import ApexCharts from 'apexcharts';
-import { AuditsPolarAreaDistributionQuery } from '@components/common/audits/__generated__/AuditsPolarAreaDistributionQuery.graphql';
+import { AuditsPolarAreaDistributionQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsPolarAreaDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -30,6 +29,7 @@ import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../..
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -121,6 +121,8 @@ interface AuditsPolarAreaProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters: WidgetParameters;
+  config: DashboardConfig;
+  refreshRate?: number | null;
   variant?: string;
   height?: CSSProperties['height'];
   popover?: ReactNode;
@@ -132,6 +134,8 @@ const AuditsPolarAreaQueyRef = ({
   endDate,
   dataSelection,
   parameters,
+  config,
+  refreshRate = null,
   height,
   variant,
   popover,
@@ -139,31 +143,34 @@ const AuditsPolarAreaQueyRef = ({
 }: AuditsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'audits',
-    dataSelection,
-    host,
-  });
-  const selection = resolvedDataSelection[0];
 
-  const queryRef = useQueryLoading<AuditsPolarAreaDistributionQuery>(
-    auditsPolarAreaDistributionQuery,
-    {
+  const buildQueryVariables = useCallback((resolvedSelection: WidgetDataSelection[]): AuditsPolarAreaDistributionQuery['variables'] => {
+    const selection = resolvedSelection[0];
+    return {
       types: ['History', 'Activity'],
-      field: selection.attribute || 'entity_type',
+      field: (selection.attribute || 'entity_type') as string,
       operation: 'count',
-      startDate,
-      endDate,
+      startDate: startDate ?? undefined,
+      endDate: endDate ?? undefined,
       dateAttribute:
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'timestamp',
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore Excepts readonly array as variables but have simple array.
-      filters: selection.filters,
+      filters: selection.filters as unknown as GqlFilterGroup,
       limit: selection.number ?? 10,
-    },
-  );
+    };
+  }, [startDate, endDate]);
+
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsPolarAreaDistributionQuery>({
+    perspective: 'audits',
+    dataSelection,
+    host,
+    refreshRate,
+    query: auditsPolarAreaDistributionQuery,
+    config,
+    parameters,
+    buildQueryVariables,
+  });
 
   return (
     <WidgetContainer
@@ -178,13 +185,13 @@ const AuditsPolarAreaQueyRef = ({
       {isMissingHostEntity ? (
         <WidgetNoHostEntity host={host} />
       ) : queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <AuditsPolarAreaComponent
             queryRef={queryRef}
             dataSelection={resolvedDataSelection}
             onMounted={setChart}
           />
-        </React.Suspense>
+        </Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />
       )}

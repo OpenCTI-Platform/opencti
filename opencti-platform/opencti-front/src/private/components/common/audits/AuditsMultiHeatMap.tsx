@@ -13,10 +13,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useMemo, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import { AuditsMultiHeatMapTimeSeriesQuery } from '@components/common/audits/__generated__/AuditsMultiHeatMapTimeSeriesQuery.graphql';
+import { AuditsMultiHeatMapTimeSeriesQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsMultiHeatMapTimeSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -28,8 +28,8 @@ import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeat
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsMultiHeatMapTimeSeriesQuery = graphql`
   query AuditsMultiHeatMapTimeSeriesQuery(
@@ -61,6 +61,12 @@ interface AuditsMultiHeatMapComponentProps {
   onMounted: (chart: ApexCharts) => void;
 }
 
+type TimeSeriesEntry = NonNullable<
+  NonNullable<
+    NonNullable<AuditsMultiHeatMapTimeSeriesQuery['response']['auditsMultiTimeSeries']>[number]
+  >['data']
+>[number];
+
 const AuditsMultiHeatMapComponent: FunctionComponent<AuditsMultiHeatMapComponentProps> = ({
   queryRef,
   dataSelection,
@@ -77,15 +83,15 @@ const AuditsMultiHeatMapComponent: FunctionComponent<AuditsMultiHeatMapComponent
     const chartData = dataSelection
       .map((selection, i) => ({
         name: selection.label || t_i18n('Number of history entries'),
-        data: data.auditsMultiTimeSeries[i].data.map((entry) => ({
-          x: new Date(entry.date),
-          y: entry.value,
-        })),
+        data: (data.auditsMultiTimeSeries?.[i]?.data ?? [])
+          .filter((entry): entry is NonNullable<TimeSeriesEntry> => entry != null)
+          .map((entry) => ({
+            x: new Date(entry.date),
+            y: entry.value,
+          })),
       }))
       .sort((a, b) => b.name.localeCompare(a.name));
-    const allValues = data.auditsMultiTimeSeries
-      .map((n) => n.data.map((o) => o.value))
-      .flat();
+    const allValues = chartData.map((serie) => serie.data.map((point) => point.y)).flat();
     const maxValue = Math.max(...allValues);
     const minValue = Math.min(...allValues);
 
@@ -109,6 +115,8 @@ interface AuditsMultiHeatMapProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  config: DashboardConfig;
+  refreshRate?: number | null;
   popover?: ReactNode;
   host?: WidgetHost;
 }
@@ -120,52 +128,58 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
   endDate,
   dataSelection,
   parameters = {},
+  config,
+  refreshRate = null,
   popover,
   host,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
+  const fallbackDates = useMemo(() => ({
+    start: monthsAgo(12),
+    end: now(),
+  }), []);
+
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'audits',
-    dataSelection,
-    host,
-  });
 
-  const timeSeriesParameters = useMemo(() => {
-    return resolvedDataSelection.map((selection) => {
+  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsMultiHeatMapTimeSeriesQuery['variables'] => {
+    const timeSeriesParameters = resolvedDataSelection.map((selection) => {
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
             ? selection.date_attribute
             : 'timestamp',
         types: ['History', 'Activity'],
-        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
+        filters: removeEntityTypeAllFromFilterGroup(selection.filters ?? undefined) as unknown as GqlFilterGroup,
       };
     });
-  }, [resolvedDataSelection]);
 
-  const fallbackDates = useMemo(() => ({
-    start: monthsAgo(12),
-    end: now(),
-  }), []);
-
-  const queryRef = useQueryLoading<AuditsMultiHeatMapTimeSeriesQuery>(
-    auditsMultiHeatMapTimeSeriesQuery,
-    {
-      operation: 'count',
+    return {
+      operation: 'count' as const,
       startDate: startDate ?? fallbackDates.start,
       endDate: endDate ?? fallbackDates.end,
       interval: parameters.interval ?? 'day',
       timeSeriesParameters,
-    },
-  );
+    };
+  }, [startDate, endDate, fallbackDates, parameters.interval]);
+
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiHeatMapTimeSeriesQuery>({
+    perspective: 'audits',
+    dataSelection,
+    host,
+    refreshRate,
+    query: auditsMultiHeatMapTimeSeriesQuery,
+    config,
+    parameters,
+    buildQueryVariables,
+  });
 
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
     }
+
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -178,22 +192,24 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
           >
             {!isEnterpriseEdition
               ? t_i18n(
-                'This feature is only available in OpenCTI Enterprise Edition.',
-              )
+                  'This feature is only available in OpenCTI Enterprise Edition.',
+                )
               : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
     }
+
     if (!queryRef) {
       return <Loader variant={LoaderVariant.inElement} />;
     }
+
     return (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <AuditsMultiHeatMapComponent
           queryRef={queryRef}
           dataSelection={resolvedDataSelection}
-          isStacked={parameters.stacked}
+          isStacked={parameters.stacked ?? undefined}
           onMounted={setChart}
         />
       </Suspense>

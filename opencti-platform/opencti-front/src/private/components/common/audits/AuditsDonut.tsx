@@ -13,10 +13,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import { AuditsDonutDistributionQuery } from '@components/common/audits/__generated__/AuditsDonutDistributionQuery.graphql';
+import { AuditsDonutDistributionQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsDonutDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -26,8 +26,8 @@ import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsDonutDistributionQuery = graphql`
   query AuditsDonutDistributionQuery(
@@ -102,7 +102,7 @@ const AuditsDonutComponent: FunctionComponent<AuditsDonutComponentProps> = ({
     return (
       <WidgetDonut
         data={data.auditsDistribution}
-        groupBy={selection.attribute}
+        groupBy={selection.attribute!}
         onMounted={onMounted}
       />
     );
@@ -119,6 +119,8 @@ interface AuditsDonutProps {
   parameters?: WidgetParameters;
   popover?: ReactNode;
   host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
 }
 
 const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
@@ -130,39 +132,48 @@ const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
   parameters = {},
   popover,
   host,
+  config,
+  refreshRate = null,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'audits',
-    dataSelection,
-    host,
-  });
-  const selection = resolvedDataSelection[0];
 
-  const queryRef = useQueryLoading<AuditsDonutDistributionQuery>(
-    auditsDonutDistributionQuery,
-    {
+  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsDonutDistributionQuery['variables'] => {
+    const selection = resolvedDataSelection[0];
+    return {
       types: ['History', 'Activity'],
-      field: selection.attribute,
-      operation: 'count',
+      field: selection.attribute as string,
+      operation: 'count' as const,
       startDate: startDate ?? undefined,
       endDate: endDate ?? undefined,
       dateAttribute:
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'timestamp',
-      filters: selection.filters,
+      filters: selection.filters as unknown as GqlFilterGroup,
       limit: selection.number ?? 10,
-    },
-  );
+    };
+  }, [startDate, endDate]);
+
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsDonutDistributionQuery>({
+    perspective: 'audits',
+    dataSelection,
+    host,
+    refreshRate,
+    query: auditsDonutDistributionQuery,
+    config,
+    parameters,
+    buildQueryVariables,
+  });
+  const selection = resolvedDataSelection[0];
 
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
     }
+
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -182,9 +193,11 @@ const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
         </div>
       );
     }
+
     if (!queryRef) {
       return <Loader variant={LoaderVariant.inElement} />;
     }
+
     return (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <AuditsDonutComponent

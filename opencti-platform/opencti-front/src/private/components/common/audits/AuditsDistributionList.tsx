@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent, ReactNode, Suspense } from 'react';
+import React, { FunctionComponent, ReactNode, Suspense, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsDistributionListDistributionQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsDistributionListDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -26,8 +26,8 @@ import WidgetDistributionList from '../../../../components/dashboard/WidgetDistr
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsDistributionListDistributionQuery = graphql`
   query AuditsDistributionListDistributionQuery(
@@ -104,6 +104,7 @@ const AuditsDistributionListComponent: FunctionComponent<AuditsDistributionListC
   hasSetAccess,
 }) => {
   const { t_i18n } = useFormatter();
+
   const data = usePreloadedQuery<AuditsDistributionListDistributionQuery>(
     auditsDistributionListDistributionQuery,
     queryRef,
@@ -144,6 +145,8 @@ interface AuditsDistributionListProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  config: DashboardConfig;
+  refreshRate?: number | null;
   popover?: ReactNode;
   host?: WidgetHost;
 }
@@ -155,6 +158,8 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
   endDate,
   dataSelection,
   parameters = {},
+  config,
+  refreshRate = null,
   popover,
   host,
 }) => {
@@ -162,19 +167,13 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'audits',
-    dataSelection,
-    host,
-  });
-  const selection = resolvedDataSelection[0];
 
-  const queryRef = useQueryLoading<AuditsDistributionListDistributionQuery>(
-    auditsDistributionListDistributionQuery,
-    {
+  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]) => {
+    const selection = resolvedDataSelection[0];
+    return {
       types: ['History', 'Activity'],
-      field: (selection.attribute || 'entity_type') as string,
-      operation: 'count',
+      field: selection.attribute as string,
+      operation: 'count' as const,
       startDate: startDate ?? undefined,
       endDate: endDate ?? undefined,
       dateAttribute:
@@ -183,13 +182,26 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
           : 'timestamp',
       filters: selection.filters as unknown as GqlFilterGroup,
       limit: selection.number ?? 10,
-    },
-  );
+    };
+  }, [startDate, endDate]);
+
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsDistributionListDistributionQuery>({
+    perspective: 'audits',
+    dataSelection,
+    host,
+    refreshRate,
+    query: auditsDistributionListDistributionQuery,
+    config,
+    parameters,
+    buildQueryVariables,
+  });
+  const selection = resolvedDataSelection[0];
 
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
     }
+
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -209,9 +221,11 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
         </div>
       );
     }
+
     if (!queryRef) {
       return <Loader variant={LoaderVariant.inElement} />;
     }
+
     return (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <AuditsDistributionListComponent

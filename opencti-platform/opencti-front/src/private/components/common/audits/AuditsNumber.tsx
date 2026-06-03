@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent, ReactNode, Suspense, useState, useEffect } from 'react';
+import React, { FunctionComponent, ReactNode, Suspense, useState, useEffect, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsNumberNumberSeriesQuery } from '@components/common/audits/__generated__/AuditsNumberNumberSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -30,8 +30,8 @@ import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -106,6 +106,8 @@ interface AuditsNumberProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  config: DashboardConfig;
+  refreshRate?: number | null;
   entityType?: string;
   popover?: ReactNode;
   variant?: string;
@@ -118,6 +120,8 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
   endDate,
   dataSelection,
   parameters = {},
+  config,
+  refreshRate = null,
   entityType,
   popover,
   variant,
@@ -129,10 +133,36 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
   const { translateEntityType } = useEntityTranslation();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+
+  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsNumberNumberSeriesQuery['variables'] => {
+    const selection = resolvedDataSelection[0];
+    const types = ['History', 'Activity'];
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'timestamp';
+    const { filters } = buildFiltersAndOptionsForWidgets(
+      selection.filters,
+      { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
+    );
+    return {
+      types,
+      filters,
+      startDate: startDate ?? undefined,
+      endDate: dayAgo(),
+      field: selection.attribute,
+      unique: selection.unique,
+    };
+  }, [startDate, endDate]);
+
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
+    refreshRate,
+    query: auditsNumberNumberQuery,
+    config,
+    parameters,
+    buildQueryVariables,
   });
 
   const title = parameters.title ?? t_i18n('Audits number');
@@ -143,24 +173,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
   }
 
   const selection = resolvedDataSelection[0];
-  const types = ['History', 'Activity'];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'timestamp';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
-  );
   const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
-
-  const queryRef = useQueryLoading<AuditsNumberNumberSeriesQuery>(auditsNumberNumberQuery, {
-    types,
-    filters,
-    startDate: startDate ?? undefined,
-    endDate: dayAgo(),
-    field: selection.attribute,
-    unique: selection.unique,
-  });
 
   return (
     <WidgetContainer

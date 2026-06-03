@@ -108,7 +108,7 @@ describe('useDashboardViz', () => {
   });
 
   it('does not refetch sibling widget when only one widget parameters change', () => {
-    const buildQueryVariables = vi.fn((_, __, parameters?: { title?: string }) => ({
+    const buildQueryVariables = vi.fn((_, __, parameters?: { title?: string | null }) => ({
       title: parameters?.title ?? null,
     }));
 

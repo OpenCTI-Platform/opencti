@@ -13,26 +13,27 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
+import type { ApexOptions } from 'apexcharts';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
-import { AuditsHorizontalBarsDistributionQuery } from '@components/common/audits/__generated__/AuditsHorizontalBarsDistributionQuery.graphql';
+import { AuditsHorizontalBarsDistributionQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsHorizontalBarsDistributionQuery.graphql';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
+import useDistributionGraphData, { DistributionQueryData } from '../../../../utils/hooks/useDistributionGraphData';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsHorizontalBarsDistributionQuery = graphql`
   query AuditsHorizontalBarsDistributionQuery(
@@ -111,7 +112,6 @@ const AuditsHorizontalBarsComponent: FunctionComponent<AuditsHorizontalBarsCompo
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { t_i18n } = useFormatter();
   const { buildWidgetProps } = useDistributionGraphData();
   const data = usePreloadedQuery<AuditsHorizontalBarsDistributionQuery>(
     auditsHorizontalBarsDistributionQuery,
@@ -119,18 +119,22 @@ const AuditsHorizontalBarsComponent: FunctionComponent<AuditsHorizontalBarsCompo
   );
 
   if (data.auditsDistribution && data.auditsDistribution.length > 0) {
-    const { series, redirectionUtils } = buildWidgetProps(data.auditsDistribution, selection, 'Number of history entries');
+    const { series, redirectionUtils } = buildWidgetProps(
+      data.auditsDistribution as unknown as DistributionQueryData,
+      selection,
+      'Number of history entries',
+    );
     return (
       <Chart
         options={horizontalBarsChartOptions(
           theme,
           true,
           simpleNumberFormat,
-          null,
+          undefined,
           distributed,
           navigate,
           redirectionUtils,
-        )}
+        ) as ApexOptions}
         series={series}
         type="bar"
         width="100%"
@@ -149,6 +153,8 @@ interface AuditsHorizontalBarsProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  config: DashboardConfig;
+  refreshRate?: number | null;
   popover?: ReactNode;
   host?: WidgetHost;
 }
@@ -160,6 +166,8 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
   endDate,
   dataSelection,
   parameters = {},
+  config,
+  refreshRate = null,
   popover,
   host,
 }) => {
@@ -167,34 +175,41 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
   const [chart, setChart] = useState<ApexCharts>();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'audits',
-    dataSelection,
-    host,
-  });
-  const selection = resolvedDataSelection[0];
 
-  const queryRef = useQueryLoading<AuditsHorizontalBarsDistributionQuery>(
-    auditsHorizontalBarsDistributionQuery,
-    {
+  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsHorizontalBarsDistributionQuery['variables'] => {
+    const selection = resolvedDataSelection[0];
+    return {
       types: ['History', 'Activity'],
-      field: selection.attribute,
-      operation: 'count',
+      field: selection.attribute as string,
+      operation: 'count' as const,
       startDate: startDate ?? undefined,
       endDate: endDate ?? undefined,
       dateAttribute:
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'timestamp',
-      filters: selection.filters,
+      filters: selection.filters as unknown as GqlFilterGroup,
       limit: selection.number ?? 10,
-    },
-  );
+    };
+  }, [startDate, endDate]);
+
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
+    perspective: 'audits',
+    dataSelection,
+    host,
+    refreshRate,
+    query: auditsHorizontalBarsDistributionQuery,
+    config,
+    parameters,
+    buildQueryVariables,
+  });
+  const selection = resolvedDataSelection[0];
 
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
     }
+
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -207,22 +222,24 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
           >
             {!isEnterpriseEdition
               ? t_i18n(
-                'This feature is only available in OpenCTI Enterprise Edition.',
-              )
+                  'This feature is only available in OpenCTI Enterprise Edition.',
+                )
               : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
     }
+
     if (!queryRef) {
       return <Loader variant={LoaderVariant.inElement} />;
     }
+
     return (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <AuditsHorizontalBarsComponent
           queryRef={queryRef}
           selection={selection}
-          distributed={parameters.distributed}
+          distributed={parameters.distributed ?? undefined}
           onMounted={setChart}
         />
       </Suspense>
