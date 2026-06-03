@@ -8,7 +8,7 @@ import StixRelationshipsMultiAreaChart from '../../private/components/common/sti
 import StixRelationshipsTimeline from '@components/common/stix_relationships/StixRelationshipsTimeline';
 import StixRelationshipsDonut from '@components/common/stix_relationships/StixRelationshipsDonut';
 import StixRelationshipsMultiHorizontalBars from '@components/common/stix_relationships/StixRelationshipsMultiHorizontalBars/StixRelationshipsMultiHorizontalBars';
-import StixRelationshipsHorizontalBars from '@components/common/stix_relationships/StixRelationshipsHorizontalBars';
+import StixRelationshipsHorizontalBars from '../../private/components/common/stix_relationships/StixRelationshipsHorizontalBars';
 import StixRelationshipsRadar from '@components/common/stix_relationships/StixRelationshipsRadar';
 import StixRelationshipsPolarArea from '@components/common/stix_relationships/StixRelationshipsPolarArea';
 import StixRelationshipsMultiHeatMap from '@components/common/stix_relationships/StixRelationshipsMultiHeatMap';
@@ -172,17 +172,13 @@ const DashboardRelationshipsViz = ({
       return (
         <StixRelationshipsHorizontalBars
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
-          title={undefined} // because calling js component in ts
-          field={undefined} // because calling js component in ts
-          fromId={undefined} // because calling js component in ts
-          relationshipType={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'radar':
