@@ -19,15 +19,18 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
-          # Check if PR author is a member of OpenCTI-Platform organization
-          MEMBERSHIP=$(gh api orgs/OpenCTI-Platform/members/$PR_AUTHOR --silent 2>&1 && echo "member" || echo "not_member")
+          # Determine author association from PR payload (OWNER/MEMBER/COLLABORATOR/CONTRIBUTOR/...)
+          set -euo pipefail
+          AUTHOR_ASSOCIATION="${{ github.event.pull_request.author_association }}"
 
-          if [ "$MEMBERSHIP" = "member" ]; then
-            echo "$PR_AUTHOR is a member of OpenCTI-Platform"
-            gh pr edit $PR_NUMBER --repo $REPO --add-label "filigran team"
+          if [ "$AUTHOR_ASSOCIATION" = "OWNER" ] || [ "$AUTHOR_ASSOCIATION" = "MEMBER" ]; then
+            echo "$PR_AUTHOR is associated as $AUTHOR_ASSOCIATION"
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "filigran team" || true
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "community" || true
           else
-            gh pr edit $PR_NUMBER --repo $REPO --add-label "community"
-            echo "$PR_AUTHOR is not a member of OpenCTI-Platform, community contribution"
+            echo "$PR_AUTHOR is associated as $AUTHOR_ASSOCIATION, community contribution"
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "community" || true
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "filigran team" || true
           fi
   check-pr-title-convention:
     name: Check that PR title follows convention
