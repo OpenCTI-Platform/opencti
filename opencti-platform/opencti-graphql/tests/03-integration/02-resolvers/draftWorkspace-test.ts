@@ -1,8 +1,19 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, testContext, TEST_ORGANIZATION, USER_PARTICIPATE, getUserIdByEmail, getOrganizationIdByName, queryInitPlatformAsAdmin } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import {
+  ADMIN_USER,
+  testContext,
+  TEST_ORGANIZATION,
+  USER_EDITOR,
+  USER_PARTICIPATE,
+  getUserIdByEmail,
+  getOrganizationIdByName,
+  queryInitPlatformAsAdmin,
+} from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAuthUser } from '../../utils/testQueryHelper';
+import { resolveUserById } from '../../../src/domain/user';
+import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
@@ -960,6 +971,99 @@ describe('Drafts workspace resolver testing', () => {
       await queryAsAdmin({
         query: DELETE_DRAFT_WORKSPACE_QUERY,
         variables: { id: deleteRelDraftId },
+      });
+    });
+  });
+
+  describe('Draft delete access rights', () => {
+    let restrictedDraftId = '';
+    let userEditorId = '';
+    let userParticipateId = '';
+
+    const executeAsResolvedUserIsExpectedForbidden = async (testUser: any, request: any) => {
+      const userId = await getUserIdByEmail(testUser.email);
+      const user = await resolveUserById(testContext, userId);
+      const authUser = {
+        ...user,
+        origin: { referer: 'test', user_id: user.internal_id },
+      } as AuthUser;
+      const queryResult = await queryAsAuthUser(authUser, request);
+      expect(queryResult.errors, 'FORBIDDEN_ACCESS is expected.').toBeDefined();
+      expect(queryResult.errors?.length).toBe(1);
+      expect(queryResult.errors?.[0].extensions?.code).toBe('FORBIDDEN_ACCESS');
+    };
+
+    const executeAsResolvedUserWithSuccess = async (testUser: any, request: any) => {
+      const userId = await getUserIdByEmail(testUser.email);
+      const user = await resolveUserById(testContext, userId);
+      const authUser = {
+        ...user,
+        origin: { referer: 'test', user_id: user.internal_id },
+      } as AuthUser;
+      const queryResult = await queryAsAuthUser(authUser, request);
+      expect(queryResult.errors).toBeUndefined();
+      expect(queryResult.data).toBeDefined();
+      return queryResult;
+    };
+
+    it('should set up restricted draft for access right tests', async () => {
+      userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+      userParticipateId = await getUserIdByEmail(USER_PARTICIPATE.email);
+      // Create a draft with USER_EDITOR as view-only and USER_PARTICIPATE as edit (restricted)
+      const createdDraft = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: {
+          input: {
+            name: 'restrictedDraftForDeleteTests',
+            authorized_members: [
+              { id: userEditorId, access_right: 'view' },
+              { id: userParticipateId, access_right: 'edit' },
+            ],
+          },
+        },
+      });
+      expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
+      restrictedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
+    });
+
+    // Rule: user with delete capability but only view on draft → cannot delete (blocked at domain level)
+    it('should not allow deletion with delete capability but view-only access on draft', async () => {
+      await executeAsResolvedUserIsExpectedForbidden(USER_EDITOR, {
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: restrictedDraftId },
+      });
+    });
+
+    // Rule: user with edit access on draft but without delete capability → cannot delete (blocked at GraphQL @auth level)
+    it('should not allow deletion without delete capability even with edit access on draft', async () => {
+      // USER_PARTICIPATE has edit access on the draft but no KNOWLEDGE_KNUPDATE_KNDELETE capability
+      await executeAsResolvedUserIsExpectedForbidden(USER_PARTICIPATE, {
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: restrictedDraftId },
+      });
+    });
+
+    // Rule: user with delete capability AND edit access on draft → can delete
+    it('should allow deletion with delete capability and edit access on draft', async () => {
+      // Give USER_EDITOR edit access; CREATOR (admin user) keeps admin to satisfy containsValidAdmin constraint
+      const editResult = await queryAsAdmin({
+        query: gql`
+          mutation DraftWorkspaceEditAuthorizedMembers($id: ID!, $input: [MemberAccessInput!]) {
+            draftWorkspaceEditAuthorizedMembers(id: $id, input: $input) { id }
+          }
+        `,
+        variables: {
+          id: restrictedDraftId,
+          input: [
+            { id: 'CREATOR', access_right: 'admin' },
+            { id: userEditorId, access_right: 'edit' },
+          ],
+        },
+      });
+      expect(editResult.errors, `editAuthorizedMembers failed: ${JSON.stringify(editResult.errors)}`).toBeUndefined();
+      await executeAsResolvedUserWithSuccess(USER_EDITOR, {
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: restrictedDraftId },
       });
     });
   });
