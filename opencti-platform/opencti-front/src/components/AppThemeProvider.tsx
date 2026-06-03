@@ -123,16 +123,12 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     theme_text_color: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
   };
 
-  const themeComponent = themeBuilder(appTheme);
-  const muiTheme = createTheme(themeComponent as ThemeOptions);
-  useDocumentThemeModifier(appTheme.name);
-
   // RTL support - get language from UserContext or settings
   // Note: We need to get settings from UserContext since AppThemeProvider_settings doesn't include platform_language
   const userContext = useContext(UserContext);
   const userLanguage = me?.language ?? null;
   const platformLanguage = userContext?.settings?.platform_language ?? null;
-  
+
   // Determine current language: user language > platform language > default
   // Use useMemo to recalculate when UserContext updates
   const direction: 'rtl' | 'ltr' = useMemo(() => {
@@ -144,7 +140,13 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     }
     return currentLang === 'fa-ir' ? 'rtl' : 'ltr';
   }, [userLanguage, platformLanguage]);
-  
+
+  const themeComponent = themeBuilder(appTheme);
+  const muiTheme = useMemo(
+    () => createTheme({ ...(themeComponent as ThemeOptions), direction }),
+    [themeComponent, direction],
+  );
+  useDocumentThemeModifier(appTheme.name);
   useDocumentDirectionModifier(direction);
 
   if (direction === 'rtl') {
