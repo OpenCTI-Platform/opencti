@@ -412,7 +412,7 @@ describe('Retention Manager tests ', () => {
     };
     await elIndex(INDEX_HISTORY, historyEntry);
 
-    // Create a history retention rule
+    // Create a history retention rule (inactive so the background daemon won't race with us)
     const ruleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
       variables: {
@@ -422,6 +422,7 @@ describe('Retention Manager tests ', () => {
           retention_unit: 'minutes',
           scope: 'history',
           filters: emptyStringFilters,
+          active: false,
         },
       },
     });
@@ -552,7 +553,7 @@ describe('Retention Manager tests ', () => {
       context_data: { message: 'test activity entry for executeProcessing retention test' },
     };
     await elIndex(INDEX_HISTORY, activityEntry);
-    // Create an activity retention rule with 1-minute window
+    // Create an activity retention rule with 1-minute window (inactive so the background daemon won't race with us)
     const ruleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
       variables: {
@@ -562,6 +563,7 @@ describe('Retention Manager tests ', () => {
           retention_unit: 'minutes',
           scope: 'activity',
           filters: emptyStringFilters,
+          active: false,
         },
       },
     });
