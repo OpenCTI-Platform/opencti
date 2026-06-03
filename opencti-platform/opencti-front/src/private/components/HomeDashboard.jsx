@@ -348,9 +348,14 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixRelationshipsPolarArea
-            title={t_i18n('Most active malware (Last 3 months)')}
             height={400}
-            startDate={monthsAgo(3)}
+            config={{
+              startDate: monthsAgo(3),
+              endDate: null,
+            }}
+            parameters={{
+              title: t_i18n('Most active malware (Last 3 months)'),
+            }}
             dataSelection={[{
               attribute: 'internal_id',
               isTo: false,
