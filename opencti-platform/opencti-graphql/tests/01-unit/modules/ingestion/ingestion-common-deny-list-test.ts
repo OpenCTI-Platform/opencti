@@ -18,6 +18,7 @@ describe('Ingestion URI deny list coverage', () => {
   it('should block URI matching an exact domain in deny list', () => {
     vi.spyOn(ingestionConfigurationMock, 'ingestionUriDenyList').mockReturnValue(['mydomain.com']);
     expect(() => verifyIngestionUri('https://mydomain.com/feed.csv')).toThrow('This URI is not allowed for ingestion.');
+    expect(() => verifyIngestionUri('https://mydomain.com:8080/feed.csv')).toThrow('This URI is not allowed for ingestion.');
     expect(() => verifyIngestionUri('https://sub.mydomain.com/feed.csv')).not.toThrow();
     expect(() => verifyIngestionUri('https://otherdomain.com/feed.csv')).not.toThrow();
   });
@@ -26,6 +27,7 @@ describe('Ingestion URI deny list coverage', () => {
     vi.spyOn(ingestionConfigurationMock, 'ingestionUriDenyList').mockReturnValue(['*.mydomain.com']);
     expect(() => verifyIngestionUri('https://sub.mydomain.com/feed.csv')).toThrow('This URI is not allowed for ingestion.');
     expect(() => verifyIngestionUri('https://deep.sub.mydomain.com/feed.csv')).toThrow('This URI is not allowed for ingestion.');
+    expect(() => verifyIngestionUri('https://deep.sub.mydomain.com:8080/feed.csv')).toThrow('This URI is not allowed for ingestion.');
     expect(() => verifyIngestionUri('https://mydomain.com/feed.csv')).toThrow('This URI is not allowed for ingestion.');
     expect(() => verifyIngestionUri('https://otherdomain.com/feed.csv')).not.toThrow();
   });

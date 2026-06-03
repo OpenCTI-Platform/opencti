@@ -32,14 +32,20 @@ const matchesDenyPattern = (host: string, pattern: string): boolean => {
   const normalizedPattern = pattern.toLowerCase().trim();
   const normalizedHost = host.toLowerCase();
 
+  // Strip port from host for pattern matching when pattern doesn't include a port
+  const patternHasPort = normalizedPattern.includes(':');
+  const hostWithoutPort = normalizedHost.includes(':') && !patternHasPort
+    ? normalizedHost.slice(0, normalizedHost.lastIndexOf(':'))
+    : normalizedHost;
+
   if (normalizedPattern.startsWith('*.')) {
-    // Wildcard: *.mydomain.com should match sub.mydomain.com and deep.sub.mydomain.com
+    // Wildcard: *.mydomain.com should match sub.mydomain.com, deep.sub.mydomain.com, and sub.mydomain.com:8080
     const domainSuffix = normalizedPattern.slice(2); // Remove '*.'
-    return normalizedHost === domainSuffix || normalizedHost.endsWith(`.${domainSuffix}`);
+    return hostWithoutPort === domainSuffix || hostWithoutPort.endsWith(`.${domainSuffix}`);
   }
 
   // Exact match (including port if specified in pattern)
-  return normalizedHost === normalizedPattern;
+  return hostWithoutPort === normalizedPattern;
 };
 
 /**
