@@ -4,7 +4,7 @@ Thank you for reading this documentation and considering making your contributio
 
 In order to help you understand the project, where we are heading and how you can contribute, below are several resources and answers.
 
-Do not hesitate to shoot us an [email](mailto:contact@opencti.io) or join us on our [Slack channel](https://community.filigran.io). Most of the articles below are an introduction for our [detailed documentation](https://docs.opencti.io/latest/).
+Do not hesitate to shoot us an [email](mailto:contact@filigran.io) or join us on our [Slack channel](https://community.filigran.io). Most of the articles below are an introduction for our [detailed documentation](https://docs.opencti.io/latest/).
 
 
 ## Why contribute?
@@ -70,4 +70,4 @@ For general suggestions or questions about the project or the documentation, you
 
 ### How can you get in touch for other questions?
 
-If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an [email](mailto:contact@opencti.io).
+If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an [email](mailto:contact@filigran.io).
