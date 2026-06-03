@@ -43,7 +43,7 @@ INGESTION_MANAGER__URI_DENY_LIST='["internal-service.local","*.corp.internal","l
 
     - Matching is **case-insensitive**.
     - The deny list applies to all ingestion feed types: CSV, RSS, TAXII, and JSON.
-    - The check is performed at feed creation, feed update (when the URI changes), and at fetch time.
+    - The check is performed at feed creation and feed update (when the URI changes).
     - Wildcard patterns (`*.domain.com`) match both subdomains and the base domain itself.
 
 ## TAXII feed settings

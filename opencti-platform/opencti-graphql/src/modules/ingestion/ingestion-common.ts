@@ -53,7 +53,7 @@ export const verifyIngestionUri = (uri: string): void => {
   const host = extractHostFromUri(uri);
   for (const pattern of denyList) {
     if (matchesDenyPattern(host, pattern)) {
-      throw FunctionalError('This URI is not allowed for ingestion.', { uri, denied_pattern: pattern });
+      throw FunctionalError('This URI is not allowed for ingestion.', { field: 'uri', uri, denied_pattern: pattern });
     }
   }
 };
