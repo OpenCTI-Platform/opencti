@@ -9,11 +9,15 @@ Note that the data deleted by an active retention policy will not appear in the 
 Retention rules can be configured in the "Settings > Customization > Retention policies" window. A set of parameters must be configured:
 
 - **Scope**: Define which data are concerned by the retention rule. The possible scopes are: Knowledge, File, Workbench, History, Activity.
-- **Maximum retention**: Set the maximum amount of time an object can remain unchanged before being eligible for deletion.
-- **Unit**: The time unit for the maximum retention value: minutes, hours or days.
-- **Active**: Toggle to enable or disable the retention rule without deleting it (see [Enabling and disabling a rule](#enabling-and-disabling-a-rule)).
-- **Filters** (for Knowledge scope only): Define filters based on specific criteria to select the types of objects subject to retention rules.
 
+- **Maximum retention**: Set the maximum amount of time an object can remain unchanged before being eligible for deletion.
+
+- **Unit**: The time unit for the maximum retention value: minutes, hours or days.
+
+- **Active**: Toggle to enable or disable the retention rule without deleting it (see [Enabling and disabling a rule](#enabling-and-disabling-a-rule)).
+![Retention policy active/inactive](./assets/retentions-active.png)
+
+- **Filters** (for Knowledge scope only): Define filters based on specific criteria to select the types of objects subject to retention rules.
 ![Retention policy parameters](./assets/retention-policy-parameters.png)
 
 ## Scopes
