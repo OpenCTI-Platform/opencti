@@ -13,8 +13,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import React, { FunctionComponent, ReactNode, Suspense, useState, useEffect } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { AuditsNumberNumberSeriesQuery } from '@components/common/audits/__generated__/AuditsNumberNumberSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -28,8 +29,9 @@ import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { useState, useEffect } from 'react';
 import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -58,28 +60,60 @@ const auditsNumberNumberQuery = graphql`
   }
 `;
 
-/**
- * Inner component that displays the number widget and triggers the estimation warning via useEffect.
- */
-const AuditsNumberContent = ({ total, count, isUnique, entityType, translatedTitle, setShowWarning }) => {
+interface AuditsNumberComponentProps {
+  queryRef: PreloadedQuery<AuditsNumberNumberSeriesQuery>;
+  entityType?: string;
+  label: string;
+  isUnique: boolean;
+  onShowWarning: (show: boolean) => void;
+}
+
+const AuditsNumberComponent: FunctionComponent<AuditsNumberComponentProps> = ({
+  queryRef,
+  entityType,
+  label,
+  isUnique,
+  onShowWarning,
+}) => {
   const { t_i18n } = useFormatter();
+  const data = usePreloadedQuery<AuditsNumberNumberSeriesQuery>(
+    auditsNumberNumberQuery,
+    queryRef,
+  );
 
   useEffect(() => {
-    setShowWarning(isUnique && total > UNIQUE_COUNT_ESTIMATION_THRESHOLD);
-  }, [isUnique, total, setShowWarning]);
+    onShowWarning(isUnique && (data.auditsNumber?.total ?? 0) > UNIQUE_COUNT_ESTIMATION_THRESHOLD);
+  }, [isUnique, data.auditsNumber?.total, onShowWarning]);
 
-  return (
-    <WidgetNumber
-      entityType={entityType}
-      label={translatedTitle}
-      value={total}
-      diffLabel={t_i18n('24 hours')}
-      diffValue={total - count}
-    />
-  );
+  if (data.auditsNumber) {
+    const { total, count } = data.auditsNumber;
+    return (
+      <WidgetNumber
+        entityType={entityType}
+        label={label}
+        value={total}
+        diffLabel={t_i18n('24 hours')}
+        diffValue={total - count}
+      />
+    );
+  }
+
+  return <WidgetNoData />;
 };
 
-const AuditsNumber = ({
+interface AuditsNumberProps {
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  entityType?: string;
+  popover?: ReactNode;
+  variant?: string;
+  height?: number;
+  host?: WidgetHost;
+}
+
+const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
   startDate,
   endDate,
   dataSelection,
@@ -115,9 +149,18 @@ const AuditsNumber = ({
     : 'timestamp';
   const { filters } = buildFiltersAndOptionsForWidgets(
     selection.filters,
-    { removeTypeAll: true, startDate, endDate, dateAttribute },
+    { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
   );
   const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
+
+  const queryRef = useQueryLoading<AuditsNumberNumberSeriesQuery>(auditsNumberNumberQuery, {
+    types,
+    filters,
+    startDate: startDate ?? undefined,
+    endDate: dayAgo(),
+    field: selection.attribute,
+    unique: selection.unique,
+  });
 
   return (
     <WidgetContainer
@@ -129,35 +172,21 @@ const AuditsNumber = ({
       showPreviewTag={isPreviewMode}
       warning={warning}
     >
-      {
-        isMissingHostEntity
-          ? <WidgetNoHostEntity host={host} />
-          : (
-              <QueryRenderer
-                query={auditsNumberNumberQuery}
-                variables={{ types, filters, startDate, endDate: dayAgo(), field: selection.attribute, unique: selection.unique }}
-                render={({ props }) => {
-                  if (props && props.auditsNumber) {
-                    const { total, count } = props.auditsNumber;
-                    return (
-                      <AuditsNumberContent
-                        total={total}
-                        count={count}
-                        isUnique={selection.unique}
-                        entityType={entityType}
-                        translatedTitle={translatedTitle}
-                        setShowWarning={setShowWarning}
-                      />
-                    );
-                  }
-                  if (props) {
-                    return <WidgetNoData />;
-                  }
-                  return <Loader variant={LoaderVariant.inElement} />;
-                }}
-              />
-            )
-      }
+      {isMissingHostEntity ? (
+        <WidgetNoHostEntity host={host} />
+      ) : queryRef ? (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <AuditsNumberComponent
+            queryRef={queryRef}
+            entityType={entityType}
+            label={translatedTitle}
+            isUnique={Boolean(selection.unique)}
+            onShowWarning={setShowWarning}
+          />
+        </Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.inElement} />
+      )}
     </WidgetContainer>
   );
 };

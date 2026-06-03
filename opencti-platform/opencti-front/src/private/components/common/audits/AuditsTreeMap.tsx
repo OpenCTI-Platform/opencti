@@ -13,21 +13,24 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState } from 'react';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import ApexCharts from 'apexcharts';
+import { AuditsTreeMapDistributionQuery } from '@components/common/audits/__generated__/AuditsTreeMapDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
+import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 
-const auditsRadarDistributionQuery = graphql`
-  query AuditsRadarDistributionQuery(
+const auditsTreeMapDistributionQuery = graphql`
+  query AuditsTreeMapDistributionQuery(
     $field: String!
     $startDate: DateTime
     $endDate: DateTime
@@ -72,6 +75,13 @@ const auditsRadarDistributionQuery = graphql`
             main
           }
         }
+        # use colors when available
+        ... on Label {
+          color
+        }
+        ... on MarkingDefinition {
+          x_opencti_color
+        }
         # objects without representative
         ... on Creator {
           name
@@ -83,12 +93,60 @@ const auditsRadarDistributionQuery = graphql`
           name
           type
         }
+        ... on Status {
+          template {
+            name
+            color
+          }
+        }
       }
     }
   }
 `;
 
-const AuditsRadar = ({
+interface AuditsTreeMapComponentProps {
+  queryRef: PreloadedQuery<AuditsTreeMapDistributionQuery>;
+  selection: WidgetDataSelection;
+  isDistributed?: boolean;
+  onMounted: (chart: ApexCharts) => void;
+}
+
+const AuditsTreeMapComponent: FunctionComponent<AuditsTreeMapComponentProps> = ({
+  queryRef,
+  selection,
+  isDistributed,
+  onMounted,
+}) => {
+  const data = usePreloadedQuery<AuditsTreeMapDistributionQuery>(
+    auditsTreeMapDistributionQuery,
+    queryRef,
+  );
+
+  if (data.auditsDistribution && data.auditsDistribution.length > 0) {
+    return (
+      <WidgetTree
+        data={data.auditsDistribution}
+        groupBy={selection.attribute}
+        isDistributed={isDistributed}
+        onMounted={onMounted}
+      />
+    );
+  }
+  return <WidgetNoData />;
+};
+
+interface AuditsTreeMapProps {
+  variant?: string;
+  height?: CSSProperties['height'];
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
+}
+
+const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
   variant,
   height,
   startDate,
@@ -99,7 +157,7 @@ const AuditsRadar = ({
   host,
 }) => {
   const { t_i18n } = useFormatter();
-  const [chart, setChart] = useState();
+  const [chart, setChart] = useState<ApexCharts>();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
@@ -107,6 +165,24 @@ const AuditsRadar = ({
     dataSelection,
     host,
   });
+  const selection = resolvedDataSelection[0];
+
+  const queryRef = useQueryLoading<AuditsTreeMapDistributionQuery>(
+    auditsTreeMapDistributionQuery,
+    {
+      types: ['History', 'Activity'],
+      field: selection.attribute,
+      operation: 'count',
+      startDate: startDate ?? undefined,
+      endDate: endDate ?? undefined,
+      dateAttribute:
+        selection.date_attribute && selection.date_attribute.length > 0
+          ? selection.date_attribute
+          : 'timestamp',
+      filters: selection.filters,
+      limit: selection.number ?? 10,
+    },
+  );
 
   const renderContent = () => {
     if (isMissingHostEntity) {
@@ -131,49 +207,23 @@ const AuditsRadar = ({
         </div>
       );
     }
-    const selection = resolvedDataSelection[0];
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
     return (
-      <QueryRenderer
-        query={auditsRadarDistributionQuery}
-        variables={{
-          types: ['History', 'Activity'],
-          field: selection.attribute,
-          operation: 'count',
-          startDate,
-          endDate,
-          dateAttribute:
-            selection.date_attribute && selection.date_attribute.length > 0
-              ? selection.date_attribute
-              : 'timestamp',
-          filters: selection.filters,
-          limit: selection.number ?? 10,
-        }}
-        render={({ props }) => {
-          if (
-            props
-            && props.auditsDistribution
-            && props.auditsDistribution.length > 0
-          ) {
-            return (
-              <WidgetRadar
-                data={props.auditsDistribution}
-                label={selection.label || t_i18n('Number of history entries')}
-                groupBy={selection.attribute}
-                onMounted={setChart}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <AuditsTreeMapComponent
+          queryRef={queryRef}
+          selection={selection}
+          isDistributed={parameters.distributed}
+          onMounted={setChart}
+        />
+      </Suspense>
     );
   };
+
   return (
     <WidgetContainer
-      padding="small"
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
@@ -186,4 +236,4 @@ const AuditsRadar = ({
   );
 };
 
-export default AuditsRadar;
+export default AuditsTreeMap;

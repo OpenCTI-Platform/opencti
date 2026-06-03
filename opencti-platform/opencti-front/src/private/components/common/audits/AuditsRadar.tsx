@@ -13,22 +13,24 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import ApexCharts from 'apexcharts';
+import { AuditsRadarDistributionQuery } from '@components/common/audits/__generated__/AuditsRadarDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
+import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 
-const auditsDistributionListDistributionQuery = graphql`
-  query AuditsDistributionListDistributionQuery(
+const auditsRadarDistributionQuery = graphql`
+  query AuditsRadarDistributionQuery(
     $field: String!
     $startDate: DateTime
     $endDate: DateTime
@@ -75,18 +77,62 @@ const auditsDistributionListDistributionQuery = graphql`
         }
         # objects without representative
         ... on Creator {
-          entity_type
           name
         }
         ... on Group {
           name
+        }
+        ... on Workspace {
+          name
+          type
         }
       }
     }
   }
 `;
 
-const AuditsDistributionList = ({
+interface AuditsRadarComponentProps {
+  queryRef: PreloadedQuery<AuditsRadarDistributionQuery>;
+  selection: WidgetDataSelection;
+  onMounted: (chart: ApexCharts) => void;
+}
+
+const AuditsRadarComponent: FunctionComponent<AuditsRadarComponentProps> = ({
+  queryRef,
+  selection,
+  onMounted,
+}) => {
+  const { t_i18n } = useFormatter();
+  const data = usePreloadedQuery<AuditsRadarDistributionQuery>(
+    auditsRadarDistributionQuery,
+    queryRef,
+  );
+
+  if (data.auditsDistribution && data.auditsDistribution.length > 0) {
+    return (
+      <WidgetRadar
+        data={data.auditsDistribution}
+        label={selection.label || t_i18n('Number of history entries')}
+        groupBy={selection.attribute}
+        onMounted={onMounted}
+      />
+    );
+  }
+  return <WidgetNoData />;
+};
+
+interface AuditsRadarProps {
+  variant?: string;
+  height?: CSSProperties['height'];
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
+}
+
+const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
   variant,
   height,
   startDate,
@@ -97,7 +143,7 @@ const AuditsDistributionList = ({
   host,
 }) => {
   const { t_i18n } = useFormatter();
-  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+  const [chart, setChart] = useState<ApexCharts>();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
@@ -105,6 +151,25 @@ const AuditsDistributionList = ({
     dataSelection,
     host,
   });
+  const selection = resolvedDataSelection[0];
+
+  const queryRef = useQueryLoading<AuditsRadarDistributionQuery>(
+    auditsRadarDistributionQuery,
+    {
+      types: ['History', 'Activity'],
+      field: selection.attribute,
+      operation: 'count',
+      startDate: startDate ?? undefined,
+      endDate: endDate ?? undefined,
+      dateAttribute:
+        selection.date_attribute && selection.date_attribute.length > 0
+          ? selection.date_attribute
+          : 'timestamp',
+      filters: selection.filters,
+      limit: selection.number ?? 10,
+    },
+  );
+
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
@@ -128,62 +193,27 @@ const AuditsDistributionList = ({
         </div>
       );
     }
-    const selection = resolvedDataSelection[0];
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
     return (
-      <QueryRenderer
-        query={auditsDistributionListDistributionQuery}
-        variables={{
-          types: ['History', 'Activity'],
-          field: selection.attribute,
-          operation: 'count',
-          startDate,
-          endDate,
-          dateAttribute:
-            selection.date_attribute && selection.date_attribute.length > 0
-              ? selection.date_attribute
-              : 'timestamp',
-          filters: selection.filters,
-          limit: selection.number ?? 10,
-        }}
-        render={({ props }) => {
-          if (
-            props
-            && props.auditsDistribution
-            && props.auditsDistribution.length > 0
-          ) {
-            const data = props.auditsDistribution.map((n) => {
-              let { label } = n;
-              let id = null;
-              let type = n.label;
-              if (isFieldForIdentifier(selection.attribute)) {
-                label = getMainRepresentative(n.entity) || n.label;
-                id = n.entity?.id;
-                type = n.entity?.entity_type;
-              } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-                label = t_i18n(`entity_${n.label}`);
-              }
-              return {
-                label,
-                value: n.value,
-                id,
-                type,
-              };
-            });
-            return <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />;
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <AuditsRadarComponent
+          queryRef={queryRef}
+          selection={selection}
+          onMounted={setChart}
+        />
+      </Suspense>
     );
   };
+
   return (
     <WidgetContainer
+      padding="small"
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
@@ -192,4 +222,4 @@ const AuditsDistributionList = ({
   );
 };
 
-export default AuditsDistributionList;
+export default AuditsRadar;

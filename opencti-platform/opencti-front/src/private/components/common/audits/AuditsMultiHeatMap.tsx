@@ -13,9 +13,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useMemo, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import ApexCharts from 'apexcharts';
+import { AuditsMultiHeatMapTimeSeriesQuery } from '@components/common/audits/__generated__/AuditsMultiHeatMapTimeSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -23,14 +24,15 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
+import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 
-const auditsMultiAreaChartTimeSeriesQuery = graphql`
-  query AuditsMultiAreaChartTimeSeriesQuery(
+const auditsMultiHeatMapTimeSeriesQuery = graphql`
+  query AuditsMultiHeatMapTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -52,34 +54,66 @@ const auditsMultiAreaChartTimeSeriesQuery = graphql`
   }
 `;
 
-/**
- * Inner component that renders the multi-area chart and triggers the estimation warning via useEffect.
- */
-const AuditsMultiAreaChartContent = ({ dataSelection, resolvedDataSelection, auditsMultiTimeSeries, parameters, setShowWarning, setChart }) => {
+interface AuditsMultiHeatMapComponentProps {
+  queryRef: PreloadedQuery<AuditsMultiHeatMapTimeSeriesQuery>;
+  dataSelection: WidgetDataSelection[];
+  isStacked?: boolean;
+  onMounted: (chart: ApexCharts) => void;
+}
+
+const AuditsMultiHeatMapComponent: FunctionComponent<AuditsMultiHeatMapComponentProps> = ({
+  queryRef,
+  dataSelection,
+  isStacked,
+  onMounted,
+}) => {
   const { t_i18n } = useFormatter();
+  const data = usePreloadedQuery<AuditsMultiHeatMapTimeSeriesQuery>(
+    auditsMultiHeatMapTimeSeriesQuery,
+    queryRef,
+  );
 
-  useEffect(() => {
-    setShowWarning(showEstimationWarningForUniqCount(dataSelection, auditsMultiTimeSeries));
-  }, [dataSelection, auditsMultiTimeSeries, setShowWarning]);
-
-  return (
-    <WidgetMultiAreas
-      series={resolvedDataSelection.map((selection, i) => ({
+  if (data.auditsMultiTimeSeries) {
+    const chartData = dataSelection
+      .map((selection, i) => ({
         name: selection.label || t_i18n('Number of history entries'),
-        data: auditsMultiTimeSeries[i].data.map((entry) => ({
+        data: data.auditsMultiTimeSeries[i].data.map((entry) => ({
           x: new Date(entry.date),
           y: entry.value,
         })),
-      }))}
-      interval={parameters.interval}
-      isStacked={parameters.stacked}
-      hasLegend={parameters.legend}
-      onMounted={setChart}
-    />
-  );
+      }))
+      .sort((a, b) => b.name.localeCompare(a.name));
+    const allValues = data.auditsMultiTimeSeries
+      .map((n) => n.data.map((o) => o.value))
+      .flat();
+    const maxValue = Math.max(...allValues);
+    const minValue = Math.min(...allValues);
+
+    return (
+      <WidgetMultiHeatMap
+        data={chartData}
+        minValue={minValue}
+        maxValue={maxValue}
+        isStacked={isStacked}
+        onMounted={onMounted}
+      />
+    );
+  }
+  return <WidgetNoData />;
 };
 
-const AuditsMultiAreaChart = ({
+interface AuditsMultiHeatMapProps {
+  variant?: string;
+  height?: CSSProperties['height'];
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
+}
+
+const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
   variant,
   height,
   startDate,
@@ -90,16 +124,14 @@ const AuditsMultiAreaChart = ({
   host,
 }) => {
   const { t_i18n } = useFormatter();
-  const [chart, setChart] = useState();
+  const [chart, setChart] = useState<ApexCharts>();
+  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'audits',
     dataSelection,
     host,
   });
-  const [showWarning, setShowWarning] = useState(false);
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
-  const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
 
   const timeSeriesParameters = useMemo(() => {
     return resolvedDataSelection.map((selection) => {
@@ -110,8 +142,6 @@ const AuditsMultiAreaChart = ({
             : 'timestamp',
         types: ['History', 'Activity'],
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
-        countField: selection.attribute,
-        unique: selection.unique,
       };
     });
   }, [resolvedDataSelection]);
@@ -121,13 +151,16 @@ const AuditsMultiAreaChart = ({
     end: now(),
   }), []);
 
-  const variables = useMemo(() => ({
-    operation: 'count',
-    startDate: startDate ?? fallbackDates.start,
-    endDate: endDate ?? fallbackDates.end,
-    interval: parameters.interval ?? 'day',
-    timeSeriesParameters,
-  }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
+  const queryRef = useQueryLoading<AuditsMultiHeatMapTimeSeriesQuery>(
+    auditsMultiHeatMapTimeSeriesQuery,
+    {
+      operation: 'count',
+      startDate: startDate ?? fallbackDates.start,
+      endDate: endDate ?? fallbackDates.end,
+      interval: parameters.interval ?? 'day',
+      timeSeriesParameters,
+    },
+  );
 
   const renderContent = () => {
     if (isMissingHostEntity) {
@@ -145,53 +178,41 @@ const AuditsMultiAreaChart = ({
           >
             {!isEnterpriseEdition
               ? t_i18n(
-                  'This feature is only available in OpenCTI Enterprise Edition.',
-                )
+                'This feature is only available in OpenCTI Enterprise Edition.',
+              )
               : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
     }
-
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
     return (
-      <QueryRenderer
-        query={auditsMultiAreaChartTimeSeriesQuery}
-        variables={variables}
-        render={({ props }) => {
-          if (props && props.auditsMultiTimeSeries) {
-            return (
-              <AuditsMultiAreaChartContent
-                dataSelection={dataSelection}
-                resolvedDataSelection={resolvedDataSelection}
-                auditsMultiTimeSeries={props.auditsMultiTimeSeries}
-                parameters={parameters}
-                setShowWarning={setShowWarning}
-                setChart={setChart}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <AuditsMultiHeatMapComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          isStacked={parameters.stacked}
+          onMounted={setChart}
+        />
+      </Suspense>
     );
   };
+
   return (
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title ?? t_i18n('Activity and history')}
+      title={parameters.title ?? t_i18n('Entities history')}
       variant={variant}
       chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
-      warning={warning}
     >
       {renderContent()}
     </WidgetContainer>
   );
 };
 
-export default AuditsMultiAreaChart;
+export default AuditsMultiHeatMap;
