@@ -20,7 +20,7 @@ import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import stopEvent from '../../../utils/domEvent';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../utils/hooks/useDeletion';
-import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { deleteNode } from '../../../utils/store';
 import useSwitchDraft from './useSwitchDraft';
@@ -145,8 +145,14 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          <MenuItem onClick={handleOpenDelete} disabled={!currentAccessRight.canEdit}>{t_i18n('Delete')}</MenuItem>
-          <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>{t_i18n('Switch to Draft')}</MenuItem>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={handleOpenDelete} disabled={!currentAccessRight.canEdit}>
+              {t_i18n('Delete')}
+            </MenuItem>
+          </Security>
+          <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>
+            {t_i18n('Switch to Draft')}
+          </MenuItem>
         </Menu>
         <DeleteDialog
           deletion={deletion}

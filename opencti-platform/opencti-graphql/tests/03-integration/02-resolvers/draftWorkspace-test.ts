@@ -1,8 +1,17 @@
-import { expect, it, describe } from 'vitest';
+import { expect, it, describe, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, testContext, TEST_ORGANIZATION, USER_PARTICIPATE, getUserIdByEmail, getOrganizationIdByName, queryInitPlatformAsAdmin } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import {
+  ADMIN_USER,
+  testContext,
+  TEST_ORGANIZATION,
+  USER_PARTICIPATE,
+  USER_EDITOR,
+  getUserIdByEmail,
+  getOrganizationIdByName,
+  queryInitPlatformAsAdmin,
+} from '../../utils/testQuery';
+import { queryAsAdmin, queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
@@ -245,6 +254,14 @@ const DRAFT_WORKSPACE_FIELD_PATCH_QUERY = gql`
   }
 `;
 
+const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
+  mutation DraftWorkspaceEditAuthorizedMembers($id: ID!, $input: [MemberAccessInput!]!) {
+    draftWorkspaceEditAuthorizedMembers(id: $id, input: $input) {
+      id
+    }
+  }
+`;
+
 const READ_DRAFT_WORKSPACE_FULL_QUERY = gql`
   query DraftWorkspaceFull($id: String!) {
     draftWorkspace(id: $id) {
@@ -284,11 +301,16 @@ describe('Drafts workspace resolver testing', () => {
   let addedDraftName = '';
   let addedDraftEntityId = '';
   let userParticipateId = '';
+  let userEditorId = '';
   let testOrganizationId = '';
 
-  it('should create a draft', async () => {
+  beforeAll(async () => {
     userParticipateId = await getUserIdByEmail(USER_PARTICIPATE.email);
+    userEditorId = await getUserIdByEmail(USER_EDITOR.email);
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+  });
+
+  it('should create a draft', async () => {
     const draftName = 'testDraft';
     const draftEntityId = 'testId';
     const createdDraft = await queryAsAdmin({
@@ -490,6 +512,44 @@ describe('Drafts workspace resolver testing', () => {
       DELETE_REPORT_QUERY,
       { id: reportInternalId },
     );
+  });
+
+  it('should not allow a user without KNOWLEDGE_KNUPDATE_KNDELETE to delete a draft', async () => {
+    // Add USER_PARTICIPATE as a 'view' member of the draft
+    await queryAsAdmin({
+      query: EDIT_AUTHORIZED_MEMBERS_QUERY,
+      variables: {
+        id: addedDraftId,
+        input: [
+          { id: userParticipateId, access_right: 'manage' },
+        ],
+      },
+    });
+
+    // USER_PARTICIPATE is now in authorized_members with 'view' access but lacks KNOWLEDGE_KNUPDATE_KNDELETE capability
+    await queryAsUserIsExpectedError(USER_PARTICIPATE, {
+      query: DELETE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: addedDraftId },
+    }, undefined, 'FORBIDDEN_ACCESS');
+  });
+
+  it('should not allow a user with KNOWLEDGE_KNUPDATE_KNDELETE but only view access to delete a draft', async () => {
+    // Add USER_EDITOR as a 'view' member of the draft
+    await queryAsAdmin({
+      query: EDIT_AUTHORIZED_MEMBERS_QUERY,
+      variables: {
+        id: addedDraftId,
+        input: [
+          { id: userEditorId, access_right: 'view' },
+        ],
+      },
+    });
+
+    // USER_EDITOR has KNOWLEDGE_KNUPDATE_KNDELETE capability but only 'view' access on the draft
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: DELETE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: addedDraftId },
+    });
   });
 
   it('should delete a draft by its ID', async () => {
