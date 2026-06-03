@@ -4,7 +4,7 @@ on:
     types: [opened, edited, reopened, ready_for_review, synchronize]
 jobs:
   check-organization:
-    name: Check if PR author is an OpenCTI-Platform member and label accordingly
+    name: Check if PR author is an OpenCTI-Platform member and add label
     # except for renovate
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'dependencies') }}
     runs-on: ubuntu-latest
@@ -26,11 +26,6 @@ jobs:
           if [ "$AUTHOR_ASSOCIATION" = "OWNER" ] || [ "$AUTHOR_ASSOCIATION" = "MEMBER" ]; then
             echo "$PR_AUTHOR is associated as $AUTHOR_ASSOCIATION"
             gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "filigran team" || true
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "community" || true
-          else
-            echo "$PR_AUTHOR is associated as $AUTHOR_ASSOCIATION, community contribution"
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "community" || true
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "filigran team" || true
           fi
   check-pr-title-convention:
     name: Check that PR title follows convention
