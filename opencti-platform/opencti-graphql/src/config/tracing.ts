@@ -26,6 +26,8 @@ class MeterManager {
 
   private lockContentions: Counter | null = null;
 
+  private migrationDurationHistogram: Histogram | null = null;
+
   private directBulkGauge: Gauge | null = null;
 
   private sideBulkGauge: Gauge | null = null;
@@ -56,6 +58,14 @@ class MeterManager {
 
   lockContention(attributes?: any) {
     this.lockContentions?.add(1, attributes);
+  }
+
+  migrationDuration(val: number, attributes: {
+    migrationTitle: string;
+  }) {
+    this.migrationDurationHistogram?.record(val, {
+      'opencti.migration.title': attributes.migrationTitle,
+    });
   }
 
   directBulk(val: number, attributes: any) {
@@ -95,6 +105,12 @@ class MeterManager {
       valueType: ValueType.INT,
       description: 'Lock acquisition wait time in milliseconds',
       advice: { explicitBucketBoundaries: [0, 10, 50, 250, 500, 1000, 2500, 5000, 10000, 25000] },
+    });
+    this.migrationDurationHistogram = meter.createHistogram('opencti_api_migration_duration', {
+      valueType: ValueType.INT,
+      description: 'Duration of each migration',
+      unit: 's',
+      advice: { explicitBucketBoundaries: [1, 5, 15, 30, 60, 120, 300, 3600, 18000] },
     });
     // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
