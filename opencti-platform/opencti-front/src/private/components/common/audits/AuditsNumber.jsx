@@ -28,7 +28,7 @@ import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 
 const auditsNumberNumberQuery = graphql`
@@ -57,6 +57,27 @@ const auditsNumberNumberQuery = graphql`
     }
   }
 `;
+
+/**
+ * Inner component that displays the number widget and triggers the estimation warning via useEffect.
+ */
+const AuditsNumberContent = ({ total, count, isUnique, entityType, translatedTitle, setShowWarning }) => {
+  const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    setShowWarning(isUnique && total > UNIQUE_COUNT_ESTIMATION_THRESHOLD);
+  }, [isUnique, total, setShowWarning]);
+
+  return (
+    <WidgetNumber
+      entityType={entityType}
+      label={translatedTitle}
+      value={total}
+      diffLabel={t_i18n('24 hours')}
+      diffValue={total - count}
+    />
+  );
+};
 
 const AuditsNumber = ({
   startDate,
@@ -118,14 +139,14 @@ const AuditsNumber = ({
                 render={({ props }) => {
                   if (props && props.auditsNumber) {
                     const { total, count } = props.auditsNumber;
-                    setShowWarning(selection.unique && total > UNIQUE_COUNT_ESTIMATION_THRESHOLD);
                     return (
-                      <WidgetNumber
+                      <AuditsNumberContent
+                        total={total}
+                        count={count}
+                        isUnique={selection.unique}
                         entityType={entityType}
-                        label={translatedTitle}
-                        value={total}
-                        diffLabel={t_i18n('24 hours')}
-                        diffValue={total - count}
+                        translatedTitle={translatedTitle}
+                        setShowWarning={setShowWarning}
                       />
                     );
                   }

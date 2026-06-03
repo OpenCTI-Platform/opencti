@@ -71,6 +71,41 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_total',
   ];
 
+  const AUDIT_WIDGET_ATTRIBUTES = [
+    'entity_type',
+    'context_data.id',
+    'context_data.created_by_ref_id',
+    'context_data.labels_ids',
+    'context_data.marking_definitions',
+    'context_data.creator_ids',
+    'context_data.search',
+    'event_type',
+    'event_scope',
+    'user_id',
+    'group_ids',
+    'organization_ids',
+  ];
+
+  const ENTITIES_WIDGET_COMMON_ATTRIBUTES = [
+    'created-by.internal_id',
+    'object-label.internal_id',
+    'object-assignee.internal_id',
+    'object-marking.internal_id',
+    'kill-chain-phase.internal_id',
+    'x_opencti_workflow_id',
+  ];
+
+  const RELATIONSHIPS_WIDGET_ATTRIBUTES = [
+    { value: 'internal_id', label: 'Entity' },
+    { value: 'entity_type', label: 'Entity type' },
+    { value: 'relationship_type', label: 'Relationship type' },
+    { value: 'created-by.internal_id', label: 'Author' },
+    { value: 'object-marking.internal_id', label: 'Marking definition' },
+    { value: 'kill-chain-phase.internal_id', label: 'Kill chain phase' },
+    { value: 'creator_id', label: 'Creator' },
+    { value: 'x_opencti_workflow_id', label: 'Processing status' },
+  ];
+
   const {
     config,
     setConfigWidget,
@@ -261,19 +296,7 @@ const WidgetCreationParameters = () => {
               }
               disabled={isAttributeSelectionDisabled}
             >
-              {['entity_type',
-                'context_data.id',
-                'context_data.created_by_ref_id',
-                'context_data.labels_ids',
-                'context_data.marking_definitions',
-                'context_data.creator_ids',
-                'context_data.search',
-                'event_type',
-                'event_scope',
-                'user_id',
-                'group_ids',
-                'organization_ids',
-              ].map((value) => (
+              {AUDIT_WIDGET_ATTRIBUTES.map((value) => (
                 <MenuItem
                   key={value}
                   value={value}
@@ -664,16 +687,7 @@ const WidgetCreationParameters = () => {
                           )
                           }
                         >
-                          {[
-                            { value: 'internal_id', label: 'Entity' },
-                            { value: 'entity_type', label: 'Entity type' },
-                            { value: 'relationship_type', label: 'Relationship type' },
-                            { value: 'created-by.internal_id', label: 'Author' },
-                            { value: 'object-marking.internal_id', label: 'Marking definition' },
-                            { value: 'kill-chain-phase.internal_id', label: 'Kill chain phase' },
-                            { value: 'creator_id', label: 'Creator' },
-                            { value: 'x_opencti_workflow_id', label: 'Processing status' },
-                          ].map((n) => (
+                          {RELATIONSHIPS_WIDGET_ATTRIBUTES.map((n) => (
                             <MenuItem key={n.value} value={n.value}>
                               {t_i18n(n.label)}
                             </MenuItem>
@@ -737,12 +751,7 @@ const WidgetCreationParameters = () => {
                                   >
                                     {[
                                       ...attributesValues,
-                                      'created-by.internal_id',
-                                      'object-label.internal_id',
-                                      'object-assignee.internal_id',
-                                      'object-marking.internal_id',
-                                      'kill-chain-phase.internal_id',
-                                      'x_opencti_workflow_id',
+                                      ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
                                     ].map((value) => (
                                       <MenuItem
                                         key={value}
@@ -788,12 +797,7 @@ const WidgetCreationParameters = () => {
                           >
                             {[
                               'entity_type',
-                              'created-by.internal_id',
-                              'object-label.internal_id',
-                              'object-assignee.internal_id',
-                              'object-marking.internal_id',
-                              'kill-chain-phase.internal_id',
-                              'x_opencti_workflow_id',
+                              ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
                             ].map((value) => (
                               <MenuItem
                                 key={value}

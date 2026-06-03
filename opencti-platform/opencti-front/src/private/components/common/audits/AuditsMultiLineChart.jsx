@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -51,6 +51,32 @@ const auditsMultiLineChartTimeSeriesQuery = graphql`
     }
   }
 `;
+
+/**
+ * Inner component that renders the multi-line chart and triggers the estimation warning via useEffect.
+ */
+const AuditsMultiLineChartContent = ({ dataSelection, resolvedDataSelection, auditsMultiTimeSeries, parameters, setShowWarning, setChart }) => {
+  const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    setShowWarning(showEstimationWarningForUniqCount(dataSelection, auditsMultiTimeSeries));
+  }, [dataSelection, auditsMultiTimeSeries, setShowWarning]);
+
+  return (
+    <WidgetMultiLines
+      series={resolvedDataSelection.map((selection, i) => ({
+        name: selection.label || t_i18n('Number of history entries'),
+        data: auditsMultiTimeSeries[i].data.map((entry) => ({
+          x: new Date(entry.date),
+          y: entry.value,
+        })),
+      }))}
+      interval={parameters.interval}
+      hasLegend={parameters.legend}
+      onMounted={setChart}
+    />
+  );
+};
 
 const AuditsMultiLineChart = ({
   variant,
@@ -132,19 +158,14 @@ const AuditsMultiLineChart = ({
         variables={variables}
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
-            setShowWarning(showEstimationWarningForUniqCount(dataSelection, props.auditsMultiTimeSeries));
             return (
-              <WidgetMultiLines
-                series={resolvedDataSelection.map((selection, i) => ({
-                  name: selection.label || t_i18n('Number of history entries'),
-                  data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
-                    x: new Date(entry.date),
-                    y: entry.value,
-                  })),
-                }))}
-                interval={parameters.interval}
-                hasLegend={parameters.legend}
-                onMounted={setChart}
+              <AuditsMultiLineChartContent
+                dataSelection={dataSelection}
+                resolvedDataSelection={resolvedDataSelection}
+                auditsMultiTimeSeries={props.auditsMultiTimeSeries}
+                parameters={parameters}
+                setShowWarning={setShowWarning}
+                setChart={setChart}
               />
             );
           }
