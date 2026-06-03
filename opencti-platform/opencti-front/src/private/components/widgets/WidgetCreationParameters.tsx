@@ -204,51 +204,45 @@ const WidgetCreationParameters = () => {
     </div>
   );
 
-  const checkbox = (dataSelectionIndex: number, inline = false) => {
-    return (
-      <Checkbox
-        sx={inline ? { ml: 0 } : { ml: -3 }}
-        onChange={(event) => handleChangeDataValidationParameter(
-          dataSelectionIndex,
-          'unique',
-          event.target.checked,
-        )}
-        checked={dataSelection[dataSelectionIndex].unique ?? undefined}
-      />
-    );
-  };
-  const uniqueDataCheckbox = (dataSelectionIndex: number = 0, inline: boolean = false) => {
-    return (
-      <Grid size={inline ? 2 : 1.5} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {inline
-          ? (
-              <FormControlLabel
-                control={
-                  checkbox(dataSelectionIndex, inline)
-                }
-                label={distinctLabel}
-              />
-            )
-          : checkbox(dataSelectionIndex)}
-      </Grid>
-    );
-  };
-  // size of the 'attribute' input
-  const attributeSize = (uniqueParameterEnabled = false) => {
-    if (!uniqueParameterEnabled) { // classical size
-      return 12;
-    } else { // size if 'uniq' is checked (remove the checkbox size)
-      return 10;
-    }
-  };
+  /**
+   * Renders the attribute selection section for audit perspective widgets.
+   * Includes a "Distinct" checkbox when unique counting is enabled, and a dropdown to select the audit attribute.
+   */
   const auditAttributeSelectionSection = (uniqueParameterEnabled: boolean, dataSelectionIndex: number) => {
     const isAttributeSelectionDisabled = uniqueParameterEnabled && !dataSelection[dataSelectionIndex].unique;
+    const attributeSize = uniqueParameterEnabled ? 10 : 12;
+
+    const uniqueDataCheckbox = () => {
+      const inline = dataSelection.length === 1;
+      const checkbox = (
+        <Checkbox
+          sx={inline ? { ml: 0 } : { ml: -3 }}
+          onChange={(event) => handleChangeDataValidationParameter(
+            dataSelectionIndex,
+            'unique',
+            event.target.checked,
+          )}
+          checked={dataSelection[dataSelectionIndex].unique ?? undefined}
+        />
+      );
+      return (
+        <Grid size={inline ? 2 : 1.5} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {inline
+            ? (
+                <FormControlLabel
+                  control={checkbox}
+                  label={distinctLabel}
+                />
+              )
+            : checkbox}
+        </Grid>
+      );
+    };
+
     return (
       <Grid container spacing={4} sx={{ width: '100%' }}>
-        {uniqueParameterEnabled && (
-          uniqueDataCheckbox(dataSelectionIndex, dataSelection.length === 1)
-        )}
-        <Grid size={attributeSize(uniqueParameterEnabled)}>
+        {uniqueParameterEnabled && uniqueDataCheckbox()}
+        <Grid size={attributeSize}>
           <FormControl
             fullWidth={true}
           >
