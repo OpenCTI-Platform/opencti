@@ -34,7 +34,7 @@ import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -90,7 +90,7 @@ const WidgetCreationParameters = () => {
     i: number,
     key: string,
     value: string | boolean | null,
-    number = false,
+    isNumber = false,
   ) => {
     if (value === null) {
       throw Error(t_i18n('This value cannot be null'));
@@ -99,7 +99,7 @@ const WidgetCreationParameters = () => {
       if (n === i) {
         return {
           ...data,
-          [key]: number && typeof value !== 'boolean' ? parseInt(value, 10) : value,
+          [key]: isNumber && typeof value !== 'boolean' ? parseInt(value, 10) : value,
         };
       }
       return data;
@@ -181,27 +181,28 @@ const WidgetCreationParameters = () => {
     varNameError = t_i18n('Only letters, numbers and special chars _ and - are allowed');
   }
 
-  const uniqueParameterEnabled = (perspective: WidgetPerspective | null | undefined, visualizationType: WidgetVisualizationTypes | ''): boolean => {
-    return perspective === 'audits' && (['number', 'line', 'area'].includes(visualizationType)) && !getCurrentAvailableParameters(type).includes('attribute');
+  const uniqueParameterEnabled = (
+    perspective: WidgetPerspective | null | undefined,
+    visualizationType: WidgetVisualizationTypes | '',
+  ): boolean => {
+    return perspective === 'audits'
+      && (['number', 'line', 'area'].includes(visualizationType))
+      && !getCurrentAvailableParameters(type).includes('attribute');
   };
   const maxResultCount = getMaxResultCount(type);
 
   const distinctLabel = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div>
-        <Typography>{t_i18n('Distinct')}</Typography>
-      </div>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography>{t_i18n('Distinct')}</Typography>
       <Tooltip
-        title={t_i18n(
-          'Count the number of distinct values in a specified field',
-        )}
+        title={t_i18n('Count the number of distinct values in a specified field')}
       >
         <InformationOutline
           fontSize="small"
           color="primary"
         />
       </Tooltip>
-    </div>
+    </Box>
   );
 
   /**
