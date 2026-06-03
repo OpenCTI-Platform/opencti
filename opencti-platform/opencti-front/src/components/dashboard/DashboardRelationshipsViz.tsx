@@ -11,7 +11,7 @@ import StixRelationshipsMultiHorizontalBars from '@components/common/stix_relati
 import StixRelationshipsHorizontalBars from '../../private/components/common/stix_relationships/StixRelationshipsHorizontalBars';
 import StixRelationshipsRadar from '../../private/components/common/stix_relationships/StixRelationshipsRadar';
 import StixRelationshipsPolarArea from '../../private/components/common/stix_relationships/StixRelationshipsPolarArea';
-import StixRelationshipsMultiHeatMap from '@components/common/stix_relationships/StixRelationshipsMultiHeatMap';
+import StixRelationshipsMultiHeatMap from '../../private/components/common/stix_relationships/StixRelationshipsMultiHeatMap';
 import StixRelationshipsTreeMap from '@components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
@@ -211,13 +211,13 @@ const DashboardRelationshipsViz = ({
       return (
         <StixRelationshipsMultiHeatMap
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'tree':
