@@ -1,5 +1,11 @@
 import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
-import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser, ingestionCsvEditField } from '../../../../src/modules/ingestion/ingestion-csv-domain';
+import {
+  addIngestionCsv,
+  deleteIngestionCsv,
+  ingestionCsvAddAutoUser,
+  ingestionCsvEditField,
+  testCsvIngestionMapping,
+} from '../../../../src/modules/ingestion/ingestion-csv-domain';
 import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, USER_EDITOR } from '../../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../../src/generated/graphql';
 import { unSetOrganization, setOrganization } from '../../../utils/testQueryHelper';
@@ -245,6 +251,19 @@ describe('Ingestion CSV domain - Deny list coverage', async () => {
       value: ['https://example.denied.com/csv-feed'],
     }];
     await expect(ingestionCsvEditField(testContext, ADMIN_USER, myCsvFeed.id, fieldPatchInput))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+  });
+
+  it('should test be denied when URL is in deny list', async () => {
+    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+
+    const testInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Test CSV feed deny list',
+      uri: 'https://example.denied.com/csv-feed',
+      user_id: ADMIN_USER.id,
+    };
+    await expect(testCsvIngestionMapping(testContext, ADMIN_USER, testInput))
       .rejects.toThrow('This URI is not allowed for ingestion.');
   });
 });
