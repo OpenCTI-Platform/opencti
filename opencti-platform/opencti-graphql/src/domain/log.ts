@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { elCount, elPaginate, type PaginateOpts } from '../database/engine';
+import { elCount, elPaginate, type PaginateOpts, elCardinalityCount } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
 import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
@@ -66,10 +66,17 @@ export const findAuditById = async (context: AuthContext, user: AuthUser, auditI
 
 export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) => {
   const finalArgs = { ...args, historyFiltering: true };
-  return {
-    count: elCount(context, user, READ_INDEX_HISTORY, finalArgs),
-    total: elCount(context, user, READ_INDEX_HISTORY, R.dissoc('endDate', finalArgs)),
-  };
+  if (args.unique) {
+    return {
+      count: elCardinalityCount(context, user, READ_INDEX_HISTORY, args.field, finalArgs),
+      total: elCardinalityCount(context, user, READ_INDEX_HISTORY, args.field, R.dissoc('endDate', finalArgs)),
+    };
+  } else {
+    return {
+      count: elCount(context, user, READ_INDEX_HISTORY, finalArgs),
+      total: elCount(context, user, READ_INDEX_HISTORY, R.dissoc('endDate', finalArgs)),
+    };
+  }
 };
 
 export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {

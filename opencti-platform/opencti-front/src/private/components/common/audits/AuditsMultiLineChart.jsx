@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -27,6 +27,7 @@ import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
 
 const auditsMultiLineChartTimeSeriesQuery = graphql`
   query AuditsMultiLineChartTimeSeriesQuery(
@@ -51,6 +52,32 @@ const auditsMultiLineChartTimeSeriesQuery = graphql`
   }
 `;
 
+/**
+ * Inner component that renders the multi-line chart and triggers the estimation warning via useEffect.
+ */
+const AuditsMultiLineChartContent = ({ dataSelection, resolvedDataSelection, auditsMultiTimeSeries, parameters, setShowWarning, setChart }) => {
+  const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    setShowWarning(showEstimationWarningForUniqCount(dataSelection, auditsMultiTimeSeries));
+  }, [dataSelection, auditsMultiTimeSeries, setShowWarning]);
+
+  return (
+    <WidgetMultiLines
+      series={resolvedDataSelection.map((selection, i) => ({
+        name: selection.label || t_i18n('Number of history entries'),
+        data: auditsMultiTimeSeries[i].data.map((entry) => ({
+          x: new Date(entry.date),
+          y: entry.value,
+        })),
+      }))}
+      interval={parameters.interval}
+      hasLegend={parameters.legend}
+      onMounted={setChart}
+    />
+  );
+};
+
 const AuditsMultiLineChart = ({
   variant,
   height,
@@ -68,9 +95,10 @@ const AuditsMultiLineChart = ({
     dataSelection,
     host,
   });
-
+  const [showWarning, setShowWarning] = useState(false);
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
 
   const timeSeriesParameters = useMemo(() => {
     return resolvedDataSelection.map((selection) => {
@@ -81,6 +109,8 @@ const AuditsMultiLineChart = ({
             : 'timestamp',
         types: ['History', 'Activity'],
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
+        countField: selection.attribute,
+        unique: selection.unique,
       };
     });
   }, [resolvedDataSelection]);
@@ -97,6 +127,7 @@ const AuditsMultiLineChart = ({
     interval: parameters.interval ?? 'day',
     timeSeriesParameters,
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
+
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
@@ -120,6 +151,7 @@ const AuditsMultiLineChart = ({
         </div>
       );
     }
+
     return (
       <QueryRenderer
         query={auditsMultiLineChartTimeSeriesQuery}
@@ -127,17 +159,13 @@ const AuditsMultiLineChart = ({
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
             return (
-              <WidgetMultiLines
-                series={resolvedDataSelection.map((selection, i) => ({
-                  name: selection.label || t_i18n('Number of history entries'),
-                  data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
-                    x: new Date(entry.date),
-                    y: entry.value,
-                  })),
-                }))}
-                interval={parameters.interval}
-                hasLegend={parameters.legend}
-                onMounted={setChart}
+              <AuditsMultiLineChartContent
+                dataSelection={dataSelection}
+                resolvedDataSelection={resolvedDataSelection}
+                auditsMultiTimeSeries={props.auditsMultiTimeSeries}
+                parameters={parameters}
+                setShowWarning={setShowWarning}
+                setChart={setChart}
               />
             );
           }
@@ -158,6 +186,7 @@ const AuditsMultiLineChart = ({
       chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
+      warning={warning}
     >
       {renderContent()}
     </WidgetContainer>

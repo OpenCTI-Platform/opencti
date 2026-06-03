@@ -28,6 +28,8 @@ import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { useState, useEffect } from 'react';
+import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -37,6 +39,8 @@ const auditsNumberNumberQuery = graphql`
     $onlyInferred: Boolean
     $filters: FilterGroup
     $search: String
+    $field: String
+    $unique: Boolean
   ) {
     auditsNumber(
       types: $types
@@ -45,12 +49,35 @@ const auditsNumberNumberQuery = graphql`
       onlyInferred: $onlyInferred
       filters: $filters
       search: $search
+      field: $field
+      unique: $unique
     ) {
       total
       count
     }
   }
 `;
+
+/**
+ * Inner component that displays the number widget and triggers the estimation warning via useEffect.
+ */
+const AuditsNumberContent = ({ total, count, isUnique, entityType, translatedTitle, setShowWarning }) => {
+  const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    setShowWarning(isUnique && total > UNIQUE_COUNT_ESTIMATION_THRESHOLD);
+  }, [isUnique, total, setShowWarning]);
+
+  return (
+    <WidgetNumber
+      entityType={entityType}
+      label={translatedTitle}
+      value={total}
+      diffLabel={t_i18n('24 hours')}
+      diffValue={total - count}
+    />
+  );
+};
 
 const AuditsNumber = ({
   startDate,
@@ -63,6 +90,7 @@ const AuditsNumber = ({
   height,
   host,
 }) => {
+  const [showWarning, setShowWarning] = useState(false);
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
@@ -89,6 +117,7 @@ const AuditsNumber = ({
     selection.filters,
     { removeTypeAll: true, startDate, endDate, dateAttribute },
   );
+  const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
 
   return (
     <WidgetContainer
@@ -98,6 +127,7 @@ const AuditsNumber = ({
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
+      warning={warning}
     >
       {
         isMissingHostEntity
@@ -105,17 +135,18 @@ const AuditsNumber = ({
           : (
               <QueryRenderer
                 query={auditsNumberNumberQuery}
-                variables={{ types, filters, startDate, endDate: dayAgo() }}
+                variables={{ types, filters, startDate, endDate: dayAgo(), field: selection.attribute, unique: selection.unique }}
                 render={({ props }) => {
                   if (props && props.auditsNumber) {
                     const { total, count } = props.auditsNumber;
                     return (
-                      <WidgetNumber
+                      <AuditsNumberContent
+                        total={total}
+                        count={count}
+                        isUnique={selection.unique}
                         entityType={entityType}
-                        label={translatedTitle}
-                        value={total}
-                        diffLabel={t_i18n('24 hours')}
-                        diffValue={total - count}
+                        translatedTitle={translatedTitle}
+                        setShowWarning={setShowWarning}
                       />
                     );
                   }
