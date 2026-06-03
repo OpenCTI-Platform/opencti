@@ -27,29 +27,6 @@ jobs:
             gh pr edit $PR_NUMBER --repo $REPO --add-label "community"
             echo "$PR_AUTHOR is not a member of OpenCTI-Platform, community contribution"
           fi
-  check-migration-label:
-    name: Add migration label when migration files are added
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Check for new migration files and add label
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-        run: |
-          # Check if any new files were added in the migrations directory
-          NEW_MIGRATIONS=$(gh pr diff $PR_NUMBER --repo $REPO --name-only | grep '^opencti-platform/opencti-graphql/src/migrations/' || true)
-
-          if [ -n "$NEW_MIGRATIONS" ]; then
-            echo "New migration file(s) detected:"
-            echo "$NEW_MIGRATIONS"
-            gh pr edit $PR_NUMBER --repo $REPO --add-label "migration"
-          else
-            echo "No new migration files found"
-          fi
   check-pr-title-convention:
     name: Check that PR title follows convention
     runs-on: ubuntu-latest
