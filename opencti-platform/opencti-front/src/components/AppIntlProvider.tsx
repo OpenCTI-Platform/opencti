@@ -1,10 +1,13 @@
-import React, { FunctionComponent, ReactNode, useContext } from 'react';
+import React, { FunctionComponent, ReactNode, useContext, useMemo } from 'react';
 import { IntlProvider } from 'react-intl';
 import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { AdapterDateFnsJalali } from '@mui/x-date-pickers/AdapterDateFnsJalaliV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Locale, de, enUS, es, faIR, fr, it, ja, ko, zhCN, ru } from 'date-fns/locale';
+import { faIR as faIRJalali } from 'date-fns-jalali/locale';
+import { isJalaliLocale } from '../utils/datePickerConfig';
 import { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import { PlatformLang, UserContext } from '../utils/hooks/useAuth';
 import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
@@ -90,6 +93,13 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
   const messages = { ...baseMessages, ...(translation[locale] ?? {}) };
   moment.locale(locale);
   useDocumentLangModifier(locale.split('-')[0]);
+
+  const dateAdapter = useMemo(
+    () => (isJalaliLocale(locale) ? AdapterDateFnsJalali : AdapterDateFns),
+    [locale],
+  );
+  const adapterLocale = isJalaliLocale(locale) ? faIRJalali : localeMap[locale];
+
   return (
     <IntlProvider
       locale={locale}
@@ -102,7 +112,7 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
         throw err;
       }}
     >
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={localeMap[locale]}>
+      <LocalizationProvider dateAdapter={dateAdapter} adapterLocale={adapterLocale}>
         {children}
       </LocalizationProvider>
     </IntlProvider>
