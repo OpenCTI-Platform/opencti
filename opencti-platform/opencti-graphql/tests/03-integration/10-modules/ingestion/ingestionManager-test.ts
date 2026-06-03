@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../../src/manager/ingestionManager';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, taxiiExecutor, type TaxiiResponseData } from '../../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ingestionTaxiiAdd, findTaxiiIngestionById, ingestionTaxiiDelete, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../../src/generated/graphql';
@@ -11,8 +11,10 @@ import { csvMapperMockCities } from './ingestionManager-testData/csv-mapper-citi
 import { addIngestionCsv, findById as findIngestionCsvById } from '../../../../src/modules/ingestion/ingestion-csv-domain';
 import { createCsvMapper } from '../../../../src/modules/internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../../../../src/modules/internal/csvMapper/csvMapper-utils';
-import { awaitUntilCondition, readCsvFromFileStream } from '../../../utils/testQueryHelper';
-import { connectorIdFromIngestId, queueDetails } from '../../../../src/domain/connector';
+import { readCsvFromFileStream } from '../../../utils/testQueryHelper';
+import * as ingestWorkMock from '../../../../src/manager/ingestionManager/ingestionManagerPushToQueue';
+import * as rabbitMock from '../../../../src/database/rabbitmq';
+import * as connectorMock from '../../../../src/domain/connector';
 
 describe('Verify taxii ingestion', () => {
   it('should create taxii ingestion with ssl_verify default (true)', async () => {
@@ -332,7 +334,123 @@ describe('Verify taxii ingestion - patch part', () => {
   });
 });
 
+describe('Verify taxiiExecutor', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('should taxiiExecutor process ingestion when queue is empty (messages_number === 0)', async () => {
+    // Create an ingestion with ingestion_running: true and no last_execution_date
+    // And queue is empty
+    // so isMustExecuteIteration returns true
+    vi.spyOn(connectorMock, 'queueDetails').mockResolvedValue({ messages_number: 0, messages_size: 0 });
+
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii executor empty queue test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Execute taxiiExecutor - ingestion has no last_execution_date so isMustExecuteIteration returns true
+    // Queue is empty (messages_number === 0) so it will call the taxii handler
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should taxiiExecutor skip ingestion when scheduling period has not elapsed', async () => {
+    // Create an ingestion with a scheduling period and a recent last_execution_date
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii executor scheduling skip test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1D', // 1 day period
+    };
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Patch last_execution_date to now so isMustExecuteIteration returns false (1 day not elapsed)
+    await patchTaxiiIngestion(testContext, ADMIN_USER, ingestion.internal_id, { last_execution_date: now() });
+
+    // Execute taxiiExecutor - should skip the ingestion because scheduling period has not elapsed
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
+    // Verify ingestion state was not modified (no new execution happened)
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
+    // last_execution_date should still be the patched value (not updated by executor)
+    expect(result.last_execution_date).toBeDefined();
+
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should taxiiExecutor handle buffering when queue has remaining messages', async () => {
+    // Create an ingestion
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii executor buffering test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Now run taxiiExecutor - should enter the buffering branch (messages_number > 0)
+    vi.spyOn(connectorMock, 'queueDetails').mockResolvedValue({ messages_number: 5, messages_size: 10 });
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should taxiiExecutor do nothing when no running ingestion exists', async () => {
+    // Create an ingestion that is NOT running
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: false,
+      name: 'taxii executor not running test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Execute taxiiExecutor - should not process the non-running ingestion
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+});
+
 describe('Verify csv ingestion', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
   let csvLines: string[];
   let csvMapperParsed: CsvMapperParsed;
   let ingestionCsv: BasicStoreEntityIngestionCsv;
@@ -359,21 +477,16 @@ describe('Verify csv ingestion', () => {
     ingestionCsv = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
     expect(ingestionCsv.id).toBeDefined();
     expect(ingestionCsv.internal_id).toBeDefined();
-
-    await awaitUntilCondition(async () => {
-      try {
-        const queryResult = await queueDetails(connectorIdFromIngestId(ingestionCsv.id));
-        return queryResult?.messages_number >= 0;
-      } catch {
-        return false;
-      }
-    }, 10000, 6); // Wait for the queue result to exist - max 1 minute
     csvMapperParsed = parseCsvMapper(mapperCreated);
-
     csvLines = await readCsvFromFileStream('./tests/03-integration/10-modules/ingestion/ingestionManager-testData', 'csv-file-cities.csv');
   });
 
   it('should csv ingestion run', async () => {
+    // We don't really send bundle to worker for tests it's hardly predictive
+    vi.spyOn(ingestWorkMock, 'createWorkForIngestion').mockResolvedValue({ id: 'work-id-csv-ingestion-lines' } as any);
+    vi.spyOn(ingestWorkMock, 'updateBuiltInConnectorInfo').mockResolvedValue(undefined);
+    vi.spyOn(rabbitMock, 'pushToWorkerForConnector').mockResolvedValue(undefined);
+
     const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
     expect(isUnchangedData).toBeFalsy();
 
