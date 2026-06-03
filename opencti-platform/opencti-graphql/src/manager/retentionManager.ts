@@ -1,7 +1,7 @@
 import moment, { type Moment } from 'moment';
 import * as R from 'ramda';
 import { listRules as findRetentionRulesToExecute } from '../modules/retentionRules/retentionRules-domain';
-import conf, { booleanConf, FEATURE_ACTIVITY_HISTORY_RETENTION, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
@@ -91,10 +91,6 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope, active } = retentionRule;
   if (active === false) {
     logApp.info(`[OPENCTI] Retention manager skipping inactive rule "${name}"`);
-    return;
-  }
-  if ((scope === 'history' || scope === 'activity') && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
-    logApp.warn(`[OPENCTI] Retention rule "${name}" (scope: ${scope}) was skipped because the feature flag ACTIVITY_HISTORY_RETENTION is not enabled. Add "ACTIVITY_HISTORY_RETENTION" to app.enabled_dev_features in your configuration to enable it.`);
     return;
   }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
