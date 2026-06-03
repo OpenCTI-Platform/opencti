@@ -12,7 +12,7 @@ import StixRelationshipsHorizontalBars from '../../private/components/common/sti
 import StixRelationshipsRadar from '../../private/components/common/stix_relationships/StixRelationshipsRadar';
 import StixRelationshipsPolarArea from '../../private/components/common/stix_relationships/StixRelationshipsPolarArea';
 import StixRelationshipsMultiHeatMap from '../../private/components/common/stix_relationships/StixRelationshipsMultiHeatMap';
-import StixRelationshipsTreeMap from '@components/common/stix_relationships/StixRelationshipsTreeMap';
+import StixRelationshipsTreeMap from '../../private/components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
 import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
@@ -224,15 +224,13 @@ const DashboardRelationshipsViz = ({
       return (
         <StixRelationshipsTreeMap
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
-          title={undefined} // because calling js component in ts
-          field={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'map':
