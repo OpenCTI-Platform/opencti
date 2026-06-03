@@ -13,6 +13,7 @@ import { StixRelationshipsHorizontalBarsDistributionQuery } from './__generated_
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
@@ -154,7 +155,7 @@ const buildQueryVariables = (
   const selection = resolvedDataSelection[0];
   const dateAttribute
     = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
-  const { startDate, endDate } = config;
+  const { startDate, endDate } = computeStartEndDates(config);
   const { filters } = buildFiltersAndOptionsForWidgets(
     selection.filters,
     { isKnowledgeRelationshipWidget: true },
