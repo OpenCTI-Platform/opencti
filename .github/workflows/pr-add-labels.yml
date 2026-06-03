@@ -1,0 +1,53 @@
+name: PR add labels
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, ready_for_review, synchronize]
+jobs:
+  check-organization:
+    name: Check if PR author is an OpenCTI-Platform member and add label
+    # except for renovate
+    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check organization membership and set label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Determine author association from PR payload (OWNER/MEMBER/COLLABORATOR/CONTRIBUTOR/...)
+          set -euo pipefail
+          AUTHOR_ASSOCIATION="${{ github.event.pull_request.author_association }}"
+          
+          if [ "$AUTHOR_ASSOCIATION" = "OWNER" ] || [ "$AUTHOR_ASSOCIATION" = "MEMBER" ]; then
+            echo "$PR_AUTHOR is associated as $AUTHOR_ASSOCIATION"
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "filigran team" || true
+          fi
+
+  check-migration-label:
+    name: Add migration label when migration files are added or updated
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check for changes in migration files and add label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Check if any new files were added in the migrations directory
+          NEW_MIGRATIONS=$(gh pr diff $PR_NUMBER --repo $REPO --name-only | grep '^opencti-platform/opencti-graphql/src/migrations/' || true)
+
+          if [ -n "$NEW_MIGRATIONS" ]; then
+            echo "New migration file(s) detected:"
+            echo "$NEW_MIGRATIONS"
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "migration" || true
+          else
+            echo "No new migration files found"
+          fi
