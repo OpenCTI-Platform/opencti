@@ -31,6 +31,22 @@ export const findCustomFieldDefinitionsForEntityType = (context: AuthContext, us
   return pageEntitiesConnection<BasicStoreEntityCustomFieldDefinition>(context, user, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION], { filters });
 };
 
+export const findCustomFieldDefinitionByName = async (
+  context: AuthContext,
+  user: AuthUser,
+  name: string
+): Promise<BasicStoreEntityCustomFieldDefinition | null> => {
+  const result = await findCustomFieldDefinitionsPaginated(context, user, {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['name'], values: [name], operator: FilterOperator.Eq }],
+      filterGroups: [],
+    },
+    first: 1,
+  });
+  return result.edges.length > 0 ? result.edges[0].node : null;
+};
+
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
   const created = await createEntity(context, user, input, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await publishUserAction({
