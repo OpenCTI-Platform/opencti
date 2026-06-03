@@ -15,6 +15,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import type { BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { verifyIngestionUri } from './ingestion-common';
 
 const MINIMAL_RSS_FEED_COMPATIBLE_VERSION = '7.260309.0';
 
@@ -31,6 +32,7 @@ export const findAllRssIngestion = async (context: AuthContext, user: AuthUser, 
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionRssAddInput) => {
+  verifyIngestionUri(input.uri);
   let onTheFlyCreatedUser;
   let finalInput;
   if (input.automatic_user) {
@@ -79,6 +81,10 @@ export const ingestionAddAutoUser = async (context: AuthContext, user: AuthUser,
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const uriField = input.find((editInput) => editInput.key === 'uri');
+  if (uriField && uriField.value[0]) {
+    verifyIngestionUri(uriField.value[0]);
+  }
   const { element } = await updateAttribute<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
   await registerConnectorForIngestion(context, {
     id: element.id,

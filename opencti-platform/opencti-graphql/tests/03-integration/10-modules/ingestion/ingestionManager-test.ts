@@ -1,26 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import {
-  prepareTaxiiGetParam,
-  processCsvLines,
-  processTaxiiResponse,
-  pushBundleToConnectorQueue,
-  taxiiExecutor,
-  type TaxiiResponseData,
-} from '../../../src/manager/ingestionManager';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
-import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
-import type { StixReport } from '../../../src/types/stix-2-1-sdo';
-import { now } from '../../../src/utils/format';
-import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionTaxii } from '../../../src/modules/ingestion/ingestion-types';
-import type { StixBundle } from '../../../src/types/stix-2-1-common';
-import { csvMapperMockCities } from './ingestionManager/csv-mapper-cities';
-import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
-import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
-import { awaitUntilCondition, readCsvFromFileStream } from '../../utils/testQueryHelper';
-import { connectorIdFromIngestId, queueDetails } from '../../../src/domain/connector';
+import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../../src/manager/ingestionManager';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { ingestionTaxiiAdd, findTaxiiIngestionById, ingestionTaxiiDelete, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
+import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../../src/generated/graphql';
+import type { StixReport } from '../../../../src/types/stix-2-1-sdo';
+import { now } from '../../../../src/utils/format';
+import type { CsvMapperParsed } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import type { BasicStoreEntityIngestionCsv } from '../../../../src/modules/ingestion/ingestion-types';
+import { csvMapperMockCities } from './ingestionManager-testData/csv-mapper-cities';
+import { addIngestionCsv, findById as findIngestionCsvById } from '../../../../src/modules/ingestion/ingestion-csv-domain';
+import { createCsvMapper } from '../../../../src/modules/internal/csvMapper/csvMapper-domain';
+import { parseCsvMapper } from '../../../../src/modules/internal/csvMapper/csvMapper-utils';
+import { awaitUntilCondition, readCsvFromFileStream } from '../../../utils/testQueryHelper';
+import { connectorIdFromIngestId, queueDetails } from '../../../../src/domain/connector';
 
 describe('Verify taxii ingestion', () => {
   it('should create taxii ingestion with ssl_verify default (true)', async () => {
@@ -34,13 +26,13 @@ describe('Verify taxii ingestion', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
     // ssl_verify should default to undefined/null when not provided (treated as true by the manager via ?? true)
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
     const sslVerifyValue = result.ssl_verify ?? true;
     expect(sslVerifyValue).toBe(true);
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 
   it('should create taxii ingestion with ssl_verify explicitly set to false', async () => {
@@ -55,11 +47,11 @@ describe('Verify taxii ingestion', () => {
       scheduling_period: 'PT1H',
       ssl_verify: false,
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
     expect(result.ssl_verify).toBe(false);
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 
   it('should create taxii ingestion with ssl_verify explicitly set to true', async () => {
@@ -74,11 +66,11 @@ describe('Verify taxii ingestion', () => {
       scheduling_period: 'PT1H',
       ssl_verify: true,
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
     const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
     expect(result.ssl_verify).toBe(true);
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -93,7 +85,7 @@ describe('Verify taxii ingestion', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestionNotPagination = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestionNotPagination = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestionNotPagination.id).toBeDefined();
     expect(ingestionNotPagination.internal_id).toBeDefined();
     // 2. Check parameter send to taxii server
@@ -124,7 +116,7 @@ describe('Verify taxii ingestion', () => {
     expect(result.added_after_start).toBeDefined();
 
     // Delete the ingest
-    await ingestionDelete(testContext, ADMIN_USER, ingestionNotPagination.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestionNotPagination.internal_id);
   });
 
   it('should taxii server response with data and next page and start date', async () => {
@@ -140,7 +132,7 @@ describe('Verify taxii ingestion', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
+    const ingestionPaginatedWithStartDate = await ingestionTaxiiAdd(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
     expect(ingestionPaginatedWithStartDate.internal_id).toBeDefined();
 
@@ -199,7 +191,7 @@ describe('Verify taxii ingestion', () => {
     expect(result.added_after_start).toBe('2024-03-01T20:35:44.000Z');
 
     // Delete the ingest
-    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
   });
 
   it('should taxii server response with no start date, and next page', async () => {
@@ -214,7 +206,7 @@ describe('Verify taxii ingestion', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestionPaginatedWithNoStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input3);
+    const ingestionPaginatedWithNoStartDate = await ingestionTaxiiAdd(testContext, ADMIN_USER, input3);
     expect(ingestionPaginatedWithNoStartDate.id).toBeDefined();
     expect(ingestionPaginatedWithNoStartDate.internal_id).toBeDefined();
 
@@ -273,7 +265,7 @@ describe('Verify taxii ingestion', () => {
     expect(result.added_after_start).toBe('2024-03-01T20:44:44.000Z');
 
     // Delete the ingest
-    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithNoStartDate.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestionPaginatedWithNoStartDate.internal_id);
   });
 
   it('should store nothing when no data', async () => {
@@ -289,7 +281,7 @@ describe('Verify taxii ingestion', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
+    const ingestionPaginatedWithStartDate = await ingestionTaxiiAdd(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
     expect(ingestionPaginatedWithStartDate.internal_id).toBeDefined();
 
@@ -308,7 +300,7 @@ describe('Verify taxii ingestion', () => {
     expect(result.added_after_start).toBe('2023-01-01T20:35:44.000Z'); // previous value
 
     // Delete the ingest
-    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
   });
 });
 
@@ -325,7 +317,7 @@ describe('Verify taxii ingestion - patch part', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
     expect(ingestion.internal_id).toBeDefined();
 
@@ -336,7 +328,7 @@ describe('Verify taxii ingestion - patch part', () => {
     // should not throw exception "Unknown Error: Attribute must be a string"
 
     // Delete the ingest
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 });
 
@@ -378,7 +370,7 @@ describe('Verify csv ingestion', () => {
     }, 10000, 6); // Wait for the queue result to exist - max 1 minute
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
-    csvLines = await readCsvFromFileStream('./tests/03-integration/10-modules/ingestion/ingestionManager', 'csv-file-cities.csv');
+    csvLines = await readCsvFromFileStream('./tests/03-integration/10-modules/ingestion/ingestionManager-testData', 'csv-file-cities.csv');
   });
 
   it('should csv ingestion run', async () => {

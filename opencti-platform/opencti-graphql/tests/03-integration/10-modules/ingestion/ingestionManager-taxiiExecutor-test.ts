@@ -3,12 +3,7 @@ import { IngestionAuthType, type IngestionTaxiiAddInput, TaxiiVersion } from '..
 
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import * as connectorMock from '../../../../src/domain/connector';
-import {
-  addIngestion as addTaxiiIngestion,
-  findById as findTaxiiIngestionById,
-  ingestionDelete,
-  patchTaxiiIngestion,
-} from '../../../../src/modules/ingestion/ingestion-taxii-domain';
+import { ingestionTaxiiAdd, findTaxiiIngestionById, ingestionTaxiiDelete, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
 import { taxiiExecutor } from '../../../../src/manager/ingestionManager';
 import { now } from '../../../../src/utils/format';
 
@@ -29,14 +24,14 @@ describe('Verify taxiiExecutor', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
 
     // Execute taxiiExecutor - ingestion has no last_execution_date so isMustExecuteIteration returns true
     // Queue is empty (messages_number === 0) so it will call the taxii handler
     await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
 
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 
   it('should taxiiExecutor skip ingestion when scheduling period has not elapsed', async () => {
@@ -51,7 +46,7 @@ describe('Verify taxiiExecutor', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1D', // 1 day period
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
 
     // Patch last_execution_date to now so isMustExecuteIteration returns false (1 day not elapsed)
@@ -65,7 +60,7 @@ describe('Verify taxiiExecutor', () => {
     // last_execution_date should still be the patched value (not updated by executor)
     expect(result.last_execution_date).toBeDefined();
 
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 
   it('should taxiiExecutor handle buffering when queue has remaining messages', async () => {
@@ -80,14 +75,14 @@ describe('Verify taxiiExecutor', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
 
     // Now run taxiiExecutor - should enter the buffering branch (messages_number > 0)
     vi.spyOn(connectorMock, 'queueDetails').mockResolvedValue({ messages_number: 5, messages_size: 10 });
     await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
 
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 
   it('should taxiiExecutor do nothing when no running ingestion exists', async () => {
@@ -102,12 +97,12 @@ describe('Verify taxiiExecutor', () => {
       user_id: ADMIN_USER.id,
       scheduling_period: 'PT1H',
     };
-    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    const ingestion = await ingestionTaxiiAdd(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
 
     // Execute taxiiExecutor - should not process the non-running ingestion
     await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
 
-    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+    await ingestionTaxiiDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 });

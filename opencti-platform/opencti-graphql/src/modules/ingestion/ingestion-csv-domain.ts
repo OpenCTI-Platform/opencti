@@ -27,7 +27,7 @@ import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } 
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
-import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
+import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, encryptIngestionCredential, decryptIngestionCredential, verifyIngestionUri } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -66,6 +66,7 @@ export const defaultIngestionGroupsCount = async (context: AuthContext) => {
 };
 
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
+  verifyIngestionUri(input.uri);
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
@@ -132,6 +133,11 @@ export const patchCsvIngestion = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const uriField = input.find((editInput) => editInput.key === 'uri');
+  if (uriField && uriField.value[0]) {
+    verifyIngestionUri(uriField.value[0]);
+  }
+
   const parsedInput = await Promise.all(input.map(async (editInput) => {
     if (editInput.key === 'csv_mapper') {
       if (!editInput.value) {
