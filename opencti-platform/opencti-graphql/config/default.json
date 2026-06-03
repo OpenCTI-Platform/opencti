@@ -322,6 +322,7 @@
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
     "interval": 30000,
+    "uri_deny_list": [],
     "taxii_feed": {
       "limit_per_request": 0
     },

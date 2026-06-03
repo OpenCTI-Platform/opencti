@@ -151,10 +151,6 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
         setSubmitting(false);
         resetForm();
       },
-      onError: (error: Error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
-      },
     });
   };
 
