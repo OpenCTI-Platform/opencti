@@ -6,9 +6,8 @@ import useSwitchDraft from '../../drafts/useSwitchDraft';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import { workflowStatusTriggerMutation, workflowStatusRetryMutation, workflowStatusClearMutation } from './workflowStatus.graphql';
+import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './workflowStatus.graphql';
 import type { workflowStatusTriggerMutation as workflowStatusTriggerMutationType } from './__generated__/workflowStatusTriggerMutation.graphql';
-import type { workflowStatusRetryMutation as workflowStatusRetryMutationType } from './__generated__/workflowStatusRetryMutation.graphql';
 import type { workflowStatusClearMutation as workflowStatusClearMutationType } from './__generated__/workflowStatusClearMutation.graphql';
 
 export type WizardStep = 'org-picker' | 'comment' | 'validate';
@@ -39,7 +38,6 @@ export const useTransitionWizard = ({ entityId, entityNavigationId }: UseTransit
   const [commentValue, setCommentValue] = useState('');
 
   const [commit, approving] = useMutation<workflowStatusTriggerMutationType>(workflowStatusTriggerMutation);
-  const [commitRetry, retrying] = useMutation<workflowStatusRetryMutationType>(workflowStatusRetryMutation);
   const [commitClear, clearing] = useMutation<workflowStatusClearMutationType>(workflowStatusClearMutation);
 
   const exitDraftAfterValidation = () => {
@@ -141,17 +139,6 @@ export const useTransitionWizard = ({ entityId, entityNavigationId }: UseTransit
     advance();
   };
 
-  const handleRetry = () => {
-    commitRetry({
-      variables: { entityId },
-      onCompleted: (response) => {
-        if (response.retryPendingWorkflowTransitionActions?.success) {
-          MESSAGING$.notifySuccess(t_i18n('Workflow actions retried'));
-        }
-      },
-    });
-  };
-
   const handleClear = () => {
     commitClear({
       variables: { entityId },
@@ -174,13 +161,11 @@ export const useTransitionWizard = ({ entityId, entityNavigationId }: UseTransit
     currentStep: wizard?.steps[0] ?? null,
     canBypassMandatoryFields,
     approving,
-    retrying,
     clearing,
     handleTransition,
     handleOrgPickerSubmit,
     handleConfirmComment,
     handleValidateDraft,
-    handleRetry,
     handleClear,
     notifyBackgroundTransitionComplete,
   };

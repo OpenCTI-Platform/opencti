@@ -4,7 +4,6 @@ import { createEntity, createRelation, loadEntity, updateAttribute } from '../..
 import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { FilterMode, type EditInput } from '../../../generated/graphql';
-import { generateInternalId } from '../../../schema/identifier';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -837,88 +836,6 @@ export const isStatusTemplateUsedInWorkflows = async (
     }
   }
   return false;
-};
-
-/**
- * Re-enqueue only the failed async action slots of a pending transition.
- * Available when pendingStatus = 'error'. Reuses stored runtimeParams — no user re-prompt.
- */
-export const retryPendingWorkflowTransitionActions = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityId: string,
-): Promise<TriggerResult> => {
-  const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
-  if (!entity) throw FunctionalError('Entity not found', { entityId });
-
-  const executionContext = bypassDraftContext(context);
-  const executionUser = executionContext.user!;
-  const effectiveEntityId = entity.internal_id || entity.id;
-  const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
-
-  if (!instanceEntity) throw FunctionalError('No workflow instance found for entity', { entityId });
-  if (instanceEntity.pendingStatus !== 'error') {
-    return { success: false, reason: 'Retry is only available when pendingStatus is "error"' };
-  }
-
-  let pendingTransition: WorkflowPendingTransition;
-  try {
-    pendingTransition = typeof instanceEntity.pendingTransition === 'string'
-      ? JSON.parse(instanceEntity.pendingTransition)
-      : instanceEntity.pendingTransition;
-  } catch {
-    throw FunctionalError('pendingTransition is malformed; use clearWorkflowPendingState to reset');
-  }
-
-  const updatedSlots: AsyncActionSlot[] = [];
-
-  for (const slot of pendingTransition.asyncActions) {
-    if (slot.status !== 'failed') {
-      updatedSlots.push(slot); // success/pending slots pass through unchanged
-      continue;
-    }
-
-    if (!slot.taskInput) {
-      throw FunctionalError('Cannot retry: slot is missing taskInput. Use clearWorkflowPendingState to unblock.', { slotId: slot.id });
-    }
-
-    // Re-enqueue the failed task with a new slot ID (old task remains but is orphaned)
-    const newSlotId = generateInternalId();
-    const { scope, description, actions, ids, draftContext } = slot.taskInput;
-    const taskContext = draftContext ? { ...executionContext, draft_context: draftContext } : executionContext;
-
-    const task = await createListTask(taskContext, executionUser, {
-      scope,
-      description: description ?? `Workflow retry: ${pendingTransition.event}`,
-      actions,
-      ids,
-      workflow_instance_id: instanceEntity.internal_id || instanceEntity.id,
-      workflow_action_id: newSlotId,
-    });
-
-    updatedSlots.push({
-      id: newSlotId,
-      workId: task.work_id ?? '',
-      type: slot.type,
-      status: 'pending',
-      taskInput: slot.taskInput,
-    });
-  }
-
-  const updatedPendingTransition: WorkflowPendingTransition = {
-    ...pendingTransition,
-    asyncActions: updatedSlots,
-  };
-
-  const instanceId = instanceEntity.internal_id || instanceEntity.id;
-  await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-    { key: 'pendingStatus', value: ['pending'] },
-    { key: 'pendingError', value: [null] },
-    { key: 'pendingTransition', value: [JSON.stringify(updatedPendingTransition)] },
-  ]);
-
-  const workflowInstance = await getWorkflowInstance(context, user, entityId);
-  return { success: true, executionStatus: 'pending', instance: workflowInstance, entity };
 };
 
 /**

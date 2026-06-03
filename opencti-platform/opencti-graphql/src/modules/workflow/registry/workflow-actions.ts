@@ -1,6 +1,6 @@
 import { logApp } from '../../../config/conf';
 import { draftWorkspaceEditAuthorizedMembers, validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
-import type { AsyncActionSlot, AsyncActionSlotTaskInput, Context } from '../types/workflow-types';
+import type { AsyncActionSlot, Context } from '../types/workflow-types';
 import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
 
@@ -96,21 +96,11 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       workflow_action_id: slotId,
     });
 
-    // Store the task's input so we can retry if needed
-    const taskInput: AsyncActionSlotTaskInput = {
-      scope,
-      description,
-      actions,
-      ids,
-      ...(isDraft ? { draftContext: entity.internal_id } : {}),
-    };
-
     const slot: AsyncActionSlot = {
       id: slotId,
       workId: task.work_id ?? '',
       type: 'asyncBulkAction',
       status: 'pending',
-      taskInput,
     };
 
     if (Array.isArray(pendingAsyncSlots)) {

@@ -8,7 +8,6 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   publishWorkflowDefinition,
-  retryPendingWorkflowTransitionActions,
   setWorkflowDefinition,
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
@@ -48,9 +47,6 @@ const workflowResolvers = {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
       return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
-    },
-    retryPendingWorkflowTransitionActions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
-      return retryPendingWorkflowTransitionActions(context, context.user!, entityId);
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);

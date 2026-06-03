@@ -13,7 +13,6 @@ import type { workflowStatus_data$key } from './__generated__/workflowStatus_dat
 // Relay + router mocks (same pattern as WorkflowStatus.test.tsx)
 // ---------------------------------------------------------------------------
 const mockCommit = vi.fn();
-const mockCommitRetry = vi.fn();
 const mockCommitClear = vi.fn();
 
 vi.mock('react-relay', async (importOriginal) => {
@@ -24,7 +23,6 @@ vi.mock('react-relay', async (importOriginal) => {
     useFragment: (_fragment: unknown, data: unknown) => data,
     useMutation: vi.fn()
       .mockImplementationOnce(() => [mockCommit, false])
-      .mockImplementationOnce(() => [mockCommitRetry, false])
       .mockImplementationOnce(() => [mockCommitClear, false])
       .mockImplementation(() => [vi.fn(), false]),
   };
@@ -118,7 +116,6 @@ const makeErrorDraft = (pendingError?: string) =>
 describe('WorkflowTransitions – pending state UI', () => {
   beforeEach(() => {
     mockCommit.mockReset();
-    mockCommitRetry.mockReset();
     mockCommitClear.mockReset();
   });
 
@@ -158,7 +155,6 @@ describe('WorkflowTransitions – pending state UI', () => {
 describe('WorkflowTransitions – error state UI', () => {
   beforeEach(() => {
     mockCommit.mockReset();
-    mockCommitRetry.mockReset();
     mockCommitClear.mockReset();
   });
 
@@ -167,34 +163,16 @@ describe('WorkflowTransitions – error state UI', () => {
     expect(screen.getByText('Transition failed')).toBeDefined();
   });
 
-  it('renders Retry and Clear buttons in the error state', () => {
+  it('renders only the Clear button in the error state', () => {
     testRender(<WorkflowTransitions data={makeErrorDraft()} />);
-    expect(screen.getByText('Retry')).toBeDefined();
     expect(screen.getByText('Clear')).toBeDefined();
-  });
-
-  it('Retry button is not disabled when not currently retrying or clearing', () => {
-    testRender(<WorkflowTransitions data={makeErrorDraft()} />);
-    const retryBtn = screen.getByText('Retry').closest('button');
-    expect(retryBtn).not.toBeDisabled();
-  });
-
-  it('does NOT render normal transition buttons in error state', () => {
-    const errorDraft = makeErrorDraft('task failed');
-    testRender(<WorkflowTransitions data={errorDraft} />);
-    // Only Retry and Clear buttons should be present
-    const buttons = screen.getAllByRole('button');
-    const buttonTexts = buttons.map((b) => b.textContent ?? '');
-    expect(buttonTexts.some((t) => t.includes('Retry'))).toBe(true);
-    expect(buttonTexts.some((t) => t.includes('Clear'))).toBe(true);
-    expect(buttonTexts.some((t) => !t.includes('Retry') && !t.includes('Clear') && t.trim() !== '')).toBe(false);
+    expect(screen.queryByText('Retry')).toBeNull();
   });
 });
 
 describe('WorkflowTransitions – validate draft dialog', () => {
   beforeEach(() => {
     mockCommit.mockReset();
-    mockCommitRetry.mockReset();
     mockCommitClear.mockReset();
   });
 

@@ -147,7 +147,6 @@ extend type Mutation {
     workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
-    retryPendingWorkflowTransitionActions(entityId: String!): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [SETTINGS])
     reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 }

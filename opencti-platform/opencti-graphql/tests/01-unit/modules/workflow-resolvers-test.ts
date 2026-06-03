@@ -5,7 +5,6 @@ import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-d
 import {
   getAllowedTransitions,
   triggerWorkflowEvent,
-  retryPendingWorkflowTransitionActions,
   clearWorkflowPendingState,
   getWorkflowInstance,
 } from '../../../src/modules/workflow/domain/workflow-domain';
@@ -20,7 +19,6 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   publishWorkflowDefinition: vi.fn(),
   deleteWorkflowDefinition: vi.fn(),
   triggerWorkflowEvent: vi.fn(),
-  retryPendingWorkflowTransitionActions: vi.fn(),
   clearWorkflowPendingState: vi.fn(),
 }));
 
@@ -638,25 +636,6 @@ describe('workflow-resolvers', () => {
         expect(result).toEqual([]);
       });
     });
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Mutation.retryPendingWorkflowTransitionActions
-// ---------------------------------------------------------------------------
-
-describe('Mutation.retryPendingWorkflowTransitionActions resolver', () => {
-  it('delegates to the domain function with the correct args', async () => {
-    (retryPendingWorkflowTransitionActions as any).mockResolvedValue({ success: true, executionStatus: 'pending', instance: {}, entity: {} });
-
-    const result = await workflowResolvers.Mutation.retryPendingWorkflowTransitionActions(
-      {},
-      { entityId: 'entity-id' },
-      mockContext,
-    );
-
-    expect(retryPendingWorkflowTransitionActions).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id');
-    expect(result).toEqual({ success: true, executionStatus: 'pending', instance: {}, entity: {} });
   });
 });
 

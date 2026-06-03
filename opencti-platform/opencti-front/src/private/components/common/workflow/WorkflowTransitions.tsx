@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useFragment } from 'react-relay';
 import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
-import { ArrowDropDownOutlined, ErrorOutline, LockOpenOutlined, Refresh } from '@mui/icons-material';
+import { ArrowDropDownOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
@@ -36,13 +36,11 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     currentStep,
     canBypassMandatoryFields,
     approving,
-    retrying,
     clearing,
     handleTransition,
     handleOrgPickerSubmit,
     handleConfirmComment,
     handleValidateDraft,
-    handleRetry,
     handleClear,
     notifyBackgroundTransitionComplete,
   } = useTransitionWizard({ entityId: draft.id, entityNavigationId: draft.entity_id });
@@ -101,7 +99,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               variant="secondary"
               size="small"
               onClick={handleClear}
-              disabled={clearing || retrying}
+              disabled={clearing}
               startIcon={<Close />}
             >
               {t_i18n('Clear')}
@@ -124,22 +122,13 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           <Typography variant="caption" color="error">
             {t_i18n('Transition failed')}
           </Typography>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={handleRetry}
-            disabled={retrying || clearing}
-            startIcon={<Refresh />}
-          >
-            {t_i18n('Retry')}
-          </Button>
           <Tooltip title={t_i18n('Force-unlock this transition (admin only). The background task will be orphaned.')}>
             <span>
               <Button
                 variant="secondary"
                 size="small"
                 onClick={handleClear}
-                disabled={clearing || retrying}
+                disabled={clearing}
                 startIcon={<LockOpenOutlined />}
               >
                 {t_i18n('Clear')}

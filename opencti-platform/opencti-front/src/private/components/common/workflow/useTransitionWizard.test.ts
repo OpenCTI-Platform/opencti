@@ -8,14 +8,12 @@ import { CommentMode } from '../../settings/sub_types/workflow/utils';
 // ---------------------------------------------------------------------------
 const {
   mockCommit,
-  mockCommitRetry,
   mockCommitClear,
   mockNotifySuccess,
   mockExitDraft,
   mockNavigate,
 } = vi.hoisted(() => ({
   mockCommit: vi.fn(),
-  mockCommitRetry: vi.fn(),
   mockCommitClear: vi.fn(),
   mockNotifySuccess: vi.fn(),
   mockExitDraft: vi.fn(),
@@ -30,7 +28,6 @@ const {
 // in every test, without relying on a fragile mockImplementationOnce queue.
 vi.mock('./workflowStatus.graphql', () => ({
   workflowStatusTriggerMutation: { __id: 'trigger' },
-  workflowStatusRetryMutation: { __id: 'retry' },
   workflowStatusClearMutation: { __id: 'clear' },
   workflowStatusFragment: {},
   COMMENT_MAX_LENGTH: 1000,
@@ -42,7 +39,6 @@ vi.mock('react-relay', async (importOriginal) => {
     ...actual,
     useMutation: (mutation: { __id?: string }) => {
       if (mutation?.__id === 'trigger') return [mockCommit, false];
-      if (mutation?.__id === 'retry') return [mockCommitRetry, false];
       if (mutation?.__id === 'clear') return [mockCommitClear, false];
       return [vi.fn(), false];
     },
@@ -312,27 +308,6 @@ describe('useTransitionWizard – fireTransition response handling', () => {
     });
 
     expect(mockExitDraft).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('useTransitionWizard – handleRetry', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('calls notifySuccess when retry completes successfully', () => {
-    const { result } = renderWizard();
-
-    act(() => {
-      result.current.handleRetry();
-    });
-
-    const [{ onCompleted }] = mockCommitRetry.mock.calls[0];
-    act(() => {
-      onCompleted({ retryPendingWorkflowTransitionActions: { success: true } });
-    });
-
-    expect(mockNotifySuccess).toHaveBeenCalledWith('Workflow actions retried');
   });
 });
 

@@ -119,21 +119,6 @@ export const workflowStatusTriggerMutation = graphql`
   }
 `;
 
-export const workflowStatusRetryMutation = graphql`
-  mutation workflowStatusRetryMutation($entityId: String!) {
-    retryPendingWorkflowTransitionActions(entityId: $entityId) {
-      success
-      reason
-      executionStatus
-      entity {
-        ... on DraftWorkspace {
-          ...workflowStatus_data
-        }
-      }
-    }
-  }
-`;
-
 export const workflowStatusClearMutation = graphql`
   mutation workflowStatusClearMutation($entityId: String!) {
     clearWorkflowPendingState(entityId: $entityId) {

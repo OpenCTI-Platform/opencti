@@ -10,7 +10,6 @@ import {
   getWorkflowInstance,
   deleteWorkflowDefinition,
   triggerWorkflowEvent,
-  retryPendingWorkflowTransitionActions,
   clearWorkflowPendingState,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
@@ -1168,98 +1167,6 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
 
     expect(result.success).toBe(false);
     expect(result.reason).toContain('DB connection error');
-  });
-});
-
-// ===========================================================================
-// retryPendingWorkflowTransitionActions
-// ===========================================================================
-
-describe('retryPendingWorkflowTransitionActions', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('throws when entity is not found', async () => {
-    (storeLoadById as any).mockResolvedValue(null);
-
-    await expect(retryPendingWorkflowTransitionActions(mockContext, mockUser, 'entity-id'))
-      .rejects.toThrow('Entity not found');
-  });
-
-  it('throws when no workflow instance exists for the entity', async () => {
-    (storeLoadById as any).mockResolvedValue({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-    (loadEntity as any).mockResolvedValue(null); // no instance
-    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
-
-    await expect(retryPendingWorkflowTransitionActions(mockContext, mockUser, 'entity-id'))
-      .rejects.toThrow();
-  });
-
-  it('returns success:false when pendingStatus is not error', async () => {
-    (storeLoadById as any).mockResolvedValue({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingStatus: 'pending' });
-
-    const result = await retryPendingWorkflowTransitionActions(mockContext, mockUser, 'entity-id');
-
-    expect(result.success).toBe(false);
-    expect(result.reason).toContain('only available when pendingStatus is "error"');
-  });
-
-  it('throws when pendingTransition JSON is malformed', async () => {
-    (storeLoadById as any).mockResolvedValue({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingStatus: 'error', pendingTransition: '{ bad json' });
-
-    await expect(retryPendingWorkflowTransitionActions(mockContext, mockUser, 'entity-id'))
-      .rejects.toThrow();
-  });
-
-  it('throws when a failed slot is missing taskInput', async () => {
-    const pt = JSON.stringify({
-      event: 'submit', toState: 'reviewing', triggeredBy: 'u', triggeredAt: new Date().toISOString(),
-      runtimeParams: {}, syncActions: [],
-      asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'failed' }], // no taskInput
-    });
-    (storeLoadById as any).mockResolvedValue({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingStatus: 'error', pendingTransition: pt });
-
-    await expect(retryPendingWorkflowTransitionActions(mockContext, mockUser, 'entity-id'))
-      .rejects.toThrow('taskInput');
-  });
-
-  it('passes through slots with status success and re-enqueues only failed slots', async () => {
-    const pt = JSON.stringify({
-      event: 'submit', toState: 'reviewing', triggeredBy: 'u', triggeredAt: new Date().toISOString(),
-      runtimeParams: {}, syncActions: [],
-      asyncActions: [
-        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'success', taskInput: { scope: 'KNOWLEDGE', actions: [], ids: [] } },
-        { id: 'slot-2', workId: 'work-2', type: 'asyncBulkAction', status: 'failed', taskInput: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['org-1'] } }], ids: ['e-1'] } },
-      ],
-    });
-    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
-      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
-      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [] }), validation_errors: [] } });
-      return Promise.resolve(null);
-    });
-    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingStatus: 'error', pendingTransition: pt });
-    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
-    (updateAttribute as any).mockResolvedValue({ element: {} });
-
-    // Mock createListTask via __createListTask injection — but here it's imported directly.
-    // We need to mock the backgroundTask-common import.
-    vi.doMock('../../../src/domain/backgroundTask-common', () => ({
-      createListTask: vi.fn().mockResolvedValue({ work_id: 'new-work-id' }),
-    }));
-
-    // The retry call won't fail even if createListTask is the real one (it will throw).
-    // Accept that it throws in this unit test since createListTask has deep deps.
-    // We just verify the pendingStatus check and slot pass-through logic.
-    // For full retry path, see integration tests.
-    try {
-      await retryPendingWorkflowTransitionActions(mockContext, mockUser, 'entity-id');
-    } catch {
-      // Expected to throw because createListTask is not fully mocked
-    }
   });
 });
 
