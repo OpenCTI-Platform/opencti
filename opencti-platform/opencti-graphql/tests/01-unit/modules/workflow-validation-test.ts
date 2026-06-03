@@ -688,8 +688,11 @@ describe('Workflow Validation', () => {
         },
       ],
     };
-    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'DraftWorkspace'))
-      .rejects.toThrow('DraftWorkspace workflow must contain at least one validateDraft action');
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'DraftWorkspace');
+    expect(errors).toContainEqual(expect.objectContaining({
+      type: 'MISSING_VALIDATE_DRAFT_ACTION',
+      message: 'DraftWorkspace workflow must contain at least one validateDraft action',
+    }));
   });
 
   it('should pass backward-compat definition with only legacy actions[]', async () => {
