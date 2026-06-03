@@ -5,6 +5,8 @@ on:
 jobs:
   check-organization:
     name: Check if PR author is a OpenCTI-Platform member and label accordingly
+    # except for renovate
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'dependencies') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
