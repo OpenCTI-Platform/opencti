@@ -41441,6 +41441,7 @@ export type ConstraintDirectiveArgs = {
 export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args = ConstraintDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type FfDirectiveArgs = {
+  defaultValue?: Maybe<Scalars['String']['input']>;
   flags: Array<Scalars['String']['input']>;
   softFail?: Maybe<Scalars['Boolean']['input']>;
 };

@@ -111,7 +111,7 @@ const SavedFilterEditDialog = ({
     }
 
     // Update authorized members
-    if (values.authorized_members) {
+    if (canShare && values.authorized_members) {
       const memberAccessInput = values.authorized_members.map((m: AuthorizedMemberOption) => ({
         id: m.value,
         access_right: m.accessRight,
