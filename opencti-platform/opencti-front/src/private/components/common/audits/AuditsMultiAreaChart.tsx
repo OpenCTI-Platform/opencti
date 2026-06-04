@@ -65,6 +65,12 @@ interface AuditsMultiAreaChartComponentProps {
   onShowWarning: (show: boolean) => void;
 }
 
+type TimeSeriesEntry = NonNullable<
+  NonNullable<
+    NonNullable<AuditsMultiAreaChartTimeSeriesQuery['response']['auditsMultiTimeSeries']>[number]
+  >['data']
+>[number];
+
 const AuditsMultiAreaChartComponent: FunctionComponent<AuditsMultiAreaChartComponentProps> = ({
   queryRef,
   dataSelection,
@@ -79,11 +85,6 @@ const AuditsMultiAreaChartComponent: FunctionComponent<AuditsMultiAreaChartCompo
     auditsMultiAreaChartTimeSeriesQuery,
     queryRef,
   );
-  type TimeSeriesEntry = NonNullable<
-    NonNullable<
-      NonNullable<AuditsMultiAreaChartTimeSeriesQuery['response']['auditsMultiTimeSeries']>[number]
-    >['data']
-  >[number];
 
   useEffect(() => {
     const warningData: WidgetMultiTimeSeries[] = (data.auditsMultiTimeSeries ?? []).map((series) => ({

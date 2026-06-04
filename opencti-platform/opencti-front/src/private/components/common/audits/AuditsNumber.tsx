@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { FunctionComponent, ReactNode, Suspense, useState, useEffect, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { AuditsNumberNumberSeriesQuery } from '@components/common/audits/__generated__/AuditsNumberNumberSeriesQuery.graphql';
+import { AuditsNumberNumberSeriesQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsNumberNumberSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -146,7 +146,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
     );
     return {
       types,
-      filters,
+      filters: filters as unknown as GqlFilterGroup,
       startDate: startDate ?? undefined,
       endDate: dayAgo(),
       field: selection.attribute,
