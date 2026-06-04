@@ -46,7 +46,7 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Manage connector state`                    | Reset the connector state to restart ingestion from the beginning.                            |
 | `API usage with authorization headers` | Programmatically authenticate against the OpenCTI API via the Authorization HTTP header. Without this capability a user will have to use the UI to log in.                   |
 | &nbsp;&nbsp;`Allow token usage`                    | Manage tokens & use a token to programmatically authenticate against the OpenCTI API via the Authorization HTTP header.                            |
-| &nbsp;&nbsp;`Allow basic auth usage`                    | Ability to use basic auth to authenticate when using OpenCTI API programmatically via the Authorization HTTP header.                    |
+| &nbsp;&nbsp;`Allow basic auth usage`                    | Use basic auth to programmatically authenticate against the OpenCTI API via the Authorization HTTP header.                    |
 | `Connectors API usage: register, ping, export push ...` | Connectors specific permissions for register, ping, push export files, etc.                   |
 | `Access data sharing`                                   | Access and consume data such as TAXII collections, CSV feeds and live streams.                |
 | &nbsp;&nbsp;`Manage data sharing`                       | Share data such as TAXII collections, CSV feeds and live streams or custom dashboards.        |
