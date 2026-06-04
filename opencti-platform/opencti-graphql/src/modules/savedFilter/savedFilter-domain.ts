@@ -63,7 +63,7 @@ export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`filters\` for saved filters \`${element.name}\``,
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for saved filters \`${element.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_SAVED_FILTER, input },
   });
 

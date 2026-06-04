@@ -10,11 +10,13 @@ import { type Creator } from '../../utils/authorizedMembers';
 interface SavedFilterSharingSectionProps {
   canShare: boolean;
   owner: Creator;
+  isEditMode?: boolean;
 }
 
 const SavedFilterSharingSection = ({
   canShare,
   owner,
+  isEditMode = false,
 }: SavedFilterSharingSectionProps) => {
   const { t_i18n } = useFormatter();
 
@@ -34,7 +36,7 @@ const SavedFilterSharingSection = ({
             component={AuthorizedMembersField}
             owner={owner}
             enableAccesses
-            addMeUserWithAdminRights
+            addMeUserWithAdminRights={!isEditMode}
             hideInfo
             customAccessRights={['view', 'admin']}
           />

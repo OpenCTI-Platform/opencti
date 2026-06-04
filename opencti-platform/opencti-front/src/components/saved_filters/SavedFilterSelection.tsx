@@ -29,6 +29,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const { t_i18n } = useFormatter();
   const {
     useDataTablePaginationLocalStorage: {
+      localStorageKey,
       helpers,
       viewStorage: { savedFilters },
     },
@@ -126,6 +127,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
         onInputChange={onInputChange}
         value={selectedSavedFilter}
         inputValue={inputValue}
+        localStorageKey={localStorageKey}
       />
       {!!savedFilterToDelete && (
         <SavedFilterDeleteDialog

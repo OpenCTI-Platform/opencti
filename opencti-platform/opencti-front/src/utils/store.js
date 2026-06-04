@@ -132,3 +132,26 @@ export const insertNodeFromEdge = (store, parentId, edgesPath, dataPath, params)
   const newEdge = payload.setLinkedRecord(payload, 'node');
   ConnectionHandler.insertEdgeBefore(records, newEdge);
 };
+
+/**
+ * Invalidates a connection record in the Relay store, forcing subscribed
+ * components to refetch the data on next render.
+ * Useful after updating a node within a connection when usePreloadedQuery
+ * does not automatically detect field changes.
+ */
+export const invalidateConnection = (store, key, filters) => {
+  const root = store.getRoot();
+  const params = { ...filters };
+  delete params.count;
+  delete params.id;
+  let conn;
+  if (Object.keys(params).length === 0) {
+    conn = ConnectionHandler.getConnection(root, key);
+  } else {
+    conn = ConnectionHandler.getConnection(root, key, params);
+  }
+  if (conn) {
+    conn.invalidateRecord();
+  }
+};
+
