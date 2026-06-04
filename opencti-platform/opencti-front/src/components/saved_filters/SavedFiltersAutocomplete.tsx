@@ -70,6 +70,11 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
       sx={{
         width: 200,
       }}
+      slotProps={{
+        listbox: {
+          sx: { paddingTop: 0 },
+        },
+      }}
       noOptionsText={t_i18n('No available options')}
       onChange={(_, selectedOption: AutocompleteOptionType) => onChange?.(selectedOption)}
       onInputChange={onInputChange}
