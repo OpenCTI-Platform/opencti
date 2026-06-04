@@ -972,16 +972,20 @@ const WidgetCreationParameters = () => {
             }
             return null;
           })}
-        {getCurrentCategory(type) === 'custom-attributes' && (
-          <WidgetCustomAttributesColumnsInput
-            layout={dataSelection[0]?.layout ?? '1'}
-            onLayoutChange={(newLayout) => setLayout(0, newLayout)}
-            availableColumns={getCustomAttributesColumns(getCurrentSelectedEntityTypes(0)[0])}
-            defaultColumns={getDefaultCustomAttributesColumns()}
-            value={[...(dataSelection[0]?.columns ?? getDefaultCustomAttributesColumns())]}
-            onChange={(newColumns) => setColumns(0, newColumns)}
-          />
-        )}
+        {getCurrentCategory(type) === 'custom-attributes' && (() => {
+          const entityType = host.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
+          const allColumns = getCustomAttributesColumns(entityType);
+          return (
+            <WidgetCustomAttributesColumnsInput
+              layout={dataSelection[0]?.layout ?? '1'}
+              onLayoutChange={(newLayout) => setLayout(0, newLayout)}
+              availableColumns={allColumns}
+              defaultColumns={getDefaultCustomAttributesColumns(entityType)}
+              value={[...(dataSelection[0]?.columns ?? allColumns)]}
+              onChange={(newColumns) => setColumns(0, newColumns)}
+            />
+          );
+        })()}
       </div>
     </div>
   );

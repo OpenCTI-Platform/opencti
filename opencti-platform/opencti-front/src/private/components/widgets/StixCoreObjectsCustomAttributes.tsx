@@ -41,6 +41,11 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         name
         description
         aliases
+        confidence
+        revoked
+        objective
+        last_seen
+        first_seen
       }
       createdBy {
         ... on Identity {

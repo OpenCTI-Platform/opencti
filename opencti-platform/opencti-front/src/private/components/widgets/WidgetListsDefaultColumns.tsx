@@ -61,6 +61,11 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'context' },
     { attribute: 'container_content', label: 'Content' },
   ],
+  Campaign: [
+    { attribute: 'objective', label: 'Objective' },
+    { attribute: 'first_seen', label: 'First seen' },
+    { attribute: 'last_seen', label: 'Last seen' },
+  ],
   'Malware-Analysis': [
     { attribute: 'product', label: 'Product' },
     { attribute: 'objectAssignee' },
@@ -192,8 +197,8 @@ export type MetricsColumn = {
   readonly metrics: readonly MetricConf[] | null | undefined;
 };
 
-export const getDefaultCustomAttributesColumns = (): WidgetColumn[] => {
-  return defaultWidgetColumns.common;
+export const getDefaultCustomAttributesColumns = (entityType?: string): WidgetColumn[] => {
+  return getCustomAttributesColumns(entityType);
 };
 
 export const getCustomAttributesColumns = (entityType?: string): WidgetColumn[] => {
