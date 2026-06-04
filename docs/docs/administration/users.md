@@ -60,7 +60,7 @@ The below capabilities are applicable to the whole application.
 | `Access to admin functionalities`                       | Parent capability allowing users to only view the settings.                                   |
 | &nbsp;&nbsp;`Access administration parameters`          | Access and manage overall parameters of the platform in `Settings > Parameters`.              |
 | &nbsp;&nbsp;`Manage credentials`                        | Access and manage roles, groups, users, organizations and security policies.                  |
-| &nbsp;&nbsp;`Manage authentication`                        | Ability for users to define Authentication strategies, password policy & set up platform-wide authentication via 2FA when using basic auth.              |
+| &nbsp;&nbsp;`Manage authentication`                        | Define authentication strategies, the password policy & set up platform-wide authentication via 2FA when using basic auth.              |
 | &nbsp;&nbsp;`Manage marking definitions`                | Update and delete marking definitions.                                                        |
 | &nbsp;&nbsp;`Manage dissemination lists`                | Update and manage dissemination lists                                                         |
 | &nbsp;&nbsp;`Manage customization`                      | Customize entity types                                                                        |
