@@ -281,6 +281,26 @@ describe('resolvedDataSelection', () => {
       expect(isMissingHostEntity).toBe(true);
     });
 
+    it('does not return isMissingHostEntity when custom view edition disables preview mode explicitly', () => {
+      const dataSelection: WidgetDataSelection[] = [{
+        filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+        dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+        dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
+      }];
+      const { isMissingHostEntity } = resolveDataSelection({
+        filterKeysSchema,
+        dataSelection,
+        perspective: 'entities',
+        host: {
+          kind: 'custom-view',
+          customViewTargetEntityType: 'Campaign',
+          customViewTargetEntityId: undefined,
+          previewMode: false,
+        },
+      });
+      expect(isMissingHostEntity).toBe(false);
+    });
+
     it('does not return isMissingHostEntity if there is no host entity injected but SELF_ID is not used', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
