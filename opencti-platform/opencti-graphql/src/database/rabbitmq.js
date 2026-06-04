@@ -75,6 +75,11 @@ const RECONNECT_INITIAL_DELAY = 1000; // 1 second
 const RECONNECT_MAX_DELAY = 30000; // 30 seconds max
 const RECONNECT_MULTIPLIER = 2; // Exponential backoff
 
+// Configuration for the send() retry loop
+const SEND_WARN_MAX_ATTEMPTS = 5; // Log the first failures at warn level
+const SEND_ERROR_LOG_INTERVAL = 10; // Then escalate to error every N attempts (also throttles log volume)
+const SEND_FORCE_RECONNECT_AFTER = 3; // Force a clean reconnection after this many consecutive failures on a seemingly-open channel
+
 /**
  * Create a new connection to RabbitMQ with automatic reconnection
  */
@@ -94,7 +99,21 @@ const createConnection = () => {
         logApp.error('[RABBITMQ] Persistent connection error', { cause: connError });
       });
 
+      // RabbitMQ pauses publishers when a resource alarm fires (memory/disk watermark exceeded).
+      // The connection stays open but no message is confirmed, so surface it explicitly: this is the
+      // typical cause of "queues growing while the platform stops sending" with no obvious error.
+      conn.on('blocked', (reason) => {
+        logApp.error('[RABBITMQ] Publisher connection BLOCKED by broker resource alarm, publishing is paused until the broker recovers', { reason });
+      });
+      conn.on('unblocked', () => {
+        logApp.info('[RABBITMQ] Publisher connection unblocked by broker, publishing resumed');
+      });
+
       conn.on('close', () => {
+        // Ignore close events coming from a stale connection that is no longer the active one
+        if (_persistentConnection && _persistentConnection !== conn) {
+          return;
+        }
         logApp.warn('[RABBITMQ] Persistent connection closed');
         _persistentConnection = null;
         persistentChannel = null;
@@ -126,28 +145,32 @@ const createConnection = () => {
         }
 
         channel.on('error', (chError) => {
+          // Ignore errors coming from a stale channel that is no longer the active one
+          if (persistentChannel && persistentChannel !== channel) {
+            return;
+          }
           logApp.error('[RABBITMQ] Persistent channel error', { cause: chError });
           persistentChannel = null;
           // Close the connection to trigger reconnection and avoid dangling connections
-          if (_persistentConnection) {
-            try {
-              _persistentConnection.close();
-            } catch (_e) {
-              // Ignore close errors - connection may already be closing
-            }
+          try {
+            conn.close();
+          } catch (_e) {
+            // Ignore close errors - connection may already be closing
           }
         });
 
         channel.on('close', () => {
+          // Ignore close events coming from a stale channel that is no longer the active one
+          if (persistentChannel && persistentChannel !== channel) {
+            return;
+          }
           logApp.warn('[RABBITMQ] Persistent channel closed');
           persistentChannel = null;
           // Close the connection to trigger reconnection and avoid dangling connections
-          if (_persistentConnection) {
-            try {
-              _persistentConnection.close();
-            } catch (_e) {
-              // Ignore close errors - connection may already be closing
-            }
+          try {
+            conn.close();
+          } catch (_e) {
+            // Ignore close errors - connection may already be closing
           }
         });
 
@@ -438,6 +461,26 @@ const amqpExecute = async (execute) => {
 };
 
 /**
+ * Drop the current publisher channel and tear down its connection so the next send
+ * rebuilds a clean one. Used when publishing keeps failing while the channel still
+ * looks "open" (half-open connection or lingering broker rejection), to avoid
+ * retrying forever on a zombie channel. The background reconnection (triggered by
+ * the connection 'close' handler) owns rebuilding the connection.
+ */
+const resetPersistentConnection = () => {
+  const staleConnection = _persistentConnection;
+  persistentChannel = null;
+  _persistentConnection = null;
+  if (staleConnection) {
+    try {
+      staleConnection.close();
+    } catch (_closeError) {
+      // Ignore close errors - the connection may already be closing
+    }
+  }
+};
+
+/**
  * Send a message using the persistent connection for high performance
  *
  * Guarantees:
@@ -455,14 +498,32 @@ export const send = async (exchangeName, routingKey, message) => {
 
   while (true) {
     try {
-      return await sendPersistent(exchangeName, routingKey, message);
+      const result = await sendPersistent(exchangeName, routingKey, message);
+      if (attemptNumber > 0) {
+        logApp.info(`[RABBITMQ] Send recovered after ${attemptNumber} failed attempt(s)`, { exchangeName, routingKey });
+      }
+      return result;
     } catch (err) {
-      logApp.warn(`[RABBITMQ] Send failed (attempt ${++attemptNumber}), retrying in ${retryDelay}ms`, { cause: err, exchangeName, routingKey });
+      attemptNumber += 1;
+      const errorMessage = err?.message ?? String(err);
+      const logMeta = { cause: err, exchangeName, routingKey, attempt: attemptNumber };
+      // Escalate to error after repeated failures so monitoring can alert, while throttling the
+      // log volume (a permanently failing send would otherwise flood the logs with identical warnings).
+      if (attemptNumber <= SEND_WARN_MAX_ATTEMPTS) {
+        logApp.warn(`[RABBITMQ] Send failed (attempt ${attemptNumber}), retrying in ${retryDelay}ms: ${errorMessage}`, logMeta);
+      } else if (attemptNumber % SEND_ERROR_LOG_INTERVAL === 0) {
+        logApp.error(`[RABBITMQ] Send still failing after ${attemptNumber} attempts, retrying in ${retryDelay}ms: ${errorMessage}`, logMeta);
+      }
 
-      // If channel was lost, wait for reconnection before retry
       if (!persistentChannel) {
+        // Channel was lost: a background reconnection is (or will be) in progress, wait for it before retrying
         logApp.info('[RABBITMQ] Waiting for connection recovery before retry...');
         await getPersistentChannel();
+      } else if (attemptNumber >= SEND_FORCE_RECONNECT_AFTER) {
+        // Channel still looks open but keeps rejecting: force a clean reconnection so we don't loop
+        // forever on a zombie channel. The next iteration waits for the rebuilt channel.
+        logApp.warn(`[RABBITMQ] Forcing publisher reconnection after ${attemptNumber} consecutive send failures`, logMeta);
+        resetPersistentConnection();
       }
 
       // Wait with exponential backoff before retrying
