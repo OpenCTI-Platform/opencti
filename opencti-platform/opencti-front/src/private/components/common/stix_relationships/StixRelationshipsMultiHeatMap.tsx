@@ -12,7 +12,7 @@ import { StixRelationshipsMultiHeatMapTimeSeriesQuery } from './__generated__/St
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
-import {monthsAgo, now} from "../../../../utils/Time";
+import { monthsAgo, now } from '../../../../utils/Time';
 
 const stixRelationshipsMultiHeatMapTimeSeriesQuery = graphql`
   query StixRelationshipsMultiHeatMapTimeSeriesQuery(

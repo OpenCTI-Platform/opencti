@@ -468,82 +468,82 @@ describe('useDashboard', () => {
       vi.useFakeTimers();
       try {
         const existingWidget = {
-        id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
-        type: 'text',
-        perspective: 'entities',
-        dataSelection: [],
-        layout: {
-          i: '474752bc-4a56-4b05-8230-633b0ca97cb2',
-          x: 0,
-          y: 7,
-          w: 4,
-          h: 4,
-          moved: false,
-          static: false,
-        },
-      } as DashboardWidget;
-      const entity = {
-        id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
-        manifest: fakeSerialize({
-          config: {},
-          widgets: {
-            [existingWidget.id]: existingWidget,
+          id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+          type: 'text',
+          perspective: 'entities',
+          dataSelection: [],
+          layout: {
+            i: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+            x: 0,
+            y: 7,
+            w: 4,
+            h: 4,
+            moved: false,
+            static: false,
           },
-        }),
-      };
-      const saveSpy = vi.fn();
-      const { result } = renderHook((entity: DashboardLike) => useDashboard({
-        entity,
-        onSave: saveSpy,
-      }), { initialProps: entity });
-
-      expect(result.current.widgetsLayouts).toStrictEqual({
-        [existingWidget.id]: existingWidget.layout,
-      });
-
-      // Act: change layout
-      act(() => result.current.handleLayoutChange([{
-        ...existingWidget.layout,
-        x: 2,
-        w: 7,
-      }]));
-
-      act(() => {
-        vi.advanceTimersByTime(300);
-      });
-      // Call twice to check noop when layouts are equal
-      act(() => result.current.handleLayoutChange([{
-        ...existingWidget.layout,
-        x: 2,
-        w: 7,
-      }]));
-
-      const expectedSerializedManifest = fakeSerialize({
-        config: {},
-        widgets: {
-          [existingWidget.id]: {
-            ...existingWidget,
-            layout: {
-              ...existingWidget.layout,
-              x: 2,
-              w: 7,
+        } as DashboardWidget;
+        const entity = {
+          id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
+          manifest: fakeSerialize({
+            config: {},
+            widgets: {
+              [existingWidget.id]: existingWidget,
             },
-          },
-        },
-      });
-      expect(saveSpy).toHaveBeenCalledExactlyOnceWith(
-        entity.id,
-        expectedSerializedManifest,
-        true,
-        expect.any(Function),
-      );
-      expect(result.current.widgetsLayouts).toStrictEqual({
-        [existingWidget.id]: {
+          }),
+        };
+        const saveSpy = vi.fn();
+        const { result } = renderHook((entity: DashboardLike) => useDashboard({
+          entity,
+          onSave: saveSpy,
+        }), { initialProps: entity });
+
+        expect(result.current.widgetsLayouts).toStrictEqual({
+          [existingWidget.id]: existingWidget.layout,
+        });
+
+        // Act: change layout
+        act(() => result.current.handleLayoutChange([{
           ...existingWidget.layout,
           x: 2,
           w: 7,
-        },
-      });
+        }]));
+
+        act(() => {
+          vi.advanceTimersByTime(300);
+        });
+        // Call twice to check noop when layouts are equal
+        act(() => result.current.handleLayoutChange([{
+          ...existingWidget.layout,
+          x: 2,
+          w: 7,
+        }]));
+
+        const expectedSerializedManifest = fakeSerialize({
+          config: {},
+          widgets: {
+            [existingWidget.id]: {
+              ...existingWidget,
+              layout: {
+                ...existingWidget.layout,
+                x: 2,
+                w: 7,
+              },
+            },
+          },
+        });
+        expect(saveSpy).toHaveBeenCalledExactlyOnceWith(
+          entity.id,
+          expectedSerializedManifest,
+          true,
+          expect.any(Function),
+        );
+        expect(result.current.widgetsLayouts).toStrictEqual({
+          [existingWidget.id]: {
+            ...existingWidget.layout,
+            x: 2,
+            w: 7,
+          },
+        });
       } finally {
         vi.useRealTimers();
       }
