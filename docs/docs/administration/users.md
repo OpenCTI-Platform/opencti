@@ -55,7 +55,7 @@ The below capabilities are applicable to the whole application.
 | `Manage data mappers`                                   | Create, update and delete CSV & JSON mappers.                                                 |
 | `Use Playbooks`                                         | Use Playbooks (enroll an entity in a playbook).                                               |
 | &nbsp;&nbsp;`Manage Playbooks`                          | Manage Playbooks.                                                                             |
-| `Access PIR`                       | Ability to view PIRs (as long as the access has been granted to you).                                   |
+| `Access PIR`                       | View PIRs (as long as the access has been granted to you).                                   |
 | &nbsp;&nbsp;`Create/update/delete`                          | Ability to manage PIR (including access to the PIR)                    |
 | `Access to admin functionalities`                       | Parent capability allowing users to only view the settings.                                   |
 | &nbsp;&nbsp;`Access administration parameters`          | Access and manage overall parameters of the platform in `Settings > Parameters`.              |
