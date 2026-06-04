@@ -91,13 +91,14 @@ describe('Workflow Domain', () => {
       // Default: EE check passes (simulates EE licence)
       vi.spyOn(ee, 'checkEnterpriseEdition').mockResolvedValue(undefined);
       (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
-      (createEntity as any).mockResolvedValue({ id: 'workflow-id', name: 'Workflow for Incident', all_versions: [], draft_version: {} });
+      const versionObj = { id: 'v1', timestamp: '', createdBy: '', content: '{}', validation_errors: [] };
+      (createEntity as any).mockResolvedValue({ id: 'workflow-id', name: 'Workflow for Incident', all_versions: [versionObj], draft_version: versionObj });
       (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id', workflow_id: 'workflow-id' } });
     });
 
     it('does NOT call checkEnterpriseEdition for a plain CE definition (no EE actions, no conditions)', async () => {
       const def = ceDefinition({
-        transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'validateDraft', mode: 'sync' }] }],
+        transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'validateDraft', mode: 'sync' }] }],
       });
       await setWorkflowDefinition(mockContext, mockUser, 'Incident', def);
       expect(ee.checkEnterpriseEdition).not.toHaveBeenCalled();
@@ -112,7 +113,7 @@ describe('Workflow Domain', () => {
     });
 
     it.each([
-      ['updateAuthorizedMembers on transition actions', { transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }] }],
+      ['updateAuthorizedMembers on transition syncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }] }],
       ['shareWithOrganizations on transition asyncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', asyncActions: [{ type: 'shareWithOrganizations', mode: 'async' }] }] }],
       ['unshareFromOrganizations on transition asyncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', asyncActions: [{ type: 'unshareFromOrganizations', mode: 'async' }] }] }],
       ['asyncBulkAction on transition syncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'asyncBulkAction', mode: 'sync' }] }] }],
@@ -128,7 +129,7 @@ describe('Workflow Domain', () => {
     it('propagates the error thrown by checkEnterpriseEdition (CE instance rejects EE features)', async () => {
       vi.spyOn(ee, 'checkEnterpriseEdition').mockRejectedValue(new Error('Enterprise edition required'));
       const def = ceDefinition({
-        transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }],
+        transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }],
       });
       await expect(setWorkflowDefinition(mockContext, mockUser, 'Incident', def)).rejects.toThrow('Enterprise edition required');
       expect(createEntity).not.toHaveBeenCalled();

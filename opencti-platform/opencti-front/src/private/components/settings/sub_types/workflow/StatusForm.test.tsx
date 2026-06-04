@@ -23,6 +23,10 @@ vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('../../../common/entreprise_edition/EEChip', () => ({
+  default: () => <span data-testid="ee-chip" />,
+}));
+
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
@@ -62,8 +66,6 @@ describe('StatusForm – EE / CE gating', () => {
 
     it('renders EEChip labels on both action sections', () => {
       renderForm({ onEnter: [], onExit: [] });
-      // EEChip renders inside the Typography – there should be two occurrences
-      const chips = document.querySelectorAll('[class*="EEChip"], [data-testid="ee-chip"]');
       // At minimum, both section headers contain "EE" marker text
       expect(screen.getByText(/on enter actions/i)).toBeDefined();
       expect(screen.getByText(/on exit actions/i)).toBeDefined();

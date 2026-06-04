@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import * as ee from '../../../src/enterprise-edition/ee';
 import { ADMIN_USER, TEST_ORGANIZATION } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 
@@ -69,6 +70,7 @@ describe('Workflow Actions Resolver', () => {
   let draftWorkspaceId: string;
 
   beforeAll(async () => {
+    vi.spyOn(ee, 'checkEnterpriseEdition').mockResolvedValue();
     const result = await queryAsAdmin({
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: {
@@ -206,5 +208,9 @@ describe('Workflow Actions Resolver', () => {
         entityType: 'DraftWorkspace',
       },
     });
+  });
+
+  afterAll(() => {
+    vi.restoreAllMocks();
   });
 });

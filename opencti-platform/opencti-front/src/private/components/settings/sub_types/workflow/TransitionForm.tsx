@@ -64,7 +64,7 @@ const TransitionForm = () => {
           {t_i18n('Conditions')} <EEChip />
         </Typography>
         {values.conditions && (
-          <Box sx={{ opacity: isEnterpriseEdition ? 1 : 0.5, pointerEvents: isEnterpriseEdition ? 'auto' : 'none' }}>
+          <Box style={{ opacity: isEnterpriseEdition ? 1 : 0.5, pointerEvents: isEnterpriseEdition ? 'auto' : 'none' }}>
             <Field name={WorkflowDataType.conditions} component={WorkflowConditionFilters} />
           </Box>
         )}
@@ -140,7 +140,7 @@ const TransitionForm = () => {
             label={t_i18n('Update authorized members')}
           />
           {values.syncActions && (
-            <Box sx={{ opacity: isEnterpriseEdition ? 1 : 0.5, pointerEvents: isEnterpriseEdition ? 'auto' : 'none' }}>
+            <Box style={{ opacity: isEnterpriseEdition ? 1 : 0.5, pointerEvents: isEnterpriseEdition ? 'auto' : 'none' }}>
               <WorkflowFieldList name={WorkflowDataType.syncActions} />
             </Box>
           )}

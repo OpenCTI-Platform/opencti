@@ -298,8 +298,7 @@ export const setWorkflowDefinition = async (
   // or onEnter/onExit actions on states), except for the 'validateDraft' action which is CE.
   const definitionRequiresEE = (
     (definitionObj.transitions ?? []).some((t: WorkflowSerializedTransition) => (
-      hasEEActions(t.actions)
-      || hasEEActions(t.asyncActions)
+      hasEEActions(t.asyncActions)
       || hasEEActions(t.syncActions)
       || hasConditions(t.conditions)
       || !!t.comment
