@@ -80,6 +80,13 @@ const SEND_WARN_MAX_ATTEMPTS = 5; // Log the first failures at warn level
 const SEND_ERROR_LOG_INTERVAL = 10; // Then escalate to error every N attempts (also throttles log volume)
 const SEND_FORCE_RECONNECT_AFTER = 3; // Force a clean reconnection after this many consecutive failures on a seemingly-open channel
 
+// A connection/channel can emit late 'error'/'close'/'blocked'/'unblocked' events after it has been
+// replaced by a fresh one (e.g. after a forced reconnection or a transient drop). Those stale events
+// must be ignored so they don't clobber the live connection state, start a competing reconnect, or
+// raise misleading resource-alarm logs on a connection that is actually healthy.
+const isStaleConnection = (conn) => _persistentConnection !== null && _persistentConnection !== conn;
+const isStaleChannel = (channel) => persistentChannel !== null && persistentChannel !== channel;
+
 /**
  * Create a new connection to RabbitMQ with automatic reconnection
  */
@@ -96,6 +103,10 @@ const createConnection = () => {
       logApp.info('[RABBITMQ] Persistent publisher connection established');
 
       conn.on('error', (connError) => {
+        // Ignore errors coming from a stale connection that is no longer the active one
+        if (isStaleConnection(conn)) {
+          return;
+        }
         logApp.error('[RABBITMQ] Persistent connection error', { cause: connError });
       });
 
@@ -103,15 +114,23 @@ const createConnection = () => {
       // The connection stays open but no message is confirmed, so surface it explicitly: this is the
       // typical cause of "queues growing while the platform stops sending" with no obvious error.
       conn.on('blocked', (reason) => {
+        // Ignore events coming from a stale connection that is no longer the active one
+        if (isStaleConnection(conn)) {
+          return;
+        }
         logApp.error('[RABBITMQ] Publisher connection BLOCKED by broker resource alarm, publishing is paused until the broker recovers', { reason });
       });
       conn.on('unblocked', () => {
+        // Ignore events coming from a stale connection that is no longer the active one
+        if (isStaleConnection(conn)) {
+          return;
+        }
         logApp.info('[RABBITMQ] Publisher connection unblocked by broker, publishing resumed');
       });
 
       conn.on('close', () => {
         // Ignore close events coming from a stale connection that is no longer the active one
-        if (_persistentConnection && _persistentConnection !== conn) {
+        if (isStaleConnection(conn)) {
           return;
         }
         logApp.warn('[RABBITMQ] Persistent connection closed');
@@ -146,7 +165,7 @@ const createConnection = () => {
 
         channel.on('error', (chError) => {
           // Ignore errors coming from a stale channel that is no longer the active one
-          if (persistentChannel && persistentChannel !== channel) {
+          if (isStaleChannel(channel)) {
             return;
           }
           logApp.error('[RABBITMQ] Persistent channel error', { cause: chError });
@@ -161,7 +180,7 @@ const createConnection = () => {
 
         channel.on('close', () => {
           // Ignore close events coming from a stale channel that is no longer the active one
-          if (persistentChannel && persistentChannel !== channel) {
+          if (isStaleChannel(channel)) {
             return;
           }
           logApp.warn('[RABBITMQ] Persistent channel closed');

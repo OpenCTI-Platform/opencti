@@ -1,5 +1,85 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Controllable in-memory amqplib so the persistent-publisher tests below can
+// drive publish failures, forced reconnections and stale event handlers without
+// a real broker. Everything lives in vi.hoisted so the amqplib mock factory
+// (hoisted above the imports) and the tests share the same state.
+const amqpFake = vi.hoisted(() => {
+  type Handlers = Record<string, (...args: any[]) => void>;
+
+  const state = {
+    connections: [] as any[],
+    // Queue of publish outcomes consumed in order: null = confirmed, an Error =
+    // broker nack (confirm callback rejects), 'THROW' = synchronous publish throw.
+    publishOutcomes: [] as Array<Error | null | 'THROW'>,
+    publishCallCount: 0,
+  };
+
+  const makeChannel = () => {
+    const handlers: Handlers = {};
+    const channel: any = {
+      __handlers: handlers,
+      on: (event: string, h: (...args: any[]) => void) => {
+        handlers[event] = h;
+      },
+      once: (event: string, h: (...args: any[]) => void) => {
+        handlers[event] = h;
+      },
+      publish: (_exchange: string, _routingKey: string, _content: Buffer, _options: unknown, cb: (err?: Error | null) => void) => {
+        state.publishCallCount += 1;
+        const outcome = state.publishOutcomes.length > 0 ? state.publishOutcomes.shift() : null;
+        if (outcome === 'THROW') {
+          throw new Error('synchronous publish failure');
+        }
+        cb(outcome ?? null);
+        return true; // canContinue (no backpressure)
+      },
+      close: () => { /* no-op for channels */ },
+      emit: (event: string, ...args: any[]) => handlers[event]?.(...args),
+    };
+    return channel;
+  };
+
+  const makeConn = () => {
+    const handlers: Handlers = {};
+    const channel = makeChannel();
+    const conn: any = {
+      __handlers: handlers,
+      __channel: channel,
+      closeCount: 0,
+      on: (event: string, h: (...args: any[]) => void) => {
+        handlers[event] = h;
+      },
+      createConfirmChannel: (cb: (err: Error | null, channel: any) => void) => cb(null, channel),
+      close: () => {
+        conn.closeCount += 1;
+        // amqplib emits 'close' once the connection is torn down.
+        handlers.close?.();
+      },
+      emit: (event: string, ...args: any[]) => handlers[event]?.(...args),
+    };
+    state.connections.push(conn);
+    return conn;
+  };
+
+  const connect = (_uri: string, _opts: unknown, cb: (err: Error | null, conn: any) => void) => cb(null, makeConn());
+
+  const reset = () => {
+    state.connections = [];
+    state.publishOutcomes = [];
+    state.publishCallCount = 0;
+  };
+
+  return { state, makeConn, connect, reset };
+});
+
+vi.mock('amqplib/callback_api', () => ({
+  default: {
+    connect: amqpFake.connect,
+    credentials: { plain: () => ({}) },
+  },
+}));
+
 const mockHttpClient = {
   get: vi.fn(),
   delete: vi.fn(),
@@ -257,5 +337,184 @@ describe('rabbitmq: getConnectorQueueSize', () => {
 
     const result = await getConnectorQueueSize(context, user, 'connector-abc');
     expect(result).toBe(15);
+  });
+});
+
+// ── Persistent publisher: send() retry loop and connection event handlers ────
+
+const EXCHANGE = 'test.exchange';
+const ROUTING_KEY = 'test.routing';
+const MESSAGE = 'hello';
+
+let publisherLogApp: { info: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn>; warn: ReturnType<typeof vi.fn>; debug: ReturnType<typeof vi.fn> };
+let send: (exchangeName: string, routingKey: string, message: string) => Promise<boolean>;
+
+// Re-import the (mocked) conf and the module under test against a fresh module
+// graph so rabbitmq.js internal connection state is reset between tests.
+const loadFreshPublisher = async () => {
+  vi.resetModules();
+  amqpFake.reset();
+  const confModule = await import('../../../src/config/conf');
+  publisherLogApp = confModule.logApp as typeof publisherLogApp;
+  const rabbitmq = await import('../../../src/database/rabbitmq');
+  send = rabbitmq.send;
+};
+
+const warnMessages = () => publisherLogApp.warn.mock.calls.map((c) => String(c[0]));
+const errorMessages = () => publisherLogApp.error.mock.calls.map((c) => String(c[0]));
+const infoMessages = () => publisherLogApp.info.mock.calls.map((c) => String(c[0]));
+
+describe('rabbitmq persistent publisher: send() retry loop', () => {
+  beforeEach(async () => {
+    await loadFreshPublisher();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should publish on the first attempt and not log any recovery', async () => {
+    const result = await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+
+    expect(result).toBe(true);
+    expect(amqpFake.state.publishCallCount).toBe(1);
+    expect(infoMessages().some((m) => m.includes('Send recovered'))).toBe(false);
+    expect(warnMessages().some((m) => m.includes('Send failed'))).toBe(false);
+  });
+
+  it('should retry a transient publish failure and log recovery once', async () => {
+    amqpFake.state.publishOutcomes = [new Error('transient nack')];
+
+    const result = await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+
+    expect(result).toBe(true);
+    expect(amqpFake.state.publishCallCount).toBe(2);
+    expect(warnMessages().some((m) => m.includes('Send failed (attempt 1)'))).toBe(true);
+    expect(infoMessages().some((m) => m.includes('Send recovered after 1 failed attempt(s)'))).toBe(true);
+    // A single transient failure must not force a reconnection.
+    expect(amqpFake.state.connections.every((c) => c.closeCount === 0)).toBe(true);
+  });
+
+  it('should force a clean reconnection after repeated failures on a seemingly-open channel', async () => {
+    // Channel keeps confirming-nacking while it still looks open: 3 failures then success.
+    amqpFake.state.publishOutcomes = [new Error('nack'), new Error('nack'), new Error('nack')];
+
+    const result = await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+
+    expect(result).toBe(true);
+    expect(warnMessages().some((m) => m.includes('Forcing publisher reconnection after 3 consecutive send failures'))).toBe(true);
+    // The first (zombie) connection must have been torn down by resetPersistentConnection.
+    expect(amqpFake.state.connections[0].closeCount).toBeGreaterThan(0);
+    // A fresh connection must have been rebuilt.
+    expect(amqpFake.state.connections.length).toBeGreaterThan(1);
+    expect(infoMessages().some((m) => m.includes('Send recovered'))).toBe(true);
+  });
+
+  it('should wait for background recovery when the channel is lost (publish throws)', async () => {
+    amqpFake.state.publishOutcomes = ['THROW'];
+
+    const result = await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+
+    expect(result).toBe(true);
+    expect(infoMessages().some((m) => m.includes('Waiting for connection recovery before retry'))).toBe(true);
+  });
+
+  it('should escalate to error logging once the warn threshold is exceeded', async () => {
+    // 10 consecutive failures then success: the 10th attempt hits the error interval.
+    amqpFake.state.publishOutcomes = Array.from({ length: 10 }, () => new Error('persistent nack'));
+
+    const result = await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+
+    expect(result).toBe(true);
+    expect(errorMessages().some((m) => m.includes('Send still failing after 10 attempts'))).toBe(true);
+  });
+});
+
+describe('rabbitmq persistent publisher: connection event handlers', () => {
+  beforeEach(async () => {
+    await loadFreshPublisher();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should log broker resource alarms on the active connection', async () => {
+    await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+    const activeConn = amqpFake.state.connections[0];
+    publisherLogApp.error.mockClear();
+    publisherLogApp.info.mockClear();
+
+    activeConn.emit('blocked', 'low on memory');
+    activeConn.emit('unblocked');
+    activeConn.emit('error', new Error('connection boom'));
+
+    expect(errorMessages().some((m) => m.includes('BLOCKED by broker resource alarm'))).toBe(true);
+    expect(infoMessages().some((m) => m.includes('unblocked by broker'))).toBe(true);
+    expect(errorMessages().some((m) => m.includes('Persistent connection error'))).toBe(true);
+  });
+
+  it('should ignore stale connection events after the connection has been replaced', async () => {
+    await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+    const staleConn = amqpFake.state.connections[0];
+
+    // Emitting close on the active connection triggers a background reconnect,
+    // so a fresh connection becomes the active one and staleConn becomes stale.
+    staleConn.emit('close');
+    expect(amqpFake.state.connections.length).toBeGreaterThan(1);
+
+    publisherLogApp.error.mockClear();
+    publisherLogApp.info.mockClear();
+    publisherLogApp.warn.mockClear();
+
+    // Late events from the leaked/old connection must be ignored entirely.
+    staleConn.emit('blocked', 'late alarm');
+    staleConn.emit('unblocked');
+    staleConn.emit('error', new Error('late error'));
+    staleConn.emit('close');
+
+    expect(errorMessages().some((m) => m.includes('BLOCKED by broker resource alarm'))).toBe(false);
+    expect(infoMessages().some((m) => m.includes('unblocked by broker'))).toBe(false);
+    expect(errorMessages().some((m) => m.includes('Persistent connection error'))).toBe(false);
+    expect(warnMessages().some((m) => m.includes('Persistent connection closed'))).toBe(false);
+  });
+
+  it('should tear down the connection when the active channel errors', async () => {
+    await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+    const conn = amqpFake.state.connections[0];
+
+    conn.__channel.emit('error', new Error('channel boom'));
+
+    expect(errorMessages().some((m) => m.includes('Persistent channel error'))).toBe(true);
+    expect(conn.closeCount).toBeGreaterThan(0);
+  });
+
+  it('should tear down the connection when the active channel closes', async () => {
+    await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+    const conn = amqpFake.state.connections[0];
+
+    conn.__channel.emit('close');
+
+    expect(warnMessages().some((m) => m.includes('Persistent channel closed'))).toBe(true);
+    expect(conn.closeCount).toBeGreaterThan(0);
+  });
+
+  it('should ignore stale channel error and close events after the channel has been replaced', async () => {
+    await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+    const staleChannel = amqpFake.state.connections[0].__channel;
+
+    // Closing the active channel rebuilds a fresh connection/channel, so the
+    // original channel becomes stale.
+    staleChannel.emit('close');
+    expect(amqpFake.state.connections.length).toBeGreaterThan(1);
+
+    publisherLogApp.error.mockClear();
+    publisherLogApp.warn.mockClear();
+
+    staleChannel.emit('error', new Error('late channel error'));
+    staleChannel.emit('close');
+
+    expect(errorMessages().some((m) => m.includes('Persistent channel error'))).toBe(false);
+    expect(warnMessages().some((m) => m.includes('Persistent channel closed'))).toBe(false);
   });
 });
