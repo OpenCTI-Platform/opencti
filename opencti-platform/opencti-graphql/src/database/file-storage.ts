@@ -2,7 +2,6 @@ import path, { join } from 'node:path';
 import crypto from 'node:crypto';
 import mime from 'mime-types';
 import nconf from 'nconf';
-import type { _Object } from '@aws-sdk/client-s3';
 import fs from 'node:fs';
 import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -35,7 +34,7 @@ import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
-import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
+import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload, type StorageObject } from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
@@ -365,20 +364,18 @@ export const isFileObjectExcluded = (id: string): boolean => {
 };
 
 /**
- * Transforms raw S3 objects into S3FileObject format with mime type detection.
- * Filters out objects without keys and applies exclusion rules.
- * @param {_Object[]} objects - Array of raw S3 objects from AWS SDK
- * @returns {S3FileObject[]} Filtered and transformed array of S3 file objects with mime types
+ * Transforms backend-agnostic storage objects into S3FileObject format with mime type detection.
+ * Applies exclusion rules. Object keys are guaranteed defined by the provider listing contract.
+ * @param {StorageObject[]} objects - Array of storage objects from the active provider
+ * @returns {S3FileObject[]} Filtered and transformed array of file objects with mime types
  */
-const filesAdaptation = (objects: _Object[]): S3FileObject[] => {
-  const storageObjects = objects
-    .filter((obj): obj is Required<Pick<_Object, 'Key'>> & _Object => obj.Key !== undefined)
-    .map((obj) => {
-      return {
-        Key: obj.Key,
-        mimeType: guessMimeType(obj.Key),
-      };
-    });
+const filesAdaptation = (objects: StorageObject[]): S3FileObject[] => {
+  const storageObjects = objects.map((obj) => {
+    return {
+      Key: obj.Key,
+      mimeType: guessMimeType(obj.Key),
+    };
+  });
   return storageObjects.filter((obj: S3FileObject) => {
     return !isFileObjectExcluded(obj.Key);
   });
@@ -417,7 +414,7 @@ export const loadedFilesListing = async (
   while (truncated) {
     try {
       const response = await rawListObjects(directory, recursive ?? false, continuationToken);
-      const resultFiles = filesAdaptation(response.Contents ?? []);
+      const resultFiles = filesAdaptation(response.objects);
       const resultLoaded = await promiseMap(
         resultFiles,
         (f: S3FileObject) => loadFile(context, user, f.Key, { dontThrow }),
@@ -428,9 +425,9 @@ export const loadedFilesListing = async (
       } else {
         pushAll(files, resultLoaded.filter((n) => n !== undefined));
       }
-      truncated = response.IsTruncated ?? false;
+      truncated = response.isTruncated;
       if (truncated) {
-        continuationToken = response.NextContinuationToken;
+        continuationToken = response.nextContinuationToken;
       }
     } catch (err) {
       logApp.error('[FILE STORAGE] Storage files read fail', { cause: err });

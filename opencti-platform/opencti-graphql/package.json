@@ -55,6 +55,8 @@
     "@aws-sdk/client-sts": "3.1046.0",
     "@aws-sdk/credential-provider-node": "3.972.40",
     "@aws-sdk/lib-storage": "3.1046.0",
+    "@azure/identity": "4.13.1",
+    "@azure/storage-blob": "12.31.0",
     "@datadog/pprof": "5.14.1",
     "@elastic/elasticsearch": "8.19.1",
     "@escape.tech/graphql-armor": "3.2.0",
