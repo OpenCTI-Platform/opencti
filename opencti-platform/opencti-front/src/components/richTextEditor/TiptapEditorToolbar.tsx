@@ -193,18 +193,25 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
     });
 
     const INTER_GROUP_GAP = 4; // gap: 0.5 = 4px between group Boxes
+    const INTRA_GROUP_GAP = 2; // gap between buttons in same group
 
     const measure = () => {
       const containerWidth = container.clientWidth;
 
-      // Total natural width: one gap per group transition, not per item
+      // Total natural width: gaps between groups + gaps between group items + item widths
       let totalNatural = 0;
       let lastGroup = -1;
       for (const id of itemIds) {
         const w = cachedWidthsRef.current[id] ?? 0;
         if (w === 0) continue;
         const gi = groupOf[id];
-        if (lastGroup !== -1 && gi !== lastGroup) totalNatural += INTER_GROUP_GAP;
+        if (lastGroup !== -1) {
+          if (gi !== lastGroup) {
+            totalNatural += INTER_GROUP_GAP;
+          } else {
+            totalNatural += INTRA_GROUP_GAP;
+          }
+        }
         totalNatural += w;
         lastGroup = gi;
       }
@@ -215,7 +222,7 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
         return;
       }
 
-      const MORE_BTN_WIDTH = 36;
+      const MORE_BTN_WIDTH = 40; // 36px estimated size + 4px safety buffer
       const available = containerWidth - MORE_BTN_WIDTH;
       let used = 0;
       const newHidden = new Set<string>();
@@ -225,7 +232,15 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
       for (const id of itemIds) {
         const w = cachedWidthsRef.current[id] ?? 0;
         const gi = groupOf[id];
-        const gapCost = (lastVisibleGroup !== -1 && gi !== lastVisibleGroup) ? INTER_GROUP_GAP : 0;
+
+        let gapCost = 0;
+        if (lastVisibleGroup !== -1) {
+          if (gi !== lastVisibleGroup) {
+            gapCost = INTER_GROUP_GAP;
+          } else {
+            gapCost = INTRA_GROUP_GAP;
+          }
+        }
 
         if (!overflowing && used + gapCost + w <= available) {
           used += gapCost + w;
@@ -248,6 +263,45 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
     return () => ro.disconnect();
   }, [itemIds, itemGroups]);
 
+  const toolbarItemStyles = {
+    '& .MuiToggleButtonGroup-root': {
+      border: 'none',
+      gap: '2px',
+      '& .MuiToggleButton-root': {
+        border: 'none',
+        '&:not(:first-of-type)': {
+          borderLeft: 'none',
+          marginLeft: 0,
+        },
+      },
+    },
+    '& .MuiToggleButton-root, & .MuiIconButton-root': {
+      border: 'none',
+      color: 'text.primary',
+      backgroundColor: 'transparent',
+      '&.Mui-disabled': {
+        color: 'text.disabled',
+      },
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '&:hover:not(.Mui-selected)': {
+        backgroundColor: 'transparent',
+      },
+      '&.Mui-selected': {
+        backgroundColor: 'action.selected',
+        color: 'primary.main',
+        '&.Mui-disabled': {
+          backgroundColor: 'action.selected',
+          color: 'text.disabled',
+        },
+        '&:hover': {
+          backgroundColor: 'action.selected',
+        },
+      },
+    },
+  };
+
   return (
     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
       <Box
@@ -261,6 +315,7 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
           p: 0.5,
           minHeight: 40,
           overflow: 'hidden',
+          ...toolbarItemStyles,
         }}
       >
         {/* heading */}
@@ -812,6 +867,7 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
             flexWrap: 'wrap',
             alignItems: 'center',
             gap: 0.5,
+            ...toolbarItemStyles,
           }}
         >
           {/* heading */}
