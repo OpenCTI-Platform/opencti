@@ -56,7 +56,7 @@ The below capabilities are applicable to the whole application.
 | `Use Playbooks`                                         | Use Playbooks (enroll an entity in a playbook).                                               |
 | &nbsp;&nbsp;`Manage Playbooks`                          | Manage Playbooks.                                                                             |
 | `Access PIR`                       | View PIRs (as long as the access has been granted to you).                                   |
-| &nbsp;&nbsp;`Create/update/delete`                          | Ability to manage PIR (including access to the PIR)                    |
+| &nbsp;&nbsp;`Create/update/delete`                          | Manage PIR (including access to the PIR).                    |
 | `Access to admin functionalities`                       | Parent capability allowing users to only view the settings.                                   |
 | &nbsp;&nbsp;`Access administration parameters`          | Access and manage overall parameters of the platform in `Settings > Parameters`.              |
 | &nbsp;&nbsp;`Manage credentials`                        | Access and manage roles, groups, users, organizations and security policies.                  |
