@@ -355,7 +355,7 @@ const loadFreshPublisher = async () => {
   vi.resetModules();
   amqpFake.reset();
   const confModule = await import('../../../src/config/conf');
-  publisherLogApp = confModule.logApp as typeof publisherLogApp;
+  publisherLogApp = confModule.logApp as unknown as typeof publisherLogApp;
   const rabbitmq = await import('../../../src/database/rabbitmq');
   send = rabbitmq.send;
 };
