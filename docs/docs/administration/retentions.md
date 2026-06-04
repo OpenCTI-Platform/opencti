@@ -26,13 +26,13 @@ There are 5 possible scopes for a retention rule:
 
 - **Knowledge**: The rule concerns all the entities of the platform. Users can define filters to target specific objects. Any object respecting the specified filters and that haven't been updated within the maximum retention duration will be permanently deleted.
 
-- **File**: The rule is applied on the global files (i.e. contained in Data > Import) that have been correctly uploaded (upload status is 'complete') and whose eventual imports have all been correctly completed. Such files are permanently deleted if they has been uploaded for a longer duration then the maximum retention duration.
+- **File**: The rule is applied on the global files (i.e. contained in Data > Import) that have been correctly uploaded (upload status is 'complete') and whose eventual imports have all been correctly completed. Such files are permanently deleted if they has been uploaded for a longer duration then the maximum retention duration. The rule is created by default and set to Inactive if you had not created it before
 
-- **Workbench**: The rule is applied on the global workbenches (i.e. contained in Data > Import). The global workbenches that hasn't been updated for the maximum retention duration will be permanently deleted.
+- **Workbench**: The rule is applied on the global workbenches (i.e. contained in Data > Import). The global workbenches that hasn't been updated for the maximum retention duration will be permanently deleted. The rule is created by default and set to Inactive if you had not created it before.
 
-- **History**: The rule is applied on the history logs of all knowledge entities. History log entries older than the maximum retention duration are permanently deleted.
+- **History**: The rule is applied on the history logs of all knowledge entities. History log entries older than the maximum retention duration are permanently deleted. The rule is created by default and set to Inactive if you had not created it before.
 
-- **Activity**: The rule is applied on the platform activity logs (administration events such as login, logout, and security actions). Activity log entries older than the maximum retention duration are permanently deleted.
+- **Activity**: The rule is applied on the platform activity logs (administration events such as login, logout, and security actions). Activity log entries older than the maximum retention duration are permanently deleted. The rule is created by default and set to Inactive if you had not created it before.
 
 ## Enabling and disabling a rule
 
