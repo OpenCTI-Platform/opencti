@@ -50,7 +50,7 @@ To create a new branch at the same level, click the **arrow** icon in the bottom
 
 To insert a component between two existing components, click the **+** button on the link between them.
 
-![Grid of available playbook components in the OpenCTI component selector dialog](assets/playbook_components1.png)
+![Grid of available playbook components in the OpenCTI component selector dialog](assets/playbook_components.png)
 
 ## Step 3: End your playbook
 
