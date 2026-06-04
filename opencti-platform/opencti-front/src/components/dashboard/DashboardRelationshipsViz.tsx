@@ -13,8 +13,8 @@ import StixRelationshipsRadar from '../../private/components/common/stix_relatio
 import StixRelationshipsPolarArea from '../../private/components/common/stix_relationships/StixRelationshipsPolarArea';
 import StixRelationshipsMultiHeatMap from '../../private/components/common/stix_relationships/StixRelationshipsMultiHeatMap';
 import StixRelationshipsTreeMap from '../../private/components/common/stix_relationships/StixRelationshipsTreeMap';
-import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
-import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
+import StixRelationshipsMap from '../../private/components/common/stix_relationships/StixRelationshipsMap';
+import StixRelationshipsWordCloud from '../../private/components/common/stix_relationships/StixRelationshipsWordCloud';
 import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
@@ -237,30 +237,26 @@ const DashboardRelationshipsViz = ({
       return (
         <StixRelationshipsMap
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
-          title={undefined} // because calling js component in ts
-          field={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     case 'wordcloud':
       return (
         <StixRelationshipsWordCloud
           variant={undefined}
-          endDate={endDate}
-          startDate={startDate}
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
-          title={undefined} // because calling js component in ts
-          field={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          refreshRate={refreshRate}
+          config={config}
         />
       );
     default:

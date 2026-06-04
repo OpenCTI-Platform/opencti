@@ -114,7 +114,6 @@ const buildQueryVariables = (
     };
   });
 
-  console.log('parameters?.interval', parameters);
   return {
     operation: 'count',
     startDate,
