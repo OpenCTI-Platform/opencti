@@ -1,5 +1,4 @@
-import { describe, expect, it, beforeAll, afterAll, vi } from 'vitest';
-import * as conf from '../../../src/config/conf';
+import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { Readable } from 'stream';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
@@ -413,7 +412,7 @@ describe('Retention Manager tests ', () => {
     };
     await elIndex(INDEX_HISTORY, historyEntry);
 
-    // Create a history retention rule
+    // Create a history retention rule (inactive so the background daemon won't race with us)
     const ruleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
       variables: {
@@ -423,6 +422,7 @@ describe('Retention Manager tests ', () => {
           retention_unit: 'minutes',
           scope: 'history',
           filters: emptyStringFilters,
+          active: false,
         },
       },
     });
@@ -433,20 +433,15 @@ describe('Retention Manager tests ', () => {
     const historyElements = await getElementsToDelete(context, 'history', before);
     expect(historyElements.edges.length).toBeGreaterThan(0);
     // Run executeProcessing for this rule
-    const featureSpy1 = vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((f: string) => f === conf.FEATURE_ACTIVITY_HISTORY_RETENTION);
-    try {
-      await executeProcessing(context, {
-        id: rule.id,
-        name: rule.name,
-        scope: 'history',
-        max_retention: 1,
-        retention_unit: 'minutes',
-        filters: emptyStringFilters,
-        active: true,
-      } as any);
-    } finally {
-      featureSpy1.mockRestore();
-    }
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'history',
+      max_retention: 1,
+      retention_unit: 'minutes',
+      filters: emptyStringFilters,
+      active: true,
+    } as any);
     // Wait for Elasticsearch automatic index refresh (1s default)
     await new Promise((resolve) => setTimeout(resolve, 1500));
     // The rule should have been patched with last_execution_date and last_deleted_count
@@ -474,20 +469,15 @@ describe('Retention Manager tests ', () => {
     const rule = ruleQuery.data?.retentionRuleAdd;
     expect(rule).toBeDefined();
     // Run executeProcessing — nothing should be deleted
-    const featureSpy2 = vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((f: string) => f === conf.FEATURE_ACTIVITY_HISTORY_RETENTION);
-    try {
-      await executeProcessing(context, {
-        id: rule.id,
-        name: rule.name,
-        scope: 'history',
-        max_retention: 36500,
-        retention_unit: 'days',
-        filters: emptyStringFilters,
-        active: true,
-      } as any);
-    } finally {
-      featureSpy2.mockRestore();
-    }
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'history',
+      max_retention: 36500,
+      retention_unit: 'days',
+      filters: emptyStringFilters,
+      active: true,
+    } as any);
     // Rule should be patched but with 0 deletions (publishUserAction NOT called since deletedCount = 0)
     const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
     expect(updatedRule?.last_execution_date).toBeDefined();
@@ -563,7 +553,7 @@ describe('Retention Manager tests ', () => {
       context_data: { message: 'test activity entry for executeProcessing retention test' },
     };
     await elIndex(INDEX_HISTORY, activityEntry);
-    // Create an activity retention rule with 1-minute window
+    // Create an activity retention rule with 1-minute window (inactive so the background daemon won't race with us)
     const ruleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
       variables: {
@@ -573,6 +563,7 @@ describe('Retention Manager tests ', () => {
           retention_unit: 'minutes',
           scope: 'activity',
           filters: emptyStringFilters,
+          active: false,
         },
       },
     });
@@ -583,20 +574,15 @@ describe('Retention Manager tests ', () => {
     const activityElements = await getElementsToDelete(context, 'activity', before);
     expect(activityElements.edges.length).toBeGreaterThan(0);
     // Run executeProcessing
-    const featureSpy3 = vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((f: string) => f === conf.FEATURE_ACTIVITY_HISTORY_RETENTION);
-    try {
-      await executeProcessing(context, {
-        id: rule.id,
-        name: rule.name,
-        scope: 'activity',
-        max_retention: 1,
-        retention_unit: 'minutes',
-        filters: emptyStringFilters,
-        active: true,
-      } as any);
-    } finally {
-      featureSpy3.mockRestore();
-    }
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'activity',
+      max_retention: 1,
+      retention_unit: 'minutes',
+      filters: emptyStringFilters,
+      active: true,
+    } as any);
     // Wait for Elasticsearch automatic index refresh (1s default)
     await new Promise((resolve) => setTimeout(resolve, 1500));
     // The rule should be patched with last_execution_date and last_deleted_count > 0
@@ -663,20 +649,15 @@ describe('Retention Manager tests ', () => {
     const rule = ruleQuery.data?.retentionRuleAdd;
     expect(rule).toBeDefined();
     // Run executeProcessing — nothing should be deleted
-    const featureSpy4 = vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((f: string) => f === conf.FEATURE_ACTIVITY_HISTORY_RETENTION);
-    try {
-      await executeProcessing(context, {
-        id: rule.id,
-        name: rule.name,
-        scope: 'activity',
-        max_retention: 36500,
-        retention_unit: 'days',
-        filters: emptyStringFilters,
-        active: true,
-      } as any);
-    } finally {
-      featureSpy4.mockRestore();
-    }
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'activity',
+      max_retention: 36500,
+      retention_unit: 'days',
+      filters: emptyStringFilters,
+      active: true,
+    } as any);
     // Rule should be patched but with 0 deletions
     const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
     expect(updatedRule?.last_execution_date).toBeDefined();
