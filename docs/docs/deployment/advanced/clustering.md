@@ -8,7 +8,7 @@ The OpenCTI platform technological stack has been designed to be able to scale h
 
 Here is the high level architecture for customers and Filigran cloud platform to ensure both high availability and throughput.
 
-![Cluster](assets/cluster.png)
+![Cluster](../assets/cluster.png)
 
 ## Configuration
 
@@ -66,10 +66,10 @@ As showed on the schema, best practices for cluster mode and to avoid any conges
 
 When enabling clustering, the number of nodes is displayed in Settings > Parameters.
 
-![Cluster mode](assets/cluster-mode.png)
+![Cluster mode](../assets/cluster-mode.png)
 
 ### Managers and schedulers
 
-Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitly [disabled in the configuration](configuration.md#engines-schedules-managers).
+Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitly [disabled in the configuration](../configuration.md#engines-schedules-managers).
 
-![Managers](assets/managers.png)
+![Managers](../assets/managers.png)
