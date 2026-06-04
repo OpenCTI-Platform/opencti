@@ -79,7 +79,7 @@ const IngestionRssEditionContainer = ({
           finalValue = value?.value;
         }
         if (name === 'ssl_verify') {
-          finalValue = value?.value ?? true;
+          finalValue = value ?? 'true';
         }
         commitMutation({
           mutation: ingestionRssMutationFieldPatch,
