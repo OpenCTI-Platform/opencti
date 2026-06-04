@@ -133,7 +133,7 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
       const isLiveScoreUnchanged = updatePatch.x_opencti_score === resolvedElement.x_opencti_score;
       if (isLiveScoreUnchanged) {
         logApp.debug(
-          `[OPENCTI][DECAY] on upsert excluded indicator, skip valid_until/revoked update, keep existing values`,
+          '[OPENCTI][DECAY] on upsert excluded indicator, skip valid_until/revoked update, keep existing values',
           { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score },
         );
         updatePatch.x_opencti_score = resolvedElement.x_opencti_score;
