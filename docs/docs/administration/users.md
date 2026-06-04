@@ -44,7 +44,7 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;&nbsp;&nbsp;`Delete investigations`         | Delete existing investigations.                                                               |
 | `Access connectors`                                     | Read information in the `Data > Connectors` section.                                          |
 | &nbsp;&nbsp;`Manage connector state`                    | Reset the connector state to restart ingestion from the beginning.                            |
-| `API usage with authorization headers` | Controls whether users assigned to a role are allowed to authenticate to the OpenCTI API programmatically via the Authorization HTTP header. Without this capability a user will have to use the UI to login                   |
+| `API usage with authorization headers` | Programmatically authenticate against the OpenCTI API via the Authorization HTTP header. Without this capability a user will have to use the UI to log in.                   |
 | &nbsp;&nbsp;`Allow token usage`                    | Allow user to manage tokens & to use a token to authenticate via API programmatically via the Authorization HTTP header.                            |
 | &nbsp;&nbsp;`Allow basic auth usage`                    | Ability to use basic auth to authenticate when using OpenCTI API programmatically via the Authorization HTTP header.                    |
 | `Connectors API usage: register, ping, export push ...` | Connectors specific permissions for register, ping, push export files, etc.                   |
