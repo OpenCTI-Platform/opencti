@@ -13,7 +13,7 @@ import { computeStartEndDates } from '../../../../components/dashboard/dashboard
 import { monthsAgo, now } from '../../../../utils/Time';
 import ApexCharts from 'apexcharts';
 import { StixCoreObjectsMultiHeatMapTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHeatMapTimeSeriesQuery.graphql';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const stixCoreObjectsMultiHeatMapTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiHeatMapTimeSeriesQuery(
@@ -112,7 +112,7 @@ const buildQueryVariables = (
     return {
       field: dateAttribute,
       types: DATA_SELECTION_TYPES,
-      filters,
+      filters: filters as unknown as GqlFilterGroup,
     };
   });
 

@@ -7,7 +7,7 @@ import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -525,7 +525,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters,
+    filters: filters as unknown as GqlFilterGroup,
     limit: selection.number ?? 10,
     subDistributionField: subSelection?.attribute ?? 'entity_type',
     subDistributionOperation: 'count',
@@ -533,7 +533,7 @@ const buildQueryVariables = (
     subDistributionEndDate: endDate,
     subDistributionDateAttribute: subDateAttribute,
     subDistributionTypes: DATA_SELECTION_TYPES,
-    subDistributionFilters: subFilters,
+    subDistributionFilters: subFilters as unknown as GqlFilterGroup,
     subDistributionLimit: subSelection?.number ?? 10,
   };
 };

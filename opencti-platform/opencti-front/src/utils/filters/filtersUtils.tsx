@@ -409,7 +409,7 @@ export const buildFiltersAndOptionsForWidgets = (
   if (isKnowledgeRelationshipWidget) {
     filters = addFilter(filters, 'entity_type', RELATIONSHIP_WIDGETS_TYPES);
   }
-  return { filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined };
+  return { filters };
 };
 
 export const useBuildFiltersForTemplateWidgets = () => {

@@ -11,7 +11,7 @@ import { StixCoreObjectsDonutDistributionQuery } from './__generated__/StixCoreO
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const stixCoreObjectsDonutDistributionQuery = graphql`
   query StixCoreObjectsDonutDistributionQuery(
@@ -153,7 +153,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters,
+    filters: filters as unknown as GqlFilterGroup,
     limit: selection.number ?? 10,
   };
 };
