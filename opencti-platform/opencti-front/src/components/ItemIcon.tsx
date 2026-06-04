@@ -526,6 +526,7 @@ const iconSelector = (
     case 'beacons-to':
     case 'characterizes':
     case 'consists-of':
+    case 'interpreted-by':
     case 'technology-from':
     case 'technology-to':
     case 'technology':

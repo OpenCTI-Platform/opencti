@@ -186,6 +186,7 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   'beacons-to': 'relationships',
   characterizes: 'relationships',
   'consists-of': 'relationships',
+  'interpreted-by': 'relationships',
   controls: 'relationships',
   'cooperates-with': 'relationships',
   'derived-from': 'relationships',
