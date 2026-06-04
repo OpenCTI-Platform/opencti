@@ -24,7 +24,8 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Can use web interface export functions`    | Ability to download widgets/graphs... as images/PDF.                                          |
 | &nbsp;&nbsp;`Create / Update knowledge`                 | Create and update existing entities and relationships.                                        |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Restrict organization access`  | Share entities and relationships with other organizations.                                    |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Delete knowledge`              | Delete entities and relationships (and merge data). **Capability needed to validate a draft** |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Delete knowledge`              | Delete entities and relationships. **Capability needed to validate a draft** |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Merge knowledge`              | Merge entities. |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Manage authorized members`     | Restrict the access to an entity to a user, group or organization.                            |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`     | If external references enforced in a type of entity, be able to bypass the enforcement.       |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass mandatory fields`       | Bypass any custom fields marked as mandatory in entity customization.                         |
@@ -43,6 +44,9 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;&nbsp;&nbsp;`Delete investigations`         | Delete existing investigations.                                                               |
 | `Access connectors`                                     | Read information in the `Data > Connectors` section.                                          |
 | &nbsp;&nbsp;`Manage connector state`                    | Reset the connector state to restart ingestion from the beginning.                            |
+| `API usage with authorization headers` | Controls whether users assigned to a role are allowed to authenticate to the OpenCTI API programmatically via the Authorization HTTP header. Without this capability a user will have to use the UI to login                   |
+| &nbsp;&nbsp;`Allow token usage`                    | Allow user to manage tokens & to use a token to authenticate via API programmatically via the Authorization HTTP header.                            |
+| &nbsp;&nbsp;`Allow basic auth usage`                    | Ability to use basic auth to authenticate when using OpenCTI API programmatically via the Authorization HTTP header.                    |
 | `Connectors API usage: register, ping, export push ...` | Connectors specific permissions for register, ping, push export files, etc.                   |
 | `Access data sharing`                                   | Access and consume data such as TAXII collections, CSV feeds and live streams.                |
 | &nbsp;&nbsp;`Manage data sharing`                       | Share data such as TAXII collections, CSV feeds and live streams or custom dashboards.        |
@@ -51,9 +55,12 @@ The below capabilities are applicable to the whole application.
 | `Manage data mappers`                                   | Create, update and delete CSV & JSON mappers.                                                 |
 | `Use Playbooks`                                         | Use Playbooks (enroll an entity in a playbook).                                               |
 | &nbsp;&nbsp;`Manage Playbooks`                          | Manage Playbooks.                                                                             |
+| `Access PIR`                       | Ability to view PIRs (as long as the access has been granted to you).                                   |
+| &nbsp;&nbsp;`Create/update/delete`                          | Ability to manage PIR (including access to the PIR)                    |
 | `Access to admin functionalities`                       | Parent capability allowing users to only view the settings.                                   |
 | &nbsp;&nbsp;`Access administration parameters`          | Access and manage overall parameters of the platform in `Settings > Parameters`.              |
 | &nbsp;&nbsp;`Manage credentials`                        | Access and manage roles, groups, users, organizations and security policies.                  |
+| &nbsp;&nbsp;`Manage authentication`                        | Ability for users to define Authentication strategies, password policy & set up platform-wide authentication via 2FA when using basic auth.              |
 | &nbsp;&nbsp;`Manage marking definitions`                | Update and delete marking definitions.                                                        |
 | &nbsp;&nbsp;`Manage dissemination lists`                | Update and manage dissemination lists                                                         |
 | &nbsp;&nbsp;`Manage customization`                      | Customize entity types                                                                        |
