@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as ee from '../../../src/enterprise-edition/ee';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import {
@@ -76,6 +77,62 @@ describe('Workflow Domain', () => {
     (findByType as any).mockResolvedValue(null);
 
     await expect(setWorkflowDefinition(mockContext, mockUser, 'Incident', JSON.stringify({ initialState: 'draft', transitions: [] }))).rejects.toThrow('Entity setting not found for type');
+  });
+
+  describe('EE / CE gating in setWorkflowDefinition', () => {
+    const ceDefinition = (overrides = {}) => JSON.stringify({
+      initialState: 'draft',
+      states: [],
+      transitions: [],
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      // Default: EE check passes (simulates EE licence)
+      vi.spyOn(ee, 'checkEnterpriseEdition').mockResolvedValue(undefined);
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
+      (createEntity as any).mockResolvedValue({ id: 'workflow-id', name: 'Workflow for Incident', all_versions: [], draft_version: {} });
+      (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id', workflow_id: 'workflow-id' } });
+    });
+
+    it('does NOT call checkEnterpriseEdition for a plain CE definition (no EE actions, no conditions)', async () => {
+      const def = ceDefinition({
+        transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'validateDraft', mode: 'sync' }] }],
+      });
+      await setWorkflowDefinition(mockContext, mockUser, 'Incident', def);
+      expect(ee.checkEnterpriseEdition).not.toHaveBeenCalled();
+    });
+
+    it('does NOT call checkEnterpriseEdition when conditions is present but filters array is empty', async () => {
+      const def = ceDefinition({
+        transitions: [{ from: 'open', to: 'closed', event: 'close', conditions: { mode: 'and', filters: [], filterGroups: [] } }],
+      });
+      await setWorkflowDefinition(mockContext, mockUser, 'Incident', def);
+      expect(ee.checkEnterpriseEdition).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['updateAuthorizedMembers on transition actions', { transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }] }],
+      ['shareWithOrganizations on transition asyncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', asyncActions: [{ type: 'shareWithOrganizations', mode: 'async' }] }] }],
+      ['unshareFromOrganizations on transition asyncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', asyncActions: [{ type: 'unshareFromOrganizations', mode: 'async' }] }] }],
+      ['asyncBulkAction on transition syncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'asyncBulkAction', mode: 'sync' }] }] }],
+      ['non-empty conditions filters on transition', { transitions: [{ from: 'open', to: 'closed', event: 'close', conditions: { mode: 'and', filters: [{ key: 'entity_type', values: ['Incident'] }], filterGroups: [] } }] }],
+      ['updateAuthorizedMembers on state onEnter', { states: [{ statusId: 'status-1', onEnter: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }] }],
+      ['updateAuthorizedMembers on state onExit', { states: [{ statusId: 'status-1', onExit: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }] }],
+    ])('calls checkEnterpriseEdition when definition has %s', async (_label, overrides) => {
+      const def = ceDefinition(overrides);
+      await setWorkflowDefinition(mockContext, mockUser, 'Incident', def);
+      expect(ee.checkEnterpriseEdition).toHaveBeenCalledWith(mockContext);
+    });
+
+    it('propagates the error thrown by checkEnterpriseEdition (CE instance rejects EE features)', async () => {
+      vi.spyOn(ee, 'checkEnterpriseEdition').mockRejectedValue(new Error('Enterprise edition required'));
+      const def = ceDefinition({
+        transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }],
+      });
+      await expect(setWorkflowDefinition(mockContext, mockUser, 'Incident', def)).rejects.toThrow('Enterprise edition required');
+      expect(createEntity).not.toHaveBeenCalled();
+    });
   });
 
   it('should update existing workflow when entity setting already has workflow id', async () => {
