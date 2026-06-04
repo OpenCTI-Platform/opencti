@@ -70,7 +70,7 @@ const buildConfig = (
         filters: emptyFilterGroup,
         dynamicFrom: emptyFilterGroup,
         dynamicTo: emptyFilterGroup,
-        instance_id: w?.type === 'attribute' ? SELF_ID : undefined,
+        instance_id: (w?.type === 'attribute' || w?.type === 'custom-attributes') ? SELF_ID : undefined,
       }],
     },
   };
