@@ -5033,6 +5033,7 @@
   "Your OpenCTI platform is successfully unregistered": "Ваша платформа OpenCTI успешно снята с регистрации",
   "Your organization does not have permission...": "У вашей организации нет разрешения...",
   "Your password has been updated.": "Ваш пароль был обновлен.",
+  "Your platform is currently using environment variables to define authentication strategies. As a result, any update on any strategies (except password policy or 2FA) won't be taken into account.": "В настоящее время ваша платформа использует переменные среды для определения стратегий аутентификации. В результате любые обновления любых стратегий (кроме политики паролей или 2FA) не будут'учтены.",
   "Your platform is running with the legacy authentication configuration defined through environment variables. This safeguard was enabled in your configuration because the authentication migration to the new v7 model encountered issues that needed to be resolved first.": "Ваша платформа работает с устаревшей конфигурацией аутентификации, определенной через переменные среды. Эта защита была включена в вашей конфигурации, так как миграция аутентификации на новую модель v7 столкнулась с проблемами, которые необходимо было решить в первую очередь.",
   "Your request for access has been successfully taken into account": "Ваш запрос на доступ был успешно принят во внимание",
   "your trial license online": "пробная лицензия онлайн",

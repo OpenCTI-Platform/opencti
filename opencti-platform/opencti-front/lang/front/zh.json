@@ -5033,6 +5033,7 @@
   "Your OpenCTI platform is successfully unregistered": "您的 OpenCTI 平台已成功取消注册",
   "Your organization does not have permission...": "您的帐户或组织没有权限创建或更新平台中已存在但受限制的知识。通过此表单，您可以向可以让您访问该知识的组织提出访问请求。他们将收到此请求的通知。",
   "Your password has been updated.": "您的密码已更新。",
+  "Your platform is currently using environment variables to define authentication strategies. As a result, any update on any strategies (except password policy or 2FA) won't be taken into account.": "您的平台目前使用环境变量来定义身份验证策略。因此，任何策略的更新（密码策略或 2FA 除外）都不会被考虑在内。",
   "Your platform is running with the legacy authentication configuration defined through environment variables. This safeguard was enabled in your configuration because the authentication migration to the new v7 model encountered issues that needed to be resolved first.": "您的平台正在运行通过环境变量定义的旧版认证配置。此保护措施已在您的配置中启用，因为向新的 v7 模型进行认证迁移时遇到了一些需要首先解决的问题。",
   "Your request for access has been successfully taken into account": "您的访问请求已被成功考虑",
   "your trial license online": "在线试用许可证",

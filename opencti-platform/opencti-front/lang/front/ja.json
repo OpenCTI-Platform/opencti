@@ -5033,6 +5033,7 @@
   "Your OpenCTI platform is successfully unregistered": "OpenCTI プラットフォームは正常に登録解除されました。",
   "Your organization does not have permission...": "あなたのアカウントまたは組織は、プラットフォームに既に存在するが制限下にあるナレッジを作成または更新する権限を持っていません。このフォームでは、このナレッジへのアクセスを提供できる組織にアクセスをリクエストできます。これらの組織にはこのリクエストが通知されます。",
   "Your password has been updated.": "パスワードが更新されました。",
+  "Your platform is currently using environment variables to define authentication strategies. As a result, any update on any strategies (except password policy or 2FA) won't be taken into account.": "あなたのプラットフォームは現在、認証戦略を定義するために環境変数を使用しています。そのため、パスワードポリシーや2FAを除く認証ストラテジーの更新は考慮されません。",
   "Your platform is running with the legacy authentication configuration defined through environment variables. This safeguard was enabled in your configuration because the authentication migration to the new v7 model encountered issues that needed to be resolved first.": "プラットフォームは、環境変数で定義されたレガシー認証設定で実行されています。この保護措置は、新しいv7モデルへの認証移行で解決が必要な問題が発生したため、設定で有効になりました。",
   "Your request for access has been successfully taken into account": "あなたのアクセス要求が考慮されました",
   "your trial license online": "あなたのトライアルライセンスをオンラインで",
