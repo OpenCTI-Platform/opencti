@@ -40,6 +40,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const ingestionJsonCreationMutation = graphql`
   mutation IngestionJsonCreationMutation($input: IngestionJsonAddInput!) {
@@ -95,6 +96,7 @@ export interface IngestionJsonAddInput {
   key?: string;
   ca?: string;
   markings: FieldOption[];
+  ssl_verify?: boolean;
 }
 
 interface IngestionJsonCreationProps {
@@ -196,6 +198,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
       authentication_value: authenticationValue,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
       markings: markings ?? [],
+      ssl_verify: values.ssl_verify,
     };
     commit({
       variables: {
@@ -248,6 +251,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
       label: marking.definition ?? '',
       value: marking.id,
     })) ?? [],
+    ssl_verify: true,
   } : {
     name: '',
     description: '',
@@ -270,6 +274,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     key: '',
     ca: '',
     markings: [],
+    ssl_verify: true,
   };
 
   return (
@@ -494,6 +499,13 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               />
             </>
           )}
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="ssl_verify"
+            label={t_i18n('Verify SSL certificate')}
+            containerstyle={fieldSpacingContainerStyle}
+          />
           <Box sx={{ width: '100%', marginTop: 5 }}>
             <Alert
               severity="info"

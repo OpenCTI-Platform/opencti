@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
-import { addTaxiiIngestion, ingestionDelete, ingestionEditField } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
+import { ingestionTaxiiAdd, ingestionTaxiiDelete, ingestionTaxiiEditField } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../../src/generated/graphql';
 import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
@@ -10,7 +10,7 @@ describe('Ingestion Taxii domain - Deny list coverage', async () => {
 
   afterAll(async () => {
     if (myTaxiiFeed && myTaxiiFeed.id) {
-      await ingestionDelete(testContext, ADMIN_USER, myTaxiiFeed.id);
+      await ingestionTaxiiDelete(testContext, ADMIN_USER, myTaxiiFeed.id);
     }
   });
 
@@ -25,13 +25,13 @@ describe('Ingestion Taxii domain - Deny list coverage', async () => {
       name: 'Test TAXII feed',
       uri: 'https://example.allowed.com/taxii-feed',
     };
-    myTaxiiFeed = await addTaxiiIngestion(testContext, ADMIN_USER, creationInput);
+    myTaxiiFeed = await ingestionTaxiiAdd(testContext, ADMIN_USER, creationInput);
 
     const fieldPatchInput: EditInput[] = [{
       key: 'uri',
       value: ['https://example.denied.com/taxii-feed'],
     }];
-    await expect(ingestionEditField(testContext, ADMIN_USER, myTaxiiFeed.id, fieldPatchInput))
+    await expect(ingestionTaxiiEditField(testContext, ADMIN_USER, myTaxiiFeed.id, fieldPatchInput))
       .rejects.toThrow('This URI is not allowed for ingestion.');
   });
 });

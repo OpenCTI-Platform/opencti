@@ -1,16 +1,16 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import { now } from '../../../src/utils/format';
-import { SYSTEM_USER } from '../../../src/utils/access';
-import pjson from '../../../package.json';
-import { IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../../src/generated/graphql';
-import { findById as findUserById } from '../../../src/domain/user';
-import { regenerateCsvMapperUUID } from '../../../src/modules/ingestion/ingestion-converter';
-import type { CsvMapperResolved } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import { ADMIN_USER, testContext, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { queryAsAdmin } from '../../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { patchCsvIngestion } from '../../../../src/modules/ingestion/ingestion-csv-domain';
+import { now } from '../../../../src/utils/format';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import pjson from '../../../../package.json';
+import { IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../../../src/generated/graphql';
+import { findById as findUserById } from '../../../../src/domain/user';
+import { regenerateCsvMapperUUID } from '../../../../src/modules/ingestion/ingestion-converter';
+import type { CsvMapperResolved } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 
 const DELETE_USER_QUERY = gql`
     mutation userDelete($id: ID!) {

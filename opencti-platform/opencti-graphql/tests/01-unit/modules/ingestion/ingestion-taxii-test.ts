@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { verifyIngestionAuthenticationContent } from '../../../src/modules/ingestion/ingestion-common';
-import { IngestionAuthType } from '../../../src/generated/graphql';
+import { verifyIngestionAuthenticationContent } from '../../../../src/modules/ingestion/ingestion-common';
+import { IngestionAuthType } from '../../../../src/generated/graphql';
 
 describe('Ingestion Taxii creation validations', () => {
   it('username in input should not contains :', () => {

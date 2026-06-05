@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import type { GraphQLFormattedError } from 'graphql';
-import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
-import { IngestionAuthType, TaxiiVersion } from '../../../src/generated/graphql';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { now } from '../../../src/utils/format';
-import { findById as findIngestionById, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
-import { findById as findUserById } from '../../../src/domain/user';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
+import { IngestionAuthType, TaxiiVersion } from '../../../../src/generated/graphql';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { queryAsAdmin } from '../../../utils/testQueryHelper';
+import { now } from '../../../../src/utils/format';
+import { findTaxiiIngestionById as findIngestionById, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
+import { findById as findUserById } from '../../../../src/domain/user';
 
 const DELETE_USER_QUERY = gql`
     mutation userDelete($id: ID!) {
