@@ -675,7 +675,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 type="checkbox"
                 name="ssl_verify"
                 label={t_i18n('Verify SSL certificate')}
-                onChange={handleSubmitField}
+                onChange={(name, value) => commitUpdate({
+                  variables: {
+                    id: ingestionCsvData.id,
+                    input: [{ key: name, value: value || '' }],
+                  },
+                })}
                 containerstyle={fieldSpacingContainerStyle}
               />
               {enableReferences && (

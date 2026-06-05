@@ -464,7 +464,12 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           />
           <Field
             component={SwitchField}
-            onChange={handleSubmitField}
+            onChange={(name, value) => commitUpdate({
+              variables: {
+                id: ingestionTaxiiData.id,
+                input: [{ key: name, value: value || '' }],
+              },
+            })}
             type="checkbox"
             name="ssl_verify"
             label={t_i18n('Verify SSL certificate')}
