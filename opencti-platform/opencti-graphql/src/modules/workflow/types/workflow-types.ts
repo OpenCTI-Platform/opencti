@@ -145,7 +145,6 @@ export interface WorkflowValidationError {
 export interface WorkflowActionConfig {
   type: string;
   params?: string;
-  mode: 'sync' | 'async';
 }
 
 export interface WorkflowConditionConfig {
@@ -166,8 +165,6 @@ export interface WorkflowSerializedTransition {
   to: string;
   event: string;
   comment?: string;
-  /** @deprecated Use syncActions instead. Kept for backward compatibility. */
-  actions?: WorkflowActionConfig[];
   /** Phase 1: async background task actions. Run before syncActions. */
   asyncActions?: WorkflowActionConfig[];
   /** Phase 2: sync actions. Run after all asyncActions succeed (or immediately if no asyncActions). */

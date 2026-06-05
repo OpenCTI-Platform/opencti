@@ -9,7 +9,7 @@ import { Action, CommentMode, CommentModeType, WorkflowNodeType } from '../utils
 
 type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onEnter']>[0]
   | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onExit']>[0]
-  | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['transitions'][0]['actions']>[0];
+  | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['transitions'][0]['asyncActions']>[0];
 
 type StatusTemplate = { [key: string]: { color: string; id: string; name: string } };
 
@@ -73,7 +73,6 @@ export const useWorkflowInitialElements = (
           const frontendType = innerType === 'UNSHARE' ? 'unshareFromOrganizations' : 'shareWithOrganizations';
           return {
             type: frontendType,
-            mode: action.mode,
             params: { organizations: orgIds.map((id) => ({ value: id, label: organizations[id]?.name ?? id })) },
           } as Action;
         }
@@ -95,13 +94,12 @@ export const useWorkflowInitialElements = (
 
     // 2. Map transitions to transition nodes
     const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, actions = [], comment, asyncActions = [], syncActions = [] }) => ({
+      .map(({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => ({
         id: `${WorkflowNodeType.transition}-${from}-${to}`,
         type: WorkflowNodeType.transition,
         data: {
           event,
           conditions,
-          actions: parseActions(actions),
           comment: (comment ?? CommentMode.disabled) as CommentModeType,
           asyncActions: parseActions((asyncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
           syncActions: parseActions((syncActions ?? []) as ReadonlyArray<ReadOnlyAction>),

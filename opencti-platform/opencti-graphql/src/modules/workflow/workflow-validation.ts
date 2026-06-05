@@ -15,7 +15,6 @@ const filterOperatorValues = Object.values(FilterOperator) as [string, ...string
 export const workflowActionConfigSchema = z.object({
   type: z.string().max(255),
   params: z.any().optional(),
-  mode: z.enum(['sync', 'async']).optional(),
 });
 
 export const workflowFilterSchema = z.object({
@@ -47,8 +46,6 @@ export const workflowSerializedTransitionSchema = z.object({
   from: z.union([z.string().max(255), z.array(z.string().max(255))]).nullable(),
   to: z.string().max(255).nullable(),
   event: z.string().max(255),
-  /** @deprecated Use syncActions instead. Kept for backward compatibility. */
-  actions: z.array(workflowActionConfigSchema).optional(),
   /** Phase 1: async background task actions. Only action types with allowedModes: ['async'] are valid here. */
   asyncActions: z.array(workflowActionConfigSchema).optional(),
   /** Phase 2: sync actions run after all asyncActions succeed (or immediately if none). */
@@ -96,9 +93,6 @@ const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, sour
   const definition = ActionDefinitions[action.type];
   if (!definition) {
     throw ValidationError(`Side effect (action) type '${action.type}' doesn't exist`);
-  }
-  if (action.mode && definition.allowedModes && !definition.allowedModes.includes(action.mode)) {
-    throw ValidationError(`Incompatible action mode '${action.mode}' for '${action.type}' in ${source}`);
   }
   if (definition.paramsSchema) {
     const result = definition.paramsSchema.safeParse(action.params);
@@ -232,16 +226,6 @@ export const validateWorkflowDefinitionData = async (
       }
     }
 
-    // Validate legacy actions[] (treated as syncActions for backward compat)
-    if (transition.actions) {
-      for (const action of transition.actions) {
-        validateAction(action, `transition ${transition.event} (actions)`);
-        if (action.type === 'validateDraft') {
-          hasValidateDraft = true;
-        }
-      }
-    }
-
     // Validate asyncActions — enforce that the action type allows async-only execution
     if (transition.asyncActions) {
       for (const action of transition.asyncActions) {
@@ -252,7 +236,7 @@ export const validateWorkflowDefinitionData = async (
         if (def.allowedModes && !def.allowedModes.includes('async')) {
           throw ValidationError(`Action type '${action.type}' is not allowed in asyncActions (must support 'async' mode) in transition ${transition.event}`);
         }
-        validateAction({ ...action, mode: 'async' }, `transition ${transition.event} (asyncActions)`);
+        validateAction(action, `transition ${transition.event} (asyncActions)`);
       }
     }
 
@@ -266,7 +250,7 @@ export const validateWorkflowDefinitionData = async (
         if (def.allowedModes && !def.allowedModes.includes('sync')) {
           throw ValidationError(`Action type '${action.type}' is not allowed in syncActions (must support 'sync' mode) in transition ${transition.event}`);
         }
-        validateAction({ ...action, mode: 'sync' }, `transition ${transition.event} (syncActions)`);
+        validateAction(action, `transition ${transition.event} (syncActions)`);
         if (action.type === 'validateDraft') {
           hasValidateDraft = true;
         }

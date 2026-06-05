@@ -37899,7 +37899,6 @@ export type WorkTracking = {
 
 export type WorkflowActionConfig = {
   __typename?: 'WorkflowActionConfig';
-  mode: WorkflowActionMode;
   params?: Maybe<Scalars['JSON']['output']>;
   type: Scalars['String']['output'];
 };
@@ -37910,11 +37909,6 @@ export type WorkflowActionError = {
   source?: Maybe<Scalars['String']['output']>;
   timestamp?: Maybe<Scalars['DateTime']['output']>;
 };
-
-export enum WorkflowActionMode {
-  Async = 'async',
-  Sync = 'sync'
-}
 
 export type WorkflowDefinitionMutationResult = {
   __typename?: 'WorkflowDefinitionMutationResult';
@@ -38000,7 +37994,6 @@ export type WorkflowSerializedState = {
 
 export type WorkflowSerializedTransition = {
   __typename?: 'WorkflowSerializedTransition';
-  actions?: Maybe<Array<WorkflowActionConfig>>;
   asyncActions?: Maybe<Array<WorkflowActionConfig>>;
   comment?: Maybe<Scalars['String']['output']>;
   conditions?: Maybe<Scalars['JSON']['output']>;
@@ -40385,7 +40378,6 @@ export type ResolversTypes = ResolversObject<{
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
   WorkflowActionError: ResolverTypeWrapper<WorkflowActionError>;
-  WorkflowActionMode: WorkflowActionMode;
   WorkflowDefinitionMutationResult: ResolverTypeWrapper<WorkflowDefinitionMutationResult>;
   WorkflowEntityRef: ResolverTypeWrapper<WorkflowEntityRef>;
   WorkflowExecutionStatus: WorkflowExecutionStatus;
@@ -52738,7 +52730,6 @@ export type WorkTrackingResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowActionConfig'] = ResolversParentTypes['WorkflowActionConfig']> = ResolversObject<{
-  mode?: Resolver<ResolversTypes['WorkflowActionMode'], ParentType, ContextType>;
   params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -52818,7 +52809,6 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
 }>;
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
-  actions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   asyncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   conditions?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;

@@ -63,7 +63,6 @@ describe('useWorkflowInitialElements', () => {
                 { id: 'user-1', name: 'John Doe', entity_type: 'User', access_right: 'admin' },
               ],
             },
-            mode: 'sync',
           },
         ],
         onExit: [],
@@ -75,7 +74,6 @@ describe('useWorkflowInitialElements', () => {
         to: 'status-closed',
         event: 'close_event',
         conditions: {},
-        actions: [],
         comment: null,
         asyncActions: [],
         syncActions: [],
@@ -164,7 +162,6 @@ describe('useWorkflowInitialElements', () => {
           onEnter: [
             {
               type: 'updateAuthorizedMembers',
-              mode: 'sync',
               params: {
                 authorized_members: [
                   { id: 'user-1', access_right: 'view', groups_restriction_ids: ['group-1'] },
@@ -229,17 +226,15 @@ describe('useWorkflowInitialElements', () => {
           event: 'share_event',
           conditions: {},
           comment: null,
-          actions: [
+          asyncActions: [
             {
               type: 'asyncBulkAction',
-              mode: 'async',
               params: {
                 scope: 'KNOWLEDGE',
                 actions: [{ type: 'SHARE', context: { values: [orgId] } }],
               },
             },
           ],
-          asyncActions: [],
           syncActions: [],
         },
       ],
@@ -254,7 +249,7 @@ describe('useWorkflowInitialElements', () => {
     );
 
     const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
-    const action = transitionNode?.data.actions[0];
+    const action = transitionNode?.data.asyncActions[0];
     expect(action.type).toBe('shareWithOrganizations');
     expect(action.params.organizations[0]).toMatchObject({ value: orgId, label: 'Org Alpha' });
   });
@@ -270,17 +265,15 @@ describe('useWorkflowInitialElements', () => {
           event: 'unshare_event',
           conditions: {},
           comment: null,
-          actions: [
+          asyncActions: [
             {
               type: 'asyncBulkAction',
-              mode: 'async',
               params: {
                 scope: 'KNOWLEDGE',
                 actions: [{ type: 'UNSHARE', context: { values: [orgId] } }],
               },
             },
           ],
-          asyncActions: [],
           syncActions: [],
         },
       ],
@@ -291,7 +284,7 @@ describe('useWorkflowInitialElements', () => {
     );
 
     const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
-    const action = transitionNode?.data.actions[0];
+    const action = transitionNode?.data.asyncActions[0];
     expect(action.type).toBe('unshareFromOrganizations');
   });
 

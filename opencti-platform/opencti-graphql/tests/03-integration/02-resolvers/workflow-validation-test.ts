@@ -107,17 +107,17 @@ describe('Workflow Validation Resolver', () => {
     expect(result.errors?.[0].message).toContain('Side effect (action) type \'non_existent_action\' doesn\'t exist');
   });
 
-  it('should reject workflow with invalid action mode', async () => {
+  it('should reject workflow with unknown action type in syncActions', async () => {
     const definition = JSON.stringify({
-      id: 'invalid-action-mode-workflow',
+      id: 'invalid-action-type-workflow',
       initialState: 'open',
-      states: [{ statusId: 'open' }],
+      states: [{ statusId: 'open' }, { statusId: 'validated' }],
       transitions: [
         {
           from: 'open',
           to: 'validated',
           event: 'validate',
-          actions: [{ type: 'validateDraft', mode: 'invalid_mode' }],
+          syncActions: [{ type: 'nonExistentActionType' }],
         },
       ],
     });
@@ -125,7 +125,7 @@ describe('Workflow Validation Resolver', () => {
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: { entityType, definition },
     });
-    expect(result.data?.workflowDefinitionSet.errors[0].message).toContain('Workflow definition schema validation failed');
+    expect(result.errors?.[0].message).toContain("doesn't exist");
   });
 
   it('should reject workflow with invalid action params', async () => {

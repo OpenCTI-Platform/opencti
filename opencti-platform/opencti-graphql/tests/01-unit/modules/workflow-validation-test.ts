@@ -106,7 +106,7 @@ describe('Workflow Validation', () => {
     const invalid = {
       initialState: 'existing-state',
       transitions: [
-        { from: 'existing-state', to: 'in-progress', event: 'publish', actions: [{ type: 'log' }] },
+        { from: 'existing-state', to: 'in-progress', event: 'publish', syncActions: [{ type: 'log' }] },
       ],
     };
 
@@ -693,23 +693,6 @@ describe('Workflow Validation', () => {
       type: 'MISSING_VALIDATE_DRAFT_ACTION',
       message: 'DraftWorkspace workflow must contain at least one validateDraft action',
     }));
-  });
-
-  it('should pass backward-compat definition with only legacy actions[]', async () => {
-    const valid = {
-      initialState: 'existing-state',
-      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
-      transitions: [
-        {
-          from: 'existing-state',
-          to: 'done',
-          event: 'publish',
-          actions: [{ type: 'validateDraft' }],
-        },
-      ],
-    };
-    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
-    expect(result).toBeDefined();
   });
 
   it('should fail when unknown action type is used in asyncActions', async () => {

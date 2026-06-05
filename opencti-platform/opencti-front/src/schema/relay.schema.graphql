@@ -10756,11 +10756,6 @@ type Mutation {
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
 }
 
-enum WorkflowActionMode {
-  sync
-  async
-}
-
 enum WorkflowExecutionStatus {
   pending
   completed
@@ -10770,7 +10765,6 @@ enum WorkflowExecutionStatus {
 type WorkflowActionConfig {
   type: String!
   params: JSON
-  mode: WorkflowActionMode!
 }
 
 type WorkflowSerializedState {
@@ -10783,7 +10777,6 @@ type WorkflowSerializedTransition {
   from: String!
   to: String!
   event: String!
-  actions: [WorkflowActionConfig!]
   asyncActions: [WorkflowActionConfig!]
   syncActions: [WorkflowActionConfig!]
   conditions: JSON

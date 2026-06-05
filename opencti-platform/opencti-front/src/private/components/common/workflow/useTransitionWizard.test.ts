@@ -283,7 +283,7 @@ describe('useTransitionWizard – fireTransition response handling', () => {
     // Simulate the mutation onCompleted callback
     const [{ onCompleted }] = mockCommit.mock.calls[0];
     act(() => {
-      onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'pending', actions: [] } });
+      onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'pending' } });
     });
 
     expect(mockNotifySuccess).toHaveBeenCalledWith('Workflow transition started in background');
@@ -304,7 +304,7 @@ describe('useTransitionWizard – fireTransition response handling', () => {
 
     const [{ onCompleted }] = mockCommit.mock.calls[0];
     act(() => {
-      onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'completed', actions: ['validateDraft'] } });
+      onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'completed' } });
     });
 
     expect(mockExitDraft).toHaveBeenCalledTimes(1);

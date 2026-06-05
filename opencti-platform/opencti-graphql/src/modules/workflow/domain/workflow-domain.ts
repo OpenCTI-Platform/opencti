@@ -731,9 +731,7 @@ export const triggerWorkflowEvent = async (
         return fromStates.includes(currentStateId) && t.event === eventName;
       });
       // fallback on actions if syncActions not explicitly defined on transition (legacy support)
-      const serializedTransitions: WorkflowActionConfig[] = (targetTransitionForSync?.syncActions?.length
-        ? targetTransitionForSync.syncActions
-        : null) ?? targetTransitionForSync?.actions ?? [];
+      const serializedTransitions: WorkflowActionConfig[] = targetTransitionForSync?.syncActions ?? [];
 
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,

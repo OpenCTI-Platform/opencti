@@ -12,8 +12,8 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 const TransitionForm = () => {
   const { t_i18n } = useFormatter();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
-  const hasUpdateAuthorizedMembers = values.actions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
-  const hasValidateDraft = values.actions?.some((a) => a.type === WorkflowActionType.validateDraft);
+  const hasUpdateAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+  const hasValidateDraft = values.syncActions?.some((a) => a.type === WorkflowActionType.validateDraft);
   const hasShare = values.asyncActions?.some((a) => a.type === WorkflowActionType.shareWithOrganizations);
   const hasUnshare = values.asyncActions?.some((a) => a.type === WorkflowActionType.unshareFromOrganizations);
   const shareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.shareWithOrganizations) ?? -1;
@@ -32,14 +32,14 @@ const TransitionForm = () => {
   };
 
   const handleToggleAction = (actionType: WorkflowActionType, checked: boolean) => {
-    const currentActions = values.actions ?? [];
+    const currentActions = values.syncActions ?? [];
     if (checked) {
       const newAction = actionType === WorkflowActionType.updateAuthorizedMembers
         ? { type: actionType, params: { authorized_members: [] } }
         : { type: actionType };
-      setFieldValue('actions', [...currentActions, newAction]);
+      setFieldValue('syncActions', [...currentActions, newAction]);
     } else {
-      setFieldValue('actions', currentActions.filter((a) => a.type !== actionType));
+      setFieldValue('syncActions', currentActions.filter((a) => a.type !== actionType));
     }
   };
 
@@ -127,7 +127,7 @@ const TransitionForm = () => {
             )}
             label={t_i18n('Update authorized members')}
           />
-          {values.actions && <WorkflowFieldList name={WorkflowDataType.actions} />}
+          {values.syncActions && <WorkflowFieldList name={WorkflowDataType.syncActions} />}
 
           <FormControlLabel
             control={(

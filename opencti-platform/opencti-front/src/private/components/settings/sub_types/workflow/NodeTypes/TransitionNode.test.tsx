@@ -37,7 +37,7 @@ const makeProps = (dataOverrides: Record<string, unknown> = {}, id = 'transition
   data: {
     event: 'approve',
     conditions: undefined,
-    actions: undefined,
+    syncActions: undefined,
     comment: undefined,
     ...dataOverrides,
   },
