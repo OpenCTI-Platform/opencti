@@ -22,7 +22,7 @@ Container orchestrators like **Kubernetes** need to distinguish between two stat
 
 ## What's next?
 
-- [Configuration](configuration.md) — Full list of platform configuration parameters.
+- [Configuration](../configuration.md) — Full list of platform configuration parameters.
 - [Clustering](clustering.md) — Deploy multiple OpenCTI instances with health monitoring.
 - [Troubleshooting](troubleshooting.md) — Diagnose startup and connectivity issues.
 
