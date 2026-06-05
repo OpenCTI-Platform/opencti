@@ -51,7 +51,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   parameters?: WidgetParameters;
   buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
-  const [queryRef, load] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
+  const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
   const [, startTransition] = useTransition();
   const lastLoadedVariablesSignatureRef = useRef<string | null>(null);
   const { filterKeysSchema } = useAuth().schema;
@@ -75,6 +75,10 @@ const useDashboardViz = <TQuery extends OperationType>({
   );
 
   const reloadData = useCallback((force = false) => {
+    if (isMissingHostEntity) {
+      return;
+    }
+
     if (!queryVariables || !queryVariablesSignature) {
       return;
     }
@@ -89,7 +93,15 @@ const useDashboardViz = <TQuery extends OperationType>({
         fetchPolicy: 'store-and-network',
       });
     });
-  }, [load, startTransition, queryVariables, queryVariablesSignature]);
+  }, [isMissingHostEntity, load, startTransition, queryVariables, queryVariablesSignature]);
+
+  useEffect(() => {
+    if (!isMissingHostEntity) {
+      return;
+    }
+    lastLoadedVariablesSignatureRef.current = null;
+    disposeQuery();
+  }, [disposeQuery, isMissingHostEntity]);
 
   useEffect(() => {
     reloadData(false);
@@ -118,6 +130,10 @@ const useDashboardViz = <TQuery extends OperationType>({
     if (prevRefreshTokenRef.current === refreshToken) return;
     prevRefreshTokenRef.current = refreshToken;
 
+    if (isMissingHostEntity) {
+      return;
+    }
+
     if (!buildQueryVariables || !config) {
       reloadDataRef.current(true);
       return;
@@ -131,7 +147,7 @@ const useDashboardViz = <TQuery extends OperationType>({
         fetchPolicy: 'store-and-network',
       });
     });
-  }, [refreshToken, buildQueryVariables, config, resolvedDataSelection, parameters, load, startTransition]);
+  }, [refreshToken, isMissingHostEntity, buildQueryVariables, config, resolvedDataSelection, parameters, load, startTransition]);
 
   useWidgetAutoRefresh(forceReloadData, refreshRate);
 

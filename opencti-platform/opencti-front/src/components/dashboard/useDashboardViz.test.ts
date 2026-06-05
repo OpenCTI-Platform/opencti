@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDashboardViz from './useDashboardViz';
 
 const loadMocks: Array<ReturnType<typeof vi.fn>> = [];
+const disposeMocks: Array<ReturnType<typeof vi.fn>> = [];
 let refreshTokenMockValue = 0;
 
 vi.mock('react-relay', async (importOriginal) => {
@@ -16,7 +17,12 @@ vi.mock('react-relay', async (importOriginal) => {
         loadRef.current = vi.fn();
         loadMocks.push(loadRef.current);
       }
-      return [null, loadRef.current] as const;
+      const disposeRef = React.useRef<ReturnType<typeof vi.fn> | null>(null);
+      if (!disposeRef.current) {
+        disposeRef.current = vi.fn();
+        disposeMocks.push(disposeRef.current);
+      }
+      return [null, loadRef.current, disposeRef.current] as const;
     }),
   };
 });
@@ -32,11 +38,13 @@ vi.mock('../../utils/hooks/useAuth', () => ({
 vi.mock('./dashboard-viz-utils', () => ({
   resolveDataSelection: vi.fn(({
     dataSelection,
+    host,
   }: {
     dataSelection: Array<unknown>;
+    host?: { kind?: string; customViewTargetEntityId?: string };
   }) => ({
     resolvedDataSelection: dataSelection,
-    isMissingHostEntity: false,
+    isMissingHostEntity: host?.kind === 'custom-view' && !host.customViewTargetEntityId,
     isPreviewMode: false,
   })),
 }));
@@ -50,6 +58,7 @@ describe('useDashboardViz', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-06-02T10:00:12.345Z'));
     loadMocks.length = 0;
+    disposeMocks.length = 0;
     refreshTokenMockValue = 0;
   });
 
@@ -216,6 +225,42 @@ describe('useDashboardViz', () => {
       vi.advanceTimersByTime(1_000);
     });
     expect(loadSpy).toHaveBeenCalledTimes(baselineCalls + 1);
+
+    hook.unmount();
+  });
+
+  it('keeps workspace host behavior unchanged by missing-host guard', () => {
+    const buildQueryVariables = vi.fn(() => ({ marker: 'workspace-host' }));
+
+    const hook = renderHook(() => useDashboardViz({
+      dataSelection: [],
+      perspective: 'entities',
+      host: { kind: 'workspace' },
+      refreshRate: null,
+      query: {} as never,
+      config: {},
+      parameters: {},
+      buildQueryVariables,
+    }));
+
+    expect(loadMocks).toHaveLength(1);
+    expect(disposeMocks).toHaveLength(1);
+    const [loadSpy] = loadMocks;
+    const [disposeSpy] = disposeMocks;
+
+    const mountCalls = loadSpy.mock.calls.length;
+    expect(mountCalls).toBeGreaterThanOrEqual(1);
+    expect(disposeSpy).not.toHaveBeenCalled();
+
+    refreshTokenMockValue = 1;
+    hook.rerender();
+
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+
+    expect(loadSpy).toHaveBeenCalledTimes(mountCalls + 1);
+    expect(disposeSpy).not.toHaveBeenCalled();
 
     hook.unmount();
   });
