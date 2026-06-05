@@ -464,7 +464,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           />
           <Field
             component={SwitchField}
-            onChange={(name, value) => commitUpdate({
+            onChange={(name: string, value: boolean) => commitUpdate({
               variables: {
                 id: ingestionTaxiiData.id,
                 input: [{ key: name, value: value || '' }],

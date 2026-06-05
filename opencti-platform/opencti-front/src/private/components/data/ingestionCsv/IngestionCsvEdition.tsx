@@ -675,10 +675,10 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 type="checkbox"
                 name="ssl_verify"
                 label={t_i18n('Verify SSL certificate')}
-                onChange={(name, value) => commitUpdate({
+                onChange={(name: string, value: boolean) => commitUpdate({
                   variables: {
                     id: ingestionCsvData.id,
-                    input: [{ key: name, value: value || '' }],
+                    input: [{ key: name, value: value || true }],
                   },
                 })}
                 containerstyle={fieldSpacingContainerStyle}
