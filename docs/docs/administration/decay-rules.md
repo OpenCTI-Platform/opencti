@@ -116,7 +116,7 @@ You will also be able to edit your rule, change all its parameters and order, ac
 
 !!! tip "Indicator decay manager"
 
-    Decay rules are only applied, and indicators score updated, if [indicator decay manager](../deployment/managers.md) is enabled (enabled by default).
+    Decay rules are only applied, and indicators score updated, if [indicator decay manager](../deployment/advanced/managers.md) is enabled (enabled by default).
 
 ## Specific behavior when two sources are trying to position a score
 

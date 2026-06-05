@@ -32,4 +32,4 @@ jobs:
 
       - name: Build documentation
         working-directory: docs
-        run: mkdocs build
+        run: mkdocs build --strict
