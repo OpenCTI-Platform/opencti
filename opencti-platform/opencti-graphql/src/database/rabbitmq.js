@@ -538,9 +538,11 @@ export const send = async (exchangeName, routingKey, message) => {
         // Channel was lost: a background reconnection is (or will be) in progress, wait for it before retrying
         logApp.info('[RABBITMQ] Waiting for connection recovery before retry...');
         await getPersistentChannel();
-      } else if (attemptNumber >= SEND_FORCE_RECONNECT_AFTER) {
+      } else if (attemptNumber % SEND_FORCE_RECONNECT_AFTER === 0) {
         // Channel still looks open but keeps rejecting: force a clean reconnection so we don't loop
-        // forever on a zombie channel. The next iteration waits for the rebuilt channel.
+        // forever on a zombie channel. Throttled to once every SEND_FORCE_RECONNECT_AFTER failures
+        // (instead of on every attempt past the threshold) to avoid churning connections and flooding
+        // the logs while a publish keeps failing. The next iteration waits for the rebuilt channel.
         logApp.warn(`[RABBITMQ] Forcing publisher reconnection after ${attemptNumber} consecutive send failures`, logMeta);
         resetPersistentConnection();
       }

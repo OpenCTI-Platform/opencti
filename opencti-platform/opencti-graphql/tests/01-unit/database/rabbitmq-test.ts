@@ -410,6 +410,22 @@ describe('rabbitmq persistent publisher: send() retry loop', () => {
     expect(infoMessages().some((m) => m.includes('Send recovered'))).toBe(true);
   });
 
+  it('should throttle forced reconnections instead of forcing on every attempt past the threshold', async () => {
+    // 7 consecutive failures on a seemingly-open channel, then success.
+    amqpFake.state.publishOutcomes = Array.from({ length: 7 }, () => new Error('nack'));
+
+    const result = await send(EXCHANGE, ROUTING_KEY, MESSAGE);
+
+    expect(result).toBe(true);
+    const forcing = warnMessages().filter((m) => m.includes('Forcing publisher reconnection'));
+    // Throttled to once every SEND_FORCE_RECONNECT_AFTER (3) attempts -> attempts 3 and 6 only,
+    // NOT on every attempt past the threshold (which would be attempts 3, 4, 5, 6 and 7).
+    expect(forcing).toHaveLength(2);
+    expect(forcing.some((m) => m.includes('after 3 consecutive send failures'))).toBe(true);
+    expect(forcing.some((m) => m.includes('after 6 consecutive send failures'))).toBe(true);
+    expect(forcing.some((m) => m.includes('after 4 consecutive send failures'))).toBe(false);
+  });
+
   it('should wait for background recovery when the channel is lost (publish throws)', async () => {
     amqpFake.state.publishOutcomes = ['THROW'];
 
