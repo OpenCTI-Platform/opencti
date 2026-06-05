@@ -17268,7 +17268,6 @@ export type Mutation = {
   retentionRuleAdd: RetentionRule;
   retentionRuleCheck: Scalars['Int']['output'];
   retentionRuleEdit?: Maybe<RetentionRuleEditMutations>;
-  retryPendingWorkflowTransitionActions: WorkflowTriggerResult;
   roleAdd?: Maybe<Role>;
   roleEdit?: Maybe<RoleEditMutations>;
   ruleApply?: Maybe<Scalars['Boolean']['output']>;
@@ -19213,11 +19212,6 @@ export type MutationRetentionRuleCheckArgs = {
 
 export type MutationRetentionRuleEditArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationRetryPendingWorkflowTransitionActionsArgs = {
-  entityId: Scalars['String']['input'];
 };
 
 
@@ -47465,7 +47459,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, RequireFields<MutationRetentionRuleAddArgs, 'input'>>;
   retentionRuleCheck?: Resolver<ResolversTypes['Int'], ParentType, ContextType, Partial<MutationRetentionRuleCheckArgs>>;
   retentionRuleEdit?: Resolver<Maybe<ResolversTypes['RetentionRuleEditMutations']>, ParentType, ContextType, RequireFields<MutationRetentionRuleEditArgs, 'id'>>;
-  retryPendingWorkflowTransitionActions?: Resolver<ResolversTypes['WorkflowTriggerResult'], ParentType, ContextType, RequireFields<MutationRetryPendingWorkflowTransitionActionsArgs, 'entityId'>>;
   roleAdd?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<MutationRoleAddArgs, 'input'>>;
   roleEdit?: Resolver<Maybe<ResolversTypes['RoleEditMutations']>, ParentType, ContextType, RequireFields<MutationRoleEditArgs, 'id'>>;
   ruleApply?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRuleApplyArgs, 'elementId' | 'ruleId'>>;
