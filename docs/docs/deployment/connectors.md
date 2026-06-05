@@ -319,4 +319,4 @@ The connector status can be displayed in the dedicated section of the platform a
 
 !!! bug "Problem"
 
-    If you encounter problems deploying OpenCTI or connectors, you can consult the [troubleshooting page](advanced/troubleshooting.md).
+    If you encounter problems deploying OpenCTI or connectors, you can consult the [troubleshooting page](troubleshooting.md).

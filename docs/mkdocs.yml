@@ -134,15 +134,14 @@ nav:
         - Troubleshooting guide: deployment/integration-manager/troubleshooting.md
       - Other resources: deployment/resources.md
     - Advanced:
-      - Platform managers: deployment/advanced/managers.md
-      - Security configuration: deployment/advanced/security-configuration.md
-      - Liveness probe: deployment/advanced/liveness-probe.md
-      - Clustering: deployment/advanced/clustering.md
-      - Indices and rollover: deployment/advanced/rollover.md
-      - On-premise map server: deployment/advanced/map.md
-      - On-premise AI extraction: deployment/advanced/ai-import-document.md
-      - Rate limiting: deployment/advanced/rate-limiting.md
-      - Troubleshooting: deployment/advanced/troubleshooting.md
+      - Platform managers: deployment/managers.md
+      - Liveness probe: deployment/liveness-probe.md
+      - Clustering: deployment/clustering.md
+      - Indices and rollover: deployment/rollover.md
+      - On-premise map server: deployment/map.md
+      - On-premise AI extraction: deployment/ai-import-document.md
+      - Rate limiting: deployment/rate-limiting.md
+      - Troubleshooting: deployment/troubleshooting.md
     - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:

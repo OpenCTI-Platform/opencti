@@ -135,5 +135,10 @@ Example:
 Result:
 - The last update from source1 is not applied.
 
-- [Indicators lifecycle](../usage/indicators-lifecycle.md)
-- [Indicator decay manager](../deployment/advanced/managers.md)
+
+
+
+## Related reading:
+
+- [Indicator decay manager](../deployment/managers.md)
+- [Decay rules configuration](../administration/decay-rules.md)

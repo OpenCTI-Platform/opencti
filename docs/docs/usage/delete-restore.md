@@ -42,7 +42,7 @@ From the Trash panel, it is also possible to delete permanently the object, its 
 
 ## Trash retention
 
-Deleted objects are kept in trash during a fixed period of time (7 days by default), then they are permanently deleted by the [trash manager](../deployment/advanced/managers.md#trash-manager).
+Deleted objects are kept in trash during a fixed period of time (7 days by default), then they are permanently deleted by the [trash manager](../deployment/managers.md#trash-manager).
 
 ## Configuration
 
@@ -74,3 +74,4 @@ Please also note that attempting to restore a deeply nested object (for instance
 
     The trash system is designed to save some precious time when a user deleted knowledge from the platform by mistake.
     It is not meant to be a complete backup system for your database.
+  

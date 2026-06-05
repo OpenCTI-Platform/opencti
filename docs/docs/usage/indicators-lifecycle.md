@@ -91,5 +91,5 @@ Understanding how OpenCTI calculates validity periods and scores is essential fo
 
 ## Related reading:
 
-- [Indicator decay manager](../deployment/advanced/managers.md)
+- [Indicator decay manager](../deployment/managers.md)
 - [Decay rules configuration](../administration/decay-rules.md)

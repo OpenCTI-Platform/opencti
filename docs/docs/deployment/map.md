@@ -41,29 +41,29 @@ Download on your computer the OpenCTI JSON styles (you will have to upload it th
 
 Now, you can access to the map server, you should see the following page:
 
-![Install](../assets/install-map-server.png)
+![Install](assets/install-map-server.png)
 
 On the next page, you should see the existing data:
 
-![Region](../assets/region-map-server.png)
+![Region](assets/region-map-server.png)
 
 On the next page, click on "Advanced Options":
 
-![Options](../assets/options-map-server.png)
+![Options](assets/options-map-server.png)
 
 Upload the `filigran-dark2.json` and `filigran-light2.json` files:
 
-![Styles](../assets/style-map-server.png)
+![Styles](assets/style-map-server.png)
 
 Save and run the server with default parameters:
 
-![Settings](../assets/settings-map-server.png)
+![Settings](assets/settings-map-server.png)
 
 ## OpenCTI Parameters
 
 Once the server is running, you should see the list of available styles:
 
-![Viewer](../assets/viewer-map-server.png)
+![Viewer](assets/viewer-map-server.png)
 
 Click on "Viewer", and take the URL:
 
