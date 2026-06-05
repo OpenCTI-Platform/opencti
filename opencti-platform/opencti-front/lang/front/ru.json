@@ -4441,6 +4441,7 @@
   "This request for sharing has been approved": "Этот запрос на совместное использование был одобрен",
   "This request for sharing has been declined": "Этот запрос на предоставление информации был отклонен",
   "This rule has been applied on the existing data": "Это правило было применено к существующим данным",
+  "This saved filter is shared with other members. Are you sure you want to delete it?": "Этот сохраненный фильтр доступен другим участникам. Вы действительно хотите его удалить?",
   "This score is updated with the decay rule applied to this indicator.": "Этот показатель обновляется с учетом правила распада, примененного к этому индикатору.",
   "This sector does not have any description.": "Этот сектор не имеет описания.",
   "This step is not implemented": "Этот шаг не выполняется",

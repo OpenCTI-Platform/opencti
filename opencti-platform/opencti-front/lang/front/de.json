@@ -4437,6 +4437,7 @@
   "This request for sharing has been approved": "Dieser Antrag auf gemeinsame Nutzung wurde genehmigt",
   "This request for sharing has been declined": "Dieser Antrag auf Freigabe wurde abgelehnt",
   "This rule has been applied on the existing data": "Diese Regel wurde auf die vorhandenen Daten angewandt",
+  "This saved filter is shared with other members. Are you sure you want to delete it?": "Dieser gespeicherte Filter wird für andere Mitglieder freigegeben. Möchten Sie ihn wirklich löschen?",
   "This score is updated with the decay rule applied to this indicator.": "Diese Punktzahl wird mit der auf diesen Indikator angewandten Verfallsregel aktualisiert.",
   "This sector does not have any description.": "Für diesen Sektor gibt es keine Beschreibung.",
   "This step is not implemented": "Dieser Schritt ist nicht implementiert",

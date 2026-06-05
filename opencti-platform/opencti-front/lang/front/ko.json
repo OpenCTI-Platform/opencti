@@ -4438,6 +4438,7 @@
   "This request for sharing has been approved": "이 공유 요청이 승인되었습니다",
   "This request for sharing has been declined": "이 공유 요청이 거부되었습니다",
   "This rule has been applied on the existing data": "이 규칙은 기존 데이터에 적용되었습니다",
+  "This saved filter is shared with other members. Are you sure you want to delete it?": "이 저장된 필터는 다른 회원들과 공유되고 있습니다. 정말 삭제하시겠습니까?",
   "This score is updated with the decay rule applied to this indicator.": "이 점수는 이 인디케이터에 적용된 감소 규칙으로 업데이트됩니다.",
   "This sector does not have any description.": "이 부문에는 설명이 없습니다.",
   "This step is not implemented": "이 단계는 구현되지 않습니다",

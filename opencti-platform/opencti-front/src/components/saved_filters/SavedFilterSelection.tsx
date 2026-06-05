@@ -37,7 +37,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   const [selectedSavedFilter, setSelectedSavedFilter] = useState<AutocompleteOptionType>();
   const [inputValue, setInputValue] = useState<string>('');
-  const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
+  const [savedFilterToDelete, setSavedFilterToDelete] = useState<SavedFiltersSelectionData>();
 
   const myFiltersGroupLabel = t_i18n('My filters');
 
@@ -115,7 +115,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);
 
-  const handleDelete = (option: SavedFiltersSelectionData) => setSavedFilterToDelete(option.id);
+  const handleDelete = (option: SavedFiltersSelectionData) => setSavedFilterToDelete(option);
 
   return (
     <>
@@ -134,7 +134,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
           savedFilterToDelete={savedFilterToDelete}
           onClose={resetSavedFilterToDelete}
           onReset={handleReset}
-          shouldResetFilters={savedFilterToDelete === selectedSavedFilter?.value.id}
+          shouldResetFilters={savedFilterToDelete.id === selectedSavedFilter?.value.id}
         />
       )}
     </>

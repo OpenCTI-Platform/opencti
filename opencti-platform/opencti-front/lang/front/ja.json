@@ -4441,6 +4441,7 @@
   "This request for sharing has been approved": "この共有リクエストは承認されました",
   "This request for sharing has been declined": "この共有リクエストは拒否されました",
   "This rule has been applied on the existing data": "既存のデータにルールを適用しました",
+  "This saved filter is shared with other members. Are you sure you want to delete it?": "この保存済みフィルターは他のメンバーと共有されています。本当に削除しますか？",
   "This score is updated with the decay rule applied to this indicator.": "このスコアはこのインジケータに適用される減衰ルールで更新される。",
   "This sector does not have any description.": "このセクターには説明がありません。",
   "This step is not implemented": "このステップは実装されていません",
