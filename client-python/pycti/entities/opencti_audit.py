@@ -112,7 +112,9 @@ class Audit:
             final_data = final_data + data
             page = 1
             while result["data"]["audits"]["pageInfo"]["hasNextPage"]:
-                self.opencti.admin_logger.info("Getting next page of data: " + str(page))
+                self.opencti.admin_logger.info(
+                    "Getting next page of data: " + str(page)
+                )
                 after = result["data"]["audits"]["pageInfo"]["endCursor"]
                 result = self.opencti.query(
                     query,

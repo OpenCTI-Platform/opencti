@@ -112,7 +112,9 @@ class Log:
             final_data = final_data + data
             page = 1
             while result["data"]["logs"]["pageInfo"]["hasNextPage"]:
-                self.opencti.admin_logger.info("Getting next page of data: " + str(page))
+                self.opencti.admin_logger.info(
+                    "Getting next page of data: " + str(page)
+                )
                 after = result["data"]["logs"]["pageInfo"]["endCursor"]
                 result = self.opencti.query(
                     query,
