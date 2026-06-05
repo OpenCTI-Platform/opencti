@@ -78,10 +78,17 @@ describe('useDashboardRefresh', () => {
     expect(result.current.isAutoRefreshing).toBe(false);
 
     act(() => {
-      vi.advanceTimersByTime(5_000);
+      // Next interval tick is 3.8s after the spinner reset (t=6.2s -> t=10s).
+      vi.advanceTimersByTime(3_800);
     });
 
     expect(result.current.refreshToken).toBe(2);
     expect(result.current.isAutoRefreshing).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1_200);
+    });
+
+    expect(result.current.isAutoRefreshing).toBe(false);
   });
 });
