@@ -320,6 +320,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     csv_mapper_id: Yup.mixed().required(t_i18n('This field is required')),
     csv_mapper_type: Yup.string(),
     markings: Yup.array().required(),
+    ssl_verify: Yup.bool().required(t_i18n('This field is required')),
   };
 
   const ingestionCsvValidator = useSchemaEditionValidation('IngestionCsv', basicShape);
@@ -675,12 +676,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 type="checkbox"
                 name="ssl_verify"
                 label={t_i18n('Verify SSL certificate')}
-                onChange={(name: string, value: boolean) => commitUpdate({
-                  variables: {
-                    id: ingestionCsvData.id,
-                    input: [{ key: name, value: value || true }],
-                  },
-                })}
+                onChange={handleSubmitField}
                 containerstyle={fieldSpacingContainerStyle}
               />
               {enableReferences && (

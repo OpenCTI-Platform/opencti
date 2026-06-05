@@ -56,6 +56,7 @@ const ingestionRssValidation = (t) => Yup.object().shape({
   current_state_date: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
+  ssl_verify: Yup.bool().required(t('This field is required')),
 });
 
 const IngestionRssEditionContainer = ({

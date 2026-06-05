@@ -188,6 +188,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     confidence_to_score: Yup.bool().nullable(),
+    ssl_verify: Yup.bool().required(t_i18n('This field is required')),
   };
 
   const ingestionTaxiiValidator = useSchemaEditionValidation('IngestionTaxii', basicShape);
@@ -464,12 +465,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           />
           <Field
             component={SwitchField}
-            onChange={(name: string, value: boolean) => commitUpdate({
-              variables: {
-                id: ingestionTaxiiData.id,
-                input: [{ key: name, value: value || '' }],
-              },
-            })}
+            onChange={handleSubmitField}
             type="checkbox"
             name="ssl_verify"
             label={t_i18n('Verify SSL certificate')}
