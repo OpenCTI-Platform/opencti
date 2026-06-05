@@ -3,6 +3,7 @@ import { ButtonGroup, CircularProgress, MenuItem, Select, useTheme } from '@mui/
 import Button from '@common/button/Button';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { useRef, useState } from 'react';
+import { useFormatter } from '../i18n';
 
 type RefreshIntervalOption = {
   label: string;
@@ -32,6 +33,7 @@ const DashboardRefreshControl = ({
   isRefreshing = false,
 }: DashboardRefreshControlProps) => {
   const theme = useTheme();
+  const { t_i18n } = useFormatter();
   const primary = theme.palette.primary.main;
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const manualResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -56,7 +58,7 @@ const DashboardRefreshControl = ({
         onClick={handleRefreshClick}
         variant="secondary"
       >
-        Refresh
+        {t_i18n('Refresh')}
       </Button>
       <Select
         value={interval}
