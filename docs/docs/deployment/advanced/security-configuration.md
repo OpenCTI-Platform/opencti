@@ -3,7 +3,7 @@
 For an easy first user experience or to avoid breaking changes, OpenCTI is configured with a default security configuration that is not strict.
 However, for production deployment, it is recommended to review and adapt the security configuration of your platform.
 
-The full list of configuration can be found in the [configuration page](../configuration.md#errors).
+The full list of configuration can be found in the [configuration page](../configuration.md).
 
 ## Rate limiting
 
