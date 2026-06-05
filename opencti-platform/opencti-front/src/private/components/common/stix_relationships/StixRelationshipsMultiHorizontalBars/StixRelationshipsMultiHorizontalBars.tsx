@@ -1,18 +1,20 @@
-import React, { CSSProperties, FunctionComponent, Suspense, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, Suspense, useEffect, useRef, useState, useTransition } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
 import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../../utils/widget/widget';
 import { useFormatter } from '../../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import type { DashboardConfig } from '../../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
 import Loader from '../../../../../components/Loader';
-import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
+import { useDashboardRefreshToken } from '../../../../../components/dashboard/DashboardRefreshContext';
 import type {
   StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery,
 } from './__generated__/StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery.graphql';
@@ -430,6 +432,8 @@ interface StixRelationshipsMultiHorizontalBarsProps {
   parameters?: WidgetParameters;
   popover?: React.ReactNode;
   host?: WidgetHost;
+  config?: DashboardConfig;
+  refreshRate?: number | null;
 }
 
 const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsMultiHorizontalBarsProps> = ({
@@ -521,12 +525,21 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
   const queryToCall = subSelection.perspective === 'entities'
     ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
     : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
-
-  // Single useQueryLoading call — mirrors the JSX exactly.
-  const queryRef = useQueryLoading<
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<
     StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
     | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
   >(queryToCall, variables);
+  const [, startTransition] = useTransition();
+
+  const refreshToken = useDashboardRefreshToken();
+  const prevRefreshTokenRef = useRef(refreshToken);
+  useEffect(() => {
+    if (prevRefreshTokenRef.current === refreshToken) return;
+    prevRefreshTokenRef.current = refreshToken;
+    startTransition(() => {
+      loadQuery(variables, { fetchPolicy: 'store-and-network' });
+    });
+  }, [refreshToken, loadQuery, startTransition, variables]);
 
   return (
     <WidgetContainer

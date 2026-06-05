@@ -117,8 +117,21 @@ const useDashboardViz = <TQuery extends OperationType>({
   useEffect(() => {
     if (prevRefreshTokenRef.current === refreshToken) return;
     prevRefreshTokenRef.current = refreshToken;
-    reloadDataRef.current(true);
-  }, [refreshToken]);
+
+    if (!buildQueryVariables || !config) {
+      reloadDataRef.current(true);
+      return;
+    }
+
+    const refreshedVariables = buildQueryVariables(resolvedDataSelection, config, parameters);
+    const refreshedSignature = JSON.stringify(refreshedVariables);
+    lastLoadedVariablesSignatureRef.current = refreshedSignature;
+    startTransition(() => {
+      load(refreshedVariables, {
+        fetchPolicy: 'store-and-network',
+      });
+    });
+  }, [refreshToken, buildQueryVariables, config, resolvedDataSelection, parameters, load, startTransition]);
 
   useWidgetAutoRefresh(forceReloadData, refreshRate);
 

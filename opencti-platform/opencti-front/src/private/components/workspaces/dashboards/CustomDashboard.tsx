@@ -196,6 +196,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     const triggerAutoRefresh = () => {
       setIsAutoRefreshing(true);
       setLastRefreshTime(new Date());
+      setManualRefreshToken((prev) => prev + 1);
 
       if (resetSpinnerTimeout) {
         clearTimeout(resetSpinnerTimeout);

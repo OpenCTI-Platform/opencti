@@ -15,7 +15,6 @@ import StixRelationshipsMultiHeatMap from '../../private/components/common/stix_
 import StixRelationshipsTreeMap from '../../private/components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '../../private/components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '../../private/components/common/stix_relationships/StixRelationshipsWordCloud';
-import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 
@@ -34,14 +33,6 @@ const DashboardRelationshipsViz = ({
   host,
   refreshRate,
 }: DashboardRelationshipsVizProps) => {
-  const startDate = config.relativeDate
-    ? computeRelativeDate(config.relativeDate)
-    : config.startDate;
-
-  const endDate = config.relativeDate
-    ? formatDate(dayStartDate(null, false))
-    : config.endDate;
-
   switch (widget.type) {
     case 'number':
       return (
@@ -157,8 +148,6 @@ const DashboardRelationshipsViz = ({
         return (
           <StixRelationshipsMultiHorizontalBars
             variant={undefined}
-            endDate={endDate}
-            startDate={startDate}
             dataSelection={widget.dataSelection}
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
@@ -166,6 +155,8 @@ const DashboardRelationshipsViz = ({
             field={undefined} // because calling js component in ts
             popover={popover}
             host={host}
+            refreshRate={refreshRate}
+            config={config}
           />
         );
       }
