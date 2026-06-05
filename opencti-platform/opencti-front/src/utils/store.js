@@ -154,4 +154,3 @@ export const invalidateConnection = (store, key, filters) => {
     conn.invalidateRecord();
   }
 };
-
