@@ -1,7 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { BasicStoreEntitySecurityCoverageResult, INPUT_RESULT_OF, RELATION_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
+import type { ATTRIBUTE_RESULT_OF, BasicStoreEntitySecurityCoverageResult, INPUT_RESULT_OF, RELATION_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
 
 export const ENTITY_TYPE_SECURITY_COVERAGE = 'Security-Coverage';
 export const RELATION_COVERED = 'object-covered';
@@ -36,7 +36,8 @@ export interface StixSecurityCoverage extends StixDomainObject {
   duration: string;
   type_affinity: string;
   platforms_affinity: string[];
-  covered_ref: string;
+  [ATTRIBUTE_COVERED]: string;
+  [ATTRIBUTE_RESULT_OF]: string[];
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

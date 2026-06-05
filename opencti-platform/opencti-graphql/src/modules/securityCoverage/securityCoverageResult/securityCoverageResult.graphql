@@ -1,4 +1,9 @@
-type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type CoverageResult {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -112,7 +117,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   ): FileConnection
   # Identity
   identity_class: String!
-  name: String!
+  name: String
   description: String
   contact_information: String
   roles: [String]
@@ -145,24 +150,16 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  # SecurityCoverage
+  # SecurityCoverageResult
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
   external_uri: String
-  periodicity: String
-  duration: String
-  type_affinity: String
-  platforms_affinity: [String!]
-  auto_enrichment_disable: Boolean
-  objectCovered: StixDomainObject
-  toStixBundle: String
-  security_platform_type: String
 }
 
 # Ordering
-enum SecurityCoverageOrdering {
+enum SecurityCoverageResultOrdering {
   name
   confidence
   created
@@ -171,45 +168,42 @@ enum SecurityCoverageOrdering {
   modified
   updated_at
   objectMarking
-  coverage_last_result
   _score
 }
 
 # Relay connections
-type SecurityCoverageConnection {
+type SecurityCoverageResultConnection {
   pageInfo: PageInfo!
-  edges: [SecurityCoverageEdge!]!
+  edges: [SecurityCoverageResultEdge!]!
 }
-type SecurityCoverageEdge {
+type SecurityCoverageResultEdge {
   cursor: String!
-  node: SecurityCoverage!
+  node: SecurityCoverageResult!
 }
 
 # Queries
 type Query {
-  securityCoverage(id: String!): SecurityCoverage @auth(for: [KNOWLEDGE])
-  securityCoverages(
+  securityCoverageResult(id: String!): SecurityCoverageResult @auth(for: [KNOWLEDGE])
+  listSecurityCoverageResultsByResultOf(id: String!): [SecurityCoverageResult!] @auth(for: [KNOWLEDGE])
+  securityCoverageResults(
     first: Int
     after: ID
-    orderBy: SecurityCoverageOrdering
+    orderBy: SecurityCoverageResultOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): SecurityCoverageConnection @auth(for: [KNOWLEDGE])
+  ): SecurityCoverageResultConnection @auth(for: [KNOWLEDGE])
 }
 
-
-
 # Mutations
-input SecurityCoverageAddInput {
-  name: String! @constraint(minLength: 2, format: "not-blank")
+input SecurityCoverageResultAddInput {
+  name: String
   description: String
   confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  objectCovered: String!
   created: DateTime
   modified: DateTime
   revoked: Boolean
@@ -228,27 +222,14 @@ input SecurityCoverageAddInput {
   update: Boolean
   # coverage specific
   external_uri: String
-  auto_enrichment_disable: Boolean!
-  periodicity: String
-  duration: String
-  type_affinity: String
-  platforms_affinity: [String]
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
+  resultOf: String!
 }
 
 type Mutation {
-  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  securityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageContextClean(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-}
-
-extend type Subscription {
-    securityCoverage(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageResultDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }
