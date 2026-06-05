@@ -51,7 +51,6 @@ const DashboardRawViz = ({
             title={undefined}
             popover={popover}
             host={host}
-            entityId={host?.kind === 'custom-view' ? host.customViewTargetEntityId : undefined}
           />
         );
       }
