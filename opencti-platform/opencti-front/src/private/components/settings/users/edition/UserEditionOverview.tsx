@@ -3,8 +3,8 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
+import MenuItem from '@mui/material/MenuItem';
 import { UserEditionOverview_user$data } from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../../components/TextField';
@@ -340,6 +340,7 @@ const UserEditionOverview = createFragmentContainer(
         theme
         otp_activated
         otp_qr
+        force_password_change
         account_status
         account_lock_after_date
         roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
