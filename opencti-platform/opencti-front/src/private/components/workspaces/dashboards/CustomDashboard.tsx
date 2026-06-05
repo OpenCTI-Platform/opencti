@@ -8,6 +8,7 @@ import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../.
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
+import useDashboardRefresh from '../../../../components/dashboard/useDashboardRefresh';
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
 import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
 import Security from 'src/utils/Security';
@@ -15,7 +16,6 @@ import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_w
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
-import { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 
 const dashboardExportWidgetQuery = graphql`
@@ -152,80 +152,35 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
 
-  const [localRefreshRateSeconds, setLocalRefreshRateSeconds] = useState<number>(workspace.refresh_rate ?? 0);
-  const refreshRate = localRefreshRateSeconds ? localRefreshRateSeconds * 1000 : null;
-  const [lastRefreshTime, setLastRefreshTime] = useState(new Date());
-  const lastRefreshTimeRef = useRef(lastRefreshTime);
-  useEffect(() => {
-    lastRefreshTimeRef.current = lastRefreshTime;
-  }, [lastRefreshTime]);
-  const [manualRefreshToken, setManualRefreshToken] = useState(0);
-  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
-
-  const handleRefreshRateChange = (refreshRateInSeconds: number) => {
-    setLocalRefreshRateSeconds(refreshRateInSeconds);
-    setLastRefreshTime(new Date());
-    commitMutation({
-      mutation: workspaceMutationFieldPatch,
-      variables: {
-        id: workspace.id,
-        input: {
-          key: 'refresh_rate',
-          value: refreshRateInSeconds,
+  const {
+    localRefreshRateSeconds,
+    refreshRate,
+    refreshToken,
+    isAutoRefreshing,
+    handleManualRefresh,
+    handleRefreshRateChange,
+  } = useDashboardRefresh({
+    initialRefreshRateSeconds: workspace.refresh_rate ?? 0,
+    onRefreshRateChange: (refreshRateInSeconds: number) => {
+      commitMutation({
+        mutation: workspaceMutationFieldPatch,
+        variables: {
+          id: workspace.id,
+          input: {
+            key: 'refresh_rate',
+            value: refreshRateInSeconds,
+          },
         },
-      },
-      // Remove these once commitMutation gets migrated to TS
-      onCompleted: undefined,
-      onError: undefined,
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-      setSubmitting: undefined,
-      updater: undefined,
-    });
-  };
-
-  const handleManualRefresh = () => {
-    setLastRefreshTime(new Date());
-    setManualRefreshToken((prev) => prev + 1);
-  };
-
-  useEffect(() => {
-    if (!refreshRate) return;
-
-    let resetSpinnerTimeout: ReturnType<typeof setTimeout> | null = null;
-    const triggerAutoRefresh = () => {
-      setIsAutoRefreshing(true);
-      setLastRefreshTime(new Date());
-      setManualRefreshToken((prev) => prev + 1);
-
-      if (resetSpinnerTimeout) {
-        clearTimeout(resetSpinnerTimeout);
-      }
-      resetSpinnerTimeout = setTimeout(() => {
-        setIsAutoRefreshing(false);
-      }, 1200);
-    };
-
-    let interval: ReturnType<typeof setInterval> | null = null;
-    const msUntilNextTick = Math.max(0, refreshRate - (Date.now() - lastRefreshTimeRef.current.getTime()));
-    const timeout = setTimeout(() => {
-      triggerAutoRefresh();
-      interval = setInterval(() => {
-        triggerAutoRefresh();
-      }, refreshRate);
-    }, msUntilNextTick);
-
-    return () => {
-      clearTimeout(timeout);
-      if (resetSpinnerTimeout !== null) {
-        clearTimeout(resetSpinnerTimeout);
-      }
-      if (interval !== null) {
-        clearInterval(interval);
-      }
-      setIsAutoRefreshing(false);
-    };
-  }, [refreshRate]);
+        // Remove these once commitMutation gets migrated to TS
+        onCompleted: undefined,
+        onError: undefined,
+        optimisticResponse: undefined,
+        optimisticUpdater: undefined,
+        setSubmitting: undefined,
+        updater: undefined,
+      });
+    },
+  });
 
   return (
     <Stack gap={2}>
@@ -277,7 +232,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
           entity={workspace}
           host={WIDGET_WORKSPACE_HOST}
           refreshRate={refreshRate}
-          refreshToken={manualRefreshToken}
+          refreshToken={refreshToken}
         />
       </div>
     </Stack>
