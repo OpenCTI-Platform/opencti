@@ -143,7 +143,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values: formValues, setFieldValue, validateForm, setTouched }) => (
+          {({ submitForm, handleReset, isSubmitting, values: formValues, validateForm, setTouched }) => (
             <Form>
               <Field
                 component={TextField}
