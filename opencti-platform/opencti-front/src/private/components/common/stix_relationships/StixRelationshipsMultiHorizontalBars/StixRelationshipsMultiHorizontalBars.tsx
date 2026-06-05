@@ -1,15 +1,26 @@
+import React, { CSSProperties, FunctionComponent, Suspense, useState } from 'react';
+import { graphql, usePreloadedQuery } from 'react-relay';
+import type { PreloadedQuery } from 'react-relay';
+import ApexCharts from 'apexcharts';
+import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../../utils/widget/widget';
 import { useFormatter } from '../../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets } from '../../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
 import Loader from '../../../../../components/Loader';
-import { graphql, usePreloadedQuery } from 'react-relay';
-import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
-import { Suspense, useState } from 'react';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
+import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
+import type {
+  StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery,
+} from './__generated__/StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery.graphql';
+import type { StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery } from './__generated__/StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery.graphql';
+
+// ---------------------------------------------------------------------------
+// GraphQL queries
+// ---------------------------------------------------------------------------
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
@@ -347,7 +358,24 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
   }
 `;
 
-const StixRelationshipsMultiHorizontalBarsComponent = ({
+// ---------------------------------------------------------------------------
+// Inner component (Suspense boundary consumer)
+// ---------------------------------------------------------------------------
+
+interface StixRelationshipsMultiHorizontalBarsComponentProps {
+  queryRef: PreloadedQuery<StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery>
+    | PreloadedQuery<StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery>;
+  queryToCall:
+    | typeof stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
+    | typeof stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery;
+  parameters: WidgetParameters;
+  subSelection: Partial<WidgetDataSelection>;
+  finalSubDistributionField: string;
+  finalField: string;
+  onMounted: (chart: ApexCharts) => void;
+}
+
+const StixRelationshipsMultiHorizontalBarsComponent: FunctionComponent<StixRelationshipsMultiHorizontalBarsComponentProps> = ({
   queryRef,
   parameters = {},
   queryToCall,
@@ -356,16 +384,17 @@ const StixRelationshipsMultiHorizontalBarsComponent = ({
   finalField,
   onMounted,
 }) => {
-  const { stixRelationshipsDistribution } = usePreloadedQuery(queryToCall, queryRef);
+  const { stixRelationshipsDistribution } = usePreloadedQuery(
+    // Cast needed: both queries share the same response shape for this field.
+    queryToCall as typeof stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery,
+    queryRef as PreloadedQuery<StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery>,
+  );
+
   if (!stixRelationshipsDistribution || stixRelationshipsDistribution.length === 0) {
     return <WidgetNoData />;
   }
 
-  const {
-    chartData,
-    redirectionUtils,
-    categories,
-  } = useStixRelationshipsMultiHorizontalBars(
+  const { chartData, redirectionUtils, categories } = useStixRelationshipsMultiHorizontalBars(
     subSelection,
     stixRelationshipsDistribution,
     finalSubDistributionField,
@@ -375,7 +404,7 @@ const StixRelationshipsMultiHorizontalBarsComponent = ({
   return (
     <WidgetHorizontalBars
       series={chartData}
-      distributed={parameters.distributed}
+      distributed={parameters.distributed ?? undefined}
       redirectionUtils={redirectionUtils}
       stacked
       total
@@ -386,7 +415,24 @@ const StixRelationshipsMultiHorizontalBarsComponent = ({
   );
 };
 
-const StixRelationshipsMultiHorizontalBars = ({
+// ---------------------------------------------------------------------------
+// Outer component (query loader + layout)
+// ---------------------------------------------------------------------------
+
+interface StixRelationshipsMultiHorizontalBarsProps {
+  title?: string;
+  variant?: string;
+  height?: CSSProperties['height'];
+  field?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: React.ReactNode;
+  host?: WidgetHost;
+}
+
+const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsMultiHorizontalBarsProps> = ({
   title,
   variant,
   height,
@@ -399,18 +445,18 @@ const StixRelationshipsMultiHorizontalBars = ({
   host,
 }) => {
   const { t_i18n } = useFormatter();
-  const [chart, setChart] = useState();
+  const [chart, setChart] = useState<ApexCharts>();
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
     perspective: 'relationships',
     dataSelection,
     host,
   });
 
-  let selection = {};
+  let selection: Partial<WidgetDataSelection> = {};
   let filtersAndOptions;
   let subDistributionFiltersAndOptions;
-  let subSelection = {};
-  let subDistributionTypes = null;
+  let subSelection: Partial<WidgetDataSelection> = {};
+  let subDistributionTypes: string[] | null = null;
   if (resolvedDataSelection) {
     selection = resolvedDataSelection[0];
     filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
@@ -426,39 +472,40 @@ const StixRelationshipsMultiHorizontalBars = ({
   const finalField = selection.attribute || field || 'entity_type';
   const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
 
-  let variables = {
-    field: finalField,
-    operation: 'count',
-    startDate,
-    endDate,
-    dateAttribute: selection.date_attribute ?? 'created_at',
-    limit: selection.number ?? 10,
-    filters: filtersAndOptions?.filters,
-    isTo: selection.isTo,
-    dynamicFrom: selection.dynamicFrom,
-    dynamicTo: selection.dynamicTo,
-  };
+  // Base variables shared by both query variants.
+  let variables:
+    | StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery['variables']
+    | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery['variables'] = {
+      field: finalField,
+      operation: 'count',
+      startDate,
+      endDate,
+      dateAttribute: selection.date_attribute ?? 'created_at',
+      limit: selection.number ?? 10,
+      filters: filtersAndOptions?.filters as unknown as GqlFilterGroup,
+      isTo: selection.isTo,
+      dynamicFrom: selection.dynamicFrom as unknown as GqlFilterGroup,
+      dynamicTo: selection.dynamicTo as unknown as GqlFilterGroup,
+      subDistributionField: finalSubDistributionField,
+      subDistributionOperation: 'count',
+    };
 
   if (subSelection.perspective === 'entities') {
     variables = {
       ...variables,
-      subDistributionField: finalSubDistributionField,
       subDistributionStartDate: startDate,
       subDistributionEndDate: endDate,
       subDistributionDateAttribute:
         subSelection.date_attribute && subSelection.date_attribute.length > 0
           ? subSelection.date_attribute
           : 'created_at',
-      subDistributionOperation: 'count',
       subDistributionLimit: subSelection.number ?? 15,
       subDistributionTypes,
-      subDistributionFilters: subDistributionFiltersAndOptions?.filters,
-    };
+      subDistributionFilters: subDistributionFiltersAndOptions?.filters as unknown as GqlFilterGroup,
+    } as StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery['variables'];
   } else {
     variables = {
       ...variables,
-      subDistributionField: finalSubDistributionField,
-      subDistributionOperation: 'count',
       subDistributionStartDate: startDate,
       subDistributionEndDate: endDate,
       subDistributionDateAttribute:
@@ -467,14 +514,19 @@ const StixRelationshipsMultiHorizontalBars = ({
           : 'created_at',
       subDistributionIsTo: subSelection.isTo,
       subDistributionLimit: subSelection.number ?? 15,
-      subDistributionFilters: subDistributionFiltersAndOptions?.filters,
-    };
+      subDistributionFilters: subDistributionFiltersAndOptions?.filters as unknown as GqlFilterGroup,
+    } as StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery['variables'];
   }
 
   const queryToCall = subSelection.perspective === 'entities'
     ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
     : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
-  const queryRef = useQueryLoading(queryToCall, variables);
+
+  // Single useQueryLoading call — mirrors the JSX exactly.
+  const queryRef = useQueryLoading<
+    StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
+    | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
+  >(queryToCall, variables);
 
   return (
     <WidgetContainer
