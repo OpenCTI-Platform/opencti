@@ -9,6 +9,7 @@ import useDeletion from 'src/utils/hooks/useDeletion';
 import { type SavedFiltersSelectionData } from './SavedFilterSelection';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
+import useHelper from '../../utils/hooks/useHelper';
 
 const savedFilterDeleteDialogMutation = graphql`
   mutation SavedFilterDeleteDialogMutation($id: ID!) {
@@ -26,6 +27,9 @@ type SavedFilterDeleteDialogProps = {
 const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, shouldResetFilters }: SavedFilterDeleteDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+
+  const { isFeatureEnable } = useHelper();
+  const isShareFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
 
   const {
     useDataTablePaginationLocalStorage: {
@@ -64,7 +68,7 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, should
   const sharedMembersCount = (savedFilterToDelete.authorizedMembers ?? [])
     .filter((m) => m.member_id !== me.id).length;
 
-  const message = sharedMembersCount > 0
+  const message = isShareFiltersFeatureEnabled && sharedMembersCount > 0
     ? t_i18n('This saved filter is shared with other members. Are you sure you want to delete it?')
     : t_i18n('Do you want to delete this saved filter?');
 
