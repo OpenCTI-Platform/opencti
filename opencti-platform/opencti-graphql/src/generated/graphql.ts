@@ -16557,6 +16557,7 @@ export type MeUser = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
   firstname?: Maybe<Scalars['String']['output']>;
+  force_password_change?: Maybe<Scalars['Boolean']['output']>;
   groups?: Maybe<GroupConnection>;
   id: Scalars['ID']['output'];
   individual_id?: Maybe<Scalars['String']['output']>;
@@ -36178,6 +36179,7 @@ export type User = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
   firstname?: Maybe<Scalars['String']['output']>;
+  force_password_change?: Maybe<Scalars['Boolean']['output']>;
   groups?: Maybe<GroupConnection>;
   id: Scalars['ID']['output'];
   individual_id?: Maybe<Scalars['String']['output']>;
@@ -47033,6 +47035,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  force_password_change?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<MeUserGroupsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -52257,6 +52260,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  force_password_change?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<UserGroupsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -6,6 +6,8 @@ import { compose } from 'ramda';
 import * as Yup from 'yup';
 import withStyles from '@mui/styles/withStyles';
 import { Stack } from '@mui/material';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import Button from '@common/button/Button';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
@@ -60,8 +62,19 @@ class UserEditionPasswordComponent extends Component {
     });
   }
 
+  handleToggleForcePasswordChange(event) {
+    commitMutation({
+      mutation: userMutationFieldPatch,
+      variables: {
+        id: this.props.user.id,
+        input: { key: 'force_password_change', value: [String(event.target.checked)] },
+      },
+    });
+  }
+
   render() {
     const { classes, t } = this.props;
+    const external = this.props.user.external === true;
     const initialValues = { password: '', confirmation: '' };
     return (
       <Formik
@@ -91,6 +104,36 @@ class UserEditionPasswordComponent extends Component {
                 fullWidth={true}
               />
             </Stack>
+            <PasswordPolicies style={{ marginBottom: 20 }} />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="password"
+              label={t('Password')}
+              type="password"
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="confirmation"
+              label={t('Confirmation')}
+              type="password"
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <FormControlLabel
+              style={{ marginLeft: 0, marginTop: 30 }}
+              control={(
+                <Switch
+                  checked={this.props.user.force_password_change ?? false}
+                  onChange={this.handleToggleForcePasswordChange.bind(this)}
+                  disabled={external}
+                  color="primary"
+                />
+              )}
+              label={t('Force password change on next login')}
+            />
             <div className={classes.buttons}>
               <Button
                 onClick={submitForm}
@@ -122,6 +165,8 @@ const UserEditionPassword = createFragmentContainer(
     user: graphql`
       fragment UserEditionPassword_user on User {
         id
+        external
+        force_password_change
       }
     `,
   },
