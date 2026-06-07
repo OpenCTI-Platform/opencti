@@ -17,13 +17,13 @@
 # ── Primary type labels (map to the Conventional Commits title prefix) ──
 - name: feature
   color: "6a3eef"
-  description: "Type: new feature or capability (feat:)."
+  description: "Type: new feature or capability (feat:). Issues only — not for PRs."
 - name: bug
   color: "d73a4a"
-  description: "Type: something isn't working (fix:)."
+  description: "Type: something isn't working (fix:). Issues only — not for PRs."
 - name: documentation
   color: "0075ca"
-  description: "Type: documentation only (docs:)."
+  description: "Type: documentation only (docs:). Issues only — not for PRs."
 - name: security
   color: "d93f0b"
   description: "Security vulnerability, hardening or guardrail."
