@@ -1,6 +1,5 @@
 import { Readable } from 'stream';
 import * as readline from 'node:readline';
-import type { SdkStream } from '@smithy/types/dist-types/serde';
 import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -35,7 +34,7 @@ const LOG_PREFIX = `[OPENCTI-MODULE][${connectorConfig.id}]`;
 /** @deprecated Will be removed when workbench are replaced by draft */
 const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts: CsvBundlerIngestionOpts) => {
   const { workId, applicantUser, csvMapper, entity } = opts;
-  const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
+  const stream: Readable | null = await downloadFile(fileId);
   if (stream) {
     // Starting to work, importing file = 1 operation
     await updateExpectationsNumber(context, applicantUser, workId, 1);
@@ -87,7 +86,7 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
     // - ** close file
     // - process the bulk count lines.
 
-    const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
+    const stream: Readable | null = await downloadFile(fileId);
     if (stream) {
       const lines: string[] = [];
       const readStream = readline.createInterface({ input: stream, crlfDelay: Infinity });

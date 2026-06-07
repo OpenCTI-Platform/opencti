@@ -397,6 +397,16 @@
     "excluded_files": [".DS_Store"],
     "disable_checksum_validation": false
   },
+  "storage": {
+    "provider": "s3",
+    "azure": {
+      "account_name": "",
+      "endpoint_suffix": "blob.core.windows.net",
+      "container_name": "opencti-bucket",
+      "client_id": "",
+      "connection_string": ""
+    }
+  },
   "rabbitmq": {
     "queue_prefix": "",
     "hostname": "localhost",
