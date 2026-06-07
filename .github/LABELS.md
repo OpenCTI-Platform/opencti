@@ -67,15 +67,20 @@ are valid types; they do not each require a dedicated label (use a repository
 area/scope label where useful). `security` is a **label** (applied on top of the
 type, e.g. a `fix:` that closes a vulnerability), not a title type.
 
-> **Pull request labels are restricted to ownership only.** A pull request
-> carries exactly **one ownership label — `filigran team` or `community` — and
-> nothing else.** Every other label (primary type labels, area/scope labels,
-> workflow/triage labels) is **issue-only** and must **never** be added to a pull
-> request; remove any that appear. The PR's `type:` title prefix and its linked
-> issue already convey the type and the affected area.
+> **Pull request labels are restricted to a small allowed set.** A pull request
+> carries only:
 >
-> *Exception:* dependency-automation labels (e.g. `dependencies`) are applied by
-> Renovate/Dependabot to their own pull requests, which are exempt.
+> - exactly **one ownership label — `filigran team` or `community`**;
+> - optionally **`vibe-coded`** — an AI-assisted change the author reviews before
+>   requesting others' review;
+> - **language** labels (`javascript`, `python`, `java`, `go`, `rust`,
+>   `typescript`, …) and the **`dependencies`** label, both applied automatically
+>   by GitHub/Renovate.
+>
+> Every other label — primary **type** labels, **area/scope** labels and
+> **workflow/triage** labels — is **issue-only** and must **never** be added to a
+> pull request; remove any that appear. The PR's `type:` title prefix and its
+> linked issue already convey the type and the affected area.
 
 ## 3. Workflow & ownership labels
 
@@ -86,6 +91,8 @@ type, e.g. a `fix:` that closes a vulnerability), not a title type.
 - **Ownership**: `filigran team`, `community`, `community support`,
   `filigran support`, `partner support`, `enterprise edition`.
 - **Security**: `security`.
+- **PR review**: `vibe-coded` (an AI-assisted pull request the author reviews
+  before requesting others' review).
 - **CLA**: `cla:pending`, `cla:signed`, `cla:exempt`.
 - **Automation**: `dependencies`, `javascript`, `python`, `java`, `do not merge`.
 
@@ -97,8 +104,8 @@ On top of the shared labels above, repositories define their own area/scope
 labels (e.g. `frontend`, `backend`, `connector: <name>`, `collector: <name>`,
 `agents`, `authentication`). They add routing context and an issue may carry
 more than one. They are **issue-only** — like type and workflow labels, they are
-**not** added to pull requests (a PR carries only its `filigran team` /
-`community` ownership label). They are not listed in `labels.yml`.
+**not** added to pull requests (a PR carries only ownership, `vibe-coded` and the
+automatic language / `dependencies` labels). They are not listed in `labels.yml`.
 
 All label names are **lowercase**. Repository-specific labels use a neutral grey
 color (`ededed`); only the shared labels above carry color, so the common
@@ -117,9 +124,9 @@ taxonomy stands out consistently across every Filigran repository.
 - [ ] **Issues only:** exactly one primary type label (`feature` / `bug` /
       `documentation`) matches the title prefix, and the GitHub **Type** field
       (Feature / Bug / Task) is set to match
-- [ ] **Pull requests:** exactly one ownership label — `filigran team` or
-      `community` — and **no other label** (type, area/scope and workflow labels
-      are issue-only)
+- [ ] **Pull requests:** one ownership label (`filigran team` / `community`),
+      optionally `vibe-coded` and the automatic language / `dependencies` labels —
+      and **no other label** (type, area/scope and workflow labels are issue-only)
 - [ ] Issues: area labels added where useful
 - [ ] No deprecated labels
 - [ ] Commits are signed and the PR is linked to an issue
