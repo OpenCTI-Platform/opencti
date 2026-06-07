@@ -28,13 +28,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     position: 'fixed',
     top: '50%',
-    right: 20,
+    left: theme.direction === 'rtl' ? 20 : 'auto',
+    right: theme.direction === 'rtl' ? 'auto' : 20,
     transform: 'translateY(-50%)',
     width: 400,
     maxWidth: 400,
     height: '60%',
     maxHeight: '60%',
-    padding: '20px 0 20px 20px',
+    padding: '20px',
     zIndex: 900,
     borderRadius: 4,
     border: 'none',
@@ -118,7 +119,7 @@ const EntitiesDetailsRightsBar = () => {
     <Drawer
       open={true}
       variant="permanent"
-      anchor="right"
+      anchor={theme.direction === 'rtl' ? 'left' : 'right'}
       classes={{ paper: classes.drawerPaper }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
