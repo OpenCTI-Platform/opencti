@@ -106,10 +106,15 @@
   color: "5319e7"
   description: "CLA not required (Filigran employee)."
 
+# ── PR review flow ──
+- name: vibe-coded
+  color: "a371f7"
+  description: "PR: AI-assisted change — the author reviews it before requesting others' review."
+
 # ── PR / dependency automation ──
 - name: dependencies
   color: "0366d6"
-  description: "Pull requests that update a dependency file."
+  description: "Pull requests that update a dependency file (applied by Renovate/Dependabot)."
 - name: javascript
   color: "168700"
   description: "Pull requests that update JavaScript code."
