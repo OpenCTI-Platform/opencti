@@ -6,6 +6,9 @@ import { FieldProps, useField } from 'formik';
 import { useIntl } from 'react-intl';
 import { isNil } from 'ramda';
 import { parse } from '../utils/Time';
+import { useTheme } from '@mui/material/styles';
+import { Theme } from './Theme';
+import { useFormatter } from './i18n';
 
 const dateTimeFormatsMap: Record<string, string> = {
   'de-de': 'dd.MM.yyyy HH:mm',
@@ -49,6 +52,8 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
     withSeconds = false,
     required = false,
   } = props;
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const intl = useIntl();
   const [field, meta] = useField(name);
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
@@ -111,6 +116,16 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
         }
         slotProps={{
           field: { clearable: true, onClear: internalOnClear },
+          nextIconButton: {
+            sx: {
+              transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
+            },
+          },
+          previousIconButton: {
+            sx: {
+              transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
+            },
+          },
           textField: {
             ...textFieldProps,
             onFocus: internalOnFocus,
@@ -118,6 +133,9 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
             error: showError,
             helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
           },
+        }}
+        localeText={{
+          okButtonLabel: t_i18n('ok'),
         }}
       />
     );
@@ -138,6 +156,16 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
       format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
       slotProps={{
         field: { clearable: true, onClear: internalOnClear },
+        nextIconButton: {
+          sx: {
+            transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
+          },
+        },
+        previousIconButton: {
+          sx: {
+            transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
+          },
+        },
         textField: {
           ...textFieldProps,
           onFocus: internalOnFocus,
@@ -145,6 +173,9 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
           error: showError,
           helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
         },
+      }}
+      localeText={{
+        okButtonLabel: t_i18n('ok'),
       }}
     />
   );
