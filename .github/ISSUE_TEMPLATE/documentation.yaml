@@ -1,16 +1,22 @@
----
 name: Documentation request
-description: Request new or improved documentation for Client Python or OpenCTI.
-title: "[DOC] <short summary>"
+description: Request new or improved documentation for OpenCTI.
+title: "docs: "
 labels:
+  - needs triage
   - documentation
-assignees: []
 body:
   - type: textarea
     id: request-details
     attributes:
-      label: Documentation Request
+      label: Documentation request
       description: "Please explain what you want to document or clarify."
       placeholder: "Describe the missing documentation, unclear section, or new topic you would like to see covered."
-
----
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: "Any links, screenshots or references that help."
+    validations:
+      required: false
