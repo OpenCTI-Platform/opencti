@@ -67,15 +67,15 @@ are valid types; they do not each require a dedicated label (use a repository
 area/scope label where useful). `security` is a **label** (applied on top of the
 type, e.g. a `fix:` that closes a vulnerability), not a title type.
 
-> **Pull requests do NOT carry a primary type label.** A pull request's `type:`
-> title prefix (and its linked issue) already convey the type, so `feature`,
-> `bug` and `documentation` must **never** be added to a pull request — remove
-> them if they appear.
+> **Pull request labels are restricted to ownership only.** A pull request
+> carries exactly **one ownership label — `filigran team` or `community` — and
+> nothing else.** Every other label (primary type labels, area/scope labels,
+> workflow/triage labels) is **issue-only** and must **never** be added to a pull
+> request; remove any that appear. The PR's `type:` title prefix and its linked
+> issue already convey the type and the affected area.
 >
-> Pull requests **do** still carry other labels. In particular, add an
-> **ownership** label — typically `filigran team` or `community` — so the source
-> of a contribution is clear at a glance. Area/scope labels and workflow labels
-> (e.g. `dependencies`, `do not merge`) also apply to pull requests where useful.
+> *Exception:* dependency-automation labels (e.g. `dependencies`) are applied by
+> Renovate/Dependabot to their own pull requests, which are exempt.
 
 ## 3. Workflow & ownership labels
 
@@ -96,7 +96,9 @@ See [`.github/labels.yml`](labels.yml) for the exact colors and descriptions.
 On top of the shared labels above, repositories define their own area/scope
 labels (e.g. `frontend`, `backend`, `connector: <name>`, `collector: <name>`,
 `agents`, `authentication`). They add routing context and an issue may carry
-more than one. They are not listed in `labels.yml`.
+more than one. They are **issue-only** — like type and workflow labels, they are
+**not** added to pull requests (a PR carries only its `filigran team` /
+`community` ownership label). They are not listed in `labels.yml`.
 
 All label names are **lowercase**. Repository-specific labels use a neutral grey
 color (`ededed`); only the shared labels above carry color, so the common
@@ -115,9 +117,9 @@ taxonomy stands out consistently across every Filigran repository.
 - [ ] **Issues only:** exactly one primary type label (`feature` / `bug` /
       `documentation`) matches the title prefix, and the GitHub **Type** field
       (Feature / Bug / Task) is set to match
-- [ ] **Pull requests:** no primary type label (the title prefix conveys the
-      type); add an ownership label (`filigran team` / `community`) and any useful
-      area labels
-- [ ] Area labels added where useful
+- [ ] **Pull requests:** exactly one ownership label — `filigran team` or
+      `community` — and **no other label** (type, area/scope and workflow labels
+      are issue-only)
+- [ ] Issues: area labels added where useful
 - [ ] No deprecated labels
 - [ ] Commits are signed and the PR is linked to an issue
