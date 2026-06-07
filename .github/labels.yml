@@ -1,0 +1,121 @@
+# Canonical Filigran label palette — shared across all Filigran repositories
+# (FiligranHQ, OpenCTI-Platform, OpenAEV-Platform, XTM-One-Platform, OpenGRC-Platform).
+#
+# This file is the machine-readable companion to .github/LABELS.md and the source
+# of truth for the *shared* labels' name, color and description. Repositories may
+# define additional area/scope labels on top of this set; those are intentionally
+# not listed here.
+#
+# Colors mirror the canonical Filigran palette (anchored on OpenCTI, the most
+# mature repository). It is a root-level YAML list of {name, color, description}
+# entries — the manifest format consumed directly by both EndBug/label-sync and
+# micnncim/action-label-syncer (neither expects a top-level `labels:` key).
+#
+# Reference manifest: do NOT enable destructive deletion (delete-other-labels)
+# when wiring up a sync, so each repository's own area/scope labels are preserved.
+
+# ── Primary type labels (map to the Conventional Commits title prefix) ──
+- name: feature
+  color: "6a3eef"
+  description: "Type: new feature or capability (feat:)."
+- name: bug
+  color: "d73a4a"
+  description: "Type: something isn't working (fix:)."
+- name: documentation
+  color: "0075ca"
+  description: "Type: documentation only (docs:)."
+- name: security
+  color: "d93f0b"
+  description: "Security vulnerability, hardening or guardrail."
+
+# ── Workflow / triage labels ──
+- name: needs triage
+  color: "906a2d"
+  description: "Needs triage from the Filigran product team."
+- name: needs more info
+  color: "906a2d"
+  description: "More information is required to triage or resolve."
+- name: solved
+  color: "0e8a16"
+  description: "Resolved (should be linked to the solving PR)."
+- name: duplicate
+  color: "cfd3d7"
+  description: "This issue or pull request already exists."
+- name: wontfix
+  color: "cfd3d7"
+  description: "This will not be worked on."
+- name: question
+  color: "cc317c"
+  description: "Further information is requested."
+- name: critical
+  color: "a40500"
+  description: "Critical issue to fix ASAP."
+- name: epic
+  color: "d96d39"
+  description: "Large issue that will be split into several chunks."
+- name: tiny
+  color: "86cb6b"
+  description: "Tiny change (less than a week to solve)."
+- name: regression
+  color: "1f47d8"
+  description: "Regression of a previously working feature."
+- name: breaking-change
+  color: "e99695"
+  description: "Introduces a potential breaking change."
+- name: "do not merge"
+  color: "02f4d4"
+  description: "Do not merge until this label is removed."
+- name: good first issue
+  color: "5319e7"
+  description: "Good issue for first-time contributors."
+- name: test automation
+  color: "586ca9"
+  description: "Linked to test automation implementation."
+- name: architecture improvement
+  color: "6d155d"
+  description: "Architecture refactor or improvement is needed."
+
+# ── Ownership / community labels ──
+- name: filigran team
+  color: "4a0c43"
+  description: "Item from the Filigran team."
+- name: community
+  color: "268e45"
+  description: "Contribution from the community."
+- name: community support
+  color: "ffa500"
+  description: "Feature developed and maintained by the community."
+- name: filigran support
+  color: "298d96"
+  description: "Feature developed and maintained by Filigran."
+- name: partner support
+  color: "c8c226"
+  description: "Feature developed and maintained by a third-party vendor."
+- name: enterprise edition
+  color: "b819f4"
+  description: "Feature part of the Enterprise Edition license."
+
+# ── Contributor License Agreement ──
+- name: "cla:pending"
+  color: "fbca04"
+  description: "CLA signature required."
+- name: "cla:signed"
+  color: "0e8a16"
+  description: "CLA has been signed."
+- name: "cla:exempt"
+  color: "5319e7"
+  description: "CLA not required (Filigran employee)."
+
+# ── PR / dependency automation ──
+- name: dependencies
+  color: "0366d6"
+  description: "Pull requests that update a dependency file."
+- name: javascript
+  color: "168700"
+  description: "Pull requests that update JavaScript code."
+- name: python
+  color: "2b67c6"
+  description: "Pull requests that update Python code."
+- name: java
+  color: "ffa221"
+  description: "Pull requests that update Java code."

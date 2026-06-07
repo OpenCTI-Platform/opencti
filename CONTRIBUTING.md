@@ -50,15 +50,7 @@ For general suggestions or questions about the project or the documentation, you
 
 ### Pull requests focus
 
-* All Pull Request title messages must be formatted as: `[component] Message (#issuenumber)` where component should be:
-  * backend
-  * frontend
-  * backend/frontend
-  * client-python
-  * worker
-  * docs
-  * tools
-  * ci
+* All commit and Pull Request titles must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification with a GitHub issue reference: `type(scope?)!?: description (#issue)` (for example `feat(backend): add bulk export endpoint (#1234)`). Allowed types are `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci` and `revert`. The old `[component]` bracket prefixes are **discontinued** — use a lowercase scope instead (e.g. `backend`, `frontend`, `client-python`, `worker`, `docs`, `ci`). The description starts with a lowercase letter and has no trailing period. See [`.github/LABELS.md`](.github/LABELS.md) for the full title & label taxonomy. **Renovate** pull requests are exempt.
 
 * All commits must be signed. If you need to configure your git environment, please see the [GitHub documentation on signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
 

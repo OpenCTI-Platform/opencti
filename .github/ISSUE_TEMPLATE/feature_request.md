@@ -1,7 +1,7 @@
 ---
 name: Feature request OpenCTI
 about: Ask for a new feature to be implemented in OpenCTI
-title: ''
+title: 'feat: '
 labels: needs triage,feature
 assignees: ''
 type: feature
