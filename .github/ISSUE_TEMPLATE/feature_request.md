@@ -1,8 +1,8 @@
 ---
-name: Feature request OpenCTI
-about: Ask for a new feature to be implemented in OpenCTI
+name: Feature request
+about: Suggest a new feature or capability for OpenCTI
 title: 'feat: '
-labels: needs triage,feature
+labels: needs triage, feature
 assignees: ''
 type: feature
 
@@ -10,20 +10,20 @@ type: feature
 
 ## Use case
 
-<!-- Please describe the use case for which you need a solution -->
+<!-- Please describe the use case for which you need a solution. -->
 
-## Current Workaround
+## Current workaround
 
-<!-- Please describe how you currently solve or work around this problem, given OpenCTI's limitation. -->
+<!-- Please describe how you currently solve or work around this problem. -->
 
-## Proposed Solution
+## Proposed solution
 
-<!-- Please describe the solution you would like OpenCTI to provide, to solve the problem above. -->
+<!-- Please describe the solution you would like to be provided. -->
 
-## Additional Information
+## Additional information
 
 <!-- Any additional information, including logs or screenshots if you have any. -->
 
 ## If the feature request is approved, would you be willing to submit a PR?
 
-Yes / No (Help can be provided if you need assistance submitting a PR)
+Yes / No (help can be provided if you need assistance submitting a PR)
