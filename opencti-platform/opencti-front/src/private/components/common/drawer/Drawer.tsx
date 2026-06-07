@@ -213,7 +213,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
       )}
       <DrawerMUI
         open={open}
-        anchor="left"
+        anchor={theme.direction === 'rtl' ? 'right' : 'left'}
         elevation={1}
         onClose={disableBackdropClose
           ? (_, reason) => {
