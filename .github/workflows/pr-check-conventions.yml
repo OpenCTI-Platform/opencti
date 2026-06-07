@@ -29,15 +29,16 @@ jobs:
           fi
   check-pr-title-convention:
     name: Check that PR title follows convention
+    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: Slashgear/action-check-pr-title@76166c63ec0b25cdbe693e5e972e83ca186313fb
         with:
-          regexp: '.+\((#[0-9]+)\)$|^\[deps\].+'
+          regexp: '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z0-9._/-]+\))?!?: .+ \(#[0-9]+\)$'
           flags: "gm"
-          helpMessage: "Format: 'Message (#issuenumber)' for example 'docs: updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
+          helpMessage: "Format: 'type(scope?): description (#issue)' for example 'docs: updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
   check-signed-commits:
     name: Check signed commits in PR
     runs-on: ubuntu-latest
