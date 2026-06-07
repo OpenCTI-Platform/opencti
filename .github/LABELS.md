@@ -84,6 +84,10 @@ labels (e.g. `frontend`, `backend`, `connector: <name>`, `collector: <name>`,
 `agents`, `authentication`). They add routing context and an issue may carry
 more than one. They are not listed in `labels.yml`.
 
+All label names are **lowercase**. Repository-specific labels use a neutral grey
+color (`ededed`); only the shared labels above carry color, so the common
+taxonomy stands out consistently across every Filigran repository.
+
 ## 5. Deprecated labels — do not use
 
 - `enhancement` — use `feature`.
