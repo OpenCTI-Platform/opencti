@@ -1,8 +1,1 @@
 blank_issues_enabled: true
-contact_links:
-  - name: Report a security vulnerability
-    url: https://github.com/OpenCTI-Platform/opencti/security/policy
-    about: Please review our security policy and report vulnerabilities privately and responsibly.
-  - name: Filigran community Slack
-    url: https://community.filigran.io
-    about: Ask questions and chat with the Filigran community.
