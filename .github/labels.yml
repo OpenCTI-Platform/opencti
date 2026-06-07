@@ -78,10 +78,10 @@
 # ── Ownership / community labels ──
 - name: filigran team
   color: "4a0c43"
-  description: "Item from the Filigran team."
+  description: "Ownership: from the Filigran team. The PR ownership label for Filigran-authored pull requests."
 - name: community
   color: "268e45"
-  description: "Contribution from the community."
+  description: "Ownership: from the community. The PR ownership label for community-authored pull requests."
 - name: community support
   color: "ffa500"
   description: "Feature developed and maintained by the community."
