@@ -30,13 +30,9 @@ type(scope?)!?: description (#issue)
 - `description` **starts with a lowercase letter** and has **no trailing period**.
   Preserve acronyms and proper nouns: `OpenCTI`, `OpenAEV`, `XTM One`, `OpenGRC`,
   `STIX`, `LLM`, `Docker`, `Redis`.
-- `(#issue)` is a **required reference on pull request titles**. Use a single
-  parenthesised group: one issue `(#1234)`, or several comma-separated
-  `(#1234, #1235, #1236)`. When the PR is squash-merged, GitHub **automatically
-  appends the PR number**, so the commit on `master`/`main` reads
-  `… (#1234, #1235) (#5678)` — the trailing `(#5678)` is the PR id added by GitHub,
-  never typed in the title. Issue titles omit the reference (the issue *is* the
-  reference).
+- `(#issue)` is a **required reference on pull request titles** (the PR title
+  becomes the squash-merge commit, so the reference lands on `master`/`main`).
+  Issue titles omit it (the issue *is* the reference).
 
 Enforcement is preventive and lives at the organization (enterprise) level; the
 [`FiligranHQ/filigran-ci-tools` `pr-title-check`](https://github.com/FiligranHQ/filigran-ci-tools/tree/main/actions/pr-title-check)
@@ -52,9 +48,10 @@ chore(ci): migrate dependency management to uv (#1237)
 feat(api)!: remove deprecated v1 endpoints (#1238)
 ```
 
-## 2. Type label (one per issue)
+## 2. Type label (issues only — one per issue)
 
-The title `type` maps to a primary type label:
+The title `type` maps to a primary type label. **Primary type labels are applied
+to issues only:**
 
 | Title prefix | Type label      | Color  |
 |--------------|-----------------|--------|
@@ -62,10 +59,23 @@ The title `type` maps to a primary type label:
 | `fix:`       | `bug`           | red    |
 | `docs:`      | `documentation` | blue   |
 
+On issues, also set the GitHub **Type** field to match (`feat:` → `Feature`,
+`fix:` → `Bug`, every other type → `Task`).
+
 `chore:`, `style:`, `ci:`, `build:`, `perf:`, `refactor:`, `test:` and `revert:`
 are valid types; they do not each require a dedicated label (use a repository
 area/scope label where useful). `security` is a **label** (applied on top of the
 type, e.g. a `fix:` that closes a vulnerability), not a title type.
+
+> **Pull requests do NOT carry a primary type label.** A pull request's `type:`
+> title prefix (and its linked issue) already convey the type, so `feature`,
+> `bug` and `documentation` must **never** be added to a pull request — remove
+> them if they appear.
+>
+> Pull requests **do** still carry other labels. In particular, add an
+> **ownership** label — typically `filigran team` or `community` — so the source
+> of a contribution is clear at a glance. Area/scope labels and workflow labels
+> (e.g. `dependencies`, `do not merge`) also apply to pull requests where useful.
 
 ## 3. Workflow & ownership labels
 
@@ -102,7 +112,12 @@ taxonomy stands out consistently across every Filigran repository.
 
 - [ ] Title follows `type(scope?)!?: description` (lowercase, no trailing period)
 - [ ] Pull request titles end with the `(#issue)` reference
-- [ ] Exactly one primary type label matches the title prefix
+- [ ] **Issues only:** exactly one primary type label (`feature` / `bug` /
+      `documentation`) matches the title prefix, and the GitHub **Type** field
+      (Feature / Bug / Task) is set to match
+- [ ] **Pull requests:** no primary type label (the title prefix conveys the
+      type); add an ownership label (`filigran team` / `community`) and any useful
+      area labels
 - [ ] Area labels added where useful
 - [ ] No deprecated labels
 - [ ] Commits are signed and the PR is linked to an issue
