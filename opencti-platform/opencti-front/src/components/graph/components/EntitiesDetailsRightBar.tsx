@@ -119,7 +119,7 @@ const EntitiesDetailsRightsBar = () => {
     <Drawer
       open={true}
       variant="permanent"
-      anchor={theme.direction === 'rtl' ? 'left' : 'right'}
+      anchor={theme.direction === 'rtl' ? 'right' : 'left'}
       classes={{ paper: classes.drawerPaper }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
@@ -131,9 +131,9 @@ const EntitiesDetailsRightsBar = () => {
           },
         })}
       </Label>
-      <div style={{ display: 'flex' }}>
+      <div className="flex items-end">
         <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
-          <InputLabel id="label" variant="outlined">
+          <InputLabel id="label">
             {t_i18n('Object')}
           </InputLabel>
           <Select
@@ -142,7 +142,6 @@ const EntitiesDetailsRightsBar = () => {
             fullWidth={true}
             onChange={handleSelectEntity}
             value={detailsPreviewSelected.id}
-            variant="outlined"
           >
             {uniqSelectedEntities.map((entity) => (
               <MenuItem key={entity.id} value={entity.id}>
@@ -153,17 +152,19 @@ const EntitiesDetailsRightsBar = () => {
         </FormControl>
         {/* Need to be handled */}
         {hasOverviewPage && (
-          <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
-            <div className={classes.external}>
-              <IconButton
-                component={Link}
-                target="_blank"
-                to={entityUrl}
-              >
-                <OpenInNewOutlined fontSize="medium" />
-              </IconButton>
-            </div>
-          </Tooltip>
+          <div className="pb-2">
+            <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
+              <div className={classes.external}>
+                <IconButton
+                  component={Link}
+                  target="_blank"
+                  to={entityUrl}
+                >
+                  <OpenInNewOutlined fontSize="medium" />
+                </IconButton>
+              </div>
+            </Tooltip>
+          </div>
         )}
       </div>
       <div
