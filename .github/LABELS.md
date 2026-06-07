@@ -30,9 +30,13 @@ type(scope?)!?: description (#issue)
 - `description` **starts with a lowercase letter** and has **no trailing period**.
   Preserve acronyms and proper nouns: `OpenCTI`, `OpenAEV`, `XTM One`, `OpenGRC`,
   `STIX`, `LLM`, `Docker`, `Redis`.
-- `(#issue)` is a **required reference on pull request titles** (the PR title
-  becomes the squash-merge commit, so the reference lands on `master`/`main`).
-  Issue titles omit it (the issue *is* the reference).
+- `(#issue)` is a **required reference on pull request titles**. Use a single
+  parenthesised group: one issue `(#1234)`, or several comma-separated
+  `(#1234, #1235, #1236)`. When the PR is squash-merged, GitHub **automatically
+  appends the PR number**, so the commit on `master`/`main` reads
+  `… (#1234, #1235) (#5678)` — the trailing `(#5678)` is the PR id added by GitHub,
+  never typed in the title. Issue titles omit the reference (the issue *is* the
+  reference).
 
 Enforcement is preventive and lives at the organization (enterprise) level; the
 [`FiligranHQ/filigran-ci-tools` `pr-title-check`](https://github.com/FiligranHQ/filigran-ci-tools/tree/main/actions/pr-title-check)
