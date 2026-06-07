@@ -152,19 +152,17 @@ const EntitiesDetailsRightsBar = () => {
         </FormControl>
         {/* Need to be handled */}
         {hasOverviewPage && (
-          <div className="pb-2">
-            <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
-              <div className={classes.external}>
-                <IconButton
-                  component={Link}
-                  target="_blank"
-                  to={entityUrl}
-                >
-                  <OpenInNewOutlined fontSize="medium" />
-                </IconButton>
-              </div>
-            </Tooltip>
-          </div>
+          <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
+            <div className={classes.external}>
+              <IconButton
+                component={Link}
+                target="_blank"
+                to={entityUrl}
+              >
+                <OpenInNewOutlined fontSize="medium" />
+              </IconButton>
+            </div>
+          </Tooltip>
         )}
       </div>
       <div
