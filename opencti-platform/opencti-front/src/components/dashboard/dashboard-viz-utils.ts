@@ -40,8 +40,7 @@ export const resolveDataSelection = ({
   });
   const isMissingHostEntity = host?.kind === 'custom-view'
     && hostEntityNeeded
-    && !host.customViewTargetEntityId
-    && host.previewMode !== false;
+    && !host.customViewTargetEntityId;
   const isPreviewMode = host?.kind === 'custom-view' && hostEntityNeeded && Boolean(host.customViewTargetEntityId) && host.previewMode;
   return {
     resolvedDataSelection: updatedDataSelection,

@@ -281,7 +281,7 @@ describe('resolvedDataSelection', () => {
       expect(isMissingHostEntity).toBe(true);
     });
 
-    it('does not return isMissingHostEntity when custom view edition disables preview mode explicitly', () => {
+    it('returns isMissingHostEntity when custom view requires host entity even if preview mode is false', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
@@ -298,7 +298,7 @@ describe('resolvedDataSelection', () => {
           previewMode: false,
         },
       });
-      expect(isMissingHostEntity).toBe(false);
+      expect(isMissingHostEntity).toBe(true);
     });
 
     it('does not return isMissingHostEntity if there is no host entity injected but SELF_ID is not used', () => {
