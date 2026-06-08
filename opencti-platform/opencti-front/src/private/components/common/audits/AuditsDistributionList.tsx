@@ -110,32 +110,33 @@ const AuditsDistributionListComponent: FunctionComponent<AuditsDistributionListC
     queryRef,
   );
 
-  if (data.auditsDistribution && data.auditsDistribution.length > 0) {
-    const mappedData = data.auditsDistribution
-      .filter((n): n is DistributionNode => n != null)
-      .map((n) => {
-        let { label } = n;
-        let id = null;
-        let type = n.label;
-        const attribute = selection.attribute ?? undefined;
-        if (isFieldForIdentifier(attribute)) {
-          label = getMainRepresentative(n.entity ?? undefined) || n.label;
-          id = n.entity?.id;
-          type = n.entity?.entity_type ?? n.label;
-        } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-          label = t_i18n(`entity_${n.label}`);
-        }
-        return {
-          label,
-          value: n.value,
-          id,
-          type,
-        };
-      });
-    return <WidgetDistributionList data={mappedData} hasSettingAccess={hasSetAccess} />;
+  if (!data.auditsDistribution || data.auditsDistribution.length === 0) {
+    return <WidgetNoData />;
   }
 
-  return <WidgetNoData />;
+  const mappedData = data.auditsDistribution
+    .filter((n): n is DistributionNode => n != null)
+    .map((n) => {
+      let { label } = n;
+      let id = null;
+      let type = n.label;
+      const attribute = selection.attribute ?? undefined;
+      if (isFieldForIdentifier(attribute)) {
+        label = getMainRepresentative(n.entity ?? undefined) || n.label;
+        id = n.entity?.id;
+        type = n.entity?.entity_type ?? n.label;
+      } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+        label = t_i18n(`entity_${n.label}`);
+      }
+      return {
+        label,
+        value: n.value,
+        id,
+        type,
+      };
+    });
+
+  return <WidgetDistributionList data={mappedData} hasSettingAccess={hasSetAccess} />;
 };
 
 interface AuditsDistributionListProps {
