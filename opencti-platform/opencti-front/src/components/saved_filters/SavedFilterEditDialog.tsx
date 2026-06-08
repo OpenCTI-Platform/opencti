@@ -10,12 +10,13 @@ import { invalidateConnection } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
 import useGranted, { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
-import useHelper from '../../utils/hooks/useHelper';
 import { AccessRight, type AuthorizedMemberOption } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import Security from '../../utils/Security';
+import useHelper from '../../utils/hooks/useHelper';
 
 const savedFilterFieldPatchMutation = graphql`
   mutation SavedFilterEditDialogFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -75,10 +76,10 @@ const SavedFilterEditDialog = ({
 }: SavedFilterEditDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+  const hasShareFilterCapability = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
 
-  const isShareFilterGranted = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
   const { isFeatureEnable } = useHelper();
-  const canShare = isShareFilterGranted && isFeatureEnable('SHARE_FILTERS');
+  const isSharingSavedFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
 
   const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
@@ -111,7 +112,7 @@ const SavedFilterEditDialog = ({
     }
 
     // Update authorized members
-    if (canShare && values.authorized_members) {
+    if (isSharingSavedFiltersFeatureEnabled && hasShareFilterCapability && values.authorized_members) {
       const memberAccessInput = values.authorized_members.map((m: AuthorizedMemberOption) => ({
         id: m.value,
         access_right: m.accessRight,
@@ -164,11 +165,16 @@ const SavedFilterEditDialog = ({
               value={values.name}
               onChange={(e) => setFieldValue('name', e.target.value)}
             />
-            <SavedFilterSharingSection
-              canShare={canShare}
-              owner={owner}
-              isEditMode
-            />
+            {isSharingSavedFiltersFeatureEnabled
+              && (
+                <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
+                  <SavedFilterSharingSection
+                    owner={owner}
+                    isEditMode
+                  />
+                </Security>
+              )
+            }
             <DialogActions>
               <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={!values.name}>{t_i18n('Save')}</Button>

@@ -3,12 +3,13 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
+import useHelper from '../../utils/hooks/useHelper';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSelection, { type SavedFiltersSelectionData } from './SavedFilterSelection';
 import SavedFiltersAutocomplete from './SavedFiltersAutocomplete';
 
 const savedFiltersQuery = graphql`
-  query SavedFiltersQuery($filters: FilterGroup) {
+  query SavedFiltersQuery($filters: FilterGroup, $skipSharedFilters: Boolean!) {
     savedFilters(first: 100, filters: $filters) @connection(key: "SavedFilters_savedFilters") {
       edges {
         node {
@@ -16,8 +17,8 @@ const savedFiltersQuery = graphql`
           name
           filters
           scope
-          currentUserAccessRight
-          authorizedMembers {
+          currentUserAccessRight @skip(if: $skipSharedFilters)
+          authorizedMembers @skip(if: $skipSharedFilters) {
             id
             name
             entity_type
@@ -61,8 +62,11 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
     },
   } = useDataTableContext();
 
+  const { isFeatureEnable } = useHelper();
+  const isSharedFiltersEnabled = isFeatureEnable('SHARED_FILTERS');
+
   const filters = getSavedFilterScopeFilter(localStorageKey);
-  const queryOptions = { filters } as unknown as SavedFiltersQuery$variables;
+  const queryOptions = { filters, skipSharedFilters: !isSharedFiltersEnabled } as unknown as SavedFiltersQuery$variables;
 
   const queryRef = useQueryLoading<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
 

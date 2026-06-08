@@ -8,21 +8,15 @@ import { useFormatter } from '../i18n';
 import { type Creator } from '../../utils/authorizedMembers';
 
 interface SavedFilterSharingSectionProps {
-  canShare: boolean;
   owner: Creator;
   isEditMode?: boolean;
 }
 
 const SavedFilterSharingSection = ({
-  canShare,
   owner,
   isEditMode = false,
 }: SavedFilterSharingSectionProps) => {
   const { t_i18n } = useFormatter();
-
-  if (!canShare) {
-    return null;
-  }
 
   return (
     <div style={{ marginTop: 16 }}>

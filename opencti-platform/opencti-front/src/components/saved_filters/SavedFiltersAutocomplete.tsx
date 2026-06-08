@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { DeleteOutlined, EditOutlined } from '@mui/icons-material';
-import { AutocompleteOptionType, SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
+import { SavedFiltersAutocompleteOptionType, SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { Autocomplete, useTheme } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useFormatter } from 'src/components/i18n';
@@ -11,16 +11,16 @@ import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/use
 import SavedFilterEditDialog from './SavedFilterEditDialog';
 import type { Theme } from '../Theme';
 import useHelper from '../../utils/hooks/useHelper';
-import useGranted, { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
+import useGranted from '../../utils/hooks/useGranted';
 
 type SavedFiltersAutocompleteProps = {
   isDisabled?: boolean;
-  value?: AutocompleteOptionType;
+  value?: SavedFiltersAutocompleteOptionType;
   inputValue?: string;
-  onChange?: (selectionOption: AutocompleteOptionType) => void;
+  onChange?: (selectionOption: SavedFiltersAutocompleteOptionType) => void;
   onInputChange?: (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => void;
   onDelete?: (value: SavedFiltersSelectionData) => void;
-  options?: AutocompleteOptionType[];
+  options?: SavedFiltersAutocompleteOptionType[];
   localStorageKey?: string;
 };
 const SavedFiltersAutocomplete = ({
@@ -35,12 +35,14 @@ const SavedFiltersAutocomplete = ({
 }: SavedFiltersAutocompleteProps) => {
   const { isFeatureEnable } = useHelper();
   const isSharingSavedFilterFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
-  const isShareFilterGranted = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
-  const canShare = isShareFilterGranted && isFeatureEnable('SHARE_FILTERS');
+
+  const hasSharingSavedFiltersCapability = useGranted(['KNOWLEDGE_KNSHAREFILTERS']);
 
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [savedFilterToEdit, setSavedFilterToEdit] = useState<SavedFiltersSelectionData | undefined>();
+
+  const MY_FILTERS_GROUP_LABEL = t_i18n('My filters');
 
   const handleDelete = (option: SavedFiltersSelectionData) => (event: SyntheticEvent) => {
     event.stopPropagation();
@@ -54,21 +56,18 @@ const SavedFiltersAutocomplete = ({
     setSavedFilterToEdit(option);
   };
 
-  const renderOption = (params: React.HTMLAttributes<HTMLLIElement> & { key: string }, option: AutocompleteOptionType) => {
+  const renderOption = (params: React.HTMLAttributes<HTMLLIElement> & { key: string }, option: SavedFiltersAutocompleteOptionType) => {
+    const filterLabel = option.ownerName ? `${option.label} (${option.ownerName})` : option.label;
+    const canManage = option.canManage && (hasSharingSavedFiltersCapability || option.isOwner);
     return (
       <li {...params} key={params.key}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Tooltip title={option.label} enterDelay={500}>
+          <Tooltip title={filterLabel} enterDelay={500}>
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-              <Typography component="span">{option.label}</Typography>
-              {option.ownerName && (
-                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                  ({option.ownerName})
-                </Typography>
-              )}
+              <Typography component="span">{filterLabel}</Typography>
             </div>
           </Tooltip>
-          {option.canManage && (
+          {canManage && (
             <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
               {isSharingSavedFilterFeatureEnabled && (
                 <Tooltip title={t_i18n('Edit this saved filter')}>
@@ -99,6 +98,10 @@ const SavedFiltersAutocomplete = ({
     );
   };
 
+  const handleFiltersGroupBy = (isOwner: boolean) => {
+    return isOwner ? MY_FILTERS_GROUP_LABEL : t_i18n('Shared with me');
+  };
+
   return (
     <>
       <Autocomplete
@@ -109,7 +112,10 @@ const SavedFiltersAutocomplete = ({
         isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
         inputValue={inputValue}
         options={options ?? []}
-        groupBy={canShare ? (option) => option.group : undefined}
+        groupBy={isSharingSavedFilterFeatureEnabled
+          ? (option) => handleFiltersGroupBy(option.isOwner)
+          : undefined
+        }
         sx={{ width: 200 }}
         slotProps={{
           listbox: {
@@ -117,7 +123,7 @@ const SavedFiltersAutocomplete = ({
           },
         }}
         noOptionsText={t_i18n('No available options')}
-        onChange={(_, selectedOption: AutocompleteOptionType) => onChange?.(selectedOption)}
+        onChange={(_, selectedOption: SavedFiltersAutocompleteOptionType) => onChange?.(selectedOption)}
         onInputChange={onInputChange}
         renderOption={renderOption}
         renderInput={(params) => (

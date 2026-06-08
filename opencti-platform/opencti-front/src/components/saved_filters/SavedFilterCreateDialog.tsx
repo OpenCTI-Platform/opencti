@@ -12,12 +12,13 @@ import { SavedFilterCreateDialogMutation$data } from 'src/components/saved_filte
 import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
-import useGranted, { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
 import useHelper from '../../utils/hooks/useHelper';
 import { type AuthorizedMemberOption } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
+import Security from '../../utils/Security';
 
 const savedFilterCreateDialogMutation = graphql`
   mutation SavedFilterCreateDialogMutation($input: SavedFilterAddInput!) {
@@ -52,9 +53,8 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
 
-  const isShareFilterGranted = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
   const { isFeatureEnable } = useHelper();
-  const canShare = isShareFilterGranted && isFeatureEnable('SHARE_FILTERS');
+  const isSharingSavedFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
 
   const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
@@ -135,10 +135,15 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
               value={filterName}
               onChange={handleChange}
             />
-            <SavedFilterSharingSection
-              canShare={canShare}
-              owner={owner}
-            />
+            {isSharingSavedFiltersFeatureEnabled
+              && (
+                <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
+                  <SavedFilterSharingSection
+                    owner={owner}
+                  />
+                </Security>
+              )
+            }
             <DialogActions>
               <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={!filterName}>{t_i18n('Save')}</Button>

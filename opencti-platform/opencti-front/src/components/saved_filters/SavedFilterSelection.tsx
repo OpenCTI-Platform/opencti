@@ -1,11 +1,10 @@
-import React, { useState, useEffect, SyntheticEvent } from 'react';
+import React, {SyntheticEvent, useEffect, useState} from 'react';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
-import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
-import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
+import {useDataTableContext} from 'src/components/dataGrid/components/DataTableContext';
+import {SavedFiltersQuery$data} from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
-import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+import {type AutocompleteInputChangeReason} from '@mui/material/useAutocomplete/useAutocomplete';
 import useAuth from '../../utils/hooks/useAuth';
-import { useFormatter } from '../i18n';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
@@ -16,17 +15,21 @@ type SavedFilterSelectionProps = {
   setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
-export type AutocompleteOptionType = {
+export type SavedFiltersAutocompleteOptionType = {
   label: string;
   value: SavedFiltersSelectionData;
-  group: string;
+  isOwner: boolean;
   ownerName?: string;
   canManage: boolean;
 };
 
-const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrentSavedFilter }: SavedFilterSelectionProps) => {
+const SavedFilterSelection = ({
+  isDisabled,
+  data,
+  currentSavedFilter,
+  setCurrentSavedFilter,
+}: SavedFilterSelectionProps) => {
   const { me } = useAuth();
-  const { t_i18n } = useFormatter();
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
@@ -35,13 +38,11 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     },
   } = useDataTableContext();
 
-  const [selectedSavedFilter, setSelectedSavedFilter] = useState<AutocompleteOptionType>();
+  const [selectedSavedFilter, setSelectedSavedFilter] = useState<SavedFiltersAutocompleteOptionType>();
   const [inputValue, setInputValue] = useState<string>('');
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<SavedFiltersSelectionData>();
 
-  const myFiltersGroupLabel = t_i18n('My filters');
-
-  const options: AutocompleteOptionType[] = data.map((item) => {
+  const options: SavedFiltersAutocompleteOptionType[] = data.map((item) => {
     const ownerMember = item.authorizedMembers?.find((m) => m.access_right === 'admin');
     const isOwner = ownerMember?.member_id === me.id;
     const ownerName = ownerMember?.name ?? '';
@@ -49,17 +50,17 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     return {
       label: item.name,
       value: item,
-      group: isOwner ? myFiltersGroupLabel : t_i18n('Shared with me'),
+      isOwner,
       ownerName: isOwner ? undefined : ownerName,
       canManage: item.currentUserAccessRight === 'admin',
     };
   });
 
-  // Sort options: "My filters" first, then "Shared with me"
+  // Sort options: "My filters" first, then "Shared with me"; alphabetically within each group
   const sortedOptions = [...options].sort((a, b) => {
-    if (a.group === myFiltersGroupLabel && b.group !== myFiltersGroupLabel) return -1;
-    if (a.group !== myFiltersGroupLabel && b.group === myFiltersGroupLabel) return 1;
-    return 0;
+    if (a.isOwner && !b.isOwner) return -1;
+    if (!a.isOwner && b.isOwner) return 1;
+    return a.label.localeCompare(b.label);
   });
 
   const handleReset = () => {
@@ -102,7 +103,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     }
   }, [isDisabled]);
 
-  const handleChange = (selectionOption: AutocompleteOptionType) => {
+  const handleChange = (selectionOption: SavedFiltersAutocompleteOptionType) => {
     setSelectedSavedFilter(selectionOption);
     setCurrentSavedFilter(selectionOption.value);
     setInputValue(selectionOption.label);
