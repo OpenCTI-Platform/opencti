@@ -22,6 +22,16 @@ const useDashboardRefresh = ({
   const refreshRate = localRefreshRateSeconds ? localRefreshRateSeconds * 1000 : null;
 
   const [lastRefreshTime, setLastRefreshTime] = useState(new Date());
+  const previousInitialRefreshRateRef = useRef(initialRefreshRateSeconds);
+
+  // Keep local state aligned with external workspace updates without overriding local edits on every render.
+  useEffect(() => {
+    if (previousInitialRefreshRateRef.current === initialRefreshRateSeconds) return;
+    previousInitialRefreshRateRef.current = initialRefreshRateSeconds;
+    setLocalRefreshRateSeconds(initialRefreshRateSeconds);
+    setLastRefreshTime(new Date());
+  }, [initialRefreshRateSeconds]);
+
   const lastRefreshTimeRef = useRef(lastRefreshTime);
   useEffect(() => {
     lastRefreshTimeRef.current = lastRefreshTime;

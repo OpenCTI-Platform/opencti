@@ -49,6 +49,23 @@ describe('useDashboardRefresh', () => {
     expect(onRefreshRateChange).toHaveBeenCalledWith(15);
   });
 
+  it('synchronizes local refresh rate when initial refresh rate changes', () => {
+    const { result, rerender } = renderHook(
+      ({ initialRefreshRateSeconds }) => useDashboardRefresh({ initialRefreshRateSeconds }),
+      {
+        initialProps: { initialRefreshRateSeconds: 10 },
+      },
+    );
+
+    expect(result.current.localRefreshRateSeconds).toBe(10);
+    expect(result.current.refreshRate).toBe(10_000);
+
+    rerender({ initialRefreshRateSeconds: 60 });
+
+    expect(result.current.localRefreshRateSeconds).toBe(60);
+    expect(result.current.refreshRate).toBe(60_000);
+  });
+
   it('auto-refreshes on interval and toggles spinner state', () => {
     const { result } = renderHook(() => useDashboardRefresh({
       initialRefreshRateSeconds: 5,
