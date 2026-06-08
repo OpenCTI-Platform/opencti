@@ -8,7 +8,7 @@ import {
   pageRegardingEntitiesConnection,
   storeLoadById,
 } from '../../database/middleware-loader';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { verifyCanDeleteOrganization } from '../../database/data-consistency';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../schema/stixDomainObject';
@@ -58,15 +58,20 @@ export const editAuthorizedAuthorities = async (context: AuthContext, user: Auth
  * This ensures user sessions are reloaded with up-to-date organization data.
  */
 const organizationUsersCacheRefresh = async (context: AuthContext, user: AuthUser, organizationId: string) => {
-  const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(
-    context,
-    user,
-    organizationId,
-    RELATION_PARTICIPATE_TO,
-    ENTITY_TYPE_USER,
-  );
-  if (members.length > 0) {
+  try {
+    const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(
+      context,
+      user,
+      organizationId,
+      RELATION_PARTICIPATE_TO,
+      ENTITY_TYPE_USER,
+    );
     await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
+  } catch (err) {
+    logApp.warn(
+      'Failed to refresh users cache after organization update. Affected members may see stale data until their next session reload.',
+      { cause: err },
+    );
   }
 };
 

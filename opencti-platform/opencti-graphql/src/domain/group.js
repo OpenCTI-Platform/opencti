@@ -8,7 +8,7 @@ import {
   pageRegardingEntitiesConnection,
   storeLoadById,
 } from '../database/middleware-loader';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
@@ -28,9 +28,14 @@ export const GROUP_DEFAULT = 'Default';
  * This ensures user sessions are reloaded with up-to-date group permissions.
  */
 const groupUsersCacheRefresh = async (context, user, groupId) => {
-  const members = await fullEntitiesThroughRelationsFromList(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
-  if (members.length > 0) {
+  try {
+    const members = await fullEntitiesThroughRelationsFromList(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
     await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
+  } catch (err) {
+    logApp.warn(
+      'Failed to refresh users cache after group update. Affected members may see stale data until their next session reload.',
+      { cause: err },
+    );
   }
 };
 
