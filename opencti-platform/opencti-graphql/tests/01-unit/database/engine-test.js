@@ -90,4 +90,26 @@ describe('buildLocalMustFilter testing', () => {
       },
     });
   });
+
+  it('should buildLocalMustFilter with contact_information emit a single terms clause for multiple values', () => {
+    const emails = ['user@example.com', 'user2@example.com', 'user3@example.com'];
+    const filter = {
+      key: ['contact_information'],
+      values: emails,
+      operator: 'eq',
+    };
+
+    const result = buildLocalMustFilter(filter);
+
+    expect(result).toStrictEqual({
+      bool: {
+        minimum_should_match: 1,
+        should: [
+          {
+            terms: { 'contact_information.keyword': emails },
+          },
+        ],
+      },
+    });
+  });
 });
