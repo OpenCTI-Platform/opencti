@@ -17,6 +17,7 @@ import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } f
 import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 import { useLoginContext } from './loginContext';
+import PublicPasswordPolicies from './PublicPasswordPolicies';
 
 interface InternalFormProps extends PropsWithChildren {
   action?: ReactNode;
@@ -82,7 +83,25 @@ const FLASH_COOKIE = 'opencti_flash';
 
 const RESEND_COOLDOWN_MS = 30000;
 
-const ResetPassword = () => {
+interface ResetPasswordProps {
+  password_policy_min_length?: number | null;
+  password_policy_max_length?: number | null;
+  password_policy_min_symbols?: number | null;
+  password_policy_min_numbers?: number | null;
+  password_policy_min_words?: number | null;
+  password_policy_min_lowercase?: number | null;
+  password_policy_min_uppercase?: number | null;
+}
+
+const ResetPassword = ({
+  password_policy_min_length,
+  password_policy_max_length,
+  password_policy_min_symbols,
+  password_policy_min_numbers,
+  password_policy_min_words,
+  password_policy_min_lowercase,
+  password_policy_min_uppercase,
+}: ResetPasswordProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
@@ -219,7 +238,7 @@ const ResetPassword = () => {
 
   const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = (
     values,
-    { resetForm, setErrors },
+    { resetForm, setErrors, setSubmitting },
   ) => {
     changePasswordCommitMutation({
       variables: {
@@ -237,6 +256,7 @@ const ResetPassword = () => {
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setValue('changePasswordInError', true);
+        setSubmitting(false);
       },
     });
   };
@@ -392,6 +412,15 @@ const ResetPassword = () => {
               </Button>
             )}
             >
+              <PublicPasswordPolicies
+                password_policy_min_length={password_policy_min_length}
+                password_policy_max_length={password_policy_max_length}
+                password_policy_min_symbols={password_policy_min_symbols}
+                password_policy_min_numbers={password_policy_min_numbers}
+                password_policy_min_words={password_policy_min_words}
+                password_policy_min_lowercase={password_policy_min_lowercase}
+                password_policy_min_uppercase={password_policy_min_uppercase}
+              />
               <Field
                 component={TextField}
                 name="password"

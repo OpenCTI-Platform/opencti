@@ -86,7 +86,17 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
               }}
             >
               <div style={{ minHeight: 170 }}>
-                {!!resetPwdStep && <ResetPassword />}
+                {!!resetPwdStep && (
+                  <ResetPassword
+                    password_policy_min_length={settings.password_policy_min_length}
+                    password_policy_max_length={settings.password_policy_max_length}
+                    password_policy_min_symbols={settings.password_policy_min_symbols}
+                    password_policy_min_numbers={settings.password_policy_min_numbers}
+                    password_policy_min_words={settings.password_policy_min_words}
+                    password_policy_min_lowercase={settings.password_policy_min_lowercase}
+                    password_policy_min_uppercase={settings.password_policy_min_uppercase}
+                  />
+                )}
                 {showLoginForm && <LoginForm />}
               </div>
             </Card>
