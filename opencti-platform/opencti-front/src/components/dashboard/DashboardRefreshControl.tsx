@@ -2,7 +2,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { ButtonGroup, CircularProgress, MenuItem, Select, useTheme } from '@mui/material';
 import Button from '@common/button/Button';
 import type { SelectChangeEvent } from '@mui/material/Select';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../i18n';
 
 type RefreshIntervalOption = {
@@ -37,6 +37,12 @@ const DashboardRefreshControl = ({
   const primary = theme.palette.primary.main;
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const manualResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (!manualResetRef.current) return;
+    clearTimeout(manualResetRef.current);
+    manualResetRef.current = null;
+  }, []);
 
   const handleIntervalChange = (event: SelectChangeEvent<number>) => {
     onIntervalChange(Number(event.target.value));
