@@ -50,11 +50,12 @@ interface UserAnalyticsProps {
   data: UserAnalytics_user$key;
 }
 
+const EMPTY_DASHBOARD_CONFIG: DashboardConfig = {};
+
 const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const user = useFragment(UserFragment, data);
-  const config: DashboardConfig = {};
   const userServiceAccount = user.user_service_account;
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
@@ -98,7 +99,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
             popover={undefined}
             host={undefined}
-            config={config}
+            config={EMPTY_DASHBOARD_CONFIG}
           />
         </Grid>
         <Grid item xs={6}>
@@ -168,7 +169,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
             popover={undefined}
             host={undefined}
-            config={config}
+            config={EMPTY_DASHBOARD_CONFIG}
           />
         </Grid>
         {!userServiceAccount && (
@@ -200,7 +201,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               ]}
               popover={undefined}
               host={undefined}
-              config={config}
+              config={EMPTY_DASHBOARD_CONFIG}
             />
           </Grid>
         )}
@@ -236,7 +237,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
             popover={undefined}
             host={undefined}
-            config={config}
+            config={EMPTY_DASHBOARD_CONFIG}
           />
         </Grid>
         {!userServiceAccount && (
@@ -274,7 +275,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 ]}
                 popover={undefined}
                 host={undefined}
-                config={config}
+                config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
             <Grid item xs={8}>
@@ -305,7 +306,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                     },
                   },
                 ]}
-                config={config}
+                config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
             <Grid item xs={4}>
@@ -341,7 +342,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 ]}
                 popover={undefined}
                 host={undefined}
-                config={config}
+                config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
           </>
