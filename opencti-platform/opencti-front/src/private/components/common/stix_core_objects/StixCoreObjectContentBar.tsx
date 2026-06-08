@@ -88,6 +88,8 @@ const StixCoreObjectContentBar: FunctionComponent<
             marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
             height: '100%',
             display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
           }}
         >
           {handleSave && (
