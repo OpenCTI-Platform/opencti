@@ -111,23 +111,29 @@ const useDashboardViz = <TQuery extends OperationType>({
     reloadData(false);
   }, [reloadData]);
 
-  // Wraps reloadData(true) for use in auto-refresh interval, always bypasses signature cache.
-  const forceReloadData = useCallback(() => {
+  // Used by interval fallback when no dashboard refresh provider is present.
+  const forceReloadWithCurrentVariables = useCallback(() => {
     reloadData(true);
   }, [reloadData]);
 
-  // Keeps a stable ref to the latest reloadData so the token effect below can call it
-  // without adding reloadData as a dependency (which would re-run the effect on every
-  // variable change and cause unwanted refetches).
-  const reloadDataRef = useRef(reloadData);
-  useEffect(() => {
-    reloadDataRef.current = reloadData;
-  }, [reloadData]);
+  // Used by dashboard token refresh to rebuild variables from latest inputs
+  // before forcing the load.
+  const forceReloadWithFreshVariables = useCallback(() => {
+    if (!buildQueryVariables || !config) {
+      reloadData(true);
+      return;
+    }
+
+    const refreshedVariables = buildQueryVariables(resolvedDataSelection, config, parameters);
+    const refreshedSignature = JSON.stringify(refreshedVariables);
+    loadAndTrackSignature(refreshedVariables, refreshedSignature);
+  }, [buildQueryVariables, config, resolvedDataSelection, parameters, reloadData, loadAndTrackSignature]);
 
   // refreshToken is an integer provided via context by DashboardContent and incremented
   // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
   // regardless of whether query variables changed, so fresh data is always fetched.
-  // prevRefreshTokenRef guards against triggering on the initial mount (token === 0).
+  // Outside DashboardContent, token is null and widget-level interval refresh is used instead.
+  // prevRefreshTokenRef guards against triggering on the initial mount.
   const refreshToken = useDashboardRefreshToken();
   const prevRefreshTokenRef = useRef(refreshToken);
 
@@ -139,17 +145,10 @@ const useDashboardViz = <TQuery extends OperationType>({
       return;
     }
 
-    if (!buildQueryVariables || !config) {
-      reloadDataRef.current(true);
-      return;
-    }
+    forceReloadWithFreshVariables();
+  }, [refreshToken, isMissingHostEntity, forceReloadWithFreshVariables]);
 
-    const refreshedVariables = buildQueryVariables(resolvedDataSelection, config, parameters);
-    const refreshedSignature = JSON.stringify(refreshedVariables);
-    loadAndTrackSignature(refreshedVariables, refreshedSignature);
-  }, [refreshToken, isMissingHostEntity, buildQueryVariables, config, resolvedDataSelection, parameters, loadAndTrackSignature]);
-
-  useWidgetAutoRefresh(forceReloadData, refreshRate);
+  useWidgetAutoRefresh(forceReloadWithCurrentVariables, refreshToken === null ? refreshRate : null);
 
   return {
     queryRef,

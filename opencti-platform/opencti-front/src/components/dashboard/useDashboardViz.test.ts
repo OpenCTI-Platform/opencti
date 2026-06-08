@@ -4,7 +4,7 @@ import useDashboardViz from './useDashboardViz';
 
 const loadMocks: Array<ReturnType<typeof vi.fn>> = [];
 const disposeMocks: Array<ReturnType<typeof vi.fn>> = [];
-let refreshTokenMockValue = 0;
+let refreshTokenMockValue: number | null = null;
 
 vi.mock('react-relay', async (importOriginal) => {
   const React = await import('react');
@@ -59,7 +59,7 @@ describe('useDashboardViz', () => {
     vi.setSystemTime(new Date('2026-06-02T10:00:12.345Z'));
     loadMocks.length = 0;
     disposeMocks.length = 0;
-    refreshTokenMockValue = 0;
+    refreshTokenMockValue = null;
   });
 
   afterEach(() => {
@@ -227,6 +227,31 @@ describe('useDashboardViz', () => {
     expect(loadSpy).toHaveBeenCalledTimes(baselineCalls + 1);
 
     hook.unmount();
+  });
+
+  it('does not run widget interval refresh when dashboard token provider is present', () => {
+    const buildQueryVariables = vi.fn(() => ({ marker: 'token-disables-interval' }));
+    refreshTokenMockValue = 0;
+
+    renderHook(() => useDashboardViz({
+      dataSelection: [],
+      perspective: 'entities',
+      refreshRate: 5_000,
+      query: {} as never,
+      config: {},
+      parameters: {},
+      buildQueryVariables,
+    }));
+
+    expect(loadMocks).toHaveLength(1);
+    const [loadSpy] = loadMocks;
+    const mountCalls = loadSpy.mock.calls.length;
+
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+
+    expect(loadSpy).toHaveBeenCalledTimes(mountCalls);
   });
 
   it('keeps workspace host behavior unchanged by missing-host guard', () => {
