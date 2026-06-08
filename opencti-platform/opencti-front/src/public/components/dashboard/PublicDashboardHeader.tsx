@@ -29,14 +29,9 @@ const PublicDashboardHeader = ({
   const startDateValue = buildDate(startDate);
   const endDateValue = buildDate(endDate);
   const minEndDate = startDateValue ? parse(startDateValue).startOf('day').toDate() : null;
-  const maxStartDate = endDateValue ? parse(endDateValue).startOf('day').toDate() : null;
 
   const isBeforeDay = (date: Date, reference: Date) => (
     parse(date).startOf('day').isBefore(parse(reference).startOf('day'))
-  );
-
-  const isAfterDay = (date: Date, reference: Date) => (
-    parse(date).startOf('day').isAfter(parse(reference).startOf('day'))
   );
 
   return (
@@ -86,10 +81,8 @@ const PublicDashboardHeader = ({
         label={t_i18n('Start date')}
         sx={{ width: 220 }}
         disableFuture
-        maxDate={maxStartDate ?? undefined}
         onChange={(value, context) => {
           if (context.validationError) return;
-          if (value && maxStartDate && isAfterDay(value, maxStartDate)) return;
           onChangeStartDate(value?.toString() ?? null);
         }}
         slotProps={{
