@@ -16,7 +16,7 @@ const passwordPoliciesFragment = graphql`
   }
 `;
 
-const PasswordPolicies: FunctionComponent = () => {
+const PasswordPolicies: FunctionComponent<{ value?: string }> = ({ value }) => {
   const { settings } = useAuth();
   const {
     password_policy_min_length,
@@ -39,6 +39,7 @@ const PasswordPolicies: FunctionComponent = () => {
         minLowercase: password_policy_min_lowercase,
         minUppercase: password_policy_min_uppercase,
       }}
+      value={value}
     />
   );
 };

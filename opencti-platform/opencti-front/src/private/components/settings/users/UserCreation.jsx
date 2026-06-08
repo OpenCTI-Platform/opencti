@@ -162,7 +162,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
             onSubmit={onSubmit}
             onReset={onClose}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form>
                 <Stack sx={{ gap: 2.5 }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -219,7 +219,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     rows={4}
                   />
                   <Stack sx={{ gap: 2.5 }}>
-                    <PasswordPolicies />
+                    <PasswordPolicies value={values.password} />
                     <Field
                       component={TextField}
                       variant="standard"

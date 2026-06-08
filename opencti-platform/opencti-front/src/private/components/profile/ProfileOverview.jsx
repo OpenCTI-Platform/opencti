@@ -520,38 +520,38 @@ const ProfileOverviewComponent = (props) => {
             validationSchema={passwordValidation(t)}
             onSubmit={handleSubmitPasswords}
           >
-            {({ submitForm, isSubmitting }) => (
+            {({ submitForm, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="current_password"
-                  label={t('Current password')}
-                  type="password"
-                  fullWidth={true}
-                  disabled={external}
-                />
-                <PasswordPolicies />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="password"
-                  label={t('New password')}
-                  type="password"
-                  fullWidth={true}
-                  style={{ marginTop: 16 }}
-                  disabled={external}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="confirmation"
-                  label={t('Confirmation')}
-                  type="password"
-                  fullWidth={true}
-                  style={{ marginTop: 16 }}
-                  disabled={external}
-                />
+                <Stack gap={2}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="current_password"
+                    label={t('Current password')}
+                    type="password"
+                    fullWidth={true}
+                    disabled={external}
+                  />
+                  <PasswordPolicies value={values.password} />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="password"
+                    label={t('New password')}
+                    type="password"
+                    fullWidth={true}
+                    disabled={external}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="confirmation"
+                    label={t('Confirmation')}
+                    type="password"
+                    fullWidth={true}
+                    disabled={external}
+                  />
+                </Stack>
                 <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
                   <Button
                     type="button"
