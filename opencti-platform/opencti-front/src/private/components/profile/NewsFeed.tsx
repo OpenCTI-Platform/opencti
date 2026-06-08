@@ -2,7 +2,7 @@ import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFe
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
 import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
-import { InsertChartOutlined, LibraryBooksOutlined, OpenInNewOutlined } from '@mui/icons-material';
+import { OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -20,11 +20,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import useChipOverflow from '../data/IngestionCatalog/components/card/usecases/useChipOverflow';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
-
-const NEWS_FEED_ICON_MAP: Record<string, React.ElementType> = {
-  RESOURCE_CUSTOM_DASHBOARD: InsertChartOutlined,
-  RESOURCE_PLAYBOOK: LibraryBooksOutlined,
-};
+import { getNewsFeedIcon, isKnownNewsFeedType } from '../../../utils/NewsFeed';
 
 const LOCAL_STORAGE_KEY = 'newsFeed';
 
@@ -231,7 +227,7 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       label: 'Type',
       percentWidth: 20,
       isSortable: true,
-      render: ({ news_feed_type }: NewsFeedLine_node$data) => defaultRender(t_i18n(news_feed_type)),
+      render: ({ news_feed_type }: NewsFeedLine_node$data) => defaultRender(isKnownNewsFeedType(news_feed_type) ? t_i18n(news_feed_type) : t_i18n('Unsupported type')),
     },
     title: {
       id: 'title',
@@ -287,8 +283,8 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
         resolvePath={(d: NewsFeedLines_data$data) => d.myNewsFeeds?.edges?.map((n) => n?.node)}
         dataColumns={dataColumns}
         icon={(row: NewsFeedLine_node$data) => {
-          const Icon = NEWS_FEED_ICON_MAP[row.news_feed_type];
-          return Icon ? <Icon fontSize="small" color="primary" /> : null;
+          const Icon = getNewsFeedIcon(row.news_feed_type);
+          return <Icon fontSize="small" color="primary" />;
         }}
         actions={(row: NewsFeedLine_node$data) => <NewsFeedLineActions data={row} />}
         lineFragment={newsFeedLineFragment}
