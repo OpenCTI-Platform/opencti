@@ -4,10 +4,10 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../components/i18n';
 import type { PublicManifestConfig } from './PublicManifest';
-import { buildDate } from '../../../utils/Time';
+import DatePicker from '../../../components/common/input/DatePicker';
+import { buildDate, parse } from '../../../utils/Time';
 
 interface PublicDashboardHeaderProps {
   title: string;
@@ -26,6 +26,18 @@ const PublicDashboardHeader = ({
 }: PublicDashboardHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { relativeDate, startDate, endDate } = manifestConfig;
+  const startDateValue = buildDate(startDate);
+  const endDateValue = buildDate(endDate);
+  const minEndDate = startDateValue ? parse(startDateValue).startOf('day').toDate() : null;
+  const maxStartDate = endDateValue ? parse(endDateValue).startOf('day').toDate() : null;
+
+  const isBeforeDay = (date: Date, reference: Date) => (
+    parse(date).startOf('day').isBefore(parse(reference).startOf('day'))
+  );
+
+  const isAfterDay = (date: Date, reference: Date) => (
+    parse(date).startOf('day').isAfter(parse(reference).startOf('day'))
+  );
 
   return (
     <header style={{
@@ -70,11 +82,16 @@ const PublicDashboardHeader = ({
       </FormControl>
       <DatePicker
         disabled
-        value={buildDate(startDate)}
+        value={startDateValue}
         label={t_i18n('Start date')}
         sx={{ width: 220 }}
         disableFuture
-        onChange={(value, context) => !context.validationError && onChangeStartDate(value?.toString() ?? null)}
+        maxDate={maxStartDate ?? undefined}
+        onChange={(value, context) => {
+          if (context.validationError) return;
+          if (value && maxStartDate && isAfterDay(value, maxStartDate)) return;
+          onChangeStartDate(value?.toString() ?? null);
+        }}
         slotProps={{
           field: {
             clearable: true,
@@ -90,10 +107,15 @@ const PublicDashboardHeader = ({
       />
       <DatePicker
         disabled
-        value={buildDate(endDate)}
+        value={endDateValue}
         label={t_i18n('End date')}
         disableFuture
-        onChange={(value, context) => !context.validationError && onChangeEndDate(value?.toString() ?? null)}
+        minDate={minEndDate ?? undefined}
+        onChange={(value, context) => {
+          if (context.validationError) return;
+          if (value && minEndDate && isBeforeDay(value, minEndDate)) return;
+          onChangeEndDate(value?.toString() ?? null);
+        }}
         sx={{ width: 220 }}
         slotProps={{
           field: {
