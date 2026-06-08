@@ -2,21 +2,20 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { ButtonGroup, CircularProgress, MenuItem, Select, useTheme } from '@mui/material';
 import Button from '@common/button/Button';
 import type { SelectChangeEvent } from '@mui/material/Select';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../i18n';
 
 type RefreshIntervalOption = {
-  label: string;
   value: number;
 };
 
 const REFRESH_INTERVALS: ReadonlyArray<RefreshIntervalOption> = [
-  { label: 'Off', value: 0 },
-  { label: '1m', value: 60 },
-  { label: '5m', value: 300 },
-  { label: '15m', value: 900 },
-  { label: '30m', value: 1800 },
-  { label: '1h', value: 3600 },
+  { value: 0 },
+  { value: 60 },
+  { value: 300 },
+  { value: 900 },
+  { value: 1800 },
+  { value: 3600 },
 ];
 
 type DashboardRefreshControlProps = {
@@ -48,6 +47,25 @@ const DashboardRefreshControl = ({
     onIntervalChange(Number(event.target.value));
   };
 
+  const getIntervalLabel = useCallback((value: number) => {
+    switch (value) {
+      case 0:
+        return t_i18n('Off');
+      case 60:
+        return t_i18n('1m');
+      case 300:
+        return t_i18n('5m');
+      case 900:
+        return t_i18n('15m');
+      case 1800:
+        return t_i18n('30m');
+      case 3600:
+        return t_i18n('1h');
+      default:
+        return '';
+    }
+  }, [t_i18n]);
+
   const handleRefreshClick = () => {
     setIsManualRefreshing(true);
     if (manualResetRef.current) clearTimeout(manualResetRef.current);
@@ -74,7 +92,7 @@ const DashboardRefreshControl = ({
         displayEmpty
         renderValue={(selected) => (Number(selected) === 0
           ? ''
-          : REFRESH_INTERVALS.find(({ value }) => value === Number(selected))?.label ?? '')}
+          : getIntervalLabel(Number(selected)))}
         sx={{
           minWidth: 0,
           borderRadius: '0 4px 4px 0',
@@ -88,8 +106,8 @@ const DashboardRefreshControl = ({
           '& .MuiSelect-icon': { right: 8 },
         }}
       >
-        {REFRESH_INTERVALS.map(({ label, value }) => (
-          <MenuItem key={value} value={value}>{label}</MenuItem>
+        {REFRESH_INTERVALS.map(({ value }) => (
+          <MenuItem key={value} value={value}>{getIntervalLabel(value)}</MenuItem>
         ))}
       </Select>
     </ButtonGroup>
