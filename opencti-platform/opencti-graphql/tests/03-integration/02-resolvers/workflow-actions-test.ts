@@ -106,7 +106,7 @@ describe('Workflow Actions Resolver', () => {
       ],
       transitions: [
         { from: 'open', to: 'restricted', event: 'restrict_event' },
-        { from: 'restricted', to: 'validated', event: 'validate_event', actions: [{ type: 'validateDraft' }] },
+        { from: 'restricted', to: 'validated', event: 'validate_event', syncActions: [{ type: 'validateDraft' }] },
       ],
     });
 

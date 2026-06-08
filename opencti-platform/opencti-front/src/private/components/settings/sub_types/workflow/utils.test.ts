@@ -52,8 +52,10 @@ describe('Workflow utils', () => {
       from: 'state-1',
       to: 'state-2',
       event: 'start',
+      comment: undefined,
       conditions: {},
-      actions: [],
+      asyncActions: [],
+      syncActions: [],
     });
   });
 
@@ -71,8 +73,10 @@ describe('Workflow utils', () => {
       from: 'state-1',
       to: null,
       event: 'end',
+      comment: undefined,
       conditions: {},
-      actions: [],
+      asyncActions: [],
+      syncActions: [],
     });
   });
 
@@ -86,7 +90,7 @@ describe('Workflow utils', () => {
           onEnter: [
             {
               type: WorkflowActionType.updateAuthorizedMembers,
-              params: { authorized_members: [{ value: 'user-1', accessRight: 'edit' }] },
+              params: { authorized_members: [{ value: 'user-1', accessRight: 'edit', groupsRestriction: [{ value: 'group-1' }] }] },
             },
           ],
           onExit: [{ type: WorkflowActionType.validateDraft }],
@@ -98,11 +102,10 @@ describe('Workflow utils', () => {
     expect(result.states[0].onEnter).toEqual([
       {
         type: 'updateAuthorizedMembers',
-        mode: 'sync',
-        params: { authorized_members: [{ id: 'user-1', access_right: 'edit' }] },
+        params: { authorized_members: [{ id: 'user-1', access_right: 'edit', groups_restriction_ids: ['group-1'] }] },
       },
     ]);
-    expect(result.states[0].onExit).toEqual([{ type: 'validateDraft', mode: 'sync' }]);
+    expect(result.states[0].onExit).toEqual([{ type: 'validateDraft' }]);
   });
 
   it('should correctly identify element types', () => {

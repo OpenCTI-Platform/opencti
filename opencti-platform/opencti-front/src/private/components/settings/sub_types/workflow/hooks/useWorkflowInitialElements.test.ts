@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MarkerType, Node } from 'reactflow';
-import { useWorkflowInitialElements } from './useWorkflowInitialElements';
-import { WorkflowNodeType } from '../utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
+import { WorkflowNodeType } from '../utils';
+import { useWorkflowInitialElements } from './useWorkflowInitialElements';
 
 vi.mock('@mui/styles', () => ({
   useTheme: () => ({
@@ -40,6 +40,12 @@ describe('useWorkflowInitialElements', () => {
     ],
   };
 
+  const mockGroups: SubTypeWorkflowQuery$data['groups'] = {
+    edges: [
+      { node: { id: 'group-1', name: 'Analysts' } },
+    ],
+  };
+
   const mockWorkflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'] = {
     id: 'workflow-1',
     name: 'Sample Workflow',
@@ -57,7 +63,6 @@ describe('useWorkflowInitialElements', () => {
                 { id: 'user-1', name: 'John Doe', entity_type: 'User', access_right: 'admin' },
               ],
             },
-            mode: 'sync',
           },
         ],
         onExit: [],
@@ -69,8 +74,9 @@ describe('useWorkflowInitialElements', () => {
         to: 'status-closed',
         event: 'close_event',
         conditions: {},
-        actions: [],
         comment: null,
+        asyncActions: [],
+        syncActions: [],
       },
     ],
   };
@@ -81,7 +87,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should return empty arrays if workflowDefinition is null', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(null, null, null),
+      useWorkflowInitialElements(null, null, null, null, null),
     );
 
     expect(result.current.initialNodes).toEqual([]);
@@ -90,7 +96,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform states into status nodes', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
     );
 
     const statusNodes = result.current.initialNodes.filter(
@@ -112,7 +118,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform transitions into one node and two edges', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
     );
 
     const transitionNodes = result.current.initialNodes.filter(
@@ -133,11 +139,10 @@ describe('useWorkflowInitialElements', () => {
 
   it('should enrich authorized members actions with member data', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
     );
 
     const node = result.current.initialNodes.find((n: Node) => n.id === 'status-open');
-    // Accessing typed data property
     const action = node?.data.onEnter[0];
 
     expect(action.type).toBe('updateAuthorizedMembers');
@@ -148,6 +153,42 @@ describe('useWorkflowInitialElements', () => {
     });
   });
 
+  it('should map groups_restriction_ids to groups_restriction using groups lookup', () => {
+    const defWithGroupRestriction: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      states: [
+        {
+          statusId: 'status-open',
+          onEnter: [
+            {
+              type: 'updateAuthorizedMembers',
+              params: {
+                authorized_members: [
+                  { id: 'user-1', access_right: 'view', groups_restriction_ids: ['group-1'] },
+                ],
+              },
+            },
+          ],
+          onExit: [],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(defWithGroupRestriction, mockStatusTemplates, mockMembers, null, mockGroups),
+    );
+
+    const node = result.current.initialNodes.find((n: Node) => n.id === 'status-open');
+    const action = node?.data.onEnter[0];
+
+    expect(action.type).toBe('updateAuthorizedMembers');
+    expect(action.params.authorized_members[0]).toMatchObject({
+      id: 'user-1',
+      access_right: 'view',
+      groups_restriction: [{ id: 'group-1', name: 'Analysts' }],
+    });
+  });
+
   it('should recompute only when workflowDefinition changes', () => {
     interface HookProps {
       def: SubTypeWorkflowQuery$data['workflowDefinition'];
@@ -155,7 +196,7 @@ describe('useWorkflowInitialElements', () => {
 
     const { result, rerender } = renderHook(
       ({ def }: HookProps) =>
-        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers),
+        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers, null, null),
       { initialProps: { def: mockWorkflowDefinition } },
     );
 
@@ -165,15 +206,93 @@ describe('useWorkflowInitialElements', () => {
     expect(result.current).toBe(firstResult);
 
     const newDef: SubTypeWorkflowQuery$data['workflowDefinition'] = {
-      ...mockWorkflowDefinition,
-      id: mockWorkflowDefinition!.id,
-      name: mockWorkflowDefinition!.name,
-      initialState: mockWorkflowDefinition!.initialState,
+      ...mockWorkflowDefinition!,
       states: [],
       errors: [],
       published: false,
     };
     rerender({ def: newDef });
     expect(result.current).not.toBe(firstResult);
+  });
+
+  it('should reverse-map asyncBulkAction SHARE to shareWithOrganizations action', () => {
+    const orgId = 'org-a';
+    const defWithShare: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      transitions: [
+        {
+          from: 'status-open',
+          to: 'status-closed',
+          event: 'share_event',
+          conditions: {},
+          comment: null,
+          asyncActions: [
+            {
+              type: 'asyncBulkAction',
+              params: {
+                scope: 'KNOWLEDGE',
+                actions: [{ type: 'SHARE', context: { values: [orgId] } }],
+              },
+            },
+          ],
+          syncActions: [],
+        },
+      ],
+    };
+
+    const mockOrgs: SubTypeWorkflowQuery$data['organizations'] = {
+      edges: [{ node: { id: orgId, name: 'Org Alpha' } }],
+    };
+
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(defWithShare, mockStatusTemplates, mockMembers, mockOrgs, null),
+    );
+
+    const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
+    const action = transitionNode?.data.asyncActions[0];
+    expect(action.type).toBe('shareWithOrganizations');
+    expect(action.params.organizations[0]).toMatchObject({ value: orgId, label: 'Org Alpha' });
+  });
+
+  it('should reverse-map asyncBulkAction UNSHARE to unshareFromOrganizations action', () => {
+    const orgId = 'org-b';
+    const defWithUnshare: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      transitions: [
+        {
+          from: 'status-open',
+          to: 'status-closed',
+          event: 'unshare_event',
+          conditions: {},
+          comment: null,
+          asyncActions: [
+            {
+              type: 'asyncBulkAction',
+              params: {
+                scope: 'KNOWLEDGE',
+                actions: [{ type: 'UNSHARE', context: { values: [orgId] } }],
+              },
+            },
+          ],
+          syncActions: [],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(defWithUnshare, mockStatusTemplates, mockMembers, null, null),
+    );
+
+    const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
+    const action = transitionNode?.data.asyncActions[0];
+    expect(action.type).toBe('unshareFromOrganizations');
+  });
+
+  it('should return empty arrays when workflowDefinition is undefined', () => {
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(undefined as never, mockStatusTemplates, mockMembers, null, null),
+    );
+    expect(result.current.initialNodes).toEqual([]);
+    expect(result.current.initialEdges).toEqual([]);
   });
 });

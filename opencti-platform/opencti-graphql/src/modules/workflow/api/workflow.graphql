@@ -1,12 +1,12 @@
-enum WorkflowActionMode {
-  sync
-  async
+enum WorkflowExecutionStatus {
+  pending
+  completed
+  error
 }
 
 type WorkflowActionConfig {
     type: String!
     params: JSON
-    mode: WorkflowActionMode!
 }
 
 type WorkflowSerializedState {
@@ -19,7 +19,8 @@ type WorkflowSerializedTransition {
     from: String!
     to: String!
     event: String!
-    actions: [WorkflowActionConfig!]
+    asyncActions: [WorkflowActionConfig!]
+    syncActions: [WorkflowActionConfig!]
     conditions: JSON
     comment: String
 }
@@ -58,6 +59,32 @@ type WorkflowDefinitionMutationResult {
     errors: [WorkflowValidationError!]!
 }
 
+type WorkflowActionError {
+    timestamp: DateTime
+    message: String!
+    source: String
+}
+
+type WorkflowPendingAsyncAction {
+    id: ID!
+    workId: String!
+    type: String!
+    status: String!
+    processedCount: Int
+    expectedCount: Int
+    startedAt: DateTime
+    lastActivityAt: DateTime
+    errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+    event: String!
+    toState: String!
+    triggeredAt: DateTime!
+    asyncActions: [WorkflowPendingAsyncAction!]!
+    syncActions: [WorkflowActionConfig!]
+}
+
 type WorkflowTriggerResult {
     success: Boolean!
     newState: String
@@ -65,6 +92,8 @@ type WorkflowTriggerResult {
     status: Status
     instance: WorkflowInstance
     entity: BasicObject
+    executionStatus: WorkflowExecutionStatus
+    pendingTransition: WorkflowPendingTransition
 }
 
 type WorkflowTransition {
@@ -73,6 +102,8 @@ type WorkflowTransition {
     toStatus: Status
     comment: String
     actions: [String!]
+    requiresShareOrganizationInput: Boolean
+    requiresUnshareOrganizationInput: Boolean
 }
 
 type WorkflowLastHistoryEntry {
@@ -89,6 +120,9 @@ type WorkflowInstance {
     currentStatus: Status
     allowedTransitions: [WorkflowTransition!]!
     lastHistoryEntry: WorkflowLastHistoryEntry
+    pendingStatus: WorkflowExecutionStatus
+    pendingError: String
+    pendingTransition: WorkflowPendingTransition
 }
 
 extend type DraftWorkspace {
@@ -98,7 +132,6 @@ extend type DraftWorkspace {
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
-    allowedNextStatuses(entityId: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
@@ -106,5 +139,7 @@ extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [SETTINGS])
+    reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 }

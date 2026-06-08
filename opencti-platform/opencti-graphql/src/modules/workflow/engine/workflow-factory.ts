@@ -11,15 +11,18 @@ import { FilterMode, FilterOperator, type Filter, type FilterGroup } from '../..
  */
 export class WorkflowFactory {
   // Helper to access nested properties: "workflow_role" -> ctx.user.role
+  // Conditions always evaluate against the triggering user (the actual caller),
+  // while actions run as WORKFLOW_MANAGER_USER. triggeringUser is set by workflow-domain.ts.
   private static getNestedValue(ctx: any, key: string): string | string[] {
+    const ctxUser = (ctx as any).triggeringUser ?? (ctx as any).user;
     if (key === 'workflow_group') {
-      return ((ctx as any)?.user?.groups || []).map((g: any) => g.id);
+      return (ctxUser?.groups || []).map((g: any) => g.id);
     } else if (key === 'workflow_organization') {
-      return ((ctx as any)?.user?.organizations || []).map((o: any) => o.id);
+      return (ctxUser?.organizations || []).map((o: any) => o.id);
     } else if (key === 'workflow_role') {
-      return ((ctx as any)?.user?.roles || []).map((r: any) => r.name);
+      return (ctxUser?.roles || []).map((r: any) => r.name);
     } else if (key === 'workflow_user') {
-      return ((ctx as any)?.user?.id || ((ctx as any)?.user?.internal_id) || null);
+      return (ctxUser?.id || ctxUser?.internal_id || null);
     } else if (key === 'name') {
       return ctx.entity.name;
     } else {
@@ -127,16 +130,7 @@ export class WorkflowFactory {
       }
 
       return async (ctx: TContext) => {
-        if (config.mode === 'async') {
-          // Fire and forget
-          Promise.resolve(actionFn(ctx, config.params)).catch((err: any) =>
-
-            console.error(`Async action '${config.type}' failed`, err),
-          );
-        } else {
-          // Await completion
-          await actionFn(ctx, config.params);
-        }
+        await actionFn(ctx, config.params);
       };
     });
   }
@@ -155,11 +149,33 @@ export class WorkflowFactory {
     });
 
     schema.transitions.forEach((t) => {
+      // asyncActions (phase 1) — absent means no async effects
+      const asyncSideEffects = this.createSideEffects<TContext>(t.asyncActions);
+      const resolvedSyncActions = t.syncActions;
+      const syncSideEffects = this.createSideEffects<TContext>(resolvedSyncActions);
+      const allActionTypes = [
+        ...(t.asyncActions?.map((a) => a.type) || []),
+        ...(resolvedSyncActions?.map((a) => a.type) || []),
+      ];
+
+      // Compute org-input requirements from asyncAction params — more reliable than the stored boolean.
+      const requiresShareOrganizationInput = (t.asyncActions ?? []).some((a) =>
+        a.type === 'asyncBulkAction'
+        && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'SHARE' && !ia.context?.values?.length),
+      );
+      const requiresUnshareOrganizationInput = (t.asyncActions ?? []).some((a) =>
+        a.type === 'asyncBulkAction'
+        && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'UNSHARE' && !ia.context?.values?.length),
+      );
+
       definition.addTransition(t.from, t.to, t.event, {
         comment: t.comment,
         conditions: this.createConditions<TContext>(t.conditions),
-        onTransition: this.createSideEffects<TContext>(t.actions),
-        actionTypes: t.actions?.map((a) => a.type) || [],
+        asyncSideEffects,
+        onTransition: syncSideEffects,
+        actionTypes: allActionTypes,
+        requiresShareOrganizationInput,
+        requiresUnshareOrganizationInput,
       });
     });
 

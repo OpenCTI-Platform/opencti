@@ -106,7 +106,7 @@ describe('Workflow Validation', () => {
     const invalid = {
       initialState: 'existing-state',
       transitions: [
-        { from: 'existing-state', to: 'in-progress', event: 'publish', actions: [{ type: 'log' }] },
+        { from: 'existing-state', to: 'in-progress', event: 'publish', syncActions: [{ type: 'log' }] },
       ],
     };
 
@@ -605,6 +605,110 @@ describe('Workflow Validation', () => {
     );
 
     expect(Array.isArray(errors)).toBe(true);
+  });
+
+  // ── asyncActions / syncActions / requiresOrganizationInput ────────────────
+
+  it('should pass with asyncBulkAction in asyncActions', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          asyncActions: [
+            {
+              type: 'asyncBulkAction',
+              params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE' }] },
+            },
+          ],
+          syncActions: [{ type: 'validateDraft' }],
+          requiresOrganizationInput: true,
+        },
+      ],
+    };
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(result).toBeDefined();
+  });
+
+  it('should fail when asyncBulkAction is placed in syncActions (wrong mode)', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          syncActions: [
+            { type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE' }] } },
+          ],
+        },
+      ],
+    };
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'DraftWorkspace'))
+      .rejects.toThrow("not allowed in syncActions");
+  });
+
+  it('should detect validateDraft in syncActions for DraftWorkspace requirement', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          asyncActions: [
+            { type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE' }] } },
+          ],
+          syncActions: [{ type: 'validateDraft' }],
+        },
+      ],
+    };
+    // Should NOT throw the "must contain at least one validateDraft" error
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(result).toBeDefined();
+  });
+
+  it('should fail DraftWorkspace validation when validateDraft is absent from all action arrays', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          asyncActions: [
+            { type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE' }] } },
+          ],
+        },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'DraftWorkspace');
+    expect(errors).toContainEqual(expect.objectContaining({
+      type: 'MISSING_VALIDATE_DRAFT_ACTION',
+      message: 'DraftWorkspace workflow must contain at least one validateDraft action',
+    }));
+  });
+
+  it('should fail when unknown action type is used in asyncActions', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'done',
+          event: 'publish',
+          asyncActions: [{ type: 'nonExistentAsyncAction' }],
+        },
+      ],
+    };
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident'))
+      .rejects.toThrow("doesn't exist");
   });
 });
 

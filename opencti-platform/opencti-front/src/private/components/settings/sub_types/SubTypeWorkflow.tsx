@@ -26,12 +26,10 @@ export const workflowQuery = graphql`
         statusId
         onExit{
           type
-          mode
           params
         }
         onEnter {
           type
-          mode
           params
         }
       }
@@ -39,9 +37,12 @@ export const workflowQuery = graphql`
         event
         from
         to
-        actions {
+        asyncActions {
           type
-          mode
+          params
+        }
+        syncActions {
+          type
           params
         }
         conditions
@@ -53,6 +54,22 @@ export const workflowQuery = graphql`
         node {
           id
           entity_type
+          name
+        }
+      }
+    }
+    organizations(search: "", first: 200) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+    groups(search: "", first: 500) {
+      edges {
+        node {
+          id
           name
         }
       }

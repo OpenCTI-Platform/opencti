@@ -42,8 +42,11 @@ export class WorkflowDefinition<TContext extends Context = Context> {
     options?: {
       comment?: string;
       conditions?: ConditionValidator<TContext>[];
+      asyncSideEffects?: SideEffect<TContext>[];
       onTransition?: SideEffect<TContext>[];
       actionTypes?: string[];
+      requiresShareOrganizationInput?: boolean;
+      requiresUnshareOrganizationInput?: boolean;
     },
   ) {
     // Ensure states exist
@@ -56,8 +59,11 @@ export class WorkflowDefinition<TContext extends Context = Context> {
       event,
       comment: options?.comment,
       conditions: options?.conditions || [],
+      asyncSideEffects: options?.asyncSideEffects || [],
       onTransition: options?.onTransition || [],
       actionTypes: options?.actionTypes || [],
+      requiresShareOrganizationInput: options?.requiresShareOrganizationInput ?? false,
+      requiresUnshareOrganizationInput: options?.requiresUnshareOrganizationInput ?? false,
     });
     return this;
   }
