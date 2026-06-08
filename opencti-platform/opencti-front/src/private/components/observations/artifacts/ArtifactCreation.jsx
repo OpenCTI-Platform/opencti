@@ -79,7 +79,7 @@ const artifactValidation = (t) => Yup.object().shape({
   file: Yup.mixed().nullable(),
   url: Yup.string().url(t('The value must be an URL')).nullable(),
   x_opencti_description: Yup.string().nullable(),
-}).test('file-or-url', t('A file or a URL must be provided'), function(values) {
+}).test('file-or-url', t('A file or a URL must be provided'), (values) => {
   if (!values.file && !values.url) {
     return this.createError({ path: 'file', message: t('A file or a URL must be provided') });
   }
