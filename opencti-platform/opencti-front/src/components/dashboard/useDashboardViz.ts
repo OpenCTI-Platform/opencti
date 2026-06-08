@@ -74,6 +74,15 @@ const useDashboardViz = <TQuery extends OperationType>({
     [queryVariables],
   );
 
+  const loadAndTrackSignature = useCallback((variables: TQuery['variables'], signature: string) => {
+    lastLoadedVariablesSignatureRef.current = signature;
+    startTransition(() => {
+      load(variables, {
+        fetchPolicy: 'store-and-network',
+      });
+    });
+  }, [load, startTransition]);
+
   const reloadData = useCallback((force = false) => {
     if (isMissingHostEntity) {
       return;
@@ -87,13 +96,8 @@ const useDashboardViz = <TQuery extends OperationType>({
       return;
     }
 
-    lastLoadedVariablesSignatureRef.current = queryVariablesSignature;
-    startTransition(() => {
-      load(queryVariables, {
-        fetchPolicy: 'store-and-network',
-      });
-    });
-  }, [isMissingHostEntity, load, startTransition, queryVariables, queryVariablesSignature]);
+    loadAndTrackSignature(queryVariables, queryVariablesSignature);
+  }, [isMissingHostEntity, queryVariables, queryVariablesSignature, loadAndTrackSignature]);
 
   useEffect(() => {
     if (!isMissingHostEntity) {
@@ -126,6 +130,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   // prevRefreshTokenRef guards against triggering on the initial mount (token === 0).
   const refreshToken = useDashboardRefreshToken();
   const prevRefreshTokenRef = useRef(refreshToken);
+
   useEffect(() => {
     if (prevRefreshTokenRef.current === refreshToken) return;
     prevRefreshTokenRef.current = refreshToken;
@@ -141,13 +146,8 @@ const useDashboardViz = <TQuery extends OperationType>({
 
     const refreshedVariables = buildQueryVariables(resolvedDataSelection, config, parameters);
     const refreshedSignature = JSON.stringify(refreshedVariables);
-    lastLoadedVariablesSignatureRef.current = refreshedSignature;
-    startTransition(() => {
-      load(refreshedVariables, {
-        fetchPolicy: 'store-and-network',
-      });
-    });
-  }, [refreshToken, isMissingHostEntity, buildQueryVariables, config, resolvedDataSelection, parameters, load, startTransition]);
+    loadAndTrackSignature(refreshedVariables, refreshedSignature);
+  }, [refreshToken, isMissingHostEntity, buildQueryVariables, config, resolvedDataSelection, parameters, loadAndTrackSignature]);
 
   useWidgetAutoRefresh(forceReloadData, refreshRate);
 
