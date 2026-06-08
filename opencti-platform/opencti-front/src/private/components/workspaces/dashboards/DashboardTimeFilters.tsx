@@ -43,7 +43,18 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
     handleDateChange('relativeDate', value);
   };
 
+  const startDateValue = buildDate(config.startDate);
+  const endDateValue = buildDate(config.endDate);
+  const minEndDate = startDateValue ? parse(startDateValue).startOf('day').toDate() : null;
+
+  const isBeforeDay = (date: Date, reference: Date) => (
+    parse(date).startOf('day').isBefore(parse(reference).startOf('day'))
+  );
+
   const handleChangeDate = (type: 'startDate' | 'endDate', value: Date | null) => {
+    if (value && type === 'endDate' && minEndDate && isBeforeDay(value, minEndDate)) {
+      return;
+    }
     const formattedDate = value ? parse(value).format() : null;
     handleDateChange(type, formattedDate);
   };
@@ -86,17 +97,18 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           </Select>
         </FormControl>
         <DatePicker
-          value={buildDate(config.startDate)}
+          value={startDateValue}
           label={t_i18n('Start date')}
           disableFuture
           disabled={!!config.relativeDate}
           onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
         />
         <DatePicker
-          value={buildDate(config.endDate)}
+          value={endDateValue}
           label={t_i18n('End date')}
           disabled={!!config.relativeDate}
           disableFuture
+          minDate={minEndDate ?? undefined}
           onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
         />
       </Stack>
