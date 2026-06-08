@@ -17,7 +17,7 @@ import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } f
 import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 import { useLoginContext } from './loginContext';
-import PublicPasswordPolicies from './PublicPasswordPolicies';
+import PasswordPoliciesAlert, { PasswordPolicies } from '../../../components/PasswordPoliciesAlert';
 
 interface InternalFormProps extends PropsWithChildren {
   action?: ReactNode;
@@ -84,24 +84,10 @@ const FLASH_COOKIE = 'opencti_flash';
 const RESEND_COOLDOWN_MS = 30000;
 
 interface ResetPasswordProps {
-  password_policy_min_length?: number | null;
-  password_policy_max_length?: number | null;
-  password_policy_min_symbols?: number | null;
-  password_policy_min_numbers?: number | null;
-  password_policy_min_words?: number | null;
-  password_policy_min_lowercase?: number | null;
-  password_policy_min_uppercase?: number | null;
+  policies?: PasswordPolicies;
 }
 
-const ResetPassword = ({
-  password_policy_min_length,
-  password_policy_max_length,
-  password_policy_min_symbols,
-  password_policy_min_numbers,
-  password_policy_min_words,
-  password_policy_min_lowercase,
-  password_policy_min_uppercase,
-}: ResetPasswordProps) => {
+const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
@@ -412,15 +398,9 @@ const ResetPassword = ({
               </Button>
             )}
             >
-              <PublicPasswordPolicies
-                password_policy_min_length={password_policy_min_length}
-                password_policy_max_length={password_policy_max_length}
-                password_policy_min_symbols={password_policy_min_symbols}
-                password_policy_min_numbers={password_policy_min_numbers}
-                password_policy_min_words={password_policy_min_words}
-                password_policy_min_lowercase={password_policy_min_lowercase}
-                password_policy_min_uppercase={password_policy_min_uppercase}
-              />
+              <Box sx={{ width: '100%', mt: 2 }}>
+                <PasswordPoliciesAlert policies={policies} />
+              </Box>
               <Field
                 component={TextField}
                 name="password"
