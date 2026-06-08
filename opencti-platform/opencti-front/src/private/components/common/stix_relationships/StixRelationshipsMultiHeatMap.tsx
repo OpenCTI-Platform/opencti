@@ -1,7 +1,7 @@
 import React, { ReactNode, Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
@@ -112,7 +112,7 @@ const buildQueryVariables = (
 
     return {
       field: dateAttribute,
-      filters: filters as unknown as GqlFilterGroup,
+      filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
       dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
       dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
     };

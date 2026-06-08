@@ -13,7 +13,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
-import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -147,7 +147,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: filters as unknown as GqlFilterGroup,
+    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
     limit: selection.number ?? 10,
   };
 };

@@ -1,7 +1,7 @@
 import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
@@ -163,7 +163,7 @@ const buildQueryVariables = (
     endDate,
     dateAttribute,
     limit: selection.number ?? 10,
-    filters: filters as unknown as GqlFilterGroup,
+    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
     isTo: selection.isTo,
     dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
     dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,

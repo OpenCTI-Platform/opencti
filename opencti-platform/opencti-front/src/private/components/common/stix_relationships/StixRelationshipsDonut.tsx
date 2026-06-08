@@ -2,7 +2,7 @@ import React, { ReactNode, Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
@@ -156,7 +156,7 @@ const buildQueryVariables = (
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
     limit: selection.number ?? 10,
-    filters: filters as unknown as GqlFilterGroup,
+    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
     isTo: selection.isTo,
     dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
     dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,

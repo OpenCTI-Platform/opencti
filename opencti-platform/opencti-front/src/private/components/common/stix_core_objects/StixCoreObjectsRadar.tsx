@@ -1,7 +1,7 @@
 import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
@@ -156,7 +156,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: filters as unknown as GqlFilterGroup,
+    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
     limit: selection.number ?? 10,
   };
 };

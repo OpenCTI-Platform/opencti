@@ -2,7 +2,7 @@ import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
@@ -1058,7 +1058,7 @@ const buildQueryVariables = (
     first: selection.number ?? 10,
     orderBy: dateAttribute as StixRelationshipsOrdering,
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-    filters: filters as unknown as GqlFilterGroup,
+    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
     dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
     dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
   };
