@@ -37,6 +37,7 @@ const timeoutLockRefreshQuery = graphql`
 const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
   const { idleLimit, sessionLimit } = state;
   let { idleCount, startDate, startDateEpoch } = state;
+  const offsetTime = Date.now() - ONE_SECOND;
   if (idleCount === null) {
     idleCount = sessionLimit;
   }
@@ -45,10 +46,10 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
     const timeoutData = JSON.parse(timeoutJSON);
     startDate = timeoutData.startDate;
     startDateEpoch = timeoutData.startDateEpoch;
-    idleCount = sessionLimit - (Date.now() - timeoutData.startDateEpoch) / 1000;
+    idleCount = sessionLimit - (Date.now() - timeoutData.startDateEpoch) / ONE_SECOND;
   } else {
     // If timeout start not yet initialize, setup the local storage
-    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
+    const newTimeItem = { startDate: new Date(), startDateEpoch: offsetTime };
     localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
     idleCount -= 1;
   }
@@ -60,7 +61,7 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
     return state;
   }
   if (action.type === 'reset timeout') {
-    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
+    const newTimeItem = { startDate: new Date(), startDateEpoch: offsetTime };
     localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
     return {
       idleLimit,
@@ -85,7 +86,7 @@ const TimeoutLock: React.FunctionComponent = () => {
     sessionLimit,
     idleCount: null,
     startDate: new Date(),
-    startDateEpoch: Date.now() - 1000,
+    startDateEpoch: Date.now() - ONE_SECOND,
   });
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timeout | null>(null);
