@@ -29,8 +29,8 @@ import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string;
   relationshipTypes: string[];
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
   isRelationReversed: boolean;
   currentView: string;
