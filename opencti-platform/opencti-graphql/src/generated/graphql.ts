@@ -18945,7 +18945,7 @@ export type MutationOrganizationEditAuthorizedAuthoritiesArgs = {
 export type MutationOrganizationFieldPatchArgs = {
   commitMessage?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
-  input: Array<InputMaybe<EditInput>>;
+  input: Array<EditInput>;
   references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
