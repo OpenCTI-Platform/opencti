@@ -1,6 +1,7 @@
 import { Field, FieldProps } from 'formik';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import WorkflowConditionFilters from './WorkflowConditionFilters';
+import { WorkflowActionType } from './utils';
 
 interface WorkflowFieldItemProps extends FieldProps {
   isCondition?: boolean;
@@ -13,7 +14,7 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
     return <Field name={name} component={WorkflowConditionFilters} />;
   }
 
-  if (value.type === 'updateAuthorizedMembers') {
+  if (value.type === WorkflowActionType.updateAuthorizedMembers) {
     return (
       <Field
         name={`${name}.params.authorized_members`}
@@ -25,6 +26,10 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
         addMeUserWithAdminRights
       />
     );
+  }
+
+  if (value.type === WorkflowActionType.shareWithOrganizations || value.type === WorkflowActionType.unshareFromOrganizations) {
+    return null;
   }
 
   return null;

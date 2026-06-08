@@ -121,7 +121,7 @@ describe('Workflow Conditions Resolver', () => {
         from: 'validated',
         to: 'validated',
         event: 'validate_requirement_event',
-        actions: [{ type: 'validateDraft' }],
+        syncActions: [{ type: 'validateDraft' }],
       },
     ],
   });

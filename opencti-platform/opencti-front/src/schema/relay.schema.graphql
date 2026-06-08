@@ -9603,7 +9603,6 @@ type Query {
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowInstance(entityId: String!): WorkflowInstance
-  allowedNextStatuses(entityId: String!): [Status!]!
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
@@ -10442,7 +10441,9 @@ type Mutation {
   workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
   workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
-  triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String): WorkflowTriggerResult!
+  triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
+  clearWorkflowPendingState(entityId: String!): WorkflowInstance!
+  reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
@@ -10757,15 +10758,15 @@ type Mutation {
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
 }
 
-enum WorkflowActionMode {
-  sync
-  async
+enum WorkflowExecutionStatus {
+  pending
+  completed
+  error
 }
 
 type WorkflowActionConfig {
   type: String!
   params: JSON
-  mode: WorkflowActionMode!
 }
 
 type WorkflowSerializedState {
@@ -10778,7 +10779,8 @@ type WorkflowSerializedTransition {
   from: String!
   to: String!
   event: String!
-  actions: [WorkflowActionConfig!]
+  asyncActions: [WorkflowActionConfig!]
+  syncActions: [WorkflowActionConfig!]
   conditions: JSON
   comment: String
 }
@@ -10838,6 +10840,32 @@ type WorkflowDefinitionMutationResult {
   errors: [WorkflowValidationError!]!
 }
 
+type WorkflowActionError {
+  timestamp: DateTime
+  message: String!
+  source: String
+}
+
+type WorkflowPendingAsyncAction {
+  id: ID!
+  workId: String!
+  type: String!
+  status: String!
+  processedCount: Int
+  expectedCount: Int
+  startedAt: DateTime
+  lastActivityAt: DateTime
+  errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+  event: String!
+  toState: String!
+  triggeredAt: DateTime!
+  asyncActions: [WorkflowPendingAsyncAction!]!
+  syncActions: [WorkflowActionConfig!]
+}
+
 type WorkflowTriggerResult {
   success: Boolean!
   newState: String
@@ -10845,6 +10873,8 @@ type WorkflowTriggerResult {
   status: Status
   instance: WorkflowInstance
   entity: BasicObject
+  executionStatus: WorkflowExecutionStatus
+  pendingTransition: WorkflowPendingTransition
 }
 
 type WorkflowTransition {
@@ -10853,6 +10883,8 @@ type WorkflowTransition {
   toStatus: Status
   comment: String
   actions: [String!]
+  requiresShareOrganizationInput: Boolean
+  requiresUnshareOrganizationInput: Boolean
 }
 
 type WorkflowLastHistoryEntry {
@@ -10869,6 +10901,9 @@ type WorkflowInstance {
   currentStatus: Status
   allowedTransitions: [WorkflowTransition!]!
   lastHistoryEntry: WorkflowLastHistoryEntry
+  pendingStatus: WorkflowExecutionStatus
+  pendingError: String
+  pendingTransition: WorkflowPendingTransition
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {

@@ -114,7 +114,7 @@ describe('Workflow Resolver', () => {
       from: 'open',
       to: 'validated',
       event: 'validate_event',
-      actions: [{ type: 'validateDraft', mode: 'sync' }],
+      syncActions: [{ type: 'validateDraft' }],
     }],
   });
 
@@ -449,7 +449,7 @@ describe('Workflow Resolver', () => {
           from: 'open',
           to: 'validated',
           event: 'validate_event',
-          actions: [{ type: 'validateDraft', mode: 'sync' }],
+          syncActions: [{ type: 'validateDraft' }],
         }],
       });
 
@@ -495,7 +495,7 @@ describe('Workflow Resolver', () => {
           from: 'open',
           to: 'validated',
           event: 'validate_event',
-          actions: [{ type: 'validateDraft', mode: 'sync' }],
+          syncActions: [{ type: 'validateDraft' }],
         }],
       });
 

@@ -1,4 +1,4 @@
-import type { FilterGroup, WorkflowActionMode } from '../../../generated/graphql';
+import type { FilterGroup } from '../../../generated/graphql';
 
 /**
  * Serialized configuration for a side effect action.
@@ -6,7 +6,6 @@ import type { FilterGroup, WorkflowActionMode } from '../../../generated/graphql
 export interface ActionConfig {
   type: string;
   params?: any;
-  mode: WorkflowActionMode;
 }
 
 /**
@@ -27,7 +26,10 @@ export interface SerializedTransition {
   to: string; // ID of the destination StatusTemplate
   event: string;
   comment?: string;
-  actions?: ActionConfig[];
+  /** Phase 1: async background task actions. Run before syncActions. */
+  asyncActions?: ActionConfig[];
+  /** Phase 2: sync actions run after all asyncActions succeed (or immediately if none). */
+  syncActions?: ActionConfig[];
   conditions?: { filters: FilterGroup };
 }
 

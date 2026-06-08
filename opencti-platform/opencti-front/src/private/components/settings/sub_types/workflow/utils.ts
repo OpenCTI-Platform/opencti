@@ -1,5 +1,5 @@
 import type { Node, Edge } from 'reactflow';
-import { SubTypeWorkflowQuery$data, WorkflowActionMode } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import type { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
@@ -8,7 +8,6 @@ export type Condition = { field: string; operator: string; value: string }
 
 export type Action = {
   type: string;
-  mode?: WorkflowActionMode;
   params?: unknown;
 };
 
@@ -28,7 +27,8 @@ export type CommentModeType = `${CommentMode}`;
 
 export type Transition = {
   event: string;
-  actions?: Action[];
+  asyncActions?: Action[];
+  syncActions?: Action[];
   conditions?: { filters: FilterGroup };
   comment?: CommentModeType;
 };
@@ -45,7 +45,7 @@ export enum WorkflowNodeType {
 
 export enum WorkflowDataType {
   // Actions
-  actions = 'actions',
+  syncActions = 'syncActions',
   onEnter = 'onEnter',
   onExit = 'onExit',
   // Conditions
@@ -55,27 +55,54 @@ export enum WorkflowDataType {
 export enum WorkflowActionType {
   updateAuthorizedMembers = 'updateAuthorizedMembers',
   validateDraft = 'validateDraft',
+  shareWithOrganizations = 'shareWithOrganizations',
+  unshareFromOrganizations = 'unshareFromOrganizations',
 }
 
 export const NODE_SIZE = { width: 160, height: 50 };
 
 const formatActions = (actions: Action[] = []) => {
-  return actions.map(({ type, params, mode = 'sync' }) => {
+  return actions.map(({ type, params }) => {
     if (type === 'updateAuthorizedMembers') {
       return {
         type,
-        mode,
         params: { authorized_members: (params as { authorized_members: AuthorizedMemberOption[] }).authorized_members
-          .map(({ value, accessRight }) => ({ id: value, access_right: accessRight })) },
+          .map(({ value, accessRight, groupsRestriction }) => ({
+            id: value,
+            access_right: accessRight,
+            groups_restriction_ids: groupsRestriction?.map((g) => g.value) ?? [],
+          })) },
       };
     }
     if (type === 'validateDraft') {
       return {
         type,
-        mode,
       };
     }
-  });
+    if (type === 'shareWithOrganizations') {
+      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
+      return {
+        type: 'asyncBulkAction',
+        params: {
+          scope: 'KNOWLEDGE',
+          actions: [{ type: 'SHARE', context: { values: orgIds } }],
+          failOnAnyError: true,
+        },
+      };
+    }
+    if (type === 'unshareFromOrganizations') {
+      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
+      return {
+        type: 'asyncBulkAction',
+        params: {
+          scope: 'KNOWLEDGE',
+          actions: [{ type: 'UNSHARE', context: { values: orgIds } }],
+          failOnAnyError: true,
+        },
+      };
+    }
+    return undefined;
+  }).filter(Boolean);
 };
 
 const transformToWorkflowDefinition = (
@@ -98,8 +125,7 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = {}, actions = [], comment } = node.data;
-
+      const { event, conditions = {}, comment, asyncActions = [], syncActions = [] } = node.data;
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
       // Find ALL outgoing edges (This Transition -> To Status)
@@ -114,8 +140,9 @@ const transformToWorkflowDefinition = (
             to: nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null,
             event,
             conditions,
-            actions: formatActions(actions),
             comment,
+            asyncActions: formatActions(asyncActions),
+            syncActions: formatActions(syncActions),
           })),
         );
       }
@@ -125,8 +152,9 @@ const transformToWorkflowDefinition = (
         to: null as string | null,
         event,
         conditions,
-        actions: formatActions(actions),
         comment,
+        asyncActions: formatActions(asyncActions),
+        syncActions: formatActions(syncActions),
       }));
     }
     return [];

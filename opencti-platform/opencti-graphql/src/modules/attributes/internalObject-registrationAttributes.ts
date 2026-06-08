@@ -1,4 +1,7 @@
 import * as R from 'ramda';
+import { computeAccountStatusChoices } from '../../config/conf';
+import { CONNECTOR_PRIORITY_GROUP_VALUES } from '../../database/repository';
+import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import {
   type AttributeDefinition,
   changes,
@@ -13,7 +16,6 @@ import {
   refreshedAt,
   updatedAt,
 } from '../../schema/attribute-definition';
-import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_BACKGROUND_TASK,
@@ -35,12 +37,10 @@ import {
   ENTITY_TYPE_USER,
   ENTITY_TYPE_WORK,
 } from '../../schema/internalObject';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
-import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
-import { computeAccountStatusChoices } from '../../config/conf';
-import { CONNECTOR_PRIORITY_GROUP_VALUES } from '../../database/repository';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -539,6 +539,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'task_expected_number', label: 'Expected number', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_order_mode', label: 'Order mode for queries', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'workflow_instance_id', label: 'Workflow instance ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'workflow_action_id', label: 'Workflow action ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     errors,
   ],
   [ENTITY_TYPE_SYNC]: [

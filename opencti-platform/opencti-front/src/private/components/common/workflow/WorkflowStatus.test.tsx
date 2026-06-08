@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import WorkflowStatus, { WorkflowTransitions } from './WorkflowStatus';
 import testRender from '../../../../utils/tests/test-render';
-import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import type { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 // ---------------------------------------------------------------------------
@@ -32,6 +32,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 vi.mock('../../../../utils/hooks/useGranted', () => ({
   default: () => false,
+  isBypassUser: () => false,
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 
@@ -54,7 +55,7 @@ const makeStatus = (color = '#ff0000', name = 'In review') => ({
   template: { name, color },
 });
 
-const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key => ({
+const makeDraft = (overrides: Record<string, unknown> = {}): workflowStatus_data$key => ({
   id: 'draft-1',
   entity_id: 'entity-1',
   processingCount: 0,
@@ -66,7 +67,7 @@ const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data
     allowedTransitions: [],
   },
   ...overrides,
-} as unknown as WorkflowStatus_data$key);
+} as unknown as workflowStatus_data$key);
 
 const makeTransition = (overrides: Record<string, unknown> = {}) => ({
   event: 'approve',
@@ -299,7 +300,7 @@ describe('WorkflowTransitions', () => {
     await user.click(screen.getByText('Confirm'));
     await waitFor(() => {
       expect(mockCommit).toHaveBeenCalledOnce();
-      expect(mockCommit.mock.calls[0][0].variables.comment).toBe(null);
+      expect(mockCommit.mock.calls[0][0].variables.comment).toBeUndefined();
     });
   });
 
