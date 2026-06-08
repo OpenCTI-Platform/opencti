@@ -1,4 +1,4 @@
-import { assert, describe, it, expect, vi } from 'vitest';
+import { afterEach, assert, describe, it, expect, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import fileDownload from 'js-file-download';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
@@ -24,6 +24,10 @@ const fakeSerialize = (manifest: DashboardManifest) => manifest as unknown as st
 vi.mock('js-file-download');
 
 describe('useDashboard', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   describe('reading an empty dashboard', () => {
     it('returns empty data structures', () => {
       const entity = {
@@ -466,87 +470,83 @@ describe('useDashboard', () => {
   describe('using handleLayoutChange to edit the layout of the dashboard', () => {
     it('applies the layout change and calls onSave with noRefresh=true', () => {
       vi.useFakeTimers();
-      try {
-        const existingWidget = {
-          id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
-          type: 'text',
-          perspective: 'entities',
-          dataSelection: [],
-          layout: {
-            i: '474752bc-4a56-4b05-8230-633b0ca97cb2',
-            x: 0,
-            y: 7,
-            w: 4,
-            h: 4,
-            moved: false,
-            static: false,
-          },
-        } as DashboardWidget;
-        const entity = {
-          id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
-          manifest: fakeSerialize({
-            config: {},
-            widgets: {
-              [existingWidget.id]: existingWidget,
-            },
-          }),
-        };
-        const saveSpy = vi.fn();
-        const { result } = renderHook((entity: DashboardLike) => useDashboard({
-          entity,
-          onSave: saveSpy,
-        }), { initialProps: entity });
-
-        expect(result.current.widgetsLayouts).toStrictEqual({
-          [existingWidget.id]: existingWidget.layout,
-        });
-
-        // Act: change layout
-        act(() => result.current.handleLayoutChange([{
-          ...existingWidget.layout,
-          x: 2,
-          w: 7,
-        }]));
-
-        act(() => {
-          vi.advanceTimersByTime(300);
-        });
-        // Call twice to check noop when layouts are equal
-        act(() => result.current.handleLayoutChange([{
-          ...existingWidget.layout,
-          x: 2,
-          w: 7,
-        }]));
-
-        const expectedSerializedManifest = fakeSerialize({
+      const existingWidget = {
+        id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+        type: 'text',
+        perspective: 'entities',
+        dataSelection: [],
+        layout: {
+          i: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+          x: 0,
+          y: 7,
+          w: 4,
+          h: 4,
+          moved: false,
+          static: false,
+        },
+      } as DashboardWidget;
+      const entity = {
+        id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
+        manifest: fakeSerialize({
           config: {},
           widgets: {
-            [existingWidget.id]: {
-              ...existingWidget,
-              layout: {
-                ...existingWidget.layout,
-                x: 2,
-                w: 7,
-              },
+            [existingWidget.id]: existingWidget,
+          },
+        }),
+      };
+      const saveSpy = vi.fn();
+      const { result } = renderHook((entity: DashboardLike) => useDashboard({
+        entity,
+        onSave: saveSpy,
+      }), { initialProps: entity });
+
+      expect(result.current.widgetsLayouts).toStrictEqual({
+        [existingWidget.id]: existingWidget.layout,
+      });
+
+      // Act: change layout
+      act(() => result.current.handleLayoutChange([{
+        ...existingWidget.layout,
+        x: 2,
+        w: 7,
+      }]));
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      // Call twice to check noop when layouts are equal
+      act(() => result.current.handleLayoutChange([{
+        ...existingWidget.layout,
+        x: 2,
+        w: 7,
+      }]));
+
+      const expectedSerializedManifest = fakeSerialize({
+        config: {},
+        widgets: {
+          [existingWidget.id]: {
+            ...existingWidget,
+            layout: {
+              ...existingWidget.layout,
+              x: 2,
+              w: 7,
             },
           },
-        });
-        expect(saveSpy).toHaveBeenCalledExactlyOnceWith(
-          entity.id,
-          expectedSerializedManifest,
-          true,
-          expect.any(Function),
-        );
-        expect(result.current.widgetsLayouts).toStrictEqual({
-          [existingWidget.id]: {
-            ...existingWidget.layout,
-            x: 2,
-            w: 7,
-          },
-        });
-      } finally {
-        vi.useRealTimers();
-      }
+        },
+      });
+      expect(saveSpy).toHaveBeenCalledExactlyOnceWith(
+        entity.id,
+        expectedSerializedManifest,
+        true,
+        expect.any(Function),
+      );
+      expect(result.current.widgetsLayouts).toStrictEqual({
+        [existingWidget.id]: {
+          ...existingWidget.layout,
+          x: 2,
+          w: 7,
+        },
+      });
     });
   });
 
