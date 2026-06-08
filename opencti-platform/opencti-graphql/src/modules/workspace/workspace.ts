@@ -33,7 +33,7 @@ export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWo
     { name: 'tags', label: 'Tags', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'graph_data', label: 'Workspace graph data', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'investigated_entities_ids', label: 'Investigated entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'refresh_rate', label: 'Refresh rate', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'refresh_interval', label: 'Refresh interval', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { ...draftChange, isFilterable: false },
     authorizedMembers,
   ],

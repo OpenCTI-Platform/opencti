@@ -52,7 +52,7 @@ const dashboardFragment = graphql`
     name
     description
     manifest
-    refresh_rate
+    refresh_interval
     tags
     owner {
       id
@@ -160,14 +160,14 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     handleManualRefresh,
     handleRefreshRateChange,
   } = useDashboardRefresh({
-    initialRefreshRateSeconds: workspace.refresh_rate ?? 0,
+    initialRefreshRateSeconds: workspace.refresh_interval ?? 0,
     onRefreshRateChange: (refreshRateInSeconds: number) => {
       commitMutation({
         mutation: workspaceMutationFieldPatch,
         variables: {
           id: workspace.id,
           input: {
-            key: 'refresh_rate',
+            key: 'refresh_interval',
             value: refreshRateInSeconds,
           },
         },

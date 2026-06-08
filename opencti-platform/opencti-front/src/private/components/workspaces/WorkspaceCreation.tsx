@@ -95,7 +95,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           name: values.name,
           description: values.description,
           type,
-          refresh_rate: null,
+          refresh_interval: null,
         },
       },
       updater: (store) => {

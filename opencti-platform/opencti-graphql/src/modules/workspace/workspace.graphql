@@ -14,7 +14,7 @@ type Workspace implements InternalObject & BasicObject {
     created_at: DateTime
     updated_at: DateTime
     refreshed_at: DateTime
-    refresh_rate: Int
+    refresh_interval: Int
     editContext: [EditUserContext!]
     investigated_entities_ids: [String]
     objects(
@@ -78,7 +78,7 @@ input WorkspaceAddInput {
     tags: [String!]
     authorized_members: [MemberAccessInput!]
     investigated_entities_ids: [String]
-    refresh_rate: Int
+    refresh_interval: Int
 }
 
 input WorkspaceDuplicateInput {

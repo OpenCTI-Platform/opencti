@@ -156,7 +156,7 @@ const WorkspaceEditionOverview = createFragmentContainer(
         name
         description
         type
-        refresh_rate
+        refresh_interval
       }
     `,
   },
