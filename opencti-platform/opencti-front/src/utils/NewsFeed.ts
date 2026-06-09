@@ -1,9 +1,5 @@
-import {
-  InsertChartOutlined,
-  LibraryBooksOutlined,
-  NotificationsOutlined,
-} from "@mui/icons-material";
-import type { ElementType } from "react";
+import { InsertChartOutlined, LibraryBooksOutlined, NotificationsOutlined } from '@mui/icons-material';
+import type { ElementType } from 'react';
 
 const NEWS_FEED_ICON_MAP: Record<string, ElementType> = {
   RESOURCE_CUSTOM_DASHBOARD: InsertChartOutlined,
