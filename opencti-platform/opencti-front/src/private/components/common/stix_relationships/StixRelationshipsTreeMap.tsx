@@ -190,9 +190,26 @@ const StixRelationshipsTreeMap = ({
     buildQueryVariables,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixRelationshipsTreeMapComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+          onMounted={setChart}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -203,18 +220,7 @@ const StixRelationshipsTreeMap = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixRelationshipsTreeMapComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-            parameters={parameters}
-            onMounted={setChart}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

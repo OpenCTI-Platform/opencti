@@ -1096,9 +1096,25 @@ const StixRelationshipsTimeline = ({
     buildQueryVariables,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixRelationshipsTimelineComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+        />
+      </Suspense>
+    );
+  };
+
   return (
     <WidgetContainer
       height={height}
@@ -1107,16 +1123,7 @@ const StixRelationshipsTimeline = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixRelationshipsTimelineComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

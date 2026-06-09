@@ -157,9 +157,26 @@ const StixRelationshipsMultiLineChart = ({
     buildQueryVariables,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixRelationshipsMultiLineChartComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+          onMounted={(c) => setChart(c as ApexCharts)}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -171,18 +188,7 @@ const StixRelationshipsMultiLineChart = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixRelationshipsMultiLineChartComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-            parameters={parameters}
-            onMounted={(c) => setChart(c as ApexCharts)}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

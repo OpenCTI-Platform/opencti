@@ -186,9 +186,26 @@ const StixCoreObjectsPolarArea = ({
   });
   const title = parameters?.title ?? t_i18n('Distribution of entities');
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixCoreObjectsPolarAreaComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          onMounted={setChart}
+        />
+      </Suspense>
+    );
+  };
+
   return (
     <WidgetContainer
       padding="small"
@@ -199,17 +216,7 @@ const StixCoreObjectsPolarArea = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixCoreObjectsPolarAreaComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-            onMounted={setChart}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

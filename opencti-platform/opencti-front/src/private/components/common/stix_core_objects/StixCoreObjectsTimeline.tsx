@@ -158,9 +158,22 @@ const StixCoreObjectsTimeline = ({
     config,
     buildQueryVariables,
   });
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) return null;
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixCoreObjectsTimelineComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -170,14 +183,7 @@ const StixCoreObjectsTimeline = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixCoreObjectsTimelineComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-          />
-        </Suspense>
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

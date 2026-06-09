@@ -4579,9 +4579,24 @@ const StixRelationshipsList = ({
     config,
     buildQueryVariables,
   });
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) return null;
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixRelationshipsListComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          widgetId={widgetId}
+          rootRef={rootRef}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -4593,16 +4608,7 @@ const StixRelationshipsList = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {queryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <StixRelationshipsListComponent
-              queryRef={queryRef}
-              dataSelection={resolvedDataSelection}
-              widgetId={widgetId}
-              rootRef={rootRef}
-            />
-          </Suspense>
-        )}
+        {renderContent()}
       </div>
     </WidgetContainer>
   );

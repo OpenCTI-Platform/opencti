@@ -200,9 +200,23 @@ const StixCoreObjectsHorizontalBars = ({
     buildQueryVariables,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) return null;
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixCoreObjectsHorizontalBarsComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -213,15 +227,7 @@ const StixCoreObjectsHorizontalBars = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixCoreObjectsHorizontalBarsComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-            parameters={parameters}
-          />
-        </Suspense>
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

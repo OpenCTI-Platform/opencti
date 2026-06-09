@@ -512,9 +512,24 @@ const StixCoreObjectsList = ({
     buildQueryVariables,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) return null;
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixCoreObjectsListComponent
+          queryRef={queryRef}
+          rootRef={rootRef}
+          dataSelection={resolvedDataSelection}
+          widgetId={widgetId}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -526,16 +541,7 @@ const StixCoreObjectsList = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {queryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <StixCoreObjectsListComponent
-              queryRef={queryRef}
-              rootRef={rootRef}
-              dataSelection={resolvedDataSelection}
-              widgetId={widgetId}
-            />
-          </Suspense>
-        )}
+        {renderContent()}
       </div>
     </WidgetContainer>
   );

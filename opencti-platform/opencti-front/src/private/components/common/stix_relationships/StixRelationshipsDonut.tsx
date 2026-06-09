@@ -197,9 +197,25 @@ const StixRelationshipsDonut = ({
     buildQueryVariables,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixRelationshipsDonutComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          onMounted={(chart) => setChart(chart as ApexCharts)}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -211,17 +227,7 @@ const StixRelationshipsDonut = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixRelationshipsDonutComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-            onMounted={(chart) => setChart(chart as ApexCharts)}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

@@ -231,9 +231,21 @@ const StixDomainObjectBookmarksList = ({
     config,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) return null;
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixDomainObjectBookmarksListComponent
+          queryRef={queryRef}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -244,13 +256,7 @@ const StixDomainObjectBookmarksList = ({
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {queryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <StixDomainObjectBookmarksListComponent
-              queryRef={queryRef}
-            />
-          </Suspense>
-        )}
+        {renderContent()}
       </div>
     </WidgetContainer>
   );

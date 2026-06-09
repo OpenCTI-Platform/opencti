@@ -66,6 +66,7 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   await customViewDetailsPage.widgets.validateFilters();
   await customViewDetailsPage.widgets.titleField.fill('Related malwares');
   await customViewDetailsPage.widgets.createWidget();
+
   // Widget should now be visible in the view
   await expect(page.getByText('Related malwares')).toBeVisible();
 

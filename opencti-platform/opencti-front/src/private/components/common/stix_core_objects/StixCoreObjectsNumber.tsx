@@ -131,9 +131,23 @@ const StixCoreObjectsNumber = ({
     config,
   });
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) return null;
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixCoreObjectsNumberComponent
+          queryRef={queryRef}
+          entityType={entityType}
+          label={translatedTitle}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -145,15 +159,7 @@ const StixCoreObjectsNumber = ({
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {queryRef && (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <StixCoreObjectsNumberComponent
-              queryRef={queryRef}
-              entityType={entityType}
-              label={translatedTitle}
-            />
-          </Suspense>
-        )}
+        {renderContent()}
       </div>
     </WidgetContainer>
   );

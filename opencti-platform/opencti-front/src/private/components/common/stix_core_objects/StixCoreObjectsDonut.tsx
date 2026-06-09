@@ -182,9 +182,22 @@ const StixCoreObjectsDonut = ({
 
   const defaultTitle = withoutTitle ? undefined : t_i18n('Distribution of entities');
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (!queryRef) return null;
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixCoreObjectsDonutComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -195,14 +208,7 @@ const StixCoreObjectsDonut = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixCoreObjectsDonutComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-          />
-        </Suspense>
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };
