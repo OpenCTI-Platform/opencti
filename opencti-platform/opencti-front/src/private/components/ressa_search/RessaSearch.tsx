@@ -1401,7 +1401,6 @@ const RessaSearch = () => {
                                   setRowsPerPage(Number(e.target.value));
                                   setPage(0);
                                 }}
-                                variant="outlined"
                                 sx={{
                                   height: 32,
                                   fontSize: '0.875rem',
