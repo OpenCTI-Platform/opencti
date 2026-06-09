@@ -5,11 +5,24 @@ import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { fullEntitiesList } from '../database/middleware-loader';
-import { mergeEntities, patchAttribute } from '../database/middleware';
+import { mergeEntities } from '../database/middleware';
 import { BULK_TIMEOUT, elBatchIdsWithRelCount, elBulk, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import { logApp, logMigration } from '../config/conf';
 
 const message = '[MIGRATION] Attack Pattern / Course of Action standard_id case-insensitive rewrite';
+
+const rewriteStandardId = async (context, entity, newId) => {
+  const existingStixIds = entity.x_opencti_stix_ids ?? [];
+  const updatedStixIds = R.uniq([...existingStixIds, entity.standard_id]);
+  await elBulk(context, {
+    refresh: true,
+    timeout: BULK_TIMEOUT,
+    body: [
+      { update: { _index: entity._index, _id: entity._id } },
+      { doc: { standard_id: newId, x_opencti_stix_ids: updatedStixIds } },
+    ],
+  });
+};
 
 // Recompute and rewrite the standard_id of all entities of a given STIX domain entity type,
 // merging duplicates that collide after the new (case-insensitive) x_mitre_id normalization.
@@ -76,7 +89,10 @@ const migrateEntityType = async (context, entityType) => {
     const sources = sorted.slice(1).map((e) => e.entity);
     try {
       if (target.standard_id !== newId) {
-        await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, { standard_id: newId });
+        // `standard_id` is not updatable through middleware patching (update: false).
+        // For this migration we must still rewrite it, while preserving the previous value in
+        // `x_opencti_stix_ids` so old IDs continue resolving.
+        await rewriteStandardId(context, target, newId);
       }
       await mergeEntities(context, SYSTEM_USER, target.internal_id, sources.map((s) => s.internal_id));
       mergedEntities += sources.length;
