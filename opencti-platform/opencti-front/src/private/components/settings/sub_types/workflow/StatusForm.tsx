@@ -33,7 +33,7 @@ const StatusForm = () => {
         setFieldValue={(field, { value, label, color }) => setFieldValue(field, { id: value, name: label, color })}
         helpertext=""
       />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
           {t_i18n('On enter actions')} <EEChip />
         </Typography>
@@ -49,7 +49,7 @@ const StatusForm = () => {
         />
         {hasUpdateAuthorizedMembersOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} />}
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
           {t_i18n('On exit actions')} <EEChip />
         </Typography>

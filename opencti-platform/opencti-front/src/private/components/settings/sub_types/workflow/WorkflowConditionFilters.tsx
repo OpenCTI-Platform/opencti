@@ -40,22 +40,24 @@ const WorkflowConditionFilters = ({
 
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Filters
-          availableFilterKeys={availableFilterKeys}
-          availableEntityTypes={availableEntityTypes}
-          helpers={helpers}
-          searchContext={searchContext}
-        />
-      </Box>
-      <Box>
-        <FilterIconButton
-          filters={filters}
-          helpers={helpers}
-          searchContext={searchContext}
-          availableEntityTypes={availableEntityTypes}
-          entityTypes={searchContext.entityTypes}
-        />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Filters
+            availableFilterKeys={availableFilterKeys}
+            availableEntityTypes={availableEntityTypes}
+            helpers={helpers}
+            searchContext={searchContext}
+          />
+        </Box>
+        <Box>
+          <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+            searchContext={searchContext}
+            availableEntityTypes={availableEntityTypes}
+            entityTypes={searchContext.entityTypes}
+          />
+        </Box>
       </Box>
     </>
   );
