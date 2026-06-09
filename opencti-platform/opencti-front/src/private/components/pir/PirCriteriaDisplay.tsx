@@ -22,7 +22,7 @@ import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { FilterValuesContentQuery } from '../../../components/__generated__/FilterValuesContentQuery.graphql';
 import { filterValuesContentQuery } from '../../../components/FilterValuesContent';
-import { GqlFilterGroup, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, sanitizeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Tag from '@common/tag/Tag';
@@ -92,16 +92,16 @@ const PirCriteriaDisplayComponent = ({
 type PirCriteriaDisplayProps = Omit<PirFiltersDisplayComponentProps, 'queryRef'>;
 
 const PirCriteriaDisplay = ({ criteria, ...props }: PirCriteriaDisplayProps) => {
-  const filters = removeIdFromFilterGroupObject({
+  const filters = sanitizeFilterGroupForBackend({
     mode: 'and',
     filters: [],
     filterGroups: criteria,
   });
-  if (!filters) return null;
+  if (!filters || !isFilterGroupNotEmpty((filters))) return null;
 
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
-    { filters: filters as unknown as GqlFilterGroup },
+    { filters },
   );
 
   return filtersRepresentativesQueryRef && (

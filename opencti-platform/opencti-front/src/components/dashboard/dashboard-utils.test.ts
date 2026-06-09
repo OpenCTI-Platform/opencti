@@ -3,7 +3,7 @@ import { formatDate } from '../../utils/Time';
 import { fromB64, toB64 } from '../../utils/String';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from './dashboard-utils';
 import type { DashboardManifest, DashboardWidget } from './dashboard-types';
-import { GqlFilterGroup, sanitizeFilterGroupKeysForBackend, sanitizeFilterGroupKeysForFrontend } from '../../utils/filters/filtersUtils';
+import { GqlFilterGroup, sanitizeFilterGroupForBackend, sanitizeFilterGroupKeysForFrontend } from '../../utils/filters/filtersUtils';
 
 describe('dashboard serialization', () => {
   describe('serializeDashboardManifestForBackend', () => {
@@ -101,9 +101,9 @@ describe('dashboard serialization', () => {
             ...widget,
             dataSelection: [{
               ...widget.dataSelection[0],
-              dynamicTo: sanitizeFilterGroupKeysForBackend(widget.dataSelection[0].dynamicTo!),
-              dynamicFrom: sanitizeFilterGroupKeysForBackend(widget.dataSelection[0].dynamicFrom!),
-              filters: sanitizeFilterGroupKeysForBackend(widget.dataSelection[0].filters!),
+              dynamicTo: sanitizeFilterGroupForBackend(widget.dataSelection[0].dynamicTo!),
+              dynamicFrom: sanitizeFilterGroupForBackend(widget.dataSelection[0].dynamicFrom!),
+              filters: sanitizeFilterGroupForBackend(widget.dataSelection[0].filters!),
             }],
           },
         },

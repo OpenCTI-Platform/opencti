@@ -1,6 +1,6 @@
 import type { GqlWidgetDataSelection, WidgetLayout } from '../../utils/widget/widget';
 import { fromB64, toB64 } from '../../utils/String';
-import { sanitizeFilterGroupKeysForBackend, sanitizeFilterGroupKeysForFrontend } from '../../utils/filters/filtersUtils';
+import { sanitizeFilterGroupForBackend, sanitizeFilterGroupKeysForFrontend } from '../../utils/filters/filtersUtils';
 import type { DashboardManifest, DashboardWidget } from './dashboard-types';
 
 /**
@@ -19,15 +19,9 @@ export const serializeDashboardManifestForBackend = (
       dataSelection: widget.dataSelection.map(
         (selection) => ({
           ...selection,
-          filters: selection.filters
-            ? sanitizeFilterGroupKeysForBackend(selection.filters)
-            : undefined,
-          dynamicFrom: selection.dynamicFrom
-            ? sanitizeFilterGroupKeysForBackend(selection.dynamicFrom)
-            : undefined,
-          dynamicTo: selection.dynamicTo
-            ? sanitizeFilterGroupKeysForBackend(selection.dynamicTo)
-            : undefined,
+          filters: sanitizeFilterGroupForBackend(selection.filters),
+          dynamicFrom: sanitizeFilterGroupForBackend(selection.dynamicFrom),
+          dynamicTo: sanitizeFilterGroupForBackend(selection.dynamicTo),
         }),
       ),
     };

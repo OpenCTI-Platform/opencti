@@ -11,7 +11,7 @@ import { useFormatter } from '../i18n';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../Loader';
 import { FilterValuesForDynamicSubKeyQuery } from './__generated__/FilterValuesForDynamicSubKeyQuery.graphql';
-import { sanitizeFilterGroupKeysForBackend } from '../../utils/filters/filtersUtils';
+import { sanitizeFilterGroupForBackend } from '../../utils/filters/filtersUtils';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../components/Theme';
 
@@ -94,7 +94,7 @@ const FilterValuesForDynamicSubKey = ({
 }: FilterValuesForDynamicSubKeyProps) => {
   const queryRef = useQueryLoading<FilterValuesForDynamicSubKeyQuery>(
     filterValuesForDynamicSubKeyQuery,
-    { filters: sanitizeFilterGroupKeysForBackend(filterValue) },
+    { filters: sanitizeFilterGroupForBackend(filterValue) },
   );
 
   return (
