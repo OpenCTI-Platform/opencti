@@ -136,7 +136,7 @@
     "json-to-plain-text": "1.2.0",
     "jsonpath-plus": "10.4.0",
     "jwt-decode": "4.0.0",
-    "license-checker-rseidelsohn": "4.4.2",
+    "license-checker-rseidelsohn": "5.0.1",
     "lru-cache": "11.5.1",
     "luxon": "3.7.2",
     "marked": "18.0.5",
@@ -212,7 +212,7 @@
     "eslint-plugin-import-newlines": "2.0.0",
     "globals": "17.6.0",
     "graphql-tag": "2.12.6",
-    "license-checker-rseidelsohn": "4.4.2",
+    "license-checker-rseidelsohn": "5.0.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.60.1",
     "vitest": "4.1.8"
