@@ -210,7 +210,7 @@ const customAttributesVisualizationType = {
   category: 'custom-attributes',
   availableParameters: [],
   isRelationships: false,
-  isEntities: true,
+  isEntities: false,
   isAudits: false,
 } as const;
 

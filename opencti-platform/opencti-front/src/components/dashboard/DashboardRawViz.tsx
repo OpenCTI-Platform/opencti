@@ -19,7 +19,8 @@ const DashboardRawViz = ({
   config,
   host,
 }: DashboardRawVizProps) => {
-  const { isCustomAttributesWidgetEnable } = useHelper();
+  const { isFeatureEnable } = useHelper();
+  const isCustomAttributesWidgetEnable = isFeatureEnable('CUSTOM_ATTRIBUTES_WIDGET');
 
   const startDate = config?.relativeDate
     ? computeRelativeDate(config.relativeDate)
@@ -38,7 +39,7 @@ const DashboardRawViz = ({
         />
       );
     case 'custom-attributes':
-      if (isCustomAttributesWidgetEnable()) {
+      if (isCustomAttributesWidgetEnable) {
         return (
           <StixCoreObjectsCustomAttributes
             variant={undefined}
@@ -54,7 +55,7 @@ const DashboardRawViz = ({
           />
         );
       }
-      return;
+      return null;
     default:
       return 'Not implemented yet';
   }

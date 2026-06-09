@@ -28,9 +28,10 @@ export const getVisualizationTypes = (host: WidgetHost, isCustomAttributesEnable
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
   const { host, setStep, setConfigWidget, config } = useWidgetConfigContext();
-  const { isCustomAttributesWidgetEnable } = useHelper();
+  const { isFeatureEnable } = useHelper();
+  const isCustomAttributesWidgetEnable = isFeatureEnable('CUSTOM_ATTRIBUTES_WIDGET');
 
-  const visualizationTypes = getVisualizationTypes(host, isCustomAttributesWidgetEnable());
+  const visualizationTypes = getVisualizationTypes(host, isCustomAttributesWidgetEnable);
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });

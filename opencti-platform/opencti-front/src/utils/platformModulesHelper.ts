@@ -5,7 +5,6 @@ export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform admin
 export const RUNTIME_SORTING = 'RUNTIME_SORTING';
 
 export const ACTIVITY_HISTORY_RETENTION = 'ACTIVITY_HISTORY_RETENTION';
-export const CUSTOM_ATTRIBUTES_WIDGET = 'CUSTOM_ATTRIBUTES_WIDGET';
 
 export const SUBSCRIPTION_MANAGER = 'SUBSCRIPTION_MANAGER';
 export const RULE_ENGINE = 'RULE_ENGINE';
@@ -43,7 +42,6 @@ export interface ModuleHelper {
   isChatbotAiEnabled: () => boolean;
   isTiptapEditorEnable: () => boolean;
   isActivityHistoryRetentionEnable: () => boolean;
-  isCustomAttributesWidgetEnable: () => boolean;
 }
 
 export const isFeatureEnable = (
@@ -97,7 +95,6 @@ const platformModuleHelper = (
   isChatbotAiEnabled: () => settings.filigran_chatbot_ai_cgu_status === 'enabled',
   isTiptapEditorEnable: () => isFeatureEnable(settings, TIPTAP_EDITOR),
   isActivityHistoryRetentionEnable: () => isFeatureEnable(settings, ACTIVITY_HISTORY_RETENTION),
-  isCustomAttributesWidgetEnable: () => isFeatureEnable(settings, CUSTOM_ATTRIBUTES_WIDGET),
 });
 
 export default platformModuleHelper;
