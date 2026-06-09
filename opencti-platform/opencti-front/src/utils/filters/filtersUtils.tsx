@@ -500,7 +500,7 @@ export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup 
 });
 
 /**
- * Sanitizes a FilterGroup for backend persistence:
+ * Normalizes a FilterGroup for backend persistence:
  * - Converts filter keys from string to string[] (backend expects arrays).
  * - Removes filter IDs (not persisted).
  * - Strips empty filters (no values and no nil/not_nil operator).
@@ -509,9 +509,9 @@ export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup 
  * This is required because GQL input coercion accepts single values in place of arrays,
  * but when filters are stringified and parsed server-side, strict array format is expected.
  */
-export function sanitizeFilterGroupForBackend(filterGroup: FilterGroup): GqlFilterGroup;
-export function sanitizeFilterGroupForBackend(filterGroup?: FilterGroup | null): GqlFilterGroup | undefined;
-export function sanitizeFilterGroupForBackend(
+export function normalizeFilterGroupForBackend(filterGroup: FilterGroup): GqlFilterGroup;
+export function normalizeFilterGroupForBackend(filterGroup?: FilterGroup | null): GqlFilterGroup | undefined;
+export function normalizeFilterGroupForBackend(
   filterGroup?: FilterGroup | null,
 ): GqlFilterGroup | undefined {
   if (!filterGroup || !isFilterGroupNotEmpty(filterGroup)) {
@@ -524,12 +524,16 @@ export function sanitizeFilterGroupForBackend(
         ...f,
         key: Array.isArray(f.key) ? f.key : [f.key],
       })),
-    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupForBackend(fg)),
+    filterGroups: filterGroup.filterGroups.map((fg) => normalizeFilterGroupForBackend(fg)),
   } as GqlFilterGroup;
 }
 
-// reverse operation of sanitizeFilterGroupKeysForBackend
-export const sanitizeFilterGroupKeysForFrontend = (
+/**
+ * Reverse operation of normalizeFilterGroupForBackend:
+ * converts a GqlFilterGroup (backend format with array keys) into a FilterGroup (frontend format with single string key).
+ * Also assigns a unique `id` to each filter for React rendering purposes.
+ */
+export const normalizeFilterGroupForFrontend = (
   filterGroup: GqlFilterGroup,
 ): FilterGroup => {
   return {
@@ -540,7 +544,7 @@ export const sanitizeFilterGroupKeysForFrontend = (
       key: Array.isArray(f.key) ? f.key[0] : f.key,
       values: f.values.map((v) => v || 'todo: delete this'),
     })),
-    filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
+    filterGroups: filterGroup?.filterGroups?.map((fg) => normalizeFilterGroupForFrontend(fg)),
   } as FilterGroup;
 };
 
@@ -555,7 +559,7 @@ export const serializeFilterGroupForBackend = (
   if (!filterGroup) {
     return JSON.stringify(emptyFilterGroup);
   }
-  return JSON.stringify(sanitizeFilterGroupForBackend(filterGroup));
+  return JSON.stringify(normalizeFilterGroupForBackend(filterGroup));
 };
 
 /**
@@ -575,7 +579,7 @@ export const deserializeFilterGroupForFrontend = (
   } else {
     filters = filterGroup;
   }
-  return sanitizeFilterGroupKeysForFrontend(filters);
+  return normalizeFilterGroupForFrontend(filters);
 };
 
 // ----------------------------------------------------------------------------------------------------------------------

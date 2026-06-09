@@ -19,7 +19,7 @@ import { Chip, Tooltip, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
-import { emptyFilterGroup, getFilterKeyValues, sanitizeFilterGroupForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getFilterKeyValues, normalizeFilterGroupForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -189,7 +189,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
     ...paginationOptions,
     id,
     count: 100,
-    filters: sanitizeFilterGroupForBackend(filters),
+    filters: normalizeFilterGroupForBackend(filters),
     objectsFilters: {
       mode: 'or',
       filterGroups: [],

@@ -8,12 +8,14 @@ import {
   getEntityTypeThreeFirstLevelsFilterValues,
   isFilterGroupFormatCorrect,
   isRegardingOfFilterWarning,
+  normalizeFilterGroupForBackend,
+  normalizeFilterGroupForFrontend,
   removeFrontendIdAndEmptyFiltersFromFilterGroupObject,
   removeIdAndIncorrectKeysFromFilterGroupObject,
-  sanitizeFilterGroupForBackend,
   serializeFilterGroupForBackend,
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
+  GqlFilterGroup,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
@@ -661,7 +663,7 @@ describe('Function findFilterFromKey: should return the filters of the specified
   });
 });
 
-describe('Function sanitizeFilterGroupForBackend', () => {
+describe('Function normalizeFilterGroupForBackend', () => {
   it('should convert string keys to arrays', () => {
     const input: FilterGroup = {
       mode: 'and',
@@ -670,7 +672,7 @@ describe('Function sanitizeFilterGroupForBackend', () => {
       ],
       filterGroups: [],
     };
-    const result = sanitizeFilterGroupForBackend(input);
+    const result = normalizeFilterGroupForBackend(input);
     expect(result?.filters[0].key).toEqual(['entity_type']);
   });
 
@@ -682,7 +684,7 @@ describe('Function sanitizeFilterGroupForBackend', () => {
       ],
       filterGroups: [],
     } as unknown as FilterGroup;
-    const result = sanitizeFilterGroupForBackend(input);
+    const result = normalizeFilterGroupForBackend(input);
     expect(result?.filters[0].key).toEqual(['objectMarking']);
   });
 
@@ -694,7 +696,7 @@ describe('Function sanitizeFilterGroupForBackend', () => {
       ],
       filterGroups: [],
     };
-    const result = sanitizeFilterGroupForBackend(input);
+    const result = normalizeFilterGroupForBackend(input);
     expect(result?.filters[0]).not.toHaveProperty('id');
   });
 
@@ -707,7 +709,7 @@ describe('Function sanitizeFilterGroupForBackend', () => {
       ],
       filterGroups: [],
     };
-    const result = sanitizeFilterGroupForBackend(input);
+    const result = normalizeFilterGroupForBackend(input);
     expect(result?.filters.length).toEqual(1);
     expect(result?.filters[0].key).toEqual(['entity_type']);
   });
@@ -721,7 +723,7 @@ describe('Function sanitizeFilterGroupForBackend', () => {
       ],
       filterGroups: [],
     };
-    const result = sanitizeFilterGroupForBackend(input);
+    const result = normalizeFilterGroupForBackend(input);
     expect(result?.filters.length).toEqual(2);
   });
 
@@ -741,7 +743,7 @@ describe('Function sanitizeFilterGroupForBackend', () => {
         },
       ],
     };
-    const result = sanitizeFilterGroupForBackend(input);
+    const result = normalizeFilterGroupForBackend(input);
     expect(result?.filterGroups![0].filters[0].key).toEqual(['name']);
     expect(result?.filterGroups![0].filters[0]).not.toHaveProperty('id');
   });
@@ -1234,5 +1236,72 @@ describe('buildFiltersForCustomView', () => {
         }],
       }],
     });
+  });
+});
+
+describe('Function normalizeFilterGroupForFrontend', () => {
+  it('should convert array keys to single string keys', () => {
+    const input: GqlFilterGroup = {
+      mode: 'and',
+      filters: [
+        { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+        { key: ['objectMarking'], values: ['marking1'], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    };
+    const result = normalizeFilterGroupForFrontend(input);
+    expect(result.filters[0].key).toEqual('entity_type');
+    expect(result.filters[1].key).toEqual('objectMarking');
+    expect(result.filters[0].id).toBeDefined();
+    expect(typeof result.filters[0].id).toBe('string');
+    expect(result.filters[0].id!.length).toBeGreaterThan(0);
+  });
+
+  it('should recursively process nested filterGroups', () => {
+    const input: GqlFilterGroup = {
+      mode: 'and',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: ['objectLabel'], values: ['label1'], operator: 'eq', mode: 'or' },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = normalizeFilterGroupForFrontend(input);
+    expect(result.filterGroups[0].filters[0].key).toEqual('objectLabel');
+    expect(result.filterGroups[0].filters[0].id).toBeDefined();
+  });
+
+  it('should handle key that is already a string (non-array)', () => {
+    const input = {
+      mode: 'and',
+      filters: [
+        { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    } as unknown as GqlFilterGroup;
+    const result = normalizeFilterGroupForFrontend(input);
+    expect(result.filters[0].key).toEqual('entity_type');
+  });
+
+  it('should preserve mode and other filter properties', () => {
+    const input: GqlFilterGroup = {
+      mode: 'or',
+      filters: [
+        { key: ['name'], values: ['val1', 'val2'], operator: 'not_eq', mode: 'and' },
+      ],
+      filterGroups: [],
+    };
+    const result = normalizeFilterGroupForFrontend(input);
+    expect(result.mode).toEqual('or');
+    expect(result.filters[0].operator).toEqual('not_eq');
+    expect(result.filters[0].mode).toEqual('and');
+    expect(result.filters[0].values).toEqual(['val1', 'val2']);
   });
 });

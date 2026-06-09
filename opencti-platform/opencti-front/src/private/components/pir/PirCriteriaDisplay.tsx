@@ -22,7 +22,7 @@ import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { FilterValuesContentQuery } from '../../../components/__generated__/FilterValuesContentQuery.graphql';
 import { filterValuesContentQuery } from '../../../components/FilterValuesContent';
-import { isFilterGroupNotEmpty, sanitizeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, normalizeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Tag from '@common/tag/Tag';
@@ -92,7 +92,7 @@ const PirCriteriaDisplayComponent = ({
 type PirCriteriaDisplayProps = Omit<PirFiltersDisplayComponentProps, 'queryRef'>;
 
 const PirCriteriaDisplay = ({ criteria, ...props }: PirCriteriaDisplayProps) => {
-  const filters = sanitizeFilterGroupForBackend({
+  const filters = normalizeFilterGroupForBackend({
     mode: 'and',
     filters: [],
     filterGroups: criteria,

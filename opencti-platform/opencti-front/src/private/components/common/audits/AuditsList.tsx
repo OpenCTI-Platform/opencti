@@ -19,7 +19,7 @@ import { AuditsListComponentQuery, FilterGroup as GqlFilterGroup, LogsOrdering, 
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import type { FilterGroup as FilterHelpersFilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';

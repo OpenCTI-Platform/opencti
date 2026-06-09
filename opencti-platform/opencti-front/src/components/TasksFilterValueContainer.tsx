@@ -1,5 +1,5 @@
 import React from 'react';
-import { sanitizeFilterGroupForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../utils/filters/filtersUtils';
+import { normalizeFilterGroupForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../utils/filters/filtersUtils';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import TaskFilterValue from './TaskFilterValue';
@@ -11,7 +11,7 @@ const TasksFilterValueContainer = ({ filters, entityTypes }: { filters: FilterGr
   const cleanUpFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes) as FilterGroup;
   const queryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
-    { filters: sanitizeFilterGroupForBackend(cleanUpFilters) },
+    { filters: normalizeFilterGroupForBackend(cleanUpFilters) },
   );
   return (
     <>
