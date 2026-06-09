@@ -5,7 +5,6 @@ import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import { useTheme } from '@mui/styles';
-import type { Editor } from '@tiptap/react';
 import { ClassicEditor } from 'ckeditor5';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
@@ -14,9 +13,11 @@ import useAI from '../../utils/hooks/useAI';
 import useHelper from '../../utils/hooks/useHelper';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
-import { RichTextEditor } from '@filigran/rich-text-editor';
+import { RichTextEditor, type RichTextEditorProps } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+
+type EditorInstance = Parameters<NonNullable<RichTextEditorProps['onReady']>>[0];
 
 interface RichTextFieldProps extends FieldProps<string> {
   disabled?: boolean;
@@ -50,7 +51,7 @@ const RichTextField = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { isTiptapEditorEnable } = useHelper();
-  const tiptapEditorRef = useRef<Editor | null>(null);
+  const richEditorRef = useRef<EditorInstance | null>(null);
   const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
@@ -61,11 +62,11 @@ const RichTextField = ({
   const RichTextEditorInstance = isTiptapEditorEnable() ? (
     <RichTextEditor
       onReady={(editor) => {
-        tiptapEditorRef.current = editor;
+        richEditorRef.current = editor;
         editor.on('selectionUpdate', () => {
-          if (tiptapEditorRef.current && onTextSelection && !tiptapEditorRef.current.isEditable && !fullScreen) {
-            const { from, to } = tiptapEditorRef.current.state.selection;
-            const text = tiptapEditorRef.current.state.doc.textBetween(from, to).trim();
+          if (richEditorRef.current && onTextSelection && !richEditorRef.current.isEditable && !fullScreen) {
+            const { from, to } = richEditorRef.current.state.selection;
+            const text = richEditorRef.current.state.doc.textBetween(from, to).trim();
             if (text.length > 2) onTextSelection(text);
           }
         });
