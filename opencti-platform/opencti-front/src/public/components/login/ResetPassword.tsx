@@ -388,7 +388,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
           validationSchema={passwordValidation(t_i18n)}
           initialValues={{ password: '', password_validation: '' }}
         >
-          {({ isSubmitting, isValid }) => (
+          {({ isSubmitting, isValid, values }) => (
             <Form action={(
               <Button
                 type="submit"
@@ -399,7 +399,10 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
             )}
             >
               <Box sx={{ width: '100%', mt: 2 }}>
-                <PasswordPoliciesAlert policies={policies} />
+                <PasswordPoliciesAlert
+                  policies={policies}
+                  value={values.password}
+                />
               </Box>
               <Field
                 component={TextField}
