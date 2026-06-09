@@ -128,6 +128,12 @@ const createApp = async (app, schema) => {
     }
   });
 
+  // complement the <meta name="robots" tag in index.html
+  app.use((_req, res, next) => {
+    res.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
+    next();
+  });
+
   app.use(compression({
     filter: (req, res) => res.getHeader('Content-Type') !== 'text/event-stream' && compressionFilter(req, res),
   }));
