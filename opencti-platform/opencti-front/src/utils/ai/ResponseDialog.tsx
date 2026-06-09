@@ -17,7 +17,7 @@ import ReactMde from 'react-mde';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 
-import RichTextEditor from '../../components/RichTextEditor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import CKEditor from '../../components/CKEditor';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';

@@ -14,7 +14,7 @@ import useAI from '../../utils/hooks/useAI';
 import useHelper from '../../utils/hooks/useHelper';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
-import RichTextEditor from '../RichTextEditor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 
