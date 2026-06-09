@@ -193,7 +193,7 @@
     "i18n-auto-translation": "2.2.3",
     "jsdom": "29.1.1",
     "knip": "6.15.0",
-    "license-checker-rseidelsohn": "4.4.2",
+    "license-checker-rseidelsohn": "5.0.1",
     "monocart-reporter": "2.11.2",
     "relay-compiler": "20.1.1",
     "relay-test-utils": "20.1.1",
