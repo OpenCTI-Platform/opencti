@@ -86,10 +86,15 @@ export const findDraftWorkspacePaginated = (context: AuthContext, user: AuthUser
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
 };
 
-export const draftWorkspacesNumber = (context: AuthContext, user: AuthUser, args: any) => {
+export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser, args: any) => {
+  const [count, total] = await Promise.all([
+    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+  ]);
+
   return {
-    count: elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
-    total: elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+    count,
+    total,
   };
 };
 
