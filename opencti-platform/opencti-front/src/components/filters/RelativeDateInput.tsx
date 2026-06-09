@@ -3,8 +3,9 @@ import TextField from '@mui/material/TextField';
 import { DateRangeOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { Field, Formik } from 'formik';
 import { Link } from 'react-router-dom';
+import DateTimePickerField from '../DateTimePickerField';
 import { useFormatter } from '../i18n';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
@@ -84,16 +85,30 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   };
   return (
     <div style={{ display: 'flex' }}>
-      {isDatePickerOpen
-        && (
-          <DateTimePicker
-            open={true}
-            onClose={() => setIsDatePickerOpen(false)}
-            sx={{ display: 'none' }}
-            onChange={handleChangeAbsoluteDateFilter}
-          />
-        )
-      }
+      <Formik
+        initialValues={{
+          date: (() => {
+            const currentValue = dateInput[valueOrder];
+            return currentValue && isValidDate(currentValue) ? currentValue : null;
+          })(),
+        }}
+        enableReinitialize
+        onSubmit={() => {}}
+      >
+        <Field
+          component={DateTimePickerField}
+          name="date"
+          open={isDatePickerOpen}
+          onClose={() => setIsDatePickerOpen(false)}
+          sx={{ display: 'none' }}
+          onChange={(_name: string, value: Date | null) => {
+            handleChangeAbsoluteDateFilter(value);
+          }}
+          textFieldProps={{
+            sx: { display: 'none' },
+          }}
+        />
+      </Formik>
       <TextField
         variant="outlined"
         size="small"

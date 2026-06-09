@@ -51,6 +51,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { schema: { scos } } = useSchema();
+  const filterDefinition = useFilterDefinition(currentFilter.key, entityTypes);
 
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
@@ -105,7 +106,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
 
   // general cases
-  const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const values = filterValues.map((id) => {
     const isLocalModeSwitchable = isReadWriteFilter
       && handleSwitchLocalMode
