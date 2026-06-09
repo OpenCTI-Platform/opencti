@@ -12,6 +12,8 @@ import { INDICATOR_DEFAULT_SCORE } from '../../../src/modules/indicator/indicato
 import type { AuthUser } from '../../../src/types/user';
 import { logApp } from '../../../src/config/conf';
 import * as indicatorUtils from '../../../src/modules/indicator/indicator-utils';
+import * as decayExclusionRuleDomain from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
+import type { BasicStoreEntityDecayExclusionRule } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-types';
 
 describe('Testing field patch and upsert on indicator for trio {score, valid until, revoked}', () => {
   // Region Mock and Spy setup
@@ -451,5 +453,90 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     await createIndicator(ADMIN_USER, indicatorUpsert2);
     const indicatorAfterUpsert2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
     expect(indicatorAfterUpsert2.x_opencti_score).toBe(80); // score update is ignored
+  });
+
+  // Region Decay exclusion rule tests (issue #16365)
+  // A fake exclusion rule to be returned by the mocked checkDecayExclusionRules
+  const fakeExclusionRule = {
+    id: 'fake-decay-exclusion-rule-id',
+    internal_id: 'fake-decay-exclusion-rule-id',
+    name: 'Test exclusion rule',
+    description: '',
+    active: true,
+    decay_exclusion_filters: '{}',
+    created_at: new Date().toISOString(),
+  } as unknown as BasicStoreEntityDecayExclusionRule;
+
+  it('decay excluded indicator - upsert with unchanged score should NOT overwrite valid_until, revoked', async () => {
+    // GIVEN decay is enabled and an exclusion rule matches this indicator
+    isDecayEnabledSpy.mockResolvedValue(true);
+    vi.spyOn(decayExclusionRuleDomain, 'getActiveDecayExclusionRules').mockResolvedValue([fakeExclusionRule]);
+    vi.spyOn(decayExclusionRuleDomain, 'checkDecayExclusionRules').mockResolvedValue(fakeExclusionRule);
+
+    const indicatorInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - upsert score unchanged',
+      pattern: "[domain-name:value = 'excluded-upsert-unchanged.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: todayMorning.toISOString(),
+      valid_until: inFiveDays.toISOString(),
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput);
+
+    // Check the exclusion rule was applied at creation
+    expect(indicatorCreated.decay_exclusion_applied_rule).toBeDefined();
+    expect(indicatorCreated.x_opencti_score).toBe(80);
+    const originalValidUntil = indicatorCreated.valid_until;
+
+    // WHEN the same indicator is re-ingested with the same score but a different valid_until (simulating a connector cycle)
+    const indicatorUpsertInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - upsert score unchanged',
+      pattern: "[domain-name:value = 'excluded-upsert-unchanged.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80, // unchanged score
+      valid_from: todayMorning.toISOString(),
+      valid_until: tomorrow.toISOString(), // different valid_until — should NOT be applied
+    };
+    await createIndicator(connectorUser, indicatorUpsertInput);
+    const indicatorAfterUpsert = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+
+    // THEN valid_until, revoked and score are preserved (guard from issue #16365 fix)
+    expect(indicatorAfterUpsert.x_opencti_score).toBe(80);
+    expect(indicatorAfterUpsert.valid_until).toBe(originalValidUntil);
+    expect(indicatorAfterUpsert.revoked).toBeFalsy();
+  });
+
+  it('decay excluded indicator - upsert with changed score SHOULD update valid_until', async () => {
+    // GIVEN decay is enabled and an exclusion rule matches this indicator
+    isDecayEnabledSpy.mockResolvedValue(true);
+    vi.spyOn(decayExclusionRuleDomain, 'getActiveDecayExclusionRules').mockResolvedValue([fakeExclusionRule]);
+    vi.spyOn(decayExclusionRuleDomain, 'checkDecayExclusionRules').mockResolvedValue(fakeExclusionRule);
+
+    const indicatorInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - upsert score changed',
+      pattern: "[domain-name:value = 'excluded-upsert-changed.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: todayMorning.toISOString(),
+      valid_until: inFiveDays.toISOString(),
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput);
+    expect(indicatorCreated.decay_exclusion_applied_rule).toBeDefined();
+    expect(indicatorCreated.x_opencti_score).toBe(80);
+
+    // WHEN the same indicator is re-ingested with a different score and a different valid_until
+    const indicatorUpsertInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - upsert score changed',
+      pattern: "[domain-name:value = 'excluded-upsert-changed.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 60, // score changed — guard should NOT block the update
+      valid_from: todayMorning.toISOString(),
+      valid_until: tomorrow.toISOString(),
+    };
+    await createIndicator(connectorUser, indicatorUpsertInput);
+    const indicatorAfterUpsert = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+
+    // THEN the new score is accepted
+    expect(indicatorAfterUpsert.x_opencti_score).toBe(60);
   });
 });
