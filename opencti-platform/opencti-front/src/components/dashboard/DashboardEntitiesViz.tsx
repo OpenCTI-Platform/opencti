@@ -77,7 +77,6 @@ const DashboardEntitiesViz = ({
             variant={undefined} // because calling js component in ts
             height={undefined} // because calling js component in ts
             dataSelection={widget.dataSelection}
-            entityType={undefined} // because calling js component in ts
             parameters={widget.parameters as object} // because calling js component in ts
             popover={popover}
             host={host}

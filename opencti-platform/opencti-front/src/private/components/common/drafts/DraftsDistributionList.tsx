@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, CSSProperties, ReactNode } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,9 +9,12 @@ import WidgetDistributionList from '../../../../components/dashboard/WidgetDistr
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DraftsDistributionListQuery$data } from './__generated__/DraftsDistributionListQuery.graphql';
 
 const draftsDistributionListQuery = graphql`
   query DraftsDistributionListQuery(
@@ -63,6 +66,15 @@ const DraftsDistributionList = ({
   parameters = {},
   popover,
   host,
+}: {
+  variant?: string;
+  height?: CSSProperties['height'];
+  config: DashboardConfig;
+  refreshRate?: number | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
 }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -108,20 +120,20 @@ const DraftsDistributionList = ({
           filters: selection.filters,
           limit: selection.number ?? 10,
         }}
-        render={({ props }) => {
+        render={({ props }: { props: DraftsDistributionListQuery$data }) => {
           if (props && props.draftWorkspacesDistribution && props.draftWorkspacesDistribution.length > 0) {
             const data = props.draftWorkspacesDistribution.map((n) => {
-              let { label } = n;
-              if (isFieldForIdentifier(selection.attribute)) {
-                label = getMainRepresentative(n.entity) || n.label;
-              } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-                label = t_i18n(`entity_${n.label}`);
+              let label = n?.label;
+              if (isFieldForIdentifier(selection.attribute ?? undefined)) {
+                label = getMainRepresentative(n?.entity) || n?.label;
+              } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n?.label}`) !== `entity_${n?.label}`) {
+                label = t_i18n(`entity_${n?.label}`);
               }
               return {
                 label,
-                value: n.value,
-                id: isFieldForIdentifier(selection.attribute) ? n.entity?.id : null,
-                type: n.entity?.entity_type ?? n.label,
+                value: n?.value,
+                id: isFieldForIdentifier(selection.attribute ?? undefined) ? n?.entity?.id : null,
+                type: n?.entity?.entity_type ?? n?.label,
               };
             });
             return <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />;

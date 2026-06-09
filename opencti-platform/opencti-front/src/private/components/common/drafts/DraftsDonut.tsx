@@ -1,19 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import ApexCharts from 'apexcharts';
 import { graphql } from 'react-relay';
+import { useState, useEffect, useRef, CSSProperties, ReactNode } from 'react';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
+import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
-import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DraftsDonutDistributionQuery$data } from './__generated__/DraftsDonutDistributionQuery.graphql';
 
-const draftsHorizontalBarsDistributionQuery = graphql`
-  query DraftsHorizontalBarsDistributionQuery(
+const draftsDonutDistributionQuery = graphql`
+  query DraftsDonutDistributionQuery(
     $field: String!
     $startDate: DateTime
     $endDate: DateTime
@@ -43,11 +46,9 @@ const draftsHorizontalBarsDistributionQuery = graphql`
           entity_type
         }
         ... on Creator {
-          id
           name
         }
         ... on Group {
-          id
           name
         }
       }
@@ -55,7 +56,7 @@ const draftsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const DraftsHorizontalBars = ({
+const DraftsDonut = ({
   variant,
   height,
   config,
@@ -64,10 +65,18 @@ const DraftsHorizontalBars = ({
   parameters = {},
   popover,
   host,
+}: {
+  variant?: string;
+  height?: CSSProperties['height'];
+  config: DashboardConfig;
+  refreshRate?: number | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
 }) => {
   const { t_i18n } = useFormatter();
-  const [chart, setChart] = useState();
-  const { buildWidgetProps } = useDistributionGraphData();
+  const [chart, setChart] = useState<ApexCharts>();
   const { startDate, endDate } = computeStartEndDates(config);
 
   const refreshToken = useDashboardRefreshToken();
@@ -98,7 +107,7 @@ const DraftsHorizontalBars = ({
     return (
       <QueryRenderer
         key={localRefreshKey}
-        query={draftsHorizontalBarsDistributionQuery}
+        query={draftsDonutDistributionQuery}
         variables={{
           field: selection.attribute,
           operation: 'count',
@@ -110,14 +119,13 @@ const DraftsHorizontalBars = ({
           filters: selection.filters,
           limit: selection.number ?? 10,
         }}
-        render={({ props }) => {
+        render={({ props }: { props: DraftsDonutDistributionQuery$data }) => {
           if (props && props.draftWorkspacesDistribution && props.draftWorkspacesDistribution.length > 0) {
-            const { series, redirectionUtils } = buildWidgetProps(props.draftWorkspacesDistribution, selection, 'Number of draft workspaces');
             return (
-              <WidgetHorizontalBars
-                series={series}
-                distributed={parameters.distributed}
-                redirectionUtils={redirectionUtils}
+              <WidgetDonut
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data={props.draftWorkspacesDistribution as any[]}
+                groupBy={selection.attribute || 'entity_type'}
                 onMounted={setChart}
               />
             );
@@ -146,4 +154,4 @@ const DraftsHorizontalBars = ({
   );
 };
 
-export default DraftsHorizontalBars;
+export default DraftsDonut;

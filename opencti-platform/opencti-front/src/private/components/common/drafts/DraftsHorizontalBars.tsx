@@ -1,18 +1,23 @@
+import { useState, useEffect, useRef, CSSProperties, ReactNode } from 'react';
+import ApexCharts from 'apexcharts';
 import { graphql } from 'react-relay';
-import { useState, useEffect, useRef } from 'react';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
+import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DraftsHorizontalBarsDistributionQuery$data } from './__generated__/DraftsHorizontalBarsDistributionQuery.graphql';
 
-const draftsDonutDistributionQuery = graphql`
-  query DraftsDonutDistributionQuery(
+const draftsHorizontalBarsDistributionQuery = graphql`
+  query DraftsHorizontalBarsDistributionQuery(
     $field: String!
     $startDate: DateTime
     $endDate: DateTime
@@ -42,9 +47,11 @@ const draftsDonutDistributionQuery = graphql`
           entity_type
         }
         ... on Creator {
+          id
           name
         }
         ... on Group {
+          id
           name
         }
       }
@@ -52,7 +59,7 @@ const draftsDonutDistributionQuery = graphql`
   }
 `;
 
-const DraftsDonut = ({
+const DraftsHorizontalBars = ({
   variant,
   height,
   config,
@@ -61,9 +68,19 @@ const DraftsDonut = ({
   parameters = {},
   popover,
   host,
+}: {
+  variant?: string;
+  height?: CSSProperties['height'];
+  config: DashboardConfig;
+  refreshRate?: number | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
 }) => {
   const { t_i18n } = useFormatter();
-  const [chart, setChart] = useState();
+  const [chart, setChart] = useState<ApexCharts>();
+  const { buildWidgetProps } = useDistributionGraphData();
   const { startDate, endDate } = computeStartEndDates(config);
 
   const refreshToken = useDashboardRefreshToken();
@@ -94,7 +111,7 @@ const DraftsDonut = ({
     return (
       <QueryRenderer
         key={localRefreshKey}
-        query={draftsDonutDistributionQuery}
+        query={draftsHorizontalBarsDistributionQuery}
         variables={{
           field: selection.attribute,
           operation: 'count',
@@ -106,12 +123,14 @@ const DraftsDonut = ({
           filters: selection.filters,
           limit: selection.number ?? 10,
         }}
-        render={({ props }) => {
+        render={({ props }: { props: DraftsHorizontalBarsDistributionQuery$data }) => {
           if (props && props.draftWorkspacesDistribution && props.draftWorkspacesDistribution.length > 0) {
+            const { series, redirectionUtils } = buildWidgetProps(props.draftWorkspacesDistribution, selection, 'Number of draft workspaces');
             return (
-              <WidgetDonut
-                data={props.draftWorkspacesDistribution}
-                groupBy={selection.attribute}
+              <WidgetHorizontalBars
+                series={series}
+                distributed={parameters.distributed ?? undefined}
+                redirectionUtils={redirectionUtils}
                 onMounted={setChart}
               />
             );
@@ -140,4 +159,4 @@ const DraftsDonut = ({
   );
 };
 
-export default DraftsDonut;
+export default DraftsHorizontalBars;
