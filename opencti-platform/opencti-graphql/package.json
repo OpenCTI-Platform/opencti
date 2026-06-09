@@ -185,7 +185,7 @@
     "@graphql-codegen/introspection": "5.0.2",
     "@graphql-codegen/typescript-resolvers": "5.1.8",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
-    "@rollup/plugin-graphql": "2.0.5",
+    "@rollup/plugin-graphql": "3.0.0",
     "@stylistic/eslint-plugin": "5.10.0",
     "@types/archiver": "7.0.0",
     "@types/bluebird": "3.5.42",
