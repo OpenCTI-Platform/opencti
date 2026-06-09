@@ -1,3 +1,4 @@
+import { CSSProperties } from 'react';
 import { FlagOutlined } from '@mui/icons-material';
 import { Alert, Box, FormControlLabel, Icon, Switch, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
@@ -9,7 +10,7 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, CommentModeType, WorkflowActionType, WorkflowDataType } from './utils';
+import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
 
 const TransitionForm = () => {
   const { t_i18n } = useFormatter();
@@ -21,6 +22,10 @@ const TransitionForm = () => {
   const hasUnshare = values.asyncActions?.some((a) => a.type === WorkflowActionType.unshareFromOrganizations);
   const shareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.shareWithOrganizations) ?? -1;
   const unshareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.unshareFromOrganizations) ?? -1;
+
+  const disabledEEStyle: CSSProperties = !isEnterpriseEdition
+    ? { opacity: 0.5, pointerEvents: 'none' }
+    : {};
 
   const commentMode: CommentModeType = values.comment ?? CommentMode.disabled;
   const enableComments = commentMode !== CommentMode.disabled;
@@ -61,10 +66,10 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
         <Typography variant="h6">
-          {t_i18n('Conditions')} <EEChip />
+          {t_i18n('Conditions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         {values.conditions && (
-          <Box style={{ opacity: isEnterpriseEdition ? 1 : 0.5, pointerEvents: isEnterpriseEdition ? 'auto' : 'none' }}>
+          <Box style={disabledEEStyle}>
             <Field name={WorkflowDataType.conditions} component={WorkflowConditionFilters} />
           </Box>
         )}
@@ -72,7 +77,7 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Organization sharing')} <EEChip />
+          {t_i18n('Organization sharing')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
@@ -126,7 +131,7 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Authorized members')} <EEChip />
+          {t_i18n('Authorized members')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
@@ -140,7 +145,7 @@ const TransitionForm = () => {
             label={t_i18n('Update authorized members')}
           />
           {values.syncActions && (
-            <Box style={{ opacity: isEnterpriseEdition ? 1 : 0.5, pointerEvents: isEnterpriseEdition ? 'auto' : 'none' }}>
+            <Box style={disabledEEStyle}>
               <WorkflowFieldList name={WorkflowDataType.syncActions} />
             </Box>
           )}
@@ -164,7 +169,7 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Comment')} <EEChip />
+          {t_i18n('Comment')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <Alert severity="info" variant="outlined" style={{ opacity: isEnterpriseEdition ? 1 : 0.5 }}>
           {t_i18n('When enabled, users will be prompted to leave a comment when changing the status.')}

@@ -31,7 +31,7 @@ import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
-const EE_ONLY_ACTION_TYPES = new Set(['updateAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
+const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>(['updateAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
 const hasEEActions = (actions?: WorkflowActionConfig[]) => (actions ?? []).some((a) => EE_ONLY_ACTION_TYPES.has(a.type));
 const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) => Array.isArray(conditions?.filters) && conditions.filters.length > 0;
 

@@ -4,7 +4,7 @@ import StatusTemplateField from '@components/common/form/StatusTemplateField';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import WorkflowFieldList from './WorkflowFieldList';
-import { WorkflowActionType, WorkflowDataType } from './utils';
+import { FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
 
@@ -35,7 +35,7 @@ const StatusForm = () => {
       />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('On enter actions')} <EEChip />
+          {t_i18n('On enter actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <FormControlLabel
           control={(
@@ -51,7 +51,7 @@ const StatusForm = () => {
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('On exit actions')} <EEChip />
+          {t_i18n('On exit actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <FormControlLabel
           control={(
