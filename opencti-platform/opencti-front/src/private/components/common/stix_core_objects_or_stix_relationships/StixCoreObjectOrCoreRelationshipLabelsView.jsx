@@ -151,15 +151,17 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       <Label
         action={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IconButton
-              size="small"
-              variant="tertiary"
-              aria-label={t_i18n('Add new labels')}
-              title={t_i18n('Add new labels')}
-              onClick={handleOpenAdd}
-            >
-              <Add fontSize="small" />
-            </IconButton>
+            {!props.isCustomViewReadOnly && (
+              <IconButton
+                size="small"
+                variant="tertiary"
+                aria-label={t_i18n('Add new labels')}
+                title={t_i18n('Add new labels')}
+                onClick={handleOpenAdd}
+              >
+                <Add fontSize="small" />
+              </IconButton>
+            )}
           </Security>
         )}
       >
@@ -173,7 +175,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 key={label.id}
                 label={label.value}
                 color={label.color}
-                onDelete={canUpdateKnowledge ? () => (
+                onDelete={!props.isCustomViewReadOnly && canUpdateKnowledge ? () => (
                   enableReferences
                     ? handleOpenCommitDelete(label)
                     : handleRemoveLabel(label.id)
@@ -203,7 +205,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       key={label.id}
                       label={label.value}
                       color={label.color}
-                      onDelete={canUpdateKnowledge ? () => (
+                      onDelete={!props.isCustomViewReadOnly && canUpdateKnowledge ? () => (
                         enableReferences
                           ? handleOpenCommitDelete(label)
                           : handleRemoveLabel(label.id)

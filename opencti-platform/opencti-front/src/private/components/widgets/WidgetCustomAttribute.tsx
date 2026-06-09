@@ -8,12 +8,14 @@ interface WidgetCustomAttributesProps {
   data: StixCoreObject | null | undefined;
   columns: readonly WidgetColumn[];
   layout?: WidgetColumnsLayout;
+  isCustomViewReadOnly?: boolean;
 }
 
 const WidgetCustomAttributes: FunctionComponent<WidgetCustomAttributesProps> = ({
   data,
   columns,
   layout = '1',
+  isCustomViewReadOnly,
 }) => {
   const col1 = layout === '2' ? columns.filter((_, i) => i % 2 === 0) : columns;
   const col2 = layout === '2' ? columns.filter((_, i) => i % 2 === 1) : [];
@@ -26,6 +28,7 @@ const WidgetCustomAttributes: FunctionComponent<WidgetCustomAttributesProps> = (
             key={column.attribute}
             column={column}
             data={data}
+            isCustomViewReadOnly={isCustomViewReadOnly}
           />
         ))}
       </Grid>
@@ -36,6 +39,7 @@ const WidgetCustomAttributes: FunctionComponent<WidgetCustomAttributesProps> = (
               key={column.attribute}
               column={column}
               data={data}
+              isCustomViewReadOnly={isCustomViewReadOnly}
             />
           ))}
         </Grid>
