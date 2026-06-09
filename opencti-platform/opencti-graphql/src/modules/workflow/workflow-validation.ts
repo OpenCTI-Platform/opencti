@@ -165,7 +165,8 @@ export const validateWorkflowDefinitionData = async (
     stateIdsToCheck.add(initialState);
   }
 
-  const events = new Set<string>();
+  // Track (fromState, event) pairs to prevent duplicate transitions from the same source.
+  const fromEventPairs = new Set<string>();
   let hasValidateDraft = false;
   const statesWithIncomingTransition = new Set<string>();
 
@@ -176,13 +177,18 @@ export const validateWorkflowDefinitionData = async (
         message: `Transition ${transition.event} should be linked to at least one status`,
       });
     }
-    if (events.has(transition.event)) {
-      errors.push({
-        type: 'DUPLICATE_TRANSITION_EVENT',
-        message: `Transition '${transition.event}' referenced in multiple transitions`,
-      });
+
+    const fromStatesForCheck = Array.isArray(transition.from) ? transition.from : [transition.from];
+    for (const fromState of fromStatesForCheck) {
+      const key = `${fromState}::${transition.event}`;
+      if (fromEventPairs.has(key)) {
+        errors.push({
+          type: 'DUPLICATE_TRANSITION_EVENT',
+          message: `Transition '${transition.event}' referenced in multiple transitions`,
+        });
+      }
+      fromEventPairs.add(key);
     }
-    events.add(transition.event);
 
     const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
     for (const fromState of fromStates) {

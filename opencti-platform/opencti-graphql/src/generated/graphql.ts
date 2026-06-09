@@ -38021,7 +38021,7 @@ export type WorkflowSerializedTransition = {
   comment?: Maybe<Scalars['String']['output']>;
   conditions?: Maybe<Scalars['JSON']['output']>;
   event: Scalars['String']['output'];
-  from: Scalars['String']['output'];
+  from: Array<Scalars['String']['output']>;
   syncActions?: Maybe<Array<WorkflowActionConfig>>;
   to: Scalars['String']['output'];
 };
@@ -52849,7 +52849,7 @@ export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType 
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   conditions?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  from?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   syncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;

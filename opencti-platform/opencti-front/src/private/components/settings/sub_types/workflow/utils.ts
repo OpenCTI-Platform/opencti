@@ -131,31 +131,29 @@ const transformToWorkflowDefinition = (
       // Find ALL outgoing edges (This Transition -> To Status)
       const outgoingEdges = edges.filter((e) => e.source === node.id);
 
-      // Create a transition entry for every possible path through this node
-      // This handles: Multiple Sources -> 1 Transition -> Multiple Targets
-      if (outgoingEdges.length > 0) {
-        return incomingEdges.flatMap((inEdge) =>
-          outgoingEdges.map((outEdge) => ({
-            from: nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id,
-            to: nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null,
-            event,
-            conditions,
-            comment,
-            asyncActions: formatActions(asyncActions),
-            syncActions: formatActions(syncActions),
-          })),
-        );
-      }
-      // Multiple Sources -> 1 Transition -> (no target)
-      return incomingEdges.map((inEdge) => ({
-        from: nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id,
-        to: null as string | null,
+      // Collect all source state IDs
+      const fromStates = incomingEdges
+        .map((inEdge) => nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id)
+        .filter(Boolean) as string[];
+
+      const actionPayload = {
         event,
         conditions,
-        comment,
         asyncActions: formatActions(asyncActions),
         syncActions: formatActions(syncActions),
-      }));
+        comment,
+      };
+
+      // Fan out: one SerializedTransition per (from, to) pair.
+      // SerializedTransition.from is always a single string — never an array —
+      // so the backend's getTransitions(currentState) strict-equality check works correctly.
+      const toStates = outgoingEdges.length > 0
+        ? outgoingEdges.map((outEdge) => nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null)
+        : [null as string | null];
+
+      return fromStates.flatMap((from) =>
+        toStates.map((to) => ({ ...actionPayload, from, to })),
+      );
     }
     return [];
   });

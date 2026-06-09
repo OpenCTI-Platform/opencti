@@ -120,7 +120,7 @@ describe('Workflow Validation', () => {
       initialState: 'existing-state',
       transitions: [
         { from: 'a', to: 'b', event: 'test' },
-        { from: 'b', to: 'c', event: 'test' },
+        { from: 'a', to: 'c', event: 'test' }, // Change 'b' to 'a' to duplicate from the same source
       ],
     };
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Report');
@@ -649,7 +649,7 @@ describe('Workflow Validation', () => {
       ],
     };
     await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'DraftWorkspace'))
-      .rejects.toThrow("not allowed in syncActions");
+      .rejects.toThrow('not allowed in syncActions');
   });
 
   it('should detect validateDraft in syncActions for DraftWorkspace requirement', async () => {
