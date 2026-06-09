@@ -5667,7 +5667,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-runtime@npm:*, @types/relay-runtime@npm:20.1.1":
+"@types/relay-runtime@npm:*":
   version: 20.1.1
   resolution: "@types/relay-runtime@npm:20.1.1"
   checksum: 10c0/37bb94d5bf2acb6d524bb7ba8e644ff81dba452e37385b2a037752c3ac024adaebe7f69e92130a2ece092b21526650ec4657f5d37307af89b5a1b43e11768b0d
@@ -13176,7 +13176,6 @@ __metadata:
     "@types/react-relay": "npm:18.2.1"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-transition-group": "npm:4.4.12"
-    "@types/relay-runtime": "npm:20.1.1"
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:6.0.2"
     "@vitest/coverage-v8": "npm:4.1.8"
