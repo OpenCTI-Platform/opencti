@@ -12,7 +12,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Security from '../../../utils/Security';
-import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
@@ -32,7 +32,7 @@ const Forms = () => {
   setTitle(t_i18n('Form intakes | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const hasIngestionCapability = useGranted([INGESTION_SETINGESTIONS]);
-  const hasKnowledgeUpdateCapability = useGranted([KNOWLEDGE_KNUPDATE]);
+  const hasKnowledgeUpdateCapability = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT], false, { capabilitiesInDraft: [KNOWLEDGE_KNUPDATE] });
 
   const {
     viewStorage,

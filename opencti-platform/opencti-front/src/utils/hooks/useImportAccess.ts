@@ -1,4 +1,4 @@
-import useGranted, { getCapabilitiesName, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from './useGranted';
+import useGranted, { getCapabilitiesName, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from './useGranted';
 import useAuth from './useAuth';
 
 const useImportAccess = () => {
@@ -12,8 +12,15 @@ const useImportAccess = () => {
     capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT],
   });
 
-  // Forced to create Draft on import if they have no import capability in base but have it in draft
-  const isForcedImportToDraft = !hasImportBaseCapability && hasAnyImportCapability;
+  // Has create/update knowledge only in draft (not in main)
+  const hasKnowledgeUpdateInMain = useGranted([KNOWLEDGE_KNUPDATE]);
+  const hasKnowledgeUpdateInDraftOnly = !hasKnowledgeUpdateInMain && useGranted([], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNUPDATE],
+  });
+
+  // Forced to create Draft on import if they have no import capability in base but have it in draft,
+  // or if they only have KNOWLEDGE_KNUPDATE in draft (not in main).
+  const isForcedImportToDraft = (!hasImportBaseCapability && hasAnyImportCapability) || hasKnowledgeUpdateInDraftOnly;
 
   // Only access to Import Draft Tab
   const userCapabilities = getCapabilitiesName(me.capabilities);
