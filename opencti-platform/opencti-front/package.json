@@ -177,7 +177,7 @@
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "6.0.2",
     "@vitest/coverage-v8": "4.1.8",
-    "babel-plugin-relay": "20.1.1",
+    "babel-plugin-relay": "21.0.1",
     "chokidar": "5.0.0",
     "compression": "1.8.1",
     "esbuild": "0.28.0",
