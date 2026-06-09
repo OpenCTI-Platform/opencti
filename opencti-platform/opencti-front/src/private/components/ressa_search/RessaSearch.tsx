@@ -18,7 +18,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Checkbox,
   Select,
   MenuItem,
   FormControl,
@@ -28,30 +27,15 @@ import {
   DialogActions,
   TextareaAutosize,
   Alert,
-  CircularProgress,
 } from '@mui/material';
-import {
-  Search,
-  Save,
-  History,
-  ErrorOutline,
-  ArrowBack,
-  FilterList,
-  DescriptionOutlined,
-  Close,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Settings,
-  KeyboardArrowLeft,
-} from '@mui/icons-material';
+import { Save, History, ErrorOutline, ArrowBack, DescriptionOutlined, Close, ChevronLeft, ChevronRight, KeyboardArrowLeft } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemEntityType from '../../../components/ItemEntityType';
 import { resolveLink } from '../../../utils/Entity';
 import SearchListPopover from './SearchListPopover';
 import FilterPopover from './FilterPopover';
-import FilterSidebar, { FilterGroup } from './FilterSidebar';
+import { FilterGroup } from './FilterSidebar';
 import { RawQueryResponse } from './mockRessaSearchApi';
 import { rawQueryApi } from './ressaSearchApi';
 import { clearRessaSearchSession, loadRessaSearchSession, RESSA_SEARCH_QUERY_PARAM, saveRessaSearchSession } from './ressaSearchSession';
@@ -160,7 +144,7 @@ const RessaSearch = () => {
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  // const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
@@ -174,8 +158,6 @@ const RessaSearch = () => {
   const hasResults = (rawResponse?.stats?.primaryDocumentCount ?? 0) > 0;
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
-  const saveIconRef = useRef<HTMLButtonElement>(null);
-  const filterIconRef = useRef<HTMLButtonElement>(null);
 
   const observedDataUrlCredentialsQuery
     = 'type="observed-data" | spath path=objects{} output=obj | mvexpand obj | spath input=obj path=type output=obj_type | search obj_type="url" | spath input=obj path=extensions{}.login output=login | spath input=obj path=extensions{}.password output=password | spath input=obj path=extensions{}.cookie output=cookie | search login=true AND password=true AND cookie=true | table obj.value login password cookie';
@@ -206,14 +188,11 @@ const RessaSearch = () => {
     if (!rawResponse) return [];
     return rawResponse.primaryDocuments.map((doc) => {
       const src = (doc.source ?? {}) as Record<string, unknown>;
-      const name = (typeof src.name === 'string' ? src.name : undefined)
-        || (typeof src.value === 'string' ? src.value : undefined);
+      const name = (typeof src.name === 'string' ? src.name : undefined) || (typeof src.value === 'string' ? src.value : undefined);
       const title = name ?? doc.standardId ?? doc.internalId;
       const createdAt = typeof src.created_at === 'string' ? src.created_at : undefined;
       const updatedAt = typeof src.updated_at === 'string' ? src.updated_at : undefined;
-      const labels = Array.isArray(src.labels)
-        ? (src.labels.filter((x) => typeof x === 'string') as string[])
-        : [];
+      const labels = Array.isArray(src.labels) ? (src.labels.filter((x) => typeof x === 'string') as string[]) : [];
       const entityType = typeof src.entity_type === 'string' ? src.entity_type : doc.entityType;
 
       return {
@@ -264,61 +243,64 @@ const RessaSearch = () => {
     },
   ];
 
-  const runSearch = useCallback(async (query: string) => {
-    const trimmed = query.trim();
-    console.log('trimmed query', trimmed);
-    if (!trimmed || isSearching) return;
+  const runSearch = useCallback(
+    async (query: string) => {
+      const trimmed = query.trim();
+      console.log('trimmed query', trimmed);
+      if (!trimmed || isSearching) return;
 
-    hasRestoredFromUrlRef.current = true;
-    setHasSearched(true);
-    setSearchError(null);
-    setIsSearching(true);
-    setSelectedRows([]);
-    setPage(0);
+      hasRestoredFromUrlRef.current = true;
+      setHasSearched(true);
+      setSearchError(null);
+      setIsSearching(true);
+      // setSelectedRows([]);
+      setPage(0);
 
-    const filters = parseSearchQuery(trimmed);
-    setExtractedFilters(filters);
-    setSearchValue(trimmed);
-    setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
+      const filters = parseSearchQuery(trimmed);
+      setExtractedFilters(filters);
+      setSearchValue(trimmed);
+      setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
 
-    try {
-      console.log('search started');
+      try {
+        console.log('search started');
 
-      const request = {
-        query: trimmed,
-        maxRelationDepth: 200,
-        maxPrimaryDocuments: 200,
-        maxRelatedEntities: 200,
-        maxRelationships: 200,
-        maxRelatedDocuments: 200,
-        includeRelationshipDocuments: true,
-        includeNestedObjects: true,
-        includeMetadataAndHistory: true,
-        multilineOutput: true,
-      } as const;
+        const request = {
+          query: trimmed,
+          maxRelationDepth: 200,
+          maxPrimaryDocuments: 200,
+          maxRelatedEntities: 200,
+          maxRelationships: 200,
+          maxRelatedDocuments: 200,
+          includeRelationshipDocuments: true,
+          includeNestedObjects: true,
+          includeMetadataAndHistory: true,
+          multilineOutput: true,
+        } as const;
 
-      const response = await rawQueryApi(request);
-      console.log('search response received');
-      setRawResponse(response);
-      saveRessaSearchSession({
-        searchValue: trimmed,
-        rawResponse: response,
-        extractedFilters: filters,
-        page: 0,
-        rowsPerPage,
-      });
-    } catch (e) {
-      console.log('search error', e);
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      setRawResponse(null);
-      setSearchError(message);
-      clearRessaSearchSession();
-    } finally {
-      console.log('search finished');
-      setIsSearching(false);
-      console.log('search finished');
-    }
-  }, [isSearching, rowsPerPage, setSearchParams]);
+        const response = await rawQueryApi(request);
+        console.log('search response received');
+        setRawResponse(response);
+        saveRessaSearchSession({
+          searchValue: trimmed,
+          rawResponse: response,
+          extractedFilters: filters,
+          page: 0,
+          rowsPerPage,
+        });
+      } catch (e) {
+        console.log('search error', e);
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        setRawResponse(null);
+        setSearchError(message);
+        clearRessaSearchSession();
+      } finally {
+        console.log('search finished');
+        setIsSearching(false);
+        console.log('search finished');
+      }
+    },
+    [isSearching, rowsPerPage, setSearchParams],
+  );
 
   const handleSearch = () => {
     runSearch(searchValue);
@@ -334,7 +316,7 @@ const RessaSearch = () => {
     setRawResponse(null);
     setSearchError(null);
     setPage(0);
-    setSelectedRows([]);
+    // setSelectedRows([]);
   }, [setSearchParams]);
 
   useEffect(() => {
@@ -375,12 +357,12 @@ const RessaSearch = () => {
     }
   };
 
-  const handleSaveIconClick = () => {
-    if (inputRef.current) {
-      setSaveAnchorEl(inputRef.current);
-      setPopoverWidth(inputRef.current.offsetWidth);
-    }
-  };
+  // const handleSaveIconClick = () => {
+  //   if (inputRef.current) {
+  //     setSaveAnchorEl(inputRef.current);
+  //     setPopoverWidth(inputRef.current.offsetWidth);
+  //   }
+  // };
 
   const handleCloseHistoryPopover = () => {
     setHistoryAnchorEl(null);
@@ -390,12 +372,12 @@ const RessaSearch = () => {
     setSaveAnchorEl(null);
   };
 
-  const handleFilterIconClick = () => {
-    if (inputRef.current) {
-      setFilterAnchorEl(inputRef.current);
-      setPopoverWidth(inputRef.current.offsetWidth);
-    }
-  };
+  // const handleFilterIconClick = () => {
+  //   if (inputRef.current) {
+  //     setFilterAnchorEl(inputRef.current);
+  //     setPopoverWidth(inputRef.current.offsetWidth);
+  //   }
+  // };
 
   const handleCloseFilterPopover = () => {
     setFilterAnchorEl(null);
@@ -486,7 +468,6 @@ const RessaSearch = () => {
     <>
       {/* <Breadcrumbs elements={[{ label: t_i18n('Ressa Search') }]} /> */}
       <Box sx={{ padding: 0 }}>
-
         {/* Global Search Title */}
         <Typography
           variant="h4"
@@ -537,11 +518,7 @@ const RessaSearch = () => {
                   <InputAdornment position="start">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Tooltip title={t_i18n('History')}>
-                        <IconButton
-                          size="small"
-                          onClick={handleSearchIconClick}
-                          sx={{ padding: 0.5 }}
-                        >
+                        <IconButton size="small" onClick={handleSearchIconClick} sx={{ padding: 0.5 }}>
                           <History fontSize="small" sx={{ color: 'text.secondary' }} />
                         </IconButton>
                       </Tooltip>
@@ -631,11 +608,7 @@ const RessaSearch = () => {
                 ),
                 endAdornment: searchValue && (
                   <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={clearSearchState}
-                      sx={{ padding: 0.5 }}
-                    >
+                    <IconButton size="small" onClick={clearSearchState} sx={{ padding: 0.5 }}>
                       <Close fontSize="small" sx={{ color: 'text.secondary' }} />
                     </IconButton>
                   </InputAdornment>
@@ -934,8 +907,8 @@ const RessaSearch = () => {
                       padding: 2,
                     }}
                   > */}
-                    {/* Results Count */}
-                    {/* <Typography
+                  {/* Results Count */}
+                  {/* <Typography
                       variant="h6"
                       color="text.secondary"
                       sx={{
@@ -961,8 +934,8 @@ const RessaSearch = () => {
                       </Box>
                     </Typography> */}
 
-                    {/* Save Search Button */}
-                    {/* <Button
+                  {/* Save Search Button */}
+                  {/* <Button
                       variant="outlined"
                       startIcon={<Save />}
                       onClick={handleSave}
@@ -1007,7 +980,8 @@ const RessaSearch = () => {
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body2" color="text.secondary">
-                              {t_i18n('Display')} {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalResults)} {t_i18n('of')} {totalResults}
+                              {t_i18n('Display')} {page * rowsPerPage + 1}-
+                              {Math.min((page + 1) * rowsPerPage, totalResults)} {t_i18n('of')} {totalResults}
                             </Typography>
                             <Divider
                               orientation="vertical"
@@ -1067,10 +1041,7 @@ const RessaSearch = () => {
                               return pages.map((p, idx) => {
                                 if (p === 'ellipsis') {
                                   return (
-                                    <Box
-                                      key={`ellipsis-${idx}`}
-                                      sx={{ px: 0.5, color: 'text.secondary' }}
-                                    >
+                                    <Box key={`ellipsis-${idx}`} sx={{ px: 0.5, color: 'text.secondary' }}>
                                       …
                                     </Box>
                                   );
@@ -1197,7 +1168,9 @@ const RessaSearch = () => {
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <ItemIcon type={result.entityType} size="small" />
-                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{result.title}</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                              {result.title}
+                                            </Typography>
                                           </Box>
                                           <Typography variant="caption" color="text.secondary">
                                             {result.standardId}
@@ -1264,7 +1237,9 @@ const RessaSearch = () => {
                                         </Box>
                                       </TableCell>
                                       <TableCell>{result.publicationDate ? fd(result.publicationDate) : ''}</TableCell>
-                                      <TableCell>{result.registrationDate ? fd(result.registrationDate) : ''}</TableCell>
+                                      <TableCell>
+                                        {result.registrationDate ? fd(result.registrationDate) : ''}
+                                      </TableCell>
                                       <TableCell>
                                         <KeyboardArrowLeft sx={{ color: 'text.secondary' }} />
                                       </TableCell>
@@ -1336,20 +1311,11 @@ const RessaSearch = () => {
       </Box>
 
       {/* Save Search Dialog */}
-      <Dialog
-        open={saveDialogOpen}
-        onClose={handleCloseSaveDialog}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={saveDialogOpen} onClose={handleCloseSaveDialog} maxWidth="md" fullWidth>
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="h6">{t_i18n('Save Search')}</Typography>
-            <IconButton
-              size="small"
-              onClick={handleCloseSaveDialog}
-              sx={{ padding: 0.5 }}
-            >
+            <IconButton size="small" onClick={handleCloseSaveDialog} sx={{ padding: 0.5 }}>
               <Close />
             </IconButton>
           </Box>
@@ -1369,7 +1335,10 @@ const RessaSearch = () => {
             {/* Query Field */}
             <Box>
               <Typography variant="body2" sx={{ marginBottom: 1, fontWeight: 500 }}>
-                {t_i18n('Query')} <Typography component="span" sx={{ color: 'error.main' }}>*</Typography>
+                {t_i18n('Query')}{' '}
+                <Typography component="span" sx={{ color: 'error.main' }}>
+                  *
+                </Typography>
               </Typography>
               <Box
                 sx={{
