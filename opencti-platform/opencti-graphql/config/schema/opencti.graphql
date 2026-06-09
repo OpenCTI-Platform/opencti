@@ -1341,6 +1341,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_consent_confirm_text: String
   platform_banner_text: String
   platform_banner_level: String
+  platform_no_access_message: String
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
   platform_whitemark: Boolean
