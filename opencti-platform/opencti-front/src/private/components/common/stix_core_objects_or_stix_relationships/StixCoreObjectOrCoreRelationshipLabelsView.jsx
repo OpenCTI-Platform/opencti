@@ -4,8 +4,6 @@ import Tag from '@common/tag/Tag';
 import { Add } from '@mui/icons-material';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import { Box, Stack } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
@@ -254,39 +252,37 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
             slots={{ transition: Transition }}
             onClose={handleCloseAdd}
             fullWidth={true}
-            style={{ paddingTop: 0 }}
+            title={t_i18n('Add new labels')}
+            contentProps={{ sx: { overflowY: 'hidden' }, style: { padding: 24 } }}
           >
-            <DialogTitle style={{ padding: '0 0 24px 0' }}>{t_i18n('Add new labels')}</DialogTitle>
-            <DialogContent style={{ overflowY: 'hidden', padding: 0 }}>
-              <Form>
-                <Field
-                  component={AutocompleteField}
-                  name="new_labels"
-                  multiple={true}
-                  textfieldprops={{
-                    variant: 'standard',
-                    label: t_i18n('Labels'),
-                    onFocus: searchLabels,
-                  }}
-                  noOptionsText={t_i18n('No available options')}
-                  options={stateLabels}
-                  onInputChange={searchLabels}
-                  openCreate={isLabelManager ? handleOpenCreate : null}
-                  renderOption={(optionsProps, option) => (
-                    <li {...optionsProps}>
-                      <div
-                        className={classes.icon}
-                        style={{ color: option.color }}
-                      >
-                        <MdiLabel />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
-                  )}
-                  classes={{ clearIndicator: classes.autoCompleteIndicator }}
-                />
-              </Form>
-            </DialogContent>
+            <Form>
+              <Field
+                component={AutocompleteField}
+                name="new_labels"
+                multiple={true}
+                textfieldprops={{
+                  variant: 'standard',
+                  label: t_i18n('Labels'),
+                  onFocus: searchLabels,
+                }}
+                noOptionsText={t_i18n('No available options')}
+                options={stateLabels}
+                onInputChange={searchLabels}
+                openCreate={isLabelManager ? handleOpenCreate : null}
+                renderOption={(optionsProps, option) => (
+                  <li {...optionsProps}>
+                    <div
+                      className={classes.icon}
+                      style={{ color: option.color }}
+                    >
+                      <MdiLabel />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </li>
+                )}
+                classes={{ clearIndicator: classes.autoCompleteIndicator }}
+              />
+            </Form>
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Close')}
