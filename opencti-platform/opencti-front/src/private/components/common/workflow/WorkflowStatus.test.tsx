@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import WorkflowStatus, { WorkflowTransitions } from './WorkflowStatus';
 import testRender from '../../../../utils/tests/test-render';
-import type { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
+import type { workflowStatus_data$key } from '@components/common/workflow/__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 // ---------------------------------------------------------------------------
@@ -20,21 +20,6 @@ vi.mock('react-relay', async (importOriginal) => {
     useMutation: () => [mockCommit, false] as const,
   };
 });
-
-vi.mock('../../drafts/useSwitchDraft', () => ({
-  default: () => ({ exitDraft: vi.fn() }),
-}));
-
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>();
-  return { ...actual, useNavigate: () => vi.fn() };
-});
-
-vi.mock('../../../../utils/hooks/useGranted', () => ({
-  default: () => false,
-  isBypassUser: () => false,
-  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
-}));
 
 vi.mock('../../../../relay/environment', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../relay/environment')>();
@@ -106,6 +91,41 @@ describe('WorkflowStatus', () => {
     });
     testRender(<WorkflowStatus data={draft} />);
     expect(document.querySelector('[data-testid="CommentOutlinedIcon"]')).not.toBeNull();
+  });
+
+  it('opens a popover with the comment text when the comment icon is clicked', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: { comment: 'Looks good' },
+        allowedTransitions: [],
+      },
+    });
+    const { user } = testRender(<WorkflowStatus data={draft} />);
+    const iconButton = document.querySelector('[aria-label="View last comment"]') as HTMLElement;
+    await user.click(iconButton);
+    expect(await screen.findByText('Looks good')).toBeDefined();
+  });
+
+  it('closes the popover when clicking outside', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: { comment: 'Looks good' },
+        allowedTransitions: [],
+      },
+    });
+    const { user } = testRender(<WorkflowStatus data={draft} />);
+    const iconButton = document.querySelector('[aria-label="View last comment"]') as HTMLElement;
+    await user.click(iconButton);
+    await screen.findByText('Looks good');
+    // Click outside to close
+    await user.click(document.body);
+    await waitFor(() => expect(screen.queryByText('Looks good')).toBeNull());
   });
 });
 
@@ -317,7 +337,7 @@ describe('WorkflowTransitions', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     const confirmButton = await screen.findByText('Confirm');
-    // Click the Cancel button that is in the same dialog as the Confirm button
+    // Click the Cancel button in the same dialog as the Confirm button
     const cancelButton = confirmButton.closest('[role="dialog"]')
       ? confirmButton.closest('[role="dialog"]')!.querySelector('button[type="button"]')
       : screen.getAllByText('Cancel')[0];
