@@ -1,7 +1,7 @@
 import { memo, ReactNode } from 'react';
 import WidgetText from './WidgetText';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
-import StixCoreObjectsCustomAttributes from '@components/widgets/StixCoreObjectsCustomAttributes';
+import StixCoreObjectsCustomAttributes from '@components/common/stix_core_objects/StixCoreObjectsCustomAttributes';
 import type { DashboardConfig } from './dashboard-types';
 import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import useHelper from '../../utils/hooks/useHelper';

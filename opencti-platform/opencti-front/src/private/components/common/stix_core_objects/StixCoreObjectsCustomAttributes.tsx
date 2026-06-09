@@ -1,16 +1,15 @@
 import React, { useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { WidgetColumn, WidgetHost, type WidgetParameters } from '../../../utils/widget/widget';
-import { useFormatter } from '../../../components/i18n';
-import useDashboardViz from '../../../components/dashboard/useDashboardViz';
+import { WidgetColumn, WidgetDataSelection, WidgetHost, type WidgetParameters } from '../../../../utils/widget/widget';
+import { useFormatter } from '../../../../components/i18n';
 import { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetNoHostEntity from '../../../components/dashboard/WidgetNoHostEntity';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetCustomAttributes from '@components/widgets/WidgetCustomAttribute';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import Loader, { LoaderVariant } from '../../../components/Loader';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { StixCoreObjectsCustomAttributesQuery } from '@components/widgets/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { getCustomAttributesColumns } from '@components/widgets/WidgetListsDefaultColumns';
 
 export const stixCoreObjectsCustomAttributesQuery = graphql`
@@ -73,12 +72,14 @@ interface StixCoreObjectsCustomAttributesContentProps {
   queryRef: PreloadedQuery<StixCoreObjectsCustomAttributesQuery>;
   columns: readonly WidgetColumn[];
   layout: WidgetColumnsLayout;
+  isCustomViewReadOnly?: boolean;
 }
 
 const StixCoreObjectsCustomAttributesContent = ({
   queryRef,
   columns,
   layout,
+  isCustomViewReadOnly,
 }: StixCoreObjectsCustomAttributesContentProps) => {
   const data = usePreloadedQuery(stixCoreObjectsCustomAttributesQuery, queryRef);
 
@@ -89,6 +90,7 @@ const StixCoreObjectsCustomAttributesContent = ({
       data={data.stixCoreObject}
       columns={columns}
       layout={layout}
+      isCustomViewReadOnly={isCustomViewReadOnly}
     />
   );
 };
@@ -117,14 +119,12 @@ const StixCoreObjectsCustomAttributes = ({
 }: StixCoreObjectsCustomAttributesProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef(null);
+  const isCustomViewReadOnly = host?.kind === 'custom-view';
+  const isPreviewMode = isCustomViewReadOnly
+    && Boolean(host.customViewTargetEntityId)
+    && host.previewMode;
 
-  const { resolvedDataSelection, isPreviewMode } = useDashboardViz({
-    perspective: 'entities',
-    dataSelection,
-    host,
-  });
-
-  const selection = resolvedDataSelection[0];
+  const selection = (dataSelection as WidgetDataSelection[])[0];
   const layout: WidgetColumnsLayout = (selection.layout as WidgetColumnsLayout) ?? '1';
 
   const resolvedEntityId = host?.kind === 'custom-view' ? host.customViewTargetEntityId : undefined;
@@ -158,6 +158,7 @@ const StixCoreObjectsCustomAttributes = ({
                     queryRef={queryRef}
                     columns={columns}
                     layout={layout}
+                    isCustomViewReadOnly={isCustomViewReadOnly}
                   />
                 </React.Suspense>
               )
