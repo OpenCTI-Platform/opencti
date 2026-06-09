@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -28,7 +28,20 @@ import {
   TextareaAutosize,
   Alert,
 } from '@mui/material';
-import { Save, History, ErrorOutline, ArrowBack, DescriptionOutlined, Close, ChevronLeft, ChevronRight, KeyboardArrowLeft } from '@mui/icons-material';
+import {
+  Save,
+  History,
+  ErrorOutline,
+  ArrowBack,
+  DescriptionOutlined,
+  Close,
+  ChevronLeft,
+  ChevronRight,
+  KeyboardArrowLeft,
+  Add,
+  PushPin,
+  PushPinOutlined,
+} from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemEntityType from '../../../components/ItemEntityType';
@@ -38,7 +51,17 @@ import FilterPopover from './FilterPopover';
 import { FilterGroup } from './FilterSidebar';
 import { RawQueryResponse } from './mockRessaSearchApi';
 import { rawQueryApi } from './ressaSearchApi';
-import { clearRessaSearchSession, loadRessaSearchSession, RESSA_SEARCH_QUERY_PARAM, saveRessaSearchSession } from './ressaSearchSession';
+import { clearRessaSearchSession, RESSA_SEARCH_QUERY_PARAM, saveRessaSearchSession } from './ressaSearchSession';
+import {
+  loadWorkspace,
+  saveWorkspace,
+  createEmptyTab,
+  sortWorkspaceTabs,
+  normalizeWorkspace,
+  getActiveTab,
+  applyInitialUrlQuery,
+  type SearchWorkspace,
+} from './ressaSearchWorkspace';
 
 interface SearchExample {
   title: string;
@@ -134,12 +157,122 @@ const parseSearchQuery = (query: string): FilterGroup[] => {
   });
 };
 
+const getTabTitle = (query: string, newSearchLabel: string): string => {
+  const trimmed = query.trim();
+  if (!trimmed) return newSearchLabel;
+  return trimmed.slice(0, 10);
+};
+
+const getPinnedTabLabel = (query: string): string => {
+  const trimmed = query.trim();
+  if (!trimmed) return '•';
+  return trimmed.slice(0, 1).toUpperCase();
+};
+
+const readInitialUrlQuery = (): string => {
+  if (typeof window === 'undefined') return '';
+  try {
+    const q = new URLSearchParams(window.location.search).get(RESSA_SEARCH_QUERY_PARAM);
+    return q !== null ? q.trim() : '';
+  } catch {
+    return '';
+  }
+};
+
 const RessaSearch = () => {
   const { t_i18n, fd } = useFormatter();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const hasRestoredFromUrlRef = useRef(false);
-  const initialQueryRef = useRef(searchParams.get(RESSA_SEARCH_QUERY_PARAM));
-  const [searchValue, setSearchValue] = useState('');
+  const isInternalUrlUpdateRef = useRef(false);
+  const skipNextExternalUrlSyncRef = useRef(true);
+  const [workspace, setWorkspace] = useState<SearchWorkspace>(() => (
+    applyInitialUrlQuery(loadWorkspace(), readInitialUrlQuery())
+  ));
+  const activeTab = useMemo(() => getActiveTab(workspace), [workspace]);
+  const activeTabIdRef = useRef(activeTab.id);
+  const searchGenerationRef = useRef(0);
+  activeTabIdRef.current = activeTab.id;
+
+  const setWorkspaceSafe = useCallback((
+    updater: SearchWorkspace | ((prev: SearchWorkspace) => SearchWorkspace),
+  ) => {
+    setWorkspace((prev) => normalizeWorkspace(
+      typeof updater === 'function' ? updater(prev) : updater,
+    ));
+  }, []);
+
+  const persistWorkspace = useCallback((next: SearchWorkspace) => {
+    const normalized = normalizeWorkspace(next);
+    saveWorkspace(normalized);
+    return normalized;
+  }, []);
+
+  useEffect(() => {
+    setWorkspace((prev) => normalizeWorkspace(prev));
+  }, []);
+
+  const updateActiveTabQuery = useCallback((query: string) => {
+    setWorkspaceSafe((prev) => ({
+      ...prev,
+      tabs: prev.tabs.map((tab) => (
+        tab.id === prev.activeTabId ? { ...tab, query } : tab
+      )),
+    }));
+  }, [setWorkspaceSafe]);
+  const switchTab = useCallback((tabId: string) => {
+    setWorkspaceSafe((prev) => {
+      if (prev.activeTabId === tabId || !prev.tabs.some((tab) => tab.id === tabId)) {
+        return prev;
+      }
+      return persistWorkspace({ ...prev, activeTabId: tabId });
+    });
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const addTab = useCallback(() => {
+    const tab = createEmptyTab();
+    setWorkspaceSafe((prev) => persistWorkspace({
+      activeTabId: tab.id,
+      tabs: [...prev.tabs, tab],
+    }));
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const closeTab = useCallback((tabId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setWorkspaceSafe((prev) => {
+      if (prev.tabs.length <= 1) return prev;
+
+      const tabIndex = prev.tabs.findIndex((tab) => tab.id === tabId);
+      if (tabIndex === -1) return prev;
+
+      const tabs = prev.tabs.filter((tab) => tab.id !== tabId);
+      let activeTabId = prev.activeTabId;
+
+      if (prev.activeTabId === tabId) {
+        const nearestIndex = tabIndex < prev.tabs.length - 1 ? tabIndex : tabIndex - 1;
+        activeTabId = tabs[nearestIndex]?.id ?? tabs[0].id;
+      }
+
+      return persistWorkspace({ activeTabId, tabs });
+    });
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const togglePinTab = useCallback((tabId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setWorkspaceSafe((prev) => {
+      const tabs = sortWorkspaceTabs(
+        prev.tabs.map((tab) => (
+          tab.id === tabId ? { ...tab, pinned: !tab.pinned } : tab
+        )),
+      );
+      return persistWorkspace({ ...prev, tabs });
+    });
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const syncUrlWithQuery = useCallback((query: string) => {
+    const trimmed = query.trim();
+    isInternalUrlUpdateRef.current = true;
+    if (trimmed.length > 0) {
+      setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
+      return;
+    }
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
   const [hasSearched, setHasSearched] = useState(false);
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
   const [page, setPage] = useState(0);
@@ -155,6 +288,16 @@ const RessaSearch = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<RawQueryResponse | null>(null);
+  const clearEmptySearchState = useCallback(() => {
+    searchGenerationRef.current += 1;
+    setHasSearched(false);
+    setExtractedFilters([]);
+    setRawResponse(null);
+    setSearchError(null);
+    setPage(0);
+    setIsSearching(false);
+    clearRessaSearchSession();
+  }, []);
   const hasResults = (rawResponse?.stats?.primaryDocumentCount ?? 0) > 0;
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -244,26 +387,37 @@ const RessaSearch = () => {
   ];
 
   const runSearch = useCallback(
-    async (query: string) => {
+    async (
+      query: string,
+      options?: {
+        tabId?: string;
+        skipQueryUpdate?: boolean;
+        skipUrlSync?: boolean;
+      },
+    ) => {
       const trimmed = query.trim();
-      console.log('trimmed query', trimmed);
-      if (!trimmed || isSearching) return;
+      if (!trimmed) return;
 
-      hasRestoredFromUrlRef.current = true;
+      const tabId = options?.tabId ?? activeTabIdRef.current;
+      const requestId = ++searchGenerationRef.current;
+
       setHasSearched(true);
       setSearchError(null);
       setIsSearching(true);
-      // setSelectedRows([]);
       setPage(0);
+      setRawResponse(null);
 
       const filters = parseSearchQuery(trimmed);
       setExtractedFilters(filters);
-      setSearchValue(trimmed);
-      setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
+
+      if (!options?.skipQueryUpdate) {
+        updateActiveTabQuery(trimmed);
+      }
+      if (!options?.skipUrlSync) {
+        syncUrlWithQuery(trimmed);
+      }
 
       try {
-        console.log('search started');
-
         const request = {
           query: trimmed,
           maxRelationDepth: 200,
@@ -278,7 +432,11 @@ const RessaSearch = () => {
         } as const;
 
         const response = await rawQueryApi(request);
-        console.log('search response received');
+
+        if (requestId !== searchGenerationRef.current || tabId !== activeTabIdRef.current) {
+          return;
+        }
+
         setRawResponse(response);
         saveRessaSearchSession({
           searchValue: trimmed,
@@ -288,67 +446,91 @@ const RessaSearch = () => {
           rowsPerPage,
         });
       } catch (e) {
-        console.log('search error', e);
+        if (requestId !== searchGenerationRef.current || tabId !== activeTabIdRef.current) {
+          return;
+        }
         const message = e instanceof Error ? e.message : 'Unknown error';
         setRawResponse(null);
         setSearchError(message);
         clearRessaSearchSession();
       } finally {
-        console.log('search finished');
-        setIsSearching(false);
-        console.log('search finished');
+        if (requestId === searchGenerationRef.current && tabId === activeTabIdRef.current) {
+          setIsSearching(false);
+        }
       }
     },
-    [isSearching, rowsPerPage, setSearchParams],
+    [rowsPerPage, syncUrlWithQuery, updateActiveTabQuery],
   );
 
+  const runSearchRef = useRef(runSearch);
+  runSearchRef.current = runSearch;
+
   const handleSearch = () => {
-    runSearch(searchValue);
+    runSearch(activeTab.query);
   };
 
+  useEffect(() => {
+    saveWorkspace(workspace);
+  }, [workspace]);
+
+  useEffect(() => {
+    if (isInternalUrlUpdateRef.current) {
+      isInternalUrlUpdateRef.current = false;
+      return;
+    }
+
+    if (skipNextExternalUrlSyncRef.current) {
+      skipNextExternalUrlSyncRef.current = false;
+      return;
+    }
+
+    const q = searchParams.get(RESSA_SEARCH_QUERY_PARAM);
+    const trimmed = q !== null ? q.trim() : '';
+    if (!trimmed) return;
+
+    setWorkspaceSafe((prev) => persistWorkspace(applyInitialUrlQuery(prev, trimmed)));
+  }, [searchParams, persistWorkspace, setWorkspaceSafe]);
+
+  useEffect(() => {
+    syncUrlWithQuery(activeTab.query);
+
+    const trimmed = activeTab.query.trim();
+    if (!trimmed) {
+      clearEmptySearchState();
+      return;
+    }
+
+    void runSearchRef.current(trimmed, {
+      tabId: activeTab.id,
+      skipQueryUpdate: true,
+      skipUrlSync: true,
+    });
+  }, [activeTab.id, syncUrlWithQuery, clearEmptySearchState]);
+
   const clearSearchState = useCallback(() => {
-    hasRestoredFromUrlRef.current = false;
+    searchGenerationRef.current += 1;
     clearRessaSearchSession();
-    setSearchParams({}, { replace: true });
-    setSearchValue('');
+    syncUrlWithQuery('');
+    updateActiveTabQuery('');
     setHasSearched(false);
     setExtractedFilters([]);
     setRawResponse(null);
     setSearchError(null);
     setPage(0);
+    setIsSearching(false);
     // setSelectedRows([]);
-  }, [setSearchParams]);
+  }, [syncUrlWithQuery, updateActiveTabQuery]);
 
   useEffect(() => {
-    const q = initialQueryRef.current;
-    if (!q || hasRestoredFromUrlRef.current) return;
-    hasRestoredFromUrlRef.current = true;
-
-    const saved = loadRessaSearchSession();
-    if (saved?.searchValue === q && saved.rawResponse) {
-      setSearchValue(saved.searchValue);
-      setRawResponse(saved.rawResponse);
-      setExtractedFilters(saved.extractedFilters);
-      setPage(saved.page ?? 0);
-      setRowsPerPage(saved.rowsPerPage ?? 20);
-      setHasSearched(true);
-      setSearchError(null);
-      return;
-    }
-
-    runSearch(q);
-  }, [runSearch]);
-
-  useEffect(() => {
-    if (!hasSearched || !rawResponse || !searchValue.trim()) return;
+    if (!hasSearched || !rawResponse || !activeTab.query.trim()) return;
     saveRessaSearchSession({
-      searchValue,
+      searchValue: activeTab.query,
       rawResponse,
       extractedFilters,
       page,
       rowsPerPage,
     });
-  }, [page, rowsPerPage, hasSearched, rawResponse, searchValue, extractedFilters]);
+  }, [page, rowsPerPage, hasSearched, rawResponse, activeTab.query, extractedFilters]);
 
   const handleSearchIconClick = () => {
     if (inputRef.current) {
@@ -390,7 +572,8 @@ const RessaSearch = () => {
   };
 
   const handleSelectRecentSearch = (query: string) => {
-    setSearchValue(query);
+    updateActiveTabQuery(query);
+    syncUrlWithQuery(query);
     setExtractedFilters(parseSearchQuery(query));
     setHistoryAnchorEl(null);
     setSaveAnchorEl(null);
@@ -399,7 +582,8 @@ const RessaSearch = () => {
 
   const handleEditSearch = (query: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    setSearchValue(query);
+    updateActiveTabQuery(query);
+    syncUrlWithQuery(query);
     setExtractedFilters(parseSearchQuery(query));
     setHistoryAnchorEl(null);
     setSaveAnchorEl(null);
@@ -439,9 +623,9 @@ const RessaSearch = () => {
   };
 
   const handleSaveSearch = () => {
-    if (saveTitle.trim() && searchValue) {
+    if (saveTitle.trim() && activeTab.query) {
       // TODO: Implement save functionality
-      console.log('Saving search:', { title: saveTitle, query: searchValue, description: saveDescription });
+      console.log('Saving search:', { title: saveTitle, query: activeTab.query, description: saveDescription });
       setSaveDialogOpen(false);
       setSaveTitle('');
       setSaveDescription('');
@@ -464,6 +648,8 @@ const RessaSearch = () => {
     runSearch(example.query);
   };
 
+  const displayTabs = useMemo(() => normalizeWorkspace(workspace).tabs, [workspace]);
+
   return (
     <>
       {/* <Breadcrumbs elements={[{ label: t_i18n('Ressa Search') }]} /> */}
@@ -478,6 +664,221 @@ const RessaSearch = () => {
         >
           {t_i18n('Global Search')}
         </Typography>
+
+        {/* Tab Bar */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: 0.5,
+            marginBottom: 0,
+            overflowX: 'auto',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            paddingBottom: 0,
+          }}
+        >
+          {displayTabs.map((tab) => {
+            const isActive = tab.id === workspace.activeTabId;
+            const isPinned = Boolean(tab.pinned);
+            const canClose = displayTabs.length > 1 && !isPinned;
+            const tabTitle = tab.query.trim() || t_i18n('New Search');
+            return (
+              <Box
+                key={tab.id}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  minWidth: isPinned ? 40 : 120,
+                  maxWidth: isPinned ? 40 : 220,
+                  height: isPinned ? 32 : 36,
+                  border: '1px solid',
+                  borderColor: isActive ? 'divider' : 'transparent',
+                  borderBottom: isActive ? '1px solid' : 'none',
+                  borderBottomColor: isActive ? 'background.paper' : 'transparent',
+                  borderTopLeftRadius: isPinned ? 6 : 8,
+                  borderTopRightRadius: isPinned ? 6 : 8,
+                  backgroundColor: isActive ? 'background.paper' : 'action.hover',
+                  color: isActive ? 'text.primary' : 'text.secondary',
+                  marginBottom: isActive ? '-1px' : 0,
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                  justifyContent: isPinned ? 'center' : 'flex-start',
+                  '&:hover': {
+                    backgroundColor: isActive ? 'background.paper' : 'action.selected',
+                    color: 'text.primary',
+                  },
+                  '& .tab-pin-button': {
+                    opacity: isPinned ? 1 : 0,
+                    transition: 'opacity 0.15s ease-in-out',
+                  },
+                  '&:hover .tab-pin-button': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                {isPinned ? (
+                  <Tooltip title={tabTitle}>
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flex: 1,
+                        minWidth: 0,
+                        height: '100%',
+                      }}
+                    >
+                      <Box
+                        component="button"
+                        type="button"
+                        onClick={() => switchTab(tab.id)}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '100%',
+                          height: '100%',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: 'inherit',
+                          cursor: 'pointer',
+                          font: 'inherit',
+                          outline: 'none',
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          noWrap
+                          sx={{
+                            fontWeight: isActive ? 700 : 500,
+                            fontSize: '0.7rem',
+                            lineHeight: 1,
+                          }}
+                        >
+                          {getPinnedTabLabel(tab.query)}
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        className="tab-pin-button"
+                        aria-label={t_i18n('Unpin tab')}
+                        onClick={(event) => togglePinTab(tab.id, event)}
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          right: 0,
+                          width: 18,
+                          height: 18,
+                          color: 'primary.main',
+                          backgroundColor: 'background.paper',
+                          '&:hover': {
+                            color: 'primary.dark',
+                            backgroundColor: 'action.selected',
+                          },
+                        }}
+                      >
+                        <PushPin sx={{ fontSize: 10 }} />
+                      </IconButton>
+                    </Box>
+                  </Tooltip>
+                ) : (
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={() => switchTab(tab.id)}
+                    title={tabTitle}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      flex: 1,
+                      minWidth: 0,
+                      height: '100%',
+                      px: canClose ? 1.5 : 2,
+                      pl: 2,
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      font: 'inherit',
+                      outline: 'none',
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      noWrap
+                      sx={{
+                        fontWeight: isActive ? 600 : 400,
+                        width: '100%',
+                        textAlign: 'start',
+                      }}
+                    >
+                      {getTabTitle(tab.query, t_i18n('New Search'))}
+                    </Typography>
+                  </Box>
+                )}
+                {!isPinned && (
+                  <Tooltip title={t_i18n('Pin tab')}>
+                    <IconButton
+                      size="small"
+                      className="tab-pin-button"
+                      aria-label={t_i18n('Pin tab')}
+                      onClick={(event) => togglePinTab(tab.id, event)}
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        flexShrink: 0,
+                        color: 'text.secondary',
+                        '&:hover': {
+                          color: 'text.primary',
+                          backgroundColor: 'action.selected',
+                        },
+                      }}
+                    >
+                      <PushPinOutlined sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {canClose && (
+                  <IconButton
+                    size="small"
+                    aria-label={t_i18n('Close tab')}
+                    onClick={(event) => closeTab(tab.id, event)}
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      flexShrink: 0,
+                      marginInlineEnd: 0.5,
+                      color: 'text.secondary',
+                      '&:hover': {
+                        color: 'text.primary',
+                        backgroundColor: 'action.selected',
+                      },
+                    }}
+                  >
+                    <Close sx={{ fontSize: 14 }} />
+                  </IconButton>
+                )}
+              </Box>
+            );
+          })}
+          <Tooltip title={t_i18n('New tab')}>
+            <IconButton
+              size="small"
+              onClick={addTab}
+              sx={{
+                width: 36,
+                height: 36,
+                flexShrink: 0,
+                marginBottom: 0.25,
+                borderRadius: 1,
+              }}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
 
         {/* Search Bar */}
         <Box
@@ -494,8 +895,8 @@ const RessaSearch = () => {
               fullWidth
               variant="outlined"
               placeholder={t_i18n('Search domain, IP, hash, email or phrase...')}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              value={activeTab.query}
+              onChange={(e) => updateActiveTabQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isSearching}
               sx={{
@@ -606,7 +1007,7 @@ const RessaSearch = () => {
                     </Box>
                   </InputAdornment>
                 ),
-                endAdornment: searchValue && (
+                endAdornment: activeTab.query && (
                   <InputAdornment position="end">
                     <IconButton size="small" onClick={clearSearchState} sx={{ padding: 0.5 }}>
                       <Close fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -623,7 +1024,7 @@ const RessaSearch = () => {
             variant="contained"
             color="primary"
             onClick={handleSearch}
-            disabled={isSearching || !searchValue.trim()}
+            disabled={isSearching || !activeTab.query.trim()}
             sx={{
               minWidth: 100,
               height: 40,
@@ -1147,9 +1548,8 @@ const RessaSearch = () => {
                                     <TableRow
                                       key={result.id}
                                       hover
-                                      component={Link}
-                                      to={detailLink}
-                                      sx={{ textDecoration: 'none', cursor: 'pointer' }}
+                                      onClick={() => navigate(detailLink)}
+                                      sx={{ cursor: 'pointer' }}
                                     >
                                       {/* <TableCell padding="checkbox">
                                         <Checkbox
@@ -1354,7 +1754,7 @@ const RessaSearch = () => {
                   alignItems: 'center',
                 }}
               >
-                {parseQueryToChips(searchValue).map((chip, index) => {
+                {parseQueryToChips(activeTab.query).map((chip, index) => {
                   if (chip.type === 'operator') {
                     return (
                       <Chip
