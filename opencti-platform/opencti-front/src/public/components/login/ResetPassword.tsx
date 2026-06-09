@@ -101,7 +101,6 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
     email,
     resetPwdStep,
     validateOtpInError,
-    resendCodeDisabled,
   } = useLoginContext();
 
   const flashError = cookies[FLASH_COOKIE] || '';
@@ -141,6 +140,8 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
     undefined,
   );
 
+  const hasPasswordPolicies = Object.values(policies).some((value) => (value ?? 0) > 0);
+
   const startResendCooldown = (onComplete?: () => void) => {
     setValue('resendCodeDisabled', true);
 
@@ -150,6 +151,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
 
     resendTimeoutRef.current = setTimeout(() => {
       setValue('resendCodeDisabled', false);
+      resendTimeoutRef.current = null;
       onComplete?.();
     }, RESEND_COOLDOWN_MS);
   };
@@ -280,7 +282,6 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
             </Button>
             {validateOtpInError && (
               <Button
-                disabled={resendCodeDisabled}
                 variant="tertiary"
                 onClick={handleResendOtp}
               >
@@ -308,7 +309,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
               <Form action={(
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !isValid || resendCodeDisabled}
+                  disabled={isSubmitting || !isValid}
                 >
                   {t_i18n('Send reset code')}
                 </Button>
@@ -319,9 +320,6 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
                   name="email"
                   label={t_i18n('Email address')}
                   fullWidth={true}
-                  onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    setValue('email', e.currentTarget.value);
-                  }}
                 />
               </Form>
             );
@@ -383,8 +381,8 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
       {resetPwdStep === ResetPwdStep.RESET_PASSWORD && (
         <Formik
           onSubmit={onSubmitValidatePassword}
-          initialTouched={{ otp: !!flashError }}
-          initialErrors={{ otp: flashError ? t_i18n(flashError) : '' }}
+          initialTouched={{ password: !!flashError }}
+          initialErrors={{ password: flashError ? t_i18n(flashError) : '' }}
           validationSchema={passwordValidation(t_i18n)}
           initialValues={{ password: '', password_validation: '' }}
         >
@@ -398,12 +396,14 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
               </Button>
             )}
             >
-              <Box sx={{ width: '100%', mt: 2 }}>
-                <PasswordPoliciesAlert
-                  policies={policies}
-                  value={values.password}
-                />
-              </Box>
+              {hasPasswordPolicies && (
+                <Box sx={{ width: '100%', mt: 2 }}>
+                  <PasswordPoliciesAlert
+                    policies={policies}
+                    value={values.password}
+                  />
+                </Box>
+              )}
               <Field
                 component={TextField}
                 name="password"
