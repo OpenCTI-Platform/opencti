@@ -33,6 +33,7 @@ const renderAttributeValue = (
   data: StixCoreObject | null | undefined,
   t_i18n: (s: string) => string,
   fldt: (s: unknown) => string,
+  isCustomViewReadOnly?: boolean,
 ) => {
   const entityType = data?.entity_type ?? '';
   if (!data) {
@@ -281,6 +282,7 @@ const renderAttributeValue = (
 const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardProps> = ({
   column,
   data,
+  isCustomViewReadOnly,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
@@ -291,7 +293,7 @@ const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardPr
       <Typography variant="h4" sx={{ marginBottom: theme.spacing(0.5) }}>
         {t_i18n(label)}
       </Typography>
-      {renderAttributeValue(column.attribute ?? '', data, t_i18n, fldt)}
+      {renderAttributeValue(column.attribute ?? '', data, t_i18n, fldt, isCustomViewReadOnly)}
     </Box>
   );
 };
