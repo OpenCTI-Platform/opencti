@@ -13268,7 +13268,7 @@ __metadata:
     relay-compiler: "npm:20.1.1"
     relay-runtime: "npm:20.1.1"
     relay-test-utils: "npm:20.1.1"
-    remark-flexible-markers: "npm:1.3.4"
+    remark-flexible-markers: "npm:1.3.5"
     remark-gfm: "npm:4.0.1"
     remark-parse: "npm:11.0.0"
     rxjs: "npm:7.8.2"
@@ -14998,9 +14998,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-flexible-markers@npm:1.3.4":
-  version: 1.3.4
-  resolution: "remark-flexible-markers@npm:1.3.4"
+"remark-flexible-markers@npm:1.3.5":
+  version: 1.3.5
+  resolution: "remark-flexible-markers@npm:1.3.5"
   dependencies:
     "@types/mdast": "npm:^4.0.4"
     unist-builder: "npm:^4.0.0"
@@ -15011,7 +15011,7 @@ __metadata:
     unist-util-visit: "npm:^5.1.0"
   peerDependencies:
     unified: ^11
-  checksum: 10c0/61595cccc790591b51cb8e851f6adaa18aa89d962f951adcb5e03cf7bab06536379babb1374cd6c1c4521712aef5fdd3a62d080ab8275adf53fc34b293f7d2f0
+  checksum: 10c0/5d28b3cade5f8d0f46682642abc726cbdc5568afad0090fff308fdbdff5d852062fd78ed66154291d99d3653d1ed40c3689452742b24148eb2c3c40cd441fe65
   languageName: node
   linkType: hard
 
