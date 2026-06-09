@@ -1237,6 +1237,13 @@ type PublicSettings implements IntlSettings & ThemeSettings {
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
     metrics_definition: [MetricDefinition!]
+    password_policy_min_length: Int
+    password_policy_max_length: Int
+    password_policy_min_symbols: Int
+    password_policy_min_numbers: Int
+    password_policy_min_words: Int
+    password_policy_min_lowercase: Int
+    password_policy_min_uppercase: Int
 }
 
 type MetricAttributes {

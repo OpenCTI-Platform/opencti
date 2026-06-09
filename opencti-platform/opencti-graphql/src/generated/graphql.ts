@@ -24218,6 +24218,13 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   __typename?: 'PublicSettings';
   id: Scalars['ID']['output'];
   metrics_definition?: Maybe<Array<MetricDefinition>>;
+  password_policy_max_length?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_length?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_lowercase?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_numbers?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_symbols?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_uppercase?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_words?: Maybe<Scalars['Int']['output']>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
@@ -48754,6 +48761,13 @@ export type PublicProviderResolvers<ContextType = any, ParentType extends Resolv
 export type PublicSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicSettings'] = ResolversParentTypes['PublicSettings']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
+  password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_numbers?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_symbols?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
