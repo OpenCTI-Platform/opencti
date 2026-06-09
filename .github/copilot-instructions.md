@@ -103,15 +103,6 @@ docker compose up -d
 2. Present a **clear, plain-language summary** of exactly what would be lost (e.g. "This will discard your unsaved changes to `src/foo.ts` and `src/bar.ts`").
 3. **Wait for explicit approval** before proceeding.
 
-## Commit Message Format
-
-**Required**: `[component] Message (#issuenumber)`
-
-Components: `backend`, `frontend`, `client-python`, `worker`, `docs`, `tools`, `CI`
-
-Example: `[backend] Fix authentication error handling (#1234)`
-
-
 <!-- filigran-conventions:start -->
 ## Commit, PR & issue conventions
 
