@@ -37,6 +37,7 @@
     "@ckeditor/ckeditor5-react": "11.2.0",
     "@filigran/chatbot": "3.7.4",
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2",
+    "@filigran/rich-text-editor": "1.0.0",
     "@fontsource/geologica": "5.2.8",
     "@fontsource/ibm-plex-sans": "5.2.8",
     "@graphiql/toolkit": "0.12.0",
