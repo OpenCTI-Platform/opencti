@@ -1,16 +1,20 @@
+import { CSSProperties } from 'react';
+import { FlagOutlined } from '@mui/icons-material';
+import { Alert, Box, FormControlLabel, Icon, Switch, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
-import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, CommentModeType, WorkflowActionType, WorkflowDataType } from './utils';
-import { FormControlLabel, Icon, Switch, Typography, Box, Alert } from '@mui/material';
-import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
-import { FlagOutlined } from '@mui/icons-material';
-import WorkflowConditionFilters from './WorkflowConditionFilters';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import EEChip from '../../../common/entreprise_edition/EEChip';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
+import WorkflowConditionFilters from './WorkflowConditionFilters';
+import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
+import WorkflowFieldList from './WorkflowFieldList';
+import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
 
 const TransitionForm = () => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
   const hasUpdateAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasValidateDraft = values.syncActions?.some((a) => a.type === WorkflowActionType.validateDraft);
@@ -18,6 +22,10 @@ const TransitionForm = () => {
   const hasUnshare = values.asyncActions?.some((a) => a.type === WorkflowActionType.unshareFromOrganizations);
   const shareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.shareWithOrganizations) ?? -1;
   const unshareIdx = values.asyncActions?.findIndex((a) => a.type === WorkflowActionType.unshareFromOrganizations) ?? -1;
+
+  const disabledEEStyle: CSSProperties = !isEnterpriseEdition
+    ? { opacity: 0.5, pointerEvents: 'none' }
+    : {};
 
   const commentMode: CommentModeType = values.comment ?? CommentMode.disabled;
   const enableComments = commentMode !== CommentMode.disabled;
@@ -58,20 +66,25 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
         <Typography variant="h6">
-          {t_i18n('Conditions')}
+          {t_i18n('Conditions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
-        {values.conditions && <Field name={WorkflowDataType.conditions} component={WorkflowConditionFilters} />}
+        {values.conditions && (
+          <Box style={disabledEEStyle}>
+            <Field name={WorkflowDataType.conditions} component={WorkflowConditionFilters} />
+          </Box>
+        )}
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Organization sharing')}
+          {t_i18n('Organization sharing')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
             control={(
               <Switch
                 checked={hasShare}
+                disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleAsyncAction(WorkflowActionType.shareWithOrganizations, e.target.checked)}
               />
             )}
@@ -86,6 +99,7 @@ const TransitionForm = () => {
                 multiple={true}
                 style={{ width: '100%' }}
                 alert={false}
+                disabled={!isEnterpriseEdition}
               />
             </Box>
           )}
@@ -93,6 +107,7 @@ const TransitionForm = () => {
             control={(
               <Switch
                 checked={hasUnshare}
+                disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleAsyncAction(WorkflowActionType.unshareFromOrganizations, e.target.checked)}
               />
             )}
@@ -107,6 +122,7 @@ const TransitionForm = () => {
                 multiple={true}
                 style={{ width: '100%' }}
                 alert={false}
+                disabled={!isEnterpriseEdition}
               />
             </Box>
           )}
@@ -115,19 +131,24 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Authorized members')}
+          {t_i18n('Authorized members')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
             control={(
               <Switch
                 checked={hasUpdateAuthorizedMembers}
+                disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleAction(WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
               />
             )}
             label={t_i18n('Update authorized members')}
           />
-          {values.syncActions && <WorkflowFieldList name={WorkflowDataType.syncActions} />}
+          {values.syncActions && (
+            <Box style={disabledEEStyle}>
+              <WorkflowFieldList name={WorkflowDataType.syncActions} />
+            </Box>
+          )}
 
           <FormControlLabel
             control={(
@@ -148,9 +169,9 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Comment')}
+          {t_i18n('Comment')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
-        <Alert severity="info" variant="outlined">
+        <Alert severity="info" variant="outlined" style={{ opacity: isEnterpriseEdition ? 1 : 0.5 }}>
           {t_i18n('When enabled, users will be prompted to leave a comment when changing the status.')}
         </Alert>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -159,6 +180,7 @@ const TransitionForm = () => {
               <Switch
                 checked={enableComments}
                 onChange={(e) => handleToggleEnableComments(e.target.checked)}
+                disabled={!isEnterpriseEdition}
               />
             )}
             label={t_i18n('Enable comment')}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import TransitionForm from './TransitionForm';
@@ -7,6 +7,7 @@ import testRender from '../../../../../utils/tests/test-render';
 import { WorkflowActionType, CommentMode } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 // ---------------------------------------------------------------------------
 // Mock heavy sub-components with no relevance to the tested logic
@@ -21,6 +22,18 @@ vi.mock('./WorkflowConditionFilters', () => ({
 
 vi.mock('../../../../../components/TextField', () => ({
   default: ({ field }: { field: { name: string } }) => <input data-testid={`field-${field.name}`} />,
+}));
+
+vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
+  default: vi.fn(),
+}));
+
+vi.mock('../../../common/entreprise_edition/EEChip', () => ({
+  default: () => <span data-testid="ee-chip" />,
+}));
+
+vi.mock('../../../common/form/ObjectOrganizationField', () => ({
+  default: () => <div data-testid="object-organization-field" />,
 }));
 
 // ---------------------------------------------------------------------------
@@ -40,6 +53,10 @@ const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit 
 // Tests
 // ---------------------------------------------------------------------------
 describe('TransitionForm – comment section', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
   it('renders "Enable comment" switch unchecked when comment is "disable"', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     const enableSwitch = screen.getByRole('checkbox', { name: /enable comment/i });
@@ -146,6 +163,10 @@ describe('TransitionForm – comment section', () => {
 });
 
 describe('TransitionForm – action toggles', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
   it('"Update authorized members" switch is unchecked when action is absent', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     const uamSwitch = screen.getByRole('checkbox', { name: /update authorized members/i });
@@ -256,6 +277,10 @@ describe('TransitionForm – action toggles', () => {
 });
 
 describe('TransitionForm – rendering', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
   it('renders the transition name field', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     expect(screen.getByTestId('field-event')).toBeDefined();
@@ -280,5 +305,80 @@ describe('TransitionForm – rendering', () => {
   it('renders WorkflowFieldList when syncActions are defined', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     expect(screen.getByTestId('workflow-field-list')).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EE / CE gating
+// ---------------------------------------------------------------------------
+describe('TransitionForm – EE / CE gating', () => {
+  const emptyFilterGroup: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
+  const eeActions = [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }];
+
+  it('disables EE-only switches in CE', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], asyncActions: [] });
+
+    expect((screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(true);
+  });
+
+  it('enables EE-only switches in EE', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], asyncActions: [] });
+
+    expect((screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(false);
+  });
+
+  it('"Validate draft" switch is always enabled regardless of EE status', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [] });
+
+    expect((screen.getByRole('checkbox', { name: /validate draft/i }) as HTMLInputElement).disabled).toBe(false);
+  });
+
+  it('renders the conditions block with pointer-events:none in CE', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
+
+    const conditionFilters = screen.getByTestId('workflow-condition-filters');
+    const wrapper = conditionFilters.parentElement!;
+    expect(wrapper.style.pointerEvents).toBe('none');
+    expect(wrapper.style.opacity).toBe('0.5');
+  });
+
+  it('renders the conditions block without pointer-events restriction in EE', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
+
+    const conditionFilters = screen.getByTestId('workflow-condition-filters');
+    const wrapper = conditionFilters.parentElement!;
+    // 'auto' is CSS default so it serializes as '' in jsdom; just confirm it's not 'none'
+    expect(wrapper.style.pointerEvents).not.toBe('none');
+    expect(wrapper.style.opacity).not.toBe('0.5');
+  });
+
+  it('renders the WorkflowFieldList with pointer-events:none in CE when EE actions exist', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: eeActions });
+
+    const fieldList = screen.getByTestId('workflow-field-list');
+    const wrapper = fieldList.parentElement!;
+    expect(wrapper.style.pointerEvents).toBe('none');
+    expect(wrapper.style.opacity).toBe('0.5');
+  });
+
+  it('renders the WorkflowFieldList without pointer-events restriction in EE', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: eeActions });
+
+    const fieldList = screen.getByTestId('workflow-field-list');
+    const wrapper = fieldList.parentElement!;
+    // 'auto' is CSS default so it serializes as '' in jsdom; just confirm it's not 'none'
+    expect(wrapper.style.pointerEvents).not.toBe('none');
+    expect(wrapper.style.opacity).not.toBe('0.5');
   });
 });

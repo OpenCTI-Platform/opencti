@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import * as ee from '../../../src/enterprise-edition/ee';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 
 const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
@@ -127,6 +128,7 @@ describe('Workflow Conditions Resolver', () => {
   });
 
   beforeAll(async () => {
+    vi.spyOn(ee, 'checkEnterpriseEdition').mockResolvedValue();
     // 1. Create a workspace
     const result = await queryAsAdmin({
       query: CREATE_DRAFT_WORKSPACE_QUERY,
@@ -191,6 +193,7 @@ describe('Workflow Conditions Resolver', () => {
   });
 
   afterAll(async () => {
+    vi.restoreAllMocks();
     await queryAsAdmin({
       query: WORKFLOW_DEFINITION_DELETE_MUTATION,
       variables: { entityType: 'DraftWorkspace' },

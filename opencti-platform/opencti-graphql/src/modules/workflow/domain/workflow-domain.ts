@@ -22,9 +22,18 @@ import {
   type TriggerResult,
   type WorkflowValidationError,
   type WorkflowActionConfig,
+  type WorkflowSerializedTransition,
+  type WorkflowSerializedState,
   type WorkflowPendingTransition,
 } from '../types/workflow-types';
 import { validateWorkflowDefinitionData } from '../workflow-validation';
+import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
+
+// EE-only action types – conditions on transitions and onEnter/onExit state actions.
+// 'validateDraft' is a CE feature and must NOT be listed here.
+const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>(['updateAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
+const hasEEActions = (actions?: WorkflowActionConfig[]) => (actions ?? []).some((a) => EE_ONLY_ACTION_TYPES.has(a.type));
+const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) => Array.isArray(conditions?.filters) && conditions.filters.length > 0;
 
 // Domain-specific types
 interface WorkflowVersion {
@@ -283,6 +292,21 @@ export const setWorkflowDefinition = async (
     definitionObj = JSON.parse(definition);
   } catch (_error) {
     throw FunctionalError('Invalid workflow definition JSON');
+  }
+
+  // Check if the definition uses EE-only features (actions/conditions on transitions
+  // or onEnter/onExit actions on states), except for the 'validateDraft' action which is CE.
+  const definitionRequiresEE = (
+    (definitionObj.transitions ?? []).some((t: WorkflowSerializedTransition) => (
+      hasEEActions(t.asyncActions)
+      || hasEEActions(t.syncActions)
+      || hasConditions(t.conditions)
+      || !!t.comment
+    ))
+    || (definitionObj.states ?? []).some((s: WorkflowSerializedState) => hasEEActions(s.onEnter) || hasEEActions(s.onExit))
+  );
+  if (definitionRequiresEE) {
+    await checkEnterpriseEdition(context);
   }
 
   const executionContext = bypassDraftContext(context);

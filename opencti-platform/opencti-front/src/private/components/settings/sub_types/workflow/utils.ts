@@ -33,6 +33,8 @@ export type Transition = {
   comment?: CommentModeType;
 };
 
+export const FEATURE_NAME = 'Workflow';
+
 export const NEW_EVENT_NAME = 'NEW_EVENT';
 
 export const NEW_STATUS_NAME = 'NEW_STATUS';
