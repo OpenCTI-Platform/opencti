@@ -195,7 +195,7 @@
     "license-checker-rseidelsohn": "5.0.1",
     "monocart-reporter": "2.11.2",
     "relay-compiler": "20.1.1",
-    "relay-test-utils": "20.1.1",
+    "relay-test-utils": "21.0.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.60.1",
     "vite": "8.0.16",

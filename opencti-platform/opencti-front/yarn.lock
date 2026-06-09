@@ -13809,7 +13809,7 @@ __metadata:
     recharts: "npm:3.8.1"
     relay-compiler: "npm:20.1.1"
     relay-runtime: "npm:21.0.1"
-    relay-test-utils: "npm:20.1.1"
+    relay-test-utils: "npm:21.0.1"
     remark-flexible-markers: "npm:1.3.5"
     remark-gfm: "npm:4.0.1"
     remark-parse: "npm:11.0.0"
@@ -15588,15 +15588,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"relay-test-utils@npm:20.1.1":
-  version: 20.1.1
-  resolution: "relay-test-utils@npm:20.1.1"
+"relay-test-utils@npm:21.0.1":
+  version: 21.0.1
+  resolution: "relay-test-utils@npm:21.0.1"
   dependencies:
     "@babel/runtime": "npm:^7.25.0"
     fbjs: "npm:^3.0.2"
     invariant: "npm:^2.2.4"
-    relay-runtime: "npm:20.1.1"
-  checksum: 10c0/0784d3a3169d579ed89e289e6d027b8a4ebe39b06a7b21316cbd305ed430be3dd6d7a9f2c73f814b2df25e3aecd6a3461dd2b8d4bd8a6a632a22b198ef59c9a9
+    relay-runtime: "npm:21.0.1"
+  checksum: 10c0/f2a625fe6e0e5e0b86c29938de4055c851d6a27d39fe35ce060b0c028daeeba1b2bf958cd7670eec8eba243d78bb76f0dd1de74ab37ea577dc84bdd2d803fb2b
   languageName: node
   linkType: hard
 
