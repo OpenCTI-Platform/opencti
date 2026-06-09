@@ -76,7 +76,7 @@ const DashboardRefreshControl = ({
   const spinning = isRefreshing || isManualRefreshing;
 
   return (
-    <ButtonGroup size="small" variant="outlined">
+    <ButtonGroup id="dashboard-refresh-control" size="small" variant="outlined">
       <Button
         startIcon={spinning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
         onClick={handleRefreshClick}
