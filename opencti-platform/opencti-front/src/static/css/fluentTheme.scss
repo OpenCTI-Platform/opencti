@@ -1,4 +1,4 @@
-html[data-theme="fluent"] {
+html[data-theme='fluent'] {
   --fluent-color-primary: #533de4;
   --fluent-color-primary-hover: #4026a8;
   --fluent-color-border: #ccd1dd;
@@ -10,10 +10,10 @@ html[data-theme="fluent"] {
   --fluent-color-background: #fafafa;
   body {
     * {
-      font-family: "Iranyekan", "IBM Plex Sans", sans-serif !important;
+      font-family: 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
     }
     background: var(--fluent-color-background);
-    &[data-theme="dark"] {
+    &[data-theme='dark'] {
       --fluent-color-border: #292929;
       --fluent-color-border-hover: #adadad;
       --fluent-color-label: #fff;
@@ -122,7 +122,7 @@ html[data-theme="fluent"] {
       &::after {
         --variant-containedBg: var(--fluent-color-primary);
         box-sizing: border-box;
-        content: "";
+        content: '';
         position: absolute;
         left: -1px;
         bottom: -1px;
@@ -158,7 +158,7 @@ html[data-theme="fluent"] {
     &.MuiInputLabel-shrink {
       font-weight: 600;
       font-size: 14px;
-      transform: none;
+      // transform: none;  It was causing issues with the input labels.
       margin-bottom: 4px;
     }
     &.Mui-focused {
@@ -206,10 +206,7 @@ html[data-theme="fluent"] {
       --fui-Checkbox__indicator--borderColor: #b3b3b3;
       --colorNeutralStrokeAccessible: #adadad;
       border-radius: 2px;
-      color: var(
-        --fui-Checkbox__indicator--borderColor,
-        var(--colorNeutralStrokeAccessible)
-      );
+      color: var(--fui-Checkbox__indicator--borderColor, var(--colorNeutralStrokeAccessible));
       &.Mui-checked {
         color: var(--fluent-color-primary);
       }
@@ -343,10 +340,9 @@ html[data-theme="fluent"] {
     padding: 6px 12px !important;
     // height: 40px;
   }
-  &[dir="rtl"] {
+  &[dir='rtl'] {
     body * {
-      font-family:
-        "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+      font-family: 'IranYekanNu', 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
     }
     .MuiSlider-thumb {
       transform: translate(-50%, -50%);
@@ -375,13 +371,11 @@ html[data-theme="fluent"] {
     .MuiFormLabel-root,
     .MuiChip-label,
     .MuiPopper-root {
-      font-family:
-        "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+      font-family: 'IranYekanNu', 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
     }
     .MuiInputBase-input {
       fieldset {
-        font-family:
-          "IranYekanNu", "Iranyekan", "IBM Plex Sans", sans-serif !important;
+        font-family: 'IranYekanNu', 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
       }
     }
     .MuiFormLabel-root {
@@ -392,14 +386,10 @@ html[data-theme="fluent"] {
       margin-left: 8px;
     }
     .mui-style-rtl-zrw16i-MuiPaper-root-MuiDrawer-paper {
-      background: linear-gradient(
-        100deg,
-        rgb(236, 236, 242) 0%,
-        rgb(255, 255, 255) 100%
-      );
+      background: linear-gradient(100deg, rgb(236, 236, 242) 0%, rgb(255, 255, 255) 100%);
     }
     .ReactVirtualized__Grid__innerScrollContainer {
-      div[role="gridcell"] {
+      div[role='gridcell'] {
         direction: rtl;
         > a {
           > div {
@@ -415,205 +405,205 @@ html[data-theme="fluent"] {
         // }
       }
     }
-    svg[name="arrow-right-icon"] {
+    svg[name='arrow-right-icon'] {
       transform: rotate(180deg);
     }
-    svg[name="arrow-left-icon"] {
+    svg[name='arrow-left-icon'] {
       transform: rotate(180deg);
     }
   }
 }
-html[dir="rtl"] {
+html[dir='rtl'] {
   .MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation1.MuiDrawer-paper.MuiDrawer-paperAnchorLeft {
     left: 0;
     right: auto;
   }
 }
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 100;
   src:
-    url(../ext/IRANYekan/IRANYekanX-Thin.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-Thin.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-Thin.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-Thin.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 200;
   src:
-    url(../ext/IRANYekan/IRANYekanX-UltraLight.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-UltraLight.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-UltraLight.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-UltraLight.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 300;
   src:
-    url(../ext/IRANYekan/IRANYekanX-Light.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-Light.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-Light.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-Light.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 400;
   src:
-    url(../ext/IRANYekan/IRANYekanX-Regular.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-Regular.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-Regular.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-Regular.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 500;
   src:
-    url(../ext/IRANYekan/IRANYekanX-Medium.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-Medium.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-Medium.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-Medium.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 600;
   src:
-    url(../ext/IRANYekan/IRANYekanX-DemiBold.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-DemiBold.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-DemiBold.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-DemiBold.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 700;
   src:
-    url(../ext/IRANYekan/IRANYekanX-Bold.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-Bold.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-Bold.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-Bold.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 800;
   src:
-    url(../ext/IRANYekan/IRANYekanX-ExtraBold.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-ExtraBold.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-ExtraBold.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-ExtraBold.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 900;
   src:
-    url(../ext/IRANYekan/IRANYekanX-Black.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-Black.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-Black.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-Black.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekan";
+  font-family: 'IranYekan';
   font-style: normal;
   font-weight: 1000;
   src:
-    url(../ext/IRANYekan/IRANYekanX-ExtraBlack.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanX-ExtraBlack.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanX-ExtraBlack.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanX-ExtraBlack.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 100;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-Thin.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-Thin.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-Thin.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Thin.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 200;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-UltraLight.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-UltraLight.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-UltraLight.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-UltraLight.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 300;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-Light.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-Light.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-Light.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Light.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 500;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-Medium.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-Medium.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-Medium.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Medium.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 600;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-DemiBold.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-DemiBold.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-DemiBold.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-DemiBold.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 800;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBold.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBold.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBold.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBold.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 900;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-Black.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-Black.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-Black.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Black.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 950;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBlack.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBlack.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBlack.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-ExtraBlack.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: 1000;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-Heavy.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-Heavy.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-Heavy.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Heavy.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: bold;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-Bold.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-Bold.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-Bold.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Bold.woff2) format('woff2');
 }
 
 @font-face {
-  font-family: "IranYekanNu";
+  font-family: 'IranYekanNu';
   font-style: normal;
   font-weight: normal;
   src:
-    url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff) format("woff"),
-    url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff2) format("woff2");
+    url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff) format('woff'),
+    url(../ext/IRANYekan/IRANYekanXFaNum-Regular.woff2) format('woff2');
 }
