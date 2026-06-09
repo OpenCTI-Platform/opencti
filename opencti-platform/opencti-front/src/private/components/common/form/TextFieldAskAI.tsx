@@ -17,7 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
@@ -48,7 +48,7 @@ interface TextFieldAskAiProps {
   format: 'text' | 'html' | 'markdown';
   variant?: 'markdown' | 'html' | 'text' | null;
   disabled?: boolean;
-  style?: object;
+  style?: CSSProperties;
 }
 
 // Legacy GraphQL mutations (used when XTM One is NOT configured)
