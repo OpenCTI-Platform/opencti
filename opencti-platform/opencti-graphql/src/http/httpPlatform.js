@@ -8,9 +8,8 @@ import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import { marked } from 'marked';
-import archiver from 'archiver';
 import validator from 'validator';
-import archiverZipEncrypted from 'archiver-zip-encrypted';
+import ZipEncrypted from 'archiver-zip-encrypted';
 import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
@@ -171,9 +170,6 @@ const createApp = async (app, schema) => {
     }
   });
 
-  // -- Register the encryption module
-  archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
-
   // -- API schema
   app.get(`${basePath}/schema`, async (req, res) => {
     const context = await createAuthenticatedContext(req, res, 'schema_get');
@@ -321,7 +317,7 @@ const createApp = async (app, schema) => {
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
-      const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
+      const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
       archive.append(await downloadFile(file), { name: filename });
       await archive.finalize();
       res.attachment(`${filename}.zip`);
