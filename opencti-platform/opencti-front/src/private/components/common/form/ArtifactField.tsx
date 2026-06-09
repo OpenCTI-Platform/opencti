@@ -79,7 +79,7 @@ const ArtifactField: FunctionComponent<ArtifactFieldProps> = ({
     filterGroups: [],
   };
   const queryRef = useQueryLoading<ArtifactFieldGetQuery>(artifactQuery, {
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    filters: sanitizeFilterGroupForBackend(filters),
   });
   return (
     <>
