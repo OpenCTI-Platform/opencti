@@ -8,9 +8,9 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import WidgetCustomAttributes from '@components/widgets/WidgetCustomAttribute';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { StixCoreObjectsCustomAttributesQuery } from '@components/widgets/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { getCustomAttributesColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import { StixCoreObjectsCustomAttributesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 
 export const stixCoreObjectsCustomAttributesQuery = graphql`
   query StixCoreObjectsCustomAttributesQuery($id: String!) {
