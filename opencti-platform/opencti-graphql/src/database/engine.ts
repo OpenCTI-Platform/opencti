@@ -2166,26 +2166,43 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
   const searchPhrase = R.uniq(querySearch).join(' ');
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|https?:/g, '')));
   if (args.historyFiltering) {
-    pushAll(shouldSearch, cleanExactSearch.map((ex) => [{
-      nested: {
-        path: 'context_data.history_changes',
-        query: {
-          bool: {
-            must: [
-              {
-                multi_match: {
-                  type: 'phrase',
-                  query: ex,
-                  lenient: true,
-                  fields: BASE_SEARCH_HISTORY,
+    pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+      {
+        multi_match: {
+          type: 'phrase',
+          query: ex,
+          lenient: true,
+          fields: BASE_SEARCH_ATTRIBUTES,
+        },
+      },
+      {
+        nested: {
+          path: 'context_data.history_changes',
+          query: {
+            bool: {
+              must: [
+                {
+                  multi_match: {
+                    type: 'phrase',
+                    query: ex,
+                    lenient: true,
+                    fields: BASE_SEARCH_HISTORY,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
         },
       },
-    }]).flat());
+    ]).flat());
     if (searchPhrase) {
+      shouldSearch.push({
+        query_string: {
+          query: searchPhrase,
+          analyze_wildcard: true,
+          fields: BASE_SEARCH_ATTRIBUTES,
+        },
+      });
       shouldSearch.push({
         nested: {
           path: 'context_data.history_changes',

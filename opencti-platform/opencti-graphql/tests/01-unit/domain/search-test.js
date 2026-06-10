@@ -90,3 +90,15 @@ it('should buildLocalMustFilter build query from ids filter with terms', () => {
   };
   expect(query).toEqual(expectedQuery);
 });
+
+it('should generate search clauses for both activity and history fields in historyFiltering mode', () => {
+  const shouldSearch = elGenerateFullTextSearchShould('login', { historyFiltering: true });
+  const topLevelQueryString = shouldSearch.find((e) => e?.query_string?.fields?.includes('event_scope'));
+  const nestedHistoryQueryString = shouldSearch.find(
+    (e) => e?.nested?.path === 'context_data.history_changes'
+      && e?.nested?.query?.bool?.must?.[0]?.query_string,
+  );
+
+  expect(topLevelQueryString).toBeDefined();
+  expect(nestedHistoryQueryString).toBeDefined();
+});
