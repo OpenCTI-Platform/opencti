@@ -48,7 +48,6 @@ const Tag = ({
     borderRadius: 4,
     fontSize: 12,
     fontWeight: 400,
-    paddingInlineStart: '8px',
     cursor: onClick ? 'pointer' : 'default',
     textTransform: labelTextTransform,
   };

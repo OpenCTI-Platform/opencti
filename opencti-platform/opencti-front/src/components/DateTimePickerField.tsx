@@ -1,6 +1,8 @@
 import React from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DateTimePickerSlotProps } from '@mui/x-date-pickers/DateTimePicker/DateTimePicker.types';
 import { TextFieldProps } from '@mui/material/TextField';
+import { PickerValidDate } from '@mui/x-date-pickers/models';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { FieldProps, useField } from 'formik';
 import { useIntl } from 'react-intl';
@@ -37,6 +39,7 @@ type DateTimePickerFieldProps = FieldProps<string> & {
   onChange?: (name: string, value: Date | null) => void;
   onSubmit?: (name: string, value: string | null) => void;
   textFieldProps: TextFieldProps;
+  pickerSlotProps?: DateTimePickerSlotProps<PickerValidDate, false>;
   withSeconds?: boolean;
   required?: boolean;
 };
@@ -49,6 +52,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
     onFocus,
     onSubmit,
     textFieldProps,
+    pickerSlotProps,
     withSeconds = false,
     required = false,
   } = props;
@@ -115,16 +119,19 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
           dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
         }
         slotProps={{
-          field: { clearable: true, onClear: internalOnClear },
+          ...pickerSlotProps,
+          field: { clearable: true, onClear: internalOnClear, ...pickerSlotProps?.field },
           nextIconButton: {
             sx: {
               transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
             },
+            ...pickerSlotProps?.nextIconButton,
           },
           previousIconButton: {
             sx: {
               transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
             },
+            ...pickerSlotProps?.previousIconButton,
           },
           textField: {
             ...textFieldProps,
@@ -132,6 +139,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
             onBlur: internalOnBlur,
             error: showError,
             helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
+            ...pickerSlotProps?.textField,
           },
         }}
         localeText={{
@@ -155,16 +163,19 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
       views={['year', 'month', 'day', 'hours', 'minutes']}
       format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
       slotProps={{
-        field: { clearable: true, onClear: internalOnClear },
+        ...pickerSlotProps,
+        field: { clearable: true, onClear: internalOnClear, ...pickerSlotProps?.field },
         nextIconButton: {
           sx: {
             transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
           },
+          ...pickerSlotProps?.nextIconButton,
         },
         previousIconButton: {
           sx: {
             transform: theme.direction === 'rtl' ? 'rotate(180deg)' : 'none',
           },
+          ...pickerSlotProps?.previousIconButton,
         },
         textField: {
           ...textFieldProps,
@@ -172,6 +183,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
           onBlur: internalOnBlur,
           error: showError,
           helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
+          ...pickerSlotProps?.textField,
         },
       }}
       localeText={{

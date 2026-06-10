@@ -1,10 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { DateRangeOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { Field, Formik } from 'formik';
 import { Link } from 'react-router-dom';
+import DateTimePickerField from '../DateTimePickerField';
 import { useFormatter } from '../i18n';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
@@ -30,6 +31,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const inputContainerRef = useRef<HTMLDivElement>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const generateErrorMessage = (values: string[]) => {
@@ -83,17 +85,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     }
   };
   return (
-    <div style={{ display: 'flex' }}>
-      {isDatePickerOpen
-        && (
-          <DateTimePicker
-            open={true}
-            onClose={() => setIsDatePickerOpen(false)}
-            sx={{ display: 'none' }}
-            onChange={handleChangeAbsoluteDateFilter}
-          />
-        )
-      }
+    <div ref={inputContainerRef} style={{ position: 'relative', width: '100%' }}>
       <TextField
         variant="outlined"
         size="small"
@@ -134,6 +126,52 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
           },
         }}
       />
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          opacity: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}
+      >
+        <Formik
+          initialValues={{
+            date: (() => {
+              const currentValue = dateInput[valueOrder];
+              return currentValue && isValidDate(currentValue) ? currentValue : null;
+            })(),
+          }}
+          enableReinitialize
+          onSubmit={() => {}}
+        >
+          <Field
+            component={DateTimePickerField}
+            name="date"
+            open={isDatePickerOpen}
+            onClose={() => setIsDatePickerOpen(false)}
+            onChange={(_name: string, value: Date | null) => {
+              handleChangeAbsoluteDateFilter(value);
+            }}
+            pickerSlotProps={{
+              popper: {
+                anchorEl: inputContainerRef.current,
+                placement: theme.direction === 'rtl' ? 'bottom-end' : 'bottom-start',
+              },
+            }}
+            textFieldProps={{
+              fullWidth: true,
+              size: 'small',
+              variant: 'outlined',
+              label,
+              tabIndex: -1,
+            }}
+          />
+        </Formik>
+      </div>
     </div>
   );
 };
