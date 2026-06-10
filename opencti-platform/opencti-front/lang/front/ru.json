@@ -19,7 +19,6 @@
   "{entityType} `{entityName}` removed from `{pirName}`": "{entityType} `{entityName}` удалено из `{pirName}",
   "+ N override(s)": "+ N переопределений",
   "0 - Less relevant": "0 - Менее актуально",
-  "0 - Less relevant": "0 - Менее актуально",
   "0 equals no maximum": "0 означает отсутствие максимума",
   "1 day": "1 день",
   "1 hour": "1 час",
