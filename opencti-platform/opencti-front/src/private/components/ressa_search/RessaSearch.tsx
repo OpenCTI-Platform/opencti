@@ -27,6 +27,7 @@ import {
   DialogActions,
   TextareaAutosize,
   Alert,
+  Collapse,
 } from '@mui/material';
 import {
   Save,
@@ -38,6 +39,8 @@ import {
   ChevronLeft,
   ChevronRight,
   KeyboardArrowLeft,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
   Add,
   PushPin,
   PushPinOutlined,
@@ -277,6 +280,7 @@ const RessaSearch = () => {
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   // const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
@@ -1543,106 +1547,147 @@ const RessaSearch = () => {
                                   const detailLink = entityLink
                                     ? `${entityLink}/${result.id}`
                                     : `/dashboard/id/${result.id}`;
+                                  const isExpanded = expandedRowId === result.id;
+                                  const handleRowExpandToggle = () => {
+                                    setExpandedRowId((current) => (current === result.id ? null : result.id));
+                                  };
                                   return (
-                                    <TableRow
-                                      key={result.id}
-                                      hover
-                                      onClick={() => navigate(detailLink)}
-                                      sx={{ cursor: 'pointer' }}
-                                    >
-                                      {/* <TableCell padding="checkbox">
-                                        <Checkbox
-                                          checked={selectedRows.includes(result.id)}
-                                          onClick={(e) => e.stopPropagation()}
-                                          onChange={(e) => {
-                                            if (e.target.checked) {
-                                              setSelectedRows([...selectedRows, result.id]);
-                                            } else {
-                                              setSelectedRows(selectedRows.filter((id) => id !== result.id));
-                                            }
-                                          }}
-                                        />
-                                      </TableCell> */}
-                                      <TableCell>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <ItemIcon type={result.entityType} size="small" />
-                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                              {result.title}
+                                    <React.Fragment key={result.id}>
+                                      <TableRow
+                                        hover
+                                        onClick={handleRowExpandToggle}
+                                        sx={{ cursor: 'pointer' }}
+                                      >
+                                        {/* <TableCell padding="checkbox">
+                                          <Checkbox
+                                            checked={selectedRows.includes(result.id)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                setSelectedRows([...selectedRows, result.id]);
+                                              } else {
+                                                setSelectedRows(selectedRows.filter((id) => id !== result.id));
+                                              }
+                                            }}
+                                          />
+                                        </TableCell> */}
+                                        <TableCell>
+                                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                              <IconButton
+                                                size="small"
+                                                aria-label={isExpanded ? t_i18n('Collapse') : t_i18n('Expand')}
+                                                onClick={(event) => {
+                                                  event.stopPropagation();
+                                                  handleRowExpandToggle();
+                                                }}
+                                                sx={{ p: 0.5, color: 'text.secondary' }}
+                                              >
+                                                {isExpanded ? (
+                                                  <KeyboardArrowUp fontSize="small" />
+                                                ) : (
+                                                  <KeyboardArrowDown fontSize="small" />
+                                                )}
+                                              </IconButton>
+                                              <ItemIcon type={result.entityType} size="small" />
+                                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                {result.title}
+                                              </Typography>
+                                            </Box>
+                                            <Typography variant="caption" color="text.secondary" sx={{ pl: 4 }}>
+                                              {result.standardId}
                                             </Typography>
                                           </Box>
-                                          <Typography variant="caption" color="text.secondary">
-                                            {result.standardId}
-                                          </Typography>
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell>
-                                        <ItemEntityType entityType={result.entityType} />
-                                      </TableCell>
-                                      <TableCell>
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                          {result.tags.map((tag, index) => (
-                                            <Chip
-                                              key={index}
-                                              label={tag}
-                                              size="small"
-                                              sx={{
-                                                height: 24,
-                                                fontSize: '0.75rem',
-                                                borderRadius: 1,
-                                                backgroundColor: (theme) => {
-                                                  const colors = [
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(76, 175, 80, 0.15)'
-                                                      : 'rgba(76, 175, 80, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(255, 152, 0, 0.15)'
-                                                      : 'rgba(255, 152, 0, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(33, 150, 243, 0.15)'
-                                                      : 'rgba(33, 150, 243, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(244, 67, 54, 0.15)'
-                                                      : 'rgba(244, 67, 54, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(156, 39, 176, 0.15)'
-                                                      : 'rgba(156, 39, 176, 0.1)',
-                                                  ];
-                                                  return colors[index % colors.length];
-                                                },
-                                                border: (theme) => {
-                                                  const borderColors = [
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(76, 175, 80, 0.6)'
-                                                      : 'rgba(76, 175, 80, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(255, 152, 0, 0.6)'
-                                                      : 'rgba(255, 152, 0, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(33, 150, 243, 0.6)'
-                                                      : 'rgba(33, 150, 243, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(244, 67, 54, 0.6)'
-                                                      : 'rgba(244, 67, 54, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(156, 39, 176, 0.6)'
-                                                      : 'rgba(156, 39, 176, 0.5)',
-                                                  ];
-                                                  return `1px solid ${borderColors[index % borderColors.length]}`;
-                                                },
-                                              }}
-                                            />
-                                          ))}
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell>{result.publicationDate ? fd(result.publicationDate) : ''}</TableCell>
-                                      <TableCell>
-                                        {result.registrationDate ? fd(result.registrationDate) : ''}
-                                      </TableCell>
-                                      <TableCell>
-                                        <KeyboardArrowLeft sx={{ color: 'text.secondary' }} />
-                                      </TableCell>
-                                    </TableRow>
+                                        </TableCell>
+                                        <TableCell>
+                                          <ItemEntityType entityType={result.entityType} />
+                                        </TableCell>
+                                        <TableCell>
+                                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                            {result.tags.map((tag, index) => (
+                                              <Chip
+                                                key={index}
+                                                label={tag}
+                                                size="small"
+                                                sx={{
+                                                  height: 24,
+                                                  fontSize: '0.75rem',
+                                                  borderRadius: 1,
+                                                  backgroundColor: (theme) => {
+                                                    const colors = [
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(76, 175, 80, 0.15)'
+                                                        : 'rgba(76, 175, 80, 0.1)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(255, 152, 0, 0.15)'
+                                                        : 'rgba(255, 152, 0, 0.1)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(33, 150, 243, 0.15)'
+                                                        : 'rgba(33, 150, 243, 0.1)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(244, 67, 54, 0.15)'
+                                                        : 'rgba(244, 67, 54, 0.1)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(156, 39, 176, 0.15)'
+                                                        : 'rgba(156, 39, 176, 0.1)',
+                                                    ];
+                                                    return colors[index % colors.length];
+                                                  },
+                                                  border: (theme) => {
+                                                    const borderColors = [
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(76, 175, 80, 0.6)'
+                                                        : 'rgba(76, 175, 80, 0.5)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(255, 152, 0, 0.6)'
+                                                        : 'rgba(255, 152, 0, 0.5)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(33, 150, 243, 0.6)'
+                                                        : 'rgba(33, 150, 243, 0.5)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(244, 67, 54, 0.6)'
+                                                        : 'rgba(244, 67, 54, 0.5)',
+                                                      theme.palette.mode === 'dark'
+                                                        ? 'rgba(156, 39, 176, 0.6)'
+                                                        : 'rgba(156, 39, 176, 0.5)',
+                                                    ];
+                                                    return `1px solid ${borderColors[index % borderColors.length]}`;
+                                                  },
+                                                }}
+                                              />
+                                            ))}
+                                          </Box>
+                                        </TableCell>
+                                        <TableCell>{result.publicationDate ? fd(result.publicationDate) : ''}</TableCell>
+                                        <TableCell>
+                                          {result.registrationDate ? fd(result.registrationDate) : ''}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          <IconButton
+                                            size="small"
+                                            aria-label={t_i18n('View full details')}
+                                            onClick={(event) => {
+                                              event.stopPropagation();
+                                              navigate(detailLink);
+                                            }}
+                                            sx={{ color: 'text.secondary' }}
+                                          >
+                                            <KeyboardArrowLeft fontSize="small" />
+                                          </IconButton>
+                                        </TableCell>
+                                      </TableRow>
+                                      <TableRow>
+                                        <TableCell colSpan={6} sx={{ py: 0, borderBottom: isExpanded ? undefined : 0 }}>
+                                          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                                            <Box sx={{ py: 2, px: 1 }}>
+                                              <Typography variant="body2">
+                                                {result.title}
+                                              </Typography>
+                                            </Box>
+                                          </Collapse>
+                                        </TableCell>
+                                      </TableRow>
+                                    </React.Fragment>
                                   );
                                 })}
                             </TableBody>
