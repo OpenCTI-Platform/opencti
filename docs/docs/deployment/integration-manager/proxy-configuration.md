@@ -57,7 +57,7 @@ Example of equivalent configuration in a JSON file:
   "http_proxy": "http://proxy.example.com:8080",
   "https_proxy": "http://proxy.example.com:8080",
   "no_proxy": "localhost,127.0.0.1,internal.domain",
-  "https_proxy_ca": "/path/to/proxy-ca.pem",
+  "https_proxy_ca": ["/path/to/proxy-ca.pem", "-----BEGIN CERTIFICATE-----"],
   "https_proxy_reject_unauthorized": false
 }
 ```
