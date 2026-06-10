@@ -87,9 +87,13 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   };
 });
 
-vi.mock('../../../src/utils/access', () => ({
-  SYSTEM_USER: { id: 'system', name: 'system' },
-}));
+vi.mock('../../../src/utils/access', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/utils/access')>();
+  return {
+    ...actual,
+    executionContext: vi.fn().mockReturnValue({ user: null }),
+  };
+});
 
 const mockContext = { user: { id: 'ctx-user-id' } } as any;
 const mockUser = { id: 'user-id' } as any;
@@ -1093,7 +1097,11 @@ describe('Transition comments – Domain', () => {
     const setupMocks = () => {
       (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
         if (id === 'entity-id') return Promise.resolve(mockEntity);
-        if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', workflow_content: definitionData });
+        if (id === 'workflow-def-id') return Promise.resolve({
+          id: 'workflow-def-id',
+          published_version: { id: 'v1', timestamp: '', createdBy: '', content: definitionData, validation_errors: [] },
+          all_versions: [{ id: 'v1', timestamp: '', createdBy: '', content: definitionData, validation_errors: [] }],
+        });
         return Promise.resolve(null);
       });
       (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });

@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/react';
 import WorkflowStatus from './WorkflowStatus';
 import WorkflowTransitions from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
-import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import type { WorkflowStatus_data$key } from '@components/common/workflow/__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 // ---------------------------------------------------------------------------
