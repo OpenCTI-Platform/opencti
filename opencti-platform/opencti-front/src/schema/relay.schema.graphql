@@ -11704,6 +11704,7 @@ type NotificationEvent {
   message: String!
   instance_id: String
   operation: String!
+  entity_type: String
 }
 
 type NotificationContent {

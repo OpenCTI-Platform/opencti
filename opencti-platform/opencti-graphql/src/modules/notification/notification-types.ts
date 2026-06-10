@@ -63,6 +63,7 @@ export interface NotificationContentEvent {
   operation: string;
   message: string;
   instance_id?: string | null;
+  entity_type?: string | null;
 }
 
 export interface NotificationAddInput {

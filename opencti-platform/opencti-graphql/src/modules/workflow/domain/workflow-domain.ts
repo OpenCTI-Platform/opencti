@@ -133,6 +133,7 @@ const notifyWorkflowTransitionComment = async (
               operation: 'update',
               message: `[${eventName}] ${comment}`,
               instance_id: entity.internal_id ?? entity.id,
+              entity_type: entity.entity_type,
             }],
           }],
         };

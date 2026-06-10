@@ -7,7 +7,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils
 import { MESSAGING$ } from '../../../../relay/environment';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './workflowStatus.graphql';
-import type { workflowStatusTriggerMutation as workflowStatusTriggerMutationType } from './__generated__/workflowStatusTriggerMutation.graphql';
+import type { workflowStatusTriggerMutation as workflowStatusTriggerMutationType } from '@components/common/workflow/__generated__/WorkflowStatusTriggerMutation.graphql';
 import type { workflowStatusClearMutation as workflowStatusClearMutationType } from './__generated__/workflowStatusClearMutation.graphql';
 
 export type WizardStep = 'org-picker' | 'comment' | 'validate';
