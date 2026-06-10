@@ -19,7 +19,7 @@ import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import StixCoreObjectLabelsView from '@components/common/stix_core_objects/StixCoreObjectLabelsView';
 import Tag from '@common/tag/Tag';
-import type { StixCoreObjectsCustomAttributesQuery$data } from './__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
+import { StixCoreObjectsCustomAttributesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
