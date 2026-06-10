@@ -395,3 +395,19 @@ export const extractJsonContent = (content: string): string => {
   }
   return content.trim();
 };
+
+/**
+ * Formats JSON string for better readability.
+ * If the string is valid JSON it will be formatted with correct indents.
+ * Otherwise, returns the original string
+ *
+ * @param content {string} The raw JSON string.
+ * @returns {string} The formatted JSON string.
+ */
+export const formatJsonStringContent = (content: string): string => {
+  try {
+    return JSON.stringify(JSON.parse(content), null, 2);
+  } catch (_) {
+    return content;
+  }
+};

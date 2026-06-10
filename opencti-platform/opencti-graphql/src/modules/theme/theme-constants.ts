@@ -14,6 +14,7 @@ export const DARK_DEFAULTS = {
   theme_login_aside_gradient_start: '',
   theme_login_aside_gradient_end: '',
   theme_login_aside_image: '',
+  theme_advanced_override: '',
 };
 
 // Default values for Light theme
@@ -32,4 +33,5 @@ export const LIGHT_DEFAULTS = {
   theme_login_aside_gradient_start: '',
   theme_login_aside_gradient_end: '',
   theme_login_aside_image: '',
+  theme_advanced_override: '',
 };

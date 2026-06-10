@@ -56,6 +56,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_login_aside_gradient_start: input.theme_login_aside_gradient_start ?? null,
     theme_login_aside_gradient_end: input.theme_login_aside_gradient_end ?? null,
     theme_login_aside_image: input.theme_login_aside_image ?? null,
+    theme_advanced_override: input.theme_advanced_override,
     built_in: input.built_in ?? false,
   };
 
@@ -82,6 +83,7 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_login_aside_gradient_start: DARK_DEFAULTS.theme_login_aside_gradient_start,
     theme_login_aside_gradient_end: DARK_DEFAULTS.theme_login_aside_gradient_end,
     theme_login_aside_image: DARK_DEFAULTS.theme_login_aside_image,
+    theme_advanced_override: DARK_DEFAULTS.theme_advanced_override,
     built_in: true,
   };
 
@@ -103,6 +105,7 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_login_aside_gradient_start: LIGHT_DEFAULTS.theme_login_aside_gradient_start,
     theme_login_aside_gradient_end: LIGHT_DEFAULTS.theme_login_aside_gradient_end,
     theme_login_aside_image: LIGHT_DEFAULTS.theme_login_aside_image,
+    theme_advanced_override: LIGHT_DEFAULTS.theme_advanced_override,
     built_in: true,
   };
 
@@ -157,6 +160,7 @@ const themeImportSchema = z.object({
   theme_login_aside_gradient_start: z.string().nullable().optional().default(null),
   theme_login_aside_gradient_end: z.string().nullable().optional().default(null),
   theme_login_aside_image: z.string().nullable().optional().default(null),
+  theme_advanced_override: z.string().optional().default(''),
 });
 
 export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {

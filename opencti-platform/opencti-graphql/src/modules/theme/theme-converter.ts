@@ -22,6 +22,7 @@ const convertThemeToStix = (instance: StoreEntityTheme): StixTheme => {
     theme_login_aside_gradient_end: instance.theme_login_aside_gradient_end,
     theme_login_aside_gradient_start: instance.theme_login_aside_gradient_start,
     theme_login_aside_image: instance.theme_login_aside_image,
+    theme_advanced_override: instance.theme_advanced_override,
     built_in: instance.built_in,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

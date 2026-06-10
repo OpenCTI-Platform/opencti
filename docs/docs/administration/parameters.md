@@ -150,6 +150,27 @@ data:image/png;base64,iVBORw0KGgoAAAANS...
 
 **Supported formats:** PNG, JPG, SVG
 
+#### Advanced theme override:
+
+Advanced users can specify an override of the theme by providing formatted JSON. If the JSON is not formatted properly the override will be ignored. 
+
+An understanding of how the base theme is structured is essential for creating a valid override. Property names must match the names used within the theme exactly for the override to function properly. These values can be found when reviewing the classes applied to the elements.
+
+MUI component styles can be overridden using the component name and style overrides property like the example below. 
+```json
+{
+  "components": {
+    "MuiDrawer": {
+      "styleOverrides": {
+        "paper": {
+          "color": "#F5F5F5"
+        }
+      }
+    }
+  }
+}
+```
+
 
 ### Importing a theme
 
@@ -170,7 +191,8 @@ To import a pre-configured theme:
   "theme_text_color": "#e0e0e0",
   "theme_logo": "",
   "theme_logo_collapsed": "",
-  "theme_logo_login": ""
+  "theme_logo_login": "",
+  "theme_advanced_override": ""
 }
 ```
 

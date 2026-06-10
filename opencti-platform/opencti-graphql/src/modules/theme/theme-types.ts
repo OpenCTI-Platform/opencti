@@ -20,6 +20,7 @@ export interface BasicStoreEntityTheme extends BasicStoreEntity {
   theme_login_aside_gradient_end: string;
   theme_login_aside_image: string;
   built_in: boolean;
+  theme_advanced_override: string;
 }
 
 export interface StoreEntityTheme extends StoreEntity {
@@ -39,6 +40,7 @@ export interface StoreEntityTheme extends StoreEntity {
   theme_login_aside_gradient_end: string;
   theme_login_aside_image: string;
   built_in: boolean;
+  theme_advanced_override: string;
 }
 // endregion
 
@@ -60,6 +62,7 @@ export interface StixTheme extends StixObject {
   theme_login_aside_gradient_end: string;
   theme_login_aside_image: string;
   built_in: boolean;
+  theme_advanced_override: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

@@ -15,6 +15,7 @@ interface ThemeType {
   theme_login_aside_gradient_end?: string | null;
   theme_login_aside_gradient_start?: string | null;
   theme_login_aside_image?: string | null;
+  theme_advanced_override?: string | null;
   system_default?: boolean | null;
   // UI only, but single source of truth for formik
   theme_login_aside_type: LoginAsideType;

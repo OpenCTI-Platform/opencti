@@ -41,6 +41,7 @@ export const refetchableThemesQuery = graphql`
           theme_login_aside_gradient_end
           theme_login_aside_gradient_start
           theme_login_aside_image
+          theme_advanced_override
         }
       }
     }
@@ -112,6 +113,7 @@ const themesLineFragment = graphql`
     theme_login_aside_gradient_start
     theme_login_aside_image
     built_in
+    theme_advanced_override
   }
 `;
 

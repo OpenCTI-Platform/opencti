@@ -34674,6 +34674,7 @@ export type Theme = BasicObject & InternalObject & {
   representative: Representative;
   standard_id: Scalars['String']['output'];
   theme_accent: Scalars['String']['output'];
+  theme_advanced_override?: Maybe<Scalars['String']['output']>;
   theme_background: Scalars['String']['output'];
   theme_login_aside_color?: Maybe<Scalars['String']['output']>;
   theme_login_aside_gradient_end?: Maybe<Scalars['String']['output']>;
@@ -34694,6 +34695,7 @@ export type ThemeAddInput = {
   built_in?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   theme_accent: Scalars['String']['input'];
+  theme_advanced_override?: InputMaybe<Scalars['String']['input']>;
   theme_background: Scalars['String']['input'];
   theme_login_aside_color?: InputMaybe<Scalars['String']['input']>;
   theme_login_aside_gradient_end?: InputMaybe<Scalars['String']['input']>;
@@ -52312,6 +52314,7 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_advanced_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_login_aside_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_login_aside_gradient_end?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
