@@ -139,8 +139,8 @@ describe('WorkflowStatus', () => {
     const iconButton = document.querySelector('[aria-label="View last comment"]') as HTMLElement;
     await user.click(iconButton);
     await screen.findByText('Looks good');
-    // Click outside to close
-    await user.click(document.body);
+    // Press Escape to close (clicking document.body doesn't trigger MUI backdrop in jsdom)
+    await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByText('Looks good')).toBeNull());
   });
 });
