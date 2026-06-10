@@ -10,6 +10,15 @@ import { insertNode } from '../../../../utils/store';
 import Drawer from '../../common/drawer/Drawer';
 import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreateMutation.graphql';
 import { LoginAsideType, ThemeCreationInput } from './ThemeType';
+import {
+  THEME_DARK_DEFAULT_ACCENT,
+  THEME_DARK_DEFAULT_BACKGROUND,
+  THEME_DARK_DEFAULT_PAPER,
+  THEME_DARK_DEFAULT_PRIMARY,
+  THEME_DARK_DEFAULT_SECONDARY,
+  THEME_DARK_DEFAULT_TEXT,
+} from '../../../../components/ThemeDark';
+import { formatJsonStringContent } from '../../../../utils/String';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -45,13 +54,13 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
 
   const initialValues: ThemeCreationInput = {
     name: '',
-    theme_background: '',
-    theme_paper: '',
-    theme_nav: '',
-    theme_primary: '',
-    theme_secondary: '',
-    theme_accent: '',
-    theme_text_color: '',
+    theme_background: THEME_DARK_DEFAULT_BACKGROUND,
+    theme_paper: THEME_DARK_DEFAULT_PAPER,
+    theme_nav: THEME_DARK_DEFAULT_BACKGROUND,
+    theme_primary: THEME_DARK_DEFAULT_PRIMARY,
+    theme_secondary: THEME_DARK_DEFAULT_SECONDARY,
+    theme_accent: THEME_DARK_DEFAULT_ACCENT,
+    theme_text_color: THEME_DARK_DEFAULT_TEXT,
     theme_logo: '',
     theme_logo_collapsed: '',
     theme_logo_login: '',
@@ -60,6 +69,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     theme_login_aside_gradient_start: '',
     theme_login_aside_gradient_end: '',
     theme_login_aside_image: '',
+    theme_advanced_override: '',
   };
 
   const handleSubmit = async (
@@ -86,6 +96,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
             theme_login_aside_gradient_start: values.theme_login_aside_gradient_start || null,
             theme_login_aside_gradient_end: values.theme_login_aside_gradient_end || null,
             theme_login_aside_image: values.theme_login_aside_image || null,
+            theme_advanced_override: formatJsonStringContent(values.theme_advanced_override ?? ''),
           },
         },
         updater: (store: RecordSourceSelectorProxy) => insertNode(

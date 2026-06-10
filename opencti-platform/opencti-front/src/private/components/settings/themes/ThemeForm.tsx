@@ -13,6 +13,7 @@ import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import ThemeDetectDuplicate from './ThemeDetectDuplicate';
 import ThemeType from './ThemeType';
+import Alert from '@mui/material/Alert';
 
 interface ThemeFormProps {
   values: {
@@ -31,6 +32,7 @@ interface ThemeFormProps {
     theme_login_aside_gradient_start?: string | null;
     theme_login_aside_gradient_end?: string | null;
     theme_login_aside_image?: string | null;
+    theme_advanced_override?: string | null;
   };
   errors?: Record<string, string>;
   isSubmitting: boolean;
@@ -49,6 +51,17 @@ const loginAsideFields = [
   'theme_login_aside_gradient_end',
   'theme_login_aside_image',
 ] as const;
+
+const validateJsonFormat = (json: string | null | undefined) => {
+  try {
+    if (json) {
+      JSON.parse(json);
+    }
+    return true;
+  } catch (_error) {
+    return false;
+  }
+};
 
 const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   values,
@@ -71,8 +84,14 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   const [loginAsideType, setLoginAsideType] = useState(
     formikValues.theme_login_aside_type || '',
   );
+  const [jsonFormatError, setJsonFormatError] = useState<boolean>(!validateJsonFormat(formikValues.theme_advanced_override));
 
   const handleFieldSubmit = () => {
+    onChange?.(formikValues);
+  };
+
+  const handleJSONSubmit = () => {
+    setJsonFormatError(!validateJsonFormat(formikValues.theme_advanced_override));
     onChange?.(formikValues);
   };
 
@@ -146,7 +165,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Background color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -156,7 +174,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Paper color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -166,7 +183,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Navigation color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -176,7 +192,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Primary color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -186,7 +201,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Secondary color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -196,7 +210,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Accent color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -206,7 +219,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Text color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -332,6 +344,34 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
               />
             )}
           </div>
+        </Stack>
+        {/* ADVANCED THEME OVERRIDE */}
+        <Stack gap={1}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 400 }}>
+            {t_i18n('Advanced theme override')}
+          </Typography>
+
+          <Label>
+            {t_i18n('Provide custom JSON override of styles')}
+          </Label>
+          {jsonFormatError
+            && (
+              <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
+                {t_i18n('JSON is not properly formatted. Provided override will not be used.')}
+              </Alert>
+            )
+          }
+          <Stack gap={2.5}>
+            <Field
+              component={TextField}
+              rows={16}
+              name="theme_advanced_override"
+              label={t_i18n('Advanced theme override')}
+              fullWidth
+              variant="standard"
+              onBlur={handleJSONSubmit}
+            />
+          </Stack>
         </Stack>
       </Stack>
 
