@@ -36,4 +36,4 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
   },
 });
 
-export default buildIntegrationTestConfig(['**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
+export default buildIntegrationTestConfig(['(02|03|10|11|20|21|30|99)-*/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
