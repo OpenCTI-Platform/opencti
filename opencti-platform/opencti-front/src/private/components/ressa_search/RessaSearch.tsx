@@ -740,8 +740,6 @@ const RessaSearch = () => {
             gap: 0.5,
             marginBottom: 0,
             overflowX: 'auto',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
             paddingBottom: 0,
           }}
         >
