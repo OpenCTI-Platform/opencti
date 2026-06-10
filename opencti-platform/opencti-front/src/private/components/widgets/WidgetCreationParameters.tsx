@@ -228,12 +228,16 @@ const WidgetCreationParameters = () => {
 
   const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
     const prevSelection = dataSelection[index];
+    const entityType = host.kind === 'custom-view'
+      ? host.customViewTargetEntityType
+      : undefined;
+
     const newSelection = {
       ...prevSelection,
       layout: newLayout,
       columns: prevSelection.columns?.length
         ? prevSelection.columns
-        : getDefaultCustomAttributesColumns(),
+        : getDefaultCustomAttributesColumns(entityType),
     };
     setDataSelectionWithIndex(newSelection, index);
   };

@@ -27,6 +27,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         modified
         confidence
         standard_id
+        confidence
+        revoked
         status {
           id
           order
@@ -37,12 +39,125 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         }
         workflowEnabled
       }
+      ... on Report {
+        name
+        description
+        report_types
+        content
+        objectAssignee {
+          id
+          name
+          entity_type
+        }
+        objectParticipant {
+          id
+          name
+          entity_type
+        }
+      }
+      ... on Grouping {
+        name
+        description
+        context
+        content
+      }
       ... on Campaign {
         name
         description
         aliases
         confidence
         revoked
+        objective
+        first_seen
+        last_seen
+      }
+      ... on MalwareAnalysis {
+        product
+        result_name
+        result
+        submitted
+        analysis_started
+        analysis_ended
+        version
+        configuration_version 
+        analysis_engine_version
+        analysis_definition_version
+        modules
+        confidence
+        revoked
+        operatingSystem {
+          id
+          name
+          entity_type
+        }
+        configuration_version
+        objectAssignee {
+          id
+          name
+          entity_type
+        }
+      }
+      ... on CaseIncident {
+        name
+        description
+        priority
+        severity
+        response_types
+        objectAssignee {
+          name
+          id
+        }
+        objectParticipant {
+          name
+          id
+        }
+      }
+      ... on CaseRfi {
+        name
+        description
+        priority
+        severity
+        information_types
+        content
+        objectAssignee {
+          name
+          id
+        }
+        objectParticipant {
+          name
+          id
+        }
+      }
+      ... on CaseRft {
+        name
+        description
+        priority
+        severity
+        takedown_types
+        content
+        objectAssignee {
+          name
+          id
+        }
+        objectParticipant {
+          name
+          id
+        }
+      }
+      ... on Incident {
+        name
+        description
+        objectParticipant {
+          id
+            name
+        }
+        objectAssignee {
+          id
+          name
+        }
+        incident_type
+        severity
+        source
         objective
         first_seen
         last_seen
