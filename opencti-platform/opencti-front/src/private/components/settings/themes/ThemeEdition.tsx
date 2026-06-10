@@ -28,6 +28,7 @@ const editThemeMutation = graphql`
       theme_login_aside_gradient_start
       theme_login_aside_gradient_end
       theme_login_aside_image
+      theme_advanced_override
     }
   }
 `;
@@ -63,20 +64,21 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
           id: values.id,
           input: [
             { key: 'name', value: values.name },
-            { key: 'theme_background', value: values.theme_background },
-            { key: 'theme_paper', value: values.theme_paper },
-            { key: 'theme_nav', value: values.theme_nav },
-            { key: 'theme_primary', value: values.theme_primary },
-            { key: 'theme_secondary', value: values.theme_secondary },
-            { key: 'theme_accent', value: values.theme_accent },
-            { key: 'theme_logo', value: values.theme_logo },
-            { key: 'theme_logo_collapsed', value: values.theme_logo_collapsed },
-            { key: 'theme_logo_login', value: values.theme_logo_login },
-            { key: 'theme_text_color', value: values.theme_text_color },
+            { key: 'theme_background', value: values.theme_background ?? '' },
+            { key: 'theme_paper', value: values.theme_paper ?? '' },
+            { key: 'theme_nav', value: values.theme_nav ?? '' },
+            { key: 'theme_primary', value: values.theme_primary ?? '' },
+            { key: 'theme_secondary', value: values.theme_secondary ?? '' },
+            { key: 'theme_accent', value: values.theme_accent ?? '' },
+            { key: 'theme_logo', value: values.theme_logo ?? '' },
+            { key: 'theme_logo_collapsed', value: values.theme_logo_collapsed ?? '' },
+            { key: 'theme_logo_login', value: values.theme_logo_login ?? '' },
+            { key: 'theme_text_color', value: values.theme_text_color ?? '' },
             { key: 'theme_login_aside_color', value: values.theme_login_aside_color ?? '' },
             { key: 'theme_login_aside_gradient_start', value: values.theme_login_aside_gradient_start ?? '' },
             { key: 'theme_login_aside_gradient_end', value: values.theme_login_aside_gradient_end ?? '' },
             { key: 'theme_login_aside_image', value: values.theme_login_aside_image ?? '' },
+            { key: 'theme_advanced_override', value: values.theme_advanced_override ?? '' },
           ],
         },
         onCompleted: () => resolve(),

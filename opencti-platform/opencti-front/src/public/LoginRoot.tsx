@@ -32,6 +32,7 @@ export const rootPublicQuery = graphql`
         theme_login_aside_gradient_end
         theme_login_aside_gradient_start
         theme_login_aside_image
+        theme_advanced_override
       }
       platform_login_message
       platform_consent_message

@@ -325,3 +325,18 @@ export interface Theme extends MuiTheme {
     };
   };
 }
+
+export interface AppThemeType {
+  name: string;
+  theme_background?: string | null;
+  theme_paper?: string | null;
+  theme_nav?: string | null;
+  theme_primary?: string | null;
+  theme_secondary?: string | null;
+  theme_accent?: string | null;
+  theme_logo?: string | null;
+  theme_logo_collapsed?: string | null;
+  theme_logo_login?: string | null;
+  theme_text_color: string;
+  theme_advanced_override?: string | null;
+}

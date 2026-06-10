@@ -34,6 +34,7 @@ const THEME_DEFINITION: ModuleDefinition<StoreEntityTheme, StixTheme> = {
     { name: 'theme_login_aside_gradient_start', label: 'Theme login aside gradient start', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'theme_login_aside_gradient_end', label: 'Theme login aside gradient end', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'theme_login_aside_image', label: 'Theme login aside image', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'theme_advanced_override', label: 'Theme advanced override', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixTheme) => {

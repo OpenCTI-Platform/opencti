@@ -34249,6 +34249,7 @@ export type Theme = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   theme_accent: Scalars['String']['output'];
+  theme_advanced_override?: Maybe<Scalars['String']['output']>;
   theme_background: Scalars['String']['output'];
   theme_login_aside_color?: Maybe<Scalars['String']['output']>;
   theme_login_aside_gradient_end?: Maybe<Scalars['String']['output']>;
@@ -34269,6 +34270,7 @@ export type ThemeAddInput = {
   built_in?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   theme_accent: Scalars['String']['input'];
+  theme_advanced_override?: InputMaybe<Scalars['String']['input']>;
   theme_background: Scalars['String']['input'];
   theme_login_aside_color?: InputMaybe<Scalars['String']['input']>;
   theme_login_aside_gradient_end?: InputMaybe<Scalars['String']['input']>;
@@ -51632,8 +51634,9 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_accent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_advanced_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_background?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_login_aside_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_login_aside_gradient_end?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_login_aside_gradient_start?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51641,11 +51644,11 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   theme_logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_logo_collapsed?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_logo_login?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_nav?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_paper?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_primary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_secondary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_text_color?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_nav?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_paper?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_primary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_secondary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_text_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

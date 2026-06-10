@@ -14981,6 +14981,7 @@ type Theme implements InternalObject & BasicObject {
   theme_login_aside_image: String
   toConfigurationExport: String!
   built_in: Boolean
+  theme_advanced_override: String
   metrics: [Metric]
 }
 
@@ -15003,20 +15004,21 @@ enum ThemeOrdering {
 input ThemeAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
-  theme_background: String!
-  theme_paper: String!
-  theme_nav: String!
-  theme_primary: String!
-  theme_secondary: String!
-  theme_accent: String!
+  theme_background: String
+  theme_paper: String
+  theme_nav: String
+  theme_primary: String
+  theme_secondary: String
+  theme_accent: String
   theme_logo: String
   theme_logo_collapsed: String
   theme_logo_login: String
-  theme_text_color: String!
+  theme_text_color: String
   theme_login_aside_color: String
   theme_login_aside_gradient_start: String
   theme_login_aside_gradient_end: String
   theme_login_aside_image: String
+  theme_advanced_override: String
   built_in: Boolean
 }
 

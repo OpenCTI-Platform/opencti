@@ -1,5 +1,5 @@
 import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback, useRef } from 'react';
-import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps } from '@mui/material';
+import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps, TextArea as MuiTextArea, TextAreaProps as MuiTextAreaProps } from '@mui/material';
 import { fieldToTextField } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
@@ -11,15 +11,17 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   detectDuplicate?: string[];
   askAi?: boolean;
   startAdornment?: ReactNode;
+  rows?: number;
   onFocus?: (name: string) => void;
   onChange?: (name: string, value: string) => void;
   onSubmit?: (name: string, value: string) => void;
   onKeyDown?: (key: string) => void;
   onBeforePaste?: (value: string) => string;
+
 };
 
 const TextField = (props: TextFieldProps) => {
-  const { detectDuplicate, onBeforePaste, startAdornment, askAi, ...htmlProps } = props;
+  const { detectDuplicate, onBeforePaste, startAdornment, askAi, rows, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
@@ -29,6 +31,8 @@ const TextField = (props: TextFieldProps) => {
     onKeyDown,
   } = props;
   const { enabled, configured } = useAI();
+
+  const multiline = rows !== undefined && rows > 1;
 
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -103,6 +107,8 @@ const TextField = (props: TextFieldProps) => {
   return (
     <MuiTextField
       {...otherProps}
+      multiline={multiline}
+      rows={rows}
       value={value ?? ''}
       error={showError}
       helperText={
