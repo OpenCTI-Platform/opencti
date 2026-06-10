@@ -34,7 +34,7 @@ export OPENCTI__HTTPS_PROXY_CA='["/path/to/proxy-ca.pem", "-----BEGIN CERTIFICAT
 export OPENCTI__HTTPS_PROXY_REJECT_UNAUTHORIZED="false"
 ```
 
-- `OPENCTI__HTTPS_PROXY_CA` — path to a CA certificate PEM file on the host.
+- `OPENCTI__HTTPS_PROXY_CA` — JSON array of CA certificate paths and/or PEM blocks used to validate the proxy certificate (for example: `["/path/to/proxy-ca.pem"]`).
 - `OPENCTI__HTTPS_PROXY_REJECT_UNAUTHORIZED` — if set to `false`, Composer injects `NODE_TLS_REJECT_UNAUTHORIZED=0` into connector containers.
 
 ### Important: Certificate Scope Clarification
