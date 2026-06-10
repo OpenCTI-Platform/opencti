@@ -43,7 +43,7 @@ Composer distinguishes two independent certificate configurations:
 
 | Purpose                           | Keys                                                  | Description                                                      |
 |-----------------------------------|-------------------------------------------------------|------------------------------------------------------------------|
-| OpenCTI HTTPS server certificates | `app.https_cert.ca`, `app.https_cert.reject_unauthorized` | TLS configuration for the OpenCTI web server                     |
+| OpenCTI HTTPS server certificates | `app:https_cert:ca`, `app:https_cert:reject_unauthorized` | TLS configuration for the OpenCTI web server                     |
 | Proxy HTTPS certificates          | `https_proxy_ca`, `https_proxy_reject_unauthorized`  | Validation settings for HTTPS connections made through the proxy |
 
 These settings must not be mixed.
