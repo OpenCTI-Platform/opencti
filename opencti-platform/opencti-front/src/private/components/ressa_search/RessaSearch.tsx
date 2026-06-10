@@ -46,9 +46,12 @@ import {
   PushPinOutlined,
   ContentCopy,
   Search,
+  ViewColumn,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import CellContextMenu, { type ContextMenuItem } from './CellContextMenu';
+import ColumnManagerModal from './ColumnManagerModal';
+import { type ColumnDefinition, loadColumnsFromStorage, saveColumnsToStorage } from './ressaSearchColumns';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemEntityType from '../../../components/ItemEntityType';
 import { resolveLink } from '../../../utils/Entity';
@@ -284,6 +287,8 @@ const RessaSearch = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [columns, setColumns] = useState<ColumnDefinition[]>(() => loadColumnsFromStorage());
+  const [columnModalOpen, setColumnModalOpen] = useState(false);
   const isAnyContextMenuOpenRef = useRef(false);
   // const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
@@ -307,6 +312,16 @@ const RessaSearch = () => {
     clearRessaSearchSession();
   }, []);
   const hasResults = (rawResponse?.stats?.primaryDocumentCount ?? 0) > 0;
+  const visibleColumns = useMemo(
+    () => [...columns]
+      .filter((column) => column.visible)
+      .sort((a, b) => a.order - b.order),
+    [columns],
+  );
+
+  useEffect(() => {
+    saveColumnsToStorage(columns);
+  }, [columns]);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
 
@@ -1467,6 +1482,15 @@ const RessaSearch = () => {
                             </FormControl>
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              startIcon={<ViewColumn />}
+                              onClick={() => setColumnModalOpen(true)}
+                              sx={{ textTransform: 'none' }}
+                            >
+                              {t_i18n('Columns')}
+                            </Button>
                             <IconButton
                               size="small"
                               onClick={() => setPage((prev) => Math.max(0, prev - 1))}
@@ -1579,11 +1603,11 @@ const RessaSearch = () => {
                                     }}
                                   />
                                 </TableCell> */}
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Title')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Entity Type')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Tags')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Updated')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Created')}</TableCell>
+                                {visibleColumns.map((column) => (
+                                  <TableCell key={column.id} sx={{ fontWeight: 600 }}>
+                                    {t_i18n(column.label)}
+                                  </TableCell>
+                                ))}
                                 <TableCell sx={{ fontWeight: 600, width: 48 }} />
                               </TableRow>
                             </TableHead>
@@ -1620,109 +1644,139 @@ const RessaSearch = () => {
                                             }}
                                           />
                                         </TableCell> */}
-                                        <TableCell>
-                                          <CellContextMenu
-                                            value={result.title}
-                                            menuItems={titleMenuItems}
-                                            onOpenChange={handleContextMenuOpenChange}
-                                          >
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <IconButton
-                                                  size="small"
-                                                  aria-label={isExpanded ? t_i18n('Collapse') : t_i18n('Expand')}
-                                                  onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    handleRowExpandToggle();
-                                                  }}
-                                                  sx={{ p: 0.5, color: 'text.secondary' }}
+                                        {visibleColumns.map((column) => {
+                                          if (column.id === 'title') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                <CellContextMenu
+                                                  value={result.title}
+                                                  menuItems={titleMenuItems}
+                                                  onOpenChange={handleContextMenuOpenChange}
                                                 >
-                                                  {isExpanded ? (
-                                                    <KeyboardArrowUp fontSize="small" />
-                                                  ) : (
-                                                    <KeyboardArrowDown fontSize="small" />
-                                                  )}
-                                                </IconButton>
-                                                <ItemIcon type={result.entityType} size="small" />
-                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                                  {result.title}
-                                                </Typography>
-                                              </Box>
-                                              <Typography variant="caption" color="text.secondary" sx={{ pl: 4 }}>
-                                                {result.standardId}
-                                              </Typography>
-                                            </Box>
-                                          </CellContextMenu>
-                                        </TableCell>
-                                        <TableCell>
-                                          <ItemEntityType entityType={result.entityType} />
-                                        </TableCell>
-                                        <TableCell>
-                                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                            {result.tags.map((tag, index) => (
-                                              <CellContextMenu
-                                                key={index}
-                                                value={tag}
-                                                menuItems={tagMenuItems}
-                                                onOpenChange={handleContextMenuOpenChange}
-                                              >
-                                                <Chip
-                                                  label={tag}
-                                                  size="small"
-                                                  sx={{
-                                                    height: 24,
-                                                    fontSize: '0.75rem',
-                                                    borderRadius: 1,
-                                                    backgroundColor: (theme) => {
-                                                      const colors = [
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(76, 175, 80, 0.15)'
-                                                          : 'rgba(76, 175, 80, 0.1)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(255, 152, 0, 0.15)'
-                                                          : 'rgba(255, 152, 0, 0.1)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(33, 150, 243, 0.15)'
-                                                          : 'rgba(33, 150, 243, 0.1)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(244, 67, 54, 0.15)'
-                                                          : 'rgba(244, 67, 54, 0.1)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(156, 39, 176, 0.15)'
-                                                          : 'rgba(156, 39, 176, 0.1)',
-                                                      ];
-                                                      return colors[index % colors.length];
-                                                    },
-                                                    border: (theme) => {
-                                                      const borderColors = [
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(76, 175, 80, 0.6)'
-                                                          : 'rgba(76, 175, 80, 0.5)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(255, 152, 0, 0.6)'
-                                                          : 'rgba(255, 152, 0, 0.5)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(33, 150, 243, 0.6)'
-                                                          : 'rgba(33, 150, 243, 0.5)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(244, 67, 54, 0.6)'
-                                                          : 'rgba(244, 67, 54, 0.5)',
-                                                        theme.palette.mode === 'dark'
-                                                          ? 'rgba(156, 39, 176, 0.6)'
-                                                          : 'rgba(156, 39, 176, 0.5)',
-                                                      ];
-                                                      return `1px solid ${borderColors[index % borderColors.length]}`;
-                                                    },
-                                                  }}
-                                                />
-                                              </CellContextMenu>
-                                            ))}
-                                          </Box>
-                                        </TableCell>
-                                        <TableCell>{result.publicationDate ? fd(result.publicationDate) : ''}</TableCell>
-                                        <TableCell>
-                                          {result.registrationDate ? fd(result.registrationDate) : ''}
-                                        </TableCell>
+                                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                      <IconButton
+                                                        size="small"
+                                                        aria-label={isExpanded ? t_i18n('Collapse') : t_i18n('Expand')}
+                                                        onClick={(event) => {
+                                                          event.stopPropagation();
+                                                          handleRowExpandToggle();
+                                                        }}
+                                                        sx={{ p: 0.5, color: 'text.secondary' }}
+                                                      >
+                                                        {isExpanded ? (
+                                                          <KeyboardArrowUp fontSize="small" />
+                                                        ) : (
+                                                          <KeyboardArrowDown fontSize="small" />
+                                                        )}
+                                                      </IconButton>
+                                                      <ItemIcon type={result.entityType} size="small" />
+                                                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                        {result.title}
+                                                      </Typography>
+                                                    </Box>
+                                                    <Typography variant="caption" color="text.secondary" sx={{ pl: 4 }}>
+                                                      {result.standardId}
+                                                    </Typography>
+                                                  </Box>
+                                                </CellContextMenu>
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'entityType') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                <ItemEntityType entityType={result.entityType} />
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'tags') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                  {result.tags.map((tag, index) => (
+                                                    <CellContextMenu
+                                                      key={index}
+                                                      value={tag}
+                                                      menuItems={tagMenuItems}
+                                                      onOpenChange={handleContextMenuOpenChange}
+                                                    >
+                                                      <Chip
+                                                        label={tag}
+                                                        size="small"
+                                                        sx={{
+                                                          height: 24,
+                                                          fontSize: '0.75rem',
+                                                          borderRadius: 1,
+                                                          backgroundColor: (theme) => {
+                                                            const colors = [
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(76, 175, 80, 0.15)'
+                                                                : 'rgba(76, 175, 80, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(255, 152, 0, 0.15)'
+                                                                : 'rgba(255, 152, 0, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(33, 150, 243, 0.15)'
+                                                                : 'rgba(33, 150, 243, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(244, 67, 54, 0.15)'
+                                                                : 'rgba(244, 67, 54, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(156, 39, 176, 0.15)'
+                                                                : 'rgba(156, 39, 176, 0.1)',
+                                                            ];
+                                                            return colors[index % colors.length];
+                                                          },
+                                                          border: (theme) => {
+                                                            const borderColors = [
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(76, 175, 80, 0.6)'
+                                                                : 'rgba(76, 175, 80, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(255, 152, 0, 0.6)'
+                                                                : 'rgba(255, 152, 0, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(33, 150, 243, 0.6)'
+                                                                : 'rgba(33, 150, 243, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(244, 67, 54, 0.6)'
+                                                                : 'rgba(244, 67, 54, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(156, 39, 176, 0.6)'
+                                                                : 'rgba(156, 39, 176, 0.5)',
+                                                            ];
+                                                            return `1px solid ${borderColors[index % borderColors.length]}`;
+                                                          },
+                                                        }}
+                                                      />
+                                                    </CellContextMenu>
+                                                  ))}
+                                                </Box>
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'updated') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                {result.publicationDate ? fd(result.publicationDate) : ''}
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'created') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                {result.registrationDate ? fd(result.registrationDate) : ''}
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          return null;
+                                        })}
                                         <TableCell align="right">
                                           <IconButton
                                             size="small"
@@ -1738,7 +1792,7 @@ const RessaSearch = () => {
                                         </TableCell>
                                       </TableRow>
                                       <TableRow>
-                                        <TableCell colSpan={6} sx={{ py: 0, borderBottom: isExpanded ? undefined : 0 }}>
+                                        <TableCell colSpan={visibleColumns.length + 1} sx={{ py: 0, borderBottom: isExpanded ? undefined : 0 }}>
                                           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                                             <Box sx={{ py: 2, px: 1 }}>
                                               <Typography variant="body2">
@@ -1939,6 +1993,13 @@ const RessaSearch = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ColumnManagerModal
+        open={columnModalOpen}
+        onClose={() => setColumnModalOpen(false)}
+        columns={columns}
+        onChange={setColumns}
+      />
     </>
   );
 };
