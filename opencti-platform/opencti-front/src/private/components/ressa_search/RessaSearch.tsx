@@ -44,8 +44,11 @@ import {
   Add,
   PushPin,
   PushPinOutlined,
+  ContentCopy,
+  Search,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
+import CellContextMenu, { type ContextMenuItem } from './CellContextMenu';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemEntityType from '../../../components/ItemEntityType';
 import { resolveLink } from '../../../utils/Entity';
@@ -281,6 +284,7 @@ const RessaSearch = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const isAnyContextMenuOpenRef = useRef(false);
   // const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
@@ -468,6 +472,50 @@ const RessaSearch = () => {
 
   const runSearchRef = useRef(runSearch);
   runSearchRef.current = runSearch;
+
+  const titleMenuItems = useMemo<ContextMenuItem[]>(
+    () => [
+      {
+        title: t_i18n('Copy'),
+        icon: <ContentCopy fontSize="small" />,
+        onClick: (value) => {
+          void navigator.clipboard.writeText(value);
+        },
+      },
+      {
+        title: t_i18n('Search this title'),
+        icon: <Search fontSize="small" />,
+        onClick: (value) => {
+          void runSearch(value);
+        },
+      },
+    ],
+    [runSearch, t_i18n],
+  );
+
+  const tagMenuItems = useMemo<ContextMenuItem[]>(
+    () => [
+      {
+        title: t_i18n('Copy'),
+        icon: <ContentCopy fontSize="small" />,
+        onClick: (value) => {
+          void navigator.clipboard.writeText(value);
+        },
+      },
+      {
+        title: t_i18n('Search this tag'),
+        icon: <Search fontSize="small" />,
+        onClick: (value) => {
+          void runSearch(value);
+        },
+      },
+    ],
+    [runSearch, t_i18n],
+  );
+
+  const handleContextMenuOpenChange = useCallback((open: boolean) => {
+    isAnyContextMenuOpenRef.current = open;
+  }, []);
 
   const handleSearch = () => {
     runSearch(activeTab.query);
@@ -1549,6 +1597,7 @@ const RessaSearch = () => {
                                     : `/dashboard/id/${result.id}`;
                                   const isExpanded = expandedRowId === result.id;
                                   const handleRowExpandToggle = () => {
+                                    if (isAnyContextMenuOpenRef.current) return;
                                     setExpandedRowId((current) => (current === result.id ? null : result.id));
                                   };
                                   return (
@@ -1572,32 +1621,38 @@ const RessaSearch = () => {
                                           />
                                         </TableCell> */}
                                         <TableCell>
-                                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                              <IconButton
-                                                size="small"
-                                                aria-label={isExpanded ? t_i18n('Collapse') : t_i18n('Expand')}
-                                                onClick={(event) => {
-                                                  event.stopPropagation();
-                                                  handleRowExpandToggle();
-                                                }}
-                                                sx={{ p: 0.5, color: 'text.secondary' }}
-                                              >
-                                                {isExpanded ? (
-                                                  <KeyboardArrowUp fontSize="small" />
-                                                ) : (
-                                                  <KeyboardArrowDown fontSize="small" />
-                                                )}
-                                              </IconButton>
-                                              <ItemIcon type={result.entityType} size="small" />
-                                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                                {result.title}
+                                          <CellContextMenu
+                                            value={result.title}
+                                            menuItems={titleMenuItems}
+                                            onOpenChange={handleContextMenuOpenChange}
+                                          >
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <IconButton
+                                                  size="small"
+                                                  aria-label={isExpanded ? t_i18n('Collapse') : t_i18n('Expand')}
+                                                  onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    handleRowExpandToggle();
+                                                  }}
+                                                  sx={{ p: 0.5, color: 'text.secondary' }}
+                                                >
+                                                  {isExpanded ? (
+                                                    <KeyboardArrowUp fontSize="small" />
+                                                  ) : (
+                                                    <KeyboardArrowDown fontSize="small" />
+                                                  )}
+                                                </IconButton>
+                                                <ItemIcon type={result.entityType} size="small" />
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                  {result.title}
+                                                </Typography>
+                                              </Box>
+                                              <Typography variant="caption" color="text.secondary" sx={{ pl: 4 }}>
+                                                {result.standardId}
                                               </Typography>
                                             </Box>
-                                            <Typography variant="caption" color="text.secondary" sx={{ pl: 4 }}>
-                                              {result.standardId}
-                                            </Typography>
-                                          </Box>
+                                          </CellContextMenu>
                                         </TableCell>
                                         <TableCell>
                                           <ItemEntityType entityType={result.entityType} />
@@ -1605,56 +1660,62 @@ const RessaSearch = () => {
                                         <TableCell>
                                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                             {result.tags.map((tag, index) => (
-                                              <Chip
+                                              <CellContextMenu
                                                 key={index}
-                                                label={tag}
-                                                size="small"
-                                                sx={{
-                                                  height: 24,
-                                                  fontSize: '0.75rem',
-                                                  borderRadius: 1,
-                                                  backgroundColor: (theme) => {
-                                                    const colors = [
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(76, 175, 80, 0.15)'
-                                                        : 'rgba(76, 175, 80, 0.1)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(255, 152, 0, 0.15)'
-                                                        : 'rgba(255, 152, 0, 0.1)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(33, 150, 243, 0.15)'
-                                                        : 'rgba(33, 150, 243, 0.1)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(244, 67, 54, 0.15)'
-                                                        : 'rgba(244, 67, 54, 0.1)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(156, 39, 176, 0.15)'
-                                                        : 'rgba(156, 39, 176, 0.1)',
-                                                    ];
-                                                    return colors[index % colors.length];
-                                                  },
-                                                  border: (theme) => {
-                                                    const borderColors = [
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(76, 175, 80, 0.6)'
-                                                        : 'rgba(76, 175, 80, 0.5)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(255, 152, 0, 0.6)'
-                                                        : 'rgba(255, 152, 0, 0.5)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(33, 150, 243, 0.6)'
-                                                        : 'rgba(33, 150, 243, 0.5)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(244, 67, 54, 0.6)'
-                                                        : 'rgba(244, 67, 54, 0.5)',
-                                                      theme.palette.mode === 'dark'
-                                                        ? 'rgba(156, 39, 176, 0.6)'
-                                                        : 'rgba(156, 39, 176, 0.5)',
-                                                    ];
-                                                    return `1px solid ${borderColors[index % borderColors.length]}`;
-                                                  },
-                                                }}
-                                              />
+                                                value={tag}
+                                                menuItems={tagMenuItems}
+                                                onOpenChange={handleContextMenuOpenChange}
+                                              >
+                                                <Chip
+                                                  label={tag}
+                                                  size="small"
+                                                  sx={{
+                                                    height: 24,
+                                                    fontSize: '0.75rem',
+                                                    borderRadius: 1,
+                                                    backgroundColor: (theme) => {
+                                                      const colors = [
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(76, 175, 80, 0.15)'
+                                                          : 'rgba(76, 175, 80, 0.1)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(255, 152, 0, 0.15)'
+                                                          : 'rgba(255, 152, 0, 0.1)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(33, 150, 243, 0.15)'
+                                                          : 'rgba(33, 150, 243, 0.1)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(244, 67, 54, 0.15)'
+                                                          : 'rgba(244, 67, 54, 0.1)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(156, 39, 176, 0.15)'
+                                                          : 'rgba(156, 39, 176, 0.1)',
+                                                      ];
+                                                      return colors[index % colors.length];
+                                                    },
+                                                    border: (theme) => {
+                                                      const borderColors = [
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(76, 175, 80, 0.6)'
+                                                          : 'rgba(76, 175, 80, 0.5)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(255, 152, 0, 0.6)'
+                                                          : 'rgba(255, 152, 0, 0.5)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(33, 150, 243, 0.6)'
+                                                          : 'rgba(33, 150, 243, 0.5)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(244, 67, 54, 0.6)'
+                                                          : 'rgba(244, 67, 54, 0.5)',
+                                                        theme.palette.mode === 'dark'
+                                                          ? 'rgba(156, 39, 176, 0.6)'
+                                                          : 'rgba(156, 39, 176, 0.5)',
+                                                      ];
+                                                      return `1px solid ${borderColors[index % borderColors.length]}`;
+                                                    },
+                                                  }}
+                                                />
+                                              </CellContextMenu>
                                             ))}
                                           </Box>
                                         </TableCell>
