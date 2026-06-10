@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { join } from 'node:path';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { type BasicStoreEntitySupportPackage, ENTITY_TYPE_SUPPORT_PACKAGE, type StoreEntitySupportPackage, SUPPORT_BUS } from './support-types';
@@ -77,7 +77,7 @@ export const findAllSupportFiles = (files: string[], prefix: string): string[] =
 };
 
 const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) => {
-  const archive = archiver('zip');
+  const archive = new ZipArchive();
   const output = fs.createWriteStream(zipFullpath);
 
   let closed = false;
