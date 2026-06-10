@@ -33,6 +33,7 @@ import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
+import { checkPlatformAiEnabled } from '../utils/ai/platformAiEnabled';
 import { notify } from '../database/redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
@@ -281,6 +282,7 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
 
 export const aiSummary = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
 
   const { busId = null, language = 'English', forceRefresh = false } = args;
   const hasTypesArgs = args.types && args.types.length > 0;
