@@ -20,7 +20,7 @@ export OPENCTI__HTTPS_PROXY="http://proxy.example.com:8080"
 export OPENCTI__NO_PROXY="localhost,127.0.0.1,.example.com"
 ```
 
-When enabled, XTM Composer forwards proxy settings to managed connector containers.
+When enabled, XTM Composer forwards these proxy settings to managed connector containers as `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
 
 ## HTTPS Proxy Certificate Support (optional)
 
