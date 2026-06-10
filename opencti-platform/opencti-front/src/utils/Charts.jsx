@@ -81,6 +81,9 @@ export const lineChartOptions = (
     foreColor: theme.palette.text.secondary,
     width: '100%',
     height: '100%',
+    animations: {
+      enabled: !theme.isExportTheme,
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -176,6 +179,9 @@ export const areaChartOptions = (
     stacked: isStacked,
     width: '100%',
     height: '100%',
+    animations: {
+      enabled: !theme.isExportTheme,
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -286,6 +292,9 @@ export const verticalBarsChartOptions = (
     stacked: isStacked,
     width: '100%',
     height: '100%',
+    animations: {
+      enabled: !theme.isExportTheme,
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -398,6 +407,9 @@ export const horizontalBarsChartOptions = (
     stackType,
     width: '100%',
     height: '100%',
+    animations: {
+      enabled: !theme.isExportTheme,
+    },
     events: {
       xAxisLabelClick: (event, chartContext, config) => {
         if (redirectionUtils) {
@@ -594,6 +606,9 @@ export const radarChartOptions = (
     toolbar: toolbarOptions,
     width: '100%',
     height: '100%',
+    animations: {
+      enabled: !theme.isExportTheme,
+    },
     events: {
       click: () => handleClick(),
       markerClick: () => handleClick(),
@@ -708,6 +723,9 @@ export const polarAreaChartOptions = (
       foreColor: theme.palette.text.secondary,
       width: '100%',
       height: '100%',
+      animations: {
+        enabled: !theme.isExportTheme,
+      },
     },
     theme: {
       mode: theme.palette.mode,
@@ -825,6 +843,9 @@ export const donutChartOptions = (
       foreColor: theme.palette.text.secondary,
       width: '100%',
       height: '100%',
+      animations: {
+        enabled: !theme.isExportTheme,
+      },
     },
     theme: {
       mode: theme.palette.mode,
@@ -907,6 +928,9 @@ export const treeMapOptions = (
       foreColor: theme.palette.text.secondary,
       width: '100%',
       height: '100%',
+      animations: {
+        enabled: !theme.isExportTheme,
+      },
     },
     theme: {
       mode: theme.palette.mode,
@@ -988,6 +1012,9 @@ export const heatMapOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
+    animations: {
+      enabled: !theme.isExportTheme,
+    },
   },
   theme: {
     mode: theme.palette.mode,

@@ -129,6 +129,7 @@ declare module '@mui/material/styles' {
     tag: {
       overflowColor: string;
     };
+    isExportTheme?: boolean;
   }
 
   interface ThemeOptions {
@@ -144,6 +145,7 @@ declare module '@mui/material/styles' {
     tag?: {
       overflowColor?: string;
     };
+    isExportTheme?: boolean;
   }
 }
 
@@ -324,4 +326,5 @@ export interface Theme extends MuiTheme {
       small: SizeConfig;
     };
   };
+  isExportTheme?: boolean;
 }
