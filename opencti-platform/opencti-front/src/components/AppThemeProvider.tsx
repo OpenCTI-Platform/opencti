@@ -112,10 +112,11 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
       theme_secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
       theme_text_color: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
     };
-    const theme = createTheme(themeBuilder(appTheme) as ThemeOptions);
-    theme.isExportTheme = !!exportTheme;
-    return theme;
-  }, [themeToUse, !!exportTheme]);
+    return createTheme({
+      ...(themeBuilder(appTheme) as ThemeOptions),
+      isExportTheme: !!exportTheme,
+    });
+  }, [themeToUse, exportTheme]);
 
   // Compute the lowercase palette mode used by the body `data-theme`
   // attribute. This must match `theme.palette.mode` so that CSS files
