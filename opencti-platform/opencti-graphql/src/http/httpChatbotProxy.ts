@@ -46,6 +46,11 @@ const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTim
   : AI_AGENTS_REFRESH_TIMEOUT_DEFAULT_MINUTES;
 const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60);
 
+// Strict UUID shape check for path parameters forwarded to XTM One
+// (conversation ids, file ids). Rejecting anything else up-front keeps
+// arbitrary strings out of the upstream URL path.
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
 const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, string>) => {
   return getHttpClient({
@@ -220,25 +225,27 @@ export const getChatbotSessions = async (req: Express.Request, res: Express.Resp
     const response = await httpClient.get('/api/v1/platform/chat/sessions', {
       timeout: DEFAULT_XTM_TIMEOUT,
     });
-    res.json(response.data);
+    res.status(response.status).json(response.data);
   } catch (e: unknown) {
     logApp.error('Error in chatbot sessions list', { cause: e });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: message });
+    // Surface the upstream `detail` / `message` (e.g. FastAPI validation
+    // errors) instead of the generic axios "Request failed with status
+    // code N", so failures are actionable in the UI and logs.
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
   }
 };
 
 // ── DELETE /chatbot/sessions/:conversationId ────────────────────────────
 // Removes a conversation from the chatbot history menu (archived upstream).
-const CONVERSATION_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
 export const deleteChatbotSession = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
     if (!context?.user) return;
     const conversationId = String(req.params.conversationId ?? '');
-    if (!conversationId || !CONVERSATION_ID_RE.test(conversationId)) {
+    if (!conversationId || !UUID_RE.test(conversationId)) {
       res.status(400).json({ error: 'Invalid conversation id' });
       return;
     }
@@ -247,15 +254,18 @@ export const deleteChatbotSession = async (req: Express.Request, res: Express.Re
       Authorization: `Bearer ${jwt}`,
       'Content-Type': 'application/json',
     });
-    await httpClient.delete(`/api/v1/platform/chat/sessions/${conversationId}`, {
+    const response = await httpClient.delete(`/api/v1/platform/chat/sessions/${conversationId}`, {
       timeout: DEFAULT_XTM_TIMEOUT,
     });
-    res.sendStatus(204);
+    // Forward the upstream success status (200 or 204 depending on whether
+    // XTM One returns a body); the chatbot only checks for a 2xx.
+    res.sendStatus(response.status);
   } catch (e: unknown) {
     logApp.error('Error in chatbot session delete', { cause: e });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: message });
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
   }
 };
 
@@ -280,13 +290,13 @@ export const postChatbotMessageSteer = async (req: Express.Request, res: Express
     const response = await httpClient.post('/api/v1/platform/chat/messages/steer', req.body, {
       timeout: DEFAULT_XTM_TIMEOUT,
     });
-    res.json(response.data);
+    res.status(response.status).json(response.data);
   } catch (e: unknown) {
     logApp.error('Error in chatbot steer', { cause: e });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     if (httpErr) {
-      const detail = httpErr.data?.detail ?? message;
+      const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
       res.status(httpErr.status).send({ status: 'error', error: detail });
     } else {
       res.status(503).send({ status: 'error', error: message });
@@ -453,8 +463,6 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
 // user therefore never authenticates to XTM One directly: the embedded
 // chatbot points its download URL at this proxy (relative to its
 // `apiBaseUrl` of `${APP_BASE_PATH}/chatbot`), not at XTM One.
-const FILE_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
 export const getChatbotFileDownload = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
@@ -464,7 +472,7 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     // single route segment is always a string at runtime, but coerce
     // defensively so a malformed value simply fails the UUID check below.
     const fileId = String(req.params.fileId ?? '');
-    if (!fileId || !FILE_ID_RE.test(fileId)) {
+    if (!fileId || !UUID_RE.test(fileId)) {
       res.status(400).json({ error: 'Invalid file id' });
       return;
     }
