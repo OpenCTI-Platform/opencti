@@ -16,6 +16,8 @@ import DraftAuthorizedMembers from './DraftAuthorizedMembers';
 import WorkflowStatus, { WorkflowTransitions } from '../common/workflow/WorkflowStatus';
 import { DraftToolbarQuery } from '@components/drafts/__generated__/DraftToolbarQuery.graphql';
 import { DraftToolbarFragment$key } from '@components/drafts/__generated__/DraftToolbarFragment.graphql';
+import DraftApprove from './DraftApprove';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const draftFragment = graphql`
   fragment DraftToolbarFragment on DraftWorkspace {
@@ -23,6 +25,7 @@ const draftFragment = graphql`
     workflowInstance {
       pendingStatus
     }
+    ...DraftApproveFragment
     ...DraftExitFragment
     ...DraftAuthorizedMembersFragment
     ...workflowStatus_data
@@ -49,6 +52,7 @@ const DraftToolbarComponent = ({
   draftId,
 }: DraftToolbarComponentProps) => {
   const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
 
   const { draftWorkspace } = usePreloadedQuery(draftQuery, queryRef);
   if (!draftWorkspace) return (<ErrorNotFound />);
@@ -62,6 +66,9 @@ const DraftToolbarComponent = ({
     },
     isPending ? FIVE_SECONDS : THIRTY_SECONDS,
   );
+
+  // Show approve button if the workflow is disabled (for backward compatibility)
+  const showApprove = isFeatureEnable('DRAFT_WORKFLOW') && draft.workflowInstance;
 
   return (
     <Stack
@@ -88,7 +95,7 @@ const DraftToolbarComponent = ({
       <WorkflowStatus data={draft} />
       <DraftAuthorizedMembers data={draft} />
       <DraftExit data={draft} />
-      <WorkflowTransitions data={draft} />
+      { showApprove ? (<WorkflowTransitions data={draft} />) : (<DraftApprove data={draft} />) }
     </Stack>
   );
 };
