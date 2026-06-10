@@ -205,6 +205,95 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
   }
 };
 
+// ── GET /chatbot/sessions ───────────────────────────────────────────────
+// Lists the user's past conversations for the chatbot history menu.
+// Proxies to XTM One Platform Chat API.
+export const getChatbotSessions = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get('/api/v1/platform/chat/sessions', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot sessions list', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: message });
+  }
+};
+
+// ── DELETE /chatbot/sessions/:conversationId ────────────────────────────
+// Removes a conversation from the chatbot history menu (archived upstream).
+const CONVERSATION_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+export const deleteChatbotSession = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const conversationId = String(req.params.conversationId ?? '');
+    if (!conversationId || !CONVERSATION_ID_RE.test(conversationId)) {
+      res.status(400).json({ error: 'Invalid conversation id' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    await httpClient.delete(`/api/v1/platform/chat/sessions/${conversationId}`, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.sendStatus(204);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot session delete', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: message });
+  }
+};
+
+// ── POST /chatbot/messages/steer ────────────────────────────────────────
+// Mid-run steering: injects a user message into the running agent loop of
+// the conversation. Upstream status codes are forwarded as-is — the
+// chatbot rolls back its optimistic bubble on any non-2xx (e.g. 409 when
+// no response is currently being generated).
+export const postChatbotMessageSteer = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    if (!req.body) {
+      res.status(400).json({ error: 'Request body is missing' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.post('/api/v1/platform/chat/messages/steer', req.body, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot steer', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    if (httpErr) {
+      const detail = httpErr.data?.detail ?? message;
+      res.status(httpErr.status).send({ status: 'error', error: detail });
+    } else {
+      res.status(503).send({ status: 'error', error: message });
+    }
+  }
+};
+
 // ── POST /chatbot/messages ──────────────────────────────────────────────
 // Proxies to XTM One Platform Chat API (streaming SSE).
 // When file_ids are present in the body, routes to the conversation-level
