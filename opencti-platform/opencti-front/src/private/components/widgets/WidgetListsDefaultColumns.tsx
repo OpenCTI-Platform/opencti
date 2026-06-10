@@ -68,6 +68,16 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   'Malware-Analysis': [
     { attribute: 'product', label: 'Product' },
+    { attribute: 'result_name', label: 'Result name' },
+    { attribute: 'result', label: 'Maliciousness' },
+    { attribute: 'version', label: 'Version of the product' },
+    { attribute: 'configuration_version', label: 'Configuration version' },
+    { attribute: 'analysis_engine_version', label: 'Analysis engine version' },
+    { attribute: 'analysis_definition_version', label: 'Analysis definition version' },
+    { attribute: 'modules', label: 'Modules' },
+    { attribute: 'submitted', label: 'Submission date' },
+    { attribute: 'analysis_started', label: 'Analysis started' },
+    { attribute: 'analysis_ended', label: 'Analysis ended' },
     { attribute: 'objectAssignee' },
   ],
   Note: [
@@ -105,6 +115,10 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'incident_type' },
     { attribute: 'severity', label: 'Severity' },
     { attribute: 'container_content', label: 'Content' },
+    { attribute: 'source', label: 'Source' },
+    { attribute: 'objective', label: 'Objective' },
+    { attribute: 'first_seen', label: 'First seen' },
+    { attribute: 'last_seen', label: 'Last seen' },
   ],
   Indicator: [
     { attribute: 'pattern_type', label: 'Pattern type' },
@@ -168,10 +182,14 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
 };
 
 const customAttributesExtraColumns: WidgetColumn[] = [
-  { attribute: 'description' },
-  { attribute: 'revoked' },
-  { attribute: 'confidence' },
+  { attribute: 'description', label: 'Description' },
+  { attribute: 'revoked', label: 'Revoked' },
+  { attribute: 'confidence', label: 'Confidence' },
 ];
+
+const EXCLUDED_COMMON_COLUMNS: Partial<Record<string, string[]>> = {
+  'Malware-Analysis': ['name', 'description', 'modified'],
+};
 
 type WidgetEntityType = 'relationships' | 'entities';
 
@@ -209,7 +227,12 @@ export const getDefaultCustomAttributesColumns = (entityType?: string): WidgetCo
 
 export const getCustomAttributesColumns = (entityType?: string): WidgetColumn[] => {
   if (entityType) {
-    const baseColumns = [...availableWidgetColumns.common, ...customAttributesExtraColumns];
+    const excluded = EXCLUDED_COMMON_COLUMNS[entityType] ?? [];
+
+    const baseColumns = [
+      ...availableWidgetColumns.common,
+      ...customAttributesExtraColumns,
+    ].filter((col) => !excluded.includes(col.attribute ?? ''));
 
     if (availableWidgetColumns[entityType]) {
       baseColumns.push(...availableWidgetColumns[entityType]);
