@@ -319,7 +319,7 @@ const ensureWorkflowInstance = async (
 };
 
 /**
- * Get a workflow definition for an entity type.
+ * Get workflow definition for an entity type.
  */
 export const getWorkflowDefinition = async (
   context: AuthContext,
@@ -350,7 +350,7 @@ export const getWorkflowPublishedVersionId = async (
 };
 
 /**
- * Create or update the workflow definition for an entity type.
+ * Create or update workflow definition for an entity type.
  */
 export const setWorkflowDefinition = async (
   context: AuthContext,
@@ -578,7 +578,7 @@ export const publishWorkflowDefinition = async (
 };
 
 /**
- * Get a workflow instance for an entity, with live pending transition data.
+ * Get workflow instance for an entity, with live pending transition data.
  */
 export const getWorkflowInstance = async (
   context: AuthContext,
@@ -696,7 +696,7 @@ export const getAllowedTransitions = async (
   // Pre-evaluate conditions against the requesting user so the frontend only
   // sees transitions the current user is actually allowed to trigger.
   const conditionContext = { entity, user, triggeringUser: user };
-  return (await Promise.all(
+  const resolvedTransitions = (await Promise.all(
     transitions.map(async (transition) => {
       for (const condition of (transition.conditions ?? [])) {
         const passes = await condition(conditionContext as any);
@@ -712,6 +712,8 @@ export const getAllowedTransitions = async (
       };
     }),
   )).filter((t): t is NonNullable<typeof t> => t !== null);
+
+  return resolvedTransitions;
 };
 
 /**
@@ -804,7 +806,7 @@ export const triggerWorkflowEvent = async (
       __draftEntityIds: draftEntityIds,
     };
 
-    // 5. Create an instance and trigger the event
+    // 5. Create instance and trigger the event
     const instance = WorkflowFactory.getInstance(definitionData, definition, currentStateId || '', workflowContext);
     const result = await instance.trigger(eventName);
 

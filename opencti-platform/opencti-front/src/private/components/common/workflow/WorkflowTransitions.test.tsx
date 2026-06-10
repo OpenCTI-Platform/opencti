@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { WorkflowTransitions } from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
-import type { WorkflowStatus_data$key } from '@components/common/workflow/__generated__/WorkflowStatus_data.graphql';
+import type { WorkflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
 
 // ---------------------------------------------------------------------------
 // Relay + router mocks (same pattern as WorkflowStatus.test.tsx)
