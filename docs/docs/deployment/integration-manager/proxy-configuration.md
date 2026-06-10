@@ -30,7 +30,7 @@ In these cases, additional certificate settings may be required.
 ### Environment variables
 
 ```bash
-export OPENCTI__HTTPS_PROXY_CA="/path/to/proxy-ca.pem"
+export OPENCTI__HTTPS_PROXY_CA='["/path/to/proxy-ca.pem", "-----BEGIN CERTIFICATE-----"]'
 export OPENCTI__HTTPS_PROXY_REJECT_UNAUTHORIZED="false"
 ```
 
@@ -115,5 +115,4 @@ Variables:
 ```
 
 Look for proxy-related keys in `manager_contract_configuration`.
-
 See also: [Private Registry Authentication](registry-authentication.md)
