@@ -44,6 +44,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         confidence
         revoked
         objective
+        first_seen
+        last_seen
       }
       createdBy {
         ... on Identity {
