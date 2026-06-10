@@ -258,8 +258,15 @@ export const deleteChatbotSession = async (req: Express.Request, res: Express.Re
       timeout: DEFAULT_XTM_TIMEOUT,
     });
     // Forward the upstream success status (200 or 204 depending on whether
-    // XTM One returns a body); the chatbot only checks for a 2xx.
-    res.sendStatus(response.status);
+    // XTM One returns a body); the chatbot only checks for a 2xx. When the
+    // upstream replies with a body, forward it as JSON; otherwise end the
+    // response empty (`sendStatus` would inject a textual "OK"/"No Content"
+    // body, breaking clients that expect empty or JSON content).
+    if (response.data !== undefined && response.data !== null && response.data !== '') {
+      res.status(response.status).json(response.data);
+    } else {
+      res.status(response.status).end();
+    }
   } catch (e: unknown) {
     logApp.error('Error in chatbot session delete', { cause: e });
     const { message } = e as Error;
