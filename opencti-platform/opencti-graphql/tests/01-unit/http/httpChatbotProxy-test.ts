@@ -114,11 +114,12 @@ vi.mock('../../../src/modules/xtm/one/xtm-one-client', () => ({
 // Mock getHttpClient — the core HTTP abstraction
 const mockPost = vi.fn();
 const mockGet = vi.fn();
+const mockDelete = vi.fn();
 vi.mock('../../../src/utils/http-client', () => ({
   getHttpClient: vi.fn(() => ({
     get: mockGet,
     post: mockPost,
-    delete: vi.fn(),
+    delete: mockDelete,
     head: vi.fn(),
     call: vi.fn(),
   })),
@@ -138,7 +139,7 @@ vi.mock('../../../src/utils/http-client', () => ({
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
-import { getChatbotFileDownload, postAgentMessageStream } from '../../../src/http/httpChatbotProxy';
+import { deleteChatbotSession, getChatbotFileDownload, getChatbotSessions, postAgentMessageStream, postChatbotMessageSteer } from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -806,5 +807,206 @@ describe('httpChatbotProxy: getChatbotFileDownload', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.json).toHaveBeenCalledWith({ error: 'XTM One is unreachable' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotSessions', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotSessions(buildReq(), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the upstream status and body on success', async () => {
+    const sessions = [{ conversation_id: '11111111-1111-1111-1111-111111111111', title: 'Threat recap' }];
+    mockGet.mockResolvedValue({ status: 200, data: sessions });
+
+    await getChatbotSessions(buildReq(), res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockGet.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/sessions');
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(sessions);
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 502') as any;
+    httpError.response = { status: 502, data: { detail: 'Chat history unavailable' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotSessions(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Chat history unavailable' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('Network failure'));
+
+    await getChatbotSessions(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: deleteChatbotSession', () => {
+  const VALID_CONVERSATION_ID = '22222222-2222-2222-2222-222222222222';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildDeleteReq = (conversationId: string) => ({ params: { conversationId }, headers: {} } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await deleteChatbotSession(buildDeleteReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID conversation id without calling XTM One', async () => {
+    await deleteChatbotSession(buildDeleteReq('../other-tenant/conversations'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid conversation id' });
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('should forward an upstream 204 with an empty body', async () => {
+    mockDelete.mockResolvedValue({ status: 204, data: '' });
+
+    await deleteChatbotSession(buildDeleteReq(VALID_CONVERSATION_ID), res);
+
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+    const [url] = mockDelete.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/sessions/${VALID_CONVERSATION_ID}`);
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
+    // Must not inject a textual ("No Content") or JSON body on empty upstream responses.
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.sendStatus).not.toHaveBeenCalled();
+  });
+
+  it('should forward an upstream 200 with its JSON body', async () => {
+    mockDelete.mockResolvedValue({ status: 200, data: { archived: true } });
+
+    await deleteChatbotSession(buildDeleteReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ archived: true });
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Conversation not found' } };
+    mockDelete.mockRejectedValue(httpError);
+
+    await deleteChatbotSession(buildDeleteReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Conversation not found' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockDelete.mockRejectedValue(new Error('Network failure'));
+
+    await deleteChatbotSession(buildDeleteReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotMessageSteer', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await postChatbotMessageSteer(buildReq({ conversation_id: 'c-1', content: 'steer this' }), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is missing', async () => {
+    await postChatbotMessageSteer(buildReq(undefined), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body is missing' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should forward the body and the upstream status on success', async () => {
+    mockPost.mockResolvedValue({ status: 202, data: { message_id: 'm-1' } });
+    const body = { conversation_id: 'c-1', content: 'focus on the APT41 angle', agent_slug: 'global.assistant' };
+
+    await postChatbotMessageSteer(buildReq(body), res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, sentBody, opts] = mockPost.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/messages/steer');
+    expect(sentBody).toEqual(body);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(202);
+    expect(res.json).toHaveBeenCalledWith({ message_id: 'm-1' });
+  });
+
+  it('should forward an upstream 409 with its detail so the widget rolls back the optimistic bubble', async () => {
+    const httpError = new Error('Request failed with status code 409') as any;
+    httpError.response = { status: 409, data: { detail: 'No response is currently being generated' } };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotMessageSteer(buildReq({ conversation_id: 'c-1', content: 'steer' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'No response is currently being generated' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockPost.mockRejectedValue(new Error('Network failure'));
+
+    await postChatbotMessageSteer(buildReq({ conversation_id: 'c-1', content: 'steer' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
   });
 });

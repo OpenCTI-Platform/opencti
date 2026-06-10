@@ -36,7 +36,10 @@ import {
   getChatbotConfig,
   getChatbotAgents,
   postChatbotSession,
+  getChatbotSessions,
+  deleteChatbotSession,
   postChatbotMessage,
+  postChatbotMessageSteer,
   postChatbotUpload,
   getChatbotFileDownload,
   postAgentMessage,
@@ -543,7 +546,10 @@ const createApp = async (app, schema) => {
   // XTM One Platform Chat API routes (used when xtm_one_token is set)
   app.get(`${basePath}/chatbot/agents`, getChatbotAgents);
   app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
+  app.get(`${basePath}/chatbot/sessions`, getChatbotSessions);
+  app.delete(`${basePath}/chatbot/sessions/:conversationId`, deleteChatbotSession);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
+  app.post(`${basePath}/chatbot/messages/steer`, postChatbotMessageSteer);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);

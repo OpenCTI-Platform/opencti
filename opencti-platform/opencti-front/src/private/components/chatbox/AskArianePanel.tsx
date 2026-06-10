@@ -135,6 +135,10 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       apiEndpoints={{
         agents: '/agents',
         messages: '/messages',
+        // Mid-run steering — must be set explicitly because the chatbot
+        // default ('/chat/messages/steer') assumes XTM One-style paths,
+        // while the OpenCTI proxy exposes '/messages/steer'.
+        steer: '/messages/steer',
         sessions: '/sessions',
         upload: '/upload',
         download: '/files',
