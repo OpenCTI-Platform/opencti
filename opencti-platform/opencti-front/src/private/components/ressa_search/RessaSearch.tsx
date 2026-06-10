@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -18,7 +18,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Checkbox,
   Select,
   MenuItem,
   FormControl,
@@ -28,33 +27,50 @@ import {
   DialogActions,
   TextareaAutosize,
   Alert,
-  CircularProgress,
+  Collapse,
 } from '@mui/material';
 import {
-  Search,
   Save,
   History,
   ErrorOutline,
   ArrowBack,
-  FilterList,
   DescriptionOutlined,
   Close,
   ChevronLeft,
   ChevronRight,
-  Download,
-  Settings,
   KeyboardArrowLeft,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  Add,
+  PushPin,
+  PushPinOutlined,
+  ContentCopy,
+  Search,
+  ViewColumn,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
+import CellContextMenu, { type ContextMenuItem } from './CellContextMenu';
+import ColumnManagerModal from './ColumnManagerModal';
+import { type ColumnDefinition, loadColumnsFromStorage, saveColumnsToStorage } from './ressaSearchColumns';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemEntityType from '../../../components/ItemEntityType';
 import { resolveLink } from '../../../utils/Entity';
 import SearchListPopover from './SearchListPopover';
 import FilterPopover from './FilterPopover';
-import FilterSidebar, { FilterGroup } from './FilterSidebar';
+import { FilterGroup } from './FilterSidebar';
 import { RawQueryResponse } from './mockRessaSearchApi';
 import { rawQueryApi } from './ressaSearchApi';
-import { clearRessaSearchSession, loadRessaSearchSession, RESSA_SEARCH_QUERY_PARAM, saveRessaSearchSession } from './ressaSearchSession';
+import { clearRessaSearchSession, RESSA_SEARCH_QUERY_PARAM, saveRessaSearchSession } from './ressaSearchSession';
+import {
+  loadWorkspace,
+  saveWorkspace,
+  createEmptyTab,
+  sortWorkspaceTabs,
+  normalizeWorkspace,
+  getActiveTab,
+  applyInitialUrlQuery,
+  type SearchWorkspace,
+} from './ressaSearchWorkspace';
 
 interface SearchExample {
   title: string;
@@ -150,17 +166,131 @@ const parseSearchQuery = (query: string): FilterGroup[] => {
   });
 };
 
+const getTabTitle = (query: string, newSearchLabel: string): string => {
+  const trimmed = query.trim();
+  if (!trimmed) return newSearchLabel;
+  return trimmed.slice(0, 10);
+};
+
+const getPinnedTabLabel = (query: string): string => {
+  const trimmed = query.trim();
+  if (!trimmed) return '•';
+  return trimmed.slice(0, 1).toUpperCase();
+};
+
+const readInitialUrlQuery = (): string => {
+  if (typeof window === 'undefined') return '';
+  try {
+    const q = new URLSearchParams(window.location.search).get(RESSA_SEARCH_QUERY_PARAM);
+    return q !== null ? q.trim() : '';
+  } catch {
+    return '';
+  }
+};
+
 const RessaSearch = () => {
   const { t_i18n, fd } = useFormatter();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const hasRestoredFromUrlRef = useRef(false);
-  const initialQueryRef = useRef(searchParams.get(RESSA_SEARCH_QUERY_PARAM));
-  const [searchValue, setSearchValue] = useState('');
+  const isInternalUrlUpdateRef = useRef(false);
+  const skipNextExternalUrlSyncRef = useRef(true);
+  const [workspace, setWorkspace] = useState<SearchWorkspace>(() => (
+    applyInitialUrlQuery(loadWorkspace(), readInitialUrlQuery())
+  ));
+  const activeTab = useMemo(() => getActiveTab(workspace), [workspace]);
+  const activeTabIdRef = useRef(activeTab.id);
+  const searchGenerationRef = useRef(0);
+  activeTabIdRef.current = activeTab.id;
+
+  const setWorkspaceSafe = useCallback((
+    updater: SearchWorkspace | ((prev: SearchWorkspace) => SearchWorkspace),
+  ) => {
+    setWorkspace((prev) => normalizeWorkspace(
+      typeof updater === 'function' ? updater(prev) : updater,
+    ));
+  }, []);
+
+  const persistWorkspace = useCallback((next: SearchWorkspace) => {
+    const normalized = normalizeWorkspace(next);
+    saveWorkspace(normalized);
+    return normalized;
+  }, []);
+
+  useEffect(() => {
+    setWorkspace((prev) => normalizeWorkspace(prev));
+  }, []);
+
+  const updateActiveTabQuery = useCallback((query: string) => {
+    setWorkspaceSafe((prev) => ({
+      ...prev,
+      tabs: prev.tabs.map((tab) => (
+        tab.id === prev.activeTabId ? { ...tab, query } : tab
+      )),
+    }));
+  }, [setWorkspaceSafe]);
+  const switchTab = useCallback((tabId: string) => {
+    setWorkspaceSafe((prev) => {
+      if (prev.activeTabId === tabId || !prev.tabs.some((tab) => tab.id === tabId)) {
+        return prev;
+      }
+      return persistWorkspace({ ...prev, activeTabId: tabId });
+    });
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const addTab = useCallback(() => {
+    const tab = createEmptyTab();
+    setWorkspaceSafe((prev) => persistWorkspace({
+      activeTabId: tab.id,
+      tabs: [...prev.tabs, tab],
+    }));
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const closeTab = useCallback((tabId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setWorkspaceSafe((prev) => {
+      if (prev.tabs.length <= 1) return prev;
+
+      const tabIndex = prev.tabs.findIndex((tab) => tab.id === tabId);
+      if (tabIndex === -1) return prev;
+
+      const tabs = prev.tabs.filter((tab) => tab.id !== tabId);
+      let activeTabId = prev.activeTabId;
+
+      if (prev.activeTabId === tabId) {
+        const nearestIndex = tabIndex < prev.tabs.length - 1 ? tabIndex : tabIndex - 1;
+        activeTabId = tabs[nearestIndex]?.id ?? tabs[0].id;
+      }
+
+      return persistWorkspace({ activeTabId, tabs });
+    });
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const togglePinTab = useCallback((tabId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setWorkspaceSafe((prev) => {
+      const tabs = sortWorkspaceTabs(
+        prev.tabs.map((tab) => (
+          tab.id === tabId ? { ...tab, pinned: !tab.pinned } : tab
+        )),
+      );
+      return persistWorkspace({ ...prev, tabs });
+    });
+  }, [persistWorkspace, setWorkspaceSafe]);
+  const syncUrlWithQuery = useCallback((query: string) => {
+    const trimmed = query.trim();
+    isInternalUrlUpdateRef.current = true;
+    if (trimmed.length > 0) {
+      setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
+      return;
+    }
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
   const [hasSearched, setHasSearched] = useState(false);
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [columns, setColumns] = useState<ColumnDefinition[]>(() => loadColumnsFromStorage());
+  const [columnModalOpen, setColumnModalOpen] = useState(false);
+  const isAnyContextMenuOpenRef = useRef(false);
+  // const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
@@ -171,11 +301,29 @@ const RessaSearch = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<RawQueryResponse | null>(null);
+  const clearEmptySearchState = useCallback(() => {
+    searchGenerationRef.current += 1;
+    setHasSearched(false);
+    setExtractedFilters([]);
+    setRawResponse(null);
+    setSearchError(null);
+    setPage(0);
+    setIsSearching(false);
+    clearRessaSearchSession();
+  }, []);
   const hasResults = (rawResponse?.stats?.primaryDocumentCount ?? 0) > 0;
+  const visibleColumns = useMemo(
+    () => [...columns]
+      .filter((column) => column.visible)
+      .sort((a, b) => a.order - b.order),
+    [columns],
+  );
+
+  useEffect(() => {
+    saveColumnsToStorage(columns);
+  }, [columns]);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
-  const saveIconRef = useRef<HTMLButtonElement>(null);
-  const filterIconRef = useRef<HTMLButtonElement>(null);
 
   const observedDataUrlCredentialsQuery
     = 'type="observed-data" | spath path=objects{} output=obj | mvexpand obj | spath input=obj path=type output=obj_type | search obj_type="url" | spath input=obj path=extensions{}.login output=login | spath input=obj path=extensions{}.password output=password | spath input=obj path=extensions{}.cookie output=cookie | search login=true AND password=true AND cookie=true | table obj.value login password cookie';
@@ -206,14 +354,11 @@ const RessaSearch = () => {
     if (!rawResponse) return [];
     return rawResponse.primaryDocuments.map((doc) => {
       const src = (doc.source ?? {}) as Record<string, unknown>;
-      const name = (typeof src.name === 'string' ? src.name : undefined)
-        || (typeof src.value === 'string' ? src.value : undefined);
+      const name = (typeof src.name === 'string' ? src.name : undefined) || (typeof src.value === 'string' ? src.value : undefined);
       const title = name ?? doc.standardId ?? doc.internalId;
       const createdAt = typeof src.created_at === 'string' ? src.created_at : undefined;
       const updatedAt = typeof src.updated_at === 'string' ? src.updated_at : undefined;
-      const labels = Array.isArray(src.labels)
-        ? (src.labels.filter((x) => typeof x === 'string') as string[])
-        : [];
+      const labels = Array.isArray(src.labels) ? (src.labels.filter((x) => typeof x === 'string') as string[]) : [];
       const entityType = typeof src.entity_type === 'string' ? src.entity_type : doc.entityType;
 
       return {
@@ -264,109 +409,195 @@ const RessaSearch = () => {
     },
   ];
 
-  const runSearch = useCallback(async (query: string) => {
-    const trimmed = query.trim();
-    console.log('trimmed query', trimmed);
-    if (!trimmed || isSearching) return;
+  const runSearch = useCallback(
+    async (
+      query: string,
+      options?: {
+        tabId?: string;
+        skipQueryUpdate?: boolean;
+        skipUrlSync?: boolean;
+      },
+    ) => {
+      const trimmed = query.trim();
+      if (!trimmed) return;
 
-    hasRestoredFromUrlRef.current = true;
-    setHasSearched(true);
-    setSearchError(null);
-    setIsSearching(true);
-    setSelectedRows([]);
-    setPage(0);
+      const tabId = options?.tabId ?? activeTabIdRef.current;
+      const requestId = ++searchGenerationRef.current;
 
-    const filters = parseSearchQuery(trimmed);
-    setExtractedFilters(filters);
-    setSearchValue(trimmed);
-    setSearchParams({ [RESSA_SEARCH_QUERY_PARAM]: trimmed }, { replace: true });
-
-    try {
-      console.log('search started');
-
-      const request = {
-        query: trimmed,
-        maxRelationDepth: 200,
-        maxPrimaryDocuments: 200,
-        maxRelatedEntities: 200,
-        maxRelationships: 200,
-        maxRelatedDocuments: 200,
-        includeRelationshipDocuments: true,
-        includeNestedObjects: true,
-        includeMetadataAndHistory: true,
-        multilineOutput: true,
-      } as const;
-
-      const response = await rawQueryApi(request);
-      console.log('search response received');
-      setRawResponse(response);
-      saveRessaSearchSession({
-        searchValue: trimmed,
-        rawResponse: response,
-        extractedFilters: filters,
-        page: 0,
-        rowsPerPage,
-      });
-    } catch (e) {
-      console.log('search error', e);
-      const message = e instanceof Error ? e.message : 'Unknown error';
+      setHasSearched(true);
+      setSearchError(null);
+      setIsSearching(true);
+      setPage(0);
       setRawResponse(null);
-      setSearchError(message);
-      clearRessaSearchSession();
-    } finally {
-      console.log('search finished');
-      setIsSearching(false);
-      console.log('search finished');
-    }
-  }, [isSearching, rowsPerPage, setSearchParams]);
+
+      const filters = parseSearchQuery(trimmed);
+      setExtractedFilters(filters);
+
+      if (!options?.skipQueryUpdate) {
+        updateActiveTabQuery(trimmed);
+      }
+      if (!options?.skipUrlSync) {
+        syncUrlWithQuery(trimmed);
+      }
+
+      try {
+        const request = {
+          query: trimmed,
+          maxRelationDepth: 200,
+          maxPrimaryDocuments: 200,
+          maxRelatedEntities: 200,
+          maxRelationships: 200,
+          maxRelatedDocuments: 200,
+          includeRelationshipDocuments: true,
+          includeNestedObjects: true,
+          includeMetadataAndHistory: true,
+          multilineOutput: true,
+        } as const;
+
+        const response = await rawQueryApi(request);
+
+        if (requestId !== searchGenerationRef.current || tabId !== activeTabIdRef.current) {
+          return;
+        }
+
+        setRawResponse(response);
+        saveRessaSearchSession({
+          searchValue: trimmed,
+          rawResponse: response,
+          extractedFilters: filters,
+          page: 0,
+          rowsPerPage,
+        });
+      } catch (e) {
+        if (requestId !== searchGenerationRef.current || tabId !== activeTabIdRef.current) {
+          return;
+        }
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        setRawResponse(null);
+        setSearchError(message);
+        clearRessaSearchSession();
+      } finally {
+        if (requestId === searchGenerationRef.current && tabId === activeTabIdRef.current) {
+          setIsSearching(false);
+        }
+      }
+    },
+    [rowsPerPage, syncUrlWithQuery, updateActiveTabQuery],
+  );
+
+  const runSearchRef = useRef(runSearch);
+  runSearchRef.current = runSearch;
+
+  const titleMenuItems = useMemo<ContextMenuItem[]>(
+    () => [
+      {
+        title: t_i18n('Copy'),
+        icon: <ContentCopy fontSize="small" />,
+        onClick: (value) => {
+          void navigator.clipboard.writeText(value);
+        },
+      },
+      {
+        title: t_i18n('Search this title'),
+        icon: <Search fontSize="small" />,
+        onClick: (value) => {
+          void runSearch(value);
+        },
+      },
+    ],
+    [runSearch, t_i18n],
+  );
+
+  const tagMenuItems = useMemo<ContextMenuItem[]>(
+    () => [
+      {
+        title: t_i18n('Copy'),
+        icon: <ContentCopy fontSize="small" />,
+        onClick: (value) => {
+          void navigator.clipboard.writeText(value);
+        },
+      },
+      {
+        title: t_i18n('Search this tag'),
+        icon: <Search fontSize="small" />,
+        onClick: (value) => {
+          void runSearch(value);
+        },
+      },
+    ],
+    [runSearch, t_i18n],
+  );
+
+  const handleContextMenuOpenChange = useCallback((open: boolean) => {
+    isAnyContextMenuOpenRef.current = open;
+  }, []);
 
   const handleSearch = () => {
-    runSearch(searchValue);
+    runSearch(activeTab.query);
   };
 
+  useEffect(() => {
+    saveWorkspace(workspace);
+  }, [workspace]);
+
+  useEffect(() => {
+    if (isInternalUrlUpdateRef.current) {
+      isInternalUrlUpdateRef.current = false;
+      return;
+    }
+
+    if (skipNextExternalUrlSyncRef.current) {
+      skipNextExternalUrlSyncRef.current = false;
+      return;
+    }
+
+    const q = searchParams.get(RESSA_SEARCH_QUERY_PARAM);
+    const trimmed = q !== null ? q.trim() : '';
+    if (!trimmed) return;
+
+    setWorkspaceSafe((prev) => persistWorkspace(applyInitialUrlQuery(prev, trimmed)));
+  }, [searchParams, persistWorkspace, setWorkspaceSafe]);
+
+  useEffect(() => {
+    syncUrlWithQuery(activeTab.query);
+
+    const trimmed = activeTab.query.trim();
+    if (!trimmed) {
+      clearEmptySearchState();
+      return;
+    }
+
+    void runSearchRef.current(trimmed, {
+      tabId: activeTab.id,
+      skipQueryUpdate: true,
+      skipUrlSync: true,
+    });
+  }, [activeTab.id, syncUrlWithQuery, clearEmptySearchState]);
+
   const clearSearchState = useCallback(() => {
-    hasRestoredFromUrlRef.current = false;
+    searchGenerationRef.current += 1;
     clearRessaSearchSession();
-    setSearchParams({}, { replace: true });
-    setSearchValue('');
+    syncUrlWithQuery('');
+    updateActiveTabQuery('');
     setHasSearched(false);
     setExtractedFilters([]);
     setRawResponse(null);
     setSearchError(null);
     setPage(0);
-    setSelectedRows([]);
-  }, [setSearchParams]);
+    setIsSearching(false);
+    // setSelectedRows([]);
+  }, [syncUrlWithQuery, updateActiveTabQuery]);
 
   useEffect(() => {
-    const q = initialQueryRef.current;
-    if (!q || hasRestoredFromUrlRef.current) return;
-    hasRestoredFromUrlRef.current = true;
-
-    const saved = loadRessaSearchSession();
-    if (saved?.searchValue === q && saved.rawResponse) {
-      setSearchValue(saved.searchValue);
-      setRawResponse(saved.rawResponse);
-      setExtractedFilters(saved.extractedFilters);
-      setPage(saved.page ?? 0);
-      setRowsPerPage(saved.rowsPerPage ?? 20);
-      setHasSearched(true);
-      setSearchError(null);
-      return;
-    }
-
-    runSearch(q);
-  }, [runSearch]);
-
-  useEffect(() => {
-    if (!hasSearched || !rawResponse || !searchValue.trim()) return;
+    if (!hasSearched || !rawResponse || !activeTab.query.trim()) return;
     saveRessaSearchSession({
-      searchValue,
+      searchValue: activeTab.query,
       rawResponse,
       extractedFilters,
       page,
       rowsPerPage,
     });
-  }, [page, rowsPerPage, hasSearched, rawResponse, searchValue, extractedFilters]);
+  }, [page, rowsPerPage, hasSearched, rawResponse, activeTab.query, extractedFilters]);
 
   const handleSearchIconClick = () => {
     if (inputRef.current) {
@@ -375,12 +606,12 @@ const RessaSearch = () => {
     }
   };
 
-  const handleSaveIconClick = () => {
-    if (inputRef.current) {
-      setSaveAnchorEl(inputRef.current);
-      setPopoverWidth(inputRef.current.offsetWidth);
-    }
-  };
+  // const handleSaveIconClick = () => {
+  //   if (inputRef.current) {
+  //     setSaveAnchorEl(inputRef.current);
+  //     setPopoverWidth(inputRef.current.offsetWidth);
+  //   }
+  // };
 
   const handleCloseHistoryPopover = () => {
     setHistoryAnchorEl(null);
@@ -390,12 +621,12 @@ const RessaSearch = () => {
     setSaveAnchorEl(null);
   };
 
-  const handleFilterIconClick = () => {
-    if (inputRef.current) {
-      setFilterAnchorEl(inputRef.current);
-      setPopoverWidth(inputRef.current.offsetWidth);
-    }
-  };
+  // const handleFilterIconClick = () => {
+  //   if (inputRef.current) {
+  //     setFilterAnchorEl(inputRef.current);
+  //     setPopoverWidth(inputRef.current.offsetWidth);
+  //   }
+  // };
 
   const handleCloseFilterPopover = () => {
     setFilterAnchorEl(null);
@@ -408,7 +639,8 @@ const RessaSearch = () => {
   };
 
   const handleSelectRecentSearch = (query: string) => {
-    setSearchValue(query);
+    updateActiveTabQuery(query);
+    syncUrlWithQuery(query);
     setExtractedFilters(parseSearchQuery(query));
     setHistoryAnchorEl(null);
     setSaveAnchorEl(null);
@@ -417,7 +649,8 @@ const RessaSearch = () => {
 
   const handleEditSearch = (query: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    setSearchValue(query);
+    updateActiveTabQuery(query);
+    syncUrlWithQuery(query);
     setExtractedFilters(parseSearchQuery(query));
     setHistoryAnchorEl(null);
     setSaveAnchorEl(null);
@@ -457,9 +690,9 @@ const RessaSearch = () => {
   };
 
   const handleSaveSearch = () => {
-    if (saveTitle.trim() && searchValue) {
+    if (saveTitle.trim() && activeTab.query) {
       // TODO: Implement save functionality
-      console.log('Saving search:', { title: saveTitle, query: searchValue, description: saveDescription });
+      console.log('Saving search:', { title: saveTitle, query: activeTab.query, description: saveDescription });
       setSaveDialogOpen(false);
       setSaveTitle('');
       setSaveDescription('');
@@ -482,11 +715,12 @@ const RessaSearch = () => {
     runSearch(example.query);
   };
 
+  const displayTabs = useMemo(() => normalizeWorkspace(workspace).tabs, [workspace]);
+
   return (
     <>
       {/* <Breadcrumbs elements={[{ label: t_i18n('Ressa Search') }]} /> */}
       <Box sx={{ padding: 0 }}>
-
         {/* Global Search Title */}
         <Typography
           variant="h4"
@@ -497,6 +731,219 @@ const RessaSearch = () => {
         >
           {t_i18n('Global Search')}
         </Typography>
+
+        {/* Tab Bar */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: 0.5,
+            marginBottom: 0,
+            overflowX: 'auto',
+            paddingBottom: 0,
+          }}
+        >
+          {displayTabs.map((tab) => {
+            const isActive = tab.id === workspace.activeTabId;
+            const isPinned = Boolean(tab.pinned);
+            const canClose = displayTabs.length > 1 && !isPinned;
+            const tabTitle = tab.query.trim() || t_i18n('New Search');
+            return (
+              <Box
+                key={tab.id}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  minWidth: isPinned ? 40 : 120,
+                  maxWidth: isPinned ? 40 : 220,
+                  height: isPinned ? 32 : 36,
+                  border: '1px solid',
+                  borderColor: isActive ? 'divider' : 'transparent',
+                  borderBottom: isActive ? '1px solid' : 'none',
+                  borderBottomColor: isActive ? 'background.paper' : 'transparent',
+                  borderTopLeftRadius: isPinned ? 6 : 8,
+                  borderTopRightRadius: isPinned ? 6 : 8,
+                  backgroundColor: isActive ? 'background.paper' : 'action.hover',
+                  color: isActive ? 'text.primary' : 'text.secondary',
+                  marginBottom: isActive ? '-1px' : 0,
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                  justifyContent: isPinned ? 'center' : 'flex-start',
+                  '&:hover': {
+                    backgroundColor: isActive ? 'background.paper' : 'action.selected',
+                    color: 'text.primary',
+                  },
+                  '& .tab-pin-button': {
+                    opacity: isPinned ? 1 : 0,
+                    transition: 'opacity 0.15s ease-in-out',
+                  },
+                  '&:hover .tab-pin-button': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                {isPinned ? (
+                  <Tooltip title={tabTitle}>
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flex: 1,
+                        minWidth: 0,
+                        height: '100%',
+                      }}
+                    >
+                      <Box
+                        component="button"
+                        type="button"
+                        onClick={() => switchTab(tab.id)}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '100%',
+                          height: '100%',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: 'inherit',
+                          cursor: 'pointer',
+                          font: 'inherit',
+                          outline: 'none',
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          noWrap
+                          sx={{
+                            fontWeight: isActive ? 700 : 500,
+                            fontSize: '0.7rem',
+                            lineHeight: 1,
+                          }}
+                        >
+                          {getPinnedTabLabel(tab.query)}
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        className="tab-pin-button"
+                        aria-label={t_i18n('Unpin tab')}
+                        onClick={(event) => togglePinTab(tab.id, event)}
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          right: 0,
+                          width: 18,
+                          height: 18,
+                          color: 'primary.main',
+                          backgroundColor: 'background.paper',
+                          '&:hover': {
+                            color: 'primary.dark',
+                            backgroundColor: 'action.selected',
+                          },
+                        }}
+                      >
+                        <PushPin sx={{ fontSize: 10 }} />
+                      </IconButton>
+                    </Box>
+                  </Tooltip>
+                ) : (
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={() => switchTab(tab.id)}
+                    title={tabTitle}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      flex: 1,
+                      minWidth: 0,
+                      height: '100%',
+                      px: canClose ? 1.5 : 2,
+                      pl: 2,
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      font: 'inherit',
+                      outline: 'none',
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      noWrap
+                      sx={{
+                        fontWeight: isActive ? 600 : 400,
+                        width: '100%',
+                        textAlign: 'start',
+                      }}
+                    >
+                      {getTabTitle(tab.query, t_i18n('New Search'))}
+                    </Typography>
+                  </Box>
+                )}
+                {!isPinned && (
+                  <Tooltip title={t_i18n('Pin tab')}>
+                    <IconButton
+                      size="small"
+                      className="tab-pin-button"
+                      aria-label={t_i18n('Pin tab')}
+                      onClick={(event) => togglePinTab(tab.id, event)}
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        flexShrink: 0,
+                        color: 'text.secondary',
+                        '&:hover': {
+                          color: 'text.primary',
+                          backgroundColor: 'action.selected',
+                        },
+                      }}
+                    >
+                      <PushPinOutlined sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {canClose && (
+                  <IconButton
+                    size="small"
+                    aria-label={t_i18n('Close tab')}
+                    onClick={(event) => closeTab(tab.id, event)}
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      flexShrink: 0,
+                      marginInlineEnd: 0.5,
+                      color: 'text.secondary',
+                      '&:hover': {
+                        color: 'text.primary',
+                        backgroundColor: 'action.selected',
+                      },
+                    }}
+                  >
+                    <Close sx={{ fontSize: 14 }} />
+                  </IconButton>
+                )}
+              </Box>
+            );
+          })}
+          <Tooltip title={t_i18n('New tab')}>
+            <IconButton
+              size="small"
+              onClick={addTab}
+              sx={{
+                width: 36,
+                height: 36,
+                flexShrink: 0,
+                marginBottom: 0.25,
+                borderRadius: 1,
+              }}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
 
         {/* Search Bar */}
         <Box
@@ -513,8 +960,8 @@ const RessaSearch = () => {
               fullWidth
               variant="outlined"
               placeholder={t_i18n('Search domain, IP, hash, email or phrase...')}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              value={activeTab.query}
+              onChange={(e) => updateActiveTabQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isSearching}
               sx={{
@@ -537,11 +984,7 @@ const RessaSearch = () => {
                   <InputAdornment position="start">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Tooltip title={t_i18n('History')}>
-                        <IconButton
-                          size="small"
-                          onClick={handleSearchIconClick}
-                          sx={{ padding: 0.5 }}
-                        >
+                        <IconButton size="small" onClick={handleSearchIconClick} sx={{ padding: 0.5 }}>
                           <History fontSize="small" sx={{ color: 'text.secondary' }} />
                         </IconButton>
                       </Tooltip>
@@ -629,13 +1072,9 @@ const RessaSearch = () => {
                     </Box>
                   </InputAdornment>
                 ),
-                endAdornment: searchValue && (
+                endAdornment: activeTab.query && (
                   <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={clearSearchState}
-                      sx={{ padding: 0.5 }}
-                    >
+                    <IconButton size="small" onClick={clearSearchState} sx={{ padding: 0.5 }}>
                       <Close fontSize="small" sx={{ color: 'text.secondary' }} />
                     </IconButton>
                   </InputAdornment>
@@ -650,7 +1089,7 @@ const RessaSearch = () => {
             variant="contained"
             color="primary"
             onClick={handleSearch}
-            disabled={isSearching || !searchValue.trim()}
+            disabled={isSearching || !activeTab.query.trim()}
             sx={{
               minWidth: 100,
               height: 40,
@@ -934,8 +1373,8 @@ const RessaSearch = () => {
                       padding: 2,
                     }}
                   > */}
-                    {/* Results Count */}
-                    {/* <Typography
+                  {/* Results Count */}
+                  {/* <Typography
                       variant="h6"
                       color="text.secondary"
                       sx={{
@@ -961,8 +1400,8 @@ const RessaSearch = () => {
                       </Box>
                     </Typography> */}
 
-                    {/* Save Search Button */}
-                    {/* <Button
+                  {/* Save Search Button */}
+                  {/* <Button
                       variant="outlined"
                       startIcon={<Save />}
                       onClick={handleSave}
@@ -1007,7 +1446,8 @@ const RessaSearch = () => {
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body2" color="text.secondary">
-                              {t_i18n('Display')} {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalResults)} {t_i18n('of')} {totalResults}
+                              {t_i18n('Display')} {page * rowsPerPage + 1}-
+                              {Math.min((page + 1) * rowsPerPage, totalResults)} {t_i18n('of')} {totalResults}
                             </Typography>
                             <Divider
                               orientation="vertical"
@@ -1026,7 +1466,6 @@ const RessaSearch = () => {
                                   setRowsPerPage(Number(e.target.value));
                                   setPage(0);
                                 }}
-                                variant="outlined"
                                 sx={{
                                   height: 32,
                                   fontSize: '0.875rem',
@@ -1041,6 +1480,15 @@ const RessaSearch = () => {
                             </FormControl>
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              startIcon={<ViewColumn />}
+                              onClick={() => setColumnModalOpen(true)}
+                              sx={{ textTransform: 'none' }}
+                            >
+                              {t_i18n('Columns')}
+                            </Button>
                             <IconButton
                               size="small"
                               onClick={() => setPage((prev) => Math.max(0, prev - 1))}
@@ -1067,10 +1515,7 @@ const RessaSearch = () => {
                               return pages.map((p, idx) => {
                                 if (p === 'ellipsis') {
                                   return (
-                                    <Box
-                                      key={`ellipsis-${idx}`}
-                                      sx={{ px: 0.5, color: 'text.secondary' }}
-                                    >
+                                    <Box key={`ellipsis-${idx}`} sx={{ px: 0.5, color: 'text.secondary' }}>
                                       …
                                     </Box>
                                   );
@@ -1156,11 +1601,11 @@ const RessaSearch = () => {
                                     }}
                                   />
                                 </TableCell> */}
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Title')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Entity Type')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Tags')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Updated')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Created')}</TableCell>
+                                {visibleColumns.map((column) => (
+                                  <TableCell key={column.id} sx={{ fontWeight: 600 }}>
+                                    {t_i18n(column.label)}
+                                  </TableCell>
+                                ))}
                                 <TableCell sx={{ fontWeight: 600, width: 48 }} />
                               </TableRow>
                             </TableHead>
@@ -1172,103 +1617,190 @@ const RessaSearch = () => {
                                   const detailLink = entityLink
                                     ? `${entityLink}/${result.id}`
                                     : `/dashboard/id/${result.id}`;
+                                  const isExpanded = expandedRowId === result.id;
+                                  const handleRowExpandToggle = () => {
+                                    if (isAnyContextMenuOpenRef.current) return;
+                                    setExpandedRowId((current) => (current === result.id ? null : result.id));
+                                  };
                                   return (
-                                    <TableRow
-                                      key={result.id}
-                                      hover
-                                      component={Link}
-                                      to={detailLink}
-                                      sx={{ textDecoration: 'none', cursor: 'pointer' }}
-                                    >
-                                      {/* <TableCell padding="checkbox">
-                                        <Checkbox
-                                          checked={selectedRows.includes(result.id)}
-                                          onClick={(e) => e.stopPropagation()}
-                                          onChange={(e) => {
-                                            if (e.target.checked) {
-                                              setSelectedRows([...selectedRows, result.id]);
-                                            } else {
-                                              setSelectedRows(selectedRows.filter((id) => id !== result.id));
-                                            }
-                                          }}
-                                        />
-                                      </TableCell> */}
-                                      <TableCell>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <ItemIcon type={result.entityType} size="small" />
-                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{result.title}</Typography>
-                                          </Box>
-                                          <Typography variant="caption" color="text.secondary">
-                                            {result.standardId}
-                                          </Typography>
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell>
-                                        <ItemEntityType entityType={result.entityType} />
-                                      </TableCell>
-                                      <TableCell>
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                          {result.tags.map((tag, index) => (
-                                            <Chip
-                                              key={index}
-                                              label={tag}
-                                              size="small"
-                                              sx={{
-                                                height: 24,
-                                                fontSize: '0.75rem',
-                                                borderRadius: 1,
-                                                backgroundColor: (theme) => {
-                                                  const colors = [
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(76, 175, 80, 0.15)'
-                                                      : 'rgba(76, 175, 80, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(255, 152, 0, 0.15)'
-                                                      : 'rgba(255, 152, 0, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(33, 150, 243, 0.15)'
-                                                      : 'rgba(33, 150, 243, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(244, 67, 54, 0.15)'
-                                                      : 'rgba(244, 67, 54, 0.1)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(156, 39, 176, 0.15)'
-                                                      : 'rgba(156, 39, 176, 0.1)',
-                                                  ];
-                                                  return colors[index % colors.length];
-                                                },
-                                                border: (theme) => {
-                                                  const borderColors = [
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(76, 175, 80, 0.6)'
-                                                      : 'rgba(76, 175, 80, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(255, 152, 0, 0.6)'
-                                                      : 'rgba(255, 152, 0, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(33, 150, 243, 0.6)'
-                                                      : 'rgba(33, 150, 243, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(244, 67, 54, 0.6)'
-                                                      : 'rgba(244, 67, 54, 0.5)',
-                                                    theme.palette.mode === 'dark'
-                                                      ? 'rgba(156, 39, 176, 0.6)'
-                                                      : 'rgba(156, 39, 176, 0.5)',
-                                                  ];
-                                                  return `1px solid ${borderColors[index % borderColors.length]}`;
-                                                },
-                                              }}
-                                            />
-                                          ))}
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell>{result.publicationDate ? fd(result.publicationDate) : ''}</TableCell>
-                                      <TableCell>{result.registrationDate ? fd(result.registrationDate) : ''}</TableCell>
-                                      <TableCell>
-                                        <KeyboardArrowLeft sx={{ color: 'text.secondary' }} />
-                                      </TableCell>
-                                    </TableRow>
+                                    <React.Fragment key={result.id}>
+                                      <TableRow
+                                        hover
+                                        onClick={handleRowExpandToggle}
+                                        sx={{ cursor: 'pointer' }}
+                                      >
+                                        {/* <TableCell padding="checkbox">
+                                          <Checkbox
+                                            checked={selectedRows.includes(result.id)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                setSelectedRows([...selectedRows, result.id]);
+                                              } else {
+                                                setSelectedRows(selectedRows.filter((id) => id !== result.id));
+                                              }
+                                            }}
+                                          />
+                                        </TableCell> */}
+                                        {visibleColumns.map((column) => {
+                                          if (column.id === 'title') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                <CellContextMenu
+                                                  value={result.title}
+                                                  menuItems={titleMenuItems}
+                                                  onOpenChange={handleContextMenuOpenChange}
+                                                >
+                                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                      <IconButton
+                                                        size="small"
+                                                        aria-label={isExpanded ? t_i18n('Collapse') : t_i18n('Expand')}
+                                                        onClick={(event) => {
+                                                          event.stopPropagation();
+                                                          handleRowExpandToggle();
+                                                        }}
+                                                        sx={{ p: 0.5, color: 'text.secondary' }}
+                                                      >
+                                                        {isExpanded ? (
+                                                          <KeyboardArrowUp fontSize="small" />
+                                                        ) : (
+                                                          <KeyboardArrowDown fontSize="small" />
+                                                        )}
+                                                      </IconButton>
+                                                      <ItemIcon type={result.entityType} size="small" />
+                                                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                        {result.title}
+                                                      </Typography>
+                                                    </Box>
+                                                    <Typography variant="caption" color="text.secondary" sx={{ pl: 4 }}>
+                                                      {result.standardId}
+                                                    </Typography>
+                                                  </Box>
+                                                </CellContextMenu>
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'entityType') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                <ItemEntityType entityType={result.entityType} />
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'tags') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                  {result.tags.map((tag, index) => (
+                                                    <CellContextMenu
+                                                      key={index}
+                                                      value={tag}
+                                                      menuItems={tagMenuItems}
+                                                      onOpenChange={handleContextMenuOpenChange}
+                                                    >
+                                                      <Chip
+                                                        label={tag}
+                                                        size="small"
+                                                        sx={{
+                                                          height: 24,
+                                                          fontSize: '0.75rem',
+                                                          borderRadius: 1,
+                                                          backgroundColor: (theme) => {
+                                                            const colors = [
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(76, 175, 80, 0.15)'
+                                                                : 'rgba(76, 175, 80, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(255, 152, 0, 0.15)'
+                                                                : 'rgba(255, 152, 0, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(33, 150, 243, 0.15)'
+                                                                : 'rgba(33, 150, 243, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(244, 67, 54, 0.15)'
+                                                                : 'rgba(244, 67, 54, 0.1)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(156, 39, 176, 0.15)'
+                                                                : 'rgba(156, 39, 176, 0.1)',
+                                                            ];
+                                                            return colors[index % colors.length];
+                                                          },
+                                                          border: (theme) => {
+                                                            const borderColors = [
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(76, 175, 80, 0.6)'
+                                                                : 'rgba(76, 175, 80, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(255, 152, 0, 0.6)'
+                                                                : 'rgba(255, 152, 0, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(33, 150, 243, 0.6)'
+                                                                : 'rgba(33, 150, 243, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(244, 67, 54, 0.6)'
+                                                                : 'rgba(244, 67, 54, 0.5)',
+                                                              theme.palette.mode === 'dark'
+                                                                ? 'rgba(156, 39, 176, 0.6)'
+                                                                : 'rgba(156, 39, 176, 0.5)',
+                                                            ];
+                                                            return `1px solid ${borderColors[index % borderColors.length]}`;
+                                                          },
+                                                        }}
+                                                      />
+                                                    </CellContextMenu>
+                                                  ))}
+                                                </Box>
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'updated') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                {result.publicationDate ? fd(result.publicationDate) : ''}
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.id === 'created') {
+                                            return (
+                                              <TableCell key={column.id}>
+                                                {result.registrationDate ? fd(result.registrationDate) : ''}
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          return null;
+                                        })}
+                                        <TableCell align="right">
+                                          <IconButton
+                                            size="small"
+                                            aria-label={t_i18n('View full details')}
+                                            onClick={(event) => {
+                                              event.stopPropagation();
+                                              navigate(detailLink);
+                                            }}
+                                            sx={{ color: 'text.secondary' }}
+                                          >
+                                            <KeyboardArrowLeft fontSize="small" />
+                                          </IconButton>
+                                        </TableCell>
+                                      </TableRow>
+                                      <TableRow>
+                                        <TableCell colSpan={visibleColumns.length + 1} sx={{ py: 0, borderBottom: isExpanded ? undefined : 0 }}>
+                                          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                                            <Box sx={{ py: 2, px: 1 }}>
+                                              <Typography variant="body2">
+                                                {result.title}
+                                              </Typography>
+                                            </Box>
+                                          </Collapse>
+                                        </TableCell>
+                                      </TableRow>
+                                    </React.Fragment>
                                   );
                                 })}
                             </TableBody>
@@ -1336,20 +1868,11 @@ const RessaSearch = () => {
       </Box>
 
       {/* Save Search Dialog */}
-      <Dialog
-        open={saveDialogOpen}
-        onClose={handleCloseSaveDialog}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={saveDialogOpen} onClose={handleCloseSaveDialog} maxWidth="md" fullWidth>
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="h6">{t_i18n('Save Search')}</Typography>
-            <IconButton
-              size="small"
-              onClick={handleCloseSaveDialog}
-              sx={{ padding: 0.5 }}
-            >
+            <IconButton size="small" onClick={handleCloseSaveDialog} sx={{ padding: 0.5 }}>
               <Close />
             </IconButton>
           </Box>
@@ -1369,7 +1892,10 @@ const RessaSearch = () => {
             {/* Query Field */}
             <Box>
               <Typography variant="body2" sx={{ marginBottom: 1, fontWeight: 500 }}>
-                {t_i18n('Query')} <Typography component="span" sx={{ color: 'error.main' }}>*</Typography>
+                {t_i18n('Query')}{' '}
+                <Typography component="span" sx={{ color: 'error.main' }}>
+                  *
+                </Typography>
               </Typography>
               <Box
                 sx={{
@@ -1385,7 +1911,7 @@ const RessaSearch = () => {
                   alignItems: 'center',
                 }}
               >
-                {parseQueryToChips(searchValue).map((chip, index) => {
+                {parseQueryToChips(activeTab.query).map((chip, index) => {
                   if (chip.type === 'operator') {
                     return (
                       <Chip
@@ -1465,6 +1991,13 @@ const RessaSearch = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ColumnManagerModal
+        open={columnModalOpen}
+        onClose={() => setColumnModalOpen(false)}
+        columns={columns}
+        onChange={setColumns}
+      />
     </>
   );
 };
