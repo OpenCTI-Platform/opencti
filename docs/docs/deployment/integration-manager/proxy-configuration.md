@@ -88,7 +88,7 @@ When proxy is enabled, XTM Composer automatically injects these environment vari
 - `REQUESTS_CA_BUNDLE` (when `https_proxy_ca` is configured)
 - `NODE_EXTRA_CA_CERTS` (when `https_proxy_ca` is configured)
 - `CURL_CA_BUNDLE` (when `https_proxy_ca` is configured)
-- `NODE_TLS_REJECT_UNAUTHORIZED=0` (when `https_proxy_reject_unauthorized: false`)
+- `NODE_TLS_REJECT_UNAUTHORIZED` (set to `0` when `https_proxy_reject_unauthorized: false`)
 
 ### Verification
 
