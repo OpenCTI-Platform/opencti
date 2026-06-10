@@ -91,6 +91,12 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
       },
     },
   ];
+
+  const config = {
+    startDate: undefined,
+    endDate: undefined,
+  };
+
   return (
     <div style={{ height: '100%' }} data-testid="incident-details-page">
       <Card title={t_i18n('Details')}>
@@ -157,8 +163,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
               height={250}
-              startDate={undefined}
-              endDate={undefined}
+              config={config}
               popover={undefined}
               host={undefined}
             />
@@ -169,8 +174,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               parameters={{ title: t_i18n('Observables distribution') }}
               variant="inEntity"
               height={250}
-              startDate={undefined}
-              endDate={undefined}
+              config={config}
               popover={undefined}
               host={undefined}
             />

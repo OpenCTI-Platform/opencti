@@ -98,8 +98,10 @@ const ReportDetails = ({ report }) => {
             <StixRelationshipsHorizontalBars
               isWidget={false}
               fromId={reportData.id}
-              startDate={null}
-              endDate={null}
+              config={{
+                startDate: null,
+                endDate: null,
+              }}
               relationshipType="object"
               dataSelection={entitiesDistributionDataSelection}
               parameters={{ title: 'Entities distribution' }}

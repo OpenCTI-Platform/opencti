@@ -13,21 +13,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent, ReactNode, Suspense, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { AuditsListComponentQuery, LogsOrdering, OrderingMode } from './__generated__/AuditsListComponentQuery.graphql';
+import { AuditsListComponentQuery, FilterGroup as GqlFilterGroup, LogsOrdering, OrderingMode } from './__generated__/AuditsListComponentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import type { FilterGroup as FilterHelpersFilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
 const auditsListComponentQuery = graphql`
   query AuditsListComponentQuery(
@@ -95,6 +96,8 @@ interface AuditsListProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  config: DashboardConfig;
+  refreshRate?: number | null;
   popover?: ReactNode;
   host?: WidgetHost;
 }
@@ -106,6 +109,8 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
   endDate,
   dataSelection,
   parameters,
+  config,
+  refreshRate = null,
   popover,
   host,
 }) => {
@@ -113,26 +118,36 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const buildQueryVariables = useCallback((resolvedSelection: WidgetDataSelection[]): AuditsListComponentQuery['variables'] => {
+    const selection = resolvedSelection[0];
+    const dateAttribute = (selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'timestamp') as LogsOrdering;
+    const { filters } = buildFiltersAndOptionsForWidgets(
+      selection.filters ?? undefined,
+      { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
+    );
+
+    return {
+      types: ['History', 'Activity'],
+      first: selection.number ?? 10,
+      orderBy: dateAttribute,
+      orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
+      filters: (filters
+        ? sanitizeFilterGroupKeysForBackend(filters as unknown as FilterHelpersFilterGroup)
+        : undefined) as unknown as GqlFilterGroup,
+    };
+  }, [startDate, endDate]);
+
+  const { isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsListComponentQuery>({
     perspective: 'audits',
     dataSelection,
     host,
-  });
-  const selection = resolvedDataSelection[0];
-  const dateAttribute = (selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'timestamp') as LogsOrdering;
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters ?? undefined,
-    { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
-  );
-
-  const queryRef = useQueryLoading<AuditsListComponentQuery>(auditsListComponentQuery, {
-    types: ['History', 'Activity'],
-    first: selection.number ?? 10,
-    orderBy: dateAttribute,
-    orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    refreshRate,
+    query: auditsListComponentQuery,
+    config,
+    parameters,
+    buildQueryVariables,
   });
 
   return (
@@ -165,9 +180,9 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
           : (
               <>
                 {queryRef && (
-                  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                  <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                     <AuditsListComponent queryRef={queryRef} />
-                  </React.Suspense>
+                  </Suspense>
                 )}
               </>
             )}

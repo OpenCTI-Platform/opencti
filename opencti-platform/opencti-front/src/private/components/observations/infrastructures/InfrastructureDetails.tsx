@@ -59,7 +59,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
         filters: [
           {
             key: 'entity_type',
-            values: 'Stix-Cyber-Observable',
+            values: ['Stix-Cyber-Observable'],
           },
           {
             key: 'regardingOf',
@@ -73,6 +73,12 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
       },
     },
   ];
+
+  const config = {
+    startDate: undefined,
+    endDate: undefined,
+  };
+
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
@@ -122,8 +128,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           parameters={{ title: t_i18n('Observables distribution') }}
           variant="inEntity"
           height={300}
-          startDate={undefined}
-          endDate={undefined}
+          config={config}
           popover={undefined}
           host={undefined}
         />

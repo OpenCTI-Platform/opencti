@@ -151,8 +151,15 @@ const TargetedCountries = ({ timeField }) => {
 const DefaultDashboard = ({ timeField }) => {
   const { t_i18n } = useFormatter();
   const { settings } = useAuth();
+
   const noAccessMessage = settings.platform_no_access_message
     ?? t_i18n('You do not have any access to the knowledge of this OpenCTI instance.');
+
+  const config = {
+    startDate: null,
+    endDate: null,
+  };
+
   return (
     <Security
       needs={[KNOWLEDGE]}
@@ -162,6 +169,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Intrusion-Set"
+            config={config}
             parameters={{
               title: 'Intrusion-Set',
             }}
@@ -183,6 +191,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Malware"
+            config={config}
             parameters={{
               title: 'Malware',
             }}
@@ -204,6 +213,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Report"
+            config={config}
             parameters={{
               title: 'Report',
             }}
@@ -225,6 +235,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixCoreObjectsNumber
             entityType="Indicator"
+            config={config}
             parameters={{
               title: 'Indicator',
             }}
@@ -245,9 +256,14 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixRelationshipsHorizontalBars
-            title={t_i18n('Most active threats (Last 3 months)')}
             height={300}
-            startDate={monthsAgo(3)}
+            config={{
+              startDate: monthsAgo(3),
+              endDate: null,
+            }}
+            parameters={{
+              title: t_i18n('Most active threats (Last 3 months)'),
+            }}
             dataSelection={[{
               attribute: 'internal_id',
               isTo: false,
@@ -272,9 +288,14 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixRelationshipsHorizontalBars
-            title={t_i18n('Most targeted victims (Last 3 months)')}
             height={300}
-            startDate={monthsAgo(3)}
+            config={{
+              startDate: monthsAgo(3),
+              endDate: null,
+            }}
+            parameters={{
+              title: t_i18n('Most targeted victims (Last 3 months)'),
+            }}
             dataSelection={[{
               attribute: 'internal_id',
               isTo: true,
@@ -299,11 +320,13 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={6}>
           <StixRelationshipsMultiAreaChart
-            title={t_i18n('Relationships created')}
             height={300}
-            startDate={yearsAgo(1)}
-            endDate={lastDayOfThePreviousMonth()}
+            config={{
+              startDate: yearsAgo(1),
+              endDate: lastDayOfThePreviousMonth(),
+            }}
             parameters={{
+              title: t_i18n('Relationships created'),
               interval: 'month',
             }}
             dataSelection={[{
@@ -325,9 +348,14 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixRelationshipsPolarArea
-            title={t_i18n('Most active malware (Last 3 months)')}
             height={400}
-            startDate={monthsAgo(3)}
+            config={{
+              startDate: monthsAgo(3),
+              endDate: null,
+            }}
+            parameters={{
+              title: t_i18n('Most active malware (Last 3 months)'),
+            }}
             dataSelection={[{
               attribute: 'internal_id',
               isTo: false,
@@ -352,9 +380,14 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={3}>
           <StixRelationshipsDistributionList
             overflow="hidden"
-            title={t_i18n('Most active vulnerabilities (Last 3 months)')}
+            parameters={{
+              title: t_i18n('Most active vulnerabilities (Last 3 months)'),
+            }}
             height={400}
-            startDate={monthsAgo(3)}
+            config={{
+              startDate: monthsAgo(3),
+              endDate: null,
+            }}
             dataSelection={[{
               attribute: 'internal_id',
               isTo: true,
@@ -393,6 +426,7 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item xs={8}>
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
+            config={config}
             height={410}
             widgetId="default_latest_reports_widget"
             dataSelection={[{
@@ -422,10 +456,15 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={4}>
           <StixRelationshipsHorizontalBars
-            title={t_i18n('Most active labels (Last 3 months)')}
             height={410}
-            startDate={monthsAgo(3)}
-            parameters={{ number: 15 }}
+            config={{
+              startDate: monthsAgo(3),
+              endDate: null,
+            }}
+            parameters={{
+              title: t_i18n('Most active labels (Last 3 months)'),
+              number: 15,
+            }}
             dataSelection={[{
               attribute: 'internal_id',
               isTo: true,

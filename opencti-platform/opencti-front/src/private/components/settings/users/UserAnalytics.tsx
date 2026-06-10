@@ -25,6 +25,7 @@ import AuditsHorizontalBars from '@components/common/audits/AuditsHorizontalBars
 import AuditsDonut from '@components/common/audits/AuditsDonut';
 import AuditsRadar from '@components/common/audits/AuditsRadar';
 import AuditsList from '@components/common/audits/AuditsList';
+import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
@@ -48,6 +49,8 @@ const UserFragment = graphql`
 interface UserAnalyticsProps {
   data: UserAnalytics_user$key;
 }
+
+const EMPTY_DASHBOARD_CONFIG: DashboardConfig = {};
 
 const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   const classes = useStyles();
@@ -96,6 +99,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
             popover={undefined}
             host={undefined}
+            config={EMPTY_DASHBOARD_CONFIG}
           />
         </Grid>
         <Grid item xs={6}>
@@ -165,6 +169,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
             popover={undefined}
             host={undefined}
+            config={EMPTY_DASHBOARD_CONFIG}
           />
         </Grid>
         {!userServiceAccount && (
@@ -196,6 +201,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               ]}
               popover={undefined}
               host={undefined}
+              config={EMPTY_DASHBOARD_CONFIG}
             />
           </Grid>
         )}
@@ -231,6 +237,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
             popover={undefined}
             host={undefined}
+            config={EMPTY_DASHBOARD_CONFIG}
           />
         </Grid>
         {!userServiceAccount && (
@@ -268,6 +275,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 ]}
                 popover={undefined}
                 host={undefined}
+                config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
             <Grid item xs={8}>
@@ -298,6 +306,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                     },
                   },
                 ]}
+                config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
             <Grid item xs={4}>
@@ -333,6 +342,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 ]}
                 popover={undefined}
                 host={undefined}
+                config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
           </>

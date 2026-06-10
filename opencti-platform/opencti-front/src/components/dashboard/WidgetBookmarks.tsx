@@ -10,7 +10,7 @@ import Card from '../common/card/Card';
 
 interface WidgetBookmarksProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any[];
+  bookmarks: readonly any[];
 }
 
 const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {

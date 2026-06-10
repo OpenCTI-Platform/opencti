@@ -47,7 +47,7 @@ export default class DashboardWidgetsPageModel {
   }
 
   createWidget() {
-    return this.page.getByRole('button', { name: 'create' }).click();
+    return this.page.getByTestId('widget-submit-button').click();
   }
 
   getItemFromWidgetList(name: string) {

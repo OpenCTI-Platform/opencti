@@ -12983,6 +12983,7 @@ type Workspace implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   refreshed_at: DateTime
+  refresh_interval: Int
   editContext: [EditUserContext!]
   investigated_entities_ids: [String]
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -13022,6 +13023,7 @@ input WorkspaceAddInput {
   tags: [String!]
   authorized_members: [MemberAccessInput!]
   investigated_entities_ids: [String]
+  refresh_interval: Int
 }
 
 input WorkspaceDuplicateInput {
