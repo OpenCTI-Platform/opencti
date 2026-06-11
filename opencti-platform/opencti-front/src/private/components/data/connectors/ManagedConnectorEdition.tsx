@@ -199,6 +199,9 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
           );
 
           const hasAdvancedProperties = Object.keys(advancedProperties).length > 0;
+          const visibleDeprecatedFieldNames = Object.keys(contract.config_schema.properties)
+            .filter((key) => Boolean(visibleDeprecatedProperties[key]))
+            .map((key) => key.replace(/_/g, ' '));
 
           return (
             <Form>
@@ -208,7 +211,12 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                   variant="outlined"
                   style={{ marginBottom: 8 }}
                 >
-                  {t_i18n('At least one deprecated field is configured with a non-default value.')}
+                  <div>{t_i18n('This connector has deprecated configuration fields:')}</div>
+                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
+                    {visibleDeprecatedFieldNames.map((fieldName) => (
+                      <li key={fieldName}>{fieldName}</li>
+                    ))}
+                  </ul>
                 </Alert>
               )}
 

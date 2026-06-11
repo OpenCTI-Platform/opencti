@@ -3,7 +3,6 @@ import Dialog from '@common/dialog/Dialog';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
-import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Alert from '@mui/material/Alert';
@@ -29,14 +28,14 @@ import canDeleteConnector from './utils/canDeleteConnector';
 interface ConnectorPopoverProps {
   connector: Connector_connector$data;
   onRefreshData?: () => void;
+  onOpenEditConfiguration?: () => void;
 }
 
-const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) => {
+const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }: ConnectorPopoverProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
-  const [editionOpen, setEditionOpen] = useState(false);
   const [displayClearWorks, setDisplayClearWorks] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [displayResetState, setDisplayResetState] = useState(false);
@@ -63,7 +62,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
 
   const handleOpenEdit = () => {
     setAnchorEl(null);
-    setEditionOpen(true);
+    onOpenEditConfiguration?.();
   };
 
   const handleOpenClearWorks = () => {
@@ -190,16 +189,6 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           {t_i18n('Delete')}
         </MenuItem>
       </Menu>
-
-      {
-        connector.is_managed && connector.manager_contract_definition && (
-          <ManagedConnectorEdition
-            open={editionOpen}
-            onClose={() => setEditionOpen(false)}
-            connector={connector}
-          />
-        )
-      }
 
       <Dialog
         open={displayClearWorks}
