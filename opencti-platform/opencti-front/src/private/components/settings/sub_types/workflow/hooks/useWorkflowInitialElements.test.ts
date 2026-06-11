@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { MarkerType, Node } from 'reactflow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
+import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import { WorkflowNodeType } from '../utils';
 import { useWorkflowInitialElements } from './useWorkflowInitialElements';
 
@@ -34,15 +35,10 @@ describe('useWorkflowInitialElements', () => {
     ],
   };
 
-  const mockMembers: SubTypeWorkflowQuery$data['members'] = {
+  const mockMembers: SubTypeWorkflowDependenciesQuery$data['members'] = {
     edges: [
       { node: { id: 'user-1', name: 'John Doe', entity_type: 'User' } },
-    ],
-  };
-
-  const mockGroups: SubTypeWorkflowQuery$data['groups'] = {
-    edges: [
-      { node: { id: 'group-1', name: 'Analysts' } },
+      { node: { id: 'group-1', name: 'Analysts', entity_type: 'Group' } },
     ],
   };
 
@@ -87,7 +83,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should return empty arrays if workflowDefinition is null', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(null, null, null, null, null),
+      useWorkflowInitialElements(null, null, null),
     );
 
     expect(result.current.initialNodes).toEqual([]);
@@ -96,7 +92,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform states into status nodes', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
     );
 
     const statusNodes = result.current.initialNodes.filter(
@@ -118,7 +114,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should transform transitions into one node and two edges', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
     );
 
     const transitionNodes = result.current.initialNodes.filter(
@@ -139,7 +135,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should enrich authorized members actions with member data', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers, null, null),
+      useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
     );
 
     const node = result.current.initialNodes.find((n: Node) => n.id === 'status-open');
@@ -175,7 +171,7 @@ describe('useWorkflowInitialElements', () => {
     };
 
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(defWithGroupRestriction, mockStatusTemplates, mockMembers, null, mockGroups),
+      useWorkflowInitialElements(defWithGroupRestriction, mockStatusTemplates, mockMembers),
     );
 
     const node = result.current.initialNodes.find((n: Node) => n.id === 'status-open');
@@ -196,7 +192,7 @@ describe('useWorkflowInitialElements', () => {
 
     const { result, rerender } = renderHook(
       ({ def }: HookProps) =>
-        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers, null, null),
+        useWorkflowInitialElements(def, mockStatusTemplates, mockMembers),
       { initialProps: { def: mockWorkflowDefinition } },
     );
 
@@ -240,12 +236,15 @@ describe('useWorkflowInitialElements', () => {
       ],
     };
 
-    const mockOrgs: SubTypeWorkflowQuery$data['organizations'] = {
-      edges: [{ node: { id: orgId, name: 'Org Alpha' } }],
+    const membersWithOrg: SubTypeWorkflowDependenciesQuery$data['members'] = {
+      edges: [
+        ...mockMembers.edges ?? [],
+        { node: { id: orgId, name: 'Org Alpha', entity_type: 'Organization' } },
+      ],
     };
 
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(defWithShare, mockStatusTemplates, mockMembers, mockOrgs, null),
+      useWorkflowInitialElements(defWithShare, mockStatusTemplates, membersWithOrg),
     );
 
     const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
@@ -280,7 +279,7 @@ describe('useWorkflowInitialElements', () => {
     };
 
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(defWithUnshare, mockStatusTemplates, mockMembers, null, null),
+      useWorkflowInitialElements(defWithUnshare, mockStatusTemplates, mockMembers),
     );
 
     const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
@@ -290,7 +289,7 @@ describe('useWorkflowInitialElements', () => {
 
   it('should return empty arrays when workflowDefinition is undefined', () => {
     const { result } = renderHook(() =>
-      useWorkflowInitialElements(undefined as never, mockStatusTemplates, mockMembers, null, null),
+      useWorkflowInitialElements(undefined as never, mockStatusTemplates, mockMembers),
     );
     expect(result.current.initialNodes).toEqual([]);
     expect(result.current.initialEdges).toEqual([]);

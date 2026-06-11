@@ -6,7 +6,7 @@ import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import Button from '../../../../components/common/button/Button';
-import { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
+import { workflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 import Dialog from '@common/dialog/Dialog';

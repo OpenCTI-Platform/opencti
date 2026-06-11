@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import WorkflowStatus, { WorkflowTransitions } from './WorkflowStatus';
 import testRender from '../../../../utils/tests/test-render';
-import type { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
+import type { workflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 // ---------------------------------------------------------------------------

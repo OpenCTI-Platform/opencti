@@ -4,7 +4,7 @@ import { Tooltip } from '@mui/material';
 import { CommentOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
 import { workflowStatusFragment } from './workflowStatus.graphql';
-import { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
+import { workflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 
 export { workflowStatusFragment } from './workflowStatus.graphql';
 export { WorkflowTransitions } from './WorkflowTransitions';
