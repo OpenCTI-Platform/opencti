@@ -41,7 +41,7 @@
   "A field will be created with appropriate type based on the attribute.": "Se creará un campo con el tipo apropiado basado en el atributo.",
   "A FINTEL export will contain extra information like markings and creation date": "Una exportación FINTEL contendrá información extra como marcas y fecha de creación",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Un flujo de trabajo guiado que agiliza la importación de archivos, la selección de conectores y permite la creación de un banco de trabajo o borrador para su revisión antes de la importación final",
-  "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade",
+  "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "Hay disponible un nuevo tipo de contenido, pero no se puede mostrar en esta notificación debido a tu versión de OpenCTI; actualiza",
   "A new entity enters a selected PIR": "Una nueva entidad entra en un PIR seleccionado",
   "A non-exhaustive enumeration of infrastructure types": "Una enumeración no exhaustiva de tipos de infraestructura",
   "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
