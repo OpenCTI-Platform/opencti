@@ -29,6 +29,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsDonutDistributionQuery = graphql`
   query AuditsDonutDistributionQuery(
@@ -176,23 +177,7 @@ const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return (
-        <div style={{ display: 'table', height: '100%', width: '100%' }}>
-          <span
-            style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
-          >
-            {!isEnterpriseEdition
-              ? t_i18n(
-                  'This feature is only available in OpenCTI Enterprise Edition.',
-                )
-              : t_i18n('You are not authorized to see this data.')}
-          </span>
-        </div>
-      );
+      return <WidgetAccessDenied />;
     }
 
     if (!queryRef) {

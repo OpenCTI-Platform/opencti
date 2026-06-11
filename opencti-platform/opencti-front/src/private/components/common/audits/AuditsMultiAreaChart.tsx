@@ -28,6 +28,7 @@ import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import { showEstimationWarningForUniqCount, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetMultiTimeSeries, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -193,23 +194,7 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return (
-        <div style={{ display: 'table', height: '100%', width: '100%' }}>
-          <span
-            style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
-          >
-            {!isEnterpriseEdition
-              ? t_i18n(
-                  'This feature is only available in OpenCTI Enterprise Edition.',
-                )
-              : t_i18n('You are not authorized to see this data.')}
-          </span>
-        </div>
-      );
+      return <WidgetAccessDenied />;
     }
 
     if (!queryRef) {

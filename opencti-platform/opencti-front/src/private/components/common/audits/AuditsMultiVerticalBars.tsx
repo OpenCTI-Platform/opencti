@@ -30,6 +30,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import WidgetAccessDenied from "../../../../components/dashboard/WidgetAccessDenied";
 
 const auditsMultiVerticalBarsTimeSeriesQuery = graphql`
   query AuditsMultiVerticalBarsTimeSeriesQuery(
@@ -177,23 +178,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return (
-        <div style={{ display: 'table', height: '100%', width: '100%' }}>
-          <span
-            style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
-          >
-            {!isEnterpriseEdition
-              ? t_i18n(
-                  'This feature is only available in OpenCTI Enterprise Edition.',
-                )
-              : t_i18n('You are not authorized to see this data.')}
-          </span>
-        </div>
-      );
+      return <WidgetAccessDenied />;
     }
 
     if (!queryRef) {
