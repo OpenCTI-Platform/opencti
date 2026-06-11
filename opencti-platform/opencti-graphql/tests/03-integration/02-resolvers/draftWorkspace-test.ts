@@ -10,6 +10,7 @@ import {
   getUserIdByEmail,
   getOrganizationIdByName,
   queryInitPlatformAsAdmin,
+  buildStandardUser,
 } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAuthUser } from '../../utils/testQueryHelper';
 import { resolveUserById } from '../../../src/domain/user';
@@ -1065,6 +1066,91 @@ describe('Drafts workspace resolver testing', () => {
         query: DELETE_DRAFT_WORKSPACE_QUERY,
         variables: { id: restrictedDraftId },
       });
+    });
+  });
+
+  describe('Draft access with KNOWLEDGE_KNUPDATE capability in draft only (not in main)', () => {
+    // A user who has KNOWLEDGE_KNUPDATE only in their draft capabilities (not in main capabilities).
+    // This models a real-world scenario where the platform grants update rights exclusively in
+    // draft contexts — the user has no edit permissions on the live platform.
+    const userWithDraftCapaOnly = {
+      ...buildStandardUser([], [], []),
+      capabilities: [],
+      capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }],
+    };
+    const userWithNoCapa = {
+      ...buildStandardUser([], [], []),
+      capabilities: [],
+    };
+
+    let draftCreatedByDraftUser = '';
+
+    // The draftWorkspaceAdd mutation carries @auth(forDraft: [KNOWLEDGE_KNUPDATE]), which means
+    // the platform checks capabilitiesInDraft even without an active draft_context.
+    it('should allow creating a draft with KNOWLEDGE_KNUPDATE in draft capabilities only', async () => {
+      const result = await queryAsAuthUser(userWithDraftCapaOnly, {
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'draft-created-by-draft-only-user' } },
+      });
+      expect(result.errors, `Unexpected errors: ${JSON.stringify(result.errors)}`).toBeUndefined();
+      expect(result.data?.draftWorkspaceAdd).toBeDefined();
+      expect(result.data?.draftWorkspaceAdd.draft_status).toEqual(DRAFT_STATUS_OPEN);
+      draftCreatedByDraftUser = result.data?.draftWorkspaceAdd.id;
+    });
+
+    // draftWorkspacesRestricted carries @auth(for: [KNOWLEDGE]).
+    // KNOWLEDGE_KNUPDATE.includes('KNOWLEDGE') is true, so when draft_context is active the user
+    // passes the capability check through capabilitiesInDraft.
+    it('should allow listing drafts when KNOWLEDGE_KNUPDATE is in draft capabilities and a draft context is active', async () => {
+      // A pre-existing draft is needed to supply a valid draft_context.
+      const setupDraft = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'draft-context-for-list-access-test' } },
+      });
+      const draftContextId = setupDraft.data?.draftWorkspaceAdd.id;
+      expect(draftContextId).toBeDefined();
+
+      const userInDraftContext = {
+        ...userWithDraftCapaOnly,
+        draft_context: draftContextId,
+      };
+
+      const listResult = await queryAsAuthUser(userInDraftContext, {
+        query: gql`
+          query DraftWorkspacesRestricted {
+            draftWorkspacesRestricted(first: 5) {
+              edges {
+                node {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        `,
+      });
+      expect(listResult.errors, `Unexpected errors: ${JSON.stringify(listResult.errors)}`).toBeUndefined();
+      expect(listResult.data?.draftWorkspacesRestricted).toBeDefined();
+
+      // Cleanup the setup draft
+      await queryAsAdmin({ query: DELETE_DRAFT_WORKSPACE_QUERY, variables: { id: draftContextId } });
+    });
+
+    // Negative case: a user with no capabilities at all must be rejected with FORBIDDEN_ACCESS.
+    it('should not allow creating a draft with no capabilities', async () => {
+      const result = await queryAsAuthUser(userWithNoCapa, {
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'draft-should-be-forbidden' } },
+      });
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.length).toBe(1);
+      expect(result.errors?.[0].extensions?.code).toBe('FORBIDDEN_ACCESS');
+    });
+
+    it('should clean up drafts created during draft-only capability tests', async () => {
+      if (draftCreatedByDraftUser) {
+        await queryAsAdmin({ query: DELETE_DRAFT_WORKSPACE_QUERY, variables: { id: draftCreatedByDraftUser } });
+      }
     });
   });
 });
