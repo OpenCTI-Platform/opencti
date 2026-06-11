@@ -162,6 +162,106 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         first_seen
         last_seen
       }
+      ... on Indicator {
+        description
+        indicator_types
+        pattern
+        valid_from
+        valid_until
+        x_opencti_score
+        x_opencti_detection
+        indicator_types
+        x_opencti_main_observable_type
+        x_mitre_platforms
+        killChainPhases {
+          id
+          phase_name
+          kill_chain_name
+          x_opencti_order
+        }
+      }
+      ... on Infrastructure {
+        name
+        description
+        infrastructure_types
+        first_seen
+        last_seen
+        killChainPhases {
+          id
+          phase_name
+          kill_chain_name
+          x_opencti_order
+        }
+      }
+      ... on ThreatActorGroup {
+        name
+        description
+        threat_actor_types
+        first_seen
+        last_seen
+        sophistication
+        resource_level
+        primary_motivation
+        secondary_motivations
+        goals
+        roles
+      }
+      ... on ThreatActorIndividual {
+        name
+        description
+        threat_actor_types
+        first_seen
+        last_seen
+        sophistication
+        resource_level
+        primary_motivation
+        secondary_motivations
+        personal_motivations
+        goals
+        roles
+        eye_color
+        hair_color
+        height {
+          measure
+          date_seen
+        }
+        weight {
+          measure
+          date_seen
+        }
+        date_of_birth
+        gender
+        marital_status
+        job_title
+      }
+      ... on IntrusionSet {
+        name
+        description
+        first_seen
+        last_seen
+        resource_level
+        primary_motivation
+        secondary_motivations
+        goals
+      }
+      ... on Malware {
+        name
+        description
+        malware_types
+        is_family
+        first_seen
+        last_seen
+        architecture_execution_envs
+        implementation_languages
+        capabilities
+        killChainPhases {
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
+        }
+      }
       createdBy {
         ... on Identity {
           id
