@@ -285,7 +285,7 @@ export const addFilter = (
 
 // remove filter with key=entity_type and values contains 'all'
 // because in this case we want everything, so no need for filters
-export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) => {
+export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup | null) => {
   if (inputFilters && isFilterGroupNotEmpty(inputFilters)) {
     const { filters, filterGroups } = inputFilters;
     const newFilters = filters.filter((f) => !(f.key === 'entity_type' && f.values.includes('all')));

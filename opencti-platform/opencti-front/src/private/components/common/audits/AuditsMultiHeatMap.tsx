@@ -16,12 +16,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import { AuditsMultiHeatMapTimeSeriesQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsMultiHeatMapTimeSeriesQuery.graphql';
+import { AuditsMultiHeatMapTimeSeriesQuery } from '@components/common/audits/__generated__/AuditsMultiHeatMapTimeSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { normalizeFilterGroupForBackend, removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
@@ -151,7 +151,7 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
             ? selection.date_attribute
             : 'timestamp',
         types: ['History', 'Activity'],
-        filters: removeEntityTypeAllFromFilterGroup(selection.filters ?? undefined) as unknown as GqlFilterGroup,
+        filters: normalizeFilterGroupForBackend(removeEntityTypeAllFromFilterGroup(selection.filters)),
       };
     });
 

@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { AuditsWordCloudDistributionQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsWordCloudDistributionQuery.graphql';
+import { AuditsWordCloudDistributionQuery } from '@components/common/audits/__generated__/AuditsWordCloudDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -27,6 +27,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 const auditsWordCloudDistributionQuery = graphql`
   query AuditsWordCloudDistributionQuery(
@@ -151,7 +152,7 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'timestamp',
-      filters: selection.filters as unknown as GqlFilterGroup,
+      filters: normalizeFilterGroupForBackend(selection.filters),
       limit: selection.number ?? 10,
     };
   }, [startDate, endDate]);

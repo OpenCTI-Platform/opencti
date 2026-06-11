@@ -1282,10 +1282,10 @@ describe('Function normalizeFilterGroupForFrontend', () => {
     const input = {
       mode: 'and',
       filters: [
-        { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+        { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
       ],
       filterGroups: [],
-    } as unknown as GqlFilterGroup;
+    } as GqlFilterGroup;
     const result = normalizeFilterGroupForFrontend(input);
     expect(result.filters[0].key).toEqual('entity_type');
   });
