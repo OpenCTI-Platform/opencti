@@ -45,10 +45,12 @@ import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { StixCoreRelationshipOverview_stixCoreRelationship$key } from './__generated__/StixCoreRelationshipOverview_stixCoreRelationship.graphql';
 import { useComputeLink } from 'src/utils/hooks/useAppData';
 import CustomFieldValuesDisplay from '../custom_fields/CustomFieldValuesDisplay';
+import { StixCoreObjectStandardIds } from '../stix_core_objects/StixCoreObjectStandardIds';
 
 const fragment = graphql`
       fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
         id
+        standard_id
         draftVersion {
           draft_id
           draft_operation
@@ -93,6 +95,7 @@ const fragment = graphql`
           phase_name
           x_opencti_order
         }
+        x_opencti_stix_ids
         x_opencti_inferences {
           rule {
             id
@@ -4700,6 +4703,12 @@ const StixCoreRelationshipOverview = ({
                 <ItemCreators
                   creators={stixCoreRelationship.creators ?? []}
                 />
+                <div style={{ marginTop: 20 }}>
+                  <StixCoreObjectStandardIds
+                    standardId={stixCoreRelationship.standard_id}
+                    stixIds={stixCoreRelationship.x_opencti_stix_ids}
+                  />
+                </div>
               </Grid>
               <CustomFieldValuesDisplay
                 entityType="stix-core-relationship"
