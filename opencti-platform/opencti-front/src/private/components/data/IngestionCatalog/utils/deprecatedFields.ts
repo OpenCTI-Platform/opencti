@@ -36,7 +36,9 @@ export const buildOptionalPropertiesWithDeprecated = (
 };
 
 /** Returns true when a schema property is marked as deprecated. */
-const isDeprecated = (property?: IngestionTypedProperty) => property?.deprecated === true;
+const isDeprecated = (property?: IngestionTypedProperty) => {
+  return Boolean((property as { deprecated?: boolean } | undefined)?.deprecated);
+};
 
 /** Returns true when a deprecated field defines a non-null default value. */
 const hasDefinedDefault = (property: IngestionTypedProperty) => {

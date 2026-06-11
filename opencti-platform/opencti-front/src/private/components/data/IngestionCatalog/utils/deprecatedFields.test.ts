@@ -11,7 +11,11 @@ import {
   shouldShowDeprecatedAlert,
 } from './deprecatedFields';
 
-const makeStringProp = (overrides: Partial<IngestionTypedProperty<'string'>> = {}): IngestionTypedProperty<'string'> => ({
+type TestStringProperty = IngestionTypedProperty<'string'> & {
+  deprecated?: boolean;
+};
+
+const makeStringProp = (overrides: Partial<TestStringProperty> = {}): TestStringProperty => ({
   type: 'string',
   default: 'default',
   description: 'prop',

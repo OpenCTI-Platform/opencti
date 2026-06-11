@@ -1,17 +1,24 @@
 import { describe, it, expect } from 'vitest';
+import type { IngestionTypedProperty } from '@components/data/IngestionCatalog';
 import { augmentPasswordDescriptions, buildContractPropertyGroups } from './buildContractPropertyGroups';
 import { ManagerContractProperty } from './reconcileManagedConnectorContractDataWithSchema';
 
+type TestStringProperty = IngestionTypedProperty<'string'> & {
+  title?: string;
+  deprecated?: boolean;
+};
+
 // Minimal IngestionTypedProperty factory
-const prop = (overrides: object = {}) => ({
+const prop = (overrides: Partial<TestStringProperty> = {}): TestStringProperty => ({
   type: 'string',
+  default: '',
   title: 'A field',
   description: 'desc',
   ...overrides,
 });
 
-const passwordProp = (overrides: object = {}) => prop({ format: 'password', ...overrides });
-const deprecatedProp = (overrides: object = {}) => prop({ deprecated: true, default: 'default_val', ...overrides });
+const passwordProp = (overrides: Partial<TestStringProperty> = {}) => prop({ format: 'password', ...overrides });
+const deprecatedProp = (overrides: Partial<TestStringProperty> = {}) => prop({ deprecated: true, default: 'default_val', ...overrides });
 
 // ---------------------------------------------------------------------------
 // augmentPasswordDescriptions
