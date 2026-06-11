@@ -128,7 +128,7 @@ const notifyWorkflowTransitionComment = async (
     if (uniqueRecipients.length === 0) return;
 
     const entityName = extractEntityRepresentativeName(entity) || entity.entity_type;
-    await Promise.all(
+    const results = await Promise.allSettled(
       uniqueRecipients.map((recipient) => {
         const recipientId = recipient.id;
         const notificationPayload: NotificationAddInput = {
@@ -149,6 +149,11 @@ const notifyWorkflowTransitionComment = async (
         return addNotification(context, SYSTEM_USER, notificationPayload);
       }),
     );
+    results
+      .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      .forEach(({ reason }) => {
+        logApp.error('[OPENCTI-MODULE] Failed to send notification to recipient', { cause: reason });
+      });
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Failed to send workflow transition comment notifications', { cause: error });
   }
@@ -890,9 +895,8 @@ export const triggerWorkflowEvent = async (
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);
     // Notify assignees and participants when a non-empty comment was provided
-    if (comment) {
-      const executionCtx = bypassDraftContext(context);
-      await notifyWorkflowTransitionComment(executionCtx, entity as BasicStoreEntity, eventName, comment, user.id);
+    if (comment?.trim()) {
+      await notifyWorkflowTransitionComment(executionContext, entity as BasicStoreEntity, eventName, comment, user.id);
     }
 
     return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
