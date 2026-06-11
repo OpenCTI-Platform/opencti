@@ -40,9 +40,9 @@ const isDeprecated = (property?: IngestionTypedProperty) => {
   return Boolean((property as { deprecated?: boolean } | undefined)?.deprecated);
 };
 
-/** Returns true when a deprecated field defines a non-null default value. */
+/** Returns true when a deprecated field explicitly defines a default value. */
 const hasDefinedDefault = (property: IngestionTypedProperty) => {
-  return property.default !== undefined && property.default !== null;
+  return property.default !== undefined;
 };
 
 /**
