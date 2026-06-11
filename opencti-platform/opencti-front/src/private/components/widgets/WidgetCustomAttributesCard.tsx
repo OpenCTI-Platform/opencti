@@ -17,7 +17,6 @@ import ItemAssignees from '../../../components/ItemAssignees';
 import ItemParticipants from '../../../components/ItemParticipants';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
-import StixCoreObjectLabelsView from '@components/common/stix_core_objects/StixCoreObjectLabelsView';
 import Tag from '@common/tag/Tag';
 import { StixCoreObjectsCustomAttributesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 
@@ -34,7 +33,6 @@ const renderAttributeValue = (
   data: StixCoreObject | null | undefined,
   t_i18n: (s: string) => string,
   fldt: (s: unknown) => string,
-  isCustomViewReadOnly?: boolean,
 ) => {
   const entityType = data?.entity_type ?? '';
   if (!data) {
@@ -64,15 +62,24 @@ const renderAttributeValue = (
         />
       );
 
-    case 'objectLabel':
+    case 'objectLabel': {
+      const labels = data.objectLabel as
+        | { id: string; value: string; color: string }[]
+        | undefined;
       return (
-        <StixCoreObjectLabelsView
-          labels={data.objectLabel}
-          id={data.id}
-          entity_type={entityType}
-          isCustomViewReadOnly={isCustomViewReadOnly}
-        />
+        <FieldOrEmpty source={labels}>
+          <Stack direction="row" flexWrap="wrap" gap={1}>
+            {labels?.map((label) => (
+              <Tag
+                key={label.id}
+                label={label.value}
+                color={label.color}
+              />
+            ))}
+          </Stack>
+        </FieldOrEmpty>
       );
+    }
 
     case 'creators':
       return <ItemCreators creators={data.creators ?? []} />;
@@ -274,7 +281,6 @@ const renderAttributeValue = (
 const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardProps> = ({
   column,
   data,
-  isCustomViewReadOnly,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
@@ -285,7 +291,7 @@ const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardPr
       <Typography variant="h4" sx={{ marginBottom: theme.spacing(0.5) }}>
         {t_i18n(label)}
       </Typography>
-      {renderAttributeValue(column.attribute ?? '', data, t_i18n, fldt, isCustomViewReadOnly)}
+      {renderAttributeValue(column.attribute ?? '', data, t_i18n, fldt)}
     </Box>
   );
 };

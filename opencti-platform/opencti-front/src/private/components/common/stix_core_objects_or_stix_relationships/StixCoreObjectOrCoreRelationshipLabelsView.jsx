@@ -151,17 +151,15 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       <Label
         action={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            {!props.isCustomViewReadOnly && (
-              <IconButton
-                size="small"
-                variant="tertiary"
-                aria-label={t_i18n('Add new labels')}
-                title={t_i18n('Add new labels')}
-                onClick={handleOpenAdd}
-              >
-                <Add fontSize="small" />
-              </IconButton>
-            )}
+            <IconButton
+              size="small"
+              variant="tertiary"
+              aria-label={t_i18n('Add new labels')}
+              title={t_i18n('Add new labels')}
+              onClick={handleOpenAdd}
+            >
+              <Add fontSize="small" />
+            </IconButton>
           </Security>
         )}
       >
