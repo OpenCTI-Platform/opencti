@@ -82,7 +82,7 @@ const AccessesMenu: FunctionComponent = () => {
   const isOrgaAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const setDissemination = useGranted([SETTINGS_SETDISSEMINATION]);
   const setAuthentication = useGranted([SETTINGS_SETAUTH]);
-  const menuEntries = [];
+  const menuEntries: MenuEntry[] = [];
   if (setAccess) {
     menuEntries.push(...entries);
   }

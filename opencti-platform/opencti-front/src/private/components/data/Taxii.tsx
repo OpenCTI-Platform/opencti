@@ -26,7 +26,7 @@ const Taxii = () => {
     navigate,
     location,
     LOCAL_STORAGE_KEY,
-  );
+  ) as Record<string, any>;
   const [taxiiState, setTaxiiState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',

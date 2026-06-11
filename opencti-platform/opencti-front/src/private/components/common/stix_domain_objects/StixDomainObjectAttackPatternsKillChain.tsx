@@ -209,7 +209,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     setAttackPatternIdsToOverlap(attackPatternIds);
   };
 
-  let csvData = null;
+  let csvData: unknown[] | null = null;
   if (currentView === 'courses-of-action') {
     csvData = (data.attackPatterns?.edges ?? [])
       .map((n) => n.node.coursesOfAction?.edges ?? [])

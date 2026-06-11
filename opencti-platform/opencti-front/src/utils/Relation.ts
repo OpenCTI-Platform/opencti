@@ -102,7 +102,7 @@ export const getRelationsFromOneEntityToAny = (
     const currentRelationToEntity = schemaRelationsTypesMapping.get(currentEntityFromRelations[i]);
     const toEntityName = currentEntityFromRelations[i].substring(from.length + 1);
 
-    const currentEntityLegitRelations = [];
+    const currentEntityLegitRelations: string[] = [];
     if (currentRelationToEntity) {
       for (let j = 0; j < currentRelationToEntity.length; j += 1) {
         currentEntityLegitRelations.push(currentRelationToEntity[j]);
