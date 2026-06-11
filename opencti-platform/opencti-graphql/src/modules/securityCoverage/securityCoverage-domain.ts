@@ -120,7 +120,7 @@ export const addSecurityCoverage = async (
     );
     // Manually add it here to be able to resolve dynamyc attributes
     createdSecurityCoverage['result-of'] = [result.id];
-    logApp.info(`[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`);
+    logApp.debug(`[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`);
   }
 
   return notify(

@@ -1,4 +1,4 @@
-import { BUS_TOPICS, logApp } from '../../../config/conf';
+import { BUS_TOPICS } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, deleteElementById } from '../../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
@@ -118,7 +118,6 @@ export const addSecurityCoverageResult = async (
     throw FunctionalError('Security coverage not found', { securityCoverageResultInput });
   }
 
-  logApp.info(`[SECURITY-COVERAGE-RESULT] Create SCR for ${securityCoverage.id}`, { securityCoverageResultInput, securityCoverage });
   const input = {
     ...securityCoverageResultInput,
   };
@@ -176,7 +175,6 @@ export const deleteSecurityCoverageResultsByResultOf = async (
     resultOfId,
   );
   for (const result of results) {
-    logApp.info(`[SECURITY-COVERAGE-RESULT][${resultOfId}] SCR to delete: ${result.standard_id}`);
     const deleted = await deleteElementById<StoreEntitySecurityCoverageResult>(
       context,
       user,
