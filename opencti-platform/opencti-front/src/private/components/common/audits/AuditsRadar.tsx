@@ -29,7 +29,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import WidgetAccessDenied from "../../../../components/dashboard/WidgetAccessDenied";
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsRadarDistributionQuery = graphql`
   query AuditsRadarDistributionQuery(

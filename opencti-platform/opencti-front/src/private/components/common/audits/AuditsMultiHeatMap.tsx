@@ -30,7 +30,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import WidgetAccessDenied from "../../../../components/dashboard/WidgetAccessDenied";
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsMultiHeatMapTimeSeriesQuery = graphql`
   query AuditsMultiHeatMapTimeSeriesQuery(

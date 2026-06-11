@@ -31,7 +31,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import WidgetAccessDenied from "../../../../components/dashboard/WidgetAccessDenied";
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsMultiLineChartTimeSeriesQuery = graphql`
   query AuditsMultiLineChartTimeSeriesQuery(

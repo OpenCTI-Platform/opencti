@@ -28,7 +28,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import WidgetAccessDenied from "../../../../components/dashboard/WidgetAccessDenied";
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsListComponentQuery = graphql`
   query AuditsListComponentQuery(
