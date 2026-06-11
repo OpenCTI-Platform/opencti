@@ -73,6 +73,12 @@ vi.mock('@components/common/files/import_files/ImportFilesContext', () => ({
   importFilesQuery: {},
 }));
 
+vi.mock('@components/chatbox/ChatbotContext', () => ({
+  useChatbot: vi.fn().mockReturnValue({
+    xtmOneConfigured: false,
+  }),
+}));
+
 // ---------------------------------------------------------------------------
 // useImportFilesData – mock the thin wrapper around usePreloadedQuery so we
 // never need to mock 'react-relay' directly (which causes worker-startup
