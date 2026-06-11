@@ -182,6 +182,12 @@ export const addPublicDashboard = async (
   }
 
   const parsedManifest = fromB64(dashboard.manifest ?? '{}');
+  const dashboardRefreshInterval = (dashboard as unknown as { refresh_interval?: number | null }).refresh_interval ?? 0;
+  parsedManifest.config = {
+    ...(parsedManifest.config ?? {}),
+    refreshInterval: dashboardRefreshInterval,
+    refresh_interval: dashboardRefreshInterval,
+  };
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     Object.keys(parsedManifest.widgets).forEach((widgetId) => {
       parsedManifest.widgets[widgetId].dataSelection = parsedManifest
