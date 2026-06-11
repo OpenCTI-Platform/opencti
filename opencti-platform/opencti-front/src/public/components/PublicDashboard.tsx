@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
+import { Box } from '@mui/material';
 import { ErrorBoundary } from '@components/Error';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
@@ -12,6 +13,8 @@ import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
 import { useFormatter } from '../../components/i18n';
 import type { DashboardManifest } from '../../components/dashboard/dashboard-types';
+import useDashboardRefresh from '../../components/dashboard/useDashboardRefresh';
+import DashboardRefreshControl from '../../components/dashboard/DashboardRefreshControl';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -40,6 +43,19 @@ const PublicDashboardComponent = ({
   const manifest = publicDashboardByUriKey?.public_manifest;
   const parsedManifest: DashboardManifest = JSON.parse(manifest ? fromB64(manifest) : '{}');
   const { widgets, config } = parsedManifest;
+  const initialRefreshRateSeconds = typeof config?.refreshInterval === 'number'
+    ? config.refreshInterval
+    : (config as DashboardManifest['config'] & { refresh_interval?: number | null })?.refresh_interval ?? 0;
+
+  const {
+    localRefreshRateSeconds,
+    refreshToken,
+    isAutoRefreshing,
+    handleManualRefresh,
+    handleRefreshRateChange,
+  } = useDashboardRefresh({
+    initialRefreshRateSeconds,
+  });
 
   useEffect(() => {
     if (publicDashboardByUriKey === null || !publicDashboardByUriKey?.enabled) {
@@ -76,6 +92,15 @@ const PublicDashboardComponent = ({
         onChangeEndDate={onChangeEndDate}
       />
 
+      <Box sx={{ margin: '12px 20px 0 20px', display: 'flex', justifyContent: 'flex-end' }}>
+        <DashboardRefreshControl
+          onRefresh={handleManualRefresh}
+          interval={localRefreshRateSeconds}
+          onIntervalChange={handleRefreshRateChange}
+          isRefreshing={isAutoRefreshing}
+        />
+      </Box>
+
       <div ref={containerRef}>
         <ReactGridLayout
           className="layout"
@@ -89,7 +114,7 @@ const PublicDashboardComponent = ({
             <div
               key={widget.id}
             >
-              <ErrorBoundary>
+              <ErrorBoundary key={`${widget.id}-${refreshToken}`}>
                 {widget.perspective === 'entities' && entityWidget(widget)}
                 {widget.perspective === 'relationships' && relationshipWidget(widget)}
                 {widget.perspective === 'audits' && auditWidget(widget)}

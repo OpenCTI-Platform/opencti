@@ -4,6 +4,8 @@ export interface DashboardConfig {
   startDate?: string | null;
   endDate?: string | null;
   relativeDate?: string | null;
+  refreshInterval?: number | null;
+  refresh_interval?: number | null;
 }
 
 // When used in dashboards widgets must have a layout
