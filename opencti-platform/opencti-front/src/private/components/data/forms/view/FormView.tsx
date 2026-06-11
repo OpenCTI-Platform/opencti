@@ -237,6 +237,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       mFields.forEach((field) => {
         if (field.type === 'checkbox' || field.type === 'toggle') {
           fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+        } else if (field.name === 'is_family' && inits[field.name] === undefined) {
+          inits[field.name] = false;
         } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
           fieldsObj[field.name] = field.defaultValue || [];
         } else if (field.type === 'datetime') {
@@ -363,6 +365,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
             if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
               hasDefaultValues = true;
               entityValues[field.name] = field.defaultValue;
+            } else if (field.name === 'is_family') {
+              hasDefaultValues = true;
+              entityValues[field.name] = false;
             }
           });
 
