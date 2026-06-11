@@ -2,9 +2,11 @@ import { Page } from '@playwright/test';
 import DashboardWidgetsPageModel from './DashboardWidgets.pageModel';
 
 export default class CustomViewDetailsPage {
-  widgets = new DashboardWidgetsPageModel(this.page);
+  widgets: DashboardWidgetsPageModel;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.widgets = new DashboardWidgetsPageModel(this.page);
+  }
 
   getTitle(name: string) {
     return this.page.getByRole('heading', { name, exact: true });

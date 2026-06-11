@@ -3,10 +3,14 @@ import SelectFieldPageModel from './field/SelectField.pageModel';
 import DateFieldPageModel from './field/DateField.pageModel';
 
 export default class DashboardDetailsPage {
-  accessSelect = new SelectFieldPageModel(this.page, 'Relative time', false);
-  startDateField = new DateFieldPageModel(this.page, 'Start date');
-  endDateField = new DateFieldPageModel(this.page, 'End date');
-  constructor(private page: Page) {}
+  accessSelect: SelectFieldPageModel;
+  startDateField: DateFieldPageModel;
+  endDateField: DateFieldPageModel;
+  constructor(private page: Page) {
+    this.accessSelect = new SelectFieldPageModel(this.page, 'Relative time', false);
+    this.startDateField = new DateFieldPageModel(this.page, 'Start date');
+    this.endDateField = new DateFieldPageModel(this.page, 'End date');
+  }
 
   getDashboardDetailsPage() {
     return this.page.getByTestId('dashboard-details-page');

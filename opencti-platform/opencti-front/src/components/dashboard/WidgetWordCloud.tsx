@@ -1,10 +1,6 @@
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import ReactWordcloud, { Props } from 'react-wordcloud';
-
-import 'tippy.js/dist/tippy.css';
-
-import 'tippy.js/animations/scale.css';
 import type { Theme } from '../Theme';
 import { colors } from '../../utils/Charts';
 import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';

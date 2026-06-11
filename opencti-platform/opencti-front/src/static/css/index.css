@@ -1,3 +1,21 @@
+@import '@filigran/chatbot/styles.css';
+@import '@fontsource/geologica';
+@import '@fontsource/ibm-plex-sans';
+@import 'ckeditor5/ckeditor5.css';
+@import 'graphiql/style.css';
+@import 'react-grid-layout/css/styles.css';
+@import 'react-mde/lib/styles/css/react-mde-all.css';
+@import 'react-pdf/dist/Page/AnnotationLayer.css';
+@import 'react-pdf/dist/Page/TextLayer.css';
+@import 'reactflow/dist/style.css';
+@import 'tippy.js/animations/scale.css';
+@import 'tippy.js/dist/tippy.css';
+@import './CKEditorDark.css';
+@import './CKEditorLight.css';
+@import './leaflet.css';
+@import './timerange.css';
+@import './TiptapEditor.css';
+
 * {
   scrollbar-width: thin;
 }

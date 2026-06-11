@@ -331,7 +331,7 @@ export const displayEntityTypeForTranslation = (value: string | undefined): stri
 export const extractUrlsFromText = (text: string) => {
   const extractUrlsregex = /\b(?:https?:\/\/|www\.)\S+\b/gm;
   const matches = Array.from(text.matchAll(extractUrlsregex));
-  const parts = [];
+  const parts: React.ReactElement[] = [];
   let lastIndex = 0;
 
   matches.forEach((match) => {

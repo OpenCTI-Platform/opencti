@@ -4,11 +4,15 @@ import DataTablePage from './DataTable.pageModel';
 import CardPage from './card.pageModel';
 
 export default class PirDetailsPageModel {
-  card = new CardPage(this.page);
-  tabs = new PirTabsPage(this.page);
-  dataTable = new DataTablePage(this.page);
+  card: CardPage;
+  tabs: PirTabsPage;
+  dataTable: DataTablePage;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.card = new CardPage(this.page);
+    this.tabs = new PirTabsPage(this.page);
+    this.dataTable = new DataTablePage(this.page);
+  }
 
   getTitle(name: string) {
     return this.page.getByRole('heading', { name });

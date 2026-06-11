@@ -120,7 +120,7 @@ const AuditsDistributionListComponent: FunctionComponent<AuditsDistributionListC
     .filter((n): n is DistributionNode => n != null)
     .map((n) => {
       let { label } = n;
-      let id = null;
+      let id: string | undefined = undefined;
       let type = n.label;
       const attribute = selection.attribute ?? undefined;
       if (isFieldForIdentifier(attribute)) {

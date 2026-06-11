@@ -40,8 +40,6 @@ import { TaskList } from './richTextEditor/extensions/TaskList';
 import { TaskItem } from './richTextEditor/extensions/TaskListItem';
 import { Div } from './richTextEditor/extensions/Div';
 
-import '../static/css/TiptapEditor.css';
-
 export const TIPTAP_EDITOR_SELECTOR = '.tiptap-editor-content.ProseMirror';
 
 export interface RichTextEditorAdapter {

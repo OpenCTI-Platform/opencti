@@ -8,15 +8,23 @@ type WidgetPerspective = 'Entities' | 'Knowledge graph' | 'Activity & history';
 export default class DashboardWidgetsPageModel {
   private labelPerspective?: 'entities' | 'relationships' | 'audits';
 
-  filters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-0'));
-  subFilters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-1'));
-  titleField = new TextFieldPageModel(this.page, 'Title', 'text');
-  dateAttributeMain = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-0'));
-  dateAttributeSub = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-1'));
-  attributeFieldMain = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-0'));
-  attributeFieldSub = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-1'));
+  filters: FiltersPageModel;
+  subFilters: FiltersPageModel;
+  titleField: TextFieldPageModel;
+  dateAttributeMain: SelectFieldPageModel;
+  dateAttributeSub: SelectFieldPageModel;
+  attributeFieldMain: SelectFieldPageModel;
+  attributeFieldSub: SelectFieldPageModel;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.filters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-0'));
+    this.subFilters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-1'));
+    this.titleField = new TextFieldPageModel(this.page, 'Title', 'text');
+    this.dateAttributeMain = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-0'));
+    this.dateAttributeSub = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-1'));
+    this.attributeFieldMain = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-0'));
+    this.attributeFieldSub = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-1'));
+  }
 
   getCreateWidgetButton() {
     return this.page.getByRole('button', { name: 'Create Widget' });

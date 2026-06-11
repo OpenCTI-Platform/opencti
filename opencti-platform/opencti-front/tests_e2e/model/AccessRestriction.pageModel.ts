@@ -5,10 +5,13 @@ import SelectFieldPageModel from './field/SelectField.pageModel';
 export type AccessLevelLocator = 'can view' | 'can edit' | 'can manage';
 
 export default class AccessRestrictionPageModel {
-  private identityAutocomplete = new AutocompleteFieldPageModel(this.page, 'Users, groups or organizations', false);
-  private accessSelect = new SelectFieldPageModel(this.page, 'Access right', false);
+  private identityAutocomplete: AutocompleteFieldPageModel;
+  private accessSelect: SelectFieldPageModel;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.identityAutocomplete = new AutocompleteFieldPageModel(this.page, 'Users, groups or organizations', false);
+    this.accessSelect = new SelectFieldPageModel(this.page, 'Access right', false);
+  }
 
   openForm() {
     return this.page.getByRole('button', { name: 'Manage access restriction' }).click();

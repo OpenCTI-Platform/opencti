@@ -232,7 +232,7 @@ export const findFiltersFromKeys = (
   keys: string[],
   operator = 'eq',
 ): Filter[] => {
-  const result = [];
+  const result: Filter[] = [];
   for (const filter of filters) {
     if (keys.includes(filter.key)) {
       if (!filter.operator || filter.operator === operator) {
@@ -382,7 +382,7 @@ export const buildFiltersAndOptionsForWidgets = (
     filters = removeEntityTypeAllFromFilterGroup(filters) ?? undefined;
   }
   // handle startDate and endDate options
-  const dateFiltersContent = [];
+  const dateFiltersContent: Filter[] = [];
   if (startDate) {
     dateFiltersContent.push({
       key: dateAttribute,
@@ -1154,7 +1154,7 @@ export const getFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) 
 
 // add pirId to pir filters
 export const formatFiltersInPirContext = (f: FilterGroup, pirId: string): FilterGroup => {
-  const formattedFilters = [];
+  const formattedFilters: Filter[] = [];
   for (const filter of f.filters) {
     const filterKey = filter.key;
     if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {

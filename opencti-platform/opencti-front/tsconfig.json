@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2024",
     "lib": [
       "dom",
-      "dom.iterable",
       "esnext"
     ],
     "allowJs": true,
+    "noImplicitAny": false, // changed to true by default in TS 6.0, to be changed to true in the future
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -19,11 +19,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
-      "@common/*": ["src/components/common/*"],
-      "@components/*": ["src/private/components/*"],
-      "src": ["src/*"]
+      "@common/*": ["./src/components/common/*"],
+      "@components/*": ["./src/private/components/*"],
+      "src/*": ["./src/*"],
+      "tests_e2e/*": ["./tests_e2e/*"]
     },
     "types": ["@testing-library/jest-dom"]
   },
