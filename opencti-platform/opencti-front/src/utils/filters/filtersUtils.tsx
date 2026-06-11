@@ -379,7 +379,7 @@ export const buildFiltersAndOptionsForWidgets = (
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
-    filters = removeEntityTypeAllFromFilterGroup(filters);
+    filters = removeEntityTypeAllFromFilterGroup(filters) ?? undefined;
   }
   // handle startDate and endDate options
   const dateFiltersContent = [];
