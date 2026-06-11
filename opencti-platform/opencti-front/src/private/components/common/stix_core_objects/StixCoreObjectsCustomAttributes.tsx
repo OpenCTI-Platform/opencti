@@ -72,14 +72,12 @@ interface StixCoreObjectsCustomAttributesContentProps {
   queryRef: PreloadedQuery<StixCoreObjectsCustomAttributesQuery>;
   columns: readonly WidgetColumn[];
   layout: WidgetColumnsLayout;
-  isCustomViewReadOnly?: boolean;
 }
 
 const StixCoreObjectsCustomAttributesContent = ({
   queryRef,
   columns,
   layout,
-  isCustomViewReadOnly,
 }: StixCoreObjectsCustomAttributesContentProps) => {
   const data = usePreloadedQuery(stixCoreObjectsCustomAttributesQuery, queryRef);
 
@@ -90,7 +88,6 @@ const StixCoreObjectsCustomAttributesContent = ({
       data={data.stixCoreObject}
       columns={columns}
       layout={layout}
-      isCustomViewReadOnly={isCustomViewReadOnly}
     />
   );
 };
@@ -157,7 +154,6 @@ const StixCoreObjectsCustomAttributes = ({
                     queryRef={queryRef}
                     columns={columns}
                     layout={layout}
-                    isCustomViewReadOnly={isCustomViewReadOnly}
                   />
                 </React.Suspense>
               )
