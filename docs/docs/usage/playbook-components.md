@@ -11,7 +11,7 @@ OpenCTI playbooks are flexible automation scenarios that you can fully customize
 - Share and Access
 - End Playbook 
 
-## Start playbook components 
+## Start playbook components
 
 These components provide the event source or trigger criteria that control when your playbook will run.
 
