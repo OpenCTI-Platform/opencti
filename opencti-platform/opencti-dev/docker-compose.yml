@@ -122,7 +122,8 @@ services:
       - "15672:15672" # management UI
       - "15692:15692" # prometheus metrics
     command: >
-      sh -c "rabbitmq-plugins enable --offline rabbitmq_prometheus && exec rabbitmq-server"
+      sh -c "rabbitmq-plugins enable --offline rabbitmq_prometheus && exec
+      rabbitmq-server"
 
   ## Telemetry + tracing dependencies
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
@@ -182,8 +183,9 @@ services:
       - opencti-dev-telemetry-prometheus
     volumes:
       - "grafanadata:/var/lib/grafana"
-      - "./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datas\
-        ources.yaml"
+      - "./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml"
+    profiles:
+      - "telemetry"
 
   # SAML / OpenId provider with keycloak - disabled by default
   # docker compose --profile keycloak up -d
