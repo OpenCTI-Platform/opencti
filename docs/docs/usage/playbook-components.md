@@ -119,7 +119,7 @@ When the primary entity is an incident and you use the Container wrapper step to
 - Marking
 - Severity (only if the severity value of the incident exists as a severity value for the case type — verify this in the [Taxonomy](https://docs.opencti.io/6.7.X/reference/taxonomy/) settings)
 
-### Create Security coverage
+### Create security coverage
 
 Will create a new security coverage for the entities (with compatible types) contained in the received STIX 2.1 bundle and send out the modified bundle. The bundle will contain the initial entities plus the created security coverages.
 
