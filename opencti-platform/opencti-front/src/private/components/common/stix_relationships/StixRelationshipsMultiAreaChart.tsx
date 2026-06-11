@@ -1,7 +1,7 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
@@ -96,11 +96,11 @@ const buildQueryVariables = (
   const fallbackEnd = now();
   const startDate = config.startDate ?? fallbackStart;
   const endDate = config.endDate ?? fallbackEnd;
-  type TimeSeriesParam = NonNullable<NonNullable<StixRelationshipsMultiAreaChartTimeSeriesQuery['variables']['timeSeriesParameters']>[number]>;
 
   const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute
-      = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
+    const dateAttribute = selection.date_attribute?.length
+      ? selection.date_attribute
+      : 'created_at';
     const { filters } = buildFiltersAndOptionsForWidgets(
       selection.filters,
       { startDate, endDate, isKnowledgeRelationshipWidget: true },
@@ -108,9 +108,9 @@ const buildQueryVariables = (
 
     return {
       field: dateAttribute,
-      filters: filters as unknown as TimeSeriesParam['filters'],
-      dynamicFrom: selection.dynamicFrom as unknown as TimeSeriesParam['dynamicFrom'],
-      dynamicTo: selection.dynamicTo as unknown as TimeSeriesParam['dynamicTo'],
+      filters: normalizeFilterGroupForBackend(filters),
+      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
     };
   });
 

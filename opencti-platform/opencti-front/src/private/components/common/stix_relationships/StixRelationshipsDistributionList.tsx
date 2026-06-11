@@ -171,12 +171,8 @@ const buildQueryVariables = (
     limit: selection.number ?? 10,
     isTo: selection.isTo ?? undefined,
     filters: normalizeFilterGroupForBackend(filters),
-    dynamicFrom: selection.dynamicFrom
-      ? (selection.dynamicFrom as unknown as StixRelationshipsDistributionListDistributionQuery['variables']['dynamicFrom'])
-      : null,
-    dynamicTo: selection.dynamicTo
-      ? (selection.dynamicTo as unknown as StixRelationshipsDistributionListDistributionQuery['variables']['dynamicTo'])
-      : null,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

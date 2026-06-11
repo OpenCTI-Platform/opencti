@@ -1,10 +1,10 @@
 import React, { CSSProperties, FunctionComponent, Suspense, useEffect, useRef, useState, useTransition } from 'react';
-import { graphql, usePreloadedQuery } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../../utils/widget/widget';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../../utils/widget/widget';
 import { useFormatter } from '../../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, GqlFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import type { DashboardConfig } from '../../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
@@ -486,10 +486,10 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
       endDate,
       dateAttribute: selection.date_attribute ?? 'created_at',
       limit: selection.number ?? 10,
-      filters: filtersAndOptions?.filters as unknown as GqlFilterGroup,
+      filters: normalizeFilterGroupForBackend(filtersAndOptions?.filters),
       isTo: selection.isTo,
-      dynamicFrom: selection.dynamicFrom as unknown as GqlFilterGroup,
-      dynamicTo: selection.dynamicTo as unknown as GqlFilterGroup,
+      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
       subDistributionField: finalSubDistributionField,
       subDistributionOperation: 'count',
     };
@@ -505,7 +505,7 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
           : 'created_at',
       subDistributionLimit: subSelection.number ?? 15,
       subDistributionTypes,
-      subDistributionFilters: subDistributionFiltersAndOptions?.filters as unknown as GqlFilterGroup,
+      subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
     } as StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery['variables'];
   } else {
     variables = {
@@ -518,7 +518,7 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
           : 'created_at',
       subDistributionIsTo: subSelection.isTo,
       subDistributionLimit: subSelection.number ?? 15,
-      subDistributionFilters: subDistributionFiltersAndOptions?.filters as unknown as GqlFilterGroup,
+      subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
     } as StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery['variables'];
   }
 
