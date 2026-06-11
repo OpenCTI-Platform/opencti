@@ -1051,16 +1051,13 @@ const buildQueryVariables = (
     },
   );
 
-  type QueryFilterGroup
-    = StixRelationshipsTimelineStixRelationshipQuery['variables']['dynamicFrom'];
-
   return {
     first: selection.number ?? 10,
     orderBy: dateAttribute as StixRelationshipsOrdering,
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
     filters: normalizeFilterGroupForBackend(filters),
-    dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
-    dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

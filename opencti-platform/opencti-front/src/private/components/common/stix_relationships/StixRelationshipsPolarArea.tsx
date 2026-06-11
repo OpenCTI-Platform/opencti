@@ -150,9 +150,6 @@ const buildQueryVariables = (
     { isKnowledgeRelationshipWidget: true },
   );
 
-  type QueryFilterGroup
-    = StixRelationshipsPolarAreaDistributionQuery['variables']['dynamicFrom'];
-
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
@@ -162,8 +159,8 @@ const buildQueryVariables = (
     limit: selection.number ?? 10,
     filters: normalizeFilterGroupForBackend(filters),
     isTo: selection.isTo,
-    dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
-    dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

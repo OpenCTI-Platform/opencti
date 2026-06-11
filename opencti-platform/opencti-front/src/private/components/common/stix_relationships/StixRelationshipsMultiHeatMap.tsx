@@ -108,13 +108,12 @@ const buildQueryVariables = (
       selection.filters,
       { isKnowledgeRelationshipWidget: true },
     );
-    type QueryFilterGroup = NonNullable<NonNullable<StixRelationshipsMultiHeatMapTimeSeriesQuery['variables']['timeSeriesParameters']>[number]>['dynamicFrom'];
 
     return {
       field: dateAttribute,
       filters: normalizeFilterGroupForBackend(filters),
-      dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
-      dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
+      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
     };
   });
   return {

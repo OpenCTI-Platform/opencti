@@ -12,7 +12,6 @@ import { StixRelationshipsTreeMapDistributionQuery } from './__generated__/StixR
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { StixRelationshipsMultiHeatMapTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiHeatMapTimeSeriesQuery.graphql';
 
 const stixRelationshipsTreeMapsDistributionQuery = graphql`
   query StixRelationshipsTreeMapDistributionQuery(
@@ -141,8 +140,6 @@ const buildQueryVariables = (
     { isKnowledgeRelationshipWidget: true },
   );
 
-  type QueryFilterGroup = NonNullable<NonNullable<StixRelationshipsMultiHeatMapTimeSeriesQuery['variables']['timeSeriesParameters']>[number]>['dynamicFrom'];
-
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
@@ -152,8 +149,8 @@ const buildQueryVariables = (
     limit: selection.number ?? 10,
     filters: normalizeFilterGroupForBackend(filters),
     isTo: selection.isTo,
-    dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
-    dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 
