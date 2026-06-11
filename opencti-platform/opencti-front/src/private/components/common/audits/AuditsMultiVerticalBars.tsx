@@ -16,12 +16,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import { AuditsMultiVerticalBarsTimeSeriesQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsMultiVerticalBarsTimeSeriesQuery.graphql';
+import { AuditsMultiVerticalBarsTimeSeriesQuery } from '@components/common/audits/__generated__/AuditsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { normalizeFilterGroupForBackend, removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
@@ -30,6 +30,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsMultiVerticalBarsTimeSeriesQuery = graphql`
   query AuditsMultiVerticalBarsTimeSeriesQuery(
@@ -144,7 +145,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
             ? selection.date_attribute
             : 'timestamp',
         types: ['History', 'Activity'],
-        filters: removeEntityTypeAllFromFilterGroup(selection.filters ?? undefined) as unknown as GqlFilterGroup,
+        filters: normalizeFilterGroupForBackend(removeEntityTypeAllFromFilterGroup(selection.filters)),
       };
     });
 
@@ -177,23 +178,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return (
-        <div style={{ display: 'table', height: '100%', width: '100%' }}>
-          <span
-            style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
-          >
-            {!isEnterpriseEdition
-              ? t_i18n(
-                  'This feature is only available in OpenCTI Enterprise Edition.',
-                )
-              : t_i18n('You are not authorized to see this data.')}
-          </span>
-        </div>
-      );
+      return <WidgetAccessDenied />;
     }
 
     if (!queryRef) {

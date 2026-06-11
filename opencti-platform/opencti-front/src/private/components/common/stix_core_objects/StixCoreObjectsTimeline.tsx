@@ -1,14 +1,14 @@
 import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { StixCoreObjectsTimelineQuery, OrderingMode, StixCoreObjectsOrdering } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
+import { OrderingMode, StixCoreObjectsOrdering, StixCoreObjectsTimelineQuery } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import { resolveLink } from '../../../../utils/Entity';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -134,7 +134,7 @@ const buildQueryVariables = (
     first: selection.number ?? 10,
     orderBy: dateAttribute as StixCoreObjectsOrdering,
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
   };
 };
 

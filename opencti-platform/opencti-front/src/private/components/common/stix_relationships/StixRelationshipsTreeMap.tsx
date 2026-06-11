@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
@@ -12,7 +12,6 @@ import { StixRelationshipsTreeMapDistributionQuery } from './__generated__/StixR
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { StixRelationshipsMultiHeatMapTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiHeatMapTimeSeriesQuery.graphql';
 
 const stixRelationshipsTreeMapsDistributionQuery = graphql`
   query StixRelationshipsTreeMapDistributionQuery(
@@ -141,8 +140,6 @@ const buildQueryVariables = (
     { isKnowledgeRelationshipWidget: true },
   );
 
-  type QueryFilterGroup = NonNullable<NonNullable<StixRelationshipsMultiHeatMapTimeSeriesQuery['variables']['timeSeriesParameters']>[number]>['dynamicFrom'];
-
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
@@ -150,10 +147,10 @@ const buildQueryVariables = (
     endDate,
     dateAttribute,
     limit: selection.number ?? 10,
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
     isTo: selection.isTo,
-    dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
-    dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

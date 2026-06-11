@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
@@ -170,13 +170,9 @@ const buildQueryVariables = (
     dateAttribute,
     limit: selection.number ?? 10,
     isTo: selection.isTo ?? undefined,
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
-    dynamicFrom: selection.dynamicFrom
-      ? (selection.dynamicFrom as unknown as StixRelationshipsDistributionListDistributionQuery['variables']['dynamicFrom'])
-      : null,
-    dynamicTo: selection.dynamicTo
-      ? (selection.dynamicTo as unknown as StixRelationshipsDistributionListDistributionQuery['variables']['dynamicTo'])
-      : null,
+    filters: normalizeFilterGroupForBackend(filters),
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

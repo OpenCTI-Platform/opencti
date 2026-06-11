@@ -15,20 +15,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { FunctionComponent, ReactNode, Suspense, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { AuditsListComponentQuery, FilterGroup as GqlFilterGroup, LogsOrdering, OrderingMode } from './__generated__/AuditsListComponentQuery.graphql';
+import { AuditsListComponentQuery, LogsOrdering, OrderingMode } from './__generated__/AuditsListComponentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
-import type { FilterGroup as FilterHelpersFilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsListComponentQuery = graphql`
   query AuditsListComponentQuery(
@@ -133,9 +133,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       first: selection.number ?? 10,
       orderBy: dateAttribute,
       orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-      filters: (filters
-        ? sanitizeFilterGroupKeysForBackend(filters as unknown as FilterHelpersFilterGroup)
-        : undefined) as unknown as GqlFilterGroup,
+      filters: normalizeFilterGroupForBackend(filters),
     };
   }, [startDate, endDate]);
 
@@ -160,21 +158,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       showPreviewTag={isPreviewMode}
     >
       {(!isGrantedToSettings || !isEnterpriseEdition)
-        ? (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {!isEnterpriseEdition
-                  ? t_i18n('This feature is only available in OpenCTI Enterprise Edition.')
-                  : t_i18n('You are not authorized to see this data.')}
-              </span>
-            </div>
-          )
+        ? <WidgetAccessDenied />
         : isMissingHostEntity
           ? <WidgetNoHostEntity host={host} />
           : (

@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent, ReactNode, Suspense, useState, useEffect, useCallback } from 'react';
+import React, { FunctionComponent, ReactNode, Suspense, useCallback, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsNumberNumberSeriesQuery } from '@components/common/audits/__generated__/AuditsNumberNumberSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -31,7 +31,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -146,7 +146,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
     );
     return {
       types,
-      filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+      filters: normalizeFilterGroupForBackend(filters),
       startDate: startDate ?? undefined,
       endDate: dayAgo(),
       field: selection.attribute,

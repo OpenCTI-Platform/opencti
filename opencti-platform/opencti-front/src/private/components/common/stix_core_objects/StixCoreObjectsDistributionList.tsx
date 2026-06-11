@@ -2,7 +2,7 @@ import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
@@ -163,7 +163,7 @@ const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], confi
     startDate: config?.startDate,
     endDate: config?.endDate,
     dateAttribute,
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
     limit: selection.number ?? 10,
   };
 };

@@ -1,7 +1,7 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -13,7 +13,6 @@ import { StixRelationshipsNumberNumberSeriesQuery } from '@components/common/sti
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { ReactNode, Suspense } from 'react';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import type { FilterGroup as GQLFilterGroup } from '@components/common/stix_relationships/__generated__/StixRelationshipsNumberNumberSeriesQuery.graphql';
 
 const stixRelationshipsNumberNumberQuery = graphql`
     query StixRelationshipsNumberNumberSeriesQuery(
@@ -116,17 +115,11 @@ const buildQueryVariables = (
   );
 
   return {
-    filters: filters
-      ? (filters as unknown as GQLFilterGroup)
-      : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
     dateAttribute,
     endDate: dayAgo(),
-    dynamicFrom: selection.dynamicFrom
-      ? (selection.dynamicFrom as unknown as GQLFilterGroup)
-      : undefined,
-    dynamicTo: selection.dynamicTo
-      ? (selection.dynamicTo as unknown as GQLFilterGroup)
-      : undefined,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

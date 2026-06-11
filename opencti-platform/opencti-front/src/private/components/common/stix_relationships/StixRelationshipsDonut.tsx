@@ -2,7 +2,7 @@ import React, { ReactNode, Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
@@ -149,17 +149,14 @@ const buildQueryVariables = (
     { startDate, endDate, dateAttribute, isKnowledgeRelationshipWidget: true },
   );
 
-  type QueryFilterGroup
-    = StixRelationshipsDonutDistributionQuery['variables']['dynamicFrom'];
-
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
     limit: selection.number ?? 10,
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
     isTo: selection.isTo,
-    dynamicFrom: selection.dynamicFrom as unknown as QueryFilterGroup,
-    dynamicTo: selection.dynamicTo as unknown as QueryFilterGroup,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ReferenceField from './ReferenceField';
 import { ArtifactFieldGetQuery } from './__generated__/ArtifactFieldGetQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { FieldOption } from '../../../../utils/field';
 
 interface ArtifactFieldProps {
@@ -79,7 +79,7 @@ const ArtifactField: FunctionComponent<ArtifactFieldProps> = ({
     filterGroups: [],
   };
   const queryRef = useQueryLoading<ArtifactFieldGetQuery>(artifactQuery, {
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
   });
   return (
     <>

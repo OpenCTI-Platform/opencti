@@ -2,21 +2,17 @@ import React, { ReactNode, Suspense, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import type {
-  FilterGroup as GQLFilterGroup,
-  StixRelationshipsListQuery,
-  StixRelationshipsOrdering,
-} from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
+import type { StixRelationshipsListQuery, StixRelationshipsOrdering } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
+import { OrderingMode } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { OrderingMode } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 
 export const stixRelationshipsListQuery = graphql`
   query StixRelationshipsListQuery(
@@ -4531,17 +4527,9 @@ const buildQueryVariables = (
     first: selection.number ?? 50,
     orderBy: (dateAttribute as StixRelationshipsOrdering),
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-    filters: filters
-      ? (filters as unknown as GQLFilterGroup)
-      : undefined,
-
-    dynamicFrom: selection.dynamicFrom
-      ? (selection.dynamicFrom as unknown as GQLFilterGroup)
-      : undefined,
-
-    dynamicTo: selection.dynamicTo
-      ? (selection.dynamicTo as unknown as GQLFilterGroup)
-      : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

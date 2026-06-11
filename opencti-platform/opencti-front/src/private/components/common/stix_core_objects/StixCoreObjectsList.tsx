@@ -2,7 +2,7 @@ import React, { ReactNode, Suspense, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
@@ -425,7 +425,7 @@ interface StixCoreObjectsListComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectsListQuery>;
   dataSelection: Widget['dataSelection'];
   widgetId: string;
-};
+}
 
 const StixCoreObjectsListComponent = ({
   dataSelection,
@@ -484,7 +484,7 @@ const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], confi
     first,
     orderBy,
     orderMode,
-    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+    filters: normalizeFilterGroupForBackend(filters),
   };
 };
 

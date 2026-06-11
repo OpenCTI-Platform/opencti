@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { CSSProperties, ReactNode, Suspense, useCallback, useState } from 'react';
 import ApexCharts from 'apexcharts';
-import { AuditsPolarAreaDistributionQuery, FilterGroup as GqlFilterGroup } from '@components/common/audits/__generated__/AuditsPolarAreaDistributionQuery.graphql';
+import { AuditsPolarAreaDistributionQuery } from '@components/common/audits/__generated__/AuditsPolarAreaDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
@@ -25,11 +25,12 @@ import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_OR
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetHost, WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -156,7 +157,7 @@ const AuditsPolarAreaQueyRef = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'timestamp',
-      filters: selection.filters as unknown as GqlFilterGroup,
+      filters: normalizeFilterGroupForBackend(selection.filters),
       limit: selection.number ?? 10,
     };
   }, [startDate, endDate]);
