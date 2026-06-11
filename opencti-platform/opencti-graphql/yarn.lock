@@ -7935,13 +7935,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:9.0.0":
-  version: 9.0.0
-  resolution: "https-proxy-agent@npm:9.0.0"
+"https-proxy-agent@npm:9.1.0":
+  version: 9.1.0
+  resolution: "https-proxy-agent@npm:9.1.0"
   dependencies:
     agent-base: "npm:9.0.0"
     debug: "npm:^4.3.4"
-  checksum: 10c0/1b55f3f79d60d5254f57afd888820e751cc28d39f4e19fd9fa098efa01ae74afcab315f02c6b067d9723fd49a0baf5eed1cde0a40a6a5bb397e3804cc81ac402
+    proxy-agent-negotiate: "npm:1.1.0"
+  checksum: 10c0/95ca9504944e0b6d214f9da0b4d747512bf79187b4c6f69db667049bdcc43e2b67c7932ad2c4bd6952e99e83de9a7d42dafff63672d7898da297b2736f4b42bd
   languageName: node
   linkType: hard
 
@@ -10206,7 +10207,7 @@ __metadata:
     graphql-ws: "npm:6.0.8"
     helmet: "npm:8.2.0"
     http-proxy-agent: "npm:9.1.0"
-    https-proxy-agent: "npm:9.0.0"
+    https-proxy-agent: "npm:9.1.0"
     ioredis: "npm:5.8.2"
     ipaddr.js: "npm:2.4.0"
     jose: "npm:6.2.3"
