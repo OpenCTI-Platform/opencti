@@ -173,7 +173,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 key={label.id}
                 label={label.value}
                 color={label.color}
-                onDelete={!props.isCustomViewReadOnly && canUpdateKnowledge ? () => (
+                onDelete={canUpdateKnowledge ? () => (
                   enableReferences
                     ? handleOpenCommitDelete(label)
                     : handleRemoveLabel(label.id)
@@ -203,7 +203,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       key={label.id}
                       label={label.value}
                       color={label.color}
-                      onDelete={!props.isCustomViewReadOnly && canUpdateKnowledge ? () => (
+                      onDelete={canUpdateKnowledge ? () => (
                         enableReferences
                           ? handleOpenCommitDelete(label)
                           : handleRemoveLabel(label.id)
