@@ -6,7 +6,7 @@
 
 OpenCTI playbooks are flexible automation scenarios that you can fully customize and activate to enrich, filter, and modify data created or updated in the platform. This page details the available components and how to use them, these are split into the following groups: 
 
-- Start playbook
+- Start Playbook
 - Transform and Enrich
 - Share and Access
 - End Playbook 
