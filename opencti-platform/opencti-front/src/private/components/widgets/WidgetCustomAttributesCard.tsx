@@ -81,6 +81,7 @@ const renderAttributeValue = (
           </Stack>
         </FieldOrEmpty>
       );
+    }
     case 'creators':
       return <ItemCreators creators={data.creators ?? []} />;
     case 'objectAssignee': {
