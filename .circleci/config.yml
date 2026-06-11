@@ -4,51 +4,7 @@ orbs:
   kubernetes: circleci/kubernetes@1.3.1
 jobs:
 # Client-python steps
-  ensure_formatting_pycti:
-    docker:
-      - image: cimg/python:3.13
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run:
-          name: debug
-          command: pwd ; ls -lart
-      - run:
-          name: go to client-python
-          command: cd client-python
-      - run:
-          name: install dependencies
-          command: cd client-python && pip3 install -r requirements.txt --user
-      - run:
-          name: install test-dependencies
-          command: cd client-python && pip3 install -r test-requirements.txt --user
-      - run:
-          name: confirm black version
-          command: cd client-python && black --version
-      - run:
-          name: run isort check
-          command: cd client-python && isort --check-only .
-      - run:
-          name: run black check
-          command: cd client-python && black --check .
-      - slack/notify:
-          branch_pattern: master
-          event: fail
-          template: basic_fail_1
-  linter_pycti: # TODO : remove when pycti release deployment is moved to github action
-  # linter pycti moved to github actions in issue/13539 
-    docker:
-      - image: alpine/flake8
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run:
-          name: flake8
-          command: flake8 --ignore=E,W ~/repo/client-python
-      - slack/notify:
-          branch_pattern: master
-          event: fail
-          template: basic_fail_1
+
   build_pycti:
     working_directory: ~/repo
     docker:
@@ -963,10 +919,6 @@ workflows:
   opencti:
     jobs:
 # Prepare and deploy client-python before building opencti
-      - ensure_formatting_pycti:
-          filters:
-            tags:
-              only: /.*/
       - linter_pycti:
           filters:
             tags:
@@ -978,7 +930,6 @@ workflows:
             branches:
               ignore: /.*/
           requires:
-            - ensure_formatting_pycti
             - linter_pycti
       - deploy_pycti:
           requires:
