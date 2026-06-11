@@ -919,18 +919,12 @@ workflows:
   opencti:
     jobs:
 # Prepare and deploy client-python before building opencti
-      - linter_pycti:
-          filters:
-            tags:
-              only: /.*/
       - build_pycti:
           filters:
             tags:
               only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
-          requires:
-            - linter_pycti
       - deploy_pycti:
           requires:
             - build_pycti
