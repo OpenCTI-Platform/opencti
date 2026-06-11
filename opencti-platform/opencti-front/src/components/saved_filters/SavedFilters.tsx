@@ -64,7 +64,7 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
   } = useDataTableContext();
 
   const { isFeatureEnable } = useHelper();
-  const isSharedFiltersEnabled = isFeatureEnable('SHARED_FILTERS');
+  const isSharedFiltersEnabled = isFeatureEnable('SHARE_FILTERS');
 
   const filters = getSavedFilterScopeFilter(localStorageKey);
   const queryOptions = { filters, skipSharedFilters: !isSharedFiltersEnabled } as unknown as SavedFiltersQuery$variables;
