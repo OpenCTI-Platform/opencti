@@ -63,11 +63,8 @@ export const workflowQuery = graphql`
 `;
 
 export const workflowDependenciesQuery = graphql`
-  query SubTypeWorkflowDependenciesQuery(
-    $memberFilters: FilterGroup
-    $memberFirst: Int
-  ) {
-    members(filters: $memberFilters, first: $memberFirst) {
+  query SubTypeWorkflowDependenciesQuery($memberFilters: FilterGroup) {
+    members(filters: $memberFilters) {
       edges {
         node {
           id
@@ -130,11 +127,7 @@ const WorkflowWithDependencies = ({ queryRef }: WorkflowWithDependenciesProps) =
   const depsQueryRef = useQueryLoading<SubTypeWorkflowDependenciesQuery>(workflowDependenciesQuery,
     {
       memberFilters: memberIds.length
-        ? ({
-            mode: 'and' as const,
-            filters: [{ key: ['id'], values: memberIds }],
-            filterGroups: [],
-          })
+        ? ({ mode: 'and' as const, filters: [{ key: ['id'], values: memberIds }], filterGroups: [] })
         : null,
     },
   );

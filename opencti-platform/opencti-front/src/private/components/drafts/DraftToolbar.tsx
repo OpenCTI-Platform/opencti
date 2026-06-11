@@ -13,7 +13,8 @@ import DraftExit from './DraftExit';
 import { FIVE_SECONDS, THIRTY_SECONDS } from '../../../utils/Time';
 import useInterval from '../../../utils/hooks/useInterval';
 import DraftAuthorizedMembers from './DraftAuthorizedMembers';
-import WorkflowStatus, { WorkflowTransitions } from '../common/workflow/WorkflowStatus';
+import WorkflowStatus from '../common/workflow/WorkflowStatus';
+import WorkflowTransitions from '../common/workflow/WorkflowTransitions';
 import { DraftToolbarQuery } from '@components/drafts/__generated__/DraftToolbarQuery.graphql';
 import { DraftToolbarFragment$key } from '@components/drafts/__generated__/DraftToolbarFragment.graphql';
 import DraftApprove from './DraftApprove';
@@ -28,7 +29,7 @@ const draftFragment = graphql`
     ...DraftApproveFragment
     ...DraftExitFragment
     ...DraftAuthorizedMembersFragment
-    ...workflowStatus_data
+    ...WorkflowStatus_data
   }
 `;
 

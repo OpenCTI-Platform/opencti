@@ -6,19 +6,19 @@ import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import Button from '../../../../components/common/button/Button';
-import { workflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 import Dialog from '@common/dialog/Dialog';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import { workflowStatusFragment, COMMENT_MAX_LENGTH } from './workflowStatus.graphql';
+import { workflowStatusFragment, COMMENT_MAX_LENGTH } from './WorkflowStatus.graphql';
 import { useTransitionWizard } from './useTransitionWizard';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { Close } from 'mdi-material-ui';
 
 interface WorkflowTransitionsProps {
-  data: workflowStatus_data$key;
+  data: WorkflowStatus_data$key;
 }
 
 export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {

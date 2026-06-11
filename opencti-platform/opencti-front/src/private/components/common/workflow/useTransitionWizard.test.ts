@@ -26,7 +26,7 @@ const {
 
 // Distinguish mutations by identity so useMutation can return the right commit fn
 // in every test, without relying on a fragile mockImplementationOnce queue.
-vi.mock('./workflowStatus.graphql', () => ({
+vi.mock('./WorkflowStatus.graphql', () => ({
   workflowStatusTriggerMutation: { __id: 'trigger' },
   workflowStatusClearMutation: { __id: 'clear' },
   workflowStatusFragment: {},

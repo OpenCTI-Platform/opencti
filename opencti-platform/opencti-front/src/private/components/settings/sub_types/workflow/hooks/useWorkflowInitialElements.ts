@@ -134,5 +134,5 @@ export const useWorkflowInitialElements = (
       initialNodes: [...stateNodes, ...transitionNodes],
       initialEdges: [...transitionEdges],
     };
-  }, [workflowDefinition]);
+  }, [workflowDefinition, statusTemplatesEdges, membersEdges]);
 };
