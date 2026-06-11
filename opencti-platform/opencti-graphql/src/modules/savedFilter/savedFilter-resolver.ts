@@ -14,6 +14,10 @@ const savedFilterResolver: Resolvers = {
     savedFilters: (_, args, context) => findSaveFilterPaginated(context, context.user, args),
   },
   SavedFilter: {
+    creator_id: (savedFilter) => {
+      const { creator_id } = savedFilter;
+      return Array.isArray(creator_id) ? creator_id[0] : creator_id;
+    },
     authorizedMembers: (savedFilter, _, context) => getAuthorizedMembers(context, context.user, savedFilter),
     currentUserAccessRight: (savedFilter, _, context) => getCurrentUserAccessRight(context.user, savedFilter),
   },

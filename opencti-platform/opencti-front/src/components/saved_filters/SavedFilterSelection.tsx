@@ -1,9 +1,9 @@
-import React, {SyntheticEvent, useEffect, useState} from 'react';
+import React, { SyntheticEvent, useEffect, useState } from 'react';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
-import {useDataTableContext} from 'src/components/dataGrid/components/DataTableContext';
-import {SavedFiltersQuery$data} from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
+import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
+import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
-import {type AutocompleteInputChangeReason} from '@mui/material/useAutocomplete/useAutocomplete';
+import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 import useAuth from '../../utils/hooks/useAuth';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
@@ -43,8 +43,8 @@ const SavedFilterSelection = ({
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<SavedFiltersSelectionData>();
 
   const options: SavedFiltersAutocompleteOptionType[] = data.map((item) => {
-    const ownerMember = item.authorizedMembers?.find((m) => m.access_right === 'admin');
-    const isOwner = ownerMember?.member_id === me.id;
+    const isOwner = item.creator_id === me.id;
+    const ownerMember = item.authorizedMembers?.find((m) => m.member_id === item.creator_id);
     const ownerName = ownerMember?.name ?? '';
 
     return {

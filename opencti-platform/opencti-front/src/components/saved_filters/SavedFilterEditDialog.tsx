@@ -25,6 +25,7 @@ const savedFilterFieldPatchMutation = graphql`
       name
       filters
       scope
+      creator_id
       currentUserAccessRight
       authorizedMembers {
         id
@@ -44,6 +45,7 @@ const savedFilterEditAuthorizedMembersMutation = graphql`
       name
       filters
       scope
+      creator_id
       currentUserAccessRight
       authorizedMembers {
         id

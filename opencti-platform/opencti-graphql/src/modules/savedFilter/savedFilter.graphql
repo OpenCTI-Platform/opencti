@@ -8,6 +8,7 @@ type SavedFilter implements InternalObject & BasicObject {
     name: String!
     filters: String!
     scope: String!
+    creator_id: String
     # Sharing
     authorizedMembers: [MemberAccess!]! @ff(flags: ["SHARE_FILTERS"], softFail: true, defaultValue: "[]")
     currentUserAccessRight: String @ff(flags: ["SHARE_FILTERS"], softFail: true)

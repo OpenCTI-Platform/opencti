@@ -139,7 +139,7 @@ export const insertNodeFromEdge = (store, parentId, edgesPath, dataPath, params)
  * Useful after updating a node within a connection when usePreloadedQuery
  * does not automatically detect field changes.
  */
-export const invalidateConnection = (store, key, filters) => {
+export const invalidateConnection = (store, key, filters = {}) => {
   const root = store.getRoot();
   const params = { ...filters };
   delete params.count;

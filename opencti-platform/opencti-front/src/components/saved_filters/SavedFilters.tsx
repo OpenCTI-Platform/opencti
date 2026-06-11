@@ -17,6 +17,7 @@ const savedFiltersQuery = graphql`
           name
           filters
           scope
+          creator_id
           currentUserAccessRight @skip(if: $skipSharedFilters)
           authorizedMembers @skip(if: $skipSharedFilters) {
             id

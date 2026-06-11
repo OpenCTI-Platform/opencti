@@ -27,6 +27,7 @@ const savedFilterCreateDialogMutation = graphql`
       name
       filters
       scope
+      creator_id
       currentUserAccessRight
       authorizedMembers {
         id
