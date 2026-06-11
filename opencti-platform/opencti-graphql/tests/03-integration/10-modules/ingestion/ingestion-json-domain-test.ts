@@ -118,9 +118,9 @@ describe('Ingestion Json domain - complex path coverage', async () => {
             complex_path: {
               variables: [{ variable: 'conf', path: '$.confidence' }],
               formula: `decisionMatrix(conf, 50, [
-                { value: '100', result: 100 },
-                { value: '75', result: 75 },
-                { value: '56', result: 56 },
+                { value: 100, result: 100 },
+                { value: 75, result: 75 },
+                { value: 56, result: 56 },
               ])`,
             },
           },
@@ -256,9 +256,9 @@ describe('Ingestion Json domain - complex path coverage', async () => {
             complex_path: {
               variables: [{ variable: 'conf', path: '$.confidence' }],
               formula: `decisionMatrix(conf, 50, [
-                { value: '100', result: 100 },
-                { value: '75', result: 75 },
-                { value: '56', result: 56 },
+                { value: 100, result: 100 },
+                { value: 75, result: 75 },
+                { value: 56, result: 56 },
               ])`,
             },
           },
@@ -301,15 +301,16 @@ describe('Ingestion Json domain - complex path coverage', async () => {
     // Verify formula-generated description on organization
     const orgObject = parsedObjects.find((o: any) => o.name === 'AlienVault');
     expect(orgObject).toBeDefined();
-
+    expect(orgObject.description).toBe('Organization: AlienVault (reliability: C - Fairly reliable)');
     // Verify tools are parsed
-    const toolNames = parsedObjects
-      .filter((o: any) => o.type === 'tool')
-      .map((o: any) => o.name);
+    const tools = parsedObjects.filter((o: any) => o.type === 'tool');
+    const toolNames = tools.map((o: any) => o.name);
     expect(toolNames).toContain('7-Zip');
     expect(toolNames).toContain('3proxy');
     expect(toolNames).toContain('16Shop');
-  });
+    expect(tools.find((o: any) => o.name === '7-Zip')?.confidence).toBe(100);
+    expect(tools.find((o: any) => o.name === '3proxy')?.confidence).toBe(75);
+    expect(tools.find((o: any) => o.name === '16Shop')?.confidence).toBe(56);
 
   it('should parse data using jsonMapperTest with extractWithRegexp formula', async () => {
     // Data with names that contain structured patterns suitable for regex extraction
