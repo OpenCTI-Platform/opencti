@@ -7,7 +7,11 @@ import {
   queryAsUserWithSuccess,
   queryUnauthenticatedIsExpectedForbidden,
 } from '../../utils/testQueryHelper';
-import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
+import { addReport } from '../../../src/domain/report';
+import { stixDomainObjectDelete, stixDomainObjectEditField } from '../../../src/domain/stixDomainObject';
+import { utcDate } from '../../../src/utils/format';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 describe('Log/Audit resolver rights management checks', () => {
   const AUDIT_QUERY = gql`
@@ -120,5 +124,37 @@ describe('Log/Audit resolver rights management checks', () => {
     expect(searchTerm).toBeDefined();
     expect(foundEdges.length).toBeGreaterThan(0);
     expect(foundEdges.every((edge) => edge.node.entity_type === 'Activity')).toBe(true);
+  });
+
+  it('should search History logs on generated history events', async () => {
+    const searchToken = `history-search-${Date.now()}`;
+    const report = await addReport(testContext, ADMIN_USER, {
+      name: 'AuditHistorySearchReport',
+      published: utcDate(),
+    });
+
+    try {
+      await stixDomainObjectEditField(testContext, ADMIN_USER, report.id, [
+        { key: 'description', value: [searchToken] },
+      ]);
+
+      let foundEdges: Array<{ node: { entity_type: string } }> = [];
+      await awaitUntilCondition(async () => {
+        const queryResult = await queryAsAdminWithSuccess({
+          query: AUDIT_QUERY,
+          variables: {
+            search: searchToken,
+            types: ['History'],
+            first: 25,
+          },
+        });
+        foundEdges = queryResult.data.audits.edges;
+        return foundEdges.some((edge) => edge.node.entity_type === 'History');
+      }, 1000, 20, true, 'No searchable generated History event found');
+
+      expect(foundEdges.some((edge) => edge.node.entity_type === 'History')).toBe(true);
+    } finally {
+      await stixDomainObjectDelete(testContext, ADMIN_USER, report.id, ENTITY_TYPE_CONTAINER_REPORT);
+    }
   });
 });
