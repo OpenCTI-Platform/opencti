@@ -31,7 +31,7 @@ const Role = () => {
     navigate,
     location,
     LOCAL_STORAGE_KEY,
-  ) as Record<string, any>;
+  ) as { orderAsc?: boolean; searchTerm?: string; view?: string; sortBy?: string };
   const classes = useStyles();
   const [rolesState, setRolesState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
