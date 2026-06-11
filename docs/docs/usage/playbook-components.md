@@ -251,7 +251,7 @@ As the main element is always preserved, subsequent components that update your 
 
 ## Share and access components
 
-These components manage the access permissions and allow you to share the bundle with organisations. 
+These components manage the access permissions and allow you to share the bundle with organizations.
 
 ### Manage access restrictions
 
