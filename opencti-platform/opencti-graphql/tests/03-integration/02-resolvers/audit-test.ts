@@ -1,6 +1,12 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsUserIsExpectedForbidden, queryAsUserWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
+import {
+  awaitUntilCondition,
+  queryAsAdminWithSuccess,
+  queryAsUserIsExpectedForbidden,
+  queryAsUserWithSuccess,
+  queryUnauthenticatedIsExpectedForbidden,
+} from '../../utils/testQueryHelper';
 import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 describe('Log/Audit resolver rights management checks', () => {
@@ -51,7 +57,7 @@ describe('Log/Audit resolver rights management checks', () => {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],
-        first: 10
+        first: 10,
       },
     });
   });
@@ -61,7 +67,7 @@ describe('Log/Audit resolver rights management checks', () => {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],
-        first: 10
+        first: 10,
       },
     });
   });
@@ -71,8 +77,48 @@ describe('Log/Audit resolver rights management checks', () => {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],
-        first: 10
+        first: 10,
       },
     });
+  });
+
+  it('should search Activity logs on startup-generated events', async () => {
+    let foundEdges: Array<{ node: { entity_type: string } }> = [];
+    let searchTerm: string | undefined;
+
+    await awaitUntilCondition(async () => {
+      const initialResult = await queryAsAdminWithSuccess({
+        query: AUDIT_QUERY,
+        variables: {
+          types: ['Activity'],
+          first: 25,
+        },
+      });
+      const initialEdges = initialResult.data.audits.edges;
+      if (initialEdges.length === 0) {
+        return false;
+      }
+
+      const firstActivity = initialEdges[0].node;
+      searchTerm = firstActivity.event_scope || firstActivity.event_type || undefined;
+      if (!searchTerm) {
+        return false;
+      }
+
+      const queryResult = await queryAsAdminWithSuccess({
+        query: AUDIT_QUERY,
+        variables: {
+          search: searchTerm,
+          types: ['Activity'],
+          first: 25,
+        },
+      });
+      foundEdges = queryResult.data.audits.edges;
+      return foundEdges.length > 0;
+    }, 1000, 20, true, 'No searchable startup Activity events found');
+
+    expect(searchTerm).toBeDefined();
+    expect(foundEdges.length).toBeGreaterThan(0);
+    expect(foundEdges.every((edge) => edge.node.entity_type === 'Activity')).toBe(true);
   });
 });
