@@ -4,6 +4,7 @@ import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
 const GET_SAVED_FILTERS_QUERY = gql`
   query savedFilters(
@@ -28,6 +29,7 @@ const GET_SAVED_FILTERS_QUERY = gql`
           name
           filters
           scope
+          creator_id
           currentUserAccessRight
           authorizedMembers {
             id
@@ -128,20 +130,17 @@ describe('Saved Filter Resolver', () => {
         query: GET_SAVED_FILTERS_QUERY,
         variables: {},
       });
-
       const savedFilters = result.data?.savedFilters.edges;
       expect(savedFilters).toBeDefined();
       expect(savedFilters.length).toEqual(1);
-    });
-    it('gives the list of saved filters with restricted members', async () => {
-      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-        query: GET_SAVED_FILTERS_QUERY,
-        variables: {},
-      });
-
-      const savedFilters = result.data?.savedFilters.edges;
-      expect(savedFilters).toBeDefined();
-      expect(savedFilters.length).toEqual(0);
+      const myFilter = savedFilters[0].node;
+      expect(myFilter.name).toEqual('my new filter');
+      expect(myFilter.creator_id).toEqual(ADMIN_USER.id);
+      expect(myFilter.currentUserAccessRight).toEqual('admin');
+      expect(myFilter.authorizedMembers.length).toEqual(1);
+      expect(myFilter.authorizedMembers[0].name).toEqual(ADMIN_USER.name);
+      expect(myFilter.authorizedMembers[0].entity_type).toEqual(ENTITY_TYPE_USER);
+      expect(myFilter.authorizedMembers[0].access_right).toEqual('admin');
     });
   });
 
