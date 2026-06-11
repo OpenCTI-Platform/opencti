@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, List, ListItem, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -19,6 +19,7 @@ import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import Tag from '@common/tag/Tag';
 import { StixCoreObjectsCustomAttributesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 import { entityTypeRenderers } from '../../../utils/widget/widgetCustomAttributesRendererUtils';
+import ListItemText from '@mui/material/ListItemText';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -155,6 +156,31 @@ const renderAttributeValue = (
         />
       );
     }
+    case 'killChainPhases': {
+      const killChainPhases = (data as Record<string, unknown>).killChainPhases as
+        | ReadonlyArray<{
+          id: string;
+          entity_type: string;
+          kill_chain_name: string;
+          phase_name: string;
+          x_opencti_order?: number | null;
+        }>
+        | undefined;
+      return (
+        <FieldOrEmpty source={killChainPhases}>
+          <List sx={{ py: 0 }}>
+            {killChainPhases?.map((phase) => (
+              <ListItem key={phase.id} dense divider>
+                <ListItemText
+                  primary={phase.phase_name}
+                  secondary={phase.kill_chain_name}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </FieldOrEmpty>
+      );
+    }
     case 'x_opencti_main_observable_type': {
       const obsType = 'x_opencti_main_observable_type' in data
         ? (data as { x_opencti_main_observable_type?: string }).x_opencti_main_observable_type
@@ -206,7 +232,69 @@ const renderAttributeValue = (
       }
       return <ExpandableMarkdown source={desc as string} limit={400} />;
     }
-
+    case 'height': {
+      const heights = (data as Record<string, unknown>).height as
+        | ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>
+        | null
+        | undefined;
+      return (
+        <FieldOrEmpty source={heights}>
+          <List sx={{ py: 0 }}>
+            {heights?.map((h, i) => (
+              <ListItem key={i} dense divider>
+                <ListItemText
+                  primary={h.measure != null ? `${h.measure} cm` : '-'}
+                  secondary={h.date_seen ? fldt(h.date_seen) : t_i18n('Unknown date')}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </FieldOrEmpty>
+      );
+    }
+    case 'weight': {
+      const weights = (data as Record<string, unknown>).weight as
+        | ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>
+        | null
+        | undefined;
+      return (
+        <FieldOrEmpty source={weights}>
+          <List sx={{ py: 0 }}>
+            {weights?.map((w, i) => (
+              <ListItem key={i} dense divider>
+                <ListItemText
+                  primary={w.measure != null ? `${w.measure} kg` : '-'}
+                  secondary={w.date_seen ? fldt(w.date_seen) : t_i18n('Unknown date')}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </FieldOrEmpty>
+      );
+    }
+    case 'date_of_birth': {
+      const value = (data as Record<string, unknown>).date_of_birth as string | undefined;
+      if (!value) {
+        return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+      }
+      return <Typography variant="body2">{fldt(value)}</Typography>;
+    }
+    case 'primary_motivation': {
+      const value = (data as Record<string, unknown>).primary_motivation as string | undefined;
+      return <ItemOpenVocab displayMode="chip" type="attack-motivation-ov" value={value} />;
+    }
+    case 'secondary_motivations': {
+      const types = (data as Record<string, unknown>).secondary_motivations as string[] | undefined;
+      return (
+        <FieldOrEmpty source={types}>
+          <Stack direction="row" flexWrap="wrap" gap={1}>
+            {types?.map((type) => (
+              <ItemOpenVocab key={type} displayMode="chip" type="attack-motivation-ov" value={type} />
+            ))}
+          </Stack>
+        </FieldOrEmpty>
+      );
+    }
     // open vocabs
     case 'priority': {
       const priority = (data as Record<string, unknown>).priority as string | undefined;
@@ -227,6 +315,14 @@ const renderAttributeValue = (
     case 'x_opencti_organization_type': {
       const orgType = (data as Record<string, unknown>).x_opencti_organization_type as string | undefined;
       return <ItemOpenVocab displayMode="chip" type="organization_type_ov" value={orgType} />;
+    }
+    case 'eye_color': {
+      const value = (data as Record<string, unknown>).eye_color as string | undefined;
+      return <ItemOpenVocab displayMode="chip" type="eye-color-ov" value={value} />;
+    }
+    case 'hair_color': {
+      const value = (data as Record<string, unknown>).hair_color as string | undefined;
+      return <ItemOpenVocab displayMode="chip" type="hair-color-ov" value={value} />;
     }
     case 'threat_actor_types': {
       const types = (data as Record<string, unknown>).threat_actor_types as string[] | undefined;

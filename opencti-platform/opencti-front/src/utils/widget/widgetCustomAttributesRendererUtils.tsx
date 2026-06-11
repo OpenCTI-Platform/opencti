@@ -6,6 +6,9 @@ import { Stack } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import ItemOpenVocab from '../../components/ItemOpenVocab';
 import ExpandableMarkdown from '../../components/ExpandableMarkdown';
+import ExpandablePre from '../../components/ExpandablePre';
+import ItemScore from '../../components/ItemScore';
+import ItemBoolean from '../../components/ItemBoolean';
 
 type AttributeRenderer = (
   data: StixCoreObject,
@@ -169,10 +172,91 @@ const incidentRenderers: EntityRenderers = {
   },
 };
 
+// ─── Indicator
+const indicatorRenderers: EntityRenderers = {
+  pattern: (data) => {
+    const pattern = (data as Record<string, unknown>).pattern as string | undefined;
+    return (
+      <FieldOrEmpty source={pattern}>
+        <ExpandablePre source={pattern ?? ''} limit={300} />
+      </FieldOrEmpty>
+    );
+  },
+  x_opencti_score: (data) => {
+    const score = (data as Record<string, unknown>).x_opencti_score as number | undefined;
+    return <ItemScore score={score ?? null} />;
+  },
+  x_opencti_detection: (data) => {
+    const detection = (data as Record<string, unknown>).x_opencti_detection as boolean | undefined;
+    return (
+      <ItemBoolean
+        status={detection ?? false}
+        label={detection ? 'Yes' : 'No'}
+      />
+    );
+  },
+};
+
+const threatActorGroupRenderers: EntityRenderers = {
+  sophistication: (data) => {
+    const value = (data as Record<string, unknown>).sophistication as string | undefined;
+    return (
+      <FieldOrEmpty source={value}>
+        <ItemOpenVocab
+          type="threat-actor-group-sophistication-ov"
+          value={value}
+        />
+      </FieldOrEmpty>
+    );
+  },
+  resource_level: (data) => {
+    const value = (data as Record<string, unknown>).resource_level as string | undefined;
+    return (
+      <FieldOrEmpty source={value}>
+        <ItemOpenVocab
+          type="attack-resource-level-ov"
+          value={value}
+        />
+      </FieldOrEmpty>
+    );
+  },
+};
+
+const threatActorIndividualRenderers: EntityRenderers = {
+  sophistication: (data) => {
+    const value = (data as Record<string, unknown>).sophistication as string | undefined;
+    return (
+      <FieldOrEmpty source={value}>
+        <ItemOpenVocab
+          type="threat-actor-individual-sophistication-ov"
+          value={value}
+        />
+      </FieldOrEmpty>
+    );
+  },
+  resource_level: threatActorGroupRenderers.resource_level,
+};
+
+const malwareRenderer: EntityRenderers = {
+  is_family: (data) => {
+    const value = (data as Record<string, unknown>).is_family as boolean | undefined;
+    return (
+      <ItemBoolean
+        status={value ?? false}
+        label={value ? 'Yes' : 'No'}
+      />
+    );
+  },
+};
+
 export const entityTypeRenderers: Record<string, EntityRenderers> = {
   Campaign: campaignRenderers,
   Report: reportRenderers,
   Grouping: groupingRenderers,
   MalwareAnalysis: malwareAnalysisRenderers,
   Incident: incidentRenderers,
+  Indicator: indicatorRenderers,
+  ThreatActorGroup: threatActorGroupRenderers,
+  ThreatActorIndividual: threatActorIndividualRenderers,
+  Malware: malwareRenderer,
 };
