@@ -1,10 +1,10 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { addSecurityCoverageResult, deleteSecurityCoverageResult, findById, pageSecurityCoverageResultPaginated } from './securityCoverageResult-domain';
+import { addSecurityCoverageResult, deleteSecurityCoverageResult, findById, findSecurityCoverageResultPaginated } from './securityCoverageResult-domain';
 
 const SecurityCoverageResultResolvers: Resolvers = {
   Query: {
     securityCoverageResult: (_, { id }, context) => findById(context, context.user, id),
-    securityCoverageResults: (_, args, context) => pageSecurityCoverageResultPaginated(context, context.user, args),
+    securityCoverageResults: (_, args, context) => findSecurityCoverageResultPaginated(context, context.user, args),
   },
   Mutation: {
     securityCoverageResultAdd: (_, { input }, context) => addSecurityCoverageResult(context, context.user, input),

@@ -43,7 +43,7 @@ export const findById = async (
  * @param args Options to customize the query.
  * @returns Security coverage result.
  */
-export const pageSecurityCoverageResultPaginated = (
+export const findSecurityCoverageResultPaginated = (
   context: AuthContext,
   user: AuthUser,
   args: EntityOptions<BasicStoreEntitySecurityCoverageResult>,
