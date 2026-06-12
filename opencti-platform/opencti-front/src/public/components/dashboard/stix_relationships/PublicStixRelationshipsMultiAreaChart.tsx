@@ -4,7 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMultiAreaChartQuery } from './__generated__/PublicStixRelationshipsMultiAreaChartQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
@@ -77,7 +77,7 @@ const PublicStixRelationshipsMultiAreaChart = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsMultiAreaChartQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsMultiAreaChartQuery>(
     publicStixRelationshipsMultiAreaChartQuery,
     {
       uriKey,

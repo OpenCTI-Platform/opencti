@@ -3,7 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsNumberQuery } from './__generated__/PublicStixRelationshipsNumberQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -70,7 +70,7 @@ const PublicStixCoreRelationshipsNumber = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsNumberQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsNumberQuery>(
     publicStixRelationshipsNumberQuery,
     {
       uriKey,
