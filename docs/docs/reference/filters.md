@@ -45,6 +45,10 @@ The boolean modes (and/or) are either **global** (between every attribute filter
 OpenCTI allows you to save filters and share them with other users. This feature enables teams to collaborate by reusing the same filter configurations across different views.
 Sharing saved filters and managing saved filters created by other users requires the **Share filters** capability.
 
+The shared saved filters are accessible in the 'Saved filters' section, with the saved filters created by the user.
+
+![Shared saved filters selection](./assets/filters-shareSavedFilter-selection.png)
+
 ### How to share a saved filter
 
 Save a filter in any entity list view using the save button.
@@ -55,6 +59,8 @@ Add authorized members with the appropriate access right:
   - **can manage**: the member can see, use, update the name, manage sharing and delete the saved filter.
 
 The creator of the saved filter always has the **can manage** access right. At least one admin member must remain at all times.
+
+![Sharing a saved filter](./assets/filters-shareSavedFilter-creation.png)
 
 ### Access rights
 
@@ -71,8 +77,8 @@ Note that the creator of a saved filter always has the **can manage** access rig
 
 | Access right | Can view | Can use | Can update | Can delete | Can manage sharing |
 |--------------|----------|---------|------------|------------|-------------------|
-| view         | ✅        | ✅       | ❌          | ❌          | ❌                 |
-| admin        | ✅        | ✅       | ✅          | ✅          | ✅                 |
+| can view     | ✅        | ✅       | ❌          | ❌          | ❌                 |
+| can manage   | ✅        | ✅       | ✅          | ✅          | ✅                 |
 
 ## Filters format
 
