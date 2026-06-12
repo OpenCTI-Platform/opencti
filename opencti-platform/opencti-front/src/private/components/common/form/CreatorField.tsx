@@ -20,6 +20,7 @@ interface CreatorFieldProps {
   showConfidence?: boolean;
   helpertext?: string;
   required?: boolean;
+  clearable?: boolean;
   disabled?: boolean;
 }
 
@@ -28,7 +29,7 @@ const CreatorFieldQuery = graphql`
     members(search: $search, entityTypes: [User]) {
       edges {
         node {
-          internal_id: id
+          id
           name
           entity_type
           effective_confidence_level {
@@ -56,6 +57,8 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   containerStyle,
   onChange,
   showConfidence = false,
+  helpertext,
+  clearable = false,
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
@@ -78,7 +81,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
             {textToShow}
             <IconButton
               component={Link}
-              to={`/dashboard/settings/accesses/users/${node.internal_id}`}
+              to={`/dashboard/settings/accesses/users/${node.id}`}
               sx={{ marginLeft: 1 }}
               color="primary"
             >
@@ -102,7 +105,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
             (data as CreatorFieldSearchQuery$data)?.members?.edges ?? []
           ).map((n) => ({
             label: n?.node.name ?? t_i18n('Unknown'),
-            value: n?.node.internal_id,
+            value: n?.node.id,
             extra: getExtraFromNode(n?.node),
           }));
           const templateValues = [...creatorOptions, ...NewCreators];
@@ -126,9 +129,10 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
         textfieldprops={{
           variant: 'standard',
           label,
+          helperText: helpertext,
           onFocus: searchCreators,
         }}
-        disableClearable
+        disableClearable={!clearable}
         onChange={onChange}
         style={containerStyle}
         noOptionsText={t_i18n('No available options')}

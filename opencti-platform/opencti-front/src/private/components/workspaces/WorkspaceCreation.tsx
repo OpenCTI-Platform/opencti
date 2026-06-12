@@ -92,8 +92,10 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
       variables: {
         input: {
           ...buildCreationFilesInput(),
-          ...values,
+          name: values.name,
+          description: values.description,
           type,
+          refresh_interval: null,
         },
       },
       updater: (store) => {

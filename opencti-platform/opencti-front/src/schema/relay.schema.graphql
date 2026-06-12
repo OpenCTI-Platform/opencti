@@ -388,6 +388,8 @@ input AuditsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
+  countField: String
+  unique: Boolean
 }
 
 input StixCoreObjectsTimeSeriesParameters {
@@ -1309,6 +1311,13 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_enterprise_edition_license_validated: Boolean!
   playground_enabled: Boolean!
   metrics_definition: [MetricDefinition!]
+  password_policy_min_length: Int
+  password_policy_max_length: Int
+  password_policy_min_symbols: Int
+  password_policy_min_numbers: Int
+  password_policy_min_words: Int
+  password_policy_min_lowercase: Int
+  password_policy_min_uppercase: Int
 }
 
 type MetricAttributes {
@@ -1412,6 +1421,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_consent_confirm_text: String
   platform_banner_text: String
   platform_banner_level: String
+  platform_no_access_message: String
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
   platform_whitemark: Boolean
@@ -9388,7 +9398,7 @@ type Query {
   log(id: ID!): Log
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   audit(id: ID!): Log
-  auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
+  auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String, field: String, unique: Boolean): Number
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   auditsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [AuditsTimeSeriesParameters]): [MultiTimeSeries]
@@ -9599,6 +9609,9 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
+  workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
+  workflowInstance(entityId: String!): WorkflowInstance
+  allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
@@ -10433,6 +10446,12 @@ type Mutation {
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
+  workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionDelete(entityType: String!): EntitySetting
+  triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
+  clearWorkflowPendingState(entityId: String!): WorkflowInstance!
+  reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
@@ -10611,7 +10630,7 @@ type Mutation {
   decayExclusionRuleDelete(id: ID!): ID
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
-  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization
+  organizationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Organization
   organizationContextPatch(id: ID!, input: EditContext!): Organization
   organizationContextClean(id: ID!): Organization
   organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -10745,6 +10764,178 @@ type Mutation {
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
+}
+
+enum WorkflowExecutionStatus {
+  pending
+  completed
+  error
+}
+
+type WorkflowActionConfig {
+  type: String!
+  params: JSON
+}
+
+type WorkflowSerializedState {
+  statusId: String!
+  onEnter: [WorkflowActionConfig!]
+  onExit: [WorkflowActionConfig!]
+}
+
+type WorkflowSerializedTransition {
+  from: [String!]!
+  to: String!
+  event: String!
+  asyncActions: [WorkflowActionConfig!]
+  syncActions: [WorkflowActionConfig!]
+  conditions: JSON
+  comment: String
+}
+
+type WorkflowSchema {
+  id: ID!
+  name: String!
+  published: Boolean!
+  errors: [WorkflowValidationError!]
+  initialState: String!
+  states: [WorkflowSerializedState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowValidationError {
+  type: String!
+  message: String!
+  path: [WorkflowEntityRef!]
+}
+
+type WorkflowEntityRef {
+  id: String!
+  entity_type: String!
+}
+
+type EntitySetting implements InternalObject & BasicObject {
+  workflow_configuration: Boolean
+  workflow_id: String
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  target_type: String!
+  platform_entity_files_ref: Boolean
+  platform_hidden_type: Boolean
+  enforce_reference: Boolean
+  attributes_configuration: String
+  attributesDefinitions: [TypeAttribute!]!
+  mandatoryAttributes: [String!]!
+  scaleAttributes: [ScaleAttribute!]!
+  defaultValuesAttributes: [DefaultValueAttribute!]!
+  availableSettings: [String!]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  overview_layout_customization: [OverviewWidgetCustomization!]
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
+  requestAccessConfiguration: RequestAccessConfiguration
+}
+
+type WorkflowDefinitionMutationResult {
+  id: ID!
+  workflow_id: String
+  target_type: String
+  published: Boolean!
+  errors: [WorkflowValidationError!]!
+}
+
+type WorkflowActionError {
+  timestamp: DateTime
+  message: String!
+  source: String
+}
+
+type WorkflowPendingAsyncAction {
+  id: ID!
+  workId: String!
+  type: String!
+  status: String!
+  processedCount: Int
+  expectedCount: Int
+  startedAt: DateTime
+  lastActivityAt: DateTime
+  errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+  event: String!
+  toState: String!
+  triggeredAt: DateTime!
+  asyncActions: [WorkflowPendingAsyncAction!]!
+  syncActions: [WorkflowActionConfig!]
+}
+
+type WorkflowTriggerResult {
+  success: Boolean!
+  newState: String
+  reason: String
+  status: Status
+  instance: WorkflowInstance
+  entity: BasicObject
+  executionStatus: WorkflowExecutionStatus
+  pendingTransition: WorkflowPendingTransition
+}
+
+type WorkflowTransition {
+  event: String!
+  toState: String!
+  toStatus: Status
+  comment: String
+  actions: [String!]
+  requiresShareOrganizationInput: Boolean
+  requiresUnshareOrganizationInput: Boolean
+}
+
+type WorkflowLastHistoryEntry {
+  state: String!
+  event: String!
+  user_id: String!
+  timestamp: String!
+  comment: String
+}
+
+type WorkflowInstance {
+  id: ID!
+  currentState: String!
+  currentStatus: Status
+  allowedTransitions: [WorkflowTransition!]!
+  lastHistoryEntry: WorkflowLastHistoryEntry
+  pendingStatus: WorkflowExecutionStatus
+  pendingError: String
+  pendingTransition: WorkflowPendingTransition
+}
+
+type DraftWorkspace implements InternalObject & BasicObject {
+  workflowInstance: WorkflowInstance
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  name: String!
+  createdBy: Identity
+  description: String
+  created_at: DateTime!
+  creators: [Creator!]
+  entity_id: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  objectsCount: DraftObjectsCount!
+  draft_status: DraftStatus!
+  processingCount: Int!
+  works(first: Int): [Work!]
+  validationWork: Work
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12919,30 +13110,6 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type EntitySetting implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  target_type: String!
-  platform_entity_files_ref: Boolean
-  platform_hidden_type: Boolean
-  enforce_reference: Boolean
-  attributes_configuration: String
-  attributesDefinitions: [TypeAttribute!]!
-  mandatoryAttributes: [String!]!
-  scaleAttributes: [ScaleAttribute!]!
-  defaultValuesAttributes: [DefaultValueAttribute!]!
-  availableSettings: [String!]!
-  created_at: DateTime!
-  updated_at: DateTime!
-  refreshed_at: DateTime
-  overview_layout_customization: [OverviewWidgetCustomization!]
-  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
-  requestAccessConfiguration: RequestAccessConfiguration
-}
-
 enum EntitySettingsOrdering {
   target_type
   _score
@@ -12973,6 +13140,7 @@ type Workspace implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   refreshed_at: DateTime
+  refresh_interval: Int
   editContext: [EditUserContext!]
   investigated_entities_ids: [String]
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -13012,6 +13180,7 @@ input WorkspaceAddInput {
   tags: [String!]
   authorized_members: [MemberAccessInput!]
   investigated_entities_ids: [String]
+  refresh_interval: Int
 }
 
 input WorkspaceDuplicateInput {
@@ -13567,6 +13736,7 @@ type IngestionRss implements InternalObject & BasicObject {
   current_state_date: DateTime
   last_execution_date: DateTime
   ingestion_running: Boolean
+  ssl_verify: Boolean
   toConfigurationExport: String!
 }
 
@@ -13619,6 +13789,7 @@ input IngestionRssAddInput {
   created_by_ref: String
   object_marking_refs: [String]
   report_types: [String!]
+  ssl_verify: Boolean
 }
 
 input IngestionRssAddAutoUserInput {
@@ -13663,6 +13834,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   confidence_to_score: Boolean
+  ssl_verify: Boolean
   toConfigurationExport: String!
 }
 
@@ -13714,6 +13886,7 @@ input IngestionTaxiiAddInput {
   added_after_start: DateTime
   ingestion_running: Boolean
   confidence_to_score: Boolean
+  ssl_verify: Boolean
   user_id: String!
   automatic_user: Boolean
   confidence_level: Int
@@ -13788,6 +13961,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   user_id: String!
   user: Creator
   ingestion_running: Boolean
+  ssl_verify: Boolean
   current_state_hash: String
   current_state_date: DateTime
   last_execution_date: DateTime
@@ -13851,6 +14025,7 @@ input IngestionCsvAddInput {
   automatic_user: Boolean
   confidence_level: Int
   markings: [String!]
+  ssl_verify: Boolean
 }
 
 input IngestionCsvAddAutoUserInput {
@@ -13902,6 +14077,7 @@ type IngestionJson implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   markings: [String!]
+  ssl_verify: Boolean
 }
 
 enum IngestionJsonOrdering {
@@ -13960,6 +14136,7 @@ input IngestionJsonAddInput {
   ingestion_running: Boolean
   user_id: String!
   markings: [String!]
+  ssl_verify: Boolean
 }
 
 enum IndicatorsOrdering {
@@ -15015,29 +15192,6 @@ type DraftContainerObjectChange {
   entity_type: String!
   representative_main: String
   draft_operation: DraftChangeType!
-}
-
-type DraftWorkspace implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  name: String!
-  createdBy: Identity
-  description: String
-  created_at: DateTime!
-  creators: [Creator!]
-  entity_id: String
-  objectAssignee: [Assignee!]
-  objectParticipant: [Participant!]
-  objectsCount: DraftObjectsCount!
-  draft_status: DraftStatus!
-  processingCount: Int!
-  works(first: Int): [Work!]
-  validationWork: Work
-  authorizedMembers: [MemberAccess!]!
-  currentUserAccessRight: String
 }
 
 type DraftObjectsCount {
@@ -16545,6 +16699,7 @@ input RetentionRuleAddInput {
   max_retention: Int!
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
+  active: Boolean
 }
 
 enum RetentionRuleOrdering {
@@ -16553,6 +16708,7 @@ enum RetentionRuleOrdering {
   remaining_count
   last_execution_date
   max_retention
+  active
   _score
 }
 
@@ -16581,6 +16737,7 @@ type RetentionRule {
   last_deleted_count: Int
   remaining_count: Int
   scope: RetentionRuleScope!
+  active: Boolean
 }
 
 type RetentionRuleConnection {

@@ -42,6 +42,7 @@ type IngestionJson implements InternalObject & BasicObject {
     ingestion_running: Boolean
     last_execution_date: DateTime
     markings: [String!]
+    ssl_verify: Boolean
 }
 
 enum IngestionJsonOrdering {
@@ -112,6 +113,7 @@ input IngestionJsonAddInput {
     ingestion_running: Boolean
     user_id: String!
     markings: [String!]
+    ssl_verify: Boolean
 }
 
 type Mutation {

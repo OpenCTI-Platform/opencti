@@ -369,6 +369,8 @@ input AuditsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
+  countField: String
+  unique: Boolean
 }
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
@@ -1235,6 +1237,13 @@ type PublicSettings implements IntlSettings & ThemeSettings {
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
     metrics_definition: [MetricDefinition!]
+    password_policy_min_length: Int
+    password_policy_max_length: Int
+    password_policy_min_symbols: Int
+    password_policy_min_numbers: Int
+    password_policy_min_words: Int
+    password_policy_min_lowercase: Int
+    password_policy_min_uppercase: Int
 }
 
 type MetricAttributes {
@@ -1339,6 +1348,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_consent_confirm_text: String
   platform_banner_text: String
   platform_banner_level: String
+  platform_no_access_message: String
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
   platform_whitemark: Boolean
@@ -14734,6 +14744,8 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
+    field: String
+    unique: Boolean
   ): Number @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsTimeSeries(
     field: String!

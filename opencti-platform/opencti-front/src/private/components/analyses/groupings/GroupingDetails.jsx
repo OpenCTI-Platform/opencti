@@ -67,8 +67,10 @@ const GroupingDetailsComponent = (props) => {
             <StixRelationshipsHorizontalBars
               isWidget={false}
               fromId={grouping.id}
-              startDate={null}
-              endDate={null}
+              config={{
+                startDate: null,
+                endDate: null,
+              }}
               relationshipType="object"
               dataSelection={entitiesDistributionDataSelection}
               parameters={{ title: 'Entities distribution' }}

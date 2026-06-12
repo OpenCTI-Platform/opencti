@@ -189,7 +189,7 @@ import type {
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
-import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
+import { IDS_ATTRIBUTES, KEYWORD_TERMS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
@@ -220,6 +220,7 @@ const ES_INDEX_REPLICA_NUMBER: number = conf.get('elasticsearch:number_of_replic
 
 const ES_PRIMARY_SHARD_SIZE: string = conf.get('elasticsearch:max_primary_shard_size') || '50gb';
 const ES_MAX_DOCS: number = conf.get('elasticsearch:max_docs') || 75000000;
+const ES_CARDINALITY_THRESHOLD = 40000;
 
 const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
@@ -2564,7 +2565,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
     } else {
       // case where we would like to build a terms query
       const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0 && !values.includes('EXISTS')
-        && arrayKeys.every((k) => (!k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED))) || IDS_ATTRIBUTES.includes(k));
+        && arrayKeys.every((k) => (!k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED))) || IDS_ATTRIBUTES.includes(k) || KEYWORD_TERMS_ATTRIBUTES.includes(k));
       if (isTermsQuery) {
         if (operator === 'eq') {
           for (let i = 0; i < arrayKeys.length; i += 1) {
@@ -3391,6 +3392,35 @@ export const elRawCount = async (query: any): Promise<number> => {
       return oebp(data).count;
     });
 };
+
+export const elCardinalityCount = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string | string[] | undefined,
+  field: string,
+  options = {},
+): Promise<number> => {
+  const cardinalityAggs: any = {
+    cardinality_count: {
+      cardinality: {
+        field: `${field}.keyword`,
+        precision_threshold: ES_CARDINALITY_THRESHOLD,
+      },
+    },
+  };
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  body.aggs = cardinalityAggs;
+  const cardinalityQuery = {
+    index: getIndicesToQuery(context, user, indexName),
+    body,
+  };
+  const searchType = `Aggregations (${field})`;
+  const cardinalityData = await elRawSearch(context, user, searchType, cardinalityQuery).catch((err) => {
+    throw DatabaseError('Cardinality computing fail', { cause: err, cardinalityQuery });
+  });
+  return cardinalityData.aggregations.cardinality_count.value;
+};
+
 export const elCount = async (
   context: AuthContext,
   user: AuthUser,
@@ -3411,6 +3441,8 @@ export const elHistogramCount = async (
   user: AuthUser,
   indexName: string | string[] | undefined,
   options: HistogramCountOpts = {},
+  unique: boolean = false,
+  countField: string = '',
 ) => {
   const { interval, field, types = null } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
@@ -3434,6 +3466,21 @@ export const elHistogramCount = async (
     default:
       throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
   }
+  const uniqueAggregation = {
+    unique: {
+      cardinality: {
+        field: `${countField}.keyword`,
+      },
+    },
+  };
+  const sumAggregation = {
+    weight: {
+      sum: {
+        field: 'i_inference_weight',
+        missing: 1,
+      },
+    },
+  };
   body.aggs = {
     count_over_time: {
       date_histogram: {
@@ -3443,14 +3490,7 @@ export const elHistogramCount = async (
         format: dateFormat,
         keyed: true,
       },
-      aggs: {
-        weight: {
-          sum: {
-            field: 'i_inference_weight',
-            missing: 1,
-          },
-        },
-      },
+      aggs: unique ? uniqueAggregation : sumAggregation,
     },
   };
   const query = {
@@ -3462,7 +3502,7 @@ export const elHistogramCount = async (
   return elRawSearch(context, user, types, query).then((data) => {
     const { buckets } = data.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
+    return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
   });
 };
 type AggregationCountOpts = QueryBodyBuilderOpts & {

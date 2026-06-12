@@ -797,7 +797,7 @@ const convertAggregateDistributions = async (
 export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
   const argsWithTypes = { ...args, types: args.types ?? [ENTITY_TYPE_HISTORY] };
-  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, argsWithTypes);
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, argsWithTypes, args.unique, args.countField);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (
@@ -3080,7 +3080,7 @@ const validateEntityAndRelationCreation = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
-  opts: { bypassValidation?: boolean } = {},
+  opts: { bypassValidation?: boolean; bypassMandatoryAttributes?: boolean } = {},
 ) => {
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
@@ -3089,7 +3089,9 @@ const validateEntityAndRelationCreation = async (
         throw ValidationError('You must provide at least one external reference for this type of entity/relationship', 'externalReferences');
       }
     }
-    await validateInputCreation(context, user, type, input, entitySetting);
+    await validateInputCreation(context, user, type, input, entitySetting, {
+      bypassMandatoryAttributes: opts.bypassMandatoryAttributes === true,
+    });
   }
 };
 
@@ -3577,6 +3579,7 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRule?: string;
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
+  bypassMandatoryAttributes?: boolean;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,

@@ -33,6 +33,12 @@ class ObservedDataDetailsComponent extends Component {
         },
       },
     ];
+
+    const config = {
+      startDate: undefined,
+      endDate: undefined,
+    };
+
     return (
       <div style={{ height: '100%' }} data-testid="observed-data-details-page">
         <Card title={t('Entity details')}>
@@ -61,6 +67,7 @@ class ObservedDataDetailsComponent extends Component {
             parameters={{ title: t('Observables distribution') }}
             variant="inEntity"
             height={300}
+            config={config}
           />
         </Card>
       </div>

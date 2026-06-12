@@ -163,7 +163,7 @@ const getStringFilterKey = (key: string | string[]): string => {
   return Array.isArray(key) ? key[0] : key;
 };
 
-export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
+export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
   return !!(
     filterGroup
     && (filterGroup.filters?.length > 0 || filterGroup.filterGroups?.length > 0)
@@ -232,7 +232,7 @@ export const findFiltersFromKeys = (
   keys: string[],
   operator = 'eq',
 ): Filter[] => {
-  const result = [];
+  const result: Filter[] = [];
   for (const filter of filters) {
     if (keys.includes(filter.key)) {
       if (!filter.operator || filter.operator === operator) {
@@ -285,7 +285,7 @@ export const addFilter = (
 
 // remove filter with key=entity_type and values contains 'all'
 // because in this case we want everything, so no need for filters
-export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) => {
+export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup | null) => {
   if (inputFilters && isFilterGroupNotEmpty(inputFilters)) {
     const { filters, filterGroups } = inputFilters;
     const newFilters = filters.filter((f) => !(f.key === 'entity_type' && f.values.includes('all')));
@@ -379,10 +379,10 @@ export const buildFiltersAndOptionsForWidgets = (
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
-    filters = removeEntityTypeAllFromFilterGroup(filters);
+    filters = removeEntityTypeAllFromFilterGroup(filters) ?? undefined;
   }
   // handle startDate and endDate options
-  const dateFiltersContent = [];
+  const dateFiltersContent: Filter[] = [];
   if (startDate) {
     dateFiltersContent.push({
       key: dateAttribute,
@@ -499,30 +499,41 @@ export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup 
   ),
 });
 
-// when a filter group is serialized, we need to make sure the keys are all arrays as per graphql TS typing emission
-// GQL input coercion allows to use non-array value of same type as inside the array
-// but when we serialize (stringify) filters they end up parsed inside the backend, that expects strictly arrays
-// --> saved filters MUST be properly sanitized
-export const sanitizeFilterGroupKeysForBackend = (
-  filterGroup: FilterGroup,
-): GqlFilterGroup => {
+/**
+ * Normalizes a FilterGroup for backend persistence:
+ * - Converts filter keys from string to string[] (backend expects arrays).
+ * - Removes filter IDs (not persisted).
+ * - Strips empty filters (no values and no nil/not_nil operator).
+ * - Recursively processes nested filterGroups.
+ *
+ * This is required because GQL input coercion accepts single values in place of arrays,
+ * but when filters are stringified and parsed server-side, strict array format is expected.
+ */
+export function normalizeFilterGroupForBackend(filterGroup: FilterGroup): GqlFilterGroup;
+export function normalizeFilterGroupForBackend(filterGroup?: FilterGroup | null): GqlFilterGroup | undefined;
+export function normalizeFilterGroupForBackend(
+  filterGroup?: FilterGroup | null,
+): GqlFilterGroup | undefined {
+  if (!filterGroup || !isFilterGroupNotEmpty(filterGroup)) {
+    return undefined;
+  }
   return {
     ...filterGroup,
-    filters: filterGroup?.filters?.filter((f) => f.values.length > 0 || ['nil', 'not_nil'].includes(f.operator ?? 'eq'))
-      .map((f) => {
-        const transformFilter = {
-          ...f,
-          key: Array.isArray(f.key) ? f.key : [f.key],
-        };
-        delete transformFilter.id;
-        return transformFilter;
-      }),
-    filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForBackend(fg)),
+    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filterGroup.filters)
+      .map((f) => ({
+        ...f,
+        key: Array.isArray(f.key) ? f.key : [f.key],
+      })),
+    filterGroups: filterGroup.filterGroups.map((fg) => normalizeFilterGroupForBackend(fg)),
   } as GqlFilterGroup;
-};
+}
 
-// reverse operation of sanitizeFilterGroupKeysForBackend
-export const sanitizeFilterGroupKeysForFrontend = (
+/**
+ * Reverse operation of normalizeFilterGroupForBackend:
+ * converts a GqlFilterGroup (backend format with array keys) into a FilterGroup (frontend format with single string key).
+ * Also assigns a unique `id` to each filter for React rendering purposes.
+ */
+export const normalizeFilterGroupForFrontend = (
   filterGroup: GqlFilterGroup,
 ): FilterGroup => {
   return {
@@ -533,7 +544,7 @@ export const sanitizeFilterGroupKeysForFrontend = (
       key: Array.isArray(f.key) ? f.key[0] : f.key,
       values: f.values.map((v) => v || 'todo: delete this'),
     })),
-    filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
+    filterGroups: filterGroup?.filterGroups?.map((fg) => normalizeFilterGroupForFrontend(fg)),
   } as FilterGroup;
 };
 
@@ -548,7 +559,7 @@ export const serializeFilterGroupForBackend = (
   if (!filterGroup) {
     return JSON.stringify(emptyFilterGroup);
   }
-  return JSON.stringify(sanitizeFilterGroupKeysForBackend(filterGroup));
+  return JSON.stringify(normalizeFilterGroupForBackend(filterGroup));
 };
 
 /**
@@ -568,7 +579,7 @@ export const deserializeFilterGroupForFrontend = (
   } else {
     filters = filterGroup;
   }
-  return sanitizeFilterGroupKeysForFrontend(filters);
+  return normalizeFilterGroupForFrontend(filters);
 };
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -833,30 +844,45 @@ const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
   return completedAvailableFilterKeys.includes(key);
 };
 
-export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
+/**
+ * Removes the `id` property from all filters in a FilterGroup (recursively).
+ * Also strips filters with empty values (unless operator is nil/not_nil).
+ * For `dynamicRegardingOf` filters, recursively cleans nested dynamic filter values.
+ */
+export const removeFrontendIdAndEmptyFiltersFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
   return {
-    mode: filters.mode,
-    filters: filters.filters
-      .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
-      .map((f) => {
-        const newFilter = { ...f };
-        delete newFilter.id;
-        if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
-          const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
-            .map((dynamic) => ({
-              ...dynamic,
-              values: dynamic.values.map((dynamicFilter: FilterGroup) => removeIdFromFilterGroupObject(dynamicFilter)),
-            }));
-          const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
-          newFilter.values = [...dynamicValues, ...relationshipTypeValues];
-        }
-        return newFilter;
-      }),
-    filterGroups: filters.filterGroups.map((group) => removeIdFromFilterGroupObject(group)) as FilterGroup[],
+    ...filters,
+    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filters.filters),
+    filterGroups: filters.filterGroups.map((group) => removeFrontendIdAndEmptyFiltersFromFilterGroupObject(group)) as FilterGroup[],
   };
+};
+
+/**
+ * Removes the frontend-only `id` property from a single filter.
+ * For `dynamicRegardingOf` filters, also recursively cleans nested dynamic FilterGroup values.
+ */
+const removeFrontendIdAndEmptyFiltersFromFiltersArray = (filtersArray: Filter[]): Filter[] => {
+  const removeFrontendIdFromFilter = (f: Filter): Filter => {
+    const newFilter = { ...f };
+    delete newFilter.id;
+    if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
+      const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
+        .map((dynamic) => ({
+          ...dynamic,
+          values: dynamic.values.map((dynamicFilter: FilterGroup) => removeFrontendIdAndEmptyFiltersFromFilterGroupObject(dynamicFilter)),
+        }));
+      const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
+      newFilter.values = [...dynamicValues, ...relationshipTypeValues];
+    }
+    return newFilter;
+  };
+
+  return filtersArray
+    .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
+    .map((f) => removeFrontendIdFromFilter(f));
 };
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
@@ -866,23 +892,8 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   }
   return {
     mode: filters.mode,
-    filters: filters.filters
-      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))
-      .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
-      .map((f) => {
-        const newFilter = { ...f };
-        delete newFilter.id;
-        if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
-          const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
-            .map((dynamic) => ({
-              ...dynamic,
-              values: dynamic.values.map((dynamicFilter: FilterGroup) => removeIdFromFilterGroupObject(dynamicFilter)),
-            }));
-          const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
-          newFilter.values = [...dynamicValues, ...relationshipTypeValues];
-        }
-        return newFilter;
-      }),
+    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filters.filters
+      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))),
     filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys)) as FilterGroup[],
   };
 };
@@ -1143,7 +1154,7 @@ export const getFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) 
 
 // add pirId to pir filters
 export const formatFiltersInPirContext = (f: FilterGroup, pirId: string): FilterGroup => {
-  const formattedFilters = [];
+  const formattedFilters: Filter[] = [];
   for (const filter of f.filters) {
     const filterKey = filter.key;
     if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {

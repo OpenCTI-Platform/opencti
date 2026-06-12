@@ -95,6 +95,15 @@ export class TelemetryMeterManager {
   // Number of decay rules created
   decayRuleCreationCount = 0;
 
+  // Whether the history retention rule is active on the platform (0 or 1)
+  isHistoryRetentionRuleActive = 0;
+
+  // Whether the activity retention rule is active on the platform (0 or 1)
+  isActivityRetentionRuleActive = 0;
+
+  // Whether activity is enabled on the platform (0 or 1) - has activity listeners configured
+  isActivityEnabled = 0;
+
   // Region Telemetry on SSO providers usage
   // True when the strategy is configured and enabled. False if not.
   ssoLocalStrategyEnabled = 0;
@@ -299,6 +308,18 @@ export class TelemetryMeterManager {
     this.decayRuleCreationCount = n;
   }
 
+  setIsHistoryRetentionRuleActive(n: number) {
+    this.isHistoryRetentionRuleActive = n;
+  }
+
+  setIsActivityRetentionRuleActive(n: number) {
+    this.isActivityRetentionRuleActive = n;
+  }
+
+  setIsActivityEnabled(n: number) {
+    this.isActivityEnabled = n;
+  }
+
   setCustomViewCreatedCount(n: number) {
     this.customViewCreatedCount = n;
   }
@@ -356,6 +377,9 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
+    this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
+    this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
+    this.registerGauge('is_activity_enabled', 'Whether activity is enabled on the platform (has activity listeners)', 'isActivityEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_local_strategy_enabled', 'LocalStrategy is configured and enabled', 'ssoLocalStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_openid_strategy_enabled', 'OpenidStrategy is configured and enabled', 'ssoOpenidStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('is_sso_ldap_strategy_enabled', 'LDAPStrategy is configured and enabled', 'ssoLDAPStrategyEnabled', { unit: 'boolean' });

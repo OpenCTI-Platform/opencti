@@ -7,21 +7,28 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { Theme } from '../../../components/Theme';
 import DraftProcessingStatus from './DraftProcessingStatus';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
+import type { LoadQueryOptions } from 'react-relay';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import DraftApprove from './DraftApprove';
 import DraftExit from './DraftExit';
-import { THIRTY_SECONDS } from '../../../utils/Time';
+import { FIVE_SECONDS, THIRTY_SECONDS } from '../../../utils/Time';
 import useInterval from '../../../utils/hooks/useInterval';
 import DraftAuthorizedMembers from './DraftAuthorizedMembers';
+import WorkflowStatus, { WorkflowTransitions } from '../common/workflow/WorkflowStatus';
 import { DraftToolbarQuery } from '@components/drafts/__generated__/DraftToolbarQuery.graphql';
 import { DraftToolbarFragment$key } from '@components/drafts/__generated__/DraftToolbarFragment.graphql';
+import DraftApprove from './DraftApprove';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const draftFragment = graphql`
   fragment DraftToolbarFragment on DraftWorkspace {
     name
+    workflowInstance {
+      pendingStatus
+    }
     ...DraftApproveFragment
     ...DraftExitFragment
     ...DraftAuthorizedMembersFragment
+    ...workflowStatus_data
   }
 `;
 
@@ -35,19 +42,33 @@ const draftQuery = graphql`
 
 interface DraftToolbarComponentProps {
   queryRef: PreloadedQuery<DraftToolbarQuery>;
-  refetch: () => void;
+  loadQuery: (variables: { id: string }, options?: LoadQueryOptions) => void;
+  draftId: string;
 }
 
 const DraftToolbarComponent = ({
   queryRef,
-  refetch,
+  loadQuery,
+  draftId,
 }: DraftToolbarComponentProps) => {
   const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
 
   const { draftWorkspace } = usePreloadedQuery(draftQuery, queryRef);
   if (!draftWorkspace) return (<ErrorNotFound />);
 
   const draft = useFragment<DraftToolbarFragment$key>(draftFragment, draftWorkspace);
+
+  const isPending = draft.workflowInstance?.pendingStatus === 'pending';
+  useInterval(
+    () => {
+      loadQuery({ id: draftId }, { fetchPolicy: 'store-and-network' });
+    },
+    isPending ? FIVE_SECONDS : THIRTY_SECONDS,
+  );
+
+  // Show approve button if the workflow is disabled (for backward compatibility)
+  const showApprove = isFeatureEnable('DRAFT_WORKFLOW') && draft.workflowInstance;
 
   return (
     <Stack
@@ -67,13 +88,14 @@ const DraftToolbarComponent = ({
       >
         {draft.name}
       </Typography>
-      <DraftProcessingStatus forceRefetch={refetch} />
+      <DraftProcessingStatus forceRefetch={() => loadQuery({ id: draftId })} />
 
       <div style={{ flex: 1 }} />
 
+      <WorkflowStatus data={draft} />
       <DraftAuthorizedMembers data={draft} />
       <DraftExit data={draft} />
-      <DraftApprove data={draft} />
+      { showApprove ? (<WorkflowTransitions data={draft} />) : (<DraftApprove data={draft} />) }
     </Stack>
   );
 };
@@ -88,21 +110,12 @@ const DraftToolbarWrapper = ({ draftId }: DraftToolbarWrapperProps) => {
     { id: draftId },
   );
 
-  useInterval(
-    () => {
-      loadQuery(
-        { id: draftId },
-        { fetchPolicy: 'store-and-network' },
-      );
-    },
-    THIRTY_SECONDS,
-  );
-
   return queryRef && (
     <Suspense>
       <DraftToolbarComponent
         queryRef={queryRef}
-        refetch={() => loadQuery({ id: draftId })}
+        loadQuery={loadQuery}
+        draftId={draftId}
       />
     </Suspense>
   );

@@ -142,8 +142,12 @@ const validateMandatoryAttributesOnCreation = async (
   user: AuthUser,
   input: Record<string, unknown>,
   entitySetting: BasicStoreEntityEntitySetting,
+  opts: { bypassMandatoryAttributes?: boolean } = {},
 ) => {
   const validateMandatoryAttributesOnCreationFn = async () => {
+    if (opts.bypassMandatoryAttributes === true) {
+      return;
+    }
     // Should have all the mandatory keys and the associated values not null
     const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
       && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
@@ -188,13 +192,14 @@ export const validateInputCreation = async (
   instanceType: string,
   input: Record<string, unknown>,
   entitySetting: BasicStoreEntityEntitySetting,
+  opts: { bypassMandatoryAttributes?: boolean } = {},
 ) => {
   const validateInputCreationFn = async () => {
     // Generic validator
     const editInputs: EditInput[] = Object.entries(input)
       .map(([k, v]) => ({ operation: EditOperation.Replace, value: Array.isArray(v) ? v : [v], key: k }));
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
-    await validateMandatoryAttributesOnCreation(context, user, input, entitySetting);
+    await validateMandatoryAttributesOnCreation(context, user, input, entitySetting, opts);
     // Functional validator
     const validator = getEntityValidatorCreation(instanceType);
     if (validator) {

@@ -8,9 +8,8 @@ import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import { marked } from 'marked';
-import archiver from 'archiver';
 import validator from 'validator';
-import archiverZipEncrypted from 'archiver-zip-encrypted';
+import ZipEncrypted from 'archiver-zip-encrypted';
 import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
@@ -36,7 +35,10 @@ import {
   getChatbotConfig,
   getChatbotAgents,
   postChatbotSession,
+  getChatbotSessions,
+  deleteChatbotSession,
   postChatbotMessage,
+  postChatbotMessageSteer,
   postChatbotUpload,
   getChatbotFileDownload,
   postAgentMessage,
@@ -128,6 +130,12 @@ const createApp = async (app, schema) => {
     }
   });
 
+  // complement the <meta name="robots" tag in index.html
+  app.use((_req, res, next) => {
+    res.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
+    next();
+  });
+
   app.use(compression({
     filter: (req, res) => res.getHeader('Content-Type') !== 'text/event-stream' && compressionFilter(req, res),
   }));
@@ -164,9 +172,6 @@ const createApp = async (app, schema) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
-
-  // -- Register the encryption module
-  archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
 
   // -- API schema
   app.get(`${basePath}/schema`, async (req, res) => {
@@ -315,7 +320,7 @@ const createApp = async (app, schema) => {
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
-      const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
+      const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
       archive.append(await downloadFile(file), { name: filename });
       await archive.finalize();
       res.attachment(`${filename}.zip`);
@@ -537,7 +542,10 @@ const createApp = async (app, schema) => {
   // XTM One Platform Chat API routes (used when xtm_one_token is set)
   app.get(`${basePath}/chatbot/agents`, getChatbotAgents);
   app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
+  app.get(`${basePath}/chatbot/sessions`, getChatbotSessions);
+  app.delete(`${basePath}/chatbot/sessions/:conversationId`, deleteChatbotSession);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
+  app.post(`${basePath}/chatbot/messages/steer`, postChatbotMessageSteer);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);

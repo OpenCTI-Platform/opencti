@@ -12,6 +12,7 @@ const convertRetentionRuleToStix = (instance: StoreEntityRetentionRule): StixRet
     max_retention: instance.max_retention,
     retention_unit: instance.retention_unit,
     scope: instance.scope,
+    active: instance.active,
     last_execution_date: instance.last_execution_date,
     last_deleted_count: instance.last_deleted_count,
     remaining_count: instance.remaining_count,

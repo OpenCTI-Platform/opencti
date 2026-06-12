@@ -26,7 +26,7 @@ describe('ListParameters utils', () => {
         mockNavigate,
         mockLocation,
         'test-key',
-      );
+      ) as Record<string, unknown>;
 
       expect(result.disabledEntityTypes).toEqual(['Malware', 'Indicator', 'Report']);
     });
@@ -44,7 +44,7 @@ describe('ListParameters utils', () => {
         mockNavigate,
         mockLocation,
         'test-key',
-      );
+      ) as Record<string, unknown>;
 
       expect(result.disabledEntityTypes).toEqual(['toto', 'tutu']);
       expect(result.disabledCreators).toEqual(['creator1']);
@@ -58,7 +58,7 @@ describe('ListParameters utils', () => {
         mockNavigate,
         mockLocation,
         'test-key',
-      );
+      ) as Record<string, unknown>;
 
       expect(result.disabledEntityTypes).toEqual([]);
     });
@@ -70,7 +70,7 @@ describe('ListParameters utils', () => {
         mockNavigate,
         mockLocation,
         'test-key',
-      );
+      ) as Record<string, unknown>;
 
       expect(result.disabledEntityTypes).toEqual(['Malware']);
     });
@@ -86,7 +86,7 @@ describe('ListParameters utils', () => {
         mockNavigate,
         mockLocation,
         'test-key',
-      );
+      ) as Record<string, unknown>;
 
       expect(result.disabledEntityTypes).toEqual(['Malware', 'Indicator']);
     });

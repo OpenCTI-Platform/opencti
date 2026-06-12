@@ -1,9 +1,9 @@
 import {
-  addIngestion,
+  ingestionTaxiiAdd,
   findTaxiiIngestionPaginated,
-  findById,
-  ingestionDelete,
-  ingestionEditField,
+  findTaxiiIngestionById,
+  ingestionTaxiiDelete,
+  ingestionTaxiiEditField,
   ingestionTaxiiResetState,
   ingestionTaxiiAddAutoUser,
   taxiiFeedAddInputFromImport,
@@ -16,7 +16,7 @@ import { loadCreator } from '../../database/members';
 
 const ingestionTaxiiResolvers: Resolvers = {
   Query: {
-    ingestionTaxii: (_, { id }, context) => findById(context, context.user, id),
+    ingestionTaxii: (_, { id }, context) => findTaxiiIngestionById(context, context.user, id),
     ingestionTaxiis: (_, args, context) => findTaxiiIngestionPaginated(context, context.user, args),
     taxiiFeedAddInputFromImport: (_, { file }) => taxiiFeedAddInputFromImport(file),
   },
@@ -30,16 +30,16 @@ const ingestionTaxiiResolvers: Resolvers = {
   },
   Mutation: {
     ingestionTaxiiAdd: (_, { input }, context) => {
-      return addIngestion(context, context.user, input);
+      return ingestionTaxiiAdd(context, context.user, input);
     },
     ingestionTaxiiDelete: (_, { id }, context) => {
-      return ingestionDelete(context, context.user, id);
+      return ingestionTaxiiDelete(context, context.user, id);
     },
     ingestionTaxiiResetState: (_, { id }, context) => {
       return ingestionTaxiiResetState(context, context.user, id);
     },
     ingestionTaxiiFieldPatch: (_, { id, input }, context) => {
-      return ingestionEditField(context, context.user, id, input);
+      return ingestionTaxiiEditField(context, context.user, id, input);
     },
     ingestionTaxiiAddAutoUser: (_, { id, input }, context) => {
       return ingestionTaxiiAddAutoUser(context, context.user, id, input);

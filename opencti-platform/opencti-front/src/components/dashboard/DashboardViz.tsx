@@ -12,24 +12,52 @@ interface DashboardVizProps {
   config: DashboardConfig;
   host?: WidgetHost;
   popover?: ReactNode;
+  refreshRate?: number | null;
 }
 
-const DashboardViz = ({ widget, config, popover, host }: DashboardVizProps) => {
+const DashboardViz = ({
+  widget,
+  config,
+  popover,
+  host,
+  refreshRate,
+}: DashboardVizProps) => {
   const { perspective } = widget;
   return (
     <ErrorBoundary>
       <>
         {perspective === 'entities' && (
-          <DashboardEntitiesViz widget={widget} config={config} popover={popover} host={host} />
+          <DashboardEntitiesViz
+            widget={widget}
+            config={config}
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+          />
         )}
         {perspective === 'relationships' && (
-          <DashboardRelationshipsViz widget={widget} config={config} popover={popover} host={host} />
+          <DashboardRelationshipsViz
+            widget={widget}
+            config={config}
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+          />
         )}
         {perspective === 'audits' && (
-          <DashboardAuditsViz widget={widget} config={config} popover={popover} host={host} />
+          <DashboardAuditsViz
+            widget={widget}
+            config={config}
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+          />
         )}
         {perspective === null && (
-          <DashboardRawViz widget={widget} popover={popover} />
+          <DashboardRawViz
+            widget={widget}
+            popover={popover}
+          />
         )}
       </>
     </ErrorBoundary>

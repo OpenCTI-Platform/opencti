@@ -142,7 +142,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   } else if (fileDeleteDraftDisabled) {
     deleteFileColor = 'disabled';
   }
-  const history = [];
+  const history: { message?: string | null; timestamp?: unknown }[] = [];
 
   if (isOutdated) {
     const time = moment
@@ -153,7 +153,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     });
   } else if (file?.metaData?.messages && file?.metaData?.errors) {
     history.push(
-      ...[...file.metaData.messages.map((o) => o), ...file.metaData.errors],
+      ...file.metaData.messages.filter((o) => !!o),
+      ...file.metaData.errors.filter((o) => !!o),
     );
   }
   const toolTip = history

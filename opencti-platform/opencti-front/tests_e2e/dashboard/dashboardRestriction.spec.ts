@@ -18,6 +18,8 @@ import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
 import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 
 test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
+  test.setTimeout(300000); // This test has 7 login/logout cycles — needs more headroom than the default 200s
+
   const leftBar = new LeftBarPage(page);
   const topBar = new TopMenuProfilePage(page);
   const dashboardPage = new DashboardPage(page);

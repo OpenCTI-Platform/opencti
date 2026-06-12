@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install documentation dependencies
         working-directory: docs
@@ -32,4 +32,6 @@ jobs:
 
       - name: Build documentation
         working-directory: docs
-        run: mkdocs build
+        env:
+          MKDOCS_GIT_COMMITTERS_APIKEY: ${{ secrets.GITHUB_TOKEN }}
+        run: mkdocs build --strict

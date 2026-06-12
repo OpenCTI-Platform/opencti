@@ -7,7 +7,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 const settingsOrganizationHiddenTypesFieldPatch = graphql`
   mutation SettingsOrganizationHiddenTypesFieldPatchMutation(
     $id: ID!
-    $input: [EditInput]!
+    $input: [EditInput!]!
   ) {
     organizationFieldPatch(id: $id, input: $input) {
       ...SettingsOrganizationHiddenTypesField_organization

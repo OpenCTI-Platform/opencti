@@ -36,6 +36,17 @@ const retentionPopoverDeletionMutation = graphql`
   }
 `;
 
+const retentionPopoverFieldPatchMutation = graphql`
+  mutation RetentionPopoverFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    retentionRuleEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        active
+      }
+    }
+  }
+`;
+
 const retentionEditionQuery = graphql`
   query RetentionPopoverEditionQuery($id: String!) {
     retentionRule(id: $id) {
@@ -43,6 +54,8 @@ const retentionEditionQuery = graphql`
       name
       max_retention
       filters
+      active
+      scope
       ...RetentionEdition_retentionRule
     }
   }
@@ -107,6 +120,17 @@ class RetentionPopover extends Component {
     });
   }
 
+  submitToggleActive(currentActive) {
+    commitMutation({
+      mutation: retentionPopoverFieldPatchMutation,
+      variables: {
+        id: this.props.retentionRuleId,
+        input: [{ key: 'active', value: [String(!currentActive)] }],
+      },
+    });
+    this.handleClose();
+  }
+
   render() {
     const { classes, t, retentionRuleId } = this.props;
     return (
@@ -118,33 +142,51 @@ class RetentionPopover extends Component {
         >
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
         <QueryRenderer
           query={retentionEditionQuery}
           variables={{ id: retentionRuleId }}
           render={({ props }) => {
             if (props) {
-              // Done
+              const { retentionRule } = props;
+              const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge';
               return (
-                <RetentionEdition
-                  retentionRule={props.retentionRule}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                  open={this.state.displayUpdate}
-                />
+                <>
+                  <Menu
+                    anchorEl={this.state.anchorEl}
+                    open={Boolean(this.state.anchorEl)}
+                    onClose={this.handleClose.bind(this)}
+                  >
+                    <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+                      {t('Update')}
+                    </MenuItem>
+                    <MenuItem onClick={() => this.submitToggleActive(retentionRule?.active)}>
+                      {retentionRule?.active ? t('Deactivate') : t('Activate')}
+                    </MenuItem>
+                    {!isTechnicalRule && (
+                      <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+                        {t('Delete')}
+                      </MenuItem>
+                    )}
+                  </Menu>
+                  <RetentionEdition
+                    retentionRule={retentionRule}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                    open={this.state.displayUpdate}
+                  />
+                </>
               );
             }
-            return null;
+            return (
+              <Menu
+                anchorEl={this.state.anchorEl}
+                open={Boolean(this.state.anchorEl)}
+                onClose={this.handleClose.bind(this)}
+              >
+                <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+                  {t('Update')}
+                </MenuItem>
+              </Menu>
+            );
           }}
         />
         <Dialog

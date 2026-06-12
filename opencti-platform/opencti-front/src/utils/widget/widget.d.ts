@@ -27,6 +27,15 @@ interface WidgetColumn {
   variableName?: string | null;
 }
 
+export interface WidgetTimeSeriesData {
+  date: DateTime;
+  value: Int;
+}
+
+export interface WidgetMultiTimeSeries {
+  data: WidgetTimeSeriesData[];
+}
+
 export interface WidgetDataSelection {
   label?: string | null;
   number?: number | null;
@@ -46,6 +55,7 @@ export interface WidgetDataSelection {
   sort_mode?: string | null;
   field?: string;
   relationship_type?: string;
+  unique?: boolean;
 }
 
 type GqlWidgetDataSelection = WidgetDataSelection & {

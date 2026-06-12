@@ -10,6 +10,7 @@ export interface BasicStoreEntityRetentionRule extends BasicStoreEntity {
   max_retention: number;
   retention_unit: string;
   scope: string;
+  active: boolean;
   last_execution_date: string | null;
   last_deleted_count: number | null;
   remaining_count: number | null;
@@ -21,6 +22,7 @@ export interface StoreEntityRetentionRule extends StoreEntity {
   max_retention: number;
   retention_unit: string;
   scope: string;
+  active: boolean;
   last_execution_date: string | null;
   last_deleted_count: number | null;
   remaining_count: number | null;
@@ -32,6 +34,7 @@ export interface StixRetentionRule extends StixObject {
   max_retention: number;
   retention_unit: string;
   scope: string;
+  active: boolean;
   last_execution_date: string | null;
   last_deleted_count: number | null;
   remaining_count: number | null;

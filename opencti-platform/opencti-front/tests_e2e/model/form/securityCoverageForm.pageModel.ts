@@ -1,17 +1,23 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import TextFieldPageModel from '../field/TextField.pageModel';
 import SelectFieldPageModel from '../field/SelectField.pageModel';
 
 export default class SecurityCoverageFormPage {
   formTitle = 'Create a security coverage';
-  formLocator = this.page.getByRole('heading', { name: this.formTitle }).locator('../..');
+  formLocator: Locator;
 
-  nameField = new TextFieldPageModel(this.page, 'Name', 'text', this.formLocator);
-  descriptionField = new TextFieldPageModel(this.page, 'Description', 'text-area', this.formLocator);
-  coverageNameField = new SelectFieldPageModel(this.page, 'Coverage name', false, this.formLocator);
-  coverageScoreField = new TextFieldPageModel(this.page, 'Coverage score (0-100)', 'text', this.formLocator);
+  nameField: TextFieldPageModel;
+  descriptionField: TextFieldPageModel;
+  coverageNameField: SelectFieldPageModel;
+  coverageScoreField: TextFieldPageModel;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.formLocator = this.page.getByRole('heading', { name: this.formTitle }).locator('../..');
+    this.nameField = new TextFieldPageModel(this.page, 'Name', 'text', this.formLocator);
+    this.descriptionField = new TextFieldPageModel(this.page, 'Description', 'text-area', this.formLocator);
+    this.coverageNameField = new SelectFieldPageModel(this.page, 'Coverage name', false, this.formLocator);
+    this.coverageScoreField = new TextFieldPageModel(this.page, 'Coverage score (0-100)', 'text', this.formLocator);
+  }
 
   chooseManualCreation() {
     return this.formLocator.getByText('Manual input').click();

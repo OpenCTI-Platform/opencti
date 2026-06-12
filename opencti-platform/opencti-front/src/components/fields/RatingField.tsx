@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { CSSProperties, FunctionComponent } from 'react';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
@@ -62,7 +62,7 @@ interface RatingProps {
   label?: string;
   rating?: number | null;
   readOnly?: boolean;
-  style?: Record<string, unknown>;
+  style?: CSSProperties;
   size: 'tiny' | 'small' | 'large';
   handleOnChange?: (value: number | null) => void;
   required?: boolean;

@@ -201,14 +201,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
 
   const handleChangeTimeField = (event: SelectChangeEvent) => {
     setTimeField(event.target.value);
-    setNestedRelationships(
-      event.target.value === 'functional' ? false : nestedRelationships,
-    );
   };
 
   const handleChangeNestedRelationships = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNestedRelationships(event.target.checked);
-    setTimeField(event.target.checked ? 'technical' : timeField);
   };
 
   const handleOpenTimeField = (event: React.MouseEvent) => {

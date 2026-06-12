@@ -131,8 +131,11 @@ export const containsValidAdmin = async (
 
 export const sanitizeAuthorizedMembers = (input: MemberAccessInput[]) => {
   return input.filter((value, index, array) => {
-    if (!value.groups_restriction_ids) {
-      return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
+    if (!value.groups_restriction_ids || value.groups_restriction_ids.length === 0) {
+      // Unrestricted entry: deduplicate only against other unrestricted entries with the same id,
+      // so that a restricted entry for the same id is kept as a separate rule.
+      return isValidMemberAccessRight(value.access_right)
+        && array.findIndex((e) => e.id === value.id && (!e.groups_restriction_ids || e.groups_restriction_ids.length === 0)) === index;
     }
 
     return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id

@@ -1,5 +1,5 @@
 import React from 'react';
-import { GqlFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../utils/filters/filtersUtils';
+import { emptyFilterGroup, normalizeFilterGroupForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../utils/filters/filtersUtils';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import TaskFilterValue from './TaskFilterValue';
@@ -8,10 +8,10 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 const TasksFilterValueContainer = ({ filters, entityTypes }: { filters: FilterGroup; entityTypes?: string[] }) => {
-  const cleanUpFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes) as FilterGroup;
+  const cleanUpFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes) ?? emptyFilterGroup;
   const queryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
-    { filters: cleanUpFilters as unknown as GqlFilterGroup },
+    { filters: normalizeFilterGroupForBackend(cleanUpFilters) },
   );
   return (
     <>

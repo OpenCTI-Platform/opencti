@@ -4,7 +4,7 @@ Thank you for reading this documentation and considering making your contributio
 
 In order to help you understand the project, where we are heading and how you can contribute, below are several resources and answers.
 
-Do not hesitate to shoot us an [email](mailto:contact@opencti.io) or join us on our [Slack channel](https://community.filigran.io). Most of the articles below are an introduction for our [detailed documentation](https://docs.opencti.io/latest/).
+Do not hesitate to shoot us an [email](mailto:contact@filigran.io) or join us on our [Slack channel](https://community.filigran.io). Most of the articles below are an introduction for our [detailed documentation](https://docs.opencti.io/latest/).
 
 
 ## Why contribute?
@@ -50,15 +50,7 @@ For general suggestions or questions about the project or the documentation, you
 
 ### Pull requests focus
 
-* All Pull Request title messages must be formatted as: `[component] Message (#issuenumber)` where component should be:
-  * backend
-  * frontend
-  * backend/frontend
-  * client-python
-  * worker
-  * docs
-  * tools
-  * ci
+* All commit and Pull Request titles must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification with a GitHub issue reference: `type(scope?)!?: description (#issue)` (for example `feat(backend): add bulk export endpoint (#1234)`). Allowed types are `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci` and `revert`. The old `[component]` bracket prefixes are **discontinued** — use a lowercase scope instead (e.g. `backend`, `frontend`, `client-python`, `worker`, `docs`, `ci`). The description starts with a lowercase letter and has no trailing period. See [`.github/LABELS.md`](.github/LABELS.md) for the full title & label taxonomy. **Renovate** pull requests are exempt.
 
 * All commits must be signed. If you need to configure your git environment, please see the [GitHub documentation on signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
 
@@ -70,4 +62,4 @@ For general suggestions or questions about the project or the documentation, you
 
 ### How can you get in touch for other questions?
 
-If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an [email](mailto:contact@opencti.io).
+If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an [email](mailto:contact@filigran.io).

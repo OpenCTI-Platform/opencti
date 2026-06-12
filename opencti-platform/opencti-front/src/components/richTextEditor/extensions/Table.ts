@@ -119,7 +119,7 @@ export const Table = TiptapTable.extend({
       // Since we can't easily extract it, we build a simple fallback.
       const cellMinWidth = this.options.cellMinWidth ?? 25;
       const row = node.firstChild;
-      const cols = [];
+      const cols: (string | { style: string })[][] = [];
       if (row) {
         for (let i = 0; i < row.childCount; i += 1) {
           const cell = row.child(i);
