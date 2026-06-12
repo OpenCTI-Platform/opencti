@@ -3,14 +3,11 @@ import { useFragment } from 'react-relay';
 import { Tooltip } from '@mui/material';
 import { CommentOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
-import { workflowStatusFragment } from './workflowStatus.graphql';
-import { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
-
-export { workflowStatusFragment } from './workflowStatus.graphql';
-export { WorkflowTransitions } from './WorkflowTransitions';
+import { workflowStatusFragment } from './WorkflowStatus.graphql';
+import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 
 interface WorkflowStatusProps {
-  data: workflowStatus_data$key;
+  data: WorkflowStatus_data$key;
 }
 
 const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data }) => {

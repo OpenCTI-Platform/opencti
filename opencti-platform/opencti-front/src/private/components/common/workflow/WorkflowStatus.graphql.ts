@@ -4,7 +4,7 @@ import { graphql } from 'react-relay';
 export const COMMENT_MAX_LENGTH = 1000;
 
 export const workflowStatusFragment = graphql`
-  fragment workflowStatus_data on DraftWorkspace {
+  fragment WorkflowStatus_data on DraftWorkspace {
     id
     entity_id
     processingCount
@@ -61,7 +61,7 @@ export const workflowStatusFragment = graphql`
 `;
 
 export const workflowStatusTriggerMutation = graphql`
-  mutation workflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON) {
+  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON) {
     triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams) {
       success
       reason
@@ -112,7 +112,7 @@ export const workflowStatusTriggerMutation = graphql`
       }
       entity {
         ... on DraftWorkspace {
-          ...workflowStatus_data
+          ...WorkflowStatus_data
         }
       }
     }
@@ -120,7 +120,7 @@ export const workflowStatusTriggerMutation = graphql`
 `;
 
 export const workflowStatusClearMutation = graphql`
-  mutation workflowStatusClearMutation($entityId: String!) {
+  mutation WorkflowStatusClearMutation($entityId: String!) {
     clearWorkflowPendingState(entityId: $entityId) {
       id
       pendingStatus

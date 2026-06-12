@@ -1,9 +1,10 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import WorkflowStatus, { WorkflowTransitions } from './WorkflowStatus';
+import WorkflowStatus from './WorkflowStatus';
+import WorkflowTransitions from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
-import type { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
+import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
 // ---------------------------------------------------------------------------
@@ -55,7 +56,7 @@ const makeStatus = (color = '#ff0000', name = 'In review') => ({
   template: { name, color },
 });
 
-const makeDraft = (overrides: Record<string, unknown> = {}): workflowStatus_data$key => ({
+const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key => ({
   id: 'draft-1',
   entity_id: 'entity-1',
   processingCount: 0,
@@ -67,7 +68,7 @@ const makeDraft = (overrides: Record<string, unknown> = {}): workflowStatus_data
     allowedTransitions: [],
   },
   ...overrides,
-} as unknown as workflowStatus_data$key);
+} as unknown as WorkflowStatus_data$key);
 
 const makeTransition = (overrides: Record<string, unknown> = {}) => ({
   event: 'approve',

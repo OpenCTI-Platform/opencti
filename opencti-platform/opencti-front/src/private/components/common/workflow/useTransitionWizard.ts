@@ -6,9 +6,9 @@ import useSwitchDraft from '../../drafts/useSwitchDraft';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './workflowStatus.graphql';
-import type { workflowStatusTriggerMutation as workflowStatusTriggerMutationType } from './__generated__/workflowStatusTriggerMutation.graphql';
-import type { workflowStatusClearMutation as workflowStatusClearMutationType } from './__generated__/workflowStatusClearMutation.graphql';
+import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './WorkflowStatus.graphql';
+import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType } from './__generated__/WorkflowStatusTriggerMutation.graphql';
+import type { WorkflowStatusClearMutation as WorkflowStatusClearMutationType } from './__generated__/WorkflowStatusClearMutation.graphql';
 
 export type WizardStep = 'org-picker' | 'comment' | 'validate';
 
@@ -37,8 +37,8 @@ export const useTransitionWizard = ({ entityId, entityNavigationId }: UseTransit
   const [wizard, setWizard] = useState<TransitionWizard | null>(null);
   const [commentValue, setCommentValue] = useState('');
 
-  const [commit, approving] = useMutation<workflowStatusTriggerMutationType>(workflowStatusTriggerMutation);
-  const [commitClear, clearing] = useMutation<workflowStatusClearMutationType>(workflowStatusClearMutation);
+  const [commit, approving] = useMutation<WorkflowStatusTriggerMutationType>(workflowStatusTriggerMutation);
+  const [commitClear, clearing] = useMutation<WorkflowStatusClearMutationType>(workflowStatusClearMutation);
 
   const exitDraftAfterValidation = () => {
     exitDraft({

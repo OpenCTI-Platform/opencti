@@ -7,6 +7,7 @@ import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -188,6 +189,7 @@ vi.mock('./EdgeTypes', () => ({
 
 describe('Workflow Component', () => {
   const mockQueryRef = {} as PreloadedQuery<SubTypeWorkflowQuery, Record<string, unknown>>;
+  const mockDepsQueryRef = {} as PreloadedQuery<SubTypeWorkflowDependenciesQuery, Record<string, unknown>>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -215,22 +217,22 @@ describe('Workflow Component', () => {
 
   describe('Component rendering', () => {
     it('should render ReactFlow component', () => {
-      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
       expect(container.querySelector('.react-flow')).toBeInTheDocument();
     });
 
     it('should render PublishButton', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
       expect(screen.getByTestId('publish-button')).toBeInTheDocument();
     });
 
     it('should render Add Status button', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
       expect(screen.getByText('Add Status')).toBeInTheDocument();
     });
 
     it('should call fitView on mount', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
       expect(mockFitView).toHaveBeenCalled();
     });
   });
@@ -238,7 +240,7 @@ describe('Workflow Component', () => {
   describe('User interactions', () => {
     it('should open drawer when Add Status button is clicked', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       const addButton = screen.getByText('Add Status');
       await user.click(addButton);
@@ -248,7 +250,7 @@ describe('Workflow Component', () => {
 
     it('should close drawer when close button is clicked', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       // Open drawer
       const addButton = screen.getByText('Add Status');
@@ -267,7 +269,7 @@ describe('Workflow Component', () => {
 
   describe('Autosave functionality', () => {
     it('should call saveWorkflowDefinition with correct entity type', async () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       await waitFor(() => {
         const calls = mockSaveWorkflowDefinition.mock.calls;
@@ -282,7 +284,7 @@ describe('Workflow Component', () => {
     });
 
     it('should provide onCompleted callback to save mutation', async () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       await waitFor(() => {
         const calls = mockSaveWorkflowDefinition.mock.calls;
@@ -296,7 +298,7 @@ describe('Workflow Component', () => {
 
   describe('Initial state', () => {
     it('should display publish button with correct initial state', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       const publishButton = screen.getByTestId('publish-button');
       expect(publishButton).toBeInTheDocument();
@@ -304,7 +306,7 @@ describe('Workflow Component', () => {
     });
 
     it('should handle workflow definition with no errors', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       const publishButton = screen.getByTestId('publish-button');
       expect(publishButton).not.toBeDisabled();
@@ -314,7 +316,7 @@ describe('Workflow Component', () => {
   describe('Drawer interactions', () => {
     it('should set selectedElement when opening drawer for new status', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       const addButton = screen.getByText('Add Status');
       await user.click(addButton);
@@ -324,7 +326,7 @@ describe('Workflow Component', () => {
 
     it('should reset selectedElement when closing drawer', async () => {
       const user = userEvent.setup();
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       const addButton = screen.getByText('Add Status');
       await user.click(addButton);
@@ -340,14 +342,14 @@ describe('Workflow Component', () => {
 
   describe('ReactFlow integration', () => {
     it('should pass nodes and edges to ReactFlow', () => {
-      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
       const reactFlow = container.querySelector('.react-flow');
 
       expect(reactFlow).toBeInTheDocument();
     });
 
     it('should call fitView with correct options', () => {
-      renderWithTheme(<Workflow queryRef={mockQueryRef} />);
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
 
       expect(mockFitView).toHaveBeenCalled();
     });

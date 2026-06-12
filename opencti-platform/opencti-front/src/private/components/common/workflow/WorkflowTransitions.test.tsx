@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { WorkflowTransitions } from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
-import type { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
+import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 
 // ---------------------------------------------------------------------------
 // Relay + router mocks (same pattern as WorkflowStatus.test.tsx)
@@ -59,7 +59,7 @@ const makeStatus = () => ({
   template: { name: 'In review', color: '#ff0000' },
 });
 
-const makeDraft = (overrides: Record<string, unknown> = {}): workflowStatus_data$key => ({
+const makeDraft = (overrides: Record<string, unknown> = {}): WorkflowStatus_data$key => ({
   id: 'draft-1',
   entity_id: 'entity-1',
   processingCount: 0,
@@ -74,7 +74,7 @@ const makeDraft = (overrides: Record<string, unknown> = {}): workflowStatus_data
     pendingError: null,
   },
   ...overrides,
-} as unknown as workflowStatus_data$key);
+} as unknown as WorkflowStatus_data$key);
 
 const makePendingDraft = (asyncActions = [{ id: 's1', workId: 'w1', type: 'asyncBulkAction', status: 'pending', expectedCount: 20, processedCount: 5 }]) =>
   makeDraft({
