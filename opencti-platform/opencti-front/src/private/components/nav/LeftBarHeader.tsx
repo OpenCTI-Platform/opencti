@@ -21,6 +21,9 @@ interface PopoverListItemProps {
   onClick?: () => void;
 }
 
+const OPENAEV_FALLBACK_URL = 'https://filigran.io/platform/openaev/';
+const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
+
 export const PopoverListItem: React.FC<PopoverListItemProps> = ({
   logoSrc,
   href,
@@ -204,7 +207,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             <span>
               <PopoverListItem
                 logoSrc={theme.palette.mode === 'dark' ? logoOpenAEVDark : logoOpenAEVLight}
-                href={openAEVUrl}
+                href={isNotEmptyField(openAEVUrl) ? openAEVUrl : OPENAEV_FALLBACK_URL}
                 external
                 onClick={handleMouseLeave}
               />
@@ -216,7 +219,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
             <PopoverListItem
               logoSrc={theme.palette.mode === 'dark' ? logoXTMHubDark : logoXTMHubLight}
-              href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://hub.filigran.io'}
+              href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : XTMHUB_FALLBACK_URL}
               external
               onClick={handleMouseLeave}
             />
