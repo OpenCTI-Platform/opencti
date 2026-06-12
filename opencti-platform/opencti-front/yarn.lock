@@ -1821,35 +1821,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/rich-text-editor@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@filigran/rich-text-editor@npm:1.0.0"
+"@filigran/rich-text-editor@npm:1.0.1":
+  version: 1.0.1
+  resolution: "@filigran/rich-text-editor@npm:1.0.1"
   peerDependencies:
     "@mui/icons-material": ">=5"
     "@mui/material": ">=5"
-    "@mui/styles": ">=5"
     "@tiptap/core": ">=3"
-    "@tiptap/extension-color": ">=3"
-    "@tiptap/extension-highlight": ">=3"
-    "@tiptap/extension-image": ">=3"
-    "@tiptap/extension-mention": ">=3"
-    "@tiptap/extension-paragraph": ">=3"
-    "@tiptap/extension-placeholder": ">=3"
-    "@tiptap/extension-subscript": ">=3"
-    "@tiptap/extension-superscript": ">=3"
-    "@tiptap/extension-table": ">=3"
-    "@tiptap/extension-task-item": ">=3"
-    "@tiptap/extension-task-list": ">=3"
-    "@tiptap/extension-text-align": ">=3"
-    "@tiptap/extension-text-style": ">=3"
-    "@tiptap/extension-typography": ">=3"
     "@tiptap/pm": ">=3"
     "@tiptap/react": ">=3"
-    "@tiptap/starter-kit": ">=3"
     react: ">=18"
     react-color: ">=2"
     react-dom: ">=18"
-  checksum: 10c0/1a145af6cc079a0c0967a4460102826f899a99c286ee6e4ecaaf5e7ba20c95e1485d8b384f7da2cfe2b07fef64b1d9aa0ceed7511fc09810b2a3c357b8b225ed
+  checksum: 10c0/76b092926dc62e74c0c8ca7610e0e09456e668202488e2cc7c36b853020f8221e4fcf6387e3ff8e61d08b06dea673d72006988cdcfedf9614503e362f011b1da
   languageName: node
   linkType: hard
 
@@ -13508,7 +13492,7 @@ __metadata:
     "@faker-js/faker": "npm:10.4.0"
     "@filigran/chatbot": "npm:3.7.4"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/rich-text-editor": "npm:1.0.0"
+    "@filigran/rich-text-editor": "npm:1.0.1"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
     "@graphiql/toolkit": "npm:0.12.0"

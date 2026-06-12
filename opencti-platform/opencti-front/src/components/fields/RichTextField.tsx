@@ -13,11 +13,9 @@ import useAI from '../../utils/hooks/useAI';
 import useHelper from '../../utils/hooks/useHelper';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
-import { RichTextEditor, type RichTextEditorProps } from '@filigran/rich-text-editor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-
-type EditorInstance = Parameters<NonNullable<RichTextEditorProps['onReady']>>[0];
 
 interface RichTextFieldProps extends FieldProps<string> {
   disabled?: boolean;
@@ -51,7 +49,6 @@ const RichTextField = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { isTiptapEditorEnable } = useHelper();
-  const richEditorRef = useRef<EditorInstance | null>(null);
   const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
@@ -61,15 +58,10 @@ const RichTextField = ({
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
   const RichTextEditorInstance = isTiptapEditorEnable() ? (
     <RichTextEditor
-      onReady={(editor) => {
-        richEditorRef.current = editor;
-        editor.on('selectionUpdate', () => {
-          if (richEditorRef.current && onTextSelection && !richEditorRef.current.isEditable && !fullScreen) {
-            const { from, to } = richEditorRef.current.state.selection;
-            const text = richEditorRef.current.state.doc.textBetween(from, to).trim();
-            if (text.length > 2) onTextSelection(text);
-          }
-        });
+      onTextSelection={(text) => {
+        if (onTextSelection && disabled && !fullScreen && text.length > 2) {
+          onTextSelection(text);
+        }
       }}
       data={value}
       onChange={(_, adapter) => {
