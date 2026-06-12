@@ -28,9 +28,6 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, should
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
 
-  const { isFeatureEnable } = useHelper();
-  const isShareFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
-
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
@@ -68,7 +65,7 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, should
   const sharedMembersCount = (savedFilterToDelete.authorizedMembers ?? [])
     .filter((m) => m.member_id !== me.id).length;
 
-  const message = isShareFiltersFeatureEnabled && sharedMembersCount > 0
+  const message = sharedMembersCount > 0
     ? t_i18n('This saved filter is shared with other members. Are you sure you want to delete it?')
     : t_i18n('Do you want to delete this saved filter?');
 

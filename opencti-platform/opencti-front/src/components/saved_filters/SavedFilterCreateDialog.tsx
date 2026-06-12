@@ -54,9 +54,6 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
 
-  const { isFeatureEnable } = useHelper();
-  const isSharingSavedFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
-
   const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
   const {
@@ -136,15 +133,11 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
               value={filterName}
               onChange={handleChange}
             />
-            {isSharingSavedFiltersFeatureEnabled
-              && (
-                <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
-                  <SavedFilterSharingSection
-                    owner={owner}
-                  />
-                </Security>
-              )
-            }
+            <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
+              <SavedFilterSharingSection
+                owner={owner}
+              />
+            </Security>
             <DialogActions>
               <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={!filterName}>{t_i18n('Save')}</Button>

@@ -9,7 +9,7 @@ import SavedFilterSelection, { type SavedFiltersSelectionData } from './SavedFil
 import SavedFiltersAutocomplete from './SavedFiltersAutocomplete';
 
 const savedFiltersQuery = graphql`
-  query SavedFiltersQuery($filters: FilterGroup, $skipSharedFilters: Boolean!) {
+  query SavedFiltersQuery($filters: FilterGroup) {
     savedFilters(first: 100, filters: $filters) @connection(key: "SavedFilters_savedFilters") {
       edges {
         node {
@@ -18,8 +18,8 @@ const savedFiltersQuery = graphql`
           filters
           scope
           creator_id
-          currentUserAccessRight @skip(if: $skipSharedFilters)
-          authorizedMembers @skip(if: $skipSharedFilters) {
+          currentUserAccessRight
+          authorizedMembers {
             id
             name
             entity_type
@@ -65,11 +65,8 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
     },
   } = useDataTableContext();
 
-  const { isFeatureEnable } = useHelper();
-  const isSharedFiltersEnabled = isFeatureEnable('SHARE_FILTERS');
-
   const filters = getSavedFilterScopeFilter(localStorageKey);
-  const queryOptions = { filters, skipSharedFilters: !isSharedFiltersEnabled } as unknown as SavedFiltersQuery$variables;
+  const queryOptions = { filters } as unknown as SavedFiltersQuery$variables;
 
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
 
