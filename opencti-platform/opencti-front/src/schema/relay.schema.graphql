@@ -12129,7 +12129,7 @@ type Query {
   fintelTemplate(id: ID!): FintelTemplate
   form(id: ID!): Form
   forms(after: ID, filters: FilterGroup, first: Int, orderBy: FormsOrdering, orderMode: OrderingMode, search: String): FormConnection
-  globalSearch(after: ID, filters: FilterGroup, first: Int, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, search: String, types: [String]): StixCoreObjectConnection
+  globalSearch(after: ID, filters: FilterGroup, first: Int, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, search: String, types: [String]): StixObjectOrStixRelationshipConnection
   group(id: String!): Group
   grouping(id: String!): Grouping
   groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean

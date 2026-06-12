@@ -95,7 +95,6 @@ export const StixCoreObjectStandardIds = ({ standardId, stixIds = [], deleteStix
                 dense={true}
                 secondaryAction={deleteStixId && (
                   <IconButton
-                    edge="end"
                     aria-label="delete"
                     onClick={() => deleteStixId(stixId)}
                   >
