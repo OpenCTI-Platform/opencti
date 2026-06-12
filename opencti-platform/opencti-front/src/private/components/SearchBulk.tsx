@@ -13,50 +13,54 @@ import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 export const BULK_SEARCH_LOCAL_STORAGE_KEY = 'searchBulk';
 
 export const searchBulkLineFragment = graphql`
-  fragment SearchBulkLine_node on StixCoreObject {
-    id
-    entity_type
-    created_at
-    updated_at
-    draftVersion {
-      draft_id
-      draft_operation
+  fragment SearchBulkLine_node on StixObjectOrStixRelationship {
+    ... on BasicObject {
+      id
+      entity_type
     }
-    ... on StixObject {
-      representative {
-        main
-        secondary
+    ... on StixCoreObject {
+      created_at
+      updated_at
+      draftVersion {
+        draft_id
+        draft_operation
       }
-    }
-    ... on HashedObservable {
-      hashes {
-        algorithm
-        hash
+      ... on StixObject {
+        representative {
+          main
+          secondary
+        }
       }
-    }
-    createdBy {
-      ... on Identity {
+      ... on HashedObservable {
+        hashes {
+          algorithm
+          hash
+        }
+      }
+      createdBy {
+        ... on Identity {
+          name
+        }
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      objectLabel {
+        id
+        value
+        color
+      }
+      creators {
+        id
         name
       }
-    }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
-    objectLabel {
-      id
-      value
-      color
-    }
-    creators {
-      id
-      name
-    }
-    containersNumber {
-      total
+      containersNumber {
+        total
+      }
     }
   }
 `;
@@ -108,8 +112,10 @@ export const searchBulkFragment = graphql`
     @connection(key: "Pagination_globalSearch") {
       edges {
         node {
-          id
-          entity_type
+          ... on BasicObject {
+            id
+            entity_type
+          }
           ...SearchBulkLine_node
         }
       }
