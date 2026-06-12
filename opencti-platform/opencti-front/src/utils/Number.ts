@@ -111,7 +111,7 @@ export const computeLevel = (
   minAllowed = 0,
   maxAllowed = 9,
 ): number => {
-  if (!value) return minAllowed;
+  if (value === null || value === undefined) return minAllowed;
   return Math.trunc(
     ((maxAllowed - minAllowed) * (value - min)) / (max - min) + minAllowed,
   );

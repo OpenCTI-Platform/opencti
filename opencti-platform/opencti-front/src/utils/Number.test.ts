@@ -68,4 +68,9 @@ describe('Function: computeLevel', () => {
     expect(computeLevel(null, 0, 100)).toBe(0);
     expect(computeLevel(undefined, 0, 100, 3, 9)).toBe(3);
   });
+
+  it('should correctly map zero as a valid value instead of treating it as falsy', () => {
+    expect(computeLevel(0, 0, 100)).toBe(0);
+    expect(computeLevel(0, -50, 50, 0, 9)).toBe(4);
+  });
 });
