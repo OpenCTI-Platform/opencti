@@ -39,7 +39,7 @@ jobs:
       uses: py-actions/flake8@v2
       with:
         ignore: "E,W"
-        path: "/client-python"
+        path: "client-python"
 
   client-python-test:
     runs-on: ubuntu-latest
