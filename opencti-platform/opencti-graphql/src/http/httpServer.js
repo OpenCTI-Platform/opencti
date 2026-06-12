@@ -26,6 +26,7 @@ import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
 import { buildRateLimiterOptions } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
+import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -138,6 +139,8 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
+  // IP whitelist middleware — must be after session middleware to detect session-based auth
+  app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
   app.use((req, res, next) => {
     // Skip graphql-upload for chatbot routes (they handle multipart themselves via Busboy)
     if (req.path.startsWith(`${basePath}/chatbot/`)) {

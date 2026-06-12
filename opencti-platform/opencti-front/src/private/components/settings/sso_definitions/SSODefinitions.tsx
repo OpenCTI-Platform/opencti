@@ -21,6 +21,7 @@ import Box from '@mui/material/Box';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import SSOSingletonStrategies from '@components/settings/sso_definitions/SSOSingletonStrategies';
 import AuthenticationGlobalSettings from '@components/settings/sso_definitions/AuthenticationGlobalSettings';
+import IpWhitelistSettings from '@components/settings/sso_definitions/IpWhitelistSettings';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
@@ -326,6 +327,7 @@ const SSODefinitions = () => {
       {settings.is_authentication_by_env && (
         <>
           <AuthenticationGlobalSettings />
+          <IpWhitelistSettings />
           <SSOSingletonStrategies />
           <Alert severity="info" variant="outlined" sx={{ mt: 2 }}>
             {t_i18n('Your platform is currently using environment variables to define authentication strategies. As a result, any update on any strategies (except password policy or 2FA) won\'t be taken into account.')}
@@ -335,6 +337,7 @@ const SSODefinitions = () => {
       {!settings.is_authentication_by_env && (
         <>
           <AuthenticationGlobalSettings />
+          <IpWhitelistSettings />
           <SSOSingletonStrategies />
           {queryRef && (
             <>

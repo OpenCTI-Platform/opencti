@@ -14,6 +14,7 @@ import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
@@ -487,6 +488,12 @@ const createApp = async (app, schema) => {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await sessionAuthenticateUser(context, req, logged, provider);
+      // Check IP whitelist after successful auth
+      const ipBlocked = await checkIpWhitelistForRequest(req, logged.id);
+      if (ipBlocked) {
+        req.session.destroy(() => {});
+        setCookieError(res, 'Your IP address is not allowed to access this platform');
+      }
     } catch (err) {
       if (err instanceof AuthenticationProviderError) {
         setCookieError(res, err.message);
