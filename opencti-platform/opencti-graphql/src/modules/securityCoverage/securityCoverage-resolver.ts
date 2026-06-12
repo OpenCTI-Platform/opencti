@@ -1,6 +1,6 @@
 import {
   addSecurityCoverage,
-  pageSecurityCoveragePaginated,
+  findSecurityCoveragePaginated,
   findById,
   securityCoverageDelete,
   securityCoverageStixBundle,
@@ -22,7 +22,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from './securityCoverage-types';
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
     securityCoverage: (_, { id }, context) => findById(context, context.user, id),
-    securityCoverages: (_, args, context) => pageSecurityCoveragePaginated(context, context.user, args),
+    securityCoverages: (_, args, context) => findSecurityCoveragePaginated(context, context.user, args),
   },
   SecurityCoverage: {
     objectCovered: (securityCoverage, _, context) => objectCovered<any>(context, context.user, securityCoverage.id),
