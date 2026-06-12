@@ -150,21 +150,6 @@ const TransitionForm = () => {
               <WorkflowFieldList name={WorkflowDataType.syncActions} />
             </Box>
           )}
-
-          <FormControlLabel
-            control={(
-              <Switch
-                checked={hasValidateDraft}
-                onChange={(e) => handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)}
-              />
-            )}
-            label={(
-              <Box style={{ display: 'flex', alignItems: 'center' }}>
-                {t_i18n('Validate draft')}
-                <Icon color="primary" fontSize="small" style={{ marginLeft: 8 }}><FlagOutlined /></Icon>
-              </Box>
-            )}
-          />
         </Box>
       </Box>
 
@@ -198,6 +183,28 @@ const TransitionForm = () => {
               label={t_i18n('Required')}
             />
           </Box>
+        </Box>
+      </Box>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+        <Typography variant="h6">
+          {t_i18n('Validate draft')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={hasValidateDraft}
+                onChange={(e) => handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)}
+              />
+            )}
+            label={(
+              <Box style={{ display: 'flex', alignItems: 'center' }}>
+                {t_i18n('Validate draft')}
+                <Icon color="primary" fontSize="small" style={{ marginLeft: 8 }}><FlagOutlined /></Icon>
+              </Box>
+            )}
+          />
         </Box>
       </Box>
     </>
