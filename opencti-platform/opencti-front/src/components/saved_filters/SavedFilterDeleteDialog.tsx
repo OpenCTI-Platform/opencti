@@ -9,7 +9,6 @@ import useDeletion from 'src/utils/hooks/useDeletion';
 import { type SavedFiltersSelectionData } from './SavedFilterSelection';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
-import useHelper from '../../utils/hooks/useHelper';
 
 const savedFilterDeleteDialogMutation = graphql`
   mutation SavedFilterDeleteDialogMutation($id: ID!) {

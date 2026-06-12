@@ -13,7 +13,6 @@ import { AccessRight, type AuthorizedMemberOption } from '../../utils/authorized
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import Security from '../../utils/Security';
-import useHelper from '../../utils/hooks/useHelper';
 
 const savedFilterFieldPatchMutation = graphql`
   mutation SavedFilterEditDialogFieldPatchMutation($id: ID!, $input: [EditInput!]!) {

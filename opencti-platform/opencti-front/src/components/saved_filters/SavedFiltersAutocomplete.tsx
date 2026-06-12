@@ -10,7 +10,6 @@ import { useFormatter } from 'src/components/i18n';
 import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 import SavedFilterEditDialog from './SavedFilterEditDialog';
 import type { Theme } from '../Theme';
-import useHelper from '../../utils/hooks/useHelper';
 import useGranted from '../../utils/hooks/useGranted';
 
 type SavedFiltersAutocompleteProps = {

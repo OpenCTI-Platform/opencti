@@ -13,7 +13,6 @@ import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
-import useHelper from '../../utils/hooks/useHelper';
 import { type AuthorizedMemberOption } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';

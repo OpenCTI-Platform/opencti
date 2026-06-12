@@ -3,7 +3,6 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
-import useHelper from '../../utils/hooks/useHelper';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSelection, { type SavedFiltersSelectionData } from './SavedFilterSelection';
 import SavedFiltersAutocomplete from './SavedFiltersAutocomplete';
