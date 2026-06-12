@@ -9,6 +9,7 @@ import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
+import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
 
 const cellContainerStyle = (theme: Theme) => ({
   display: 'flex',
@@ -142,7 +143,7 @@ const DataTableLine = ({
   const handleNavigate = (event: React.MouseEvent) => {
     if (!navigable || !link) return;
 
-    if (event.ctrlKey) {
+    if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
     } else {
       navigate(link);
@@ -200,7 +201,7 @@ const DataTableLine = ({
               width: startColumnWidth,
             }}
           >
-            { startsWithAction && (
+            {startsWithAction && (
               <Checkbox
                 onClick={handleSelectLine}
                 sx={{

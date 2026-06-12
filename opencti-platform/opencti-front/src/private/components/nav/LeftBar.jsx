@@ -120,6 +120,7 @@ import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
+import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -302,7 +303,7 @@ const LeftBarComponent = ({ queryRef }) => {
     localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
   };
   const handleGoToPage = (event, link) => {
-    if (event.ctrlKey) {
+    if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
     } else {
       navigate(link);
