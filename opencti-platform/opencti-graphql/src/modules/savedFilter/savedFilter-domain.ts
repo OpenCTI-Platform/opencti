@@ -8,7 +8,6 @@ import type { InputMaybe, MemberAccessInput, MutationSavedFilterFieldPatchArgs, 
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { getUserAccessRight, isUserHasCapability, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isFeatureEnabled } from '../../config/conf';
 
 const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
