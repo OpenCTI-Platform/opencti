@@ -1,10 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { InsertChartOutlined, NotificationsOutlined, OpenInNewOutlined } from '@mui/icons-material';
+import { OpenInNewOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
+import { getNewsFeedIcon, getNewsFeedLabel, isKnownNewsFeedType } from '../../../utils/NewsFeed';
 
 export interface NewsFeedToastData {
   id: string;
@@ -12,10 +13,6 @@ export interface NewsFeedToastData {
   news_feed_type: string;
   metadata: { key: string; readonly value: string | null | undefined }[];
 }
-
-const NEWS_FEED_ICON_MAP: Record<string, React.ElementType> = {
-  RESOURCE_CUSTOM_DASHBOARD: InsertChartOutlined,
-};
 
 export const NEWS_FEED_TOAST_WIDTH = 450;
 
@@ -29,7 +26,8 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
-  const IconComponent: React.ElementType = NEWS_FEED_ICON_MAP[item.news_feed_type] ?? NotificationsOutlined;
+  const IconComponent: React.ElementType = getNewsFeedIcon(item.news_feed_type);
+  const typeLabel = getNewsFeedLabel(item.news_feed_type);
 
   const urlPath = item.metadata?.find((m) => m?.key === 'url_path')?.value;
   const resourceLink = useXTMHubResourceLink(urlPath);
@@ -72,14 +70,19 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
 
       {/* Text content */}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        {item.news_feed_type === 'RESOURCE_CUSTOM_DASHBOARD' && (
+        {typeLabel && (
           <Typography variant="caption" sx={{ color: theme.palette.primary.main, display: 'block' }}>
-            {t_i18n('New Custom Dashboard')}
+            {t_i18n(typeLabel)}
           </Typography>
         )}
         <Typography variant="body2" sx={{ wordBreak: 'break-word', fontWeight: 700 }}>
           {item.title}
         </Typography>
+        {!isKnownNewsFeedType(item.news_feed_type) && (
+          <Typography variant="caption" sx={{ color: theme.palette.primary.main, display: 'block' }}>
+            {t_i18n('A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade')}
+          </Typography>
+        )}
       </Box>
 
       {/* Open in XTM Hub */}
