@@ -45,6 +45,7 @@ import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHisto
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { StixCoreObjectStandardIds } from '../stix_core_objects/StixCoreObjectStandardIds';
 
 const styles = (theme) => ({
   container: {
@@ -219,8 +220,7 @@ class StixCoreRelationshipContainer extends Component {
 
     const linkFrom = from
       ? from.relationship_type
-        ? `${resolveLink(from.from.entity_type)}/${
-          from.from.id
+        ? `${resolveLink(from.from.entity_type)}/${from.from.id
         }/knowledge/relations`
         : resolveLink(from.entity_type)
       : '';
@@ -228,8 +228,7 @@ class StixCoreRelationshipContainer extends Component {
 
     const linkTo = to
       ? to.relationship_type
-        ? `${resolveLink(to.from.entity_type)}/${
-          to.from.id
+        ? `${resolveLink(to.from.entity_type)}/${to.from.id
         }/knowledge/relations`
         : resolveLink(to.entity_type)
       : '';
@@ -489,6 +488,12 @@ class StixCoreRelationshipContainer extends Component {
                   <ItemCreators
                     creators={stixCoreRelationship.creators ?? []}
                   />
+                  <div style={{ marginTop: 20 }}>
+                    <StixCoreObjectStandardIds
+                      standardId={stixCoreRelationship.standard_id}
+                      stixIds={stixCoreRelationship.x_opencti_stix_ids}
+                    />
+                  </div>
                 </Grid>
               </Grid>
             </Card>
@@ -607,6 +612,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
     stixCoreRelationship: graphql`
       fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
         id
+        standard_id
         draftVersion {
           draft_id
           draft_operation
@@ -644,6 +650,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           phase_name
           x_opencti_order
         }
+        x_opencti_stix_ids
         x_opencti_inferences {
           rule {
             id

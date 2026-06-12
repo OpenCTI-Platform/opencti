@@ -5,6 +5,7 @@ import {
   createRelationRaw,
   deleteElementById,
   distributionEntities,
+  pageEntitiesOrRelationsConnection,
   stixBundleByIdStringify,
   storeLoadByIdWithRefs,
   timeSeriesEntities,
@@ -165,7 +166,7 @@ export const findStixCoreObjectPaginated = async (context, user, args) => {
 export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
-  return findStixCoreObjectPaginated(context, user, args);
+  return pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], args);
 };
 
 export const findUnknownStixCoreObjects = async (context, user, args) => {

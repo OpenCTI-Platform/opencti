@@ -15011,7 +15011,7 @@ type Query {
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   unknownStixCoreObjects(
     values: [String!]!
     orderBy: UnknownStixCoreObjectsOrdering
