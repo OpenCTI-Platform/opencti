@@ -36,7 +36,7 @@ export const COVERED_ENTITIES_TYPE = [
 ];
 
 // region CRUD
-export const findSecurityCoverageById = async (
+export const findById = async (
   context: AuthContext,
   user: AuthUser,
   SecurityCoverageId: string,
@@ -54,7 +54,7 @@ export const findSecurityCoverageById = async (
   );
 };
 
-export const pageSecurityCoverageConnections = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
+export const pageSecurityCoveragePaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
   return pageEntitiesConnection<BasicStoreEntitySecurityCoverage>(context, user, [ENTITY_TYPE_SECURITY_COVERAGE], args);
 };
 

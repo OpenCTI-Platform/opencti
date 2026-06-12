@@ -22,21 +22,16 @@ import {
  * @param resultOfId ID of the security coverage result.
  * @returns Security coverage result.
  */
-export const findSecurityCoverageResultById = async (
+export const findById = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverageId: string,
 ): Promise<BasicStoreEntitySecurityCoverageResult> => {
-  const store = storeLoadById<BasicStoreEntitySecurityCoverageResult>(
+  return storeLoadById<BasicStoreEntitySecurityCoverageResult>(
     context,
     user,
     securityCoverageId,
     ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-  );
-  return notify(
-    BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC,
-    store,
-    user,
   );
 };
 
@@ -48,7 +43,7 @@ export const findSecurityCoverageResultById = async (
  * @param args Options to customize the query.
  * @returns Security coverage result.
  */
-export const pageSecurityCoverageResults = (
+export const pageSecurityCoverageResultPaginated = (
   context: AuthContext,
   user: AuthUser,
   args: EntityOptions<BasicStoreEntitySecurityCoverageResult>,
@@ -131,7 +126,7 @@ export const addSecurityCoverageResult = async (
     ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
   );
   return notify(
-    BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].EDIT_TOPIC,
+    BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].ADDED_TOPIC,
     result,
     user,
   );

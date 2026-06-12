@@ -184,7 +184,6 @@ type SecurityCoverageResultEdge {
 # Queries
 type Query {
   securityCoverageResult(id: String!): SecurityCoverageResult @auth(for: [KNOWLEDGE])
-  listSecurityCoverageResultsByResultOf(id: String!): [SecurityCoverageResult!] @auth(for: [KNOWLEDGE])
   securityCoverageResults(
     first: Int
     after: ID

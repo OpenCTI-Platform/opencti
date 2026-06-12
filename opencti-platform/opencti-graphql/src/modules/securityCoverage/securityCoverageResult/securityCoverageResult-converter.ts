@@ -16,7 +16,7 @@ const convertSecurityCoverageResultToStix = (instance: StoreEntitySecurityCovera
     covered: isNotEmptyField(instance.coverage_information),
     coverage: (instance.coverage_information ?? [])
       .map((c) => ({ name: c.coverage_name, score: c.coverage_score })),
-    [ATTRIBUTE_RESULT_OF]: (instance[INPUT_RESULT_OF] ?? []).standard_id,
+    [ATTRIBUTE_RESULT_OF]: instance[INPUT_RESULT_OF]?.standard_id,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
