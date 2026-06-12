@@ -24486,7 +24486,6 @@ export type Query = {
   labels?: Maybe<LabelConnection>;
   language?: Maybe<Language>;
   languages?: Maybe<LanguageConnection>;
-  listSecurityCoverageResultsByResultOf?: Maybe<Array<SecurityCoverageResult>>;
   location?: Maybe<Location>;
   locations?: Maybe<LocationConnection>;
   log?: Maybe<Log>;
@@ -25962,11 +25961,6 @@ export type QueryLanguagesArgs = {
   orderBy?: InputMaybe<LanguagesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryListSecurityCoverageResultsByResultOfArgs = {
-  id: Scalars['String']['input'];
 };
 
 
@@ -49548,7 +49542,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   labels?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType, Partial<QueryLabelsArgs>>;
   language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<QueryLanguageArgs, 'id'>>;
   languages?: Resolver<Maybe<ResolversTypes['LanguageConnection']>, ParentType, ContextType, Partial<QueryLanguagesArgs>>;
-  listSecurityCoverageResultsByResultOf?: Resolver<Maybe<Array<ResolversTypes['SecurityCoverageResult']>>, ParentType, ContextType, RequireFields<QueryListSecurityCoverageResultsByResultOfArgs, 'id'>>;
   location?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<QueryLocationArgs, 'id'>>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType, Partial<QueryLocationsArgs>>;
   log?: Resolver<Maybe<ResolversTypes['Log']>, ParentType, ContextType, RequireFields<QueryLogArgs, 'id'>>;

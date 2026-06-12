@@ -9773,7 +9773,6 @@ type Query {
   securityCoverage(id: String!): SecurityCoverage
   securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
   securityCoverageResult(id: String!): SecurityCoverageResult
-  listSecurityCoverageResultsByResultOf(id: String!): [SecurityCoverageResult!]
   securityCoverageResults(first: Int, after: ID, orderBy: SecurityCoverageResultOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageResultConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection

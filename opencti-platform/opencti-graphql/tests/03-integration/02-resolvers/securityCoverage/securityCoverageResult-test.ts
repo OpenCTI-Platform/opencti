@@ -36,21 +36,6 @@ const GET_ALL_QUERY = gql`
   }
 `;
 
-const GET_ALL_BY_ID_QUERY = gql`
- query SecurityCoverageResultById($id: String!) {
-    listSecurityCoverageResultsByResultOf(id: $id) {
-      external_uri
-      coverage_last_result
-      coverage_valid_from
-      coverage_valid_to
-      coverage_information {
-        coverage_name
-        coverage_score
-      }
-    }
-  }
-`;
-
 const GET_ONE_QUERY = gql`
  query SecurityCoverageResult($id: String!) {
     securityCoverageResult(id: $id) {
@@ -135,22 +120,6 @@ describe('SecurityCoverageResult resolver', () => {
     expect(securityCoverageResultsData).toBeDefined();
     expect(securityCoverageResultsData.pageInfo.globalCount).toEqual(2);
     const uris = securityCoverageResultsData.edges.map((e: any) => e.node.external_uri);
-    expect(uris).toContain('http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a175');
-    expect(uris).toContain('http://localhost/admin/scenarios/d49dd003-3498-441f-96a8-a533067b1322');
-  });
-
-  it('should fetch all results by security coverage ID', async () => {
-    const securityCoverageResults = await queryAsAdmin({
-      query: GET_ALL_BY_ID_QUERY,
-      variables: {
-        id: securityCoverageId,
-      },
-    });
-
-    const securityCoverageResultsData = securityCoverageResults.data?.listSecurityCoverageResultsByResultOf;
-    expect(securityCoverageResultsData).toBeDefined();
-    expect(securityCoverageResultsData.length).toEqual(2);
-    const uris = securityCoverageResultsData.map((scr: any) => scr.external_uri);
     expect(uris).toContain('http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a175');
     expect(uris).toContain('http://localhost/admin/scenarios/d49dd003-3498-441f-96a8-a533067b1322');
   });
