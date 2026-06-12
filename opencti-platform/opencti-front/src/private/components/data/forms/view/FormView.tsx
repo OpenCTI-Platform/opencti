@@ -618,6 +618,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           helpertext={schema.mainEntityMultiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                           multiple={schema.mainEntityMultiple}
                           disableCreation={schema.mainEntityDisableCreation}
+                          deferCreation={isForcedImportToDraft}
                         />
                       );
                     }
@@ -780,6 +781,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                                   multiple={additionalEntity.multiple}
                                   disableCreation={additionalEntity.disableCreation}
+                                  deferCreation={isForcedImportToDraft}
                                 />
                               );
                             }
