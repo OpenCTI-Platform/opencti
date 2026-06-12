@@ -1,6 +1,5 @@
 import { useEffect, useRef, useTransition } from 'react';
 import { GraphQLTaggedNode, UseQueryLoaderLoadQueryOptions, VariablesOf, useQueryLoader } from 'react-relay';
-import { useQueryLoaderHookType } from 'react-relay/relay-hooks/useQueryLoader';
 import { OperationType, PreloadableConcreteRequest } from 'relay-runtime';
 import { equals } from 'ramda';
 import { useDashboardRefreshToken } from '../../../components/dashboard/DashboardRefreshContext';
