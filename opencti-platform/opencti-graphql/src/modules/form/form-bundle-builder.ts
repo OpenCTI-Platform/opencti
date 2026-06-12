@@ -17,6 +17,60 @@ import { transformSpecialFields, convertFieldType } from './form-fields-converte
 import { completeEntity } from './form-entity-builder';
 import { loadFormEntity } from './form-utils';
 
+/**
+ * Build partial StoreEntity objects from pending-creation payloads.
+ *
+ * A "pending creation" is emitted by the frontend when a draft-only user creates an
+ * entity on the fly inside a Form Intake lookup field. The mutation is intercepted
+ * client-side and the raw mutation variables (`input` for SDOs, or the flat variable
+ * object for SCOs) are forwarded here as part of the form submission so the entity
+ * can be materialised in the draft bundle.
+ *
+ * SDO mutations: variables = { input: { name, description, … } }
+ * SCO mutations: variables are flat: { type, x_opencti_description, IPv4Addr: { value }, … }
+ *
+ * Only simple scalar attributes are mapped. Complex reference fields (createdBy,
+ * objectMarking, objectLabel) carry OpenCTI internal IDs that are not guaranteed to
+ * exist in the bundle and are intentionally skipped in this minimal implementation.
+ */
+const buildPendingEntities = (
+  pendingList: Array<{ entityType: string; input: Record<string, any> }>,
+): StoreEntity[] => {
+  return pendingList.map((pending) => {
+    const entity: Record<string, any> = { entity_type: pending.entityType };
+    const { input } = pending;
+
+    // Map common scalar SDO fields
+    const scalarFields = ['name', 'description', 'confidence', 'value', 'hashes',
+      'first_seen', 'last_seen', 'first_observed', 'last_observed', 'published',
+      'pattern', 'pattern_type', 'valid_from', 'valid_until', 'source_name',
+      'url', 'external_id', 'contact_information', 'x_opencti_reliability',
+      'is_family', 'context', 'region', 'country', 'city'];
+
+    for (const field of scalarFields) {
+      if (input[field] !== undefined && input[field] !== null && input[field] !== '') {
+        entity[field] = input[field];
+      }
+    }
+
+    // Handle SCO flat-variable format: the observable data is nested under a type key
+    // e.g. { type: 'IPv4-Addr', IPv4Addr: { value: '1.2.3.4' }, x_opencti_description: '…' }
+    if (input.type && !entity.name) {
+      // Description from SCO top-level x_opencti_description
+      if (input.x_opencti_description) entity.description = input.x_opencti_description;
+      // Observable value: look for the camelCase type key (e.g. 'IPv4Addr', 'DomainName')
+      const obsTypeKey = Object.keys(input).find((k) => k !== 'type' && typeof input[k] === 'object' && input[k] !== null && 'value' in input[k]);
+      if (obsTypeKey) {
+        entity.value = input[obsTypeKey].value;
+        // Use value as name for observables so STIX converter can work
+        entity.name = input[obsTypeKey].value;
+      }
+    }
+
+    return entity as StoreEntity;
+  });
+};
+
 export const buildMainStixEntities = async (
   context: AuthContext,
   user: AuthUser,
@@ -36,6 +90,17 @@ export const buildMainStixEntities = async (
     for (let index = 0; index < mainEntities.length; index += 1) {
       mainStixEntities.push(convertStoreToStix_2_1(mainEntities[index]));
       mainEntityStixId = mainEntities[index].standard_id;
+    }
+
+    // Handle pending (deferred) entity creations for main-entity lookup
+    if (isNotEmptyField(values.mainEntityLookupPending)) {
+      const pendingEntities = buildPendingEntities(values.mainEntityLookupPending);
+      for (let index = 0; index < pendingEntities.length; index += 1) {
+        const pendingEntity = completeEntity(pendingEntities[index].entity_type, pendingEntities[index]);
+        const stixPending = convertStoreToStix_2_1(pendingEntity);
+        mainStixEntities.push(stixPending);
+        mainEntityStixId = pendingEntity.standard_id;
+      }
     }
   } else {
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -182,6 +247,22 @@ export const buildAdditionalEntities = async (
             additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
           } else {
             additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+          }
+        }
+      }
+
+      // Handle pending (deferred) entity creations inside this lookup field
+      const pendingKey = `additional_${additionalEntity.id}_lookup_pending`;
+      if (isNotEmptyField(values[pendingKey])) {
+        const pendingEntities = buildPendingEntities(values[pendingKey]);
+        for (let index2 = 0; index2 < pendingEntities.length; index2 += 1) {
+          const pendingEntity = completeEntity(pendingEntities[index2].entity_type, pendingEntities[index2]);
+          const stixPending = convertStoreToStix_2_1(pendingEntity);
+          bundle.objects.push(stixPending);
+          if (additionalEntitiesMap[additionalEntity.id]) {
+            additionalEntitiesMap[additionalEntity.id].push(stixPending.id);
+          } else {
+            additionalEntitiesMap[additionalEntity.id] = [stixPending.id];
           }
         }
       }
