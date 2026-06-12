@@ -63,7 +63,7 @@ export const simpleNumberFormat = (number: number, digits = 2): string => {
 };
 
 /**
- * Formats a byte count into a human-readable string using binary prefixes
+ * Formats a byte count into a human-readable string using base-1024 units
  * (Bytes, KB, MB, GB, TB). Returns the scaled value, its unit and the original.
  */
 export const bytesFormat = (number: number, digits = 2): BytesFormat => {
