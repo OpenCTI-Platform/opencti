@@ -13,6 +13,7 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   startAdornment?: ReactNode;
   rows?: number;
   onFocus?: (name: string) => void;
+  onBlur?: (name: string, value: string) => void;
   onChange?: (name: string, value: string) => void;
   onSubmit?: (name: string, value: string) => void;
   onKeyDown?: (key: string) => void;
@@ -27,6 +28,7 @@ const TextField = (props: TextFieldProps) => {
     field: { name },
     onChange,
     onFocus,
+    onBlur,
     onSubmit,
     onKeyDown,
   } = props;
@@ -54,10 +56,12 @@ const TextField = (props: TextFieldProps) => {
   const internalOnBlur = useCallback((event: FocusEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setFieldTouched(name, true);
-    if (typeof onSubmit === 'function' && value !== initialValueOnFocus.current) {
+    if (typeof onBlur === 'function' && value !== initialValueOnFocus.current) {
+      onBlur(name, value || '');
+    } else if (typeof onSubmit === 'function' && value !== initialValueOnFocus.current) {
       onSubmit(name, value || '');
     }
-  }, [onSubmit, setFieldTouched, name]);
+  }, [onBlur, setFieldTouched, name]);
 
   const internalOnPaste = useCallback((event: ClipboardEvent<HTMLInputElement>) => {
     // onBeforePaste can be used to alter the pasted content

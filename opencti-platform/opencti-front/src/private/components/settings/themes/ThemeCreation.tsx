@@ -18,6 +18,7 @@ import {
   THEME_DARK_DEFAULT_SECONDARY,
   THEME_DARK_DEFAULT_TEXT,
 } from '../../../../components/ThemeDark';
+import { formatJsonStringContent } from '../../../../utils/String';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -95,7 +96,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
             theme_login_aside_gradient_start: values.theme_login_aside_gradient_start || null,
             theme_login_aside_gradient_end: values.theme_login_aside_gradient_end || null,
             theme_login_aside_image: values.theme_login_aside_image || null,
-            theme_advanced_override: values.theme_advanced_override || null,
+            theme_advanced_override: formatJsonStringContent(values.theme_advanced_override ?? ''),
           },
         },
         updater: (store: RecordSourceSelectorProxy) => insertNode(

@@ -328,12 +328,12 @@ export interface Theme extends MuiTheme {
 
 export interface AppThemeType {
   name: string;
-  theme_background?: string | null;
-  theme_paper?: string | null;
-  theme_nav?: string | null;
-  theme_primary?: string | null;
-  theme_secondary?: string | null;
-  theme_accent?: string | null;
+  theme_background: string;
+  theme_paper: string;
+  theme_nav: string;
+  theme_primary: string;
+  theme_secondary: string;
+  theme_accent: string;
   theme_logo?: string | null;
   theme_logo_collapsed?: string | null;
   theme_logo_login?: string | null;

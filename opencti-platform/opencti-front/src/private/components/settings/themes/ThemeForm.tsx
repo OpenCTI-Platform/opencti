@@ -346,7 +346,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                 label={t_i18n('Advanced theme override')}
                 fullWidth
                 variant="standard"
-                onSubmit={handleFieldSubmit}
+                onBlur={handleFieldSubmit}
               />
             </div>
           </Stack>

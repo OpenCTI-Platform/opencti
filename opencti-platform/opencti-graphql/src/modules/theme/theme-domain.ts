@@ -56,7 +56,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_login_aside_gradient_start: input.theme_login_aside_gradient_start ?? null,
     theme_login_aside_gradient_end: input.theme_login_aside_gradient_end ?? null,
     theme_login_aside_image: input.theme_login_aside_image ?? null,
-    theme_advanced_override: input.theme_advanced_override ?? null,
+    theme_advanced_override: input.theme_advanced_override,
     built_in: input.built_in ?? false,
   };
 
@@ -160,7 +160,7 @@ const themeImportSchema = z.object({
   theme_login_aside_gradient_start: z.string().nullable().optional().default(null),
   theme_login_aside_gradient_end: z.string().nullable().optional().default(null),
   theme_login_aside_image: z.string().nullable().optional().default(null),
-  theme_advanced_override: z.string().nullable().optional().default(null),
+  theme_advanced_override: z.string().optional().default(''),
 });
 
 export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
