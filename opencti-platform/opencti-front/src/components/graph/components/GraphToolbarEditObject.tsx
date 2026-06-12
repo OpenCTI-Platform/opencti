@@ -115,11 +115,13 @@ const GraphToolbarEditObject = ({
             stixSightingRelationshipId={objectToEdit.id}
             handleClose={closeEditionForm}
           />
-          <StixNestedRefRelationshipEdition
-            open={category === 'nested'}
-            stixNestedRefRelationshipId={objectToEdit.id}
-            handleClose={closeEditionForm}
-          />
+          {category === 'nested' && (
+            <StixNestedRefRelationshipEdition
+              open={category === 'nested'}
+              stixNestedRefRelationshipId={objectToEdit.id}
+              handleClose={closeEditionForm}
+            />
+          )}
         </>
       )}
     </>

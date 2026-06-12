@@ -13,7 +13,7 @@ import { SecurityCoverageResultLines_data$data } from '@components/analyses/secu
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import IconButton from '@common/button/IconButton';
@@ -311,7 +311,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
       render: ({ coverage_information }) =>
         coverage_information?.length
           ? (
-              <SecurityCoverageInformation
+              <SecurityCoverageScores
                 coverage_information={coverage_information}
                 variant="header"
               />
