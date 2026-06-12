@@ -23,13 +23,17 @@ describe('Function: simpleNumberFormat', () => {
   it('should use the requested number of digits', () => {
     expect(simpleNumberFormat(1_234, 0)).toBe('1 K');
   });
+
+  it('should return only the number when symbol is empty', () => {
+    expect(simpleNumberFormat(42)).toBe('42');
+  });
 });
 
 describe('Function: bytesFormat', () => {
   it('should format a byte count using binary prefixes', () => {
-    expect(bytesFormat(1024)).toEqual({ number: '1', symbol: 'KB', original: 1024 });
-    expect(bytesFormat(1_572_864)).toEqual({ number: '1.5', symbol: 'MB', original: 1_572_864 });
-    expect(bytesFormat(1024 ** 3)).toEqual({ number: '1', symbol: 'GB', original: 1024 ** 3 });
+    expect(bytesFormat(1024)).toEqual({ number: 1, symbol: 'KB', original: 1024 });
+    expect(bytesFormat(1_572_864)).toEqual({ number: 1.5, symbol: 'MB', original: 1_572_864 });
+    expect(bytesFormat(1024 ** 3)).toEqual({ number: 1, symbol: 'GB', original: 1024 ** 3 });
   });
 
   it('should return zero bytes for a zero input', () => {

@@ -5,10 +5,13 @@ export interface NumberFormat {
 }
 
 export interface BytesFormat {
-  number: number | string;
+  number: number;
   symbol: string;
   original: number;
 }
+
+// Strips unnecessary trailing zeros from a decimal number (e.g. "1.50" → "1.5", "2.00" → "2")
+const TRAILING_ZEROS_REGEX = /\.0+$|(\.\d*[1-9])0+$/;
 
 /**
  * Returns a pseudo-random floating point number in the half-open interval [min, max).
@@ -35,7 +38,6 @@ export const numberFormat = (
     { value: 1e15, symbol: 'P' },
     { value: 1e18, symbol: 'E' },
   ];
-  const rx = /\.0+$|(\.\d*[1-9])0+$/;
   let i;
   for (i = si.length - 1; i > 0; i -= 1) {
     if (number >= si[i].value) {
@@ -43,7 +45,7 @@ export const numberFormat = (
     }
   }
   return {
-    number: Number.parseFloat((number / si[i].value).toFixed(digits).replace(rx, '$1')),
+    number: Number.parseFloat((number / si[i].value).toFixed(digits).replace(TRAILING_ZEROS_REGEX, '$1')),
     symbol: si[i].symbol,
     original: number,
   };
@@ -55,7 +57,9 @@ export const numberFormat = (
  */
 export const simpleNumberFormat = (number: number, digits = 2): string => {
   const formatted = numberFormat(number, digits);
-  return `${formatted.number} ${formatted.symbol}`;
+  return formatted.symbol
+    ? `${formatted.number} ${formatted.symbol}`
+    : `${formatted.number}`;
 };
 
 /**
@@ -63,7 +67,6 @@ export const simpleNumberFormat = (number: number, digits = 2): string => {
  * (Bytes, KB, MB, GB, TB). Returns the scaled value, its unit and the original.
  */
 export const bytesFormat = (number: number, digits = 2): BytesFormat => {
-  const rx = /\.0+$|(\.\d*[1-9])0+$/;
   const sizes = [' Bytes', 'KB', 'MB', 'GB', 'TB'];
   if (number === 0) {
     return {
@@ -75,7 +78,7 @@ export const bytesFormat = (number: number, digits = 2): BytesFormat => {
 
   const i = Math.floor(Math.log(number) / Math.log(1024));
   return {
-    number: (number / 1024 ** i).toFixed(digits).replace(rx, '$1'),
+    number: Number.parseFloat((number / 1024 ** i).toFixed(digits).replace(TRAILING_ZEROS_REGEX, '$1')),
     symbol: sizes[i],
     original: number,
   };
