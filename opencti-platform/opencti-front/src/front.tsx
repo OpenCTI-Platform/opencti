@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import './static/css/index.css';
 import makeStyles from '@mui/styles/makeStyles';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import App from './app';
