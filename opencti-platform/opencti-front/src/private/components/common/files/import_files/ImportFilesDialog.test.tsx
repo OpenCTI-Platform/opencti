@@ -15,6 +15,8 @@ const {
   mockEnterDraft,
   mockNotifyError,
   mockUseImportFilesContext,
+  mockUseChatbot,
+  mockUseImportFilesData,
 } = vi.hoisted(() => ({
   mockSetDraftId: vi.fn(),
   mockSetUploadStatus: vi.fn(),
@@ -23,6 +25,8 @@ const {
   mockEnterDraft: vi.fn(),
   mockNotifyError: vi.fn(),
   mockUseImportFilesContext: vi.fn(),
+  mockUseChatbot: vi.fn(),
+  mockUseImportFilesData: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -74,9 +78,7 @@ vi.mock('@components/common/files/import_files/ImportFilesContext', () => ({
 }));
 
 vi.mock('@components/chatbox/ChatbotContext', () => ({
-  useChatbot: vi.fn().mockReturnValue({
-    xtmOneConfigured: false,
-  }),
+  useChatbot: mockUseChatbot,
 }));
 
 // ---------------------------------------------------------------------------
@@ -85,10 +87,7 @@ vi.mock('@components/chatbox/ChatbotContext', () => ({
 // hangs via vite-plugin-relay intercepting the module in Vitest's forks pool).
 // ---------------------------------------------------------------------------
 vi.mock('./useImportFilesData', () => ({
-  default: vi.fn().mockReturnValue({
-    stixCoreObject: null,
-    connectorsForImport: [],
-  }),
+  default: mockUseImportFilesData,
 }));
 
 // ---------------------------------------------------------------------------
@@ -207,6 +206,11 @@ describe('ImportFilesDialog – createDraft', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseImportFilesContext.mockReturnValue(defaultContextValues);
+    mockUseChatbot.mockReturnValue({ xtmOneConfigured: false });
+    mockUseImportFilesData.mockReturnValue({
+      stixCoreObject: null,
+      connectorsForImport: [],
+    });
   });
 
   describe('when the draft mutation succeeds', () => {
@@ -308,6 +312,52 @@ describe('ImportFilesDialog – createDraft', () => {
         expect(mockBulkCommit).toHaveBeenCalled();
       });
       expect(mockCommitCreationMutation).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe('ImportFilesDialog – Next button XTM One validation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseImportFilesContext.mockReturnValue({
+      ...defaultContextValues,
+      activeStep: 1,
+      files: [
+        {
+          file: new File(['content'], 'test.txt', { type: 'text/plain' }),
+          connectors: [{ id: 'xtm-connector', name: 'ImportDocumentAI' }],
+        },
+      ],
+    });
+    mockUseImportFilesData.mockReturnValue({
+      stixCoreObject: null,
+      connectorsForImport: [
+        {
+          id: 'xtm-connector',
+          name: 'ImportDocumentAI',
+          xtm_one_intent: 'cti.stix_harvester',
+        },
+      ],
+    });
+  });
+
+  it('should keep Next enabled when xtmOneConfigured is false and no configuration is provided', async () => {
+    mockUseChatbot.mockReturnValue({ xtmOneConfigured: false });
+
+    testRender(<ImportFilesDialog open={true} handleClose={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
+    });
+  });
+
+  it('should disable Next when xtmOneConfigured is true and no configuration is provided', async () => {
+    mockUseChatbot.mockReturnValue({ xtmOneConfigured: true });
+
+    testRender(<ImportFilesDialog open={true} handleClose={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
     });
   });
 });
