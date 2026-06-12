@@ -24,7 +24,7 @@ describe('Component: SecurityCoverageInformation', () => {
     expect(section).not.toBeInTheDocument();
   });
 
-  it('should display is covered : true and should display the coverage scores section when there is no coverage_information', () => {
+  it('should display is covered : true and should display the coverage scores section when there is coverage_information', () => {
     const coverageInformationMock = [{
       coverage_name: 'name',
       coverage_score: 10,
