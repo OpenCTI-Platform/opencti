@@ -4,7 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMultiVerticalBarsQuery } from './__generated__/PublicStixRelationshipsMultiVerticalBarsQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
@@ -77,7 +77,7 @@ const PublicStixRelationshipsMultiVerticalBars = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsMultiVerticalBarsQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsMultiVerticalBarsQuery>(
     publicStixRelationshipsMultiVerticalBarsQuery,
     {
       uriKey,

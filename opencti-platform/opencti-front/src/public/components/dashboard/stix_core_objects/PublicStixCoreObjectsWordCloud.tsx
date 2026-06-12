@@ -3,7 +3,7 @@ import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import { PublicStixCoreObjectsDistributionListQuery } from './__generated__/PublicStixCoreObjectsDistributionListQuery.graphql';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -93,7 +93,7 @@ const PublicStixCoreObjectsWordCloud = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsDistributionListQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsDistributionListQuery>(
     publicStixCoreObjectsWordCloudQuery,
     {
       uriKey,
