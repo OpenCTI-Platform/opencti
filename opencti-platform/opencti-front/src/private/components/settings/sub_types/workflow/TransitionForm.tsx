@@ -188,7 +188,7 @@ const TransitionForm = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
         <Typography variant="h6">
-          {t_i18n('Validate draft')}
+          {t_i18n('Draft validation')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
