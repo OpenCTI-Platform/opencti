@@ -156,7 +156,7 @@ const ImportFilesOptions = ({
                   showAllMembersLine={showAllMembersLine}
                   canDeactivate={true}
                   addMeUserWithAdminRights
-                  isCanUseEnable
+                  customAccessRights={['view', 'use', 'edit', 'admin']}
                   enableAccesses
                   applyAccesses
                 />

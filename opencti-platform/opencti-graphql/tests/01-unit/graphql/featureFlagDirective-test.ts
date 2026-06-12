@@ -87,4 +87,27 @@ describe('featureFlagDirective', () => {
     expect(result.errors).toBeUndefined();
     expect(result.data?.flaggedFeature).toBeNull();
   });
+
+  it('returns defaultValue when none of the flags are enabled and softFail and defaultValue are set', async () => {
+    const typeDefs = parse(`
+      directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
+      type Query {
+        flaggedFeature: String @ff(flags: ["SOME_FLAG"], softFail: true, defaultValue: "\\"test\\"")
+      }
+    `);
+    const resolvers = {
+      Query: {
+        flaggedFeature: () => 'experimental content',
+      },
+    };
+    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+
+    let schema = makeExecutableSchema({ typeDefs, resolvers });
+    schema = makeFeatureFlagDirectiveTransformer()(schema);
+
+    const result = await graphql({ schema, source: '{ flaggedFeature }' });
+
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.flaggedFeature).toEqual('test');
+  });
 });

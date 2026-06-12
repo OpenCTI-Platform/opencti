@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
 const GET_SAVED_FILTERS_QUERY = gql`
   query savedFilters(
@@ -28,6 +29,7 @@ const GET_SAVED_FILTERS_QUERY = gql`
           name
           filters
           scope
+          creator_id
           currentUserAccessRight
           authorizedMembers {
             id
@@ -97,80 +99,70 @@ describe('Saved Filter Resolver', () => {
   };
 
   describe('savedFilterAdd', () => {
-    describe('If I use the addSavedFilter mutation', () => {
-      it('should create a filter with the creator as admin in authorized members', async () => {
-        const input = {
-          name: 'my new filter',
-          filters: JSON.stringify(newFilter),
-          scope: 'Incident',
-        };
+    it('should create a filter with the creator as admin in authorized members', async () => {
+      const input = {
+        name: 'my new filter',
+        filters: JSON.stringify(newFilter),
+        scope: 'Incident',
+      };
 
-        const result = await queryAsAdminWithSuccess({
-          query: CREATE_SAVED_FILTER_MUTATION,
-          variables: {
-            input: { ...input },
-          },
-        });
-
-        expect(result?.data?.savedFilterAdd).toBeDefined();
-        expect(result?.data?.savedFilterAdd.name).toEqual('my new filter');
-        createdFilterId = result?.data?.savedFilterAdd.id as string;
-
-        const { authorizedMembers } = result.data.savedFilterAdd;
-        expect(authorizedMembers).toBeDefined();
-        expect(authorizedMembers.length).toEqual(1);
-        expect(authorizedMembers[0].access_right).toEqual('admin');
+      const result = await queryAsAdminWithSuccess({
+        query: CREATE_SAVED_FILTER_MUTATION,
+        variables: {
+          input: { ...input },
+        },
       });
+
+      expect(result?.data?.savedFilterAdd).toBeDefined();
+      expect(result?.data?.savedFilterAdd.name).toEqual('my new filter');
+      createdFilterId = result?.data?.savedFilterAdd.id as string;
+
+      const { authorizedMembers } = result.data.savedFilterAdd;
+      expect(authorizedMembers).toBeDefined();
+      expect(authorizedMembers.length).toEqual(1);
+      expect(authorizedMembers[0].access_right).toEqual('admin');
     });
   });
 
   describe('savedFilters', () => {
-    describe('If I use the savedFilters query', () => {
-      it('gives the list of saved filters', async () => {
-        const result = await queryAsAdminWithSuccess({
-          query: GET_SAVED_FILTERS_QUERY,
-          variables: {},
-        });
-
-        const savedFilters = result.data?.savedFilters.edges;
-        expect(savedFilters).toBeDefined();
-        expect(savedFilters.length).toEqual(1);
+    it('gives the list of saved filters', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: GET_SAVED_FILTERS_QUERY,
+        variables: {},
       });
-      it('gives the list of saved filters with restricted members', async () => {
-        const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-          query: GET_SAVED_FILTERS_QUERY,
-          variables: {},
-        });
-
-        const savedFilters = result.data?.savedFilters.edges;
-        expect(savedFilters).toBeDefined();
-        expect(savedFilters.length).toEqual(0);
-      });
+      const savedFilters = result.data?.savedFilters.edges;
+      expect(savedFilters).toBeDefined();
+      expect(savedFilters.length).toEqual(1);
+      const myFilter = savedFilters[0].node;
+      expect(myFilter.name).toEqual('my new filter');
+      expect(myFilter.creator_id).toEqual(ADMIN_USER.id);
+      expect(myFilter.currentUserAccessRight).toEqual('admin');
+      expect(myFilter.authorizedMembers.length).toEqual(1);
+      expect(myFilter.authorizedMembers[0].name).toEqual(ADMIN_USER.name);
+      expect(myFilter.authorizedMembers[0].entity_type).toEqual(ENTITY_TYPE_USER);
+      expect(myFilter.authorizedMembers[0].access_right).toEqual('admin');
     });
   });
 
   describe('savedFilterEdit', () => {
-    describe('If I edit the filter of a saved Filter', async () => {
-      const editedFilters = {
-        ...newFilter,
-        filters: [{ key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] }],
-      };
-      const input = {
-        key: 'filters',
-        value: [JSON.stringify(editedFilters)],
-      };
+    const editedFilters = {
+      ...newFilter,
+      filters: [{ key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] }],
+    };
+    const input = {
+      key: 'filters',
+      value: [JSON.stringify(editedFilters)],
+    };
 
-      it('should have a filter different than the initial value', async () => {
-        const result = await queryAsAdminWithSuccess({
-          query: EDIT_SAVED_FILTER_MUTATION,
-          variables: {
-            id: createdFilterId,
-            input,
-          },
-        });
-
-        expect(result?.data?.savedFilterFieldPatch?.filters).not.equal(JSON.stringify(newFilter));
+    it('should have a filter different than the initial value', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: EDIT_SAVED_FILTER_MUTATION,
+        variables: {
+          id: createdFilterId,
+          input,
+        },
       });
+      expect(result?.data?.savedFilterFieldPatch?.filters).not.equal(JSON.stringify(newFilter));
     });
   });
 
@@ -275,27 +267,40 @@ describe('Saved Filter Resolver', () => {
   });
 
   describe('savedFilterDelete', () => {
-    describe('If I take the last created filter', () => {
-      it('should have found the filter', async () => {
-        const savedFilter = await elLoadById(testContext, ADMIN_USER, createdFilterId);
-        expect(savedFilter).toBeDefined();
+    it('should not allow a non-creator user without share filter capability to delete a filter they can manage', async () => {
+      // Share the filter with admin rights with ALL members so USER_PARTICIPATE can manage it
+      const shareInput = [
+        { id: ADMIN_USER.id, access_right: 'admin' },
+        { id: MEMBER_ACCESS_ALL, access_right: 'admin' },
+      ];
+      await queryAsAdminWithSuccess({
+        query: EDIT_AUTHORIZED_MEMBERS_MUTATION,
+        variables: { id: createdFilterId, input: shareInput },
       });
 
-      describe('If I use the deleteSavedFilter function', () => {
-        beforeAll(async () => {
-          await queryAsAdminWithSuccess({
-            query: DELETE_SAVED_FILTER_MUTATION,
-            variables: {
-              id: createdFilterId,
-            },
-          });
-        });
-
-        it('should have deleted the last created filter', async () => {
-          const savedFilter = await elLoadById(testContext, ADMIN_USER, createdFilterId);
-          expect(savedFilter).toBeUndefined();
-        });
+      // Verify USER_PARTICIPATE can see the filter
+      const listResult = await queryAsUserWithSuccess(USER_PARTICIPATE, {
+        query: GET_SAVED_FILTERS_QUERY,
+        variables: {},
       });
+      expect(listResult.data?.savedFilters.edges.length).toEqual(1);
+
+      // USER_PARTICIPATE can manage the filter but lacks KNOWLEDGE_KNSHAREFILTERS capability
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+        query: DELETE_SAVED_FILTER_MUTATION,
+        variables: { id: createdFilterId },
+      });
+    });
+
+    it('should delete a saved filter', async () => {
+      await queryAsAdminWithSuccess({
+        query: DELETE_SAVED_FILTER_MUTATION,
+        variables: {
+          id: createdFilterId,
+        },
+      });
+      const savedFilter = await elLoadById(testContext, ADMIN_USER, createdFilterId);
+      expect(savedFilter).toBeUndefined();
     });
   });
 });

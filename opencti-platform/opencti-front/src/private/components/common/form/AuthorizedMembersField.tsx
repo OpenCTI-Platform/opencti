@@ -57,7 +57,7 @@ interface AuthorizedMembersFieldProps
   dynamicAuthorOrgLabel?: string;
   includeBundleOrganizationDynamicOption?: boolean;
   dynamicGroupsRestrictionSupportedValues?: string[];
-  isCanUseEnable?: boolean;
+  customAccessRights?: AccessRight[];
   customInfoMessage?: string;
   style?: CSSProperties;
   isDraftEntity?: boolean;
@@ -107,7 +107,7 @@ const AuthorizedMembersField = ({
   dynamicAuthorOrgLabel = 'Author (organization)',
   includeBundleOrganizationDynamicOption = true,
   dynamicGroupsRestrictionSupportedValues = DYNAMIC_GROUPS_RESTRICTION_SUPPORTED,
-  isCanUseEnable = false,
+  customAccessRights = ['view', 'edit', 'admin'],
   customInfoMessage,
   style,
   isDraftEntity,
@@ -149,19 +149,25 @@ const AuthorizedMembersField = ({
     accessRight: accessForCreator?.accessRight ?? 'none',
   };
 
-  let accessRights = [
-    { label: t_i18n('can view'), value: 'view' },
-    { label: t_i18n('can edit'), value: 'edit' },
-    { label: t_i18n('can manage'), value: 'admin' },
-  ];
-  if (isCanUseEnable && featureFlagAccessRestriction) {
-    accessRights = [
-      { label: t_i18n('can view'), value: 'view' },
-      { label: t_i18n('can use'), value: 'use' },
-      { label: t_i18n('can edit'), value: 'edit' },
-      { label: t_i18n('can manage'), value: 'admin' },
-    ];
-  }
+  const accessRightLabels: Record<AccessRight, string> = {
+    none: t_i18n('no access'),
+    view: t_i18n('can view'),
+    use: t_i18n('can use'),
+    edit: t_i18n('can edit'),
+    admin: t_i18n('can manage'),
+  };
+
+  const buildAccessRights = (): { label: string; value: string }[] => {
+    // If 'use' is requested but 'access restriction' feature flag is disabled, filter it out
+    const rights = customAccessRights.includes('use') && !featureFlagAccessRestriction
+      ? customAccessRights.filter((r) => r !== 'use')
+      : customAccessRights;
+    return rights.map((right) => ({
+      label: accessRightLabels[right],
+      value: right,
+    }));
+  };
+  const accessRights = buildAccessRights();
 
   // Initialize the field with owner and/or current on enableAccesses truthly.
   useEffect(() => {
@@ -556,8 +562,8 @@ const AuthorizedMembersField = ({
                 <List sx={{ pt: 0 }}>
                   {value.map((authorizedMember, index) => (
                     !isGenericOption(authorizedMember.value)
-                    && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
-                    ) ? (
+                    && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID)
+                      ? (
                           <AuthorizedMembersFieldListItem
                             key={index}
                             authorizedMember={authorizedMember}
@@ -567,7 +573,8 @@ const AuthorizedMembersField = ({
                             onRemove={() => arrayHelpers.remove(index)}
                             disabled={disabled}
                           />
-                        ) : null))}
+                        )
+                      : null))}
                 </List>
               )}
             </>

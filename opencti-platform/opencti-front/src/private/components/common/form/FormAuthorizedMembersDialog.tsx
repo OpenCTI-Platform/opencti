@@ -6,7 +6,7 @@ import { FormikHelpers } from 'formik/dist/types';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
-import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
+import { AccessRight, AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
 import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -20,7 +20,7 @@ interface FormAuthorizedMembersDialogProps {
   owner?: Creator;
   open?: boolean;
   handleClose?: () => void;
-  isCanUseEnable?: boolean;
+  customAccessRights?: AccessRight[];
   canDeactivate: boolean;
   customInfoMessage?: string;
 }
@@ -32,7 +32,7 @@ const FormAuthorizedMembersDialog = ({
   owner,
   open,
   handleClose,
-  isCanUseEnable,
+  customAccessRights,
   canDeactivate,
   customInfoMessage,
 }: FormAuthorizedMembersDialogProps) => {
@@ -106,7 +106,7 @@ const FormAuthorizedMembersDialog = ({
         owner={owner}
         canDeactivate={canDeactivate}
         showAllMembersLine={showAllMembersLine}
-        isCanUseEnable={isCanUseEnable}
+        customAccessRights={customAccessRights}
         customInfoMessage={customInfoMessage}
         isDraftEntity={isDraftEntity}
       />

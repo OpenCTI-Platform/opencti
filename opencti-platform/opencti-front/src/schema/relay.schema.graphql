@@ -8,7 +8,7 @@ directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
 
 directive @constraint(minLength: Int, maxLength: Int, startsWith: String, endsWith: String, notContains: String, pattern: String, format: String, min: Int, max: Int, exclusiveMin: Int, exclusiveMax: Int, multipleOf: Int) on INPUT_FIELD_DEFINITION
 
-directive @ff(flags: [String!]!, softFail: Boolean = false) on FIELD_DEFINITION
+directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
 
 """Controls the rate of traffic."""
 directive @rateLimit(
@@ -15376,6 +15376,7 @@ type SavedFilter implements InternalObject & BasicObject {
   name: String!
   filters: String!
   scope: String!
+  creator_id: String
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
 }
@@ -15399,6 +15400,7 @@ input SavedFilterAddInput {
   name: String!
   filters: String!
   scope: String!
+  authorized_members: [MemberAccessInput!]
 }
 
 enum RequestAccessType {

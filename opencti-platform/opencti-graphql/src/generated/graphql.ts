@@ -29180,6 +29180,7 @@ export type SamlInput = {
 export type SavedFilter = BasicObject & InternalObject & {
   __typename?: 'SavedFilter';
   authorizedMembers: Array<MemberAccess>;
+  creator_id?: Maybe<Scalars['String']['output']>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   filters: Scalars['String']['output'];
@@ -29192,6 +29193,7 @@ export type SavedFilter = BasicObject & InternalObject & {
 };
 
 export type SavedFilterAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   filters: Scalars['String']['input'];
   name: Scalars['String']['input'];
   scope: Scalars['String']['input'];
@@ -41440,6 +41442,7 @@ export type ConstraintDirectiveArgs = {
 export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args = ConstraintDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type FfDirectiveArgs = {
+  defaultValue?: Maybe<Scalars['String']['input']>;
   flags: Array<Scalars['String']['input']>;
   softFail?: Maybe<Scalars['Boolean']['input']>;
 };
@@ -49941,6 +49944,7 @@ export type SamlConfigurationResolvers<ContextType = any, ParentType extends Res
 
 export type SavedFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['SavedFilter'] = ResolversParentTypes['SavedFilter']> = ResolversObject<{
   authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
+  creator_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
