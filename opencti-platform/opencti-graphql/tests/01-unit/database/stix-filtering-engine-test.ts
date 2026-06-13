@@ -42,6 +42,41 @@ describe('Filter Boolean logic engine ', () => {
       expect(engine.testGenericFilter({ mode: FilterMode.And, operator: FilterOperator.NotNil }, ['id'], [])).toEqual(false);
       expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotNil }, [], ['id1', 'id2', 'id3'])).toEqual(true);
     });
+
+    it('tests has_changed with eventContext (update event, attribute changed)', () => {
+      const changeContext = { filterKey: 'confidence', eventContext: { changedAttributes: ['confidence', 'workflow_id'] } };
+      // has_changed returns true when the filter key is in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['high'], changeContext)).toEqual(true);
+      // not_has_changed returns false when the filter key is in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['high'], changeContext)).toEqual(false);
+    });
+
+    it('tests has_changed with eventContext (update event, attribute NOT changed)', () => {
+      const changeContext = { filterKey: 'description', eventContext: { changedAttributes: ['confidence', 'workflow_id'] } };
+      // has_changed returns false when the filter key is NOT in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['some text'], changeContext)).toEqual(false);
+      // not_has_changed returns true when the filter key is NOT in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['some text'], changeContext)).toEqual(true);
+    });
+
+    it('tests has_changed without eventContext (e.g. delete event)', () => {
+      // Without changeContext, has_changed defaults to false
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['value'])).toEqual(false);
+      // Without changeContext, not_has_changed defaults to true
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['value'])).toEqual(true);
+    });
+
+    it('tests has_changed with isCreation context', () => {
+      // Creation: has_changed is true if the field has a non-null value (stixCandidates non-empty)
+      const creationCtxWithValue = { filterKey: 'confidence', eventContext: { changedAttributes: [], isCreation: true } };
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['high'], creationCtxWithValue)).toEqual(true);
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['high'], creationCtxWithValue)).toEqual(false);
+
+      // Creation: has_changed is false if the field has no value (stixCandidates empty)
+      const creationCtxNoValue = { filterKey: 'description', eventContext: { changedAttributes: [], isCreation: true } };
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], [], creationCtxNoValue)).toEqual(false);
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], [], creationCtxNoValue)).toEqual(true);
+    });
   });
 
   describe('testBooleanFilter', () => {
