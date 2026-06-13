@@ -1,17 +1,18 @@
 import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
-import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
+import { convertMembersToUsersFromElements, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 import { sendEmailToUser } from '../../../domain/user';
 import { ACCOUNT_STATUS_ACTIVE, logApp } from '../../../config/conf';
 
 export interface SendEmailTemplateConfiguration {
   email_template: string;
   targets: object;
+  applyToElements?: PlaybookBundleElementsToApply;
 }
 const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA: JSONSchemaType<SendEmailTemplateConfiguration> = {
   type: 'object',
@@ -20,6 +21,17 @@ const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA: JSONSchemaType<SendEmailTem
       type: 'string', $ref: 'Email template', oneOf: [],
     },
     targets: { type: 'object' },
+    applyToElements: {
+      type: 'string',
+      nullable: true,
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Resolve dynamic targets from',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
   },
   required: ['email_template'],
 };
@@ -42,9 +54,18 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const { email_template, targets } = playbookNode.configuration;
+    const { email_template, targets, applyToElements } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const targetUsers = await convertMembersToUsers(targets as { value: string }[], baseData, bundle);
+
+    // Resolve which elements to extract dynamic targets from
+    const scope = applyToElements || playbookBundleElementsToApply.onlyMain.value;
+    const sourceElements = bundle.objects.filter((o) => isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId));
+
+    const targetUsers = await convertMembersToUsersFromElements(
+      targets as { value: string }[],
+      sourceElements.length > 0 ? sourceElements : [baseData],
+      bundle,
+    );
     const sendEmailUserIds = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];

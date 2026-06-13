@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
+import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
@@ -44,7 +44,7 @@ import { FilterMode } from '../../generated/graphql';
 import { generateCreateMessage } from '../../database/data-changes';
 import type { BasicStoreSettings } from '../../types/settings';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
+import { convertMembersToUsersFromElements, extractBundleBaseElement, isBundleElementInScope } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
@@ -600,6 +600,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
 export interface NotifierConfiguration {
   notifiers: string[];
   authorized_members: { value: string }[];
+  applyToElements?: PlaybookBundleElementsToApply;
 }
 const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
   type: 'object',
@@ -621,6 +622,17 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
         },
         required: ['value'],
       },
+    },
+    applyToElements: {
+      type: 'string',
+      nullable: true,
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Resolve dynamic targets from',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
     },
   },
   required: ['notifiers', 'authorized_members'],
@@ -645,9 +657,18 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
   executor: async ({ dataInstanceId, playbookId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
-    const { notifiers, authorized_members } = playbookNode.configuration;
+    const { notifiers, authorized_members, applyToElements } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const targetUsers = await convertMembersToUsers(authorized_members as { value: string }[], baseData, bundle);
+
+    // Resolve which elements to extract dynamic targets from
+    const scope = applyToElements || playbookBundleElementsToApply.onlyMain.value;
+    const sourceElements = bundle.objects.filter((o) => isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId));
+
+    const targetUsers = await convertMembersToUsersFromElements(
+      authorized_members as { value: string }[],
+      sourceElements.length > 0 ? sourceElements : [baseData],
+      bundle,
+    );
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const notificationsCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {

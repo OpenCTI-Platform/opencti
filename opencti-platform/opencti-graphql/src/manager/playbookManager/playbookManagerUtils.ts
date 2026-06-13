@@ -44,15 +44,13 @@ export const isValidEventType = (eventType: StreamDataEventType, configuration: 
  * Extracts the changed attribute names from context.changes.
  *
  * The changes[].field format is "EntityType--attributeName" (e.g., "Report--objectMarking").
- * We extract the attribute name part which corresponds directly to the filter key.
+ * We extract the attribute name part which is used as the changed attribute identifier.
  */
 export const buildFilterEventContext = (updateEvent: UpdateEvent): FilterEventContext => {
   const changedFields = (updateEvent.context?.changes ?? []).map((change) => {
-    // Extract attribute name from "EntityType--attributeName" format
     const parts = change.field.split('--');
     return parts.length > 1 ? parts[1] : change.field;
   });
-  // Deduplicate
   return { changedAttributes: [...new Set(changedFields)] };
 };
 

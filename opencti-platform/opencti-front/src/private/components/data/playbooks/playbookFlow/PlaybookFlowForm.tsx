@@ -185,6 +185,14 @@ const PlaybookFlowForm = ({
         }
         initialValues.actionsFormValues = actionsFormValues;
       });
+    // Ensure applyToElements defaults to 'only-main' for existing configs missing it
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      initialValues.applyToElements = 'only-main';
+    }
   }
 
   // endregion

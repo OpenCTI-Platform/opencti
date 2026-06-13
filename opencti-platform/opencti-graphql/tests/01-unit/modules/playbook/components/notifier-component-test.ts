@@ -41,7 +41,8 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue(mockPlaybook);
     vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue(mockSettings);
     vi.spyOn(playbookUtils, 'extractBundleBaseElement').mockReturnValue(mockBundle.objects[0]);
-    vi.spyOn(playbookUtils, 'convertMembersToUsers').mockResolvedValue([mockUser]);
+    vi.spyOn(playbookUtils, 'convertMembersToUsersFromElements').mockResolvedValue([mockUser]);
+    vi.spyOn(playbookUtils, 'isBundleElementInScope').mockReturnValue(true);
     vi.spyOn(utils, 'isUserInPlatformOrganization').mockReturnValue(true);
     vi.spyOn(utils, 'isUserCanAccessStixElement').mockResolvedValue(true);
     vi.spyOn(notificationManager, 'convertToNotificationUser').mockReturnValue(mockNotificationUser);

@@ -1,6 +1,6 @@
 import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
-import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from '../playbook-types';
+import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
 import { usableNotifiers } from '../../notifier/notifier-domain';
 import { storeLoadById } from '../../../database/middleware-loader';
@@ -11,13 +11,14 @@ import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION
 import { generateCreateMessage, generateDeleteMessage } from '../../../database/data-changes';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/stream/stream-handler';
-import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
+import { convertMembersToUsersFromElements, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 import { isEventInPirRelationship } from '../../../manager/playbookManager/playbookManagerUtils';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 
 export interface NotifierConfiguration {
   notifiers: string[];
   authorized_members: { value: string }[];
+  applyToElements?: PlaybookBundleElementsToApply;
 }
 
 const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
@@ -40,6 +41,17 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
         },
         required: ['value'],
       },
+    },
+    applyToElements: {
+      type: 'string',
+      nullable: true,
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Resolve dynamic targets from',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
     },
   },
   required: ['notifiers', 'authorized_members'],
@@ -66,11 +78,16 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const context = executionContext('playbook_components');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
-    const { notifiers, authorized_members } = playbookNode.configuration;
+    const { notifiers, authorized_members, applyToElements } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const targetUsers = await convertMembersToUsers(
+
+    // Resolve which elements to extract dynamic targets from
+    const scope = applyToElements || playbookBundleElementsToApply.onlyMain.value;
+    const sourceElements = bundle.objects.filter((o) => isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId));
+
+    const targetUsers = await convertMembersToUsersFromElements(
       authorized_members as { value: string }[],
-      baseData,
+      sourceElements.length > 0 ? sourceElements : [baseData],
       bundle,
     );
 

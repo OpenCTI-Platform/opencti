@@ -30,14 +30,31 @@ export const toValidArray = <T = unknown>(v: T) => {
  * @param adaptedFilterValues filter.values (strings) adapted for the test (e.g. parsing numbers, forcing lower case...)
  * @param stixCandidates the values inside the DATA that we compare to the filter values; they are properly types
  *                       We always assume an array of value(s) ; use toValidArray if the data is a single, nullable value.
+ * @param changeContext optional context for has_changed evaluation: { filterKey, eventContext }
  */
 export const testGenericFilter = <T extends string | number | boolean>(
   { mode = FilterMode.Or, operator = FilterOperator.Eq }: FilterLogic,
   adaptedFilterValues: T[],
   stixCandidates: T[],
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
 ) => {
   const op = operator ?? 'eq';
   const operationMode = mode ?? 'or';
+
+  // has_changed / not_has_changed operators
+  if (op === 'has_changed' || op === 'not_has_changed') {
+    const isHasChanged = op === 'has_changed';
+    if (!changeContext) return !isHasChanged;
+    const { filterKey, eventContext } = changeContext;
+    if (eventContext.isCreation) {
+      // Creation: "has changed" if the field has a non-null value
+      return isHasChanged ? stixCandidates.length > 0 : stixCandidates.length === 0;
+    }
+    // Update: check if the filter key is in the changed attributes list
+    const changed = eventContext.changedAttributes.includes(filterKey);
+    return isHasChanged ? changed : !changed;
+  }
+
   // "(not) nil" or "(not) equal to nothing" is resolved the same way
   if (op === 'nil' || (op === 'eq' && adaptedFilterValues.length === 0)) {
     return stixCandidates.length === 0;
@@ -101,10 +118,10 @@ export const testGenericFilter = <T extends string | number | boolean>(
  * Implementation of testGenericFilter for string values.
  * String comparison is insensitive to case, and we trim values by default.
  */
-export const testStringFilter = (filter: FilterExcerpt, stixCandidates: string[]) => {
+export const testStringFilter = (filter: FilterExcerpt, stixCandidates: string[], changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const filterValuesLowerCase = filter.values.map((v) => v.toLowerCase().trim());
   const stixValuesLowerCase = stixCandidates.map((v) => v.toLowerCase().trim());
-  return testGenericFilter<string>(filter, filterValuesLowerCase, stixValuesLowerCase);
+  return testGenericFilter<string>(filter, filterValuesLowerCase, stixValuesLowerCase, changeContext);
 };
 
 /**
@@ -112,18 +129,18 @@ export const testStringFilter = (filter: FilterExcerpt, stixCandidates: string[]
  * Filter values are parsed as booleans
  * The strings "true", "yes" or "1" are interpreted as true ; anything else is false.
  */
-export const testBooleanFilter = (filter: FilterExcerpt, stixCandidate: boolean | null | undefined) => {
+export const testBooleanFilter = (filter: FilterExcerpt, stixCandidate: boolean | null | undefined, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const filterValuesAsBooleans = filter.values.map((v) => v.toLowerCase() === 'true' || v.toLowerCase() === 'yes' || v === '1');
-  return testGenericFilter<boolean>(filter, filterValuesAsBooleans, toValidArray(stixCandidate));
+  return testGenericFilter<boolean>(filter, filterValuesAsBooleans, toValidArray(stixCandidate), changeContext);
 };
 
 /**
  * Implementation of testGenericFilter for numerical values.
  * Filter values are parsed as floats.
  */
-export const testNumericFilter = (filter: FilterExcerpt, stixCandidate: number | null | undefined) => {
+export const testNumericFilter = (filter: FilterExcerpt, stixCandidate: number | null | undefined, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const filterValuesAsNumbers = filter.values.map((v) => parseFloat(v)).filter((n) => !Number.isNaN(n));
-  return testGenericFilter<number>(filter, filterValuesAsNumbers, toValidArray(stixCandidate));
+  return testGenericFilter<number>(filter, filterValuesAsNumbers, toValidArray(stixCandidate), changeContext);
 };
 
 /**
@@ -177,50 +194,16 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
 
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter
-export type TesterFunction = (data: any, filter: Filter) => boolean;
+export type TesterFunction = (data: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => boolean;
 
 /**
  * Optional event context passed through the filtering pipeline.
- * Contains the list of changed attribute keys from an update event,
- * used to evaluate has_changed/not_has_changed operators.
+ * Used to evaluate has_changed/not_has_changed operators.
  */
 export interface FilterEventContext {
-  changedAttributes: string[]; // Filter keys of changed attributes (e.g., ['confidence', 'objectMarking'])
+  changedAttributes: string[]; // Filter keys of attributes that changed (e.g., ['confidence', 'workflow_id'])
   isCreation?: boolean; // When true, has_changed evaluates to true if the field has a non-null value in the created entity
 }
-
-/**
- * Test a single filter with has_changed or not_has_changed operator against event context.
- * For creation events (isCreation=true), has_changed is true if the field has a non-null/non-empty value in the data.
- * For non-event context (delete or unknown), has_changed is always false and not_has_changed is always true.
- */
-const testChangeFilter = (filter: Filter, eventContext: FilterEventContext | undefined, data: any, testerByFilterKeyMap: Record<string, TesterFunction>): boolean => {
-  const op = filter.operator as string;
-  // If no event context is available (e.g. delete event), has_changed is always false and not_has_changed is always true
-  if (!eventContext) {
-    return op === 'not_has_changed';
-  }
-  const filterKey = filter.key[0];
-  // For creation events: consider the field "has changed" if it has a non-null value in the created entity
-  if (eventContext.isCreation) {
-    const tester = testerByFilterKeyMap[filterKey];
-    if (tester) {
-      // Use the tester with a synthetic not_nil filter to check presence of a value
-      const syntheticFilter: Filter = { ...filter, operator: 'not_nil' as any, values: [], mode: 'or' as any };
-      const hasValue = tester(data, syntheticFilter);
-      return op === 'has_changed' ? hasValue : !hasValue;
-    }
-    // If no tester exists for this key, fall back to conservative behavior
-    return op === 'not_has_changed';
-  }
-  // For update events: check if the filter key is in the list of changed attributes
-  const hasChanged = eventContext.changedAttributes.includes(filterKey);
-  return op === 'has_changed' ? hasChanged : !hasChanged;
-};
-
-const isChangeOperator = (operator: string | undefined | null): boolean => {
-  return operator === 'has_changed' || operator === 'not_has_changed';
-};
 
 /**
  * Recursive function that tests a complex filter group.
@@ -230,16 +213,17 @@ const isChangeOperator = (operator: string | undefined | null): boolean => {
  * @param filterGroup complex filter group object with nested groups and filters
  * @param testerByFilterKeyMap function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
- * @param eventContext optional context from the stream event (patch paths for has_changed evaluation)
+ * @param eventContext optional context from the stream event (for has_changed evaluation)
  */
 export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>, eventContext?: FilterEventContext): boolean => {
   if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
 
   const testSingleFilter = (filter: Filter): boolean => {
-    if (isChangeOperator(filter.operator)) {
-      return testChangeFilter(filter, eventContext, data, testerByFilterKeyMap);
-    }
-    return testerByFilterKeyMap[filter.key[0]]?.(data, filter) ?? false;
+    const tester = testerByFilterKeyMap[filter.key[0]];
+    if (!tester) return false;
+    // Build changeContext for has_changed operators — passed through to testGenericFilter
+    const changeContext = eventContext ? { filterKey: filter.key[0], eventContext } : undefined;
+    return tester(data, filter, changeContext);
   };
 
   if (filterGroup.mode === 'and') {
