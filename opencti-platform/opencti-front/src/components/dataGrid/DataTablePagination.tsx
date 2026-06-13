@@ -71,25 +71,16 @@ const DataTablePagination = ({
     setColumns(newColumns);
   };
 
-  const computeDataColumnOptions = () => {
-    const options = [];
-    if (columns) {
-      for (const column of columns.filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))) {
-        options.push(
-          {
-            value: column.id,
-            label: t_i18n(column.label ?? column.id),
-            selected: column.visible,
-            onClick: () => handleToggleVisibility(column.id),
-            menuLevel: 1,
-            keepMenuOpen: true,
-          },
-        );
-      }
-    }
-
-    return options;
-  };
+  const computeDataColumnOptions = () => (columns ?? [])
+    .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
+    .map((column) => ({
+      value: column.id,
+      label: t_i18n(column.label ?? column.id),
+      selected: column.visible,
+      onClick: () => handleToggleVisibility(column.id),
+      menuLevel: 1,
+      keepMenuOpen: true,
+    }));
 
   const resetTable = () => {
     resetColumns();
