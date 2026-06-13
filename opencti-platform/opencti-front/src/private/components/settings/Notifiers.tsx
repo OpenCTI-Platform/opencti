@@ -72,7 +72,7 @@ const Notifiers = () => {
     commitFieldPatch({
       variables: {
         id: settings.id,
-        input: { key: 'platform_notifier_auto_trigger_assignee', value: [String(checked)] },
+        input: [{ key: 'platform_notifier_auto_trigger_assignee', value: [String(checked)] }],
       },
     });
   };
