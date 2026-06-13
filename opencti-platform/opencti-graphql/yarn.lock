@@ -10242,7 +10242,7 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.2.0"
-    semver: "npm:7.8.3"
+    semver: "npm:7.8.4"
     set-interval-async: "npm:3.0.3"
     slug: "npm:11.0.1"
     source-map: "npm:0.7.6"
@@ -11349,12 +11349,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:7.8.3":
-  version: 7.8.3
-  resolution: "semver@npm:7.8.3"
+"semver@npm:7.8.4":
+  version: 7.8.4
+  resolution: "semver@npm:7.8.4"
   bin:
     semver: bin/semver.js
-  checksum: 10c0/06d96d5b5c03acd8b0dceeae458e5d4b4ea2b6c16a2b0dfa88a0f19b91d19be1a4a192c7abfa825218c4c36c087d831b928c27d5b79a622e370bd12e95578a99
+  checksum: 10c0/81b7c296fd7927b80f67fa516b75fa1017caac8167795320de28e76ccbc6f7f01763c30ecd10d6a0d8fd089708ab0548a5aebb94b0870e99c2a2b4600a46389b
   languageName: node
   linkType: hard
 
