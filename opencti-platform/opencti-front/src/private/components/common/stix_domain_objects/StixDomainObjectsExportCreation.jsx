@@ -113,7 +113,7 @@ class StixDomainObjectsExportCreation extends Component {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
-    let updatedExportContext = { ...exportContext };
+    const updatedExportContext = { ...exportContext };
     if (values.columns === 'all') {
       updatedExportContext.visible_columns = undefined;
     }

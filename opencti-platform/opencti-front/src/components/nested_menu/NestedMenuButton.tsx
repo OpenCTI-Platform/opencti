@@ -129,7 +129,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     }
   };
 
-  const handleClickOption = (event: React.MouseEvent<MouseEvent>, option: Option) => {
+  const handleClickOption = (event: React.MouseEvent<HTMLElement>, option: Option) => {
     if (option.keepMenuOpen) {
       // Prevent default of closing the menu on click
       event.preventDefault();
@@ -293,7 +293,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
                               )
                             : undefined
                         }
-                        onClick={(event: MouseEvent) => handleClickOption(event, option)}
+                        onClick={(event) => handleClickOption(event, option)}
                         onMouseMove={(event) => handleMouseMove(event, option, optIndex)}
                         onMouseLeave={(event) => handleMouseLeave(event, option, optIndex)}
                         onKeyDown={(event) => handleKeyDown(event, option)}
