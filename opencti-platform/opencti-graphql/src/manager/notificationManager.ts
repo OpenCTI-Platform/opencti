@@ -176,11 +176,15 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
   // nativeTriggers
   for (let index = 0; index < platformUsers.length; index += 1) {
     const user = platformUsers[index];
-    notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    if (isAssigneeAutoTriggerEnabled) {
+      notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    }
     notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
     if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
       notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });

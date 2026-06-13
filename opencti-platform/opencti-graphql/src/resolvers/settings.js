@@ -65,6 +65,7 @@ const settingsResolvers = {
     platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
+    platform_notifier_auto_trigger_assignee: (settings) => settings.platform_notifier_auto_trigger_assignee ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
     platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
     metrics_definition: () => getEntityMetricsConfiguration(),

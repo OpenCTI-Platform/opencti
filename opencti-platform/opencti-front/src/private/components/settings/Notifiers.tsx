@@ -1,5 +1,7 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import type { Theme } from '../../../components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -13,7 +15,12 @@ import NotifierCreation from './notifiers/NotifierCreation';
 import { useFormatter } from '../../../components/i18n';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import Card from '../../../components/common/card/Card';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { NotifiersSettingsQuery } from './__generated__/NotifiersSettingsQuery.graphql';
+import { NotifiersSettings$key } from './__generated__/NotifiersSettings.graphql';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -26,11 +33,50 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
+const notifiersSettingsQuery = graphql`
+  query NotifiersSettingsQuery {
+    settings {
+      ...NotifiersSettings
+    }
+  }
+`;
+
+const notifiersSettingsFragment = graphql`
+  fragment NotifiersSettings on Settings {
+    id
+    platform_notifier_auto_trigger_assignee
+  }
+`;
+
+const notifiersSettingsFieldPatchMutation = graphql`
+  mutation NotifiersSettingsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...NotifiersSettings
+      }
+    }
+  }
+`;
+
 const Notifiers = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notifiers | Customization | Settings'));
+
+  const settingsData = useLazyLoadQuery<NotifiersSettingsQuery>(notifiersSettingsQuery, {});
+  const settings = useFragment<NotifiersSettings$key>(notifiersSettingsFragment, settingsData.settings);
+  const [commitFieldPatch] = useApiMutation(notifiersSettingsFieldPatchMutation);
+
+  const handleToggleAutoTrigger = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    commitFieldPatch({
+      variables: {
+        id: settings.id,
+        input: { key: 'platform_notifier_auto_trigger_assignee', value: [String(checked)] },
+      },
+    });
+  };
+
   const {
     viewStorage,
     paginationOptions,
@@ -73,6 +119,17 @@ const Notifiers = () => {
   return (
     <div className={classes.container} data-testid="notifiers-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Notifiers'), current: true }]} />
+      <Card title={t_i18n('Configuration')} sx={{ marginBottom: '20px' }}>
+        <FormControlLabel
+          control={(
+            <Switch
+              checked={settings.platform_notifier_auto_trigger_assignee}
+              onChange={handleToggleAutoTrigger}
+            />
+          )}
+          label={t_i18n('Automatically notify users when they are assigned as participant or assignee')}
+        />
+      </Card>
       <ListLines
         helpers={storageHelpers}
         sortBy={sortBy}
