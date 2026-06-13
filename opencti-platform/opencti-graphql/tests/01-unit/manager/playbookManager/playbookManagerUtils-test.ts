@@ -1,16 +1,69 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  buildFilterEventContext,
   isEventCreateRelationship,
   isEventInPirRelationship,
   isEventUpdateOnEntity,
   isValidEventType,
-  StreamDataEventTypeEnum
+  StreamDataEventTypeEnum,
 } from '../../../../src/manager/playbookManager/playbookManagerUtils';
 import * as stixRelationship from '../../../../src/schema/stixRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import type { StreamDataEvent } from '../../../../src/types/event';
 
 describe('playbookManagerUtils', () => {
+  describe('buildFilterEventContext', () => {
+    it('should extract changed attribute names from update event context', () => {
+      const updateEvent = {
+        context: {
+          changes: [
+            { field: 'Report--objectMarking' },
+            { field: 'Report--confidence' },
+          ],
+        },
+      } as any;
+      const result = buildFilterEventContext(updateEvent);
+      expect(result).toEqual({ changedAttributes: ['objectMarking', 'confidence'] });
+    });
+
+    it('should deduplicate changed attributes', () => {
+      const updateEvent = {
+        context: {
+          changes: [
+            { field: 'Report--confidence' },
+            { field: 'Indicator--confidence' },
+          ],
+        },
+      } as any;
+      const result = buildFilterEventContext(updateEvent);
+      expect(result).toEqual({ changedAttributes: ['confidence'] });
+    });
+
+    it('should handle fields without EntityType prefix', () => {
+      const updateEvent = {
+        context: {
+          changes: [
+            { field: 'simpleField' },
+          ],
+        },
+      } as any;
+      const result = buildFilterEventContext(updateEvent);
+      expect(result).toEqual({ changedAttributes: ['simpleField'] });
+    });
+
+    it('should return empty changedAttributes when no changes', () => {
+      const updateEvent = { context: { changes: [] } } as any;
+      const result = buildFilterEventContext(updateEvent);
+      expect(result).toEqual({ changedAttributes: [] });
+    });
+
+    it('should return empty changedAttributes when context is undefined', () => {
+      const updateEvent = { context: undefined } as any;
+      const result = buildFilterEventContext(updateEvent);
+      expect(result).toEqual({ changedAttributes: [] });
+    });
+  });
+
   describe('isValidEventType', () => {
     it('should return true when evenType is correct and corresponding event in configuration is true', () => {
       const result = isValidEventType('create', { create: true });
@@ -29,8 +82,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'internal',
         data: {
-          relationship_type: RELATION_IN_PIR
-        }
+          relationship_type: RELATION_IN_PIR,
+        },
       } as unknown as StreamDataEvent;
       const result = isEventInPirRelationship(streamEventMock);
       expect(result).toBeTruthy();
@@ -41,8 +94,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'external',
         data: {
-          relationship_type: RELATION_IN_PIR
-        }
+          relationship_type: RELATION_IN_PIR,
+        },
       } as unknown as StreamDataEvent;
       const result = await isEventInPirRelationship(streamEventMock);
       expect(result).toBeFalsy();
@@ -53,8 +106,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'internal',
         data: {
-          relationship_type: 'random-relationship-type'
-        }
+          relationship_type: 'random-relationship-type',
+        },
       } as unknown as StreamDataEvent;
       const result = await isEventInPirRelationship(streamEventMock);
       expect(result).toBeFalsy();
@@ -65,8 +118,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'internal',
         data: {
-          relationship_type: RELATION_IN_PIR
-        }
+          relationship_type: RELATION_IN_PIR,
+        },
       } as unknown as StreamDataEvent;
       const result = await isEventInPirRelationship(streamEventMock);
       expect(result).toBeFalsy();
@@ -78,7 +131,7 @@ describe('playbookManagerUtils', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
       const streamEventMock = {
         type: 'update',
-        data: {}
+        data: {},
       } as unknown as StreamDataEvent;
       const result = isEventUpdateOnEntity(streamEventMock);
       expect(result).toBeTruthy();
@@ -88,7 +141,7 @@ describe('playbookManagerUtils', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
       const streamEventMock = {
         type: 'create',
-        data: {}
+        data: {},
       } as unknown as StreamDataEvent;
       const result = isEventUpdateOnEntity(streamEventMock);
       expect(result).toBeFalsy();
@@ -98,7 +151,7 @@ describe('playbookManagerUtils', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
       const streamEventMock = {
         type: 'update',
-        data: {}
+        data: {},
       } as unknown as StreamDataEvent;
       const result = isEventUpdateOnEntity(streamEventMock);
       expect(result).toBeFalsy();

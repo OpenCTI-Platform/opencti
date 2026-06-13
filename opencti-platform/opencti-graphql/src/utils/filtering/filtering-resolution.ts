@@ -253,7 +253,7 @@ export const convertFiltersToQueryOptions = async (filters: FilterGroup | null, 
  * Strip has_changed / not_has_changed filters from a filter group.
  * These operators are only meaningful in event-context (stream) filtering, not database queries.
  */
-const stripEventContextFilters = (filterGroup: FilterGroup): FilterGroup | null => {
+export const stripEventContextFilters = (filterGroup: FilterGroup): FilterGroup | null => {
   const strippedFilters = filterGroup.filters.filter(
     (f) => (f.operator as string) !== 'has_changed' && (f.operator as string) !== 'not_has_changed',
   );

@@ -324,17 +324,17 @@ describe('Filter Boolean logic engine ', () => {
             filters: [
               { mode: FilterMode.And, key: ['id'], operator: FilterOperator.NotEq, values: ['aa', 'bb'] }, // F1
               { mode: FilterMode.Or, key: ['refs'], operator: FilterOperator.Eq, values: ['ref1', 'ref2'] }, // F2
-              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Gt, values: ['100'] } // F3
+              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Gt, values: ['100'] }, // F3
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           { // FG2
             mode: FilterMode.And,
             filters: [
               { mode: FilterMode.And, key: ['options'], operator: FilterOperator.Nil, values: [] }, // F4
-              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Lt, values: ['100'] } // F5
+              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Lt, values: ['100'] }, // F5
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           { // FG3
             mode: FilterMode.Or,
@@ -344,21 +344,21 @@ describe('Filter Boolean logic engine ', () => {
                 mode: FilterMode.Or,
                 filters: [
                   { mode: FilterMode.And, key: ['color'], operator: FilterOperator.NotEq, values: ['red', 'yellow'] }, // F6
-                  { mode: FilterMode.And, key: ['height'], operator: FilterOperator.Gt, values: ['100'] } // F7
+                  { mode: FilterMode.And, key: ['height'], operator: FilterOperator.Gt, values: ['100'] }, // F7
                 ],
-                filterGroups: []
+                filterGroups: [],
               },
               { // FG5
                 mode: FilterMode.And,
                 filters: [
                   { mode: FilterMode.And, key: ['posX'], operator: FilterOperator.Lt, values: ['50'] }, // F8
-                  { mode: FilterMode.And, key: ['posY'], operator: FilterOperator.Lt, values: ['10'] } // F9
+                  { mode: FilterMode.And, key: ['posY'], operator: FilterOperator.Lt, values: ['10'] }, // F9
                 ],
-                filterGroups: []
-              }
-            ]
-          }
-        ]
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
       };
 
       // ----> (F1- or F2+ or F3-) --> FG1+
@@ -384,7 +384,7 @@ describe('Filter Boolean logic engine ', () => {
       // failing F4 will propagate to failing FG
       const dataNoMatch1 = {
         ...dataMatch,
-        options: ['opt1']
+        options: ['opt1'],
       };
       expect(engine.testFilterGroup(dataNoMatch1, filterGroup, testerByFilterKeyMap)).toEqual(false);
 
@@ -526,6 +526,52 @@ describe('Filter Boolean logic engine ', () => {
       const eventContext = { changedAttributes: ['name'] };
 
       expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContext)).toEqual(false);
+    });
+
+    it('handles has_changed combined with other filters (AND mode)', () => {
+      // has_changed on score AND score > 50: both must be true
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.Gt, values: ['50'] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // score changed AND score > 50 → true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['score'] })).toEqual(true);
+      // score NOT changed AND score > 50 → false (has_changed fails)
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['description'] })).toEqual(false);
+
+      // score changed but score < 50 → false (gt fails)
+      const dataLow = { id: 'x', score: 30 };
+      expect(engine.testFilterGroup(dataLow, filterGroup, testerByFilterKeyMap, { changedAttributes: ['score'] })).toEqual(false);
+    });
+
+    it('handles has_changed combined with other filters (OR mode)', () => {
+      // has_changed on score OR id == 'x': at least one must be true
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.Or,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+          { mode: FilterMode.Or, key: ['id'], operator: FilterOperator.Eq, values: ['x'] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // score not changed but id == 'x' → true (second filter matches)
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['description'] })).toEqual(true);
+      // score changed → true (first filter matches)
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['score'] })).toEqual(true);
+
+      // neither matches
+      const dataOther = { id: 'y', score: 80 };
+      expect(engine.testFilterGroup(dataOther, filterGroup, testerByFilterKeyMap, { changedAttributes: ['description'] })).toEqual(false);
     });
   });
 });
