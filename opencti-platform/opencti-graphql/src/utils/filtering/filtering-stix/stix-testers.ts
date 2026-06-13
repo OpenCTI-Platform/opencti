@@ -48,7 +48,8 @@ import {
   PIR_SCORE_FILTER,
   PIR_SCORE_SUBFILTER,
   PIR_IDS_SUBFILTER,
-  DESCRIPTION_FILTER, X_OPENCTI_WORKFLOW_ID,
+  DESCRIPTION_FILTER,
+  X_OPENCTI_WORKFLOW_ID,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';

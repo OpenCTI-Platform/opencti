@@ -24,10 +24,6 @@ const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup) => {
     if (filter.key.length !== 1) {
       throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
     }
-    // has_changed/not_has_changed operators are handled directly by the engine and don't need a key tester
-    if (filter.operator === 'has_changed' || filter.operator === 'not_has_changed') {
-      return;
-    }
     if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
       const availableFilters = JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP));
       throw UnsupportedError('Stix filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });

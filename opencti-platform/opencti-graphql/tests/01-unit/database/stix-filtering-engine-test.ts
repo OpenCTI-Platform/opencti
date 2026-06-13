@@ -299,15 +299,15 @@ describe('Filter Boolean logic engine ', () => {
   describe('testFilterGroup', () => {
     // fake testers for our dummy data (a simplistic version)
     const testerByFilterKeyMap = {
-      id: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.id]),
-      refs: (data: any, filter: Filter) => engine.testStringFilter(filter, data.refs),
-      score: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.score),
-      labels: (data: any, filter: Filter) => engine.testStringFilter(filter, data.labels),
-      color: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.color]),
-      height: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.height),
-      posX: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posX),
-      posY: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posY),
-      options: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.options),
+      id: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, [data.id], changeContext),
+      refs: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, data.refs, changeContext),
+      score: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.score, changeContext),
+      labels: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, data.labels, changeContext),
+      color: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, [data.color], changeContext),
+      height: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.height, changeContext),
+      posX: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.posX, changeContext),
+      posY: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.posY, changeContext),
+      options: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.options, changeContext),
     };
 
     it('handles empty filters', () => {
@@ -404,94 +404,7 @@ describe('Filter Boolean logic engine ', () => {
       expect(engine.testFilterGroup(dataMatch2, filterGroup, testerByFilterKeyMap)).toEqual(true);
     });
 
-    it('handles has_changed on a key WITHOUT a registered tester (update event)', () => {
-      // "name" is NOT in testerByFilterKeyMap — previously this would always return false
-      const filterGroup: FilterGroup = {
-        mode: FilterMode.And,
-        filters: [
-          { mode: FilterMode.Or, key: ['name'], operator: FilterOperator.HasChanged, values: [] },
-        ],
-        filterGroups: [],
-      };
-
-      const data = { id: 'x', name: 'something' };
-      const eventContextChanged = { changedAttributes: ['name', 'description'] };
-      const eventContextNotChanged = { changedAttributes: ['description'] };
-
-      // name changed → has_changed should be true
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextChanged)).toEqual(true);
-      // name NOT changed → has_changed should be false
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextNotChanged)).toEqual(false);
-    });
-
-    it('handles not_has_changed on a key WITHOUT a registered tester (update event)', () => {
-      const filterGroup: FilterGroup = {
-        mode: FilterMode.And,
-        filters: [
-          { mode: FilterMode.Or, key: ['name'], operator: FilterOperator.NotHasChanged, values: [] },
-        ],
-        filterGroups: [],
-      };
-
-      const data = { id: 'x', name: 'something' };
-      const eventContextChanged = { changedAttributes: ['name'] };
-      const eventContextNotChanged = { changedAttributes: ['description'] };
-
-      // name changed → not_has_changed should be false
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextChanged)).toEqual(false);
-      // name NOT changed → not_has_changed should be true
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextNotChanged)).toEqual(true);
-    });
-
-    it('handles has_changed without eventContext (e.g. delete event)', () => {
-      const filterGroup: FilterGroup = {
-        mode: FilterMode.And,
-        filters: [
-          { mode: FilterMode.Or, key: ['name'], operator: FilterOperator.HasChanged, values: [] },
-        ],
-        filterGroups: [],
-      };
-
-      const data = { id: 'x', name: 'something' };
-
-      // No eventContext → has_changed defaults to false
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap)).toEqual(false);
-    });
-
-    it('handles not_has_changed without eventContext (e.g. delete event)', () => {
-      const filterGroup: FilterGroup = {
-        mode: FilterMode.And,
-        filters: [
-          { mode: FilterMode.Or, key: ['name'], operator: FilterOperator.NotHasChanged, values: [] },
-        ],
-        filterGroups: [],
-      };
-
-      const data = { id: 'x', name: 'something' };
-
-      // No eventContext → not_has_changed defaults to true
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap)).toEqual(true);
-    });
-
-    it('handles has_changed with isCreation context on key WITHOUT tester', () => {
-      const filterGroup: FilterGroup = {
-        mode: FilterMode.And,
-        filters: [
-          { mode: FilterMode.Or, key: ['name'], operator: FilterOperator.HasChanged, values: [] },
-        ],
-        filterGroups: [],
-      };
-
-      const data = { id: 'x', name: 'something' };
-
-      // Creation: the engine cannot inspect the actual value without a tester,
-      // so stixCandidates is [] → has_changed evaluates to false
-      const creationContext = { changedAttributes: [], isCreation: true };
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(false);
-    });
-
-    it('handles has_changed on a key WITH a registered tester (update event)', () => {
-      // "score" IS in testerByFilterKeyMap — should bypass the tester and resolve via eventContext
+    it('handles has_changed on update event (attribute changed)', () => {
       const filterGroup: FilterGroup = {
         mode: FilterMode.And,
         filters: [
@@ -501,11 +414,118 @@ describe('Filter Boolean logic engine ', () => {
       };
 
       const data = { id: 'x', score: 80 };
+      const eventContextChanged = { changedAttributes: ['score', 'description'] };
+      const eventContextNotChanged = { changedAttributes: ['description'] };
+
+      // score changed → has_changed should be true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextChanged)).toEqual(true);
+      // score NOT changed → has_changed should be false
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextNotChanged)).toEqual(false);
+    });
+
+    it('handles not_has_changed on update event', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.NotHasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
       const eventContextChanged = { changedAttributes: ['score'] };
       const eventContextNotChanged = { changedAttributes: ['description'] };
 
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextChanged)).toEqual(true);
-      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextNotChanged)).toEqual(false);
+      // score changed → not_has_changed should be false
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextChanged)).toEqual(false);
+      // score NOT changed → not_has_changed should be true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextNotChanged)).toEqual(true);
+    });
+
+    it('handles has_changed without eventContext (e.g. delete event)', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // No eventContext → has_changed defaults to false
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap)).toEqual(false);
+    });
+
+    it('handles not_has_changed without eventContext (e.g. delete event)', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.NotHasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // No eventContext → not_has_changed defaults to true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap)).toEqual(true);
+    });
+
+    it('handles has_changed with isCreation context (field has value)', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const creationContext = { changedAttributes: [], isCreation: true };
+
+      // score has a value → has_changed = true
+      const dataWithScore = { id: 'x', score: 80 };
+      expect(engine.testFilterGroup(dataWithScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(true);
+
+      // score is null → has_changed = false
+      const dataNoScore = { id: 'x', score: null };
+      expect(engine.testFilterGroup(dataNoScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(false);
+    });
+
+    it('handles not_has_changed with isCreation context', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.NotHasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const creationContext = { changedAttributes: [], isCreation: true };
+
+      // score has a value → not_has_changed = false
+      const dataWithScore = { id: 'x', score: 80 };
+      expect(engine.testFilterGroup(dataWithScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(false);
+
+      // score is null → not_has_changed = true
+      const dataNoScore = { id: 'x', score: null };
+      expect(engine.testFilterGroup(dataNoScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(true);
+    });
+
+    it('handles has_changed on key without tester (returns false)', () => {
+      // "name" is NOT in testerByFilterKeyMap → returns false (unsupported key)
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['name'], operator: FilterOperator.HasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', name: 'something' };
+      const eventContext = { changedAttributes: ['name'] };
+
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContext)).toEqual(false);
     });
   });
 });
