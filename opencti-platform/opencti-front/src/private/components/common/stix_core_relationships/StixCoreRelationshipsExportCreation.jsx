@@ -92,7 +92,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const finalFilters = filters ?? emptyFilterGroup;
 
-    let updatedExportContext = { ...exportContext };
+    const updatedExportContext = { ...exportContext };
     if (values.columns === 'all') {
       updatedExportContext.visible_columns = undefined;
     }

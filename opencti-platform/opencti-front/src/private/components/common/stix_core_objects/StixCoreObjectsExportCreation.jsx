@@ -71,7 +71,7 @@ const StixCoreObjectsExportCreation = ({
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
-    let updatedExportContext = { ...exportContext };
+    const updatedExportContext = { ...exportContext };
     if (values.columns === 'all') {
       updatedExportContext.visible_columns = undefined;
     }
@@ -80,14 +80,14 @@ const StixCoreObjectsExportCreation = ({
       mutation: StixCoreObjectsExportCreationMutation,
       variables: {
         input: {
-          updatedExportContext,
+          exportContext: updatedExportContext,
           format: values.format,
           exportType: exportType ?? 'full',
           selectedIds,
           orderBy,
           filters,
           orderMode,
-          exportContext: contentMaxMarkings,
+          contentMaxMarkings,
           fileMarkings,
           search,
         },

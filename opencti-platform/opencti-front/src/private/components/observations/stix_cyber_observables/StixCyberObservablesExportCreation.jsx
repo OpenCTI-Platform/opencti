@@ -99,7 +99,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
     const { orderBy, orderMode, filters, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
-    let updatedExportContext = { ...exportContext };
+    const updatedExportContext = { ...exportContext };
     if (values.columns === 'all') {
       updatedExportContext.visible_columns = undefined;
     }
