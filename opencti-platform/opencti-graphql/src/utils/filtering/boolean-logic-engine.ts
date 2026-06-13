@@ -219,10 +219,21 @@ export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFil
   if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
 
   const testSingleFilter = (filter: Filter): boolean => {
+    const changeContext = eventContext ? { filterKey: filter.key[0], eventContext } : undefined;
+
+    // has_changed/not_has_changed operators don't require a key tester;
+    // they are resolved purely from the event context (changedAttributes / isCreation).
+    if (filter.operator === 'has_changed' || filter.operator === 'not_has_changed') {
+      return testGenericFilter(
+        { mode: filter.mode, operator: filter.operator },
+        [],
+        [],
+        changeContext,
+      );
+    }
+
     const tester = testerByFilterKeyMap[filter.key[0]];
     if (!tester) return false;
-    // Build changeContext for has_changed operators — passed through to testGenericFilter
-    const changeContext = eventContext ? { filterKey: filter.key[0], eventContext } : undefined;
     return tester(data, filter, changeContext);
   };
 
