@@ -239,7 +239,7 @@ const FilterIconButtonContainer: FunctionComponent<
         );
         const isNotLastFilter = index < displayedFilters.length - 1;
 
-        const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator ?? 'eq')
+        const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
         // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)

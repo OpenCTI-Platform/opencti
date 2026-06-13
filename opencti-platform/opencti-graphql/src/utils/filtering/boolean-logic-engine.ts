@@ -180,6 +180,49 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
 export type TesterFunction = (data: any, filter: Filter) => boolean;
 
 /**
+ * Optional event context passed through the filtering pipeline.
+ * Contains the list of changed attribute keys from an update event,
+ * used to evaluate has_changed/not_has_changed operators.
+ */
+export interface FilterEventContext {
+  changedAttributes: string[]; // Filter keys of changed attributes (e.g., ['confidence', 'objectMarking'])
+  isCreation?: boolean; // When true, has_changed evaluates to true if the field has a non-null value in the created entity
+}
+
+/**
+ * Test a single filter with has_changed or not_has_changed operator against event context.
+ * For creation events (isCreation=true), has_changed is true if the field has a non-null/non-empty value in the data.
+ * For non-event context (delete or unknown), has_changed is always false and not_has_changed is always true.
+ */
+const testChangeFilter = (filter: Filter, eventContext: FilterEventContext | undefined, data: any, testerByFilterKeyMap: Record<string, TesterFunction>): boolean => {
+  const op = filter.operator as string;
+  // If no event context is available (e.g. delete event), has_changed is always false and not_has_changed is always true
+  if (!eventContext) {
+    return op === 'not_has_changed';
+  }
+  const filterKey = filter.key[0];
+  // For creation events: consider the field "has changed" if it has a non-null value in the created entity
+  if (eventContext.isCreation) {
+    const tester = testerByFilterKeyMap[filterKey];
+    if (tester) {
+      // Use the tester with a synthetic not_nil filter to check presence of a value
+      const syntheticFilter: Filter = { ...filter, operator: 'not_nil' as any, values: [], mode: 'or' as any };
+      const hasValue = tester(data, syntheticFilter);
+      return op === 'has_changed' ? hasValue : !hasValue;
+    }
+    // If no tester exists for this key, fall back to conservative behavior
+    return op === 'not_has_changed';
+  }
+  // For update events: check if the filter key is in the list of changed attributes
+  const hasChanged = eventContext.changedAttributes.includes(filterKey);
+  return op === 'has_changed' ? hasChanged : !hasChanged;
+};
+
+const isChangeOperator = (operator: string | undefined | null): boolean => {
+  return operator === 'has_changed' || operator === 'not_has_changed';
+};
+
+/**
  * Recursive function that tests a complex filter group.
  * Thanks to the param getTesterFromFilterKey, this function is agnostic of the data content and how to test it.
  * It only takes care of the recursion mechanism.
@@ -187,17 +230,25 @@ export type TesterFunction = (data: any, filter: Filter) => boolean;
  * @param filterGroup complex filter group object with nested groups and filters
  * @param testerByFilterKeyMap function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
+ * @param eventContext optional context from the stream event (patch paths for has_changed evaluation)
  */
-export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>): boolean => {
+export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>, eventContext?: FilterEventContext): boolean => {
   if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
+
+  const testSingleFilter = (filter: Filter): boolean => {
+    if (isChangeOperator(filter.operator)) {
+      return testChangeFilter(filter, eventContext, data, testerByFilterKeyMap);
+    }
+    return testerByFilterKeyMap[filter.key[0]]?.(data, filter) ?? false;
+  };
+
   if (filterGroup.mode === 'and') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
-      // note that we are not compatible with multiple keys yet, so we'll always check the first one only
-      results.push(filterGroup.filters.every((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter)));
+      results.push(filterGroup.filters.every((filter) => testSingleFilter(filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap)));
+      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, eventContext)));
     }
     return results.length > 0 && results.every((isTrue) => isTrue);
   }
@@ -205,10 +256,10 @@ export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFil
   if (filterGroup.mode === 'or') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
-      results.push(filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter)));
+      results.push(filterGroup.filters.some((filter) => testSingleFilter(filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap)));
+      results.push(filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, eventContext)));
     }
     return results.length > 0 && results.some((isTrue) => isTrue);
   }

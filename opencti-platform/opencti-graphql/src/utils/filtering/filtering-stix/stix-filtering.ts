@@ -1,5 +1,5 @@
 import { FILTER_KEY_TESTERS_MAP } from './stix-testers';
-import { testFilterGroup } from '../boolean-logic-engine';
+import { type FilterEventContext, testFilterGroup } from '../boolean-logic-engine';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../../access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { getEntitiesMapFromCache } from '../../../database/cache';
@@ -23,6 +23,10 @@ const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup) => {
     }
     if (filter.key.length !== 1) {
       throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
+    }
+    // has_changed/not_has_changed operators are handled directly by the engine and don't need a key tester
+    if (filter.operator === 'has_changed' || filter.operator === 'not_has_changed') {
+      return;
     }
     if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
       const availableFilters = JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP));
@@ -55,6 +59,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   stix: any,
   filterGroup: FilterGroup | undefined,
   resolutionMap: FilterResolutionMap,
+  eventContext?: FilterEventContext,
 ): Promise<boolean> => {
   // we are limited to certain filter keys right now, so better throw an explicit error if a key is not compatible
   // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
@@ -74,7 +79,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   const resolvedFilterGroup = await resolveFilterGroup(context, user, filterGroup, resolutionMap);
 
   // then call our boolean engine on the filter group using the stix testers
-  return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP);
+  return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP, eventContext);
 };
 
 /**
@@ -87,6 +92,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
  * @param user
  * @param stix stix object from the raw event stream
  * @param filterGroup
+ * @param eventContext optional event context for has_changed/not_has_changed operator evaluation
  * @throws {Error} on invalid filter keys
  */
 export const isStixMatchFilterGroup = async (
@@ -94,6 +100,7 @@ export const isStixMatchFilterGroup = async (
   user: AuthUser,
   stix: any,
   filterGroup?: FilterGroup,
+  eventContext?: FilterEventContext,
 ): Promise<boolean> => {
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
@@ -102,5 +109,5 @@ export const isStixMatchFilterGroup = async (
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   const map = filterGroup ? await buildResolutionMapForFilterGroup(context, user, filterGroup, cache) : new Map();
 
-  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map);
+  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map, eventContext);
 };

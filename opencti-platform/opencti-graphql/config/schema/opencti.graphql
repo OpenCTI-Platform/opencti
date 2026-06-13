@@ -145,6 +145,8 @@ enum FilterOperator {
   within
   only_eq_to
   not_only_eq_to
+  has_changed
+  not_has_changed
 }
 
 enum XTMHubRegistrationStatus {
