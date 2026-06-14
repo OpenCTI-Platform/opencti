@@ -59,7 +59,17 @@ const DataTableInternalFilters = ({
       paginationOptions,
     },
   } = useDataTableContext();
-  const extendedExportContext = exportContext ? { ...exportContext, visible_columns: columns.filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible).map((c) => c.id) } : undefined;
+  const extendedExportContext = React.useMemo(
+    () => (exportContext
+      ? {
+          ...exportContext,
+          visible_columns: columns
+            .filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible)
+            .map((c) => c.id),
+        }
+      : undefined),
+    [exportContext, columns],
+  );
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
 
   return (
