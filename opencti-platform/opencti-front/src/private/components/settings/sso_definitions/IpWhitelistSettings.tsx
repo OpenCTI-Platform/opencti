@@ -20,6 +20,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { FieldOption } from '../../../../utils/field';
 import { IpWhitelistSettingsQuery } from './__generated__/IpWhitelistSettingsQuery.graphql';
+import type { GroupSetDefaultGroupForIngestionUsersQuery$data } from '@components/settings/groups/__generated__/GroupSetDefaultGroupForIngestionUsersQuery.graphql';
 
 const ipWhitelistSettingsQuery = graphql`
   query IpWhitelistSettingsQuery {
@@ -82,7 +83,8 @@ const IpWhitelistSettingsContent = () => {
         filters: [{ key: ['auto_integration_assignation'], values: ['global'] }],
         filterGroups: [],
       },
-    }).toPromise().then((data: any) => {
+    }).toPromise().then((rawData) => {
+      const data = rawData as GroupSetDefaultGroupForIngestionUsersQuery$data | undefined;
       const group = data?.groups?.edges?.[0]?.node;
       if (group) {
         setServiceAccountGroupId(group.id);
@@ -184,7 +186,8 @@ const IpWhitelistSettingsContent = () => {
                                 filters: [{ key: ['auto_integration_assignation'], values: ['global'] }],
                                 filterGroups: [],
                               },
-                            }).toPromise().then((result: any) => {
+                            }).toPromise().then((rawResult) => {
+                              const result = rawResult as GroupSetDefaultGroupForIngestionUsersQuery$data | undefined;
                               const group = result?.groups?.edges?.[0]?.node;
                               if (group) {
                                 setServiceAccountGroupId(group.id);
@@ -243,7 +246,7 @@ const IpWhitelistSettingsContent = () => {
                                       const last = fieldData[fieldData.length - 1];
                                       const val = last?.value ?? '';
                                       const label = last?.label ?? val;
-                                      const type = (last as any)?.type ?? 'User';
+                                      const type = last?.type ?? 'User';
                                       if (val && !localExclusions.some((e) => e.id === val)) {
                                         updateLocalExclusions([...localExclusions, { id: val, name: label, entity_type: type }]);
                                       }
@@ -307,7 +310,8 @@ const IpWhitelistSettingsContent = () => {
               updateLocalExclusions(localExclusions.filter((e) => e.id !== pendingRemoveExclusion.id));
             }
             setPendingRemoveExclusion(null);
-          }}>
+          }}
+          >
             {t_i18n('Confirm removal')}
           </Button>
         </DialogActions>
@@ -323,4 +327,3 @@ const IpWhitelistSettings = () => (
 );
 
 export default IpWhitelistSettings;
-
