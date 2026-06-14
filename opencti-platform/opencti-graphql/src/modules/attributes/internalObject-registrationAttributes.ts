@@ -230,7 +230,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'platform_no_access_message', label: 'No access to knowledge error message', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_ip_whitelist', label: 'IP whitelist', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'platform_ip_whitelist_enabled', label: 'IP whitelist enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'platform_ip_whitelist_exclusion_ids', label: 'IP whitelist exclusion IDs', type: 'string', format: 'id', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'platform_ip_whitelist_exclusion_ids', label: 'IP whitelist exclusion IDs', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER, ENTITY_TYPE_GROUP, ENTITY_TYPE_IDENTITY_ORGANIZATION], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'platform_translations', label: 'Translations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_mandatory', label: 'OTP mandatory', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_min_length', label: 'Min policy length', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
