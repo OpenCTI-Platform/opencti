@@ -14,6 +14,7 @@ const IP_WHITELIST_CONF_ENABLED = conf.get('app:ip_whitelist_enabled') ?? true;
 // Throttle rejection logs: at most one log per IP per window to prevent flooding.
 // A browser tab generates many polling requests — without dedup, logs would explode.
 const REJECTION_LOG_WINDOW_MS = 60_000; // 1 minute
+const REJECTION_LOG_MAX_ENTRIES = 1000;
 const rejectionLogCache = new Map(); // ip -> lastLogTimestamp
 
 const shouldLogRejection = (ip) => {
@@ -23,18 +24,16 @@ const shouldLogRejection = (ip) => {
     return false;
   }
   rejectionLogCache.set(ip, now);
-  return true;
-};
-
-// Periodically clean stale entries to avoid unbounded memory growth
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, ts] of rejectionLogCache) {
-    if ((now - ts) > REJECTION_LOG_WINDOW_MS * 2) {
-      rejectionLogCache.delete(ip);
+  // Inline eviction: if cache grows too large, purge stale entries
+  if (rejectionLogCache.size > REJECTION_LOG_MAX_ENTRIES) {
+    for (const [cachedIp, ts] of rejectionLogCache) {
+      if ((now - ts) > REJECTION_LOG_WINDOW_MS * 2) {
+        rejectionLogCache.delete(cachedIp);
+      }
     }
   }
-}, REJECTION_LOG_WINDOW_MS * 5);
+  return true;
+};
 
 /**
  * Checks if a source IP matches at least one entry in the whitelist.
