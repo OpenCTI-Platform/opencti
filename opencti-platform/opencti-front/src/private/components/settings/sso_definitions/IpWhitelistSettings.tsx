@@ -232,7 +232,7 @@ const IpWhitelistSettingsContent = () => {
                             initialValues={{ exclusion_member: [] }}
                           >
                             {({ setFieldValue: setExclusionFieldValue }) => (
-                              <Form>
+                              <div>
                                 <ObjectMembersField
                                   name="exclusion_member"
                                   label={t_i18n('Add user, group or organization')}
@@ -253,7 +253,7 @@ const IpWhitelistSettingsContent = () => {
                                   }}
                                   multiple
                                 />
-                              </Form>
+                              </div>
                             )}
                           </Formik>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>

@@ -4,10 +4,37 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import conf, { logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
+import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
+import { publishUserAction } from '../listener/UserActionListener';
 
 // Escape hatch: set app:ip_whitelist_enabled to false in config to bypass
 // the whitelist entirely (useful for recovery if admin locks themselves out).
 const IP_WHITELIST_CONF_ENABLED = conf.get('app:ip_whitelist_enabled') ?? true;
+
+// Throttle rejection logs: at most one log per IP per window to prevent flooding.
+// A browser tab generates many polling requests — without dedup, logs would explode.
+const REJECTION_LOG_WINDOW_MS = 60_000; // 1 minute
+const rejectionLogCache = new Map(); // ip -> lastLogTimestamp
+
+const shouldLogRejection = (ip) => {
+  const now = Date.now();
+  const lastLog = rejectionLogCache.get(ip);
+  if (lastLog && (now - lastLog) < REJECTION_LOG_WINDOW_MS) {
+    return false;
+  }
+  rejectionLogCache.set(ip, now);
+  return true;
+};
+
+// Periodically clean stale entries to avoid unbounded memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, ts] of rejectionLogCache) {
+    if ((now - ts) > REJECTION_LOG_WINDOW_MS * 2) {
+      rejectionLogCache.delete(ip);
+    }
+  }
+}, REJECTION_LOG_WINDOW_MS * 5);
 
 /**
  * Checks if a source IP matches at least one entry in the whitelist.
@@ -63,7 +90,14 @@ export const isUserExcluded = (user, exclusionIds) => {
 };
 
 // GraphQL operations that must remain accessible for login/auth flow
-const LOGIN_OPERATIONS = ['token', 'publicSettings', 'LoginRootPublic', 'OTPGeneration', 'OTPValidation', 'OTPLogin'];
+const LOGIN_OPERATIONS = [
+  'token',
+  'publicSettings',
+  'LoginRootPublic',
+  'OTPGeneration',
+  'OTPValidation',
+  'OTPLogin',
+];
 
 /**
  * Parses the GraphQL operation name from the request body.
@@ -123,17 +157,27 @@ const ipWhitelistMiddleware = async (req, res, next) => {
 
     // IP does NOT match the whitelist — check if request should still be allowed
 
-    const sessionUser = req.session?.user;
-    const hasBearerToken = !!(req.headers.authorization && req.headers.authorization.startsWith('Bearer '));
+    // Resolve authenticated user from session or bearer token
+    const authenticatedUser = await authenticateUserFromRequest(context, req);
 
-    if (!sessionUser && !hasBearerToken) {
+    if (!authenticatedUser) {
       // Unauthenticated: only allow login-related operations
       const operationName = getOperationName(req);
       if (operationName && LOGIN_OPERATIONS.some((op) => operationName.toLowerCase().includes(op.toLowerCase()))) {
         return next();
       }
       // Block all other unauthenticated requests (e.g. public dashboards)
-      logApp.warn('[IP_WHITELIST] Access denied for unauthenticated IP', { ip: sourceIp });
+      if (shouldLogRejection(sourceIp)) {
+        logApp.warn('[IP_WHITELIST] Access denied for unauthenticated IP', { ip: sourceIp });
+        await publishUserAction({
+          user: SYSTEM_USER,
+          event_type: 'authentication',
+          event_scope: 'login',
+          event_access: 'administration',
+          status: 'error',
+          context_data: { provider: 'ip_whitelist', username: sourceIp },
+        });
+      }
       return res.status(200).json({
         data: null,
         errors: [{
@@ -146,17 +190,27 @@ const ipWhitelistMiddleware = async (req, res, next) => {
 
     // Authenticated (session or token): check exclusion list
     const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
-    if (sessionUser && isNotEmptyField(exclusionIds)) {
+    if (isNotEmptyField(exclusionIds)) {
       const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-      const fullUser = platformUsers.get(sessionUser.id);
+      const fullUser = platformUsers.get(authenticatedUser.id);
       if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
         return next();
       }
     }
 
     // Authenticated but not excluded and IP not in whitelist → block
-    const userId = sessionUser?.id ?? 'token-user';
-    logApp.warn('[IP_WHITELIST] Access denied for IP', { ip: sourceIp, user_id: userId });
+    if (shouldLogRejection(sourceIp)) {
+      logApp.warn('[IP_WHITELIST] Access denied for IP', { ip: sourceIp, user_id: authenticatedUser.id });
+      const auditUser = userWithOrigin(req, authenticatedUser);
+      await publishUserAction({
+        user: auditUser,
+        event_type: 'authentication',
+        event_scope: 'login',
+        event_access: 'administration',
+        status: 'error',
+        context_data: { provider: 'ip_whitelist', username: authenticatedUser.user_email ?? authenticatedUser.name },
+      });
+    }
     return res.status(200).json({
       data: null,
       errors: [{

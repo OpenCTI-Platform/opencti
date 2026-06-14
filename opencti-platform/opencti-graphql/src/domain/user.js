@@ -1498,6 +1498,9 @@ export const otpUserDeactivation = async (context, user, id) => {
  * The middleware will block any subsequent requests from this IP.
  */
 const checkIpWhitelistOnLogin = async (context, loggedUser) => {
+  // Global kill switch via configuration file (app:ip_whitelist_enabled)
+  const ipWhitelistConfEnabled = conf.get('app:ip_whitelist_enabled') ?? true;
+  if (!ipWhitelistConfEnabled) return;
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (!settings?.platform_ip_whitelist_enabled) return;
   const whitelist = settings.platform_ip_whitelist;
