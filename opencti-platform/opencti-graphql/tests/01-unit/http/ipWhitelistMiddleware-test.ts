@@ -1,5 +1,47 @@
-import { describe, expect, it } from 'vitest';
-import { ipMatchesWhitelist, isUserExcluded, isLoginOnlyRequest } from '../../../src/http/ipWhitelistMiddleware';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import ipWhitelistMiddleware, { ipMatchesWhitelist, isUserExcluded, isLoginOnlyRequest, checkIpWhitelistForRequest } from '../../../src/http/ipWhitelistMiddleware';
+import * as cache from '../../../src/database/cache';
+import * as userDomain from '../../../src/domain/user';
+import * as listener from '../../../src/listener/UserActionListener';
+import { logApp } from '../../../src/config/conf';
+
+vi.mock('../../../src/database/cache', () => ({
+  getEntityFromCache: vi.fn(),
+  getEntitiesMapFromCache: vi.fn(),
+}));
+
+vi.mock('../../../src/domain/user', () => ({
+  authenticateUserFromRequest: vi.fn(),
+  userWithOrigin: vi.fn((req, user) => user),
+}));
+
+vi.mock('../../../src/listener/UserActionListener', () => ({
+  publishUserAction: vi.fn(),
+}));
+
+vi.mock('../../../src/config/conf', async (importOriginal: any) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      get: vi.fn((key) => {
+        if (key === 'app:ip_whitelist_enabled') return true;
+        return actual.default.get(key);
+      }),
+    },
+    logApp: {
+      ...actual.logApp,
+      warn: vi.fn(),
+      error: vi.fn(),
+    },
+  };
+});
+
+vi.mock('../../../src/utils/access', () => ({
+  executionContext: vi.fn().mockReturnValue('mock-context'),
+  SYSTEM_USER: { id: 'system-user' },
+}));
 
 // ─── ipMatchesWhitelist ─────────────────────────────────────────────────────
 
@@ -346,5 +388,200 @@ describe('isLoginOnlyRequest', () => {
       };
       expect(isLoginOnlyRequest(req)).toBe(false);
     });
+  });
+});
+
+// ─── ipWhitelistMiddleware ──────────────────────────────────────────────────
+
+describe('ipWhitelistMiddleware', () => {
+  let req: any;
+  let res: any;
+  let next: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    req = { ip: '192.168.1.50', body: {} };
+    res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+    next = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should call next if no source IP is present', async () => {
+    req.ip = undefined;
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should call next if whitelist is disabled in settings', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: false,
+    });
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should call next if whitelist is empty', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: [],
+    });
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should call next if IP matches the whitelist', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['192.168.1.0/24'],
+    });
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should allow unauthenticated login requests when not in whitelist', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+    });
+    vi.mocked(userDomain.authenticateUserFromRequest as any).mockResolvedValueOnce(null);
+    req.body = { query: 'query { publicSettings { platform_title } }' };
+
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should block unauthenticated requests and log rejection (throttled)', async () => {
+    vi.useFakeTimers();
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValue({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+    });
+    vi.mocked(userDomain.authenticateUserFromRequest as any).mockResolvedValue(null);
+    req.body = { query: 'query { me { id } }' }; // Not a login query
+    req.ip = '203.0.113.1';
+
+    // First request should block and log
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ errors: expect.any(Array) }));
+    expect(logApp.warn).toHaveBeenCalledTimes(1);
+    expect(listener.publishUserAction).toHaveBeenCalledTimes(1);
+
+    // Second request within window should block but NOT log
+    vi.clearAllMocks();
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(logApp.warn).not.toHaveBeenCalled();
+    expect(listener.publishUserAction).not.toHaveBeenCalled();
+
+    // Advance time past the 60s window
+    vi.advanceTimersByTime(65000);
+
+    // Third request should block and log again
+    vi.clearAllMocks();
+    await ipWhitelistMiddleware(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(logApp.warn).toHaveBeenCalledTimes(1);
+    expect(listener.publishUserAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should allow authenticated user if in exclusion list', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+      platform_ip_whitelist_exclusion_ids: ['excluded-group-id'],
+    });
+    vi.mocked(userDomain.authenticateUserFromRequest as any).mockResolvedValueOnce({ id: 'user1' });
+
+    const mockUsersMap = new Map();
+    mockUsersMap.set('user1', { id: 'user1', groups: [{ id: 'excluded-group-id' }] });
+    vi.mocked(cache.getEntitiesMapFromCache as any).mockResolvedValueOnce(mockUsersMap);
+
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should block authenticated user if not in whitelist and not excluded', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+      platform_ip_whitelist_exclusion_ids: ['other-group-id'],
+    });
+    vi.mocked(userDomain.authenticateUserFromRequest as any).mockResolvedValueOnce({ id: 'user1', name: 'User1' });
+
+    const mockUsersMap = new Map();
+    mockUsersMap.set('user1', { id: 'user1', groups: [{ id: 'normal-group-id' }] });
+    vi.mocked(cache.getEntitiesMapFromCache as any).mockResolvedValueOnce(mockUsersMap);
+    req.ip = '203.0.113.2'; // New IP to bypass log throttle
+    vi.setSystemTime(new Date('2024-01-01T00:00:00.000Z')); // Ensure log goes through
+
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(logApp.warn).toHaveBeenCalledTimes(1);
+    expect(listener.publishUserAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should handle errors gracefully and call next()', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockRejectedValueOnce(new Error('Cache error'));
+    await ipWhitelistMiddleware(req, res, next);
+    expect(logApp.error).toHaveBeenCalled();
+    expect(next).toHaveBeenCalled(); // Falls open on error
+  });
+});
+
+// ─── checkIpWhitelistForRequest ─────────────────────────────────────────────
+
+describe('checkIpWhitelistForRequest', () => {
+  let req: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    req = { ip: '192.168.1.50' };
+  });
+
+  it('should return false if IP is whitelisted', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['192.168.1.0/24'],
+    });
+    const result = await checkIpWhitelistForRequest(req, 'user1');
+    expect(result).toBe(false);
+  });
+
+  it('should return true if IP is not whitelisted and user is not excluded', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+    });
+    const result = await checkIpWhitelistForRequest(req, 'user1');
+    expect(result).toBe(true);
+    expect(logApp.warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return false if user is excluded', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+      platform_ip_whitelist_exclusion_ids: ['excluded-user-id'],
+    });
+    const mockUsersMap = new Map();
+    mockUsersMap.set('excluded-user-id', { id: 'excluded-user-id' });
+    vi.mocked(cache.getEntitiesMapFromCache as any).mockResolvedValueOnce(mockUsersMap);
+
+    const result = await checkIpWhitelistForRequest(req, 'excluded-user-id');
+    expect(result).toBe(false);
+  });
+
+  it('should return false on cache error', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockRejectedValueOnce(new Error('Cache fail'));
+    const result = await checkIpWhitelistForRequest(req, 'user1');
+    expect(result).toBe(false);
+    expect(logApp.error).toHaveBeenCalledTimes(1);
   });
 });
