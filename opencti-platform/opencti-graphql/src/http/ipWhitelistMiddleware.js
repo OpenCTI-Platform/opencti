@@ -1,4 +1,5 @@
 import ipaddr from 'ipaddr.js';
+import { parse } from 'graphql';
 import { getEntityFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -88,33 +89,47 @@ export const isUserExcluded = (user, exclusionIds) => {
   return false;
 };
 
-// GraphQL operations that must remain accessible for login/auth flow
-const LOGIN_OPERATIONS = [
-  'token',
+// Root fields that must remain accessible for unauthenticated users to reach the login page.
+// Validated by parsing the actual query document AST — checks what data is accessed,
+// not the arbitrary operation name.
+const LOGIN_ALLOWED_FIELDS = new Set([
   'publicSettings',
-  'LoginRootPublic',
-  'OTPGeneration',
-  'OTPValidation',
-  'OTPLogin',
-];
+  'token',
+  'otpGeneration',
+  'otpValidation',
+  'otpLogin',
+]);
 
 /**
- * Parses the GraphQL operation name from the request body.
- * Supports both standard (`operationName`) and persisted query (`id`) formats.
+ * Checks if a GraphQL request only accesses fields from the allowed login set.
+ * Parses the actual query document AST to inspect root-level field selections.
+ *
+ * Returns true only if ALL root selections in ALL operations are in the allowed set.
  */
-const getOperationName = (req) => {
+export const isLoginOnlyRequest = (req) => {
   try {
-    if (req.body?.operationName) return req.body.operationName;
-    if (req.body?.id) return req.body.id;
-    // For batched queries, check first operation
     if (Array.isArray(req.body)) {
-      if (req.body[0]?.operationName) return req.body[0].operationName;
-      if (req.body[0]?.id) return req.body[0].id;
+      return req.body.every((item) => item?.query && queryAccessesOnlyLoginFields(item.query));
     }
+    return req.body?.query && queryAccessesOnlyLoginFields(req.body.query);
   } catch {
-    // ignore
+    return false;
   }
-  return null;
+};
+
+const queryAccessesOnlyLoginFields = (queryStr) => {
+  try {
+    const document = parse(queryStr);
+    const operations = document.definitions.filter((d) => d.kind === 'OperationDefinition');
+    if (operations.length === 0) return false;
+    return operations.every((op) => {
+      const selections = op.selectionSet?.selections ?? [];
+      if (selections.length === 0) return false;
+      return selections.every((sel) => sel.kind === 'Field' && LOGIN_ALLOWED_FIELDS.has(sel.name.value));
+    });
+  } catch {
+    return false;
+  }
 };
 
 /**
@@ -122,9 +137,10 @@ const getOperationName = (req) => {
  *
  * Logic:
  * - If platform_ip_whitelist_enabled is false (or not set), allow all.
- * - If unauthenticated: allow through (normal auth will require login).
- * - If authenticated and user/group/org is in the exclusion list, allow through.
- * - If authenticated and NOT excluded, check source IP against whitelist.
+ * - If IP matches the whitelist, allow.
+ * - If unauthenticated but request is a login-only operation (verified from query AST), allow.
+ * - If authenticated and user/group/org is in the exclusion list, allow.
+ * - Otherwise, block.
  *
  * Must be mounted AFTER session middleware and BEFORE the GraphQL handler.
  */
@@ -160,12 +176,12 @@ const ipWhitelistMiddleware = async (req, res, next) => {
     const authenticatedUser = await authenticateUserFromRequest(context, req);
 
     if (!authenticatedUser) {
-      // Unauthenticated: only allow login-related operations
-      const operationName = getOperationName(req);
-      if (operationName && LOGIN_OPERATIONS.some((op) => operationName.toLowerCase().includes(op.toLowerCase()))) {
+      // Allow login-related operations so users can reach the login page
+      // Validated from the query document itself — not the spoofable operationName field
+      if (isLoginOnlyRequest(req)) {
         return next();
       }
-      // Block all other unauthenticated requests (e.g. public dashboards)
+      // Block all other unauthenticated requests
       if (shouldLogRejection(sourceIp)) {
         logApp.warn('[IP_WHITELIST] Access denied for unauthenticated IP', { ip: sourceIp });
         await publishUserAction({

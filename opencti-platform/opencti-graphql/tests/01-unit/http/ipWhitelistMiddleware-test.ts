@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ipMatchesWhitelist, isUserExcluded } from '../../../src/http/ipWhitelistMiddleware';
+import { ipMatchesWhitelist, isUserExcluded, isLoginOnlyRequest } from '../../../src/http/ipWhitelistMiddleware';
 
 // ─── ipMatchesWhitelist ─────────────────────────────────────────────────────
 
@@ -222,6 +222,129 @@ describe('isUserExcluded', () => {
       expect(isUserExcluded(user, ['group-a'])).toBe(true);
       // Matches via user id
       expect(isUserExcluded(user, ['user-1'])).toBe(true);
+    });
+  });
+});
+
+// ─── isLoginOnlyRequest ─────────────────────────────────────────────────────
+
+describe('isLoginOnlyRequest', () => {
+  const makeReq = (query: string) => ({ body: { query } });
+
+  describe('allowed login queries', () => {
+    it('should allow publicSettings query', () => {
+      const req = makeReq('query publicSettings { publicSettings { platform_title } }');
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+
+    it('should allow publicSettings with any operation name (e.g. LoginRootPublicQuery)', () => {
+      const req = makeReq(`query LoginRootPublicQuery {
+        publicSettings {
+          platform_title
+          platform_providers { name type provider }
+        }
+      }`);
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+
+    it('should allow token mutation', () => {
+      const req = makeReq('mutation TokenMutation { token(input: { email: "a@b.com", password: "x" }) }');
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+
+    it('should allow otpLogin mutation', () => {
+      const req = makeReq('mutation OtpLogin { otpLogin(input: { code: "123456" }) }');
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+
+    it('should allow otpGeneration query', () => {
+      const req = makeReq('query OtpGen { otpGeneration { secret uri } }');
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+
+    it('should allow otpValidation mutation', () => {
+      const req = makeReq('mutation OtpVal { otpValidation(input: { code: "123456" }) }');
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+
+    it('should allow publicSettings with fragments', () => {
+      const req = makeReq(`query LoginRootPublicQuery {
+        publicSettings {
+          platform_title
+          ...ExternalAuthsFragment
+        }
+      }
+      fragment ExternalAuthsFragment on PublicSettings {
+        platform_providers { name type }
+      }`);
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+  });
+
+  describe('blocked queries', () => {
+    it('should block me query', () => {
+      const req = makeReq('query MeQuery { me { id name user_email } }');
+      expect(isLoginOnlyRequest(req)).toBe(false);
+    });
+
+    it('should block mixed query (publicSettings + me)', () => {
+      const req = makeReq('query Mixed { publicSettings { platform_title } me { id } }');
+      expect(isLoginOnlyRequest(req)).toBe(false);
+    });
+
+    it('should block query with allowed name but disallowed field', () => {
+      const req = makeReq('query publicSettings { users { edges { node { id } } } }');
+      expect(isLoginOnlyRequest(req)).toBe(false);
+    });
+
+    it('should block anonymous query with disallowed field', () => {
+      const req = makeReq('{ me { id } }');
+      expect(isLoginOnlyRequest(req)).toBe(false);
+    });
+
+    it('should block publicDashboardByUriKey query', () => {
+      const req = makeReq('query Dashboard { publicDashboardByUriKey(uri_key: "test") { id } }');
+      expect(isLoginOnlyRequest(req)).toBe(false);
+    });
+
+    it('should block when query field is spoofed as operationName', () => {
+      // Attacker sends operationName: publicSettings but queries something else
+      const req = { body: { operationName: 'publicSettings', query: '{ me { id } }' } };
+      expect(isLoginOnlyRequest(req)).toBe(false);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should return false for missing query', () => {
+      expect(isLoginOnlyRequest({ body: {} })).toBeFalsy();
+    });
+
+    it('should return false for invalid query string', () => {
+      expect(isLoginOnlyRequest({ body: { query: 'not valid graphql {{{' } })).toBe(false);
+    });
+
+    it('should return false for empty query', () => {
+      expect(isLoginOnlyRequest({ body: { query: '' } })).toBeFalsy();
+    });
+
+    it('should handle batched requests - all allowed', () => {
+      const req = {
+        body: [
+          { query: 'query A { publicSettings { platform_title } }' },
+          { query: 'mutation B { token(input: { email: "a@b.com", password: "x" }) }' },
+        ],
+      };
+      expect(isLoginOnlyRequest(req)).toBe(true);
+    });
+
+    it('should handle batched requests - one disallowed', () => {
+      const req = {
+        body: [
+          { query: 'query A { publicSettings { platform_title } }' },
+          { query: 'query B { me { id } }' },
+        ],
+      };
+      expect(isLoginOnlyRequest(req)).toBe(false);
     });
   });
 });
