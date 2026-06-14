@@ -67,7 +67,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     options: new Array(menuLevels).fill(null),
   });
 
-  const [visibleMenuValue, setVisibleMenuValue] = React.useState<string | null>();
+  const [visibleMenuValue, setVisibleMenuValue] = React.useState<string | null>(null);
 
   const mouseEntered = React.useRef<Record<string, boolean>>({});
   const mouseLeftCoordinates = React.useRef<Array<number>>([]);
@@ -98,18 +98,26 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     }));
   };
 
-  const updateAnchorOptions = () => {
-    if (visibleMenuValue) {
-      const option = options.filter((o) => o.value === visibleMenuValue);
-      if (option.length === 1 && option[0].nestedOptions && options) {
-        const selectedMenuOptions = option[0].nestedOptions;
-        setAnchors((prevAnchors) => ({
-          ...prevAnchors,
-          options: [options, selectedMenuOptions],
-        }));
-      }
+  // When the live `options` prop changes while a submenu is kept open
+  // (keepMenuOpen multi-select), refresh the rendered submenu so its selected
+  // state and labels stay in sync. The menu renders from `anchors.options`
+  // (a snapshot), so without this it would show stale data until reopened.
+  React.useEffect(() => {
+    if (!visibleMenuValue) {
+      return;
     }
-  };
+    const parentOption = options.find((o) => o.value === visibleMenuValue);
+    if (!parentOption?.nestedOptions) {
+      return;
+    }
+    setAnchors((prevAnchors) => {
+      // Only refresh while the submenu is actually open, otherwise leave state untouched.
+      if (!prevAnchors.elements[1]) {
+        return prevAnchors;
+      }
+      return { ...prevAnchors, options: [options, parentOption.nestedOptions ?? null] };
+    });
+  }, [options, visibleMenuValue]);
 
   const handleClickAway = (event: MouseEvent | TouchEvent) => {
     if (event.target === buttonRef.current) {
@@ -117,8 +125,8 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
       return;
     }
     if (event.defaultPrevented) {
-      // Need to update options in place since it wont be reopened
-      updateAnchorOptions();
+      // A keepMenuOpen item was clicked: keep the menu open. The submenu is
+      // re-synced from the latest options by the effect above.
       return;
     }
     const optionWithoutSubMenu = anchors.elements.every(
