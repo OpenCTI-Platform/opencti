@@ -14,6 +14,7 @@ import convertSecurityCoverageToStix from './securityCoverage-converter';
 import { createdBy, objectLabel, objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 import { COVERED_ENTITIES_TYPE, securityCoverageStixBundle } from './securityCoverage-domain';
 import type { StoreEntity } from '../../types/store';
+import { ATTRIBUTE_RESULT_OF, ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF, RELATION_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
 
 const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {
@@ -65,6 +66,22 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
       },
       isFilterable: true,
       toTypes: COVERED_ENTITIES_TYPE,
+    },
+    {
+      name: INPUT_RESULT_OF,
+      type: 'ref',
+      databaseName: RELATION_RESULT_OF,
+      stixName: ATTRIBUTE_RESULT_OF,
+      label: 'Security coverage results',
+      mandatoryType: 'external',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      isRefExistingForTypes(this, fromType, toType) {
+        return fromType === ENTITY_TYPE_SECURITY_COVERAGE && this.toTypes.includes(toType);
+      },
+      isFilterable: true,
+      toTypes: [ENTITY_TYPE_SECURITY_COVERAGE_RESULT],
     },
     objectLabel,
     objectMarking,
