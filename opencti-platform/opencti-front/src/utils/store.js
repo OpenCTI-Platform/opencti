@@ -115,7 +115,7 @@ export const deleteNodeFromContainer = (store, containerId, key, filters, id) =>
 export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   const node = store.get(rootId);
   const records = node.getLinkedRecord(path, params);
-  const edges = records.getLinkedRecords('edges');
+  const edges = records.getLinkedRecords('edges') || [];
   const newEdges = edges.filter((n) => n.getLinkedRecord('node').getValue('id') !== deleteId);
   records.setLinkedRecords(newEdges, 'edges');
 };

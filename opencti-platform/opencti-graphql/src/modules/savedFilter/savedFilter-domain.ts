@@ -39,12 +39,10 @@ export const addSavedFilter = (context: AuthContext, user: AuthUser, input: Save
   // construct final creation input
   const canShare = isFeatureEnabled('SHARE_FILTERS')
     && isUserHasCapability(user, KNOWLEDGE_KNSHAREFILTERS);
-  const savedFiltersToCreate = canShare
-    ? {
-        ...input,
-        restricted_members: initializeAuthorizedMembers(input.authorized_members, user),
-      }
-    : input;
+  const savedFiltersToCreate = {
+    ...input,
+    restricted_members: initializeAuthorizedMembers(canShare ? input.authorized_members : undefined, user),
+  };
   return createInternalObject<StoreEntitySavedFilter>(contextOutOfDraft, user, savedFiltersToCreate, ENTITY_TYPE_SAVED_FILTER);
 };
 
