@@ -60,6 +60,7 @@ from pycti.entities.opencti_opinion import Opinion
 from pycti.entities.opencti_report import Report
 from pycti.entities.opencti_role import Role
 from pycti.entities.opencti_security_coverage import SecurityCoverage
+from pycti.entities.opencti_security_coverage_result import SecurityCoverageResult
 from pycti.entities.opencti_settings import Settings
 from pycti.entities.opencti_stix import Stix
 from pycti.entities.opencti_stix_core_object import StixCoreObject
@@ -317,6 +318,7 @@ class OpenCTIApiClient:
         self.language = Language(self)
         self.vulnerability = Vulnerability(self)
         self.security_coverage = SecurityCoverage(self)
+        self.security_coverage_result = SecurityCoverageResult(self)
         self.attack_pattern = AttackPattern(self)
         self.course_of_action = CourseOfAction(self)
         self.data_component = DataComponent(self)
