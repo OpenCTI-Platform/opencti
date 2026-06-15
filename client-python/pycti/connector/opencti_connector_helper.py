@@ -962,6 +962,7 @@ class PingAlive(threading.Thread):
         set_state: Callable[[str], None],
         metric,
         connector_info,
+        get_state_last_write=None,
     ) -> None:
         """Initialize the PingAlive daemon thread.
 
@@ -990,6 +991,7 @@ class PingAlive(threading.Thread):
         self.exit_event = threading.Event()
         self.metric = metric
         self.connector_info = connector_info
+        self.get_state_last_write = get_state_last_write or (lambda: None)
 
     def ping(self) -> None:
         """Execute the ping loop to maintain connector heartbeat.
@@ -1021,12 +1023,41 @@ class PingAlive(threading.Thread):
                     and len(result["connector_state"]) > 0
                     else None
                 )
-                if initial_state != remote_state:
-                    self.set_state(result["connector_state"])
-                    self.connector_logger.info(
-                        "Connector state has been remotely reset",
-                        {"state": self.get_state()},
+                # A divergent platform state is only adopted when it is a genuine
+                # reset: an empty state whose reset timestamp is newer than our
+                # last local write. This prevents a delayed/stale ping echo
+                # (frequent under high platform latency) from overwriting the
+                # connector's own freshly written state.
+                raw_timestamp = result.get("connector_state_timestamp")
+                reset_timestamp = (
+                    datetime.datetime.fromisoformat(
+                        raw_timestamp.replace("Z", "+00:00")
                     )
+                    if raw_timestamp
+                    else None
+                )
+                last_local_write = self.get_state_last_write()
+                is_genuine_reset = remote_state is None and (
+                    reset_timestamp is None
+                    or last_local_write is None
+                    or reset_timestamp > last_local_write
+                )
+                if initial_state != remote_state:
+                    if is_genuine_reset:
+                        self.set_state(None)
+                        self.connector_logger.info(
+                            "Connector state has been remotely reset",
+                            {"state": self.get_state()},
+                        )
+                    else:
+                        self.connector_logger.debug(
+                            "Ignoring divergent platform state (stale echo), "
+                            "keeping local state",
+                            {
+                                "local_state": initial_state,
+                                "remote_state": remote_state,
+                            },
+                        )
 
                 if self.in_error:
                     self.in_error = False
@@ -2503,6 +2534,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     self.set_state,
                     self.metric,
                     self.connector_info,
+                    self.get_state_last_write,
                 )
                 self.ping.start()
 
@@ -2835,6 +2867,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_state = json.dumps(state)
         else:
             self.connector_state = None
+        self.connector_state_last_write = datetime.datetime.now(datetime.timezone.utc)
+
+    def get_state_last_write(self) -> Optional[datetime.datetime]:
+        """returns the timestamp of the last local state write, or None"""
+        return getattr(self, "connector_state_last_write", None)
 
     def get_state(self) -> Optional[Dict]:
         """Get the connector state.
@@ -3589,9 +3626,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                             )
                         )
                     else:
-                        octi_extensions["granted_refs"] = (
-                            self.enrichment_shared_organizations
-                        )
+                        octi_extensions[
+                            "granted_refs"
+                        ] = self.enrichment_shared_organizations
                 else:
                     if item.get("x_opencti_granted_refs") is not None:
                         item["x_opencti_granted_refs"] = list(
@@ -3601,9 +3638,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                             )
                         )
                     else:
-                        item["x_opencti_granted_refs"] = (
-                            self.enrichment_shared_organizations
-                        )
+                        item[
+                            "x_opencti_granted_refs"
+                        ] = self.enrichment_shared_organizations
             bundle = json.dumps(bundle_data)
 
         # If execution in playbook, callback the api
@@ -3703,13 +3740,15 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             expectations_number = 1
         else:
             stix2_splitter = OpenCTIStix2Splitter()
-            expectations_number, _, bundles = (
-                stix2_splitter.split_bundle_with_expectations(
-                    bundle=bundle,
-                    use_json=True,
-                    event_version=event_version,
-                    cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
-                )
+            (
+                expectations_number,
+                _,
+                bundles,
+            ) = stix2_splitter.split_bundle_with_expectations(
+                bundle=bundle,
+                use_json=True,
+                event_version=event_version,
+                cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
             )
 
         if len(bundles) == 0:
