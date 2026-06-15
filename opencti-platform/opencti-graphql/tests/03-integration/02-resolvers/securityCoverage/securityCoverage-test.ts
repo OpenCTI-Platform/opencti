@@ -32,7 +32,7 @@ describe('SecurityCoverage resolver', () => {
           coverage_name: 'prevention',
           coverage_score: 10,
         }],
-        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131',
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a175',
       },
     };
 
@@ -47,7 +47,7 @@ describe('SecurityCoverage resolver', () => {
     expect(securityCoverageData.coverage_last_result.toISOString()).toEqual('2023-08-06T11:39:36.949Z');
     expect(securityCoverageData.coverage_valid_from.toISOString()).toEqual('2023-07-06T11:39:36.949Z');
     expect(securityCoverageData.coverage_valid_to.toISOString()).toEqual('2023-12-06T11:39:36.949Z');
-    expect(securityCoverageData.external_uri).toEqual('http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131');
+    expect(securityCoverageData.external_uri).toEqual('http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a175');
     expect(securityCoverageData.coverage_information[0].coverage_name).toEqual('prevention');
     expect(securityCoverageData.coverage_information[0].coverage_score).toEqual(10);
   });
