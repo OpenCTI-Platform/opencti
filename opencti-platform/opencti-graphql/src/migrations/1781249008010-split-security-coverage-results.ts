@@ -96,8 +96,10 @@ export const up = async (next: (error?: Error) => void) => {
           source,
         },
         query: {
-          ids: {
-            values: [sc.internal_id],
+          term: {
+            'internal_id.keyword': {
+              value: sc.internal_id,
+            },
           },
         },
       },
