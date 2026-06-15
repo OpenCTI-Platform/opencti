@@ -68,6 +68,7 @@ generates:
         Pir: ../modules/pir/pir-types#BasicStoreEntityPir
         SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
         SecurityCoverage: ../modules/securityCoverage/securityCoverage-types#BasicStoreEntitySecurityCoverage
+        SecurityCoverageResult: ../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types#BasicStoreEntitySecurityCoverageResult
         EmailTemplate: ../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate
         Form: ../modules/form/form-types#BasicStoreEntityForm
         AuthenticationProvider: ../modules/authenticationProvider/authenticationProvider-types#BasicStoreEntityAuthenticationProvider

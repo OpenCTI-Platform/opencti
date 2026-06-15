@@ -1,10 +1,11 @@
 import {
   addSecurityCoverage,
-  pageSecurityCoverageConnections,
-  findSecurityCoverageById,
+  findSecurityCoveragePaginated,
+  findById,
   securityCoverageDelete,
   securityCoverageStixBundle,
   objectCovered,
+  getSecurityCoverageResultProperty,
 } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
@@ -20,12 +21,18 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from './securityCoverage-types';
 
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
-    securityCoverage: (_, { id }, context) => findSecurityCoverageById(context, context.user, id),
-    securityCoverages: (_, args, context) => pageSecurityCoverageConnections(context, context.user, args),
+    securityCoverage: (_, { id }, context) => findById(context, context.user, id),
+    securityCoverages: (_, args, context) => findSecurityCoveragePaginated(context, context.user, args),
   },
   SecurityCoverage: {
-    objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
-    toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
+    objectCovered: (securityCoverage, _, context) => objectCovered<any>(context, context.user, securityCoverage.id),
+    toStixBundle: (securityCoverage, _, context) => securityCoverageStixBundle(context, context.user, securityCoverage.id),
+    // security coverage result info
+    coverage_last_result: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_last_result'),
+    coverage_valid_from: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
+    coverage_valid_to: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
+    coverage_information: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_information'),
+    external_uri: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'external_uri'),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
