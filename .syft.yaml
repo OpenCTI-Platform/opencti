@@ -1,3 +1,13 @@
+log:
+  # suppress all logging output (env: SYFT_LOG_QUIET)
+  quiet: false
+
+  # increase verbosity (-v = info, -vv = debug) (env: SYFT_LOG_VERBOSITY)
+  verbosity: 0
+
+  # explicitly set the logging level (available: [error warn info debug trace]) (env: SYFT_LOG_LEVEL)
+  level: "info"
+
 file:
   metadata:
     # Options include:
@@ -6,10 +16,13 @@ file:
     #  - "none", "": do not capture any files (env: SYFT_FILE_METADATA_SELECTION)
     selection: none
 
+# exclude files after nodes_modules/@X/Y/package.json
+exclude:
+    - '**/node_modules/@*/*/*/**/[!node_modules]/**/package.json'
+    - '**/node_modules/[!@]*/*/*/**/[!node_modules]/**/package.json'
+
 output:
-  - "syft-table=syft-table.txt"
   - "cyclonedx-json=opencti-platform.cdx.json"
-  - "cyclonedx=sbom-cyclonedx.xml"
 
 # selection of layers to catalog, options=[squashed all-layers deep-squashed] (env: SYFT_SCOPE)
 scope: "all-layers"
@@ -19,10 +32,14 @@ format:
 
 compliance:
   # action to take when a package is missing a name (env: SYFT_COMPLIANCE_MISSING_NAME)
-  missing-name: "drop"
+  # missing-name: "drop"
   # action to take when a package is missing a version (env: SYFT_COMPLIANCE_MISSING_VERSION)
-  missing-version: "drop"
+  missing-version: "stub"
 
+#select-catalogers:
+#  - "python"
+#  - "javascript"
+#  - "+binary-classifier-cataloger"
 
 javascript:
   # enables Syft to use the network to fill in more detailed license information (env: SYFT_JAVASCRIPT_SEARCH_REMOTE_LICENSES)
