@@ -100,7 +100,11 @@ class StixCyberObservablesExportCreationComponent extends Component {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const updatedExportContext = { ...exportContext };
-    if (values.columns === 'all') {
+    // Only forward visible_columns for a "Current view" CSV export. The column
+    // selector is hidden for other formats, so clear it otherwise (including
+    // after the format is switched away from CSV) to avoid sending a stale
+    // hidden-field value to the export connector.
+    if (values.columns !== 'view' || values.format !== 'text/csv') {
       updatedExportContext.visible_columns = undefined;
     }
 

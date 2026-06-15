@@ -62,7 +62,7 @@ const DataTablePagination = ({
   }, [page, pageSize]);
 
   const handleToggleVisibility = (columnId: string) => {
-    setColumns(columns.map((column) => (
+    setColumns((prevColumns) => prevColumns.map((column) => (
       column.id === columnId
         ? { ...column, visible: !column.visible }
         : column
