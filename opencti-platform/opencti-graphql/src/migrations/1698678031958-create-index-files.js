@@ -1,5 +1,6 @@
 import { logApp } from '../config/conf';
-import { elCreateIndex, engineMappingGenerator } from '../database/engine';
+import { elCreateIndex } from '../database/engine';
+import { engineMappingGenerator } from '../database/engine-mapping-generator';
 import { INDEX_FILES } from '../database/utils';
 
 const message = '[MIGRATION] Create index files';

@@ -1,5 +1,6 @@
 import { logMigration } from '../config/conf';
-import { elCreateIndex, engineMappingGenerator } from '../database/engine';
+import { elCreateIndex } from '../database/engine';
+import { engineMappingGenerator } from '../database/engine-mapping-generator';
 import { ES_INDEX_PREFIX } from '../database/utils';
 
 const message = '[MIGRATION] Create index for PIR meta re';
