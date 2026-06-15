@@ -3,10 +3,10 @@ import { type EntityOptions, fullRelationsList, loadEntityThroughRelationsPagina
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, RELATION_COVERED, type StoreEntitySecurityCoverage } from './securityCoverage-types';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
-import type { SecurityCoverageAddInput } from '../../generated/graphql';
+import { type SecurityCoverageAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity, StoreObject, StoreRelation } from '../../types/store';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
@@ -16,8 +16,9 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
-import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
 import { deleteSecurityCoverageResultsByResultOf } from './securityCoverageResult/securityCoverageResult-domain';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-types';
+import { loadThroughDenormalized } from '../../resolvers/stix';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
@@ -29,7 +30,7 @@ export const COVERED_ENTITIES_TYPE = [
 ];
 
 // region CRUD
-export const findSecurityCoverageById = async (
+export const findById = async (
   context: AuthContext,
   user: AuthUser,
   SecurityCoverageId: string,
@@ -47,7 +48,7 @@ export const findSecurityCoverageById = async (
   );
 };
 
-export const pageSecurityCoverageConnections = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
+export const findSecurityCoveragePaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
   return pageEntitiesConnection<BasicStoreEntitySecurityCoverage>(context, user, [ENTITY_TYPE_SECURITY_COVERAGE], args);
 };
 
@@ -105,12 +106,15 @@ export const addSecurityCoverage = async (
       objectMarking,
       x_opencti_modified_at,
     };
-    await createEntity(
+    const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
       context,
       user,
       securityCoverageResultInput,
       ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
     );
+    // Manually add it here to be able to resolve dynamyc attributes
+    createdSecurityCoverage['result-of'] = [result.id];
+    logApp.debug(`[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`);
   }
 
   return notify(
@@ -168,9 +172,25 @@ export const objectCovered = async <T extends BasicStoreEntity>(context: AuthCon
 };
 
 export const securityCoverageDelete = async (context: AuthContext, user: AuthUser, securityCoverageId: string) => {
-  await deleteSecurityCoverageResultsByResultOf(context, user, securityCoverageId);
+  const deletedResults = await deleteSecurityCoverageResultsByResultOf(context, user, securityCoverageId);
+  logApp.info(`[SECURITY-COVERAGE-RESULT][${securityCoverageId}] SCR deleted: ${deletedResults}`);
   await deleteElementById(context, user, securityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, securityCoverageId, user);
   return securityCoverageId;
 };
 // endregion
+
+export const getSecurityCoverageResultProperty = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+  property: keyof BasicStoreEntitySecurityCoverageResult,
+) => {
+  const results = await loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
+
+  if (!results[0]) {
+    return undefined;
+  }
+
+  return results[0][property];
+};
