@@ -1821,9 +1821,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/rich-text-editor@npm:1.0.1":
-  version: 1.0.1
-  resolution: "@filigran/rich-text-editor@npm:1.0.1"
+"@filigran/rich-text-editor@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@filigran/rich-text-editor@npm:1.0.2"
   peerDependencies:
     "@mui/icons-material": ">=5"
     "@mui/material": ">=5"
@@ -1833,7 +1833,7 @@ __metadata:
     react: ">=18"
     react-color: ">=2"
     react-dom: ">=18"
-  checksum: 10c0/76b092926dc62e74c0c8ca7610e0e09456e668202488e2cc7c36b853020f8221e4fcf6387e3ff8e61d08b06dea673d72006988cdcfedf9614503e362f011b1da
+  checksum: 10c0/66941f49f7c6bcc3f543674e088e80dd43313883cd1c36b2fd57fe8e6b6faf088190ffdcbd0aa1f61961700e93b8e56378693fad4a0986b468ce6197d005a43f
   languageName: node
   linkType: hard
 
@@ -13492,7 +13492,7 @@ __metadata:
     "@faker-js/faker": "npm:10.4.0"
     "@filigran/chatbot": "npm:3.7.4"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/rich-text-editor": "npm:1.0.1"
+    "@filigran/rich-text-editor": "npm:1.0.2"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
     "@graphiql/toolkit": "npm:0.12.0"
