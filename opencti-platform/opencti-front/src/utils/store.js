@@ -1,12 +1,10 @@
-import * as R from 'ramda';
-import { filter } from 'ramda';
 import { ConnectionHandler } from 'relay-runtime';
 
 export const isNodeInConnection = (payload, conn) => {
   const records = conn.getLinkedRecords('edges');
   const recordsIds = records.map((n) => n.getLinkedRecord('node').getValue('id'));
   const payloadId = payload.getValue('id');
-  return R.includes(payloadId, recordsIds);
+  return recordsIds.includes(payloadId);
 };
 
 export const insertNode = (
@@ -118,10 +116,7 @@ export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   const node = store.get(rootId);
   const records = node.getLinkedRecord(path, params);
   const edges = records.getLinkedRecords('edges');
-  const newEdges = filter(
-    (n) => n.getLinkedRecord('node').getValue('id') !== deleteId,
-    edges,
-  );
+  const newEdges = edges.filter((n) => n.getLinkedRecord('node').getValue('id') !== deleteId);
   records.setLinkedRecords(newEdges, 'edges');
 };
 
@@ -131,26 +126,4 @@ export const insertNodeFromEdge = (store, parentId, edgesPath, dataPath, params)
   const payload = store.getRootField(dataPath);
   const newEdge = payload.setLinkedRecord(payload, 'node');
   ConnectionHandler.insertEdgeBefore(records, newEdge);
-};
-
-/**
- * Invalidates a connection record in the Relay store, forcing subscribed
- * components to refetch the data on next render.
- * Useful after updating a node within a connection when usePreloadedQuery
- * does not automatically detect field changes.
- */
-export const invalidateConnection = (store, key, filters = {}) => {
-  const root = store.getRoot();
-  const params = { ...filters };
-  delete params.count;
-  delete params.id;
-  let conn;
-  if (Object.keys(params).length === 0) {
-    conn = ConnectionHandler.getConnection(root, key);
-  } else {
-    conn = ConnectionHandler.getConnection(root, key, params);
-  }
-  if (conn) {
-    conn.invalidateRecord();
-  }
 };
