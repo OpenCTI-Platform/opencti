@@ -142,7 +142,7 @@ describe('Saved Filter Resolver', () => {
 
       const { authorizedMembers } = result.data.savedFilterAdd;
       expect(authorizedMembers.length).toEqual(1);
-      expect(authorizedMembers[0].name).toEqual(USER_PARTICIPATE.name);
+      expect(authorizedMembers[0].name).toEqual(USER_PARTICIPATE.email);
       expect(authorizedMembers[0].access_right).toEqual('admin');
 
       // Cleanup: delete the filter as the creator
