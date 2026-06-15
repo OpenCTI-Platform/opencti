@@ -35,7 +35,13 @@ export const useWorkflowInitialElements = (
 
     const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
     // Members contains both users, groups and organizations
-    const members = convertEdgesToObject(membersEdges);
+    const members = {
+      ...convertEdgesToObject(membersEdges),
+      AUTHOR: { id: 'AUTHOR', name: 'Draft author (org)', entity_type: 'Dynamic from draft' },
+      CREATORS: { id: 'CREATORS', name: 'Creators', entity_type: 'Dynamic from draft' },
+      ASSIGNEES: { id: 'ASSIGNEES', name: 'Assignees', entity_type: 'Dynamic from draft' },
+      PARTICIPANTS: { id: 'PARTICIPANTS', name: 'Participants', entity_type: 'Dynamic from draft' },
+    };
 
     // Populate authorized members
     const parseActions = (actions?: ReadonlyArray<ReadOnlyAction> | null): Action[] => {
