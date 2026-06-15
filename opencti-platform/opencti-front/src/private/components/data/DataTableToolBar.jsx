@@ -518,7 +518,8 @@ class DataTableToolBar extends Component {
       type: 'ENROLL_PLAYBOOK',
       context: { values: [{ id: playbookId, name: playbookName }] },
     }];
-    this.setState({ actions }, () => {
+    const description = `ENROLL IN PLAYBOOK ${playbookName}`;
+    this.setState({ description, actions }, () => {
       this.handleCloseEnrollPlaybook();
       this.handleOpenTask();
     });
@@ -2559,22 +2560,27 @@ class DataTableToolBar extends Component {
                         </Security>
                       </>
                     )}
-                    {isBulkEnrollEnabled && (
-                      <Security needs={[AUTOMATION]}>
-                        <Tooltip title={t('Enroll in playbook')}>
-                          <span>
-                            <IconButton
-                              aria-label="enroll-playbook"
-                              disabled={numberOfSelectedElements === 0 || this.state.processing}
-                              onClick={this.handleOpenEnrollPlaybook.bind(this)}
-                              size="small"
-                            >
-                              <PrecisionManufacturingOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
+                    {isBulkEnrollEnabled && !isInDraft && !isUserDatatable
+                      && taskScope !== 'SETTINGS'
+                      && taskScope !== 'INVESTIGATION'
+                      && taskScope !== 'DASHBOARD'
+                      && taskScope !== 'PUBLIC_DASHBOARD'
+                      && (
+                        <Security needs={[AUTOMATION]}>
+                          <Tooltip title={t('Enroll in playbook')}>
+                            <span>
+                              <IconButton
+                                aria-label="enroll-playbook"
+                                disabled={numberOfSelectedElements === 0 || this.state.processing}
+                                onClick={this.handleOpenEnrollPlaybook.bind(this)}
+                                size="small"
+                              >
+                                <PrecisionManufacturingOutlined fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Security>
+                      )}
                     {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
                       <Security needs={[deleteCapability]}>
                         <Tooltip title={warningMessage || t('Delete')}>
@@ -3383,6 +3389,11 @@ class DataTableToolBar extends Component {
                 open={this.state.displayEnrollPlaybook}
                 onClose={this.handleCloseEnrollPlaybook.bind(this)}
                 onLaunch={this.handleLaunchEnrollPlaybook.bind(this)}
+                entityIds={this.props.selectAll ? undefined : Object.keys(this.props.selectedElements || {})}
+                isSelectAll={this.props.selectAll}
+                filters={this.props.selectAll ? this.props.filters : undefined}
+                search={this.props.selectAll ? this.props.search : undefined}
+                excludedIds={this.props.selectAll ? Object.keys(this.props.deSelectedElements || {}) : undefined}
               />
             </>
           );

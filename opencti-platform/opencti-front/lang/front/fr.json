@@ -2621,6 +2621,7 @@
   "Listen knowledge events": "Écouter les événements de connaissance",
   "Listen queue": "File d'attente d'écoute",
   "Listing playbooks with entry points manual or live trigger (events) and matching filters.": "Liste des playbooks avec points d'entrée manuels ou déclencheurs en direct (événements) et filtres correspondants.",
+  "Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.": "Liste des playbooks avec des points d'entrée manuels ou déclenchés en temps réel (événements) et des filtres correspondants. Seules les 5 000 premières entités ont fait l'objet d'un contrôle de compatibilité ; les entités incompatibles ne seront pas traitées par le playbook sélectionné.",
   "Live streams": "Streams live",
   "Live Streams | Data Sharing | Data": "Flux en direct | Partage de données | Données",
   "Live trigger": "Déclencheur live",

@@ -2621,6 +2621,7 @@
   "Listen knowledge events": "监听知识事件",
   "Listen queue": "监听队列",
   "Listing playbooks with entry points manual or live trigger (events) and matching filters.": "列出具有入口点手动或实时触发器（事件）和匹配过滤器的播放列表。",
+  "Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.": "列出具有手动或实时触发（事件）入口点及匹配过滤器的操作指南。目前仅对前 5000 个实体进行了兼容性检查，任何不兼容的实体都不会被所选操作指南处理。",
   "Live streams": "实时流",
   "Live Streams | Data Sharing | Data": "实时流 | 数据共享 | 数据",
   "Live trigger": "实时触发器",
