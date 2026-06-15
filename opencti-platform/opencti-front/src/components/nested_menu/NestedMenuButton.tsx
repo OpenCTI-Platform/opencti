@@ -115,7 +115,17 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
       if (!prevAnchors.elements[1]) {
         return prevAnchors;
       }
-      return { ...prevAnchors, options: [options, parentOption.nestedOptions ?? null] };
+      // Refresh the top-level options (index 0) and the open submenu (index 1)
+      // from the latest props while preserving any deeper levels, so that
+      // anchors.options keeps its menuLevels-length invariant.
+      return {
+        ...prevAnchors,
+        options: prevAnchors.options.map((opt, index) => {
+          if (index === 0) return options;
+          if (index === 1) return parentOption.nestedOptions ?? null;
+          return opt;
+        }),
+      };
     });
   }, [options, visibleMenuValue]);
 
