@@ -3626,9 +3626,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                             )
                         )
                     else:
-                        octi_extensions[
-                            "granted_refs"
-                        ] = self.enrichment_shared_organizations
+                        octi_extensions["granted_refs"] = (
+                            self.enrichment_shared_organizations
+                        )
                 else:
                     if item.get("x_opencti_granted_refs") is not None:
                         item["x_opencti_granted_refs"] = list(
@@ -3638,9 +3638,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                             )
                         )
                     else:
-                        item[
-                            "x_opencti_granted_refs"
-                        ] = self.enrichment_shared_organizations
+                        item["x_opencti_granted_refs"] = (
+                            self.enrichment_shared_organizations
+                        )
             bundle = json.dumps(bundle_data)
 
         # If execution in playbook, callback the api
