@@ -2,13 +2,15 @@ import React, { ReactNode } from 'react';
 import { StixCoreObject } from '@components/widgets/WidgetCustomAttributesCard';
 import FieldOrEmpty from '../../components/FieldOrEmpty';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
-import { Stack } from '@mui/material';
+import { List, ListItem, Stack, Typography } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import ItemOpenVocab from '../../components/ItemOpenVocab';
 import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ExpandablePre from '../../components/ExpandablePre';
 import ItemScore from '../../components/ItemScore';
 import ItemBoolean from '../../components/ItemBoolean';
+import ListItemText from '@mui/material/ListItemText';
+import ItemCopy from '../../components/ItemCopy';
 
 type AttributeRenderer = (
   data: StixCoreObject,
@@ -186,17 +188,28 @@ const indicatorRenderers: EntityRenderers = {
     const score = (data as Record<string, unknown>).x_opencti_score as number | undefined;
     return <ItemScore score={score ?? null} />;
   },
-  x_opencti_detection: (data) => {
+  x_opencti_detection: (data, t_i18n) => {
     const detection = (data as Record<string, unknown>).x_opencti_detection as boolean | undefined;
     return (
       <ItemBoolean
         status={detection ?? false}
-        label={detection ? 'Yes' : 'No'}
+        label={detection ? t_i18n('Yes') : t_i18n('No')}
+      />
+    );
+  },
+  x_opencti_main_observable_type: (data) => {
+    const obsType = (data as Record<string, unknown>).x_opencti_main_observable_type as string | undefined;
+    return (
+      <ItemOpenVocab
+        displayMode="chip"
+        type="observable_types_ov"
+        value={obsType}
       />
     );
   },
 };
 
+// ─── Threat Actor Group and Individual
 const threatActorGroupRenderers: EntityRenderers = {
   sophistication: (data) => {
     const value = (data as Record<string, unknown>).sophistication as string | undefined;
@@ -220,8 +233,10 @@ const threatActorGroupRenderers: EntityRenderers = {
       </FieldOrEmpty>
     );
   },
+
 };
 
+// ─── Threat Actor Group and Individual
 const threatActorIndividualRenderers: EntityRenderers = {
   sophistication: (data) => {
     const value = (data as Record<string, unknown>).sophistication as string | undefined;
@@ -234,9 +249,30 @@ const threatActorIndividualRenderers: EntityRenderers = {
       </FieldOrEmpty>
     );
   },
+  height: (data, fldt, t_i18n) => {
+    const heights = (data as Record<string, unknown>).height as
+      | ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>
+      | null
+      | undefined;
+    return (
+      <FieldOrEmpty source={heights}>
+        <List sx={{ py: 0 }}>
+          {heights?.map((h, i) => (
+            <ListItem key={i} dense divider>
+              <ListItemText
+                primary={h.measure != null ? `${h.measure} cm` : '-'}
+                secondary={h.date_seen ? fldt(h.date_seen) : t_i18n('Unknown date')}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </FieldOrEmpty>
+    );
+  },
   resource_level: threatActorGroupRenderers.resource_level,
 };
 
+// ─── Malware
 const malwareRenderer: EntityRenderers = {
   is_family: (data) => {
     const value = (data as Record<string, unknown>).is_family as boolean | undefined;
@@ -246,6 +282,108 @@ const malwareRenderer: EntityRenderers = {
         label={value ? 'Yes' : 'No'}
       />
     );
+  },
+};
+
+// ─── Vulnerability
+const vulnerabilityRenderer: EntityRenderers = {
+  x_opencti_cisa_kev: (data, t_i18n) => {
+    const value = (data as Record<string, unknown>).x_opencti_cisa_kev as boolean | undefined;
+    return (
+      <ItemBoolean
+        status={value ?? false}
+        label={value ? t_i18n('Yes') : t_i18n('No')}
+        reverse
+      />
+    );
+  },
+};
+
+// ─── Attack Pattern
+const attackPatternRenderers: EntityRenderers = {
+  x_mitre_detection: (data) => {
+    const value = (data as Record<string, unknown>).x_mitre_detection as string | undefined;
+    if (!value) {
+      return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    }
+    return <ExpandableMarkdown source={value} limit={400} />;
+  },
+};
+
+// ─── Security Platform
+const secutityPlatformRenderers: EntityRenderers = {
+  security_platform_type: (data) => {
+    const value = (data as Record<string, unknown>).security_platform_type as string | undefined;
+    if (!value) {
+      return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    }
+    return <Tag label={value} />;
+  },
+};
+
+// ─── Stix Cyber Observable
+const stixCyberObservableRenderers: EntityRenderers = {
+  observable_value: (data) => {
+    const value = (data as Record<string, unknown>).observable_value as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Typography variant="body2">{value}</Typography>;
+  },
+};
+
+// ─── Artifact
+const ValueCopy = ({ value }: { value: string }) => {
+  return (
+    <pre>
+      <ItemCopy content={value} />
+    </pre>
+  );
+};
+
+const makeHashRenderer = (algorithm: string) => {
+  const HashRenderer = (data: unknown) => {
+    const hashes = (data as Record<string, unknown>).hashes as { algorithm: string; hash: string }[] | undefined;
+    const value = hashes?.find((h) => h.algorithm === algorithm)?.hash;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
+  };
+  HashRenderer.displayName = `HashRenderer_${algorithm}`;
+  return HashRenderer;
+};
+
+const artifactRenderers: EntityRenderers = {
+  mime_type: (data) => {
+    const value = (data as Record<string, unknown>).mime_type as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
+  },
+  x_opencti_additional_names: (data) => {
+    const values = (data as Record<string, unknown>).x_opencti_additional_names as string[] | undefined;
+    return (
+      <FieldOrEmpty source={values}>
+        {values?.map((v) => (
+          <ValueCopy key={v} value={v} />
+        ))}
+      </FieldOrEmpty>
+    );
+  },
+  encryption_algorithm: (data) => {
+    const value = (data as Record<string, unknown>).mime_type as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
+  },
+  decryption_key: (data) => {
+    const value = (data as Record<string, unknown>).mime_type as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
+  },
+  hash_md5: makeHashRenderer('MD5'),
+  hash_sha1: makeHashRenderer('SHA-1'),
+  hash_sha256: makeHashRenderer('SHA-256'),
+  hash_sha512: makeHashRenderer('SHA-512'),
+  url: (data) => {
+    const value = (data as Record<string, unknown>).mime_type as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
   },
 };
 
@@ -259,4 +397,9 @@ export const entityTypeRenderers: Record<string, EntityRenderers> = {
   ThreatActorGroup: threatActorGroupRenderers,
   ThreatActorIndividual: threatActorIndividualRenderers,
   Malware: malwareRenderer,
+  Vulnerability: vulnerabilityRenderer,
+  AttackPattern: attackPatternRenderers,
+  SecurityPlatform: secutityPlatformRenderers,
+  StixCyberObservable: stixCyberObservableRenderers,
+  Artifact: artifactRenderers,
 };

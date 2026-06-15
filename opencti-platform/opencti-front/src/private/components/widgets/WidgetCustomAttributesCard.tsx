@@ -11,7 +11,6 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import ItemCreators from '../../../components/ItemCreators';
 import ItemOpenVocab from '../../../components/ItemOpenVocab';
 import ItemStatus from '../../../components/ItemStatus';
-import ItemPatternType from '../../../components/ItemPatternType';
 import ItemAssignees from '../../../components/ItemAssignees';
 import ItemParticipants from '../../../components/ItemParticipants';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
@@ -20,6 +19,9 @@ import Tag from '@common/tag/Tag';
 import { StixCoreObjectsCustomAttributesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 import { entityTypeRenderers } from '../../../utils/widget/widgetCustomAttributesRendererUtils';
 import ListItemText from '@mui/material/ListItemText';
+import ItemScore from '../../../components/ItemScore';
+import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
+import { openVocabListRenderers, openVocabSingleRenderers } from '../../../utils/widget/widgetOpenVocabRendererUtils';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -117,7 +119,6 @@ const renderAttributeValue = (
         />
       );
     }
-
     case 'created':
     case 'modified':
     case 'created_at':
@@ -143,7 +144,6 @@ const renderAttributeValue = (
       }
       return <Typography variant="body2">{fldt(dateValue)}</Typography>;
     }
-
     case 'x_opencti_reliability': {
       const reliability = 'x_opencti_reliability' in data
         ? (data as { x_opencti_reliability?: string }).x_opencti_reliability
@@ -181,18 +181,6 @@ const renderAttributeValue = (
         </FieldOrEmpty>
       );
     }
-    case 'x_opencti_main_observable_type': {
-      const obsType = 'x_opencti_main_observable_type' in data
-        ? (data as { x_opencti_main_observable_type?: string }).x_opencti_main_observable_type
-        : undefined;
-      return (
-        <ItemOpenVocab
-          displayMode="chip"
-          type="observable_types_ov"
-          value={obsType}
-        />
-      );
-    }
     case 'x_opencti_workflow_id': {
       const status = 'status' in data
         ? (data as { status?: unknown; workflowEnabled?: boolean }).status ?? null
@@ -206,19 +194,6 @@ const renderAttributeValue = (
           disabled={!workflowEnabled}
         />
       );
-    }
-    case 'pattern_type': {
-      const patternType = 'pattern_type' in data
-        ? (data as { pattern_type?: string }).pattern_type
-        : undefined;
-      if (!patternType) {
-        return (
-          <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-            -
-          </Typography>
-        );
-      }
-      return <ItemPatternType label={patternType} />;
     }
     case 'description':
     case 'x_opencti_description': {
@@ -279,162 +254,33 @@ const renderAttributeValue = (
       }
       return <Typography variant="body2">{fldt(value)}</Typography>;
     }
-    case 'primary_motivation': {
-      const value = (data as Record<string, unknown>).primary_motivation as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="attack-motivation-ov" value={value} />;
+    case 'x_opencti_score': {
+      const score = (data as Record<string, unknown>).x_opencti_score as number | undefined;
+      return <ItemScore score={score ?? null} />;
     }
-    case 'secondary_motivations': {
-      const types = (data as Record<string, unknown>).secondary_motivations as string[] | undefined;
+    case 'contact_information': {
+      const value = (data as Record<string, unknown>).contact_information as string | undefined;
+      if (!value) {
+        return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+      }
       return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="attack-motivation-ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
+        <MarkdownDisplay
+          content={value}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
       );
     }
-    // open vocabs
-    case 'priority': {
-      const priority = (data as Record<string, unknown>).priority as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="case_priority_ov" value={priority} />;
-    }
-    case 'severity': {
-      const severity = (data as Record<string, unknown>).severity as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="case_severity_ov" value={severity} />;
-    }
-    case 'incident_type': {
-      const incidentType = (data as Record<string, unknown>).incident_type as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="incident_type_ov" value={incidentType} />;
-    }
-    case 'resource_level': {
-      const resourceLevel = (data as Record<string, unknown>).resource_level as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="attack-resource-level-ov" value={resourceLevel} />;
-    }
-    case 'x_opencti_organization_type': {
-      const orgType = (data as Record<string, unknown>).x_opencti_organization_type as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="organization_type_ov" value={orgType} />;
-    }
-    case 'eye_color': {
-      const value = (data as Record<string, unknown>).eye_color as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="eye-color-ov" value={value} />;
-    }
-    case 'hair_color': {
-      const value = (data as Record<string, unknown>).hair_color as string | undefined;
-      return <ItemOpenVocab displayMode="chip" type="hair-color-ov" value={value} />;
-    }
-    case 'threat_actor_types': {
-      const types = (data as Record<string, unknown>).threat_actor_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="threat-actor-type-ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'malware_types': {
-      const types = (data as Record<string, unknown>).malware_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="malware-type-ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'channel_types': {
-      const types = (data as Record<string, unknown>).channel_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="channel_types_ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'tool_types': {
-      const types = (data as Record<string, unknown>).tool_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="tool-type-ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'note_types': {
-      const types = (data as Record<string, unknown>).note_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="note_types_ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'response_types': {
-      const types = (data as Record<string, unknown>).response_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="response_types_ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'information_types': {
-      const types = (data as Record<string, unknown>).information_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="information_types_ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'takedown_types': {
-      const types = (data as Record<string, unknown>).takedown_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="takedown_types_ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-    case 'event_types': {
-      const types = (data as Record<string, unknown>).event_types as string[] | undefined;
-      return (
-        <FieldOrEmpty source={types}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
-            {types?.map((type) => (
-              <ItemOpenVocab key={type} displayMode="chip" type="event_types_ov" value={type} />
-            ))}
-          </Stack>
-        </FieldOrEmpty>
-      );
-    }
-
     default: {
       const value = (data as Record<string, unknown>)[attribute];
+      const d = data as Record<string, unknown>;
+
+      if (openVocabSingleRenderers[attribute]) {
+        return openVocabSingleRenderers[attribute](d);
+      }
+      if (openVocabListRenderers[attribute]) {
+        return openVocabListRenderers[attribute](d);
+      }
 
       if (value === undefined || value === null || value === '') {
         return (
