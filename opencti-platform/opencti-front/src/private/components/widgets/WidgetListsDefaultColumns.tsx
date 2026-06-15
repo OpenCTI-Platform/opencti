@@ -128,7 +128,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_detection', label: 'Detection' },
     { attribute: 'indicator_types', label: 'Indicator types' },
     { attribute: 'x_opencti_main_observable_type', label: 'Main observable type' },
-    { attribute: 'x_mitre_platforms', label: 'Platforms' },
+    { attribute: 'x_mitre_platforms_indicator', label: 'Platforms' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
   Infrastructure: [
@@ -195,6 +195,8 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   Tool: [
     { attribute: 'tool_types', label: 'Tool types' },
+    { attribute: 'tool_version', label: 'Tool version' },
+    { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
   Vulnerability: [
     { attribute: 'x_opencti_cvss_base_score', label: 'CVSS3 - Score' },
@@ -204,9 +206,57 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_cisa_kev', label: 'CISA - KEV' },
     { attribute: 'x_opencti_epss_score', label: 'EPSS Score' },
     { attribute: 'x_opencti_epss_percentile', label: 'EPSS Percentile' },
+    { attribute: 'x_opencti_score', label: 'Score' },
+    { attribute: 'x_opencti_cwe', label: 'Associated CWE(s)' },
+    { attribute: 'x_opencti_first_seen_active', label: 'First seen active' },
+    // CVSS V2
+    { attribute: 'x_opencti_cvss_v2_base_score', label: 'CVSS2 - Score' },
+    { attribute: 'x_opencti_cvss_v2_vector_string', label: 'CVSS2 - Vector' },
+    { attribute: 'x_opencti_cvss_v2_access_vector', label: 'CVSS2 - Access Vector' },
+    { attribute: 'x_opencti_cvss_v2_access_complexity', label: 'CVSS2 - Access Complexity' },
+    { attribute: 'x_opencti_cvss_v2_authentication', label: 'CVSS2 - Authentication' },
+    { attribute: 'x_opencti_cvss_v2_confidentiality_impact', label: 'CVSS2 - Confidentiality Impact' },
+    { attribute: 'x_opencti_cvss_v2_integrity_impact', label: 'CVSS2 - Integrity Impact' },
+    { attribute: 'x_opencti_cvss_v2_availability_impact', label: 'CVSS2 - Availability Impact' },
+    { attribute: 'x_opencti_cvss_v2_exploitability', label: 'CVSS2 - Exploitability' },
+    { attribute: 'x_opencti_cvss_v2_remediation_level', label: 'CVSS2 - Remediation Level' },
+    { attribute: 'x_opencti_cvss_v2_report_confidence', label: 'CVSS2 - Report Confidence' },
+    { attribute: 'x_opencti_cvss_v2_temporal_score', label: 'CVSS2 - Temporal Score' },
+    // CVSS V3
+    { attribute: 'x_opencti_cvss_vector_string', label: 'CVSS3 - Vector' },
+    { attribute: 'x_opencti_cvss_attack_vector', label: 'CVSS3 - Attack Vector' },
+    { attribute: 'x_opencti_cvss_attack_complexity', label: 'CVSS3 - Attack Complexity' },
+    { attribute: 'x_opencti_cvss_privileges_required', label: 'CVSS3 - Privileges Required' },
+    { attribute: 'x_opencti_cvss_user_interaction', label: 'CVSS3 - User Interaction' },
+    { attribute: 'x_opencti_cvss_scope', label: 'CVSS3 - Scope' },
+    { attribute: 'x_opencti_cvss_confidentiality_impact', label: 'CVSS3 - Confidentiality Impact' },
+    { attribute: 'x_opencti_cvss_integrity_impact', label: 'CVSS3 - Integrity Impact' },
+    { attribute: 'x_opencti_cvss_availability_impact', label: 'CVSS3 - Availability Impact' },
+    { attribute: 'x_opencti_cvss_exploit_code_maturity', label: 'CVSS3 - Exploit Code Maturity' },
+    { attribute: 'x_opencti_cvss_remediation_level', label: 'CVSS3 - Remediation Level' },
+    { attribute: 'x_opencti_cvss_report_confidence', label: 'CVSS3 - Report Confidence' },
+    { attribute: 'x_opencti_cvss_temporal_score', label: 'CVSS3 - Temporal Score' },
+    // CVSS V4
+    { attribute: 'x_opencti_cvss_v4_vector_string', label: 'CVSS4 - Vector' },
+    { attribute: 'x_opencti_cvss_v4_attack_vector', label: 'CVSS4 - Attack Vector' },
+    { attribute: 'x_opencti_cvss_v4_attack_complexity', label: 'CVSS4 - Attack Complexity' },
+    { attribute: 'x_opencti_cvss_v4_attack_requirements', label: 'CVSS4 - Attack Requirements' },
+    { attribute: 'x_opencti_cvss_v4_privileges_required', label: 'CVSS4 - Privileges Required' },
+    { attribute: 'x_opencti_cvss_v4_user_interaction', label: 'CVSS4 - User Interaction' },
+    { attribute: 'x_opencti_cvss_v4_confidentiality_impact_v', label: 'CVSS4 - VS Confidentiality Impact' },
+    { attribute: 'x_opencti_cvss_v4_confidentiality_impact_s', label: 'CVSS4 - SS Confidentiality Impact' },
+    { attribute: 'x_opencti_cvss_v4_integrity_impact_v', label: 'CVSS4 - VS Integrity Impact' },
+    { attribute: 'x_opencti_cvss_v4_integrity_impact_s', label: 'CVSS4 - SS Integrity Impact' },
+    { attribute: 'x_opencti_cvss_v4_availability_impact_v', label: 'CVSS4 - VS Availability Impact' },
+    { attribute: 'x_opencti_cvss_v4_availability_impact_s', label: 'CVSS4 - SS Availability Impact' },
+    { attribute: 'x_opencti_cvss_v4_exploit_maturity', label: 'CVSS4 - Exploit Maturity' },
   ],
   'Attack-Pattern': [
     { attribute: 'x_mitre_id', label: 'External ID' },
+    { attribute: 'x_mitre_platforms_attack_pattern', label: 'Platforms' },
+    { attribute: 'x_mitre_permissions_required', label: 'Required permissions' },
+    { attribute: 'x_mitre_detection', label: 'Detection' },
+    { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
   'Course-Of-Action': [
     { attribute: 'x_mitre_id', label: 'External ID' },
@@ -217,6 +267,36 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   Organization: [
     { attribute: 'x_opencti_organization_type', label: 'Organization type' },
     { attribute: 'x_opencti_score', label: 'Score' },
+    { attribute: 'contact_information', label: 'Contact information' },
+  ],
+  SecurityPlatform: [
+    { attribute: 'security_platform_type', label: 'Security platform type' },
+  ],
+  System: [
+    { attribute: 'contact_information', label: 'Contact information' },
+  ],
+  Individual: [
+    { attribute: 'contact_information', label: 'Contact information' },
+  ],
+  Position: [
+    { attribute: 'latitude', label: 'Latitude' },
+    { attribute: 'longitude', label: 'Longitude' },
+    { attribute: 'street_address', label: 'Street address' },
+    { attribute: 'postal_code', label: 'Postal code' },
+  ],
+  'Stix-Cyber-Observable': [
+    { attribute: 'observable_value', label: 'Value' },
+  ],
+  Artifact: [
+    { attribute: 'mime_type', label: 'MIME Type' },
+    { attribute: 'x_opencti_additional_names', label: 'Additional Names' },
+    { attribute: 'encryption_algorithm', label: 'Encryption Algorithm' },
+    { attribute: 'decryption_key', label: 'Decryption Key' },
+    { attribute: 'hash_md5', label: 'MD5' },
+    { attribute: 'hash_sha1', label: 'SHA-1' },
+    { attribute: 'hash_sha256', label: 'SHA-256' },
+    { attribute: 'hash_sha512', label: 'SHA-512' },
+    { attribute: 'url', label: 'URL' },
   ],
   DraftWorkspace: [
     { attribute: 'name', label: 'Name' },
@@ -239,6 +319,8 @@ const customAttributesExtraColumns: WidgetColumn[] = [
 const EXCLUDED_COMMON_COLUMNS: Partial<Record<string, string[]>> = {
   'Malware-Analysis': ['name', 'description', 'modified'],
   Indicator: ['name'],
+  'Stix-Cyber-Observable': ['name'],
+  Artifact: ['name'],
 };
 
 type WidgetEntityType = 'relationships' | 'entities';

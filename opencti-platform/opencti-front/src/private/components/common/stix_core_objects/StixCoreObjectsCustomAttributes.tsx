@@ -26,8 +26,6 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         created
         modified
         confidence
-        standard_id
-        confidence
         revoked
         status {
           id
@@ -64,9 +62,6 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
       ... on Campaign {
         name
         description
-        aliases
-        confidence
-        revoked
         objective
         first_seen
         last_seen
@@ -83,8 +78,6 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         analysis_engine_version
         analysis_definition_version
         modules
-        confidence
-        revoked
         operatingSystem {
           id
           name
@@ -149,7 +142,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         description
         objectParticipant {
           id
-            name
+          name
         }
         objectAssignee {
           id
@@ -172,7 +165,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         x_opencti_detection
         indicator_types
         x_opencti_main_observable_type
-        x_mitre_platforms
+        x_mitre_platforms_indicator: x_mitre_platforms
         killChainPhases {
           id
           phase_name
@@ -261,6 +254,173 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
           phase_name
           x_opencti_order
         }
+      }
+      ... on Channel {
+        name
+        description
+        channel_types
+      }
+      ... on Tool {
+        name
+        description
+        tool_types
+        tool_version
+        killChainPhases {
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
+        }
+      }
+      ... on Vulnerability {
+        name
+        description
+        x_opencti_score
+        x_opencti_cisa_kev
+        x_opencti_epss_score
+        x_opencti_epss_percentile
+        x_opencti_cwe
+        x_opencti_first_seen_active
+        x_opencti_cvss_base_score
+        x_opencti_cvss_base_severity
+        x_opencti_cvss_vector_string
+        x_opencti_cvss_attack_vector
+        x_opencti_cvss_attack_complexity
+        x_opencti_cvss_privileges_required
+        x_opencti_cvss_user_interaction
+        x_opencti_cvss_scope
+        x_opencti_cvss_confidentiality_impact
+        x_opencti_cvss_integrity_impact
+        x_opencti_cvss_availability_impact
+        x_opencti_cvss_exploit_code_maturity
+        x_opencti_cvss_remediation_level
+        x_opencti_cvss_report_confidence
+        x_opencti_cvss_temporal_score
+        x_opencti_cvss_v2_base_score
+        x_opencti_cvss_v2_vector_string
+        x_opencti_cvss_v2_access_vector
+        x_opencti_cvss_v2_access_complexity
+        x_opencti_cvss_v2_authentication
+        x_opencti_cvss_v2_confidentiality_impact
+        x_opencti_cvss_v2_integrity_impact
+        x_opencti_cvss_v2_availability_impact
+        x_opencti_cvss_v2_exploitability
+        x_opencti_cvss_v2_remediation_level
+        x_opencti_cvss_v2_report_confidence
+        x_opencti_cvss_v2_temporal_score
+        x_opencti_cvss_v4_base_score
+        x_opencti_cvss_v4_base_severity
+        x_opencti_cvss_v4_vector_string
+        x_opencti_cvss_v4_attack_vector
+        x_opencti_cvss_v4_attack_complexity
+        x_opencti_cvss_v4_attack_requirements
+        x_opencti_cvss_v4_privileges_required
+        x_opencti_cvss_v4_user_interaction
+        x_opencti_cvss_v4_confidentiality_impact_v
+        x_opencti_cvss_v4_confidentiality_impact_s
+        x_opencti_cvss_v4_integrity_impact_v
+        x_opencti_cvss_v4_integrity_impact_s
+        x_opencti_cvss_v4_availability_impact_v
+        x_opencti_cvss_v4_availability_impact_s
+        x_opencti_cvss_v4_exploit_maturity
+      }
+      ... on AttackPattern {
+        name
+        description
+        x_mitre_id
+        x_mitre_permissions_required
+        x_mitre_detection
+        x_mitre_platforms_attack_pattern: x_mitre_platforms
+        killChainPhases {
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
+        }
+      }
+      ... on Narrative {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on Event {
+        name
+        description
+        event_types
+      }
+      ... on Organization {
+        name
+        description
+        x_opencti_organization_type
+        x_opencti_score
+        contact_information
+      }
+      ... on SecurityPlatform {
+        name
+        description
+        security_platform_type
+      }
+      ... on System {
+        name
+        description
+        contact_information
+      }
+      ... on Individual {
+        name
+        description
+        contact_information
+      }
+      ... on Region {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on AdministrativeArea {
+        name    
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on Position {
+        name
+        description
+        latitude
+        longitude
+        street_address
+        postal_code
+      }
+      ... on StixCyberObservable {
+        observable_value
+        x_opencti_description
+        x_opencti_score
+      }
+      ... on Artifact {
+        x_opencti_additional_names
+        x_opencti_additional_names    
+        x_opencti_score
+        payload_bin
+        x_opencti_modified_at
+        x_opencti_description
+        created_at
+        updated_at
+        url
+        hashes {
+          algorithm
+          hash
+        }
+        encryption_algorithm
+        decryption_key
+        mime_type
       }
       createdBy {
         ... on Identity {
