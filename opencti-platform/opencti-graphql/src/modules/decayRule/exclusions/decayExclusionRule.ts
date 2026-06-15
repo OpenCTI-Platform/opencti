@@ -6,7 +6,6 @@ import convertDecayExclusionRuleToStix from './decayExclusionRule-converter';
 
 const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusionRule, StixDecayExclusionRule> = {
   type: {
-    id: 'decayExclusionRule',
     name: ENTITY_TYPE_DECAY_EXCLUSION_RULE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

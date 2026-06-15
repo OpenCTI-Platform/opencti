@@ -10,7 +10,6 @@ import { ENTITY_TYPE_CONTAINER_GROUPING, type Stix2Grouping, type StixGrouping, 
 
 const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping, Stix2Grouping> = {
   type: {
-    id: 'groupings',
     name: ENTITY_TYPE_CONTAINER_GROUPING,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: false,

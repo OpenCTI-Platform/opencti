@@ -9,7 +9,6 @@ import convertJsonMapperToStix from './jsonMapper-converter';
 
 const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMapper> = {
   type: {
-    id: 'jsonmapper',
     name: ENTITY_TYPE_JSON_MAPPER,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

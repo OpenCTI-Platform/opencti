@@ -8,7 +8,6 @@ import { authorizedAuthorities, authorizedMembers, created } from '../../schema/
 
 const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> = {
   type: {
-    id: 'notifiers',
     name: ENTITY_TYPE_NOTIFIER,
     category: ABSTRACT_INTERNAL_OBJECT,
   },

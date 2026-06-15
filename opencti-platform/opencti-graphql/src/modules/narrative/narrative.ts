@@ -9,7 +9,6 @@ import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative, Stix2Narrative> = {
   type: {
-    id: 'narratives',
     name: ENTITY_TYPE_NARRATIVE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true,

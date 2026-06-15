@@ -97,7 +97,6 @@ export const height: NestedObjectAttribute<Measurement> = {
 
 const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
-    id: 'threat-actor-individual',
     name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
     category: ENTITY_TYPE_THREAT_ACTOR,
     aliased: true,

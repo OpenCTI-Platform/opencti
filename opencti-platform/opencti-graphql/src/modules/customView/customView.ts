@@ -7,7 +7,6 @@ import convertCustomViewToStix from './customView-converter';
 
 export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, StixCustomView> = {
   type: {
-    id: 'customView',
     name: ENTITY_TYPE_CUSTOM_VIEW,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

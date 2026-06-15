@@ -11,7 +11,6 @@ const generateInputDependencyKeys = () => {
 
 const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabulary> = {
   type: {
-    id: 'vocabulary',
     name: ENTITY_TYPE_VOCABULARY,
     category: ABSTRACT_STIX_META_OBJECT,
     aliased: true,

@@ -23,7 +23,6 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {
-    id: 'security-coverage',
     name: ENTITY_TYPE_SECURITY_COVERAGE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: false,

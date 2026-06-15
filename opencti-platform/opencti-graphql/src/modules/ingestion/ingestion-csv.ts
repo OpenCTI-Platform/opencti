@@ -9,7 +9,6 @@ import { ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 
 const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
   type: {
-    id: 'ingestion-csv',
     name: ENTITY_TYPE_INGESTION_CSV,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

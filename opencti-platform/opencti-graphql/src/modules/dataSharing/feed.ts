@@ -8,7 +8,6 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
   type: {
-    id: 'feed',
     name: ENTITY_TYPE_FEED,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

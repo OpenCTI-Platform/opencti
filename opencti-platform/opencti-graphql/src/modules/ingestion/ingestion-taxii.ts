@@ -8,7 +8,6 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
   type: {
-    id: 'ingestion-taxii',
     name: ENTITY_TYPE_INGESTION_TAXII,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

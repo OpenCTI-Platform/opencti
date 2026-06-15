@@ -10,7 +10,6 @@ import { authorizedMembers, authorizedMembersActivationDate } from '../../../sch
 
 const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi, Stix2CaseRfi> = {
   type: {
-    id: 'case-rfi',
     name: ENTITY_TYPE_CONTAINER_CASE_RFI,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false,

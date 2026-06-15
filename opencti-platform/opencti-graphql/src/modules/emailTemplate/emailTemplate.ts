@@ -21,7 +21,6 @@ import convertEmailTemplateToStix from './emailTemplate-converter';
 
 const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, StixEmailTemplate> = {
   type: {
-    id: 'emailTemplate',
     name: ENTITY_TYPE_EMAIL_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

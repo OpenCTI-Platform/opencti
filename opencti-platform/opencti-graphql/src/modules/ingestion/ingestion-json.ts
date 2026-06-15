@@ -24,7 +24,6 @@ import { ENTITY_TYPE_JSON_MAPPER } from '../internal/jsonMapper/jsonMapper-types
 
 const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, StixIngestionJson> = {
   type: {
-    id: 'ingestion-json',
     name: ENTITY_TYPE_INGESTION_JSON,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

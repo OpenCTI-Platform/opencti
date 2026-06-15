@@ -7,7 +7,6 @@ import { registerDefinition } from '../../schema/module';
 
 const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> = {
   type: {
-    id: 'languages',
     name: ENTITY_TYPE_LANGUAGE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true,

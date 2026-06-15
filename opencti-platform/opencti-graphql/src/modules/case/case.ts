@@ -9,7 +9,6 @@ import { ENTITY_TYPE_CASE_TEMPLATE } from './case-template/case-template-types';
 
 const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   type: {
-    id: 'cases',
     name: ENTITY_TYPE_CONTAINER_CASE,
     category: ENTITY_TYPE_CONTAINER,
     aliased: false,

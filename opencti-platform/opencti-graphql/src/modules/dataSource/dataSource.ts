@@ -11,7 +11,6 @@ import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 
 const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource, Stix2DataSource> = {
   type: {
-    id: 'dataSources',
     name: ENTITY_TYPE_DATA_SOURCE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: false,

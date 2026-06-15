@@ -10,7 +10,6 @@ import { createdBy, objectAssignee, objectParticipant } from '../../schema/stixR
 
 const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, StixDraftWorkspace> = {
   type: {
-    id: 'draftWorkspace',
     name: ENTITY_TYPE_DRAFT_WORKSPACE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

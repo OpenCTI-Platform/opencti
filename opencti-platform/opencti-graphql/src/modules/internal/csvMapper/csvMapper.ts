@@ -10,7 +10,6 @@ import './deprecated/csvMapper-deprecated';
 
 const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMapper> = {
   type: {
-    id: 'csvmapper',
     name: ENTITY_TYPE_CSV_MAPPER,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

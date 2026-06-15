@@ -22,7 +22,6 @@ import { authorizedMembers, draftChange, lastEventId } from '../../schema/attrib
 
 const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
   type: {
-    id: 'pir',
     name: ENTITY_TYPE_PIR,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

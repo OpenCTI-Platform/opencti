@@ -9,7 +9,6 @@ import { draftChange } from '../../schema/attribute-definition';
 
 export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDashboard, StixPublicDashboard> = {
   type: {
-    id: 'publicDashboards',
     name: ENTITY_TYPE_PUBLIC_DASHBOARD,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,

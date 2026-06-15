@@ -10,7 +10,6 @@ import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent, Stix2Event> = {
   type: {
-    id: 'events',
     name: ENTITY_TYPE_EVENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true,

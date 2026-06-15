@@ -9,7 +9,6 @@ import { authorizedMembers, draftChange } from '../../schema/attribute-definitio
 
 export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace> = {
   type: {
-    id: 'workspaces',
     name: ENTITY_TYPE_WORKSPACE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,
