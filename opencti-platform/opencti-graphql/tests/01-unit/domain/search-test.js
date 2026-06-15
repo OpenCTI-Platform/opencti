@@ -98,11 +98,16 @@ it('should generate search clauses for both activity and history fields in histo
       && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('event_scope'))
       && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.search')),
   );
+  const topLevelHistoryMessageQueryString = shouldSearch.find(
+    (e) => e?.bool?.must?.some((m) => m?.term?.['entity_type.keyword'] === 'History')
+      && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.message')),
+  );
   const nestedHistoryQueryString = shouldSearch.find(
     (e) => e?.nested?.path === 'context_data.history_changes'
       && e?.nested?.query?.bool?.must?.[0]?.query_string,
   );
 
   expect(topLevelActivityQueryString).toBeDefined();
+  expect(topLevelHistoryMessageQueryString).toBeDefined();
   expect(nestedHistoryQueryString).toBeDefined();
 });

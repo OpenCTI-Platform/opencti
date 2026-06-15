@@ -113,7 +113,7 @@ import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -2041,6 +2041,9 @@ const BASE_SEARCH_HISTORY = [
   'context_data.history_changes.changes_added.raw',
   'context_data.history_changes.changes_removed.raw',
 ];
+const BASE_SEARCH_HISTORY_ATTRIBUTES = [
+  'context_data.message',
+];
 const BASE_SEARCH_ATTRIBUTES = [
   // Pounds for attributes search
   `${ATTRIBUTE_NAME}^5`,
@@ -2185,6 +2188,21 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
         },
       },
       {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_HISTORY } },
+            {
+              multi_match: {
+                type: 'phrase',
+                query: ex,
+                lenient: true,
+                fields: BASE_SEARCH_HISTORY_ATTRIBUTES,
+              },
+            },
+          ],
+        },
+      },
+      {
         nested: {
           path: 'context_data.history_changes',
           query: {
@@ -2214,6 +2232,20 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
                 query: searchPhrase,
                 analyze_wildcard: true,
                 fields: BASE_SEARCH_ATTRIBUTES,
+              },
+            },
+          ],
+        },
+      });
+      shouldSearch.push({
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_HISTORY } },
+            {
+              query_string: {
+                query: searchPhrase,
+                analyze_wildcard: true,
+                fields: BASE_SEARCH_HISTORY_ATTRIBUTES,
               },
             },
           ],
