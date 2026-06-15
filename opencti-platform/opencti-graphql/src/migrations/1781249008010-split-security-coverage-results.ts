@@ -39,13 +39,6 @@ export const up = async (next: (error?: Error) => void) => {
 
   // Step 2 -> Create a SecurityCoverageResult for each SecurityCoverage with data
   for (const sc of allSecurityCoverages) {
-    let result: BasicStoreEntitySecurityCoverageResult | undefined = undefined;
-    let source = "ctx._source.remove('coverage_information');"
-      + "ctx._source.remove('coverage_last_result');"
-      + "ctx._source.remove('coverage_valid_from');"
-      + "ctx._source.remove('coverage_valid_to');"
-      + "ctx._source.remove('external_uri');";
-
     const {
       coverage_information,
       coverage_last_result,
@@ -77,34 +70,37 @@ export const up = async (next: (error?: Error) => void) => {
         objectLabel: otherAttributes['object-label'],
         objectMarking: otherAttributes['object-marking'],
       };
-      result = await createEntity(
+      const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
         context,
         SYSTEM_USER,
         securityCoverageResultInput,
         ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
       );
-      source += 'ctx._source.rel_result-of.internal_id = [params.security_coverage_result_id];';
       logMigration.info(`${message} > SCR ${result?.standard_id} created for ${sc.standard_id}`);
     }
+  }
 
-    await elUpdateByQueryForMigration(
-      `${message} > SecurityCoverage ${sc.internal_id}: add result id + clean old attributes`,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      {
-        script: {
-          params: result ? { security_coverage_result_id: result.internal_id } : {},
-          source,
-        },
-        query: {
-          term: {
-            'internal_id.keyword': {
-              value: sc.internal_id,
-            },
+  // Step 3 -> Remove old attributes.
+  await elUpdateByQueryForMigration(
+    `${message} > Clean old attributes`,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    {
+      script: {
+        source: "ctx._source.remove('coverage_information');"
+          + "ctx._source.remove('coverage_last_result');"
+          + "ctx._source.remove('coverage_valid_from');"
+          + "ctx._source.remove('coverage_valid_to');"
+          + "ctx._source.remove('external_uri');",
+      },
+      query: {
+        term: {
+          'entity_type.keyword': {
+            value: ENTITY_TYPE_SECURITY_COVERAGE,
           },
         },
       },
-    );
-  }
+    },
+  );
 
   logMigration.info(`${message} > done in ${Date.now() - startTime} ms`);
   next();
