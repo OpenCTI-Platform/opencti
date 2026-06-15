@@ -109,3 +109,203 @@ const attributesMappingGenerator = (engine: ElkClient | OpenClient): Record<stri
   }
   return schemaProperties;
 };
+
+// Only useful for option ES_INIT_RETRO_MAPPING_MIGRATION
+// This mode let the platform initialize old mapping protection before direct stop
+// Its only useful when old platform needs to be reindex
+export const getRetroCompatibleMappings = (engine: ElkClient | OpenClient): any => {
+  const flattenedType = engine instanceof ElkClient ? 'flattened' : 'flat_object';
+  return {
+    internal_id: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
+    standard_id: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
+    user_email: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
+    name: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          normalizer: 'string_normalizer',
+          ignore_above: 512,
+        },
+      },
+    },
+    height: {
+      type: 'nested',
+      properties: {
+        measure: { type: 'float' },
+        date_seen: { type: 'date' },
+      },
+    },
+    weight: {
+      type: 'nested',
+      properties: {
+        measure: { type: 'float' },
+        date_seen: { type: 'date' },
+      },
+    },
+    timestamp: {
+      type: 'date',
+    },
+    created: {
+      type: 'date',
+    },
+    created_at: {
+      type: 'date',
+    },
+    modified: {
+      type: 'date',
+    },
+    modified_at: {
+      type: 'date',
+    },
+    indexed_at: {
+      type: 'date',
+    },
+    uploaded_at: {
+      type: 'date',
+    },
+    first_seen: {
+      type: 'date',
+    },
+    last_seen: {
+      type: 'date',
+    },
+    start_time: {
+      type: 'date',
+    },
+    stop_time: {
+      type: 'date',
+    },
+    published: {
+      type: 'date',
+    },
+    valid_from: {
+      type: 'date',
+    },
+    valid_until: {
+      type: 'date',
+    },
+    observable_date: {
+      type: 'date',
+    },
+    event_date: {
+      type: 'date',
+    },
+    received_time: {
+      type: 'date',
+    },
+    processed_time: {
+      type: 'date',
+    },
+    completed_time: {
+      type: 'date',
+    },
+    ctime: {
+      type: 'date',
+    },
+    mtime: {
+      type: 'date',
+    },
+    atime: {
+      type: 'date',
+    },
+    current_state_date: {
+      type: 'date',
+    },
+    confidence: {
+      type: 'integer',
+    },
+    attribute_order: {
+      type: 'integer',
+    },
+    base_score: {
+      type: 'integer',
+    },
+    is_family: {
+      type: 'boolean',
+    },
+    number_observed: {
+      type: 'integer',
+    },
+    x_opencti_negative: {
+      type: 'boolean',
+    },
+    default_assignation: {
+      type: 'boolean',
+    },
+    x_opencti_detection: {
+      type: 'boolean',
+    },
+    x_opencti_order: {
+      type: 'integer',
+    },
+    import_expected_number: {
+      type: 'integer',
+    },
+    import_processed_number: {
+      type: 'integer',
+    },
+    x_opencti_score: {
+      type: 'integer',
+    },
+    connections: {
+      type: 'nested',
+    },
+    manager_setting: {
+      type: flattenedType,
+    },
+    context_data: {
+      properties: {
+        input: { type: flattenedType },
+      },
+    },
+    size: {
+      type: 'integer',
+    },
+    lastModifiedSinceMin: {
+      type: 'integer',
+    },
+    lastModified: {
+      type: 'date',
+    },
+    metaData: {
+      properties: {
+        order: {
+          type: 'integer',
+        },
+        inCarousel: {
+          type: 'boolean',
+        },
+        messages: { type: flattenedType },
+        errors: { type: flattenedType },
+      },
+    },
+  };
+};
