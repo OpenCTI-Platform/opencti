@@ -4,15 +4,12 @@ import { createEntity } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../modules/securityCoverage/securityCoverage-types';
-import {
-  ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-  INPUT_RESULT_OF,
-  type BasicStoreEntitySecurityCoverageResult,
-} from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
 const message = '[MIGRATION] Separate results data of Security Coverage into dedicated objects';
 
+// To match what we have in Elastic at the time the migration is ran.
 interface OldSecurityCoverage extends BasicStoreEntitySecurityCoverage {
   external_uri?: string;
   coverage_last_result?: string;
@@ -37,7 +34,7 @@ export const up = async (next: (error?: Error) => void) => {
   );
   logMigration.info(`${message} > ${allSecurityCoverages.length} SecurityCoverages found`);
 
-  // Step 2 -> Create a SecurityCoverageResult for each SecurityCoverage with data
+  // Step 2 -> Create a SecurityCoverageResult for each SecurityCoverage containing results data.
   for (const sc of allSecurityCoverages) {
     const {
       coverage_information,
@@ -52,8 +49,9 @@ export const up = async (next: (error?: Error) => void) => {
       ...otherAttributes
     } = sc;
 
-    const shouldCreateResult = external_uri || (coverage_information ?? []).length > 0;
-    if (shouldCreateResult) {
+    // Want to create a result if there is results data,
+    // Or an external_uri is set because we can have a result instantiate by OpenAEV but without data yet.
+    if (external_uri || (coverage_information ?? []).length > 0) {
       const securityCoverageResultInput = {
         name: `Result of ${sc.name}`,
         [INPUT_RESULT_OF]: sc.id,
@@ -70,13 +68,13 @@ export const up = async (next: (error?: Error) => void) => {
         objectLabel: otherAttributes['object-label'],
         objectMarking: otherAttributes['object-marking'],
       };
-      const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
+      const result = await createEntity(
         context,
         SYSTEM_USER,
         securityCoverageResultInput,
         ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
       );
-      logMigration.info(`${message} > SCR ${result?.standard_id} created for ${sc.standard_id}`);
+      logMigration.info(`${message} > SCR ${result?.standard_id} created for SC ${sc.standard_id}`);
     }
   }
 
