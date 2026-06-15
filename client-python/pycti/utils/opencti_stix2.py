@@ -1141,6 +1141,7 @@ class OpenCTIStix2:
             "Vocabulary": self.opencti.vocabulary.read,
             "Vulnerability": self.opencti.vulnerability.read,
             "Security-Coverage": self.opencti.security_coverage.read,
+            "Security-Coverage-Result": self.opencti.security_coverage_result.read,
         }
 
     def get_reader(self, entity_type: str):
@@ -1219,6 +1220,7 @@ class OpenCTIStix2:
             "task": self.opencti.task,
             "x-opencti-task": self.opencti.task,
             "security-coverage": self.opencti.security_coverage,
+            "security-coverage-result": self.opencti.security_coverage_result,
             "vocabulary": self.opencti.vocabulary,
             # relationships
             "relationship": self.opencti.stix_core_relationship,
