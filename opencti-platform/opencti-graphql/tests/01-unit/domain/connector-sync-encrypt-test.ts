@@ -76,6 +76,7 @@ import { testSync } from '../../../src/domain/connector-utils';
 import { updateAttribute, createEntity } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { notify } from '../../../src/database/redis';
+import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
 import { verifyIngestionUri } from '../../../src/modules/ingestion/ingestion-common';
 import { syncEditField, registerSync, findSyncById } from '../../../src/domain/connector';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
@@ -140,6 +141,22 @@ describe('connector.ts — syncEditField token encryption', () => {
     await expect(syncEditField(fakeContext, fakeUser, 'test-sync-id', input))
       .rejects.toThrow('This URI is not allowed for ingestion.');
 
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should fail fast on denied uri before token encryption', async () => {
+    vi.mocked(verifyIngestionUri).mockImplementation(() => {
+      throw new Error('This URI is not allowed for ingestion.');
+    });
+    const input = [
+      { key: 'uri', value: ['https://example.denied.com'] },
+      { key: 'token', value: ['my-plain-token'] },
+    ];
+
+    await expect(syncEditField(fakeContext, fakeUser, 'test-sync-id', input))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+
+    expect(encryptSynchronizerCredential).not.toHaveBeenCalled();
     expect(updateAttribute).not.toHaveBeenCalled();
   });
 });
@@ -210,6 +227,31 @@ describe('connector.ts — registerSync token encryption', () => {
     await expect(registerSync(fakeContext, fakeUser, input))
       .rejects.toThrow('This URI is not allowed for ingestion.');
 
+    expect(testSync).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('should fail fast on denied uri before auto user creation', async () => {
+    vi.mocked(verifyIngestionUri).mockImplementation(() => {
+      throw new Error('This URI is not allowed for ingestion.');
+    });
+    vi.mocked(createOnTheFlyUser).mockResolvedValue({ id: 'auto-user-id' } as never);
+
+    const input = {
+      name: 'Test synchronizer denied uri with automatic user',
+      uri: 'http://example.denied.com',
+      stream_id: 'live',
+      user_id: 'auto-user-name',
+      automatic_user: true,
+      confidence_level: 50,
+      listen_deletion: false,
+      no_dependencies: false,
+    } as never;
+
+    await expect(registerSync(fakeContext, fakeUser, input))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+
+    expect(createOnTheFlyUser).not.toHaveBeenCalled();
     expect(testSync).not.toHaveBeenCalled();
     expect(createEntity).not.toHaveBeenCalled();
   });

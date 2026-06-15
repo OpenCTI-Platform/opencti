@@ -588,6 +588,8 @@ export const registerSync = async (
   user: AuthUser,
   syncData: SynchronizerAddInput,
 ) => {
+  verifyIngestionUri(syncData.uri);
+
   let finalSyncData = { ...syncData, running: false };
 
   if (finalSyncData.automatic_user) {
@@ -612,8 +614,6 @@ export const registerSync = async (
     confidence_level: _confidence_level,
     ...synchronizerToCreate
   } = finalSyncData;
-
-  verifyIngestionUri(synchronizerToCreate.uri);
 
   await testSyncUtils(context, user, synchronizerToCreate);
 
@@ -678,13 +678,14 @@ export const synchronizerAddAutoUser = async (context: AuthContext, user: AuthUs
 };
 
 export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
-  const tokenInput = input.find((i) => i.key === 'token');
-  if (tokenInput && tokenInput.value[0]) {
-    tokenInput.value[0] = await encryptSynchronizerCredential(tokenInput.value[0]);
-  }
   const uriInput = input.find((i) => i.key === 'uri');
   if (uriInput && uriInput.value[0]) {
     verifyIngestionUri(uriInput.value[0]);
+  }
+
+  const tokenInput = input.find((i) => i.key === 'token');
+  if (tokenInput && tokenInput.value[0]) {
+    tokenInput.value[0] = await encryptSynchronizerCredential(tokenInput.value[0]);
   }
   const { element } = await updateAttribute<StoreEntity>(context, user, syncId, ENTITY_TYPE_SYNC, input);
   await publishUserAction({
