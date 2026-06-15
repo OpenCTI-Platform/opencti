@@ -54,6 +54,9 @@ vi.mock('../../../src/utils/platformCrypto', () => ({
 vi.mock('../../../src/domain/connector-sync-crypto', () => ({
   encryptSynchronizerCredential: vi.fn(), decryptSynchronizerCredential: vi.fn(),
 }));
+vi.mock('../../../src/modules/ingestion/ingestion-common', () => ({
+  verifyIngestionUri: vi.fn(),
+}));
 vi.mock('../../../src/domain/connector-utils', () => ({
   testSync: vi.fn(), createSyncHttpUri: vi.fn(),
 }));
@@ -73,6 +76,7 @@ import { testSync } from '../../../src/domain/connector-utils';
 import { updateAttribute, createEntity } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { notify } from '../../../src/database/redis';
+import { verifyIngestionUri } from '../../../src/modules/ingestion/ingestion-common';
 import { syncEditField, registerSync, findSyncById } from '../../../src/domain/connector';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 
@@ -83,6 +87,7 @@ describe('connector.ts — syncEditField token encryption', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v: string | null | undefined) => v ? `encrypted:${v}` : v);
+    vi.mocked(verifyIngestionUri).mockImplementation(() => undefined);
     vi.mocked(updateAttribute).mockResolvedValue({ element: { id: 'x', name: 'y' } } as never);
     vi.mocked(publishUserAction).mockResolvedValue([] as void[]);
     vi.mocked(notify).mockResolvedValue(undefined as never);
@@ -116,12 +121,34 @@ describe('connector.ts — syncEditField token encryption', () => {
 
     expect(encryptSynchronizerCredential).not.toHaveBeenCalled();
   });
+
+  it('should validate uri against deny list when uri is edited', async () => {
+    const input = [{ key: 'uri', value: ['https://example.allowed.com'] }];
+
+    await syncEditField(fakeContext, fakeUser, 'test-sync-id', input);
+
+    expect(verifyIngestionUri).toHaveBeenCalledWith('https://example.allowed.com');
+    expect(updateAttribute).toHaveBeenCalled();
+  });
+
+  it('should reject uri edition when uri is denied', async () => {
+    vi.mocked(verifyIngestionUri).mockImplementation(() => {
+      throw new Error('This URI is not allowed for ingestion.');
+    });
+    const input = [{ key: 'uri', value: ['https://example.denied.com'] }];
+
+    await expect(syncEditField(fakeContext, fakeUser, 'test-sync-id', input))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
 });
 
 describe('connector.ts — registerSync token encryption', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(encryptSynchronizerCredential).mockImplementation(async (v: string | null | undefined) => v ? `encrypted:${v}` : v);
+    vi.mocked(verifyIngestionUri).mockImplementation(() => undefined);
     vi.mocked(testSync).mockResolvedValue('Connection success' as never);
     vi.mocked(createEntity).mockResolvedValue({
       element: { id: 'test-sync-id', internal_id: 'test-sync-id' },
@@ -143,6 +170,7 @@ describe('connector.ts — registerSync token encryption', () => {
 
     await registerSync(fakeContext, fakeUser, input);
 
+    expect(verifyIngestionUri).toHaveBeenCalledWith('http://remote-opencti.invalid');
     expect(encryptSynchronizerCredential).toHaveBeenCalledWith('secret-stream-token');
     expect(testSync).toHaveBeenCalled();
     expect(createEntity).toHaveBeenCalled();
@@ -160,8 +188,30 @@ describe('connector.ts — registerSync token encryption', () => {
 
     await registerSync(fakeContext, fakeUser, input);
 
+    expect(verifyIngestionUri).toHaveBeenCalledWith('http://remote-opencti.invalid');
     expect(encryptSynchronizerCredential).not.toHaveBeenCalled();
     expect(createEntity).toHaveBeenCalled();
+  });
+
+  it('should reject creation when uri is denied', async () => {
+    vi.mocked(verifyIngestionUri).mockImplementation(() => {
+      throw new Error('This URI is not allowed for ingestion.');
+    });
+    const input = {
+      name: 'Test synchronizer denied uri',
+      uri: 'http://example.denied.com',
+      token: 'secret-stream-token',
+      stream_id: 'live',
+      user_id: fakeUser.id,
+      listen_deletion: false,
+      no_dependencies: false,
+    } as never;
+
+    await expect(registerSync(fakeContext, fakeUser, input))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+
+    expect(testSync).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
   });
 });
 
