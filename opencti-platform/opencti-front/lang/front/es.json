@@ -4387,6 +4387,7 @@
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "Esta configuración habilita el requerimiento de un mensaje de referencia en la creación o modificación de una entidad.",
   "This configuration hides a specific entity type across the entire platform.": "Esta configuración oculta un tipo de entidad específico en toda la plataforma.",
   "This configuration is not available for this entity type": "Esta configuración no está disponible para este tipo de entidad",
+  "This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.": "Este conector no ha sido desarrollado ni verificado por Filigran. Por lo tanto, Filigran no se hace responsable de ningún problema que pueda surgir durante su uso.",
   "This connector is active": "Este conector está activo",
   "This connector is disconnected": "Este conector está desconectado",
   "This entity has several key fields, which is incompatible with bulk creation": "Esta entidad tiene varios campos clave, lo que es incompatible con la creación masiva",

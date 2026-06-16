@@ -4387,6 +4387,7 @@
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "この構成により、エンティティの作成または変更に関する参照メッセージの要件が有効になります。",
   "This configuration hides a specific entity type across the entire platform.": "この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。",
   "This configuration is not available for this entity type": "この構成は、このエンティティ タイプでは使用できません",
+  "This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.": "このコネクタは、Filigranによって開発および検証されたものではありません。したがって、Filigranは、その使用中に発生する可能性のあるいかなる問題についても責任を負いかねます。",
   "This connector is active": "このコネクタはアクティブです",
   "This connector is disconnected": "このコネクタとの接続が切れています",
   "This entity has several key fields, which is incompatible with bulk creation": "このエンティティは複数のキーフィールドを持つため、一括作成とは互換性がありません。",

@@ -4387,6 +4387,7 @@
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "Эта конфигурация позволяет требовать сообщения о ссылке при создании или изменении сущности.",
   "This configuration hides a specific entity type across the entire platform.": "Эта конфигурация скрывает определенный тип сущности на всей платформе.",
   "This configuration is not available for this entity type": "Эта конфигурация недоступна для данного типа сущности",
+  "This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.": "Данный коннектор не был разработан и протестирован компанией Filigran. В связи с этим компания Filigran не несет ответственности за любые проблемы, которые могут возникнуть при его использовании.",
   "This connector is active": "Этот коннектор активен",
   "This connector is disconnected": "Этот коннектор отсоединен",
   "This entity has several key fields, which is incompatible with bulk creation": "Эта сущность имеет несколько ключевых полей, что несовместимо с массовым созданием",

@@ -4387,6 +4387,7 @@
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "이 구성은 엔터티 생성 또는 수정 시 참조 메시지 요구를 활성화합니다.",
   "This configuration hides a specific entity type across the entire platform.": "이 구성은 전체 플랫폼에서 특정 엔터티 유형을 숨깁니다.",
   "This configuration is not available for this entity type": "이 구성은 이 엔터티 유형에 사용할 수 없습니다",
+  "This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.": "이 커넥터는 Filigran에서 개발하거나 검증하지 않았습니다. 따라서 Filigran은 이 커넥터를 사용하는 과정에서 발생할 수 있는 어떠한 문제에 대해서도 책임을 지지 않습니다.",
   "This connector is active": "이 커넥터는 활성화되었습니다",
   "This connector is disconnected": "이 커넥터는 연결이 끊어졌습니다",
   "This entity has several key fields, which is incompatible with bulk creation": "이 엔티티에는 대량 생성과 호환되지 않는 몇 가지 주요 필드가 있습니다",
