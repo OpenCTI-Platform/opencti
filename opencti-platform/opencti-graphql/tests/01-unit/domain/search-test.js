@@ -93,21 +93,20 @@ it('should buildLocalMustFilter build query from ids filter with terms', () => {
 
 it('should generate search clauses for both activity and history fields in historyFiltering mode', () => {
   const shouldSearch = elGenerateFullTextSearchShould('login', { historyFiltering: true });
-  const topLevelActivityQueryString = shouldSearch.find(
-    (e) => e?.bool?.must?.some((m) => m?.term?.['entity_type.keyword'] === 'Activity')
-      && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('event_scope'))
-      && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.search')),
-  );
-  const topLevelHistoryMessageQueryString = shouldSearch.find(
-    (e) => e?.bool?.must?.some((m) => m?.term?.['entity_type.keyword'] === 'History')
-      && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.message')),
+  const topLevelActivityAndHistoryQueryString = shouldSearch.find(
+    (e) => e?.bool?.must?.some((m) => {
+      const values = m?.terms?.['entity_type.keyword'];
+      return Array.isArray(values) && values.includes('Activity') && values.includes('History');
+    })
+    && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('event_scope'))
+    && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.message'))
+    && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.search')),
   );
   const nestedHistoryQueryString = shouldSearch.find(
     (e) => e?.nested?.path === 'context_data.history_changes'
       && e?.nested?.query?.bool?.must?.[0]?.query_string,
   );
 
-  expect(topLevelActivityQueryString).toBeDefined();
-  expect(topLevelHistoryMessageQueryString).toBeDefined();
+  expect(topLevelActivityAndHistoryQueryString).toBeDefined();
   expect(nestedHistoryQueryString).toBeDefined();
 });

@@ -2041,9 +2041,6 @@ const BASE_SEARCH_HISTORY = [
   'context_data.history_changes.changes_added.raw',
   'context_data.history_changes.changes_removed.raw',
 ];
-const BASE_SEARCH_HISTORY_ATTRIBUTES = [
-  'context_data.message',
-];
 const BASE_SEARCH_ATTRIBUTES = [
   // Pounds for attributes search
   `${ATTRIBUTE_NAME}^5`,
@@ -2175,28 +2172,13 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
       {
         bool: {
           must: [
-            { term: { 'entity_type.keyword': ENTITY_TYPE_ACTIVITY } },
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
             {
               multi_match: {
                 type: 'phrase',
                 query: ex,
                 lenient: true,
                 fields: BASE_SEARCH_ATTRIBUTES,
-              },
-            },
-          ],
-        },
-      },
-      {
-        bool: {
-          must: [
-            { term: { 'entity_type.keyword': ENTITY_TYPE_HISTORY } },
-            {
-              multi_match: {
-                type: 'phrase',
-                query: ex,
-                lenient: true,
-                fields: BASE_SEARCH_HISTORY_ATTRIBUTES,
               },
             },
           ],
@@ -2226,26 +2208,12 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
       shouldSearch.push({
         bool: {
           must: [
-            { term: { 'entity_type.keyword': ENTITY_TYPE_ACTIVITY } },
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
             {
               query_string: {
                 query: searchPhrase,
                 analyze_wildcard: true,
                 fields: BASE_SEARCH_ATTRIBUTES,
-              },
-            },
-          ],
-        },
-      });
-      shouldSearch.push({
-        bool: {
-          must: [
-            { term: { 'entity_type.keyword': ENTITY_TYPE_HISTORY } },
-            {
-              query_string: {
-                query: searchPhrase,
-                analyze_wildcard: true,
-                fields: BASE_SEARCH_HISTORY_ATTRIBUTES,
               },
             },
           ],
