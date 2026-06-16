@@ -301,7 +301,7 @@ const IngestionCatalogConnectorCreation = ({
       )}
     >
       <Stack gap={1}>
-        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
+        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} isVerified={connector.verified} />
 
         <Formik<ManagedConnectorValues>
           onReset={onClose}
