@@ -1,13 +1,11 @@
 import { logApp } from '../config/conf';
 import { elCreateIndex } from '../database/engine';
-import { engineMappingGenerator } from '../database/engine-mapping-generator';
 import { INDEX_DELETED_OBJECTS } from '../database/utils';
 
 const message = '[MIGRATION] Create index deleted objects';
 export const up = async (next) => {
   logApp.info(`${message} > started`);
-  const mappingProperties = engineMappingGenerator();
-  await elCreateIndex(INDEX_DELETED_OBJECTS, mappingProperties);
+  await elCreateIndex(INDEX_DELETED_OBJECTS);
   logApp.info(`${message} > done`);
   next();
 };
