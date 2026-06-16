@@ -1,12 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
+import { randomUUID } from 'node:crypto';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
-import { deleteElementById } from '../../../src/database/middleware';
+import { deleteElementById, storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from '../../../src/database/middleware';
+import { addThreatActorIndividual } from '../../../src/modules/threatActorIndividual/threatActorIndividual-domain';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
+import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 
 const LIST_QUERY = gql`
   query reports(
@@ -494,6 +498,242 @@ describe('Report resolver standard behavior', () => {
   });
 
   describe('When adding an observable to a report', () => {
+    it('should ignore duplicate object addition from a stale loaded snapshot', async () => {
+      const CREATE_QUERY = gql`
+        mutation ReportAdd($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const DELETE_QUERY = gql`
+        mutation reportDelete($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const isolatedReport = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            stix_id: `report--${randomUUID()}`,
+            name: `Concurrent report objects add ${now()}`,
+            description: 'Regression test report',
+            published: '2020-02-26T00:51:35.000Z',
+          },
+        },
+      });
+      const isolatedReportId = isolatedReport.data.reportAdd.id;
+      const objectToAdd = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `Concurrent object ${randomUUID()}`,
+        description: 'Temporary object for stale snapshot regression test',
+      });
+      try {
+        const staleLoadedReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, isolatedReportId);
+        const inputs = [
+          {
+            key: 'objects',
+            operation: 'add',
+            value: [objectToAdd.internal_id],
+          },
+        ];
+
+        const firstUpdate = await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, inputs);
+        const secondUpdate = await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, inputs);
+
+        expect(firstUpdate.event).not.toBeNull();
+        expect(secondUpdate.event).toBeNull();
+      } finally {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, objectToAdd.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: isolatedReportId } });
+      }
+    });
+
+    it('should still create new objects when some candidates already exist (toId filter regression)', async () => {
+      const CREATE_QUERY = gql`
+        mutation ReportAdd($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const DELETE_QUERY = gql`
+        mutation reportDelete($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const isolatedReport = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            stix_id: `report--${randomUUID()}`,
+            name: `Partial add regression ${now()}`,
+            description: 'Regression: toId filter must not block new candidates',
+            published: '2020-02-26T00:51:35.000Z',
+          },
+        },
+      });
+      const isolatedReportId = isolatedReport.data.reportAdd.id;
+      const alreadyAddedObject = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `Already-added object ${randomUUID()}`,
+        description: 'Object pre-added before stale snapshot is taken',
+      });
+      const newObject = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `New object ${randomUUID()}`,
+        description: 'Object that must be created even when another candidate already exists',
+      });
+      try {
+        // Capture a stale snapshot before alreadyAddedObject is added
+        const staleLoadedReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, isolatedReportId);
+
+        // Add alreadyAddedObject so it now exists in DB (making the snapshot stale for it)
+        await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, [
+          { key: 'objects', operation: 'add', value: [alreadyAddedObject.internal_id] },
+        ]);
+
+        // Now ADD both objects using the stale snapshot.
+        // The toId-filtered query must return only the alreadyAddedObject relation,
+        // so that newObject is still identified as missing and gets created.
+        const partialAddUpdate = await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, [
+          { key: 'objects', operation: 'add', value: [alreadyAddedObject.internal_id, newObject.internal_id] },
+        ]);
+
+        expect(partialAddUpdate.event).not.toBeNull();
+        // Verify final report state: both objects present exactly once, no duplicates
+        const REPORT_OBJECTS_QUERY = gql`
+          query report($id: String!) {
+            report(id: $id) {
+              id
+              objects(first: 200) {
+                edges {
+                  node {
+                    ... on BasicObject {
+                      id
+                    }
+                    ... on BasicRelationship {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+        const reportAfterPartialAdd = await queryAsAdmin({ query: REPORT_OBJECTS_QUERY, variables: { id: isolatedReportId } });
+        const objectEdges = reportAfterPartialAdd?.data?.report?.objects?.edges ?? [];
+        const objectIds = objectEdges.map((e) => e?.node?.id);
+        // newObject must be present (toId filter must not have blocked it)
+        expect(objectIds).toContain(newObject.id);
+        // alreadyAddedObject must still be present exactly once (no duplicate)
+        expect(objectIds.filter((id) => id === alreadyAddedObject.id)).toHaveLength(1);
+        // Total must be exactly 2
+        expect(objectEdges).toHaveLength(2);
+      } finally {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, alreadyAddedObject.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await stixDomainObjectDelete(testContext, ADMIN_USER, newObject.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: isolatedReportId } });
+      }
+    });
+
+    it.skip('should keep relationAdd idempotent on duplicate lock-first additions', async () => {
+      const CREATE_QUERY = gql`
+        mutation ReportAdd($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const DELETE_QUERY = gql`
+        mutation reportDelete($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const RELATION_ADD_QUERY = gql`
+        mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
+          reportEdit(id: $id) {
+            relationAdd(input: $input) {
+              id
+            }
+          }
+        }
+      `;
+      const REPORT_OBJECTS_QUERY = gql`
+        query report($id: String!) {
+          report(id: $id) {
+            id
+            objects(first: 200) {
+              edges {
+                node {
+                  ... on BasicObject {
+                    id
+                  }
+                  ... on BasicRelationship {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      const isolatedReport = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            stix_id: `report--${randomUUID()}`,
+            name: `Concurrent report relationAdd ${now()}`,
+            description: 'Regression test report for lock-first relationAdd',
+            published: '2020-02-26T00:51:35.000Z',
+          },
+        },
+      });
+      const isolatedReportId = isolatedReport.data.reportAdd.id;
+      const objectToAdd = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `Concurrent lock-first object ${randomUUID()}`,
+        description: 'Temporary object for lock-first duplicate relationAdd regression test',
+      });
+
+      try {
+        const variables = {
+          id: isolatedReportId,
+          input: {
+            toId: objectToAdd.internal_id,
+            relationship_type: 'object',
+          },
+        };
+
+        const firstAdd = await queryAsAdmin({ query: RELATION_ADD_QUERY, variables });
+        const reportAfterFirstAdd = await queryAsAdmin({ query: READ_QUERY, variables: { id: isolatedReportId } });
+        const secondAdd = await queryAsAdmin({ query: RELATION_ADD_QUERY, variables });
+        const reportAfterSecondAdd = await queryAsAdmin({ query: READ_QUERY, variables: { id: isolatedReportId } });
+        const reportAfterAdds = await queryAsAdmin({ query: REPORT_OBJECTS_QUERY, variables: { id: isolatedReportId } });
+        const firstRelationId = firstAdd?.data?.reportEdit?.relationAdd?.id;
+        const secondRelationId = secondAdd?.data?.reportEdit?.relationAdd?.id ?? null;
+        const matchingTargetEdges = reportAfterAdds?.data?.report?.objects?.edges
+          ?.filter((edge) => edge?.node?.id === objectToAdd.id) ?? [];
+
+        expect(firstAdd.data.reportEdit.relationAdd).not.toBeNull();
+        expect(secondAdd.errors ?? []).toHaveLength(0);
+        expect(firstRelationId).not.toBeNull();
+        if (secondRelationId !== null) {
+          expect(secondRelationId).toEqual(firstRelationId);
+        }
+        expect(reportAfterSecondAdd.data.report.updated_at).toEqual(reportAfterFirstAdd.data.report.updated_at);
+        expect(reportAfterSecondAdd.data.report.modified).toEqual(reportAfterFirstAdd.data.report.modified);
+        expect(matchingTargetEdges).toHaveLength(1);
+        expect(reportAfterAdds.data.report.objects.edges).toHaveLength(1);
+      } finally {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, objectToAdd.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: isolatedReportId } });
+      }
+    });
+
     it('should add the observable and update updated_at and modified', async () => {
       const RELATION_ADD_OBSERVABLE_QUERY = gql`
       mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {

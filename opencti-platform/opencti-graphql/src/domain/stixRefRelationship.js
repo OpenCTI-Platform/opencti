@@ -1,5 +1,5 @@
 import { dissoc, uniq } from 'ramda';
-import { createRelation, deleteElementById, storeLoadByIdWithRefs, updateAttribute } from '../database/middleware';
+import { createRelation, deleteElementById, storeLoadByIdWithRefs, updateAttributeLockFirst } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import {
@@ -110,7 +110,7 @@ export const stixRefRelationshipEditField = async (context, user, stixRefRelatio
   if (!stixRefRelation) {
     throw FunctionalError('Cannot delete the relation, Stix-Ref-Relation cannot be found.', { id: stixRefRelationshipId });
   }
-  const { element } = await updateAttribute(context, user, stixRefRelationshipId, ABSTRACT_STIX_RELATIONSHIP, input);
+  const { element } = await updateAttributeLockFirst(context, user, stixRefRelationshipId, ABSTRACT_STIX_RELATIONSHIP, input);
   return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 export const stixRefRelationshipDelete = async (context, user, stixRefRelationshipId) => {

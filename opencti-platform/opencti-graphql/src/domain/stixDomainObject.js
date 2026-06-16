@@ -54,6 +54,9 @@ import { paginatedForPathWithEnrichment } from '../modules/internal/document/doc
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { lockResources } from '../lock/master-lock';
+import { getDraftContext } from '../utils/draftContext';
+import { getInstanceIds } from '../schema/identifier';
 
 export const findStixDomainObjectPaginated = async (context, user, args) => {
   let types = [];
@@ -363,20 +366,38 @@ export const stixDomainObjectEditAuthorizedMembers = async (context, user, entit
 };
 
 export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order, description, inCarousel }) => {
-  const stixDomainObject = await storeLoadByIdWithRefs(context, user, sdoId);
-  const files = stixDomainObject.x_opencti_files.map((file) => {
-    if (file.id === id) {
-      return { ...file, order, description, inCarousel };
+  const draftId = getDraftContext(context, user);
+  let lock;
+  try {
+    lock = await lockResources([sdoId], { draftId });
+    // Load fresh under the lock so the file array and the update use the same consistent snapshot
+    const stixDomainObject = await storeLoadByIdWithRefs(context, user, sdoId);
+    if (!stixDomainObject) {
+      throw FunctionalError('Cannot edit the file, Stix-Domain-Object cannot be found.', { id: sdoId });
     }
-    return file;
-  });
-  const nonResolvedFiles = files.map((f) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
-    return nonResolvedFile;
-  });
-  const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(context, user, stixDomainObject, { key: 'x_opencti_files', value: nonResolvedFiles });
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
+    const files = (stixDomainObject.x_opencti_files ?? []).map((file) => {
+      if (file.id === id) {
+        return { ...file, order, description, inCarousel };
+      }
+      return file;
+    });
+    const nonResolvedFiles = files.map((f) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
+      return nonResolvedFile;
+    });
+    const lockScopedIds = getInstanceIds(stixDomainObject);
+    const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(
+      context,
+      user,
+      stixDomainObject,
+      [{ key: 'x_opencti_files', value: nonResolvedFiles }],
+      { locks: R.uniq([sdoId, ...lockScopedIds]) },
+    );
+    return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 
 // region context

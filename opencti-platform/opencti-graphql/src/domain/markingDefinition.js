@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, updateAttributeLockFirst } from '../database/middleware';
 import { internalFindByIds, fullEntitiesList, fullRelationsList, topEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -144,7 +144,7 @@ export const markingDefinitionDeleteAndUpdateGroups = async (context, user, mark
 };
 
 export const markingDefinitionEditField = async (context, user, markingDefinitionId, input, opts = {}) => {
-  const { element } = await updateAttribute(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);
+  const { element } = await updateAttributeLockFirst(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);
   // users of group impacted must be refreshed
   await notifyMembersOfNewMarking(context, user, element);
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, element, user);

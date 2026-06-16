@@ -1,6 +1,6 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createRelation, deleteElementById, updateAttribute } from '../database/middleware';
+import { createRelation, deleteElementById, updateAttributeLockFirst } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { elCount } from '../database/engine';
@@ -42,7 +42,7 @@ export const stixSightingRelationshipDelete = async (context, user, stixSighting
   return stixSightingRelationshipId;
 };
 export const stixSightingRelationshipEditField = async (context, user, relationshipId, input, opts) => {
-  const { element } = await updateAttribute(context, user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input, opts);
+  const { element } = await updateAttributeLockFirst(context, user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input, opts);
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 // endregion
