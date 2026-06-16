@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { WidgetColumn, WidgetDataSelection, WidgetHost, type WidgetParameters } from '../../../../utils/widget/widget';
-import { useFormatter } from '../../../../components/i18n';
+import { WidgetColumn, WidgetDataSelection, WidgetHost, type WidgetParameters } from 'src/utils/widget/widget';
+import { useFormatter } from 'src/components/i18n';
 import { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
