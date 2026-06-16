@@ -4980,10 +4980,15 @@ export type ContextData = {
   entity_type?: Maybe<Scalars['String']['output']>;
   external_references?: Maybe<Array<ExternalReference>>;
   from_id?: Maybe<Scalars['String']['output']>;
-  message: Scalars['String']['output'];
+  groups?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  organization?: Maybe<Scalars['String']['output']>;
   pir_ids?: Maybe<Array<Scalars['String']['output']>>;
   pir_match_from?: Maybe<Scalars['Boolean']['output']>;
   pir_score?: Maybe<Scalars['Int']['output']>;
+  result_count?: Maybe<Scalars['Int']['output']>;
+  search?: Maybe<Scalars['String']['output']>;
+  search_location?: Maybe<Scalars['String']['output']>;
   to_id?: Maybe<Scalars['String']['output']>;
   workspace_type?: Maybe<Scalars['String']['output']>;
 };
@@ -15451,10 +15456,17 @@ export type LogsConnectorStatusInput = {
 export enum LogsOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
+  EntityType = 'entity_type',
   Event = 'event',
   EventScope = 'event_scope',
   EventType = 'event_type',
-  Timestamp = 'timestamp'
+  Groups = 'groups',
+  Organization = 'organization',
+  ResultCount = 'result_count',
+  Search = 'search',
+  SearchLocation = 'search_location',
+  Timestamp = 'timestamp',
+  User = 'user'
 }
 
 export type LogsWorkerConfig = {
@@ -24475,6 +24487,7 @@ export type Query = {
   labels?: Maybe<LabelConnection>;
   language?: Maybe<Language>;
   languages?: Maybe<LanguageConnection>;
+  localSearch?: Maybe<StixCoreObjectConnection>;
   location?: Maybe<Location>;
   locations?: Maybe<LocationConnection>;
   log?: Maybe<Log>;
@@ -24577,6 +24590,8 @@ export type Query = {
   schemaAttributes?: Maybe<Array<Maybe<AttributesMap>>>;
   schemaRelationsRefTypesMapping: Array<StixRelationshipRefSchema>;
   schemaRelationsTypesMapping: Array<StixRelationshipSchema>;
+  searchAnalytics?: Maybe<SearchAnalytics>;
+  searchLogs?: Maybe<LogConnection>;
   sector?: Maybe<Sector>;
   sectors?: Maybe<SectorConnection>;
   securityCoverage?: Maybe<SecurityCoverage>;
@@ -25952,6 +25967,17 @@ export type QueryLanguagesArgs = {
 };
 
 
+export type QueryLocalSearchArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
 export type QueryLocationArgs = {
   id: Scalars['String']['input'];
 };
@@ -26660,6 +26686,27 @@ export type QuerySavedFiltersArgs = {
 
 export type QuerySchemaAttributeNamesArgs = {
   elementType: Array<InputMaybe<Scalars['String']['input']>>;
+};
+
+
+export type QuerySearchAnalyticsArgs = {
+  binSize?: InputMaybe<Scalars['Int']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  maxBin?: InputMaybe<Scalars['Int']['input']>;
+  minBin?: InputMaybe<Scalars['Int']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QuerySearchLogsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<LogsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -29237,10 +29284,28 @@ export type ScaleAttribute = {
   scale: Scalars['String']['output'];
 };
 
+export type SearchAnalytics = {
+  __typename?: 'SearchAnalytics';
+  locations: Array<Maybe<TermCount>>;
+  noResults: Array<Maybe<TermCount>>;
+  organizations: Array<Maybe<TermCount>>;
+  searchCounts: Array<Maybe<TermCount>>;
+  summary: SearchSummary;
+  withResults: Array<Maybe<TermCount>>;
+};
+
 export type SearchMetrics = {
   __typename?: 'SearchMetrics';
   fetch_total?: Maybe<Scalars['String']['output']>;
   query_total?: Maybe<Scalars['String']['output']>;
+};
+
+export type SearchSummary = {
+  __typename?: 'SearchSummary';
+  total_locations: Scalars['Int']['output'];
+  total_organizations: Scalars['Int']['output'];
+  total_searches: Scalars['Int']['output'];
+  total_users: Scalars['Int']['output'];
 };
 
 export type SecretInfo = {
@@ -34026,6 +34091,12 @@ export enum TaxiiVersion {
   V2 = 'v2',
   V21 = 'v21'
 }
+
+export type TermCount = {
+  __typename?: 'TermCount';
+  count: Scalars['Int']['output'];
+  value: Scalars['String']['output'];
+};
 
 export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Text';
@@ -40148,7 +40219,9 @@ export type ResolversTypes = ResolversObject<{
   SavedFilterEdge: ResolverTypeWrapper<Omit<SavedFilterEdge, 'node'> & { node: ResolversTypes['SavedFilter'] }>;
   SavedFilterOrdering: SavedFilterOrdering;
   ScaleAttribute: ResolverTypeWrapper<ScaleAttribute>;
+  SearchAnalytics: ResolverTypeWrapper<SearchAnalytics>;
   SearchMetrics: ResolverTypeWrapper<SearchMetrics>;
+  SearchSummary: ResolverTypeWrapper<SearchSummary>;
   SecretInfo: ResolverTypeWrapper<SecretInfo>;
   SecretSource: SecretSource;
   Sector: ResolverTypeWrapper<Omit<Sector, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subSectors' | 'targetedOrganizations' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversTypes['FintelTemplate']>>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentSectors?: Maybe<ResolversTypes['SectorConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, subSectors?: Maybe<ResolversTypes['SectorConnection']>, targetedOrganizations?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -40319,6 +40392,7 @@ export type ResolversTypes = ResolversObject<{
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
   TaxiiFeedAddInputFromImport: ResolverTypeWrapper<TaxiiFeedAddInputFromImport>;
   TaxiiVersion: TaxiiVersion;
+  TermCount: ResolverTypeWrapper<TermCount>;
   Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   TextAddInput: TextAddInput;
   Theme: ResolverTypeWrapper<BasicStoreEntityTheme>;
@@ -41176,7 +41250,9 @@ export type ResolversParentTypes = ResolversObject<{
   SavedFilterConnection: Omit<SavedFilterConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['SavedFilterEdge']>> };
   SavedFilterEdge: Omit<SavedFilterEdge, 'node'> & { node: ResolversParentTypes['SavedFilter'] };
   ScaleAttribute: ScaleAttribute;
+  SearchAnalytics: SearchAnalytics;
   SearchMetrics: SearchMetrics;
+  SearchSummary: SearchSummary;
   SecretInfo: SecretInfo;
   Sector: Omit<Sector, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subSectors' | 'targetedOrganizations' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, parentSectors?: Maybe<ResolversParentTypes['SectorConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, subSectors?: Maybe<ResolversParentTypes['SectorConnection']>, targetedOrganizations?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   SectorAddInput: SectorAddInput;
@@ -41320,6 +41396,7 @@ export type ResolversParentTypes = ResolversObject<{
   TaxiiCollectionEdge: Omit<TaxiiCollectionEdge, 'node'> & { node: ResolversParentTypes['TaxiiCollection'] };
   TaxiiCollectionEditMutations: Omit<TaxiiCollectionEditMutations, 'fieldPatch'> & { fieldPatch?: Maybe<ResolversParentTypes['TaxiiCollection']> };
   TaxiiFeedAddInputFromImport: TaxiiFeedAddInputFromImport;
+  TermCount: TermCount;
   Text: Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   TextAddInput: TextAddInput;
   Theme: BasicStoreEntityTheme;
@@ -43077,10 +43154,15 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   external_references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  groups?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pir_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   pir_match_from?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  result_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  search?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  search_location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workspace_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
@@ -49234,6 +49316,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   labels?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType, Partial<QueryLabelsArgs>>;
   language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<QueryLanguageArgs, 'id'>>;
   languages?: Resolver<Maybe<ResolversTypes['LanguageConnection']>, ParentType, ContextType, Partial<QueryLanguagesArgs>>;
+  localSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryLocalSearchArgs>>;
   location?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<QueryLocationArgs, 'id'>>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType, Partial<QueryLocationsArgs>>;
   log?: Resolver<Maybe<ResolversTypes['Log']>, ParentType, ContextType, RequireFields<QueryLogArgs, 'id'>>;
@@ -49336,6 +49419,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   schemaAttributes?: Resolver<Maybe<Array<Maybe<ResolversTypes['AttributesMap']>>>, ParentType, ContextType>;
   schemaRelationsRefTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipRefSchema']>, ParentType, ContextType>;
   schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
+  searchAnalytics?: Resolver<Maybe<ResolversTypes['SearchAnalytics']>, ParentType, ContextType, Partial<QuerySearchAnalyticsArgs>>;
+  searchLogs?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QuerySearchLogsArgs>>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType, Partial<QuerySectorsArgs>>;
   securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<QuerySecurityCoverageArgs, 'id'>>;
@@ -49995,9 +50080,25 @@ export type ScaleAttributeResolvers<ContextType = any, ParentType extends Resolv
   scale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type SearchAnalyticsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchAnalytics'] = ResolversParentTypes['SearchAnalytics']> = ResolversObject<{
+  locations?: Resolver<Array<Maybe<ResolversTypes['TermCount']>>, ParentType, ContextType>;
+  noResults?: Resolver<Array<Maybe<ResolversTypes['TermCount']>>, ParentType, ContextType>;
+  organizations?: Resolver<Array<Maybe<ResolversTypes['TermCount']>>, ParentType, ContextType>;
+  searchCounts?: Resolver<Array<Maybe<ResolversTypes['TermCount']>>, ParentType, ContextType>;
+  summary?: Resolver<ResolversTypes['SearchSummary'], ParentType, ContextType>;
+  withResults?: Resolver<Array<Maybe<ResolversTypes['TermCount']>>, ParentType, ContextType>;
+}>;
+
 export type SearchMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchMetrics'] = ResolversParentTypes['SearchMetrics']> = ResolversObject<{
   fetch_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   query_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type SearchSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchSummary'] = ResolversParentTypes['SearchSummary']> = ResolversObject<{
+  total_locations?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total_organizations?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total_searches?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total_users?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type SecretInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecretInfo'] = ResolversParentTypes['SecretInfo']> = ResolversObject<{
@@ -51571,6 +51672,11 @@ export type TaxiiFeedAddInputFromImportResolvers<ContextType = any, ParentType e
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type TermCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['TermCount'] = ResolversParentTypes['TermCount']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type TextResolvers<ContextType = any, ParentType extends ResolversParentTypes['Text'] = ResolversParentTypes['Text']> = ResolversObject<{
@@ -53568,7 +53674,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SavedFilterConnection?: SavedFilterConnectionResolvers<ContextType>;
   SavedFilterEdge?: SavedFilterEdgeResolvers<ContextType>;
   ScaleAttribute?: ScaleAttributeResolvers<ContextType>;
+  SearchAnalytics?: SearchAnalyticsResolvers<ContextType>;
   SearchMetrics?: SearchMetricsResolvers<ContextType>;
+  SearchSummary?: SearchSummaryResolvers<ContextType>;
   SecretInfo?: SecretInfoResolvers<ContextType>;
   Sector?: SectorResolvers<ContextType>;
   SectorConnection?: SectorConnectionResolvers<ContextType>;
@@ -53676,6 +53784,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TaxiiCollectionEdge?: TaxiiCollectionEdgeResolvers<ContextType>;
   TaxiiCollectionEditMutations?: TaxiiCollectionEditMutationsResolvers<ContextType>;
   TaxiiFeedAddInputFromImport?: TaxiiFeedAddInputFromImportResolvers<ContextType>;
+  TermCount?: TermCountResolvers<ContextType>;
   Text?: TextResolvers<ContextType>;
   Theme?: ThemeResolvers<ContextType>;
   ThemeConnection?: ThemeConnectionResolvers<ContextType>;

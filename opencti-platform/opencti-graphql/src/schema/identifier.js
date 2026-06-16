@@ -190,6 +190,7 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_RULE_MANAGER]: () => uuidv4(),
     [I.ENTITY_TYPE_RULE]: () => uuidv4(),
     [I.ENTITY_TYPE_HISTORY]: () => uuidv4(),
+    [I.ENTITY_TYPE_SEARCH]: () => uuidv4(),
     [I.ENTITY_TYPE_STATUS_TEMPLATE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_STATUS]: [{ src: 'template_id' }, { src: 'type' }, { src: 'scope' }],
     [I.ENTITY_TYPE_FEED]: () => uuidv4(),

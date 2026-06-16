@@ -50,6 +50,7 @@ import {
   RouteOutlined,
   RouterOutlined,
   SafetyCheckOutlined,
+  SearchOutlined,
   SecurityOutlined,
   SettingsApplicationsOutlined,
   SettingsOutlined,
@@ -619,6 +620,8 @@ const iconSelector = (
       return <FilterOutline style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'logsearch':
+      return <SearchOutlined style={style} fontSize={fontSize} role="img" />;
     default:
       return <AutoAwesomeMotion style={style} fontSize={fontSize} role="img" />;
   }

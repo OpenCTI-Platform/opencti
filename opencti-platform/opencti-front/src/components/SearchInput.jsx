@@ -16,6 +16,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
+import { useQueryLoader } from 'react-relay';
+import { graphql } from 'graphql';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from './i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
@@ -172,6 +174,8 @@ const SearchInput = (props) => {
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
     isNLQLoading,
+    disableLogging,
+    searchContext,
     ...otherProps
   } = props;
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
@@ -206,6 +210,7 @@ const SearchInput = (props) => {
   const selectedAgentSlug = nlqSlugFromMode(mode);
   const selectedAgent = nlqAgents.find((a) => a.slug === selectedAgentSlug) ?? null;
 
+  let isLocalSearch = true;
   let classRoot = classes.searchRoot;
   if (variant === 'inDrawer') {
     classRoot = classes.searchRootInDrawer;
@@ -221,6 +226,7 @@ const SearchInput = (props) => {
     classInput = classes.searchInputSmall;
   } else if (variant === 'topBar') {
     classInput = classes.searchInputTopBar;
+    isLocalSearch = false;
   } else if (variant === 'noAnimation') {
     classInput = classes.searchInputNoAnimation;
   } else if (variant === 'inDrawer') {
@@ -267,6 +273,23 @@ const SearchInput = (props) => {
       onSubmit(searchValue, true, agent.slug);
     }
   };
+  const [, logSearchQuery] = useQueryLoader(
+    graphql`
+      query SearchInputLogSearchQuery(
+        $search: String,
+        $types: [String],
+      ) {
+        localSearch(search: $search, types: $types) {
+          edges {
+            node {
+              entity_type
+              id
+            }
+          }
+        }
+      }
+    `,
+  );
 
   // Click on the NLQ toggle: activate NLQ and execute search if there's a value
   const handleNlqToggleClick = useCallback((event) => {
@@ -363,6 +386,9 @@ const SearchInput = (props) => {
           onKeyDown={(event) => {
             const { value } = event.target;
             if (typeof onSubmit === 'function' && event.key === 'Enter') {
+              if (isLocalSearch && !disableLogging && searchContext) {
+                logSearchQuery({ search: value, types: searchContext.entityTypes });
+              }
               onSubmit(value);
             }
           }}
