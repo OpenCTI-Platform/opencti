@@ -68,7 +68,14 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
         )}
 
         {!!loginMessage && (
-          <Typography textAlign="center" variant="body2">
+          <Typography
+            textAlign="center"
+            variant="body2"
+            sx={{
+              maxHeight: '25vh',
+              overflowY: loginMessage.length > 500 ? 'auto' : undefined,
+            }}
+          >
             <LoginMarkdown sx={{ mb: 2 }}>
               {loginMessage}
             </LoginMarkdown>
