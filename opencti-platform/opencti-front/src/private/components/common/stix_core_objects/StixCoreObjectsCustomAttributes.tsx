@@ -226,6 +226,12 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         gender
         marital_status
         job_title
+        bornIn {
+          name
+        }
+        ethnicity {
+          name
+        }
       }
       ... on IntrusionSet {
         name
@@ -276,6 +282,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
       ... on Vulnerability {
         name
         description
+        modified
+        x_opencti_modified_at
         x_opencti_score
         x_opencti_cisa_kev
         x_opencti_epss_score
@@ -403,6 +411,9 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         observable_value
         x_opencti_description
         x_opencti_score
+        created_at
+        x_opencti_modified_at
+        updated_at
       }
       ... on Artifact {
         x_opencti_additional_names

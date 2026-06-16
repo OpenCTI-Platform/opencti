@@ -9,8 +9,11 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ExpandablePre from '../../components/ExpandablePre';
 import ItemScore from '../../components/ItemScore';
 import ItemBoolean from '../../components/ItemBoolean';
-import ListItemText from '@mui/material/ListItemText';
 import ItemCopy from '../../components/ItemCopy';
+import ListItemText from '@mui/material/ListItemText';
+import ItemCvssScore from 'src/components/ItemCvssScore';
+import ItemSeverity from 'src/components/ItemSeverity';
+import TextList from '@common/text/TextList';
 
 type AttributeRenderer = (
   data: StixCoreObject,
@@ -207,6 +210,18 @@ const indicatorRenderers: EntityRenderers = {
       />
     );
   },
+  x_mitre_platforms_indicator: (data) => {
+    const value = (data as Record<string, unknown>).x_mitre_platforms_indicator as string[] | undefined;
+    return (
+      <FieldOrEmpty source={value}>
+        <Stack direction="row" flexWrap="wrap" gap={1}>
+          {value?.map((platform) => (
+            <Tag key={platform} label={platform} />
+          ))}
+        </Stack>
+      </FieldOrEmpty>
+    );
+  },
 };
 
 // ─── Threat Actor Group and Individual
@@ -249,7 +264,23 @@ const threatActorIndividualRenderers: EntityRenderers = {
       </FieldOrEmpty>
     );
   },
-  height: (data, fldt, t_i18n) => {
+  place_of_birth: (data) => {
+    const value = (data as Record<string, unknown>).bornIn as { name: string } | undefined;
+    return (
+      <FieldOrEmpty source={value?.name}>
+        <Typography variant="body2">{value?.name}</Typography>
+      </FieldOrEmpty>
+    );
+  },
+  ethnicity: (data) => {
+    const value = (data as Record<string, unknown>).ethnicity as { name: string } | undefined;
+    return (
+      <FieldOrEmpty source={value?.name}>
+        <Typography variant="body2">{value?.name}</Typography>
+      </FieldOrEmpty>
+    );
+  },
+  height: (data, t_i18n, fldt) => {
     const heights = (data as Record<string, unknown>).height as
       | ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>
       | null
@@ -269,6 +300,33 @@ const threatActorIndividualRenderers: EntityRenderers = {
       </FieldOrEmpty>
     );
   },
+  weight: (data, t_i18n, fldt) => {
+    const weights = (data as Record<string, unknown>).weight as
+      | ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>
+      | null
+      | undefined;
+    return (
+      <FieldOrEmpty source={weights}>
+        <List sx={{ py: 0 }}>
+          {weights?.map((w, i) => (
+            <ListItem key={i} dense divider>
+              <ListItemText
+                primary={w.measure != null ? `${w.measure} kg` : '-'}
+                secondary={w.date_seen ? fldt(w.date_seen) : t_i18n('Unknown date')}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </FieldOrEmpty>
+    );
+  },
+  date_of_birth: (data, _, fldt) => {
+    const value = (data as Record<string, unknown>).date_of_birth as string | undefined;
+    if (!value) {
+      return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    }
+    return <Typography variant="body2">{fldt(value)}</Typography>;
+  },
   resource_level: threatActorGroupRenderers.resource_level,
 };
 
@@ -286,16 +344,134 @@ const malwareRenderer: EntityRenderers = {
 };
 
 // ─── Vulnerability
-const vulnerabilityRenderer: EntityRenderers = {
+const getCvssCriticity = (score: number | null | undefined): string | null => {
+  if (typeof score !== 'number' || score < 0 || score > 10) return null;
+  if (score === 0.0) return 'Unknown';
+  if (score <= 3.9) return 'LOW';
+  if (score <= 6.9) return 'MEDIUM';
+  if (score <= 8.9) return 'HIGH';
+  return 'CRITICAL';
+};
+
+const makeScoreRenderer = (scoreKey: string, severityKey?: string) => {
+  const renderer = (data: Record<string, unknown>, _t_i18n: unknown) => {
+    const score = data[scoreKey] as number | undefined;
+    const severity = severityKey
+      ? data[severityKey] as string | undefined
+      : getCvssCriticity(score ?? null);
+    return (
+      <Stack direction="row" gap={1}>
+        <ItemCvssScore score={score ?? 0} />
+        <ItemSeverity severity={severity ?? null} label={severity ?? null} variant="high" />
+      </Stack>
+    );
+  };
+  renderer.displayName = `ScoreRenderer(${scoreKey})`;
+  return renderer;
+};
+
+const makeTagRenderer = (key: string) => {
+  const renderer = (data: Record<string, unknown>) => {
+    const value = data[key] as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Tag label={value} />;
+  };
+  renderer.displayName = `TagRenderer(${key})`;
+  return renderer;
+};
+
+const vulnerabilityRenderers: EntityRenderers = {
+  // ── Scores
+  x_opencti_cvss_base_score: makeScoreRenderer('x_opencti_cvss_base_score', 'x_opencti_cvss_base_severity'),
+  x_opencti_cvss_v2_base_score: makeScoreRenderer('x_opencti_cvss_v2_base_score'),
+  x_opencti_cvss_v4_base_score: makeScoreRenderer('x_opencti_cvss_v4_base_score', 'x_opencti_cvss_v4_base_severity'),
+  x_opencti_cvss_temporal_score: makeScoreRenderer('x_opencti_cvss_temporal_score'),
+  x_opencti_cvss_v2_temporal_score: makeScoreRenderer('x_opencti_cvss_v2_temporal_score'),
+  x_opencti_cvss_base_severity: makeTagRenderer('x_opencti_cvss_base_severity'),
+  x_opencti_cvss_v4_base_severity: makeTagRenderer('x_opencti_cvss_v4_base_severity'),
+
+  // ── Vectors
+  x_opencti_cvss_vector_string: makeTagRenderer('x_opencti_cvss_vector_string'),
+  x_opencti_cvss_v2_vector_string: makeTagRenderer('x_opencti_cvss_v2_vector_string'),
+  x_opencti_cvss_v4_vector_string: makeTagRenderer('x_opencti_cvss_v4_vector_string'),
+
+  // ── CVSS V3 metrics
+  x_opencti_cvss_attack_vector: makeTagRenderer('x_opencti_cvss_attack_vector'),
+  x_opencti_cvss_attack_complexity: makeTagRenderer('x_opencti_cvss_attack_complexity'),
+  x_opencti_cvss_privileges_required: makeTagRenderer('x_opencti_cvss_privileges_required'),
+  x_opencti_cvss_user_interaction: makeTagRenderer('x_opencti_cvss_user_interaction'),
+  x_opencti_cvss_scope: makeTagRenderer('x_opencti_cvss_scope'),
+  x_opencti_cvss_confidentiality_impact: makeTagRenderer('x_opencti_cvss_confidentiality_impact'),
+  x_opencti_cvss_integrity_impact: makeTagRenderer('x_opencti_cvss_integrity_impact'),
+  x_opencti_cvss_availability_impact: makeTagRenderer('x_opencti_cvss_availability_impact'),
+  x_opencti_cvss_exploit_code_maturity: makeTagRenderer('x_opencti_cvss_exploit_code_maturity'),
+  x_opencti_cvss_remediation_level: makeTagRenderer('x_opencti_cvss_remediation_level'),
+  x_opencti_cvss_report_confidence: makeTagRenderer('x_opencti_cvss_report_confidence'),
+
+  // ── CVSS V2 metrics
+  x_opencti_cvss_v2_access_vector: makeTagRenderer('x_opencti_cvss_v2_access_vector'),
+  x_opencti_cvss_v2_access_complexity: makeTagRenderer('x_opencti_cvss_v2_access_complexity'),
+  x_opencti_cvss_v2_authentication: makeTagRenderer('x_opencti_cvss_v2_authentication'),
+  x_opencti_cvss_v2_confidentiality_impact: makeTagRenderer('x_opencti_cvss_v2_confidentiality_impact'),
+  x_opencti_cvss_v2_integrity_impact: makeTagRenderer('x_opencti_cvss_v2_integrity_impact'),
+  x_opencti_cvss_v2_availability_impact: makeTagRenderer('x_opencti_cvss_v2_availability_impact'),
+  x_opencti_cvss_v2_exploitability: makeTagRenderer('x_opencti_cvss_v2_exploitability'),
+  x_opencti_cvss_v2_remediation_level: makeTagRenderer('x_opencti_cvss_v2_remediation_level'),
+  x_opencti_cvss_v2_report_confidence: makeTagRenderer('x_opencti_cvss_v2_report_confidence'),
+
+  // ── CVSS V4 metrics
+  x_opencti_cvss_v4_attack_vector: makeTagRenderer('x_opencti_cvss_v4_attack_vector'),
+  x_opencti_cvss_v4_attack_complexity: makeTagRenderer('x_opencti_cvss_v4_attack_complexity'),
+  x_opencti_cvss_v4_attack_requirements: makeTagRenderer('x_opencti_cvss_v4_attack_requirements'),
+  x_opencti_cvss_v4_privileges_required: makeTagRenderer('x_opencti_cvss_v4_privileges_required'),
+  x_opencti_cvss_v4_user_interaction: makeTagRenderer('x_opencti_cvss_v4_user_interaction'),
+  x_opencti_cvss_v4_confidentiality_impact_v: makeTagRenderer('x_opencti_cvss_v4_confidentiality_impact_v'),
+  x_opencti_cvss_v4_confidentiality_impact_s: makeTagRenderer('x_opencti_cvss_v4_confidentiality_impact_s'),
+  x_opencti_cvss_v4_integrity_impact_v: makeTagRenderer('x_opencti_cvss_v4_integrity_impact_v'),
+  x_opencti_cvss_v4_integrity_impact_s: makeTagRenderer('x_opencti_cvss_v4_integrity_impact_s'),
+  x_opencti_cvss_v4_availability_impact_v: makeTagRenderer('x_opencti_cvss_v4_availability_impact_v'),
+  x_opencti_cvss_v4_availability_impact_s: makeTagRenderer('x_opencti_cvss_v4_availability_impact_s'),
+  x_opencti_cvss_v4_exploit_maturity: makeTagRenderer('x_opencti_cvss_v4_exploit_maturity'),
   x_opencti_cisa_kev: (data, t_i18n) => {
-    const value = (data as Record<string, unknown>).x_opencti_cisa_kev as boolean | undefined;
+    const value = data.x_opencti_cisa_kev as boolean | undefined;
+    if (value === undefined || value === null) {
+      return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    }
     return (
       <ItemBoolean
-        status={value ?? false}
-        label={value ? t_i18n('Yes') : t_i18n('No')}
+        status={value}
+        label={value ? (t_i18n as (s: string) => string)('Yes') : (t_i18n as (s: string) => string)('No')}
         reverse
       />
     );
+  },
+  modified: (_data, _t_i18n, fldt) => {
+    const value = (_data as Record<string, unknown>).modified as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Typography variant="body2">{(fldt as (s: unknown) => string)(value)}</Typography>;
+  },
+  x_opencti_epss_score: (data) => {
+    const value = data.x_opencti_epss_score as number | undefined;
+    if (value === undefined || value === null) {
+      return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    }
+    return <Tag label={String(value)} />;
+  },
+  x_opencti_epss_percentile: (data) => {
+    const value = data.x_opencti_epss_percentile as number | undefined;
+    if (value === undefined || value === null) {
+      return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    }
+    return <Tag label={String(value)} />;
+  },
+  x_opencti_cwe: (data) => {
+    const value = data.x_opencti_cwe as string[] | undefined;
+    return <TextList list={value} />;
+  },
+  x_opencti_first_seen_active: (data, _t_i18n, fldt) => {
+    const value = data.x_opencti_first_seen_active as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Typography variant="body2">{(fldt as (s: unknown) => string)(value)}</Typography>;
   },
 };
 
@@ -307,6 +483,18 @@ const attackPatternRenderers: EntityRenderers = {
       return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
     }
     return <ExpandableMarkdown source={value} limit={400} />;
+  },
+  x_mitre_platforms_attack_pattern: (data) => {
+    const value = (data as Record<string, unknown>).x_mitre_platforms_attack_pattern as string[] | undefined;
+    return (
+      <FieldOrEmpty source={value}>
+        <Stack direction="row" flexWrap="wrap" gap={1}>
+          {value?.map((platform) => (
+            <Tag key={platform} label={platform} />
+          ))}
+        </Stack>
+      </FieldOrEmpty>
+    );
   },
 };
 
@@ -327,6 +515,17 @@ const stixCyberObservableRenderers: EntityRenderers = {
     const value = (data as Record<string, unknown>).observable_value as string | undefined;
     if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
     return <Typography variant="body2">{value}</Typography>;
+  },
+  modified: (_data, _t_i18n, fldt) => {
+    const value = (_data as Record<string, unknown>).x_opencti_modified_at as string | undefined
+      ?? (_data as Record<string, unknown>).updated_at as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Typography variant="body2">{fldt(value)}</Typography>;
+  },
+  created: (_data, _t_i18n, fldt) => {
+    const value = (_data as Record<string, unknown>).created_at as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Typography variant="body2">{fldt(value)}</Typography>;
   },
 };
 
@@ -351,6 +550,37 @@ const makeHashRenderer = (algorithm: string) => {
 };
 
 const artifactRenderers: EntityRenderers = {
+  description: (data) => {
+    const value = (data as Record<string, unknown>).x_opencti_description as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ExpandableMarkdown source={value} limit={400} />;
+  },
+  modified: (_data, _t_i18n, fldt) => {
+    const value = (_data as Record<string, unknown>).x_opencti_modified_at as string | undefined
+      ?? (_data as Record<string, unknown>).updated_at as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Typography variant="body2">{fldt(value)}</Typography>;
+  },
+  created: (_data, _t_i18n, fldt) => {
+    const value = (_data as Record<string, unknown>).created_at as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <Typography variant="body2">{fldt(value)}</Typography>;
+  },
+  encryption_algorithm: (data) => {
+    const value = (data as Record<string, unknown>).encryption_algorithm as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
+  },
+  decryption_key: (data) => {
+    const value = (data as Record<string, unknown>).decryption_key as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
+  },
+  url: (data) => {
+    const value = (data as Record<string, unknown>).url as string | undefined;
+    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
+    return <ValueCopy value={value} />;
+  },
   mime_type: (data) => {
     const value = (data as Record<string, unknown>).mime_type as string | undefined;
     if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
@@ -366,40 +596,25 @@ const artifactRenderers: EntityRenderers = {
       </FieldOrEmpty>
     );
   },
-  encryption_algorithm: (data) => {
-    const value = (data as Record<string, unknown>).mime_type as string | undefined;
-    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
-    return <ValueCopy value={value} />;
-  },
-  decryption_key: (data) => {
-    const value = (data as Record<string, unknown>).mime_type as string | undefined;
-    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
-    return <ValueCopy value={value} />;
-  },
   hash_md5: makeHashRenderer('MD5'),
   hash_sha1: makeHashRenderer('SHA-1'),
   hash_sha256: makeHashRenderer('SHA-256'),
   hash_sha512: makeHashRenderer('SHA-512'),
-  url: (data) => {
-    const value = (data as Record<string, unknown>).mime_type as string | undefined;
-    if (!value) return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
-    return <ValueCopy value={value} />;
-  },
 };
 
 export const entityTypeRenderers: Record<string, EntityRenderers> = {
   Campaign: campaignRenderers,
   Report: reportRenderers,
   Grouping: groupingRenderers,
-  MalwareAnalysis: malwareAnalysisRenderers,
+  'Malware-Analysis': malwareAnalysisRenderers,
   Incident: incidentRenderers,
   Indicator: indicatorRenderers,
-  ThreatActorGroup: threatActorGroupRenderers,
-  ThreatActorIndividual: threatActorIndividualRenderers,
+  'Threat-Actor-Group': threatActorGroupRenderers,
+  'Threat-Actor-Individual': threatActorIndividualRenderers,
   Malware: malwareRenderer,
-  Vulnerability: vulnerabilityRenderer,
-  AttackPattern: attackPatternRenderers,
+  Vulnerability: vulnerabilityRenderers,
+  'Attack-Pattern': attackPatternRenderers,
   SecurityPlatform: secutityPlatformRenderers,
-  StixCyberObservable: stixCyberObservableRenderers,
+  'Stix-Cyber-Observable': stixCyberObservableRenderers,
   Artifact: artifactRenderers,
 };

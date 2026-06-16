@@ -17,11 +17,11 @@ import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import Tag from '@common/tag/Tag';
 import { StixCoreObjectsCustomAttributesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
-import { entityTypeRenderers } from '../../../utils/widget/widgetCustomAttributesRendererUtils';
+import { entityTypeRenderers } from 'src/utils/widget/widgetCustomAttributesRendererUtils';
 import ListItemText from '@mui/material/ListItemText';
 import ItemScore from '../../../components/ItemScore';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
-import { openVocabListRenderers, openVocabSingleRenderers } from '../../../utils/widget/widgetOpenVocabRendererUtils';
+import { openVocabListRenderers, openVocabSingleRenderers } from 'src/utils/widget/widgetOpenVocabRendererUtils';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -46,7 +46,11 @@ const renderAttributeValue = (
     );
   }
 
-  const specificRenderer = entityTypeRenderers[entityType]?.[attribute];
+  const isSCO = 'observable_value' in data;
+  const specificRenderer
+    = entityTypeRenderers[entityType]?.[attribute]
+      ?? (isSCO ? entityTypeRenderers['Stix-Cyber-Observable']?.[attribute] : undefined);
+
   if (specificRenderer) {
     return specificRenderer(data, t_i18n, fldt);
   }
@@ -95,6 +99,7 @@ const renderAttributeValue = (
         <ItemAssignees
           assignees={assignees}
           stixDomainObjectId={data.id}
+          readOnly
         />
       );
     }
@@ -106,6 +111,7 @@ const renderAttributeValue = (
         <ItemParticipants
           participants={participants}
           stixDomainObjectId={data.id}
+          readOnly
         />
       );
     }
@@ -197,7 +203,8 @@ const renderAttributeValue = (
     }
     case 'description':
     case 'x_opencti_description': {
-      const desc = (data as Record<string, unknown>)[attribute];
+      const desc = (data as Record<string, unknown>)[attribute]
+        ?? (data as Record<string, unknown>).x_opencti_description;
       if (!desc) {
         return (
           <Typography variant="body2" sx={{ color: 'text.disabled' }}>
@@ -206,53 +213,6 @@ const renderAttributeValue = (
         );
       }
       return <ExpandableMarkdown source={desc as string} limit={400} />;
-    }
-    case 'height': {
-      const heights = (data as Record<string, unknown>).height as
-        | ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>
-        | null
-        | undefined;
-      return (
-        <FieldOrEmpty source={heights}>
-          <List sx={{ py: 0 }}>
-            {heights?.map((h, i) => (
-              <ListItem key={i} dense divider>
-                <ListItemText
-                  primary={h.measure != null ? `${h.measure} cm` : '-'}
-                  secondary={h.date_seen ? fldt(h.date_seen) : t_i18n('Unknown date')}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </FieldOrEmpty>
-      );
-    }
-    case 'weight': {
-      const weights = (data as Record<string, unknown>).weight as
-        | ReadonlyArray<{ measure?: number | null; date_seen?: string | null }>
-        | null
-        | undefined;
-      return (
-        <FieldOrEmpty source={weights}>
-          <List sx={{ py: 0 }}>
-            {weights?.map((w, i) => (
-              <ListItem key={i} dense divider>
-                <ListItemText
-                  primary={w.measure != null ? `${w.measure} kg` : '-'}
-                  secondary={w.date_seen ? fldt(w.date_seen) : t_i18n('Unknown date')}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </FieldOrEmpty>
-      );
-    }
-    case 'date_of_birth': {
-      const value = (data as Record<string, unknown>).date_of_birth as string | undefined;
-      if (!value) {
-        return <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>;
-      }
-      return <Typography variant="body2">{fldt(value)}</Typography>;
     }
     case 'x_opencti_score': {
       const score = (data as Record<string, unknown>).x_opencti_score as number | undefined;
