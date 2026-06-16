@@ -101,7 +101,7 @@ const IpWhitelistSettingsContent = () => {
     <>
       <Grid container spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={12}>
-          <Card title={t_i18n('IP access whitelist')}>
+          <Card title={t_i18n('IP access allow list')}>
             <Formik
               onSubmit={() => {}}
               initialValues={initialValues}
@@ -118,7 +118,7 @@ const IpWhitelistSettingsContent = () => {
                   // Validate: if enabled, IP list must not be empty
                   if (isEnabled && lines.length === 0) {
                     setFieldTouched('platform_ip_whitelist', true, false);
-                    setFieldError('platform_ip_whitelist', t_i18n('At least one IP address is required when whitelist is enabled'));
+                    setFieldError('platform_ip_whitelist', t_i18n('At least one IP address is required when allow list is enabled'));
                     return;
                   }
 
@@ -160,7 +160,7 @@ const IpWhitelistSettingsContent = () => {
                       },
                     });
                   }
-                  MESSAGING$.notifySuccess(t_i18n('IP whitelist configuration saved'));
+                  MESSAGING$.notifySuccess(t_i18n('IP allow list configuration saved'));
                   setExclusionsDirty(false);
                 };
 
@@ -171,7 +171,7 @@ const IpWhitelistSettingsContent = () => {
                         component={SwitchField}
                         type="checkbox"
                         name="platform_ip_whitelist_enabled"
-                        label={t_i18n('Enable IP whitelist')}
+                        label={t_i18n('Enable IP allow list')}
                         onChange={(_name: string, value: string) => {
                           if (value === 'true') {
                             const newExclusions = [...localExclusions];
@@ -213,7 +213,7 @@ const IpWhitelistSettingsContent = () => {
                     {isEnabled && (
                       <>
                         <Alert severity="info" variant="outlined" style={{ marginTop: 20 }}>
-                          {t_i18n('Users logging in from an IP not in the whitelist will be rejected.')}
+                          {t_i18n('Users logging in from an IP not in the allow list will be rejected.')}
                           {' '}{t_i18n('Excluded users, groups, or organizations bypass the IP check.')}
                         </Alert>
                         <Field
@@ -292,10 +292,10 @@ const IpWhitelistSettingsContent = () => {
         title={t_i18n('Remove exclusion')}
       >
         <Alert severity="warning" variant="outlined" style={{ marginBottom: 20 }}>
-          {t_i18n('You are about to remove')} <strong>{pendingRemoveExclusion?.name}</strong> {t_i18n('from the IP whitelist exclusion list.')}
+          {t_i18n('You are about to remove')} <strong>{pendingRemoveExclusion?.name}</strong> {t_i18n('from the IP allow list exclusion list.')}
           <br /><br />
           {pendingRemoveExclusion?.reason === 'self'
-            && t_i18n('This is your own account. If your IP is not in the whitelist, you will be locked out of the platform after saving.')
+            && t_i18n('This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.')
           }
           {pendingRemoveExclusion?.reason === 'service_account_group'
             && t_i18n('This group is currently configured as the default group for service accounts (connectors, ingestion). Removing it may block automated integrations from accessing the platform.')
