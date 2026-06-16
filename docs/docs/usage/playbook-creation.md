@@ -124,7 +124,7 @@ To view execution traces, open a playbook and click the execution traces icon in
 ### Useful tips for troubleshooting
 
 - If fewer steps are shown than the number of components in your playbook, the execution stopped early due to an error.
-- For playbooks with multiple routes, adding temporary manipulation steps (for example adding a label) can help identify which path the bundle is taking.
+- For playbooks with multiple routes, update the default titles so that you can easily review the execution logs to identify which component processed the data.
 - For **Manipulate Knowledge** components, always verify:
   - the operation type (add, replace, remove),
   - the target field and value,
