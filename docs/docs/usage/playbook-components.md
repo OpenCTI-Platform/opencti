@@ -44,6 +44,10 @@ This event source listens to Priority Intelligence Requirement (PIR) events. You
 
 > Note: By default, if no PIR is selected, all available PIR events will be processed by the playbook.
 
+***Component details***
+***Change to status/score***
+As this component listens to the stream of events from knowledge it is able to be triggered with two additonal conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for temporal event changes on an entity such as when the score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue.  
+
 ![Playbook configuration panel for listening to PIR events](assets/listen-pir-events-in-playbook.png)
 
 The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score.
@@ -331,6 +335,13 @@ This component makes a direct query to the database before the Send for ingestio
 
 For more details, see [Organization segregation](https://docs.opencti.io/latest/administration/organization-segregation/).
 
+### Transform with AI
+
+This component sends the bundle to the configured AI agent. By default this will be set to the "CTI STIX transformer" agent this agent is configured to only use the STIX 2.1 data schema and will send back a stix bundle that can then be further processed by the playbook. Add 'Additional user instructions' to provide the agent with a user prompt to follow.   
+
+!!! warning "This component requires access to the XTM One platform and will consume usage of your XTM One quota."
+
+
 ### Unshare with organizations
 
 This component removes sharing for the configured entities in the received STIX 2.1 bundle from the organizations you set. Your platform must have a main organization declared in ****Settings > Parameters****. To avoid conflicts between playbook components, apply the Unshare with Organisations step before any Share with Organisation steps — or, handle unsharing in a separate playbook altogether.
@@ -381,6 +392,10 @@ This component also supports static fields for recipients: users, groups, and or
 ### Send for ingestion
 
 This component passes the STIX 2.1 bundle to the data stream for writing. It has no output and should be the final component in a branch of your playbook.
+
+### Send to AI
+
+This component passes the STIX 2.1 bundle to the AI agent, by default this will be set to the CTI STIX Consumer, with the additional user provided instructions. Once the data is processed the playbook will complete and the bundle will continue to be processed by the AI agent depending on instructions. For example the instructions may specify the creation of a new weekly grouping of data to be created in OpenCTI, the AI agent would then create a Draft within OpenCTI where an analyst can review the AI agent's output.
 
 ### Send to notifier
 
