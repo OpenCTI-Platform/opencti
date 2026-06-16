@@ -59,7 +59,7 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
             </Typography>
             <ItemBoolean
               status
-              reverse
+              reverse={!connector.verified}
               label={(
                 <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
                   <VerifiedOutlined
