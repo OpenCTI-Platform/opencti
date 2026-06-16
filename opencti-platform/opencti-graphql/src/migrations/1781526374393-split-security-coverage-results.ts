@@ -1,11 +1,15 @@
+import * as R from 'ramda';
 import { logMigration } from '../config/conf';
-import { elUpdateByQueryForMigration } from '../database/engine';
+import { BULK_TIMEOUT, elBulk, ES_MAX_CONCURRENCY, ES_RETRY_ON_CONFLICT, MAX_BULK_OPERATIONS } from '../database/engine';
 import { createEntity } from '../database/middleware';
-import { fullEntitiesList } from '../database/middleware-loader';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../database/middleware-loader';
+import { Promise } from 'bluebird';
 import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
+import { BasicStoreObject, BasicStoreRelation } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { pushAll } from '../utils/arrayUtil';
 
 const message = '[MIGRATION] Separate results data of Security Coverage into dedicated objects';
 
@@ -26,7 +30,7 @@ export const up = async (next: (error?: Error) => void) => {
   const context = executionContext('migration');
   logMigration.info(`${message} > started`);
 
-  // Step 1 -> Retrieve all SecurityCoverages
+  // Step 1 -> Retrieve all SecurityCoverages & has-covered relationships
   // TODO : add a callback system to avoid getting too many SC
   const allSecurityCoverages = await fullEntitiesList<OldSecurityCoverage>(
     context,
@@ -35,7 +39,15 @@ export const up = async (next: (error?: Error) => void) => {
   );
   logMigration.info(`${message} > ${allSecurityCoverages.length} SecurityCoverages found`);
 
-  // TODO : get all has-covered relationships
+  const allHasCoveredRelationships = await fullRelationsList<BasicStoreRelation>(
+    context,
+    SYSTEM_USER,
+    [RELATION_HAS_COVERED],
+  );
+  logMigration.info(`${message} > ${allHasCoveredRelationships.length} Has-Covered relationships found`);
+
+  // Starting the bulk operations
+  const bulkOperations: any[] = [];
 
   // Step 2 -> Create a SecurityCoverageResult for each SecurityCoverage containing results data.
   for (const sc of allSecurityCoverages) {
@@ -53,9 +65,12 @@ export const up = async (next: (error?: Error) => void) => {
     } = sc;
 
     // Want to create a result if there is results data,
-    // Or an external_uri is set because we can have a result instantiate by OpenAEV but without data yet.
-    // TODO : add condition if there is has-covered relationship => create a SCR
-    if (external_uri || (coverage_information ?? []).length > 0) {
+    // Or an external_uri is set because we can have a result instantiate by OpenAEV but without data yet,
+    // Or if there is has-covered relationship
+    const securityCoverageHasCoveredRelationships = allHasCoveredRelationships.filter((relation) => relation.fromRole === 'has-covered_from' && relation.fromId === sc.internal_id);
+    console.log('--------------', { id: sc.internal_id, securityCoverageHasCoveredRelationships });
+
+    if (external_uri || (coverage_information ?? []).length > 0 || securityCoverageHasCoveredRelationships.length > 0) {
       const securityCoverageResultInput = {
         name: `Result of ${sc.name}`,
         [INPUT_RESULT_OF]: sc.id,
@@ -79,57 +94,96 @@ export const up = async (next: (error?: Error) => void) => {
         ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
       );
 
-      // TODO : a bulk update + split in groups (see line 124 of clean-deprecated-rels)
+      // First operation : update has-covered relationships
+      securityCoverageHasCoveredRelationships.forEach((relation) => {
+        const query = [
+          { update: { _index: relation._index, _id: relation.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          { script: {
+            params: {
+              old_id: sc.internal_id,
+              new_id: result.internal_id,
+              new_name: result.name,
+              new_types: [ENTITY_TYPE_SECURITY_COVERAGE_RESULT, 'Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+            },
+            source: "def connection = ctx._source.connections.find(conn -> conn.role == 'has-covered_from');"
+              + 'if (connection != null) {'
+              + 'connection.internal_id = params.new_id;'
+              + 'connection.name = params.new_name;'
+              + 'connection.types = params.new_types;'
+              + '}',
+          },
+          },
+        ];
+        pushAll(bulkOperations, query);
+      });
 
-      // Find the has-covered relationships with the SC id
+      // Second operation : add list of has-covered entities to SCR
+      const coveredEntitiesIds = securityCoverageHasCoveredRelationships.map((relation) => relation.toId);
+      const updateSCRQuery = [
+        { update: { _index: result._index, _id: result.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { script: { params: { covered_entities_ids: coveredEntitiesIds }, source: 'ctx._source["rel_has-covered.internal_id"] = params.covered_entities_ids;' } },
+      ];
+      pushAll(bulkOperations, updateSCRQuery);
 
-      // 1rst op : relation => filter on  "role": "has-covered_from"
-      // In relationship : replace "connections" :
-      // "internal_id" : replace SC id with SCR id
-      // "name" : replace SC name with SCR name
-      // "types" : replace "Security-Coverage" with "Security-Coverage-Result" ENTITY_TYPE_SECURITY_COVERAGE_RESULT
+      // Third operation : In covered entities : each SC is beeing replaced with corresponding SCR
+      const coveredEntities = await internalFindByIds<BasicStoreObject>(context, SYSTEM_USER, coveredEntitiesIds) as BasicStoreObject[];
+      if (!Array.isArray(coveredEntities)) {
+        throw new Error(`${message} > internalFindByIds did not return an array`);
+      }
+      const coveredEntitiesIdsAndIndex = coveredEntities.map((coveredEntity) => {
+        return {
+          internalId: coveredEntity?.internal_id,
+          index: coveredEntity?._index,
+        };
+      });
+      coveredEntitiesIdsAndIndex.forEach((coveredEntity) => {
+        const query = [
+          { update: { _index: coveredEntity.index, _id: coveredEntity.internalId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          { script: {
+            params: {
+              old_id: sc.internal_id,
+              new_id: result.internal_id,
+            },
+            source: `if (ctx._source.containsKey('rel_has-covered.internal_id')) {
+                def coveredIds = ctx._source['rel_has-covered.internal_id'];
+                for (int i = 0; i < coveredIds.length; i++) {
+                  if (coveredIds[i] == params.old_id) { coveredIds[i] = params.new_id; }
+                }
+              }
+            `,
+          } },
+        ];
+        pushAll(bulkOperations, query);
+      });
 
-      // 2nd op : In SCR : "rel_has-covered.internal_id" : list of has-covered entities TO BE ADDED (to)
-      // get SCR id
-      // add list of has-covered entities to "rel_has-covered.internal_id"
-
-      // 3rd op : In entity : "rel_has-covered.internal_id" : list of SC to be replaced with corresponding SCR
-
-      // 4rth op : In SC : remove attributes
-      // "rel_has-covered.internal_id" : list of has-covered entities TO BE REMOVED (to)
-      // + all other attributes :
-      // 'coverage_information'
-      // 'coverage_last_result'
-      // 'coverage_valid_from'
-      // 'coverage_valid_to'
-      // 'external_uri'
+      // Forth operation : In SC : remove old SC attributes
+      const removeSCAttributesQuery = [
+        { update: { _index: sc._index, _id: sc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { script: {
+          source: "ctx._source.remove('coverage_information');"
+            + "ctx._source.remove('coverage_last_result');"
+            + "ctx._source.remove('coverage_valid_from');"
+            + "ctx._source.remove('coverage_valid_to');"
+            + "ctx._source.remove('external_uri');"
+            + "ctx._source.remove('rel_has-covered.internal_id');",
+        },
+        },
+      ];
+      pushAll(bulkOperations, removeSCAttributesQuery);
 
       logMigration.info(`${message} > SCR ${result?.standard_id} created for SC ${sc.standard_id}`);
     }
   }
 
-  // Step 3 -> Remove old attributes.
-  // TODO : create a bulk update to call query only once (see clean-deprecated-rels)
-  await elUpdateByQueryForMigration(
-    `${message} > Clean old attributes`,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    {
-      script: {
-        source: "ctx._source.remove('coverage_information');"
-          + "ctx._source.remove('coverage_last_result');"
-          + "ctx._source.remove('coverage_valid_from');"
-          + "ctx._source.remove('coverage_valid_to');"
-          + "ctx._source.remove('external_uri');",
-      },
-      query: {
-        term: {
-          'entity_type.keyword': {
-            value: ENTITY_TYPE_SECURITY_COVERAGE,
-          },
-        },
-      },
-    },
-  );
+  // Apply operations.
+  const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
+  let currentProcessing = 0;
+  const concurrentUpdate = async (bulk: any[][]) => {
+    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
+    currentProcessing += bulk.length;
+    logMigration.info(`${message} bulk operations on SC / SCR / Entities  ${currentProcessing} / ${bulkOperations.length}`);
+  };
+  await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
 
   logMigration.info(`${message} > done in ${Date.now() - startTime} ms`);
   next();
