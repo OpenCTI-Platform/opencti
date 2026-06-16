@@ -1299,7 +1299,11 @@ export const elDeleteIndex = async (index: string) => {
     logApp.error('Error deleting indexes:', error);
   }
 };
-export const elCreateIndex = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
+export const elCreateIndex = async (index: string) => {
+  const mappingProperties = engineMappingGenerator(engine);
+  return elCreateIndexWithMapping(index, mappingProperties);
+};
+const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;
@@ -1325,7 +1329,7 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES):
   const mappingProperties = engineMappingGenerator(engine);
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
-    const createdIndex = await elCreateIndex(index, mappingProperties);
+    const createdIndex = await elCreateIndexWithMapping(index, mappingProperties);
     if (createdIndex) {
       createdIndices.push(oebp(createdIndex));
     }
