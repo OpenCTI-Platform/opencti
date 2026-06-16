@@ -163,6 +163,7 @@ export interface DataTableProps {
   trashOperationsEnabled?: boolean;
   disableBulkEnroll?: boolean;
   deleteDisable?: boolean;
+  disableLogging?:boolean;
 }
 
 export interface DataTableBodyProps {

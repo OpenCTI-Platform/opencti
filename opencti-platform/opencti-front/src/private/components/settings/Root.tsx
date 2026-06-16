@@ -20,6 +20,7 @@ import {
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
+import RootSearchLogs from './activity/search_log/Root';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const Settings = lazy(() => import('./Settings'));
@@ -64,6 +65,14 @@ const Root = () => {
             element={(
               <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
                 <RootActivity />
+              </Security>
+            )}
+          />
+          <Route
+            path="/activity/searches/*"
+            element={(
+              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+                <RootSearchLogs />
               </Security>
             )}
           />

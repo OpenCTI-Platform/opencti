@@ -1,4 +1,15 @@
-import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, findById, findAuditById } from '../domain/log';
+import {
+  auditsDistribution,
+  auditsMultiTimeSeries,
+  auditsNumber,
+  auditsTimeSeries,
+  findAudits,
+  findHistory,
+  findSearchLogs,
+  findById,
+  findAuditById,
+  findSearchAnalytics,
+} from '../domain/log';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
@@ -14,6 +25,8 @@ const logResolvers = {
     auditsTimeSeries: (_, args, context) => auditsTimeSeries(context, context.user, args),
     auditsMultiTimeSeries: (_, args, context) => auditsMultiTimeSeries(context, context.user, args),
     auditsDistribution: (_, args, context) => auditsDistribution(context, context.user, args),
+    searchLogs: (_, args, context) => findSearchLogs(context, context.user, args),
+    searchAnalytics: (_, args, context) => findSearchAnalytics(context, context.user, args),
   },
   Log: {
     user: async (log, _, context) => loadCreator(context, context.user, log.applicant_id || log.user_id),

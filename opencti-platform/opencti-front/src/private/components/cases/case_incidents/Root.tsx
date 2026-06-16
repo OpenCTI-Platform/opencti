@@ -175,6 +175,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
             <ContainerStixCyberObservables
               container={caseData}
               enableReferences={enableReferences}
+              disableLogging
             />
           ),
           files: (

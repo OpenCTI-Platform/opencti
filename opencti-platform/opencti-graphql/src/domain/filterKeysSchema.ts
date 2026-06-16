@@ -23,6 +23,11 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  CONTEXT_RESULT_COUNT_FILTER,
+  CONTEXT_SEARCH_TERM_FILTER,
+  CONTEXT_ORGANIZATION_FILTER,
+  CONTEXT_SEARCH_LOCATION_FILTER,
+  CONTEXT_GROUPS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -45,15 +50,22 @@ import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../sc
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import {
+  ENTITY_TYPE_ACTIVITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_HISTORY,
+  ENTITY_TYPE_SEARCH,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STATUS_TEMPLATE,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 
@@ -442,23 +454,47 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
     });
   }
-  if (type === ENTITY_TYPE_USER) {
+  if (type === ENTITY_TYPE_SEARCH) {
     // add context filters
-    filterDefinitionsMap.set(RELATION_PARTICIPATE_TO, {
-      filterKey: RELATION_PARTICIPATE_TO,
-      type: 'id',
-      label: 'Organizations',
+    filterDefinitionsMap.set(CONTEXT_SEARCH_TERM_FILTER, {
+      filterKey: CONTEXT_SEARCH_TERM_FILTER,
+      type: 'string',
+      label: 'Search term',
       multiple: true,
       subEntityTypes,
-      elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      elementsForFilterValuesSearch: [ENTITY_TYPE_SEARCH],
     });
-    filterDefinitionsMap.set(RELATION_MEMBER_OF, {
-      filterKey: RELATION_MEMBER_OF,
-      type: 'id',
+    filterDefinitionsMap.set(CONTEXT_RESULT_COUNT_FILTER, {
+      filterKey: CONTEXT_RESULT_COUNT_FILTER,
+      type: 'integer',
+      label: 'Result count',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_SEARCH],
+    });
+    filterDefinitionsMap.set(CONTEXT_ORGANIZATION_FILTER, {
+      filterKey: CONTEXT_ORGANIZATION_FILTER,
+      type: 'string',
+      label: 'Organization',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_SEARCH],
+    });
+    filterDefinitionsMap.set(CONTEXT_SEARCH_LOCATION_FILTER, {
+      filterKey: CONTEXT_SEARCH_LOCATION_FILTER,
+      type: 'string',
+      label: 'Search location',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_SEARCH],
+    });
+    filterDefinitionsMap.set(CONTEXT_GROUPS_FILTER, {
+      filterKey: CONTEXT_GROUPS_FILTER,
+      type: 'string',
       label: 'Groups',
       multiple: true,
       subEntityTypes,
-      elementsForFilterValuesSearch: [ENTITY_TYPE_GROUP],
+      elementsForFilterValuesSearch: [ENTITY_TYPE_SEARCH],
     });
   }
   if (type === ENTITY_TYPE_DRAFT_WORKSPACE) {

@@ -2089,7 +2089,12 @@ const BASE_SEARCH_ATTRIBUTES = [
   'event_type',
   'event_scope',
   'context_data.message',
+  // For search logs
+  'context_data.organization',
+  'context_data.search_location',
   'context_data.search',
+  'context_data.groups',
+  'context_data.input.search',
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
@@ -2148,6 +2153,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   'definition_type',
   'user_email',
   'main_entity_name', // deletedOperation
+
 ];
 
 type ProcessSearchArgs = {
@@ -5109,4 +5115,210 @@ export const isEngineAlive = async () => {
   if (migrations.length === 0) {
     throw DatabaseError('Invalid database content, missing migration schema');
   }
+};
+
+export const elMultipleFieldCountAggregation = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  aggregations: { field: string; name: string }[],
+  opts: AggregationsListOpts = {},
+  filter?: any,
+): Promise<Map<string, { value: string; count: number }[]>> => {
+  const queryAggs: any = {};
+  aggregations.forEach((agg) => {
+    queryAggs[agg.name] = {
+      terms: {
+        field: agg.field,
+        size: opts.first ?? 5000, // use the first argument if present, else return probably everything
+      },
+    };
+  });
+  const dateFilter = {
+    range: {
+      created_at: {
+        gte: opts.startDate,
+        lte: opts.endDate,
+      },
+    },
+  };
+  let queryFilters = dateFilter;
+  if (filter) {
+    const updatedFilter = { ...filter };
+    if (!updatedFilter.bool.must) {
+      updatedFilter.bool.must = [dateFilter];
+    } else {
+      updatedFilter.bool.must = [...updatedFilter.bool.must, dateFilter];
+    }
+    queryFilters = updatedFilter;
+  };
+
+  const body: any = {
+    query: queryFilters,
+    aggs: queryAggs,
+    size: 0, // No limit on the search
+  };
+  const query = {
+    index: getIndicesToQuery(context, user, indexName),
+    track_total_hits: false,
+    _source: false,
+    body,
+  };
+  const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
+  const data = await elRawSearch(context, user, searchType, query).catch((err) => {
+    throw DatabaseError('Aggregations computing list fail', { cause: err, query });
+  });
+  const aggsMap = Object.keys(data.aggregations);
+  const resultMap = new Map<string, { value: string; count: number }[]>();
+  aggsMap.map((agg) => {
+    resultMap.set(agg, data.aggregations[agg].buckets?.map((b: any) => ({ value: b.key, count: b.doc_count })));
+  });
+  return resultMap;
+};
+
+export const elHistogramWithOutlierBinsQuery = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  aggregation: { field: string; name: string },
+  opts: HistogramCountOpts = {},
+  interval: number,
+  minBin: number,
+  maxBin: number,
+) => {
+  const outerBoundsAggs: any = {
+    [`${aggregation.name}OuterBounds`]: {
+      range: {
+        field: aggregation.field,
+        ranges: [
+          { key: 'lower', to: minBin + 1 },
+          { key: 'upper', from: maxBin - 1 },
+        ],
+      },
+    },
+  };
+
+  const filter = {
+    bool: {
+      must: [
+        {
+          range: {
+            created_at: {
+              gte: opts.startDate,
+              lte: opts.endDate,
+            },
+          },
+        },
+      ],
+    },
+
+  };
+  const body: any = {
+    query: filter,
+    aggs: { ...outerBoundsAggs },
+    size: 0, // No limit on the search
+  };
+  const histogramQuery = {
+    index: getIndicesToQuery(context, user, indexName),
+    track_total_hits: false,
+    _source: false,
+    body,
+  };
+  const searchType = `Aggregations (${aggregation.field})`;
+  const histogramData = await elRawSearch(context, user, searchType, histogramQuery).catch((err) => {
+    throw DatabaseError('Histogram computing fail', { cause: err, histogramQuery });
+  });
+  const outerBoundsBin = histogramData.aggregations[`${aggregation.name}OuterBounds`].buckets;
+  const distributionData = await elFilteredHistogram(context, user, indexName, aggregation, opts, interval, minBin, maxBin);
+  return [{ value: outerBoundsBin[0].to - 1, count: outerBoundsBin[0].doc_count }, ...distributionData, { value: `${outerBoundsBin[1].from + 1}+`, count: outerBoundsBin[1].doc_count }];
+};
+
+export const elDateRangeCount = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  opts: AggregationsListOpts = {},
+) => {
+  const filter = {
+    range: {
+      created_at: {
+        gte: opts.startDate,
+        lte: opts.endDate,
+      },
+    },
+  };
+  const body: any = {
+    query: filter,
+  };
+  const countQuery = {
+    index: getIndicesToQuery(context, user, indexName),
+    body,
+  };
+  const count = await elRawCount(countQuery).catch((err) => {
+    throw DatabaseError('Count computing fail', { cause: err, countQuery });
+  });
+  return count;
+};
+
+export const elFilteredHistogram = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  aggregation: { field: string; name: string },
+  opts: HistogramCountOpts = {},
+  interval: number,
+  minBin: number,
+  maxBin: number,
+) => {
+  const distributionAggs: any = {
+    [`${aggregation.name}Distribution`]: {
+      histogram: {
+        field: aggregation.field,
+        interval: interval,
+        min_doc_count: 0,
+        extended_bounds: {
+          min: minBin + 1,
+          max: maxBin - 1,
+        },
+      },
+    },
+  };
+  const filter = {
+    bool: {
+      must: [
+        {
+          range: {
+            created_at: {
+              gte: opts.startDate,
+              lte: opts.endDate,
+            },
+          },
+        },
+        {
+          range: {
+            [aggregation.field]: {
+              gt: minBin,
+              lt: maxBin,
+            },
+          },
+        },
+      ],
+    },
+  };
+  const body: any = {
+    query: filter,
+    aggs: { ...distributionAggs },
+    size: 0, // No limit on the search
+  };
+  const histogramQuery = {
+    index: getIndicesToQuery(context, user, indexName),
+    track_total_hits: false,
+    _source: false,
+    body,
+  };
+  const searchType = `Aggregations (${aggregation.field})`;
+  const histogramData = await elRawSearch(context, user, searchType, histogramQuery).catch((err) => {
+    throw DatabaseError('Histogram computing fail', { cause: err, histogramQuery });
+  });
+  return histogramData.aggregations[`${aggregation.name}Distribution`].buckets?.map((b: any) => ({ value: `${b.key + 1} - ${b.key + interval}`, count: b.doc_count }));
 };

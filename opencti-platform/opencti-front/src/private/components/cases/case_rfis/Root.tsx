@@ -167,6 +167,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
             <ContainerStixCyberObservables
               container={caseData}
               enableReferences={enableReferences}
+              disableLogging
             />
           ),
           files: (

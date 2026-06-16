@@ -101,6 +101,11 @@ export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_aliases' attributes
 export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
+export const CONTEXT_ORGANIZATION_FILTER = 'contextOrganization';
+export const CONTEXT_RESULT_COUNT_FILTER = 'contextResultCount';
+export const CONTEXT_SEARCH_TERM_FILTER = 'contextSearchTerm';
+export const CONTEXT_SEARCH_LOCATION_FILTER = 'contextSearchLocation';
+export const CONTEXT_GROUPS_FILTER = 'contextGroups';
 
 // for PIR
 export const PIR_SCORE_FILTER = 'pir_score';
@@ -179,6 +184,11 @@ export const SPECIAL_FILTER_KEYS = [
   WORKFLOW_GROUP_FILTER,
   WORKFLOW_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
+  CONTEXT_SEARCH_TERM_FILTER,
+  CONTEXT_RESULT_COUNT_FILTER,
+  CONTEXT_ORGANIZATION_FILTER,
+  CONTEXT_SEARCH_LOCATION_FILTER,
+  CONTEXT_GROUPS_FILTER,
   ...COMPLEX_CONVERSION_FILTER_KEYS,
 ];
 
