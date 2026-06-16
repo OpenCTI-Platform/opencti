@@ -4673,6 +4673,7 @@
   "Unit System": "ユニットシステム",
   "Unknown": "不明",
   "Unknown configuration error in the platform.": "プラットフォームで不明な構成エラーが発生しました。",
+  "Unknown date": "日付不明",
   "Unknown entities": "不明なエンティティ",
   "Unknown provider type": "不明なプロバイダータイプ",
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "デフォルトグループの割り当てを禁止しない限り、ユーザは指定されたグループとデフォルトグループで作成されます。",

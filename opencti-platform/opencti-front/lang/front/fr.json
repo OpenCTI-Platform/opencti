@@ -4673,6 +4673,7 @@
   "Unit System": "Système d'unités",
   "Unknown": "inconnu",
   "Unknown configuration error in the platform.": "Erreur de configuration inconnue dans la plateforme.",
+  "Unknown date": "Date inconnue",
   "Unknown entities": "Entités inconnues",
   "Unknown provider type": "Type de fournisseur inconnu",
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "A moins que vous n'empêchiez l'assignation des groupes par défaut, l'utilisateur sera créé avec les groupes spécifiés et les groupes par défaut.",
