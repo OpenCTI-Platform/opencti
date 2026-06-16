@@ -516,7 +516,7 @@ const StixCoreObjectsCustomAttributes = ({
 
   const queryRef = useQueryLoading<StixCoreObjectsCustomAttributesQuery>(
     stixCoreObjectsCustomAttributesQuery,
-    resolvedEntityId ? { id: resolvedEntityId } : undefined,
+    { id: resolvedEntityId ?? '' },
   );
 
   return (
