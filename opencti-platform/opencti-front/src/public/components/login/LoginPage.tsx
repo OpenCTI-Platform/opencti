@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import LoginForm from './LoginForm';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -26,11 +26,21 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   const { resetPwdStep } = useLoginContext();
   const [checked, setChecked] = useState(false);
 
+  const loginMessageRef = useRef<HTMLElement>(null);
+  const [isLoginMessageOverflowing, setIsLoginMessageOverflowing] = useState(false);
+  const loginMessageMaxHeight = window.innerHeight * 0.25;
+
   const consentMessage = settings.platform_consent_message;
   const loginMessage = settings.platform_login_message;
   const providers = settings.platform_providers;
   const hasAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
   const hasConsentMessage = isNotEmptyField(consentMessage);
+
+  useEffect(() => {
+    if (loginMessageRef.current) {
+      setIsLoginMessageOverflowing(loginMessageRef.current.scrollHeight > loginMessageMaxHeight);
+    }
+  }, [loginMessage]);
 
   const handleChange = () => {
     setChecked(!checked);
@@ -69,11 +79,12 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
         {!!loginMessage && (
           <Typography
+            ref={loginMessageRef}
             textAlign="center"
             variant="body2"
             sx={{
-              maxHeight: '25vh',
-              overflowY: loginMessage.length > 500 ? 'auto' : undefined,
+              maxHeight: loginMessageMaxHeight,
+              overflowY: isLoginMessageOverflowing ? 'auto' : undefined,
             }}
           >
             <LoginMarkdown sx={{ mb: 2 }}>
