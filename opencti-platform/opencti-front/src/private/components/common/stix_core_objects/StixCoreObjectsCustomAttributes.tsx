@@ -83,7 +83,6 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
           name
           entity_type
         }
-        configuration_version
         objectAssignee {
           id
           name
@@ -163,7 +162,6 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         valid_until
         x_opencti_score
         x_opencti_detection
-        indicator_types
         x_opencti_main_observable_type
         x_mitre_platforms_indicator: x_mitre_platforms
         killChainPhases {
@@ -417,9 +415,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
       }
       ... on Artifact {
         x_opencti_additional_names
-        x_opencti_additional_names    
         x_opencti_score
-        payload_bin
         x_opencti_modified_at
         x_opencti_description
         created_at
