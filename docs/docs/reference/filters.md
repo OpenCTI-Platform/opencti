@@ -72,7 +72,7 @@ A user without this capability can fully manage (view, use, update the name, del
 
 #### With the "Share filters" capability
 
-A user with this capability can share saved filters with other members. The actions they can perform on a shared filter depend on the access right granted to them (see the tab below).
+A user with this capability can share saved filters with other members. The actions they can perform on a shared filter depend on the access right granted to them (see the table below).
 Note that the creator of a saved filter always has the **can manage** access right.
 
 | Access right | Can view | Can use | Can update | Can delete | Can manage sharing |
