@@ -12,7 +12,6 @@ import ItemCreators from '../../../components/ItemCreators';
 import ItemOpenVocab from '../../../components/ItemOpenVocab';
 import ItemStatus from '../../../components/ItemStatus';
 import ItemPatternType from '../../../components/ItemPatternType';
-import ItemCopy from '../../../components/ItemCopy';
 import ItemAssignees from '../../../components/ItemAssignees';
 import ItemParticipants from '../../../components/ItemParticipants';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
@@ -193,30 +192,6 @@ const renderAttributeValue = (
       }
       return <ItemPatternType label={patternType} />;
     }
-
-    case 'standard_id': {
-      if (!data.standard_id) {
-        return (
-          <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-            -
-          </Typography>
-        );
-      }
-      return (
-        <Typography
-          sx={{
-            padding: '5px 5px 5px 10px',
-            fontFamily: 'Consolas, monaco, monospace',
-            fontSize: 11,
-            backgroundColor: 'rgba(255, 255, 255, 0.02)',
-            lineHeight: '18px',
-          }}
-        >
-          <ItemCopy content={data.standard_id} />
-        </Typography>
-      );
-    }
-
     case 'description':
     case 'x_opencti_description': {
       const desc = (data as Record<string, unknown>)[attribute];
