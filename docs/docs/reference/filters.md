@@ -45,7 +45,7 @@ The boolean modes (and/or) are either **global** (between every attribute filter
 OpenCTI allows you to save filters and share them with other users. This feature enables teams to collaborate by reusing the same filter configurations across different views.
 Sharing saved filters and managing saved filters created by other users requires the **Share filters** capability.
 
-The shared saved filters are accessible in the 'Saved filters' section, with the saved filters created by the user.
+The shared saved filters are available in the **Saved filters** section, alongside the saved filters you have created.
 
 ![Shared saved filters selection](./assets/filters-shareSavedFilter-selection.png)
 
