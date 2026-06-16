@@ -280,7 +280,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
 
     const result = await findPlaybooksForEnrollmentByFilters(testContext, SYSTEM_USER, null, null, []);
 
-    expect(result.playbooks).toHaveLength(0);
+    expect(result).toHaveLength(0);
     expect(stixLoadByFiltersSpy).not.toHaveBeenCalled();
   });
 
@@ -292,7 +292,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
 
     const result = await findPlaybooksForEnrollmentByFilters(testContext, SYSTEM_USER, null, null, []);
 
-    expect(result.playbooks).toHaveLength(0);
+    expect(result).toHaveLength(0);
     expect(stixLoadByFiltersSpy).not.toHaveBeenCalled();
   });
 
@@ -307,7 +307,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
 
     const result = await findPlaybooksForEnrollmentByFilters(testContext, SYSTEM_USER, null, null, ['id-1', 'id-2']);
 
-    expect(result.playbooks).toHaveLength(0);
+    expect(result).toHaveLength(0);
   });
 
   it('should return playbook when it has no filters and entity is not excluded', async () => {
@@ -318,7 +318,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
 
     const result = await findPlaybooksForEnrollmentByFilters(testContext, SYSTEM_USER, null, null, []);
 
-    expect(result.playbooks).toEqual([playbook]);
+    expect(result).toEqual([playbook]);
     expect(isStixMatchFilterGroupSpy).not.toHaveBeenCalled();
   });
 
@@ -331,7 +331,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
 
     const result = await findPlaybooksForEnrollmentByFilters(testContext, SYSTEM_USER, null, null, []);
 
-    expect(result.playbooks).toHaveLength(1);
+    expect(result).toHaveLength(1);
   });
 
   it('should return empty when entity does not pass playbook filters', async () => {
@@ -344,7 +344,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
 
     const result = await findPlaybooksForEnrollmentByFilters(testContext, SYSTEM_USER, null, null, []);
 
-    expect(result.playbooks).toHaveLength(0);
+    expect(result).toHaveLength(0);
   });
 
   it('should pass filters and search to stixLoadByFilters', async () => {

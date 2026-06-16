@@ -9694,7 +9694,7 @@ type Query {
   playbookComponents: [PlaybookComponent]!
   playbooksForEntity(id: String!): [Playbook]
   playbooksForEnrollment(ids: [String!]!): [Playbook]
-  playbooksForEnrollmentByFilters(filters: FilterGroup, search: String, excludedIds: [String!]): PlaybooksForEnrollmentResult
+  playbooksForEnrollmentByFilters(filters: FilterGroup, search: String, excludedIds: [String!]): [Playbook!]!
   playbookManagerInfo: PlaybookManager
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
@@ -13693,10 +13693,6 @@ type PlaybookManager {
   firstStreamEventId: String
   firstStreamEventDate: DateTime
   managerInGoodHealth: Boolean
-}
-
-type PlaybooksForEnrollmentResult {
-  playbooks: [Playbook!]!
 }
 
 input PlaybookAddInput {

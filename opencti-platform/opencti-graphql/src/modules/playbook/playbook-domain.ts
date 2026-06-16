@@ -87,7 +87,7 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
   return filteredPlaybooks;
 };
 
-const getEligiblePlaybooks = async (context: AuthContext) => {
+const getEligiblePlaybooksForEnrollment = async (context: AuthContext) => {
   const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
   return playbooks.map(getEnrollmentEligibility).filter((e): e is NonNullable<typeof e> => e !== null);
 };
@@ -98,7 +98,7 @@ export const findPlaybooksForEnrollment = async (
   ids: string[],
 ) => {
   await checkEnterpriseEdition(context);
-  const eligible = await getEligiblePlaybooks(context);
+  const eligible = await getEligiblePlaybooksForEnrollment(context);
   if (eligible.length === 0) return [];
   const cappedIds = ids.slice(0, ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT);
   const stixEntities = await stixLoadByIds(context, user, cappedIds);
@@ -106,30 +106,25 @@ export const findPlaybooksForEnrollment = async (
   return matchPlaybooksToEntities(eligible, stixEntities, isEntityMatchingFilterGroup);
 };
 
-export interface PlaybooksForEnrollmentResult {
-  playbooks: BasicStoreEntityPlaybook[];
-}
-
 export const findPlaybooksForEnrollmentByFilters = async (
   context: AuthContext,
   user: AuthUser,
   filters: FilterGroup | null,
   search: string | null,
   excludedIds: string[],
-): Promise<PlaybooksForEnrollmentResult> => {
+): Promise<BasicStoreEntityPlaybook[]> => {
   await checkEnterpriseEdition(context);
-  const eligible = await getEligiblePlaybooks(context);
-  if (eligible.length === 0) return { playbooks: [] };
+  const eligible = await getEligiblePlaybooksForEnrollment(context);
+  if (eligible.length === 0) return [];
   const stixEntities = await stixLoadByFilters(context, user, [ABSTRACT_STIX_CORE_OBJECT], {
     filters: filters ?? undefined,
     search: search ?? undefined,
     first: ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT,
   });
   const filteredEntities = excludeEntitiesByIds(stixEntities, excludedIds);
-  if (filteredEntities.length === 0) return { playbooks: [] };
+  if (filteredEntities.length === 0) return [];
   const isEntityMatchingFilterGroup: StixFilterMatchFn = (entity, filterGroup) => isStixMatchFilterGroup(context, SYSTEM_USER, entity, filterGroup);
-  const matchingPlaybooks = await matchPlaybooksToEntities(eligible, filteredEntities, isEntityMatchingFilterGroup);
-  return { playbooks: matchingPlaybooks };
+  return matchPlaybooksToEntities(eligible, filteredEntities, isEntityMatchingFilterGroup);
 };
 
 // IDs of playbook components that delegate their work to an XTM One agent

@@ -16,11 +16,9 @@ export const playbooksForEnrollmentIdsQuery = graphql`
 export const playbooksForEnrollmentByFiltersQuery = graphql`
   query enrollPlaybookDrawerFiltersQuery($filters: FilterGroup, $search: String, $excludedIds: [String!]) {
     playbooksForEnrollmentByFilters(filters: $filters, search: $search, excludedIds: $excludedIds) {
-      playbooks {
-        id
-        name
-        description
-      }
+      id
+      name
+      description
     }
   }
 `;
@@ -55,15 +53,13 @@ export function mapIdsResponse(data: IdsResponseData): Playbook[] {
 }
 
 export function mapFiltersResponse(data: FiltersResponseData): Playbook[] {
-  const result = data.playbooksForEnrollmentByFilters;
-  if (!result) {
-    return [];
-  }
-  return (result.playbooks ?? []).map((p) => ({
-    label: p.name,
-    value: p.id,
-    description: p.description,
-  }));
+  return data.playbooksForEnrollmentByFilters
+    .filter((p): p is NonNullable<typeof p> => Boolean(p))
+    .map((p) => ({
+      label: p.name,
+      value: p.id,
+      description: p.description,
+    }));
 }
 
 export function sortPlaybooks(playbooks: Playbook[]): Playbook[] {

@@ -92,10 +92,6 @@ type PlaybookManager {
     managerInGoodHealth: Boolean
 }
 
-type PlaybooksForEnrollmentResult {
-    playbooks: [Playbook!]!
-}
-
 # Queries
 type Query {
     playbook(id: String!): Playbook @auth(for: [AUTOMATION])
@@ -114,7 +110,7 @@ type Query {
         filters: FilterGroup
         search: String
         excludedIds: [String!]
-    ): PlaybooksForEnrollmentResult @auth(for: [AUTOMATION]) @ff(flags: ["BULK_ENROLLMENT"])
+    ): [Playbook!]! @auth(for: [AUTOMATION]) @ff(flags: ["BULK_ENROLLMENT"])
     playbookManagerInfo: PlaybookManager @auth(for: [AUTOMATION])
 }
 

@@ -57,19 +57,11 @@ describe('mapIdsResponse', () => {
 describe('mapFiltersResponse', () => {
   it('maps a single playbook from filter response', () => {
     const data: FiltersResponseData = {
-      playbooksForEnrollmentByFilters: { playbooks: [TAG_AND_SCORE] },
+      playbooksForEnrollmentByFilters: [TAG_AND_SCORE],
     };
     expect(mapFiltersResponse(data)).toEqual([
       { label: TAG_AND_SCORE.name, value: TAG_AND_SCORE.id, description: TAG_AND_SCORE.description },
     ]);
-  });
-
-  it('returns empty array when result is null', () => {
-    expect(mapFiltersResponse({ playbooksForEnrollmentByFilters: null })).toEqual([]);
-  });
-
-  it('returns empty array when result is undefined', () => {
-    expect(mapFiltersResponse({ playbooksForEnrollmentByFilters: undefined })).toEqual([]);
   });
 });
 
@@ -105,9 +97,7 @@ describe('fetchPlaybooks', () => {
   };
 
   const filtersResponseFixture: FiltersResponseData = {
-    playbooksForEnrollmentByFilters: {
-      playbooks: [TAG_AND_SCORE, NOTIFY_ON_MALWARE, ENRICH_OBSERVABLE],
-    },
+    playbooksForEnrollmentByFilters: [TAG_AND_SCORE, NOTIFY_ON_MALWARE, ENRICH_OBSERVABLE],
   };
 
   it('calls fetcher with the provided entityIds when isSelectAll is false', async () => {
@@ -151,7 +141,7 @@ describe('fetchPlaybooks', () => {
   });
 
   it('returns empty array when filters response has no playbooks', async () => {
-    const fetcher = vi.fn().mockResolvedValue({ playbooksForEnrollmentByFilters: null });
+    const fetcher = vi.fn().mockResolvedValue({ playbooksForEnrollmentByFilters: [] });
     expect(await fetchPlaybooks({ isSelectAll: true }, fetcher)).toEqual([]);
   });
 });
