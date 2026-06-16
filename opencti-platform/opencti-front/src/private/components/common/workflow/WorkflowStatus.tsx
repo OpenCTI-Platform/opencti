@@ -6,7 +6,6 @@ import ItemStatus from '../../../../components/ItemStatus';
 import { workflowStatusFragment } from './WorkflowStatus.graphql';
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import IconButton from '../../../../components/common/button/IconButton';
-import { workflowStatus_data$key } from './__generated__/workflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 export { WorkflowTransitions } from './WorkflowTransitions';
 
