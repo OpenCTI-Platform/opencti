@@ -98,7 +98,7 @@ interface StixCoreObjectsCustomAttributesProps {
   height?: number;
   startDate?: string;
   endDate?: string;
-  dataSelection: object[];
+  dataSelection: WidgetDataSelection[];
   widgetId: string;
   parameters?: WidgetParameters;
   popover?: React.ReactNode;
