@@ -4659,6 +4659,7 @@
   "Unit System": "单位系统",
   "Unknown": "未知",
   "Unknown configuration error in the platform.": "平台中存在未知配置错误。",
+  "Unknown date": "日期不详",
   "Unknown entities": "未知实体",
   "Unknown provider type": "未知提供程序类型",
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "除非阻止分配默认组，否则创建的用户将包含指定组和默认组。",
