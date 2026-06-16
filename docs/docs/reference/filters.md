@@ -58,7 +58,7 @@ Add authorized members with the appropriate access right:
   - **can view**: the member can see and use the shared filter.
   - **can manage**: the member can see, use, update the name, manage sharing and delete the saved filter.
 
-The creator of the saved filter always has the **can manage** access right. At least one admin member must remain at all times.
+The creator of the saved filter always has the **can manage** access right. At least one member with the **can manage** access right must remain at all times.
 
 ![Sharing a saved filter](./assets/filters-shareSavedFilter-creation.png)
 
