@@ -457,7 +457,13 @@ const promoteOperationCallback = async (context, user, task, container) => {
           objects.push(stixRelation);
         }
       } catch (e) {
-        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', { cause: e });
+        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
+          cause: e,
+          taskId: task.internal_id,
+          workId: task.work_id,
+          elementId: loadedElements[index]?.internal_id,
+          elementType: loadedElements[index]?.entity_type,
+        });
       }
     }
     const objectRefs = objects.map((object) => object.id);
