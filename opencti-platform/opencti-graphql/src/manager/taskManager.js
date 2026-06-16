@@ -392,68 +392,72 @@ const promoteOperationCallback = async (context, user, task, container) => {
     const ids = elements.map((e) => e.internal_id);
     const loadedElements = await storeLoadByIdsWithRefs(context, user, ids);
     for (let index = 0; index < loadedElements.length; index += 1) {
-      const loadedElement = loadedElements[index];
-      // If indicator, promote to observable
-      if (loadedElement.entity_type === ENTITY_TYPE_INDICATOR) {
-        const indicator = loadedElement;
-        const { pattern } = indicator;
-        const observables = extractValidObservablesFromIndicatorPattern(pattern);
-        for (let obsIndex = 0; obsIndex < observables.length; obsIndex += 1) {
-          const observable = observables[obsIndex];
-          const observableToCreate = {
-            ...R.dissoc('type', observable),
-            entity_type: observable.type,
-            x_opencti_description: indicator.description ? indicator.description
-              : `Simple observable of indicator {${indicator.name || indicator.pattern}}`,
-            x_opencti_score: indicator.x_opencti_score,
-            createdBy: indicator.createdBy,
-            objectMarking: indicator.objectMarking,
-            objectOrganization: indicator.objectOrganization,
-            objectLabel: indicator.objectLabel,
-            externalReferences: indicator.externalReferences,
-          };
-          observableToCreate.standard_id = generateStandardId(observableToCreate.entity_type, observableToCreate);
-          const stixObservable = convertStoreToStix_2_1(observableToCreate);
-          objects.push(stixObservable);
+      try {
+        const loadedElement = loadedElements[index];
+        // If indicator, promote to observable
+        if (loadedElement.entity_type === ENTITY_TYPE_INDICATOR) {
+          const indicator = loadedElement;
+          const { pattern } = indicator;
+          const observables = extractValidObservablesFromIndicatorPattern(pattern);
+          for (let obsIndex = 0; obsIndex < observables.length; obsIndex += 1) {
+            const observable = observables[obsIndex];
+            const observableToCreate = {
+              ...R.dissoc('type', observable),
+              entity_type: observable.type,
+              x_opencti_description: indicator.description ? indicator.description
+                : `Simple observable of indicator {${indicator.name || indicator.pattern}}`,
+              x_opencti_score: indicator.x_opencti_score,
+              createdBy: indicator.createdBy,
+              objectMarking: indicator.objectMarking,
+              objectOrganization: indicator.objectOrganization,
+              objectLabel: indicator.objectLabel,
+              externalReferences: indicator.externalReferences,
+            };
+            observableToCreate.standard_id = generateStandardId(observableToCreate.entity_type, observableToCreate);
+            const stixObservable = convertStoreToStix_2_1(observableToCreate);
+            objects.push(stixObservable);
+            const relationToCreate = {
+              from: indicator,
+              fromId: indicator.internal_id,
+              fromType: indicator.entity_type,
+              to: observableToCreate,
+              toId: observableToCreate.internal_id,
+              toType: observableToCreate.entity_type,
+              entity_type: RELATION_BASED_ON,
+              relationship_type: RELATION_BASED_ON,
+              objectMarking: indicator.objectMarking,
+              objectOrganization: indicator.objectOrganization,
+            };
+            relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
+            const stixRelation = convertStoreToStix_2_1(relationToCreate);
+            objects.push(stixRelation);
+          }
+        }
+        // If observable, promote to indicator
+        if (isStixCyberObservable(loadedElement.entity_type)) {
+          const indicatorToCreate = await generateIndicatorFromObservable(context, user, loadedElement, loadedElement);
+          indicatorToCreate.entity_type = ENTITY_TYPE_INDICATOR;
+          indicatorToCreate.standard_id = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorToCreate);
+          const stixIndicator = convertStoreToStix_2_1(indicatorToCreate);
+          objects.push(stixIndicator);
           const relationToCreate = {
-            from: indicator,
-            fromId: indicator.internal_id,
-            fromType: indicator.entity_type,
-            to: observableToCreate,
-            toId: observableToCreate.internal_id,
-            toType: observableToCreate.entity_type,
+            from: indicatorToCreate,
+            fromId: indicatorToCreate.internal_id,
+            fromType: indicatorToCreate.entity_type,
+            to: loadedElement,
+            toId: loadedElement.internal_id,
+            toType: loadedElement.entity_type,
             entity_type: RELATION_BASED_ON,
             relationship_type: RELATION_BASED_ON,
-            objectMarking: indicator.objectMarking,
-            objectOrganization: indicator.objectOrganization,
+            objectMarking: indicatorToCreate.objectMarking,
+            objectOrganization: indicatorToCreate.objectOrganization,
           };
           relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
           const stixRelation = convertStoreToStix_2_1(relationToCreate);
           objects.push(stixRelation);
         }
-      }
-      // If observable, promote to indicator
-      if (isStixCyberObservable(loadedElement.entity_type)) {
-        const indicatorToCreate = await generateIndicatorFromObservable(context, user, loadedElement, loadedElement);
-        indicatorToCreate.entity_type = ENTITY_TYPE_INDICATOR;
-        indicatorToCreate.standard_id = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorToCreate);
-        const stixIndicator = convertStoreToStix_2_1(indicatorToCreate);
-        objects.push(stixIndicator);
-        const relationToCreate = {
-          from: indicatorToCreate,
-          fromId: indicatorToCreate.internal_id,
-          fromType: indicatorToCreate.entity_type,
-          to: loadedElement,
-          toId: loadedElement.internal_id,
-          toType: loadedElement.entity_type,
-          entity_type: RELATION_BASED_ON,
-          relationship_type: RELATION_BASED_ON,
-          objectMarking: indicatorToCreate.objectMarking,
-          objectOrganization: indicatorToCreate.objectOrganization,
-        };
-        relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
-        const stixRelation = convertStoreToStix_2_1(relationToCreate);
-        objects.push(stixRelation);
+      } catch (e) {
+        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', { cause: e });
       }
     }
     const objectRefs = objects.map((object) => object.id);
