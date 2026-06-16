@@ -43,21 +43,21 @@ describe('BrowserLanguage utils', () => {
     it('should match language from browserLanguage property', () => {
       const mockNav = {
         browserLanguage: 'DE-DE',
-      } as unknown as Navigator;
+      };
       expect(detectedLocale(mockNav)).toBe('de-de');
     });
 
     it('should match language from userLanguage property', () => {
       const mockNav = {
         userLanguage: 'ES-ES',
-      } as unknown as Navigator;
+      };
       expect(detectedLocale(mockNav)).toBe('es-es');
     });
 
     it('should match language from systemLanguage property', () => {
       const mockNav = {
         systemLanguage: 'IT-IT',
-      } as unknown as Navigator;
+      };
       expect(detectedLocale(mockNav)).toBe('it-it');
     });
 
