@@ -1,4 +1,4 @@
-import type { WidgetColumn, WidgetHost } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import useHelper from '../../../utils/hooks/useHelper';
 

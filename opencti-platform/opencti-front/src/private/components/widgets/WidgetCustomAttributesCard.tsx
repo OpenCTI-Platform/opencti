@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Box, List, ListItem, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../components/Theme';
-import { useFormatter } from '../../../components/i18n';
-import type { WidgetColumn } from '../../../utils/widget/widget';
+import type { Theme } from 'src/components/Theme';
+import { useFormatter } from 'src/components/i18n';
+import type { WidgetColumn } from 'src/utils/widget/widget';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemAuthor from '../../../components/ItemAuthor';
 import ItemConfidence from '../../../components/ItemConfidence';
