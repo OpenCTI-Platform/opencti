@@ -4,11 +4,12 @@ import type { AsyncActionSlot, Context } from '../types/workflow-types';
 import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import type { MemberAccessInput } from '../../../generated/graphql';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
 import { storeLoadById } from '../../../database/middleware-loader';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import { RELATION_PARTICIPATE_TO } from '../../../schema/internalRelationship';
+import type { BasicOrganizationEntity } from '../../../types/store';
 
 /**
  * Resolves dynamic authorized member keys (AUTHOR, CREATORS, ASSIGNEES, PARTICIPANTS)
@@ -23,12 +24,15 @@ const resolveDynamicAuthorizedMembers = async (
   for (const member of rawMembers) {
     const { id, access_right, groups_restriction_ids } = member;
     if (id === 'AUTHOR') {
-      // RELATION_CREATED_BY is the denormalized flat field name for the author relation in ES
-      const createdById = entity[RELATION_CREATED_BY] as string | undefined;
-      if (createdById) {
-        const authorEntity = await storeLoadById(context, user, createdById, 'Basic-Object').catch(() => null);
-        if (authorEntity?.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-          resolved.push({ id: createdById, access_right, groups_restriction_ids });
+      // It resolves to the organization of the draft author
+      const creatorIds: string[] = Array.isArray(entity.creator_id)
+        ? entity.creator_id
+        : (entity.creator_id ? [entity.creator_id] : []);
+      for (const creatorId of creatorIds) {
+        if (creatorId) resolved.push({ id: creatorId, access_right, groups_restriction_ids });
+        const userEntity = await storeLoadById<BasicOrganizationEntity>(context, user, creatorId, 'Basic-Object').catch(() => null);
+        for (const orgId of userEntity?.[RELATION_PARTICIPATE_TO] ?? []) {
+          resolved.push({ id: orgId, access_right, groups_restriction_ids });
         }
       }
     } else if (id === 'CREATORS') {
