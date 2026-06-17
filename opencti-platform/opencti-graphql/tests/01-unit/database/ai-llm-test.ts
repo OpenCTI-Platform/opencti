@@ -39,6 +39,8 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     default: {
       get: (key: string) => {
         switch (key) {
+          case 'redis:ca':
+            return [];
           case 'ai:enabled':
             return true;
           case 'ai:type':
