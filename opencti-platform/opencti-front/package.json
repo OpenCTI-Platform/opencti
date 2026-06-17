@@ -97,6 +97,7 @@
     "html-to-image": "1.11.13",
     "html-to-pdfmake": "2.5.33",
     "invert-color": "2.0.0",
+    "ipaddr.js": "2.4.0",
     "is-svg": "6.1.0",
     "js-base64": "3.7.8",
     "js-file-download": "0.4.12",

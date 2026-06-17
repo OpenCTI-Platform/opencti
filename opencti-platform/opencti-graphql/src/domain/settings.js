@@ -1,5 +1,6 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
+import ipaddr from 'ipaddr.js';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
@@ -233,6 +234,26 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     const validStatuses = Object.values(CguStatus);
     if (!Array.isArray(cguStatus.value) || cguStatus.value.length > 1 || !validStatuses.includes(cguStatus.value[0])) {
       throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
+    }
+  }
+
+  const ipWhitelist = data.find((inputData) => inputData.key === 'platform_ip_whitelist');
+  if (ipWhitelist && Array.isArray(ipWhitelist.value) && ipWhitelist.value.length > 0) {
+    const invalidEntries = ipWhitelist.value.filter((entry) => {
+      if (typeof entry !== 'string' || entry.trim() === '') return true;
+      try {
+        if (entry.includes('/')) {
+          ipaddr.parseCIDR(entry.trim());
+        } else {
+          ipaddr.parse(entry.trim());
+        }
+        return false;
+      } catch {
+        return true;
+      }
+    });
+    if (invalidEntries.length > 0) {
+      throw UnsupportedError(`Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`);
     }
   }
 

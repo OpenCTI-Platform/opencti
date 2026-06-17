@@ -1,5 +1,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
+import * as Yup from 'yup';
+import * as ipaddr from 'ipaddr.js';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
@@ -16,8 +18,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import { fetchQuery } from '../../../../relay/environment';
-import { MESSAGING$ } from '../../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { FieldOption } from '../../../../utils/field';
 import { IpWhitelistSettingsQuery } from './__generated__/IpWhitelistSettingsQuery.graphql';
 import type { GroupSetDefaultGroupForIngestionUsersQuery$data } from '@components/settings/groups/__generated__/GroupSetDefaultGroupForIngestionUsersQuery.graphql';
@@ -54,9 +55,34 @@ const ipWhitelistSettingsMutation = graphql`
   }
 `;
 
+const isValidIpOrCidr = (entry: string): boolean => {
+  try {
+    if (entry.includes('/')) {
+      ipaddr.parseCIDR(entry);
+    } else {
+      ipaddr.parse(entry);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const IpWhitelistSettingsContent = () => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+
+  const ipWhitelistSchema = Yup.object().shape({
+    platform_ip_whitelist: Yup.string().test(
+      'valid-ip-list',
+      t_i18n('One or more entries are not valid IP addresses or CIDR ranges'),
+      (value) => {
+        if (!value) return true;
+        const lines = value.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+        return lines.every((line) => isValidIpOrCidr(line));
+      },
+    ),
+  });
 
   const data = useLazyLoadQuery<IpWhitelistSettingsQuery>(ipWhitelistSettingsQuery, {});
   const settings = data.settings;
@@ -105,9 +131,10 @@ const IpWhitelistSettingsContent = () => {
             <Formik
               onSubmit={() => {}}
               initialValues={initialValues}
+              validationSchema={ipWhitelistSchema}
               enableReinitialize={true}
             >
-              {({ values, dirty, setFieldError, setFieldTouched }) => {
+              {({ values, dirty, errors, setFieldError, setFieldTouched }) => {
                 const isEnabled = values.platform_ip_whitelist_enabled;
                 const lines = values.platform_ip_whitelist
                   .split('\n')
@@ -119,6 +146,11 @@ const IpWhitelistSettingsContent = () => {
                   if (isEnabled && lines.length === 0) {
                     setFieldTouched('platform_ip_whitelist', true, false);
                     setFieldError('platform_ip_whitelist', t_i18n('At least one IP address is required when allow list is enabled'));
+                    return;
+                  }
+                  // Validate: block save if IP format errors exist
+                  if (errors.platform_ip_whitelist) {
+                    setFieldTouched('platform_ip_whitelist', true, false);
                     return;
                   }
 
