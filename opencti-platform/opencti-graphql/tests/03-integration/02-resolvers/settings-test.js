@@ -24,6 +24,11 @@ const READ_QUERY = gql`
       platform_title
       platform_email
       platform_language
+      platform_ip_whitelist_enabled
+      caller_ip
+      platform_ip_whitelist_exclusions {
+        id
+      }
       platform_theme {
         name
       }
@@ -62,6 +67,9 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.platform_title).toEqual(PLATFORM_TITLE);
     expect(settings.platform_email).toEqual('admin@opencti.io');
     expect(settings.platform_language).toEqual('auto');
+    expect(settings.platform_ip_whitelist_enabled).toBeDefined();
+    expect(settings.caller_ip).toBeDefined();
+    expect(settings.platform_ip_whitelist_exclusions).toBeDefined();
     expect(settings.platform_theme.name).toEqual('Dark');
     expect(settings.editContext.length).toEqual(0);
   });

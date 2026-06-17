@@ -61,6 +61,9 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   platform_ai_enabled: boolean;
   filigran_chatbot_ai_cgu_status: CguStatus;
   view_all_users: boolean;
+  platform_ip_whitelist?: string[];
+  platform_ip_whitelist_enabled?: boolean;
+  platform_ip_whitelist_exclusion_ids?: string[];
   auth_strategy_migrated: string[];
   local_auth?: LocalAuthConfig;
   cert_auth?: CertAuthConfig;
