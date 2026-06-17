@@ -25,12 +25,18 @@ const shouldLogRejection = (ip) => {
     return false;
   }
   rejectionLogCache.set(ip, now);
-  // Inline eviction: if cache grows too large, purge stale entries
+  // Evict stale entries when cache grows too large.
+  // First pass: remove entries older than 2× the log window (IPs not seen recently).
+  // Fallback: if all entries are recent (e.g. under a brute-force from many IPs),
+  // remove the oldest inserted entry — O(1), Map preserves insertion order.
   if (rejectionLogCache.size > REJECTION_LOG_MAX_ENTRIES) {
     for (const [cachedIp, ts] of rejectionLogCache) {
       if ((now - ts) > REJECTION_LOG_WINDOW_MS * 2) {
         rejectionLogCache.delete(cachedIp);
       }
+    }
+    if (rejectionLogCache.size > REJECTION_LOG_MAX_ENTRIES) {
+      rejectionLogCache.delete(rejectionLogCache.keys().next().value);
     }
   }
   return true;
