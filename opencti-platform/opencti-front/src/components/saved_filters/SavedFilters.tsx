@@ -71,7 +71,7 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
 
   const handleRefetch = useCallback(() => {
     loadQuery(queryOptions, { fetchPolicy: 'network-only' });
-  }, [loadQuery, localStorageKey, isSharedFiltersEnabled]);
+  }, [loadQuery, localStorageKey]);
 
   const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
   if (isRestrictedStorageKey) return null;
