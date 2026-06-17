@@ -22,6 +22,7 @@ type SavedFiltersAutocompleteProps = {
   onDelete?: (value: SavedFiltersSelectionData) => void;
   options?: SavedFiltersAutocompleteOptionType[];
   localStorageKey?: string;
+  onRefetch?: () => void;
 };
 const SavedFiltersAutocomplete = ({
   isDisabled,
@@ -32,6 +33,7 @@ const SavedFiltersAutocomplete = ({
   onDelete,
   options,
   localStorageKey,
+  onRefetch,
 }: SavedFiltersAutocompleteProps) => {
   const { isFeatureEnable } = useHelper();
   const isSharingSavedFilterFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
@@ -148,7 +150,7 @@ const SavedFiltersAutocomplete = ({
           isOpen={!!savedFilterToEdit}
           onClose={() => setSavedFilterToEdit(undefined)}
           savedFilter={savedFilterToEdit}
-          localStorageKey={localStorageKey}
+          onSaved={onRefetch}
         />
       )}
     </>
