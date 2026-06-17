@@ -3152,6 +3152,7 @@
   "One line confirm label next to confirm checkbox": "확인 확인란 옆에 한 줄 확인 라벨",
   "one of the following requirements:": "다음 요구 사항 중 하나:",
   "One or more async workflow actions failed": "하나 이상의 비동기 워크플로 작업이 실패했습니다",
+  "One or more entries are not valid IP addresses or CIDR ranges": "하나 이상의 항목이 유효한 IP 주소나 CIDR 범위가 아닙니다.",
   "One per line": "한 줄당 하나",
   "One week ago": "1주일 전",
   "Ongoing processes": "진행 중인 프로세스",

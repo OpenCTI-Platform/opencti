@@ -3152,6 +3152,7 @@
   "One line confirm label next to confirm checkbox": "Etichetta di conferma su una riga accanto alla casella di conferma",
   "one of the following requirements:": "uno dei seguenti requisiti:",
   "One or more async workflow actions failed": "Una o più azioni asincrone del flusso di lavoro fallite",
+  "One or more entries are not valid IP addresses or CIDR ranges": "Una o più voci non sono indirizzi IP o intervalli CIDR validi",
   "One per line": "Uno per riga",
   "One week ago": "Una settimana fa",
   "Ongoing processes": "Processi in corso",

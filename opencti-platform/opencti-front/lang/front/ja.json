@@ -3152,6 +3152,7 @@
   "One line confirm label next to confirm checkbox": "確認チェックボックスの横にある 1 行の確認ラベル",
   "one of the following requirements:": "以下のいずれかの条件",
   "One or more async workflow actions failed": "1つ以上の非同期ワークフローアクションの失敗",
+  "One or more entries are not valid IP addresses or CIDR ranges": "1つ以上のエントリが有効なIPアドレスまたはCIDR範囲ではありません",
   "One per line": "1行に1つ",
   "One week ago": "1週間前",
   "Ongoing processes": "進行中のプロセス",

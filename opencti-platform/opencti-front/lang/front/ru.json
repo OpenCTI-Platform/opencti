@@ -3152,6 +3152,7 @@
   "One line confirm label next to confirm checkbox": "Однострочный ярлык подтверждения рядом с флажком подтверждения",
   "one of the following requirements:": "одно из следующих требований:",
   "One or more async workflow actions failed": "Одно или несколько асинхронных действий рабочего процесса завершились неудачно",
+  "One or more entries are not valid IP addresses or CIDR ranges": "Одна или несколько записей не являются действительными IP-адресами или диапазонами CIDR",
   "One per line": "По одному на строку",
   "One week ago": "Неделю назад",
   "Ongoing processes": "Текущие процессы",
