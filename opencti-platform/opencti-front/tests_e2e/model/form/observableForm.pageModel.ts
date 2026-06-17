@@ -30,8 +30,8 @@ export default class ObservableFormPage {
     return this.formLocator.getByRole('button', { name: 'Create multiple observables', exact: true }).click();
   }
 
-  validateBulk() {
-    return this.bulkLocator.getByRole('button', { name: 'Validate', exact: true }).click();
+  validateBulk(objectToCreateCount: number) {
+    return this.bulkLocator.getByRole('button', { name: `Create ${objectToCreateCount} objects`, exact: true }).click();
   }
 
   cancelBulk() {
