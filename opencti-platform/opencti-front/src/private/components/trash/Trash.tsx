@@ -190,6 +190,7 @@ const Trash: React.FC = () => {
             exportContext={{ entity_type: 'DeleteOperation' }}
             disableNavigation
             trashOperationsEnabled
+            disableBulkEnroll
             deleteDisable
             actions={(row: TrashDeleteOperationLine_node$data) => (
               <DeleteOperationPopover

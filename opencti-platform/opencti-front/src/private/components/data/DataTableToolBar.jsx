@@ -2171,6 +2171,7 @@ class DataTableToolBar extends Component {
       deleteDisable,
       mergeDisable,
       trashOperationsEnabled,
+      disableBulkEnroll,
       removeAuthMembersEnabled,
       removeFromDraftEnabled,
       markAsReadEnabled,
@@ -2560,11 +2561,9 @@ class DataTableToolBar extends Component {
                         </Security>
                       </>
                     )}
-                    {isBulkEnrollEnabled && !isInDraft && !isUserDatatable
-                      && taskScope !== 'SETTINGS'
-                      && taskScope !== 'INVESTIGATION'
-                      && taskScope !== 'DASHBOARD'
-                      && taskScope !== 'PUBLIC_DASHBOARD'
+                    {isBulkEnrollEnabled && !isInDraft
+                      && (!taskScope || taskScope === 'KNOWLEDGE')
+                      && !disableBulkEnroll
                       && (
                         <Security needs={[AUTOMATION]}>
                           <Tooltip title={t('Enroll in playbook')}>
@@ -3423,6 +3422,7 @@ DataTableToolBar.propTypes = {
   rightOffset: PropTypes.number,
   mergeDisable: PropTypes.bool,
   trashOperationsEnabled: PropTypes.bool,
+  disableBulkEnroll: PropTypes.bool,
   removeAuthMembersEnabled: PropTypes.bool,
   removeFromDraft: PropTypes.bool,
   markAsReadEnabled: PropTypes.bool,

@@ -119,7 +119,7 @@ export const findPlaybooksForEnrollmentByFilters = async (
   const stixEntities = await stixLoadByFilters(context, user, [ABSTRACT_STIX_CORE_OBJECT], {
     filters: filters ?? undefined,
     search: search ?? undefined,
-    first: ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT,
+    maxSize: ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT,
   });
   const filteredEntities = excludeEntitiesByIds(stixEntities, excludedIds);
   if (filteredEntities.length === 0) return [];
