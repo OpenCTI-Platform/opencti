@@ -1,4 +1,4 @@
-import React, { UIEvent, useState } from 'react';
+import React, { UIEvent, useEffect, useState } from 'react';
 import { useFormatter } from 'src/components/i18n';
 import Dialog from '@common/dialog/Dialog';
 import { DialogActions, Typography } from '@mui/material';
@@ -20,6 +20,11 @@ const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnve
 }) => {
   const { t_i18n } = useFormatter();
   const [isAcknowledged, setIsAcknowledged] = useState(false);
+  useEffect(() => {
+    if (isOpen) {
+      setIsAcknowledged(false);
+    }
+  }, [isOpen]);
   return (
     <Dialog
       open={isOpen}
