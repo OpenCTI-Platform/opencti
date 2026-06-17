@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
-import { Box } from '@mui/material';
 import { ErrorBoundary } from '@components/Error';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
@@ -91,16 +90,15 @@ const PublicDashboardComponent = ({
         onChangeRelativeDate={onChangeRelativeDate}
         onChangeStartDate={onChangeStartDate}
         onChangeEndDate={onChangeEndDate}
+        actions={(
+          <DashboardRefreshControl
+            onRefresh={handleManualRefresh}
+            interval={localRefreshRateSeconds}
+            onIntervalChange={handleRefreshRateChange}
+            isRefreshing={isAutoRefreshing}
+          />
+        )}
       />
-
-      <Box sx={{ margin: '12px 20px 0 20px', display: 'flex', justifyContent: 'flex-end' }}>
-        <DashboardRefreshControl
-          onRefresh={handleManualRefresh}
-          interval={localRefreshRateSeconds}
-          onIntervalChange={handleRefreshRateChange}
-          isRefreshing={isAutoRefreshing}
-        />
-      </Box>
 
       <DashboardRefreshContext.Provider value={refreshToken}>
         <div ref={containerRef}>
