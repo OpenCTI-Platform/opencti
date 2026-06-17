@@ -120,7 +120,7 @@ export const isAgentBoundToIntent = async (
  * user is configured.
  */
 export const resolveRunAsUserId = (
-  runAs?: string | { value?: string } | null,
+  runAs?: string | { label?: string; value?: string } | null,
 ): string | undefined => {
   if (!runAs) return undefined;
   if (typeof runAs === 'string') return runAs.trim() || undefined;
