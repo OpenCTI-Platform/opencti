@@ -17,8 +17,8 @@ const SANITIZE_CONFIG = {
 };
 
 const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) => {
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const oldEditorEnabled = isOldEditorEnable();
 
   if (isEmptyField(content)) {
     return (
@@ -26,7 +26,7 @@ const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) =>
     );
   }
 
-  if (!tiptapEnabled) {
+  if (oldEditorEnabled) {
     return (
       <div className="ck-content">
         {limit ? parse(purify.sanitize(truncate(content, limit))) : parse(purify.sanitize(content))}
