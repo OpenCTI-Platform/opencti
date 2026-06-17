@@ -23,7 +23,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import RichTextEditor from '../../../../components/RichTextEditor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import CKEditor from '../../../../components/CKEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
