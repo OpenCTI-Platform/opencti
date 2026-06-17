@@ -107,7 +107,7 @@ const ReportDetails = ({ report }) => {
                 endDate: null,
               }}
               dataSelection={entitiesDistributionDataSelection}
-              parameters={{ title: 'Entities distribution' }}
+              parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
             />
           </Grid>

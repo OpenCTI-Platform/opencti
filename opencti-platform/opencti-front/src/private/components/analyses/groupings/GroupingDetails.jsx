@@ -76,7 +76,7 @@ const GroupingDetailsComponent = (props) => {
                 endDate: null,
               }}
               dataSelection={entitiesDistributionDataSelection}
-              parameters={{ title: 'Entities distribution' }}
+              parameters={{ title: t('Entities distribution') }}
               variant="inEntity"
             />
           </Grid>
