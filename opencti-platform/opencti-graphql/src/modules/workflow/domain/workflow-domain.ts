@@ -757,15 +757,21 @@ export const triggerWorkflowEvent = async (
       // fallback on actions if syncActions not explicitly defined on transition (legacy support)
       const serializedTransitions: WorkflowActionConfig[] = targetTransitionForSync?.syncActions ?? [];
 
+      // Collect the onEnter actions of the target state so phase 2 can replay them.
+      const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
+      const targetStateDef = definitionData.states?.find((s: any) => s.statusId === toStateId);
+      const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
+
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
-        toState: targetTransitionForSync?.to ?? instance.getCurrentState(),
+        toState: toStateId,
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
         ...(comment ? { comment } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
+        ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
       };
 
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
