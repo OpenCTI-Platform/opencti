@@ -95,7 +95,7 @@ export const isUserExcluded = (user, exclusionIds) => {
   return false;
 };
 
-// Root fields that must remain accessible for unauthenticated users to reach the login page.
+// Root fields that must remain accessible to reach the login page, regardless of auth state.
 // Validated by parsing the actual query document AST — checks what data is accessed,
 // not the arbitrary operation name.
 const LOGIN_ALLOWED_FIELDS = new Set([
@@ -144,7 +144,7 @@ const queryAccessesOnlyLoginFields = (queryStr) => {
  * Logic:
  * - If platform_ip_whitelist_enabled is false (or not set), allow all.
  * - If IP matches the whitelist, allow.
- * - If unauthenticated but request is a login-only operation (verified from query AST), allow.
+ * - If request is a login-only operation (verified from query AST), allow (any auth state).
  * - If authenticated and user/group/org is in the exclusion list, allow.
  * - Otherwise, block.
  *
@@ -176,17 +176,20 @@ const ipWhitelistMiddleware = async (req, res, next) => {
       return next();
     }
 
+    // Login-only operations (publicSettings, token, otp*) must always be accessible
+    // regardless of authentication state. A blocked user may still have an active session
+    // cookie — without this check, the login page itself (publicSettings) would be blocked
+    // on refresh, resulting in a blank screen instead of the login form.
+    if (isLoginOnlyRequest(req)) {
+      return next();
+    }
+
     // IP does NOT match the whitelist — check if request should still be allowed
 
     // Resolve authenticated user from session or bearer token
     const authenticatedUser = await authenticateUserFromRequest(context, req);
 
     if (!authenticatedUser) {
-      // Allow login-related operations so users can reach the login page
-      // Validated from the query document itself — not the spoofable operationName field
-      if (isLoginOnlyRequest(req)) {
-        return next();
-      }
       // Block all other unauthenticated requests
       if (shouldLogRejection(sourceIp)) {
         logApp.warn('[IP_WHITELIST] Access denied for unauthenticated IP', { ip: sourceIp });
