@@ -106,7 +106,7 @@
     "content-type": "2.0.0",
     "convert": "7.0.0",
     "cors": "2.8.6",
-    "csv-parse": "6.2.1",
+    "csv-parse": "7.0.0",
     "dataloader": "2.2.3",
     "ejs": "6.0.1",
     "eventsource": "2.0.2",
