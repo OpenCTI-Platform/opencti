@@ -7,9 +7,9 @@ import { Promise } from 'bluebird';
 import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
-import { BasicStoreObject, BasicStoreRelation } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { pushAll } from '../utils/arrayUtil';
+import type { BasicStoreObject, BasicStoreRelation } from '../types/store';
 
 const message = '[MIGRATION] Separate results data of Security Coverage into dedicated objects';
 
