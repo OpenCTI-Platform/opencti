@@ -142,6 +142,8 @@ const DataTableLine = ({
 
   const handleNavigate = (event: React.MouseEvent) => {
     if (!navigable || !link) return;
+    event.preventDefault();
+    event.stopPropagation();
 
     if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
@@ -189,8 +191,9 @@ const DataTableLine = ({
         style={linkStyle}
         href={navigable ? link : undefined}
         // We need both to handle accessibility and widget.
-        onMouseDown={variant === DataTableVariant.widget ? handleNavigate : undefined}
-        onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
+        onClick={variant !== DataTableVariant.widget
+          ? handleRowClick
+          : (variant === DataTableVariant.widget ? handleNavigate : undefined)}
         data-testid={getMainRepresentative(data)}
       >
         {(startsWithAction || startsWithIcon) && (
