@@ -13936,7 +13936,7 @@ __metadata:
     monaco-editor: "npm:0.52.2"
     monaco-graphql: "npm:1.8.0"
     monocart-reporter: "npm:2.11.2"
-    pdfmake: "npm:0.3.10"
+    pdfmake: "npm:0.3.11"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.32.0"
@@ -14412,9 +14412,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfkit@npm:^0.19.0":
-  version: 0.19.0
-  resolution: "pdfkit@npm:0.19.0"
+"pdfkit@npm:^0.19.1":
+  version: 0.19.1
+  resolution: "pdfkit@npm:0.19.1"
   dependencies:
     "@noble/ciphers": "npm:^1.0.0"
     "@noble/hashes": "npm:^1.6.0"
@@ -14422,18 +14422,18 @@ __metadata:
     js-md5: "npm:^0.8.3"
     linebreak: "npm:^1.1.0"
     png-js: "npm:^1.1.0"
-  checksum: 10c0/45aca68c1e69104937a5762b4ecff4ef1ce14534e3d46748db37d3bfb2dfe3e0363c4c347f896f7e41833084daf5e43c3777ef902968469acb772832e0901cc9
+  checksum: 10c0/1483b07842f5ca184e8834cbf6bb9cb1eeef3664505aa9a47488181db134fe3f97ebef395144e9f60a92a752afc5e4251fce118a79c414beea50d5d2a604346a
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.3.10":
-  version: 0.3.10
-  resolution: "pdfmake@npm:0.3.10"
+"pdfmake@npm:0.3.11":
+  version: 0.3.11
+  resolution: "pdfmake@npm:0.3.11"
   dependencies:
     linebreak: "npm:^1.1.0"
-    pdfkit: "npm:^0.19.0"
+    pdfkit: "npm:^0.19.1"
     xmldoc: "npm:^2.0.3"
-  checksum: 10c0/d7a64a017102db3b325644346b83f7eda744c4019f3bbcbd9bea76722cfc7d3682d0a915bd99cc8acf815293d061c3d96d0fbf2ebfff4be4d60a5266f67f0324
+  checksum: 10c0/ecea71cdc143036af23ad3aff4dafcf260345b5a001763901574160316439ab09ee54516034a37edfcd3fd99112578838593a82a760b970eaf4cb81d41b2cdd1
   languageName: node
   linkType: hard
 
