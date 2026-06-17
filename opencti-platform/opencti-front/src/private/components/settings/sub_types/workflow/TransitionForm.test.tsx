@@ -8,6 +8,7 @@ import { WorkflowActionType, CommentMode } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
 // ---------------------------------------------------------------------------
 // Mock heavy sub-components with no relevance to the tested logic
@@ -218,6 +219,25 @@ describe('TransitionForm – action toggles', () => {
     await waitFor(() => {
       const actions = onSubmit.mock.calls[0][0].syncActions as { type: string }[];
       expect(actions.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers)).toBe(false);
+    });
+  });
+
+  it('pre-populates CREATOR with admin access when toggling "Update authorized members" ON', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+
+    await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      const actions = onSubmit.mock.calls[0][0].syncActions as { type: string; params?: { authorized_members?: { value: string; accessRight: string }[] } }[];
+      const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+      expect(uamAction?.params?.authorized_members).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+        ]),
+      );
     });
   });
 

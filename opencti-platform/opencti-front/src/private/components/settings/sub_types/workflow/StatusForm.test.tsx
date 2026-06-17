@@ -1,12 +1,13 @@
 import React from 'react';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import StatusForm from './StatusForm';
 import testRender from '../../../../../utils/tests/test-render';
 import { WorkflowActionType } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -129,6 +130,50 @@ describe('StatusForm – EE / CE gating', () => {
       renderForm({ onEnter: [], onExit: onExitAction });
       const sw = screen.getByRole('checkbox', { name: /update authorized members on exit/i }) as HTMLInputElement;
       expect(sw.checked).toBe(true);
+    });
+  });
+
+  describe('CREATOR default pre-population', () => {
+    beforeEach(() => {
+      vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+    });
+
+    it('pre-populates CREATOR with admin access when toggling "on enter" ON', async () => {
+      const onSubmit = vi.fn();
+      const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit);
+
+      await user.click(screen.getByRole('checkbox', { name: /update authorized members on enter/i }));
+
+      document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+      await waitFor(() => {
+        const actions = onSubmit.mock.calls[0][0].onEnter as { type: string; params?: { authorized_members?: { value: string; accessRight: string }[] } }[];
+        const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+        expect(uamAction?.params?.authorized_members).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+          ]),
+        );
+      });
+    });
+
+    it('pre-populates CREATOR with admin access when toggling "on exit" ON', async () => {
+      const onSubmit = vi.fn();
+      const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit);
+
+      await user.click(screen.getByRole('checkbox', { name: /update authorized members on exit/i }));
+
+      document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+      await waitFor(() => {
+        const actions = onSubmit.mock.calls[0][0].onExit as { type: string; params?: { authorized_members?: { value: string; accessRight: string }[] } }[];
+        const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+        expect(uamAction?.params?.authorized_members).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+          ]),
+        );
+      });
     });
   });
 });

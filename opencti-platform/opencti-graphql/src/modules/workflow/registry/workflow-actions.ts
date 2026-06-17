@@ -29,7 +29,6 @@ const resolveDynamicAuthorizedMembers = async (
         ? entity.creator_id
         : (entity.creator_id ? [entity.creator_id] : []);
       for (const creatorId of creatorIds) {
-        if (creatorId) resolved.push({ id: creatorId, access_right, groups_restriction_ids });
         const userEntity = await storeLoadById<BasicOrganizationEntity>(context, user, creatorId, 'Basic-Object').catch(() => null);
         for (const orgId of userEntity?.[RELATION_PARTICIPATE_TO] ?? []) {
           resolved.push({ id: orgId, access_right, groups_restriction_ids });
