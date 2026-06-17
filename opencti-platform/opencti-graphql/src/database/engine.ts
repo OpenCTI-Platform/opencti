@@ -543,7 +543,7 @@ const isTransitoryError = (error: any): boolean => {
   }
   const errorMessage = error?.message ?? '';
   // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
-  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
+  if (/circuit_breaking_exception|version_conflict|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
     return true;
   }
   return false;
