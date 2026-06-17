@@ -17,10 +17,14 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, resolveRunAsUserId } from './ai-agent-shared';
 
 interface AiAgentSendConfiguration {
   agent_slug: string;
+  // User the agent call runs as: the cross-platform JWT carries this
+  // user's email so XTM One (and any write-back to OpenCTI) attributes the
+  // work to a real account. Stored as the member-picker option.
+  run_as?: { label: string; value: string };
   prompt?: string;
 }
 
@@ -33,6 +37,16 @@ const PLAYBOOK_AI_AGENT_SEND_COMPONENT_SCHEMA: JSONSchemaType<AiAgentSendConfigu
       type: 'string',
       $ref: 'AI agent',
       // Populated dynamically from the XTM One intent catalog at schema() time.
+      oneOf: [],
+    },
+    run_as: {
+      type: 'object',
+      $ref: 'Run as',
+      nullable: true,
+      default: null,
+      // Stored as the member-picker option ({ label, value }). The empty
+      // oneOf keeps AJV's JSONSchemaType satisfied without enumerating the
+      // option shape (same escape as the access-restrictions component).
       oneOf: [],
     },
     prompt: {
@@ -79,7 +93,7 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
     );
   },
   executor: async ({ playbookNode, bundle, playbookId }) => {
-    const { agent_slug, prompt } = playbookNode.configuration;
+    const { agent_slug, prompt, run_as } = playbookNode.configuration;
     if (!agent_slug) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] No agent configured, dropping playbook step', { playbookId });
       return { output_port: undefined, bundle, forceBundleTracking: true };
@@ -99,7 +113,7 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     const content = buildAgentMessageContent(bundle, prompt);
-    const rawResponse = await callXtmAgent(agent_slug, content);
+    const rawResponse = await callXtmAgent(agent_slug, content, resolveRunAsUserId(run_as));
     if (rawResponse === null) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] Agent call did not complete', {
         playbookId,

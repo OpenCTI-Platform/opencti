@@ -18,8 +18,12 @@ import xtmOneClient from '../../xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../../../domain/xtm-auth';
 import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import { logApp, PLATFORM_VERSION } from '../../../config/conf';
-import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../../utils/access';
+import { internalLoadById } from '../../../database/middleware-loader';
+import { ENTITY_TYPE_USER } from '../../../schema/internalObject';
+import { OPENCTI_ADMIN_UUID } from '../../../schema/general';
 import type { AuthContext } from '../../../types/user';
+import type { BasicStoreEntity } from '../../../types/store';
 import type { StixBundle } from '../../../types/stix-2-1-common';
 
 // 5 minutes — agent runs may take a while when the LLM has to materialise
@@ -109,6 +113,62 @@ export const isAgentBoundToIntent = async (
 };
 
 /**
+ * Normalize the component ``run_as`` configuration into a plain user id.
+ * The playbook form stores the member-picker selection as a
+ * ``{ label, value }`` option object, while hand-written / imported
+ * configs may carry a raw id string. Returns undefined when no run-as
+ * user is configured.
+ */
+export const resolveRunAsUserId = (
+  runAs?: string | { label?: string; value?: string } | null,
+): string | undefined => {
+  if (!runAs) return undefined;
+  if (typeof runAs === 'string') return runAs.trim() || undefined;
+  return runAs.value?.trim() || undefined;
+};
+
+/**
+ * Resolve the identity whose email is embedded in the cross-platform JWT
+ * sent to XTM One. When the component is configured with an explicit
+ * ``run_as`` user, the JWT is minted for that user so XTM One resolves a
+ * matching local account and any write-back to OpenCTI is attributed to
+ * a real, well-known user.
+ *
+ * When no run-as user is configured, it defaults to the seeded platform
+ * admin (``OPENCTI_ADMIN_UUID``) - a real, indexed account with a
+ * resolvable email - rather than the in-memory ``AUTOMATION_MANAGER_USER``,
+ * whose placeholder email cannot be resolved on the XTM One side.
+ *
+ * ``AUTOMATION_MANAGER_USER`` remains the last-resort fallback when the
+ * target user (explicit run-as or seeded admin) cannot be loaded, so the
+ * component degrades gracefully instead of failing.
+ */
+const resolveAgentJwtUser = async (
+  runAsUserId?: string,
+): Promise<{ id: string; user_email: string }> => {
+  const targetUserId = runAsUserId || OPENCTI_ADMIN_UUID;
+  try {
+    const context = executionContext('playbook_components');
+    const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
+      context,
+      SYSTEM_USER,
+      targetUserId,
+      { type: ENTITY_TYPE_USER },
+    );
+    if (user?.user_email) {
+      return { id: user.id, user_email: user.user_email };
+    }
+    logApp.warn('[PLAYBOOK AI AGENT] Run-as user not found, falling back to automation user', { runAsUserId: targetUserId });
+  } catch (e: unknown) {
+    logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve run-as user, falling back to automation user', {
+      runAsUserId: targetUserId,
+      cause: (e as Error).message,
+    });
+  }
+  return AUTOMATION_MANAGER_USER;
+};
+
+/**
  * Synchronous, non-streaming call to XTM One Platform Chat. Returns the
  * raw assistant content or null when the call cannot complete (XTM One
  * not configured, network failure, non-success status). Errors are
@@ -116,15 +176,15 @@ export const isAgentBoundToIntent = async (
  * deciding how to react (route to ``unmodified``, swallow at the end
  * of a chain, etc.) instead of crashing the whole run.
  *
- * The JWT is minted on behalf of the platform-internal
- * ``AUTOMATION_MANAGER_USER`` (the user that already drives every other
- * playbook side effect: stream events, RabbitMQ work, knowledge
- * mutations, ...), so XTM One sees the playbook agent calls as coming
- * from the same identity as the rest of the playbook engine.
+ * The JWT is minted on behalf of the configured ``run_as`` user (see
+ * ``resolveAgentJwtUser``) so XTM One - and any subsequent write-back to
+ * OpenCTI - sees the agent call as coming from that real account. When no
+ * run-as user is configured it defaults to the seeded platform admin.
  */
 export const callXtmAgent = async (
   agentSlug: string,
   content: string,
+  runAsUserId?: string,
 ): Promise<string | null> => {
   const xtmOneUrl = nconf.get('xtm:xtm_one_url');
   if (!xtmOneUrl || !xtmOneClient.isConfigured()) {
@@ -132,7 +192,8 @@ export const callXtmAgent = async (
     return null;
   }
   try {
-    const jwt = await issueXtmJwt(AUTOMATION_MANAGER_USER, xtmOneUrl);
+    const jwtUser = await resolveAgentJwtUser(runAsUserId);
+    const jwt = await issueXtmJwt(jwtUser, xtmOneUrl);
     const httpClient = getHttpClient({
       baseURL: xtmOneUrl,
       responseType: 'json',
