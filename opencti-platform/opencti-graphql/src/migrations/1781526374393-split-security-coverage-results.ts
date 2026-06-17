@@ -10,6 +10,7 @@ import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { pushAll } from '../utils/arrayUtil';
 import type { BasicStoreObject, BasicStoreRelation } from '../types/store';
+import { ABSTRACT_BASIC_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 const message = '[MIGRATION] Separate results data of Security Coverage into dedicated objects';
 
@@ -19,7 +20,7 @@ interface OldSecurityCoverage extends BasicStoreEntitySecurityCoverage {
   coverage_last_result?: string;
   coverage_valid_from?: string;
   coverage_valid_to?: string;
-  coverage_information?: {
+  coverage_information: {
     coverage_name: string;
     coverage_score: number;
   }[];
@@ -46,6 +47,30 @@ export const up = async (next: (error?: Error) => void) => {
   );
   logMigration.info(`${message} > ${allHasCoveredRelationships.length} Has-Covered relationships found`);
 
+  const hasCoveredRelationshipsByFromId = new Map<string, BasicStoreRelation[]>();
+  for (const relation of allHasCoveredRelationships) {
+    const existing = hasCoveredRelationshipsByFromId.get(relation.fromId) ?? [];
+    existing.push(relation);
+    hasCoveredRelationshipsByFromId.set(relation.fromId, existing);
+  }
+
+  const allCoveredEntityIds = [...new Set(allHasCoveredRelationships.map((relationship) => relationship.toId))];
+
+  const allCoveredEntitiesResult = await internalFindByIds<BasicStoreObject>(
+    context,
+    SYSTEM_USER,
+    allCoveredEntityIds,
+    { baseData: true },
+  );
+
+  const allCoveredEntities: BasicStoreObject[] = Array.isArray(allCoveredEntitiesResult)
+    ? allCoveredEntitiesResult
+    : [];
+
+  const coveredEntitiesIndexById = new Map<string, string>(
+    allCoveredEntities.map((entity) => [entity.internal_id, entity._index]),
+  );
+
   // Starting the bulk operations
   const bulkOperations: any[] = [];
 
@@ -67,9 +92,7 @@ export const up = async (next: (error?: Error) => void) => {
     // Want to create a result if there is results data,
     // Or an external_uri is set because we can have a result instantiate by OpenAEV but without data yet,
     // Or if there is has-covered relationship
-    const securityCoverageHasCoveredRelationships = allHasCoveredRelationships.filter((relation) => relation.fromRole === 'has-covered_from' && relation.fromId === sc.internal_id);
-    console.log('--------------', { id: sc.internal_id, securityCoverageHasCoveredRelationships });
-
+    const securityCoverageHasCoveredRelationships = hasCoveredRelationshipsByFromId.get(sc.internal_id) || [];
     if (external_uri || (coverage_information ?? []).length > 0 || securityCoverageHasCoveredRelationships.length > 0) {
       const securityCoverageResultInput = {
         name: `Result of ${sc.name}`,
@@ -103,7 +126,13 @@ export const up = async (next: (error?: Error) => void) => {
               old_id: sc.internal_id,
               new_id: result.internal_id,
               new_name: result.name,
-              new_types: [ENTITY_TYPE_SECURITY_COVERAGE_RESULT, 'Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+              new_types: [
+                ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
+                ABSTRACT_BASIC_OBJECT,
+                ABSTRACT_STIX_OBJECT,
+                ABSTRACT_STIX_CORE_OBJECT,
+                ABSTRACT_STIX_DOMAIN_OBJECT,
+              ],
             },
             source: "def connection = ctx._source.connections.find(conn -> conn.role == 'has-covered_from');"
               + 'if (connection != null) {'
@@ -118,25 +147,20 @@ export const up = async (next: (error?: Error) => void) => {
       });
 
       // Second operation : add list of has-covered entities to SCR
-      const coveredEntitiesIds = securityCoverageHasCoveredRelationships.map((relation) => relation.toId);
+      const coveredEntitiesIds = [...new Set(securityCoverageHasCoveredRelationships.map((relation) => relation.toId))];
       const updateSCRQuery = [
         { update: { _index: result._index, _id: result.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
         { script: { params: { covered_entities_ids: coveredEntitiesIds }, source: 'ctx._source["rel_has-covered.internal_id"] = params.covered_entities_ids;' } },
       ];
       pushAll(bulkOperations, updateSCRQuery);
 
-      // Third operation : In covered entities : each SC is beeing replaced with corresponding SCR
-      const coveredEntities = await internalFindByIds<BasicStoreObject>(context, SYSTEM_USER, coveredEntitiesIds) as BasicStoreObject[];
-      if (!Array.isArray(coveredEntities)) {
-        throw new Error(`${message} > internalFindByIds did not return an array`);
-      }
-      const coveredEntitiesIdsAndIndex = coveredEntities.map((coveredEntity) => {
-        return {
-          internalId: coveredEntity?.internal_id,
-          index: coveredEntity?._index,
-        };
-      });
-      coveredEntitiesIdsAndIndex.forEach((coveredEntity) => {
+      // Third operation : In covered entities : each SC is replaced with corresponding SCR
+      const coveredEntitiesIdsAndIndexes = coveredEntitiesIds.map((id) => ({
+        internalId: id,
+        index: coveredEntitiesIndexById.get(id),
+      }));
+      coveredEntitiesIdsAndIndexes.forEach((coveredEntity) => {
+        if (!coveredEntity.index) return;
         const query = [
           { update: { _index: coveredEntity.index, _id: coveredEntity.internalId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
           { script: {
@@ -175,7 +199,7 @@ export const up = async (next: (error?: Error) => void) => {
     }
   }
 
-  // Apply operations.
+  // Step 3 -> Apply operations.
   const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
   let currentProcessing = 0;
   const concurrentUpdate = async (bulk: any[][]) => {
