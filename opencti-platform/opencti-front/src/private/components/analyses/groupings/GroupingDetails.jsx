@@ -32,6 +32,12 @@ const GroupingDetailsComponent = (props) => {
         mode: 'and',
         filters: [
           {
+            key: 'fromId',
+            values: [grouping.id],
+            operator: 'eq',
+            mode: 'or',
+          },
+          {
             key: 'relationship_type',
             values: [
               'object',
@@ -65,17 +71,13 @@ const GroupingDetailsComponent = (props) => {
           </Grid>
           <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
             <StixRelationshipsHorizontalBars
-              isWidget={false}
-              fromId={grouping.id}
               config={{
                 startDate: null,
                 endDate: null,
               }}
-              relationshipType="object"
               dataSelection={entitiesDistributionDataSelection}
               parameters={{ title: 'Entities distribution' }}
               variant="inEntity"
-              isReadOnly={true}
             />
           </Grid>
         </Grid>
