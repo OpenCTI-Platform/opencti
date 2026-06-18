@@ -3319,6 +3319,7 @@
   "Password": "Kennwort",
   "Password field": "Passwort-Feld",
   "Password security policies": "Passwort-Sicherheitsrichtlinien",
+  "Password valid until": "Passwort gültig bis",
   "Password validation": "Passwort-Überprüfung",
   "password will be cleaned: you will not be able to log in to ui with this service account given there will be no password in Database for this service account.": "passwort wird bereinigt: Sie können sich mit diesem Dienstkonto nicht in die Benutzeroberfläche einloggen, da kein Passwort in der Datenbank für dieses Dienstkonto vorhanden ist.",
   "Paste": "Einfügen",

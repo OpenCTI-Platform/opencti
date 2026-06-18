@@ -3319,6 +3319,7 @@
   "Password": "Password",
   "Password field": "Campo password",
   "Password security policies": "Politiche di sicurezza della password",
+  "Password valid until": "Password valida fino al",
   "Password validation": "Convalida della password",
   "password will be cleaned: you will not be able to log in to ui with this service account given there will be no password in Database for this service account.": "la password verrà ripulita: non sarà possibile accedere all'interfaccia utente con questo account di servizio, poiché non ci sarà alcuna password nel database per questo account di servizio.",
   "Paste": "Incolla",

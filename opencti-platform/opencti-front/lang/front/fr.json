@@ -3319,6 +3319,7 @@
   "Password": "Mot de passe",
   "Password field": "Champ mot de passe",
   "Password security policies": "Politiques de sécurité des mots de passe",
+  "Password valid until": "Mot de passe valable jusqu'au",
   "Password validation": "Validation du mot de passe",
   "password will be cleaned: you will not be able to log in to ui with this service account given there will be no password in Database for this service account.": "le mot de passe sera nettoyé : vous ne pourrez pas vous connecter à l'interface utilisateur avec ce compte de service étant donné qu'il n'y aura pas de mot de passe dans la base de données pour ce compte de service.",
   "Paste": "Coller",
