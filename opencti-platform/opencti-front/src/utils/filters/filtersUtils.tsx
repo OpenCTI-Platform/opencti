@@ -525,8 +525,8 @@ export function normalizeFilterGroupForBackend(
         key: Array.isArray(f.key) ? f.key : [f.key],
       })),
     filterGroups: filterGroup.filterGroups
-      .filter((fg) => fg && isFilterGroupNotEmpty(fg))
-      .map((fg) => normalizeFilterGroupForBackend(fg)),
+      .map((fg) => normalizeFilterGroupForBackend(fg))
+      .filter((fg) => fg && isFilterGroupNotEmpty(fg)),
   } as GqlFilterGroup;
 }
 
@@ -897,8 +897,8 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
     filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filters.filters
       .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))),
     filterGroups: filters.filterGroups
-      .filter((fg) => fg && isFilterGroupNotEmpty(fg))
-      .map((fg) => removeIdAndIncorrectKeysFromFilterGroupObject(fg, availableFilterKeys)) as FilterGroup[],
+      .map((fg) => removeIdAndIncorrectKeysFromFilterGroupObject(fg, availableFilterKeys))
+      .filter((fg) => fg && isFilterGroupNotEmpty(fg)) as FilterGroup[],
   };
 };
 
