@@ -6,13 +6,45 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
-import { Stack } from '@mui/material';
+import { Stack, useTheme } from '@mui/material';
 import CodeBlock from '@components/common/CodeBlock';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
-import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
+import type { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
+
+// ─── Shared style constants ──────────────────────────────────────────
+
+const modeBadgeSx = {
+  textTransform: 'uppercase',
+  fontWeight: 'bold',
+  borderRadius: '24px',
+  padding: '8px 16px',
+  fontFamily: 'Consolas, monaco, monospace',
+  backgroundColor: 'primary.dark',
+} as const;
+
+const operatorBadgeSx = {
+  textTransform: 'uppercase',
+  fontFamily: 'Consolas, monaco, monospace',
+  backgroundColor: 'rgba(74, 117, 162, 0.8)',
+  fontWeight: 'bold',
+  display: 'inline-block',
+  margin: '0 8px',
+  padding: '8px',
+} as const;
+
+const inlineModeBadgeSx = {
+  textTransform: 'uppercase',
+  fontFamily: 'Consolas, monaco, monospace',
+  backgroundColor: 'action.selected',
+  fontWeight: 'bold',
+  display: 'inline-block',
+  padding: '8px',
+} as const;
+
+// ─── DisplayFiltersValues ────────────────────────────────────────────
 
 interface DisplayFiltersValuesProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
@@ -30,20 +62,15 @@ const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
     <>
       {values.map((value, j) => (
         <Fragment key={value}>
-          <span key={value}>
+          <span>
             {' '}
-            {filtersRepresentativesMap.get(value) ? filtersRepresentativesMap.get(value)?.value : value}{' '}
+            {filtersRepresentativesMap.get(value)?.value ?? value}{' '}
           </span>
           {j + 1 < values.length && (
             <Box
               sx={{
-                paddingTop: 2,
-                textTransform: 'uppercase',
-                fontFamily: 'Consolas, monaco, monospace',
-                backgroundColor: mode ? 'rgba(255, 255, 255, .1)' : 'rgba(255, 255, 255, .0)',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                padding: '8px',
+                ...inlineModeBadgeSx,
+                backgroundColor: mode ? 'rgba(255, 255, 255, .1)' : 'transparent',
               }}
             >
               {t_i18n(mode ?? 'or')}
@@ -54,6 +81,8 @@ const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
     </>
   );
 };
+
+// ─── DisplayFiltersFilterGroups ──────────────────────────────────────
 
 interface DisplayFilterGroupsProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
@@ -77,56 +106,42 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
         <>
           {values
             .filter((v) => v.key === 'relationship_type')
-            .flat()
-            .map((value) => {
-              return (
-                <span key="relationship_type">
-                  <DisplayFiltersValues
-                    filtersRepresentativesMap={filtersRepresentativesMap}
-                    values={value.values}
-                  />
-                </span>
-              );
-            })}
-          {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
-            && (
-              <Box
-                sx={{
-                  paddingTop: 2,
-                  textTransform: 'uppercase',
-                  fontFamily: 'Consolas, monaco, monospace',
-                  backgroundColor: 'rgba(255, 255, 255, .1)',
-                  fontWeight: 'bold',
-                  display: 'inline-block',
-                  margin: '0 8px',
-                  padding: '8px',
-                }}
-              >
-                {t_i18n('WITH')}
-              </Box>
-            )
-          }
-          {values.filter((v) => v.key === 'id').flat().map((value) => {
-            return (
-              <span key="id">
+            .map((value) => (
+              <span key="relationship_type">
                 <DisplayFiltersValues
                   filtersRepresentativesMap={filtersRepresentativesMap}
                   values={value.values}
                 />
               </span>
-            );
-          })}
-          {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
-            return (
-              <span key="id">
-                <DisplayFiltersFilterGroups
-                  filterGroups={value.values}
-                  filtersRepresentativesMap={filtersRepresentativesMap}
-                  filterMode="and"
-                />
-              </span>
-            );
-          })}
+            ))}
+          {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0 && (
+            <Box
+              sx={{
+                ...inlineModeBadgeSx,
+                backgroundColor: 'rgba(255, 255, 255, .1)',
+                margin: '0 8px',
+              }}
+            >
+              {t_i18n('WITH')}
+            </Box>
+          )}
+          {values.filter((v) => v.key === 'id').map((value) => (
+            <span key="regardingOf-id">
+              <DisplayFiltersValues
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                values={value.values}
+              />
+            </span>
+          ))}
+          {values.filter((v) => v.key === 'dynamic').map((value) => (
+            <span key="regardingOf-dynamic">
+              <DisplayFiltersFilterGroups
+                filterGroups={value.values}
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                filterMode="and"
+              />
+            </span>
+          ))}
         </>
       );
     }
@@ -157,7 +172,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
       const { key, operator, id } = f;
       return (
         <Box
-          key={id ?? key}
+          key={id ?? `${key}-${i}`}
           sx={{
             display: 'grid',
             gridTemplateColumns: 'auto 1fr',
@@ -166,17 +181,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
           }}
         >
           {i !== 0 && (
-            <Box
-              sx={{
-                textTransform: 'uppercase',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                borderRadius: '24px',
-                padding: '8px 16px',
-                fontFamily: 'Consolas, monaco, monospace',
-                backgroundColor: '#01478d',
-              }}
-            >
+            <Box sx={{ ...modeBadgeSx, display: 'inline-block' }}>
               {parentMode}
             </Box>
           )}
@@ -192,18 +197,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             }}
           >
             <span>{t_i18n(key)}</span>
-            <Box
-              sx={{
-                textTransform: 'uppercase',
-                fontFamily: 'Consolas, monaco, monospace',
-                backgroundColor: 'rgb(74 117 162)',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                margin: '0 8px',
-                padding: '8px',
-              }}
-            >
-              {' '}
+            <Box sx={operatorBadgeSx}>
               {operator}
             </Box>
             <Box sx={{ display: 'inline-block' }}>
@@ -215,64 +209,54 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
     });
   };
 
-  return filterGroups.map((f, i) => {
-    return (
-      <Fragment key={i}>
-        {i !== 0 && (
-          <Box
-            sx={{
-              textTransform: 'uppercase',
-              fontWeight: 'bold',
-              display: 'inline-block',
-              borderRadius: '24px',
-              padding: '8px 16px',
-              fontFamily: 'Consolas, monaco, monospace',
-              height: 'fit-content',
-              backgroundColor: '#01478d',
-              marginBottom: '8px',
-            }}
-          >
-            {filterMode}
-          </Box>
-        )}
+  return filterGroups.map((f, i) => (
+    <Fragment key={`filter-group-${i}`}>
+      {i !== 0 && (
         <Box
           sx={{
-            padding: '16px',
-            backgroundColor: 'rgba(0,0,0, 0.1)',
-            marginBottom: '16px',
+            ...modeBadgeSx,
+            display: 'inline-block',
+            height: 'fit-content',
+            marginBottom: '8px',
           }}
         >
-          <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
-            {displayFilterFilters(f.filters, f.mode)}
-          </Stack>
-          {f.filterGroups.length > 0 && (
-            <Stack direction="row">
-              <Box
-                sx={{
-                  textTransform: 'uppercase',
-                  fontWeight: 'bold',
-                  borderRadius: '24px',
-                  padding: '8px 16px',
-                  fontFamily: 'Consolas, monaco, monospace',
-                  backgroundColor: '#01478d',
-                  marginRight: '8px',
-                  height: 'fit-content',
-                }}
-              >
-                {f.mode}
-              </Box>
-              <DisplayFiltersFilterGroups
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                filterGroups={f.filterGroups}
-                filterMode={filterMode}
-              />
-            </Stack>
-          )}
+          {filterMode}
         </Box>
-      </Fragment>
-    );
-  });
+      )}
+      <Box
+        sx={{
+          padding: '16px',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          marginBottom: '16px',
+        }}
+      >
+        <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
+          {displayFilterFilters(f.filters, f.mode)}
+        </Stack>
+        {f.filterGroups.length > 0 && (
+          <Stack direction="row">
+            <Box
+              sx={{
+                ...modeBadgeSx,
+                marginRight: '8px',
+                height: 'fit-content',
+              }}
+            >
+              {f.mode}
+            </Box>
+            <DisplayFiltersFilterGroups
+              filtersRepresentativesMap={filtersRepresentativesMap}
+              filterGroups={f.filterGroups}
+              filterMode={filterMode}
+            />
+          </Stack>
+        )}
+      </Box>
+    </Fragment>
+  ));
 };
+
+// ─── DisplayFilterGroup (main export) ────────────────────────────────
 
 interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
@@ -290,12 +274,10 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
   const { filterGroups } = filterObj;
   const [open, setOpen] = useState(false);
   const { t_i18n } = useFormatter();
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const theme = useTheme();
+
+  const handleClickOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   return (
     <>
@@ -310,7 +292,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
             textOverflow: 'ellipsis',
             display: 'flex',
             alignItems: 'center',
-            gap: 4,
+            gap: 0.5,
           },
         }}
         color="warning"
@@ -333,15 +315,15 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         aria-describedby="Show Filter groups configuration"
       >
         <DialogTitle id="filter-groups-dialog-title">
-          {t_i18n('Filter group configuration')}
+          {t_i18n('Imbricated filter groups')}
         </DialogTitle>
         <DialogContent>
           <Typography
             variant="h3"
             sx={{ textTransform: 'none' }}
-            gutterBottom={true}
+            gutterBottom
           >
-            <div style={{ marginBottom: '8px' }}>
+            <div style={{ marginBottom: theme.spacing(1) }}>
               {t_i18n('This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here are information about the content of the filter object.')}
             </div>
             {t_i18n('Your filter group cannot be modified yet:')}
@@ -354,7 +336,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
           <Typography
             variant="h3"
             sx={{ textTransform: 'none' }}
-            gutterBottom={true}
+            gutterBottom
           >
             {t_i18n('The complete Filter object is as follows:')}
           </Typography>
@@ -363,7 +345,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
             language="json"
           />
         </DialogContent>
-        <DialogActions sx={{ marginRight: '16px', marginBottom: '16px' }}>
+        <DialogActions sx={{ mr: 2, mb: 2 }}>
           <Button onClick={handleClose} autoFocus>
             {t_i18n('Close')}
           </Button>
