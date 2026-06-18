@@ -570,6 +570,7 @@ const isTransitoryError = (error: any): boolean => {
 
   const errorText = [
     ...collectErrorFieldValues(error, 'message'),
+    ...collectErrorFieldValues(error, 'reason'),
     ...collectErrorFieldValues(error, 'type'),
     ...collectErrorFieldValues(error, 'name'),
     ...collectErrorFieldValues(error, 'stack'),
