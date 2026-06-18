@@ -222,7 +222,7 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
     context: {},
   });
 
-  it('pushes creator id and their participate-to org IDs for AUTHOR', async () => {
+  it('pushes only the participate-to org IDs for AUTHOR (not the creator itself)', async () => {
     const { storeLoadById } = await import('../../../src/database/middleware-loader');
     const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
     vi.mocked(storeLoadById).mockResolvedValue({ 'participate-to': ['org-id'] } as any);
@@ -235,14 +235,13 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
       ctx.context, ctx.user,
       expect.objectContaining({
         input: [
-          { id: 'creator-user-id', access_right: 'edit', groups_restriction_ids: ['group-1'] },
           { id: 'org-id', access_right: 'edit', groups_restriction_ids: ['group-1'] },
         ],
       }),
     );
   });
 
-  it('pushes only the creator id when the user has no participate-to orgs', async () => {
+  it('produces empty resolved list when creator has no participate-to orgs', async () => {
     const { storeLoadById } = await import('../../../src/database/middleware-loader');
     const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
     vi.mocked(storeLoadById).mockResolvedValue({} as any);
@@ -253,9 +252,7 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
     });
     expect(editAuthorizedMembers).toHaveBeenCalledWith(
       ctx.context, ctx.user,
-      expect.objectContaining({
-        input: [{ id: 'creator-user-id', access_right: 'edit', groups_restriction_ids: [] }],
-      }),
+      expect.objectContaining({ input: [] }),
     );
   });
 
@@ -271,7 +268,7 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
     );
   });
 
-  it('still pushes creator id when storeLoadById rejects', async () => {
+  it('produces empty resolved list when storeLoadById rejects', async () => {
     const { storeLoadById } = await import('../../../src/database/middleware-loader');
     const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
     vi.mocked(storeLoadById).mockRejectedValue(new Error('DB unavailable'));
@@ -282,9 +279,7 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
     });
     expect(editAuthorizedMembers).toHaveBeenCalledWith(
       ctx.context, ctx.user,
-      expect.objectContaining({
-        input: [{ id: 'some-id', access_right: 'edit', groups_restriction_ids: [] }],
-      }),
+      expect.objectContaining({ input: [] }),
     );
   });
 
@@ -303,9 +298,7 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
       ctx.context, ctx.user,
       expect.objectContaining({
         input: [
-          { id: 'user-1', access_right: 'view', groups_restriction_ids: [] },
           { id: 'org-a', access_right: 'view', groups_restriction_ids: [] },
-          { id: 'user-2', access_right: 'view', groups_restriction_ids: [] },
           { id: 'org-b', access_right: 'view', groups_restriction_ids: [] },
         ],
       }),
