@@ -181,7 +181,7 @@ export const userWithOrigin = (req, user, originHeaders = {}) => {
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
+    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata, sessionId: req?.sessionID },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
