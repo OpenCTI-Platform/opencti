@@ -13,7 +13,6 @@ import { AccessRight, type AuthorizedMemberOption } from '../../utils/authorized
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import Security from '../../utils/Security';
-import useHelper from '../../utils/hooks/useHelper';
 
 const savedFilterFieldPatchMutation = graphql`
   mutation SavedFilterEditDialogFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -77,9 +76,6 @@ const SavedFilterEditDialog = ({
   const { me } = useAuth();
   const hasShareFilterCapability = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
 
-  const { isFeatureEnable } = useHelper();
-  const isSharingSavedFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
-
   const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
   const [commitFieldPatch] = useApiMutation(
@@ -105,7 +101,7 @@ const SavedFilterEditDialog = ({
     }
 
     // Update authorized members
-    if (isSharingSavedFiltersFeatureEnabled && hasShareFilterCapability && values.authorized_members) {
+    if (hasShareFilterCapability && values.authorized_members) {
       const memberAccessInput = values.authorized_members.map((m: AuthorizedMemberOption) => ({
         id: m.value,
         access_right: m.accessRight,
@@ -158,16 +154,12 @@ const SavedFilterEditDialog = ({
               value={values.name}
               onChange={(e) => setFieldValue('name', e.target.value)}
             />
-            {isSharingSavedFiltersFeatureEnabled
-              && (
-                <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
-                  <SavedFilterSharingSection
-                    owner={owner}
-                    isEditMode
-                  />
-                </Security>
-              )
-            }
+            <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
+              <SavedFilterSharingSection
+                owner={owner}
+                isEditMode
+              />
+            </Security>
             <DialogActions>
               <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={!values.name}>{t_i18n('Save')}</Button>

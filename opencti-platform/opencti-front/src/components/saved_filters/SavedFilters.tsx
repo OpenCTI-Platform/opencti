@@ -3,13 +3,12 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
-import useHelper from '../../utils/hooks/useHelper';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSelection, { type SavedFiltersSelectionData } from './SavedFilterSelection';
 import SavedFiltersAutocomplete from './SavedFiltersAutocomplete';
 
 const savedFiltersQuery = graphql`
-  query SavedFiltersQuery($filters: FilterGroup, $skipSharedFilters: Boolean!) {
+  query SavedFiltersQuery($filters: FilterGroup) {
     savedFilters(first: 100, filters: $filters) @connection(key: "SavedFilters_savedFilters") {
       edges {
         node {
@@ -18,8 +17,8 @@ const savedFiltersQuery = graphql`
           filters
           scope
           creator_id
-          currentUserAccessRight @skip(if: $skipSharedFilters)
-          authorizedMembers @skip(if: $skipSharedFilters) {
+          currentUserAccessRight
+          authorizedMembers {
             id
             name
             entity_type
@@ -65,17 +64,14 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
     },
   } = useDataTableContext();
 
-  const { isFeatureEnable } = useHelper();
-  const isSharedFiltersEnabled = isFeatureEnable('SHARE_FILTERS');
-
   const filters = getSavedFilterScopeFilter(localStorageKey);
-  const queryOptions = { filters, skipSharedFilters: !isSharedFiltersEnabled } as unknown as SavedFiltersQuery$variables;
+  const queryOptions = { filters } as unknown as SavedFiltersQuery$variables;
 
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
 
   const handleRefetch = useCallback(() => {
     loadQuery(queryOptions, { fetchPolicy: 'network-only' });
-  }, [loadQuery, localStorageKey, isSharedFiltersEnabled]);
+  }, [loadQuery, localStorageKey]);
 
   const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
   if (isRestrictedStorageKey) return null;

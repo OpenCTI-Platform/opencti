@@ -13,7 +13,6 @@ import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
-import useHelper from '../../utils/hooks/useHelper';
 import { type AuthorizedMemberOption } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
@@ -53,9 +52,6 @@ interface SavedFilterFormValues {
 const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: SavedFilterDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-
-  const { isFeatureEnable } = useHelper();
-  const isSharingSavedFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
 
   const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
@@ -136,15 +132,11 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
               value={filterName}
               onChange={handleChange}
             />
-            {isSharingSavedFiltersFeatureEnabled
-              && (
-                <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
-                  <SavedFilterSharingSection
-                    owner={owner}
-                  />
-                </Security>
-              )
-            }
+            <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
+              <SavedFilterSharingSection
+                owner={owner}
+              />
+            </Security>
             <DialogActions>
               <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={!filterName}>{t_i18n('Save')}</Button>

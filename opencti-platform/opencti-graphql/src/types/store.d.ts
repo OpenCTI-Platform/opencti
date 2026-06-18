@@ -734,6 +734,12 @@ interface BasicGroupEntity extends BasicStoreEntity {
   auto_integration_assignation: string[];
 }
 
+interface BasicCapabilityEntity extends BasicStoreCommon {
+  name: string;
+  description?: string;
+  attribute_order?: number;
+}
+
 interface BasicOrganizationEntity extends BasicStoreEntity {
   [RELATION_PARTICIPATE_TO]: string[];
 }
