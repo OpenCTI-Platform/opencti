@@ -6,8 +6,7 @@ import { compose } from 'ramda';
 import * as Yup from 'yup';
 import withStyles from '@mui/styles/withStyles';
 import { Stack } from '@mui/material';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import FormHelperText from '@mui/material/FormHelperText';
 import Button from '@common/button/Button';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
@@ -45,6 +44,30 @@ const userValidation = (t) => Yup.object().shape({
 });
 
 class UserEditionPasswordComponent extends Component {
+  formatExpiryDate(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return new Intl.DateTimeFormat('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
+  }
+
+  handleForcePasswordChange() {
+    commitMutation({
+      mutation: userMutationFieldPatch,
+      variables: {
+        id: this.props.user.id,
+        input: { key: 'password_valid_until', value: [new Date().toISOString()] },
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('Password change will be required at next login');
+      },
+    });
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
     const field = { key: 'password', value: values.password };
     commitMutation({
@@ -62,19 +85,11 @@ class UserEditionPasswordComponent extends Component {
     });
   }
 
-  handleToggleForcePasswordChange(event) {
-    commitMutation({
-      mutation: userMutationFieldPatch,
-      variables: {
-        id: this.props.user.id,
-        input: { key: 'force_password_change', value: [String(event.target.checked)] },
-      },
-    });
-  }
-
   render() {
     const { classes, t } = this.props;
     const external = this.props.user.external === true;
+    const isLocked = this.props.user.account_status === 'Locked';
+    const formattedExpiry = this.formatExpiryDate(this.props.user.password_valid_until);
     const initialValues = { password: '', confirmation: '' };
     return (
       <Formik
@@ -122,19 +137,16 @@ class UserEditionPasswordComponent extends Component {
               fullWidth={true}
               style={{ marginTop: 20 }}
             />
-            <FormControlLabel
-              style={{ marginLeft: 0, marginTop: 30 }}
-              control={(
-                <Switch
-                  checked={this.props.user.force_password_change ?? false}
-                  onChange={this.handleToggleForcePasswordChange.bind(this)}
-                  disabled={external}
-                  color="primary"
-                />
-              )}
-              label={t('Force password change on next login')}
-            />
             <div className={classes.buttons}>
+              {!external && !isLocked && (
+                <Button
+                  variant="secondary"
+                  onClick={this.handleForcePasswordChange.bind(this)}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Force password change')}
+                </Button>
+              )}
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
@@ -143,6 +155,11 @@ class UserEditionPasswordComponent extends Component {
                 {t('Update')}
               </Button>
             </div>
+            {formattedExpiry && (
+              <FormHelperText style={{ marginTop: 8 }}>
+                {`Expiry: ${formattedExpiry}`}
+              </FormHelperText>
+            )}
           </Form>
         )}
       </Formik>
@@ -166,7 +183,8 @@ const UserEditionPassword = createFragmentContainer(
       fragment UserEditionPassword_user on User {
         id
         external
-        force_password_change
+        account_status
+        password_valid_until
       }
     `,
   },

@@ -1933,7 +1933,13 @@ const internalAuthenticateUser = async (context, req, user) => {
  * @param {AuthUser} user
  * @returns {boolean}
  */
-export const isPasswordExpired = (user) => user.password_valid_until != null && utcDate().isAfter(utcDate(user.password_valid_until));
+export const isPasswordExpired = (user) => {
+  if (user.password_valid_until == null) {
+    return false;
+  }
+  // Use an inclusive comparison: if validity is set to "now", login must be blocked immediately.
+  return !utcDate().isBefore(utcDate(user.password_valid_until));
+};
 
 /**
  * Validates a user before granting authorization.
@@ -1998,7 +2004,7 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
     logged = platformUsers.get(user.internal_id);
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  validateUser(logged, settings, { skipForcePasswordCheck: true });
+  validateUser(logged, settings);
   const withOrigin = userWithOrigin(req, logged);
   const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session
