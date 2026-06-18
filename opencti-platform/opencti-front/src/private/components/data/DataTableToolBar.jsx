@@ -99,7 +99,7 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
-import { isFeatureEnable } from '../../../utils/platformModulesHelper';
+
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 
 const styles = (theme) => ({
@@ -2199,7 +2199,7 @@ class DataTableToolBar extends Component {
         {({ schema, settings, me }) => {
           const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
           const isInDraft = me.draftContext;
-          const isBulkEnrollEnabled = isFeatureEnable(settings, 'BULK_ENROLLMENT');
+
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -2561,7 +2561,7 @@ class DataTableToolBar extends Component {
                         </Security>
                       </>
                     )}
-                    {isBulkEnrollEnabled && !isInDraft
+                    {!isInDraft
                       && (!taskScope || taskScope === 'KNOWLEDGE')
                       && !disableBulkEnroll
                       && (

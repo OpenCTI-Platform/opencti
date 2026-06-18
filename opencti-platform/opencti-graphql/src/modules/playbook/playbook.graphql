@@ -105,12 +105,12 @@ type Query {
     ): PlaybookConnection @auth(for: [AUTOMATION])
     playbookComponents: [PlaybookComponent]! @auth(for: [AUTOMATION])
     playbooksForEntity(id: String!): [Playbook] @auth(for: [AUTOMATION])
-    playbooksForEnrollment(ids: [String!]!): [Playbook] @auth(for: [AUTOMATION]) @ff(flags: ["BULK_ENROLLMENT"])
+    playbooksForEnrollment(ids: [String!]!): [Playbook] @auth(for: [AUTOMATION])
     playbooksForEnrollmentByFilters(
         filters: FilterGroup
         search: String
         excludedIds: [String!]
-    ): [Playbook!]! @auth(for: [AUTOMATION]) @ff(flags: ["BULK_ENROLLMENT"])
+    ): [Playbook!]! @auth(for: [AUTOMATION])
     playbookManagerInfo: PlaybookManager @auth(for: [AUTOMATION])
 }
 
