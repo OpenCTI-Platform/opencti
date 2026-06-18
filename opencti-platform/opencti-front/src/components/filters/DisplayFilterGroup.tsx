@@ -319,13 +319,16 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         </DialogTitle>
         <DialogContent>
           <Typography
+            variant="body2"
+            sx={{ marginBottom: theme.spacing(2) }}
+          >
+            {t_i18n('This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is information about the content of the filter object.')}
+          </Typography>
+          <Typography
             variant="h3"
             sx={{ textTransform: 'none' }}
             gutterBottom
           >
-            <div style={{ marginBottom: theme.spacing(1) }}>
-              {t_i18n('This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here are information about the content of the filter object.')}
-            </div>
             {t_i18n('Your filter group cannot be modified yet:')}
           </Typography>
           <DisplayFiltersFilterGroups
