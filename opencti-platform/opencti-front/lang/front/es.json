@@ -3338,6 +3338,7 @@
   "Password": "Contraseña",
   "Password field": "Campo de contraseña",
   "Password security policies": "Políticas de seguridad de contraseñas",
+  "Password valid until": "Contraseña válida hasta el",
   "Password validation": "Validación de contraseña",
   "password will be cleaned: you will not be able to log in to ui with this service account given there will be no password in Database for this service account.": "se limpiará la contraseña: no podrá iniciar sesión en la ui con esta cuenta de servicio dado que no habrá contraseña en la base de datos para esta cuenta de servicio.",
   "Paste": "Pegar",

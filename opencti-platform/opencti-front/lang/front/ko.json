@@ -3338,6 +3338,7 @@
   "Password": "비밀번호",
   "Password field": "비밀번호 필드",
   "Password security policies": "비밀번호 보안 정책",
+  "Password valid until": "비밀번호 유효 기간:",
   "Password validation": "비밀번호 확인 중",
   "password will be cleaned: you will not be able to log in to ui with this service account given there will be no password in Database for this service account.": "비밀번호가 삭제됩니다: 이 서비스 계정의 데이터베이스에 비밀번호가 없으므로 이 서비스 계정으로 UI에 로그인할 수 없습니다.",
   "Paste": "붙여넣기",
