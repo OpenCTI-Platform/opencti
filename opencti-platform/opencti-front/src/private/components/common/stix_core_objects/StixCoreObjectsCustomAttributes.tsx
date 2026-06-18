@@ -42,6 +42,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         description
         report_types
         content
+        modified
+        updated_at
         objectAssignee {
           id
           name
@@ -58,6 +60,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         description
         context
         content
+        modified
+        updated_at
       }
       ... on Campaign {
         name
@@ -65,12 +69,16 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         objective
         first_seen
         last_seen
+        modified
+        updated_at
       }
       ... on MalwareAnalysis {
         product
         result_name
         result
         submitted
+        modified
+        updated_at
         analysis_started
         analysis_ended
         version
@@ -94,6 +102,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         description
         priority
         severity
+        modified
+        updated_at
         response_types
         objectAssignee {
           name
@@ -109,6 +119,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         description
         priority
         severity
+        modified
+        updated_at
         information_types
         content
         objectAssignee {
@@ -126,6 +138,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         priority
         severity
         takedown_types
+        modified
+        updated_at
         content
         objectAssignee {
           name
@@ -139,6 +153,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
       ... on Incident {
         name
         description
+        modified
+        updated_at
         objectParticipant {
           id
           name
@@ -159,6 +175,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         indicator_types
         pattern
         valid_from
+        modified
+        updated_at
         valid_until
         x_opencti_score
         x_opencti_detection
@@ -176,6 +194,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         description
         infrastructure_types
         first_seen
+        modified
+        updated_at
         last_seen
         killChainPhases {
           id
@@ -191,6 +211,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         first_seen
         last_seen
         sophistication
+        modified
+        updated_at
         resource_level
         primary_motivation
         secondary_motivations
@@ -212,6 +234,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         roles
         eye_color
         hair_color
+        modified
+        updated_at
         height {
           measure
           date_seen
@@ -240,6 +264,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         primary_motivation
         secondary_motivations
         goals
+        modified
+        updated_at
       }
       ... on Malware {
         name
@@ -247,6 +273,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         malware_types
         is_family
         first_seen
+        modified
+        updated_at
         last_seen
         architecture_execution_envs
         implementation_languages
@@ -263,12 +291,16 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         name
         description
         channel_types
+        modified
+        updated_at
       }
       ... on Tool {
         name
         description
         tool_types
         tool_version
+        modified
+        updated_at
         killChainPhases {
           id
           entity_type
@@ -330,6 +362,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         x_opencti_cvss_v4_availability_impact_v
         x_opencti_cvss_v4_availability_impact_s
         x_opencti_cvss_v4_exploit_maturity
+        updated_at
       }
       ... on AttackPattern {
         name
@@ -337,6 +370,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         x_mitre_id
         x_mitre_permissions_required
         x_mitre_detection
+        modified
+        updated_at
         x_mitre_platforms_attack_pattern: x_mitre_platforms
         killChainPhases {
           id
@@ -349,15 +384,21 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
       ... on Narrative {
         name
         description
+        modified
+        updated_at
       }
       ... on Sector {
         name
         description
+        modified
+        updated_at
       }
       ... on Event {
         name
         description
         event_types
+        modified
+        updated_at
       }
       ... on Organization {
         name
@@ -365,37 +406,55 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         x_opencti_organization_type
         x_opencti_score
         contact_information
+        modified
+        updated_at
       }
       ... on SecurityPlatform {
         name
         description
         security_platform_type
+        modified
+        updated_at
       }
       ... on System {
         name
         description
         contact_information
+        modified
+        updated_at
       }
       ... on Individual {
         name
         description
         contact_information
+        modified
+        updated_at
       }
       ... on Region {
         name
         description
+        modified
+        updated_at
       }
       ... on Country {
         name
         description
+        modified
+        updated_at
       }
       ... on AdministrativeArea {
         name    
         description
+        modified
+        updated_at
+        latitude
+        longitude
       }
       ... on City {
         name
         description
+        modified
+        updated_at
       }
       ... on Position {
         name
@@ -404,6 +463,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         longitude
         street_address
         postal_code
+        modified
+        updated_at
       }
       ... on StixCyberObservable {
         observable_value
@@ -412,6 +473,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         created_at
         x_opencti_modified_at
         updated_at
+        entity_type
       }
       ... on Artifact {
         x_opencti_additional_names
@@ -428,6 +490,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         encryption_algorithm
         decryption_key
         mime_type
+        payload_bin
       }
       createdBy {
         ... on Identity {
