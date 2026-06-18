@@ -20,21 +20,21 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
-import { QueryRenderer } from '../../../relay/environment';
-import { isNotEmptyField } from '../../../utils/utils';
-import { capitalizeFirstLetter } from '../../../utils/String';
+import { QueryRenderer } from 'src/relay/environment';
+import { isNotEmptyField } from 'src/utils/utils';
+import { capitalizeFirstLetter } from 'src/utils/String';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
-import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from 'src/components/i18n';
+import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetColumn, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from '../../../utils/widget/widgetUtils';
+import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
+import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
-import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
 import useHelper from '../../../utils/hooks/useHelper';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
-import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
@@ -577,7 +577,7 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute'].includes(type) && (
+                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute', 'custom-attributes'].includes(type) && (
                   <div
                     style={{
                       display: 'flex',
