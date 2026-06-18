@@ -26,8 +26,23 @@ export const initialStaticPaginationForGroupUsers = {
   },
 };
 
+const safeFormatDate = (value: unknown, formatter: (v: string) => string) => {
+  if (typeof value !== 'string' || !value) {
+    return '-';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+  try {
+    return formatter(value);
+  } catch {
+    return '-';
+  }
+};
+
 const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const LOCAL_STORAGE_KEY = `group-${groupId}-users`;
   const {
     viewStorage,
@@ -58,7 +73,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
     },
     user_email: {
       label: 'Email',
-      width: '25%',
+      width: '20%',
       isSortable: true,
     },
     firstname: {
@@ -80,6 +95,12 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
       label: '2FA',
       width: '5%',
       isSortable: false,
+    },
+    password_valid_until: {
+      label: 'Password valid until',
+      width: '10%',
+      isSortable: true,
+      render: (v: unknown) => safeFormatDate(v, fd),
     },
     created_at: {
       label: 'Platform creation date',

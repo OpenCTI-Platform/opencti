@@ -84,7 +84,16 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
   subscribeFn,
 });
 const store = new Store(new RecordSource());
-export const environment = new Environment({ network, store });
+const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
+const getDataID = (fieldValue, typeName) => {
+  const id = fieldValue?.id;
+  if (!id) return null;
+  if (namespacedTypenames.has(typeName)) {
+    return `${typeName}:${id}`;
+  }
+  return id;
+};
+export const environment = new Environment({ network, store, getDataID });
 
 // Components
 export class QueryRenderer extends Component {

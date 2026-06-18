@@ -18,6 +18,7 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { handleError } from '../../../../../relay/environment';
 import type { Theme } from '../../../../../components/Theme';
 
 export const userMutationFieldPatch = graphql`
@@ -139,6 +140,9 @@ const UserEditionOverviewComponent: FunctionComponent<
           variables: {
             id: user.id,
             input: { key: name, value: value || '' },
+          },
+          onError: (error: Error) => {
+            handleError(error);
           },
         });
       })
@@ -340,7 +344,7 @@ const UserEditionOverview = createFragmentContainer(
         theme
         otp_activated
         otp_qr
-        force_password_change
+        password_valid_until
         account_status
         account_lock_after_date
         roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
