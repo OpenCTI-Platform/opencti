@@ -28,7 +28,7 @@ Administrators can optionally allow users to skip draft mode per submission.
 The form intake button is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Override of capabilities in draft](https://docs.opencti.io/latest/administration/users/?h=capab#override-of-capabilities-in-draft) for details on controlling users capabilities in draft mode.
 
 
-## Defining a Form Intake
+# Defining a Form Intake
 To create a form intake, navigate to the Ingestion menu, Form intake menu and click Create.
 
 You can set core detail fields: 
@@ -36,6 +36,55 @@ You can set core detail fields:
 - Name of your form intake
 - Description of the form intake 
 - Active (toggle on/off, default to on): when enabled, your form will be present in the form intake list.
+
+
+## Draft and form intake
+
+### Creation of a draft by default 
+
+When defining a new form intake, you can decide whether the Form Intake output will create a draft or not by toggling the option: **Create as draft by default**. If this option is enabled, you can then choose to **Allow users to uncheck draft mode**.
+
+This has been built to offer advanced users the option to directly submit their input to the main database instead of a draft.
+
+### Creation of a draft by default if user only has the capability to create data in draft
+
+However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (enterprise edition)](../administration/users.md) then the user will not able to untick the box.
+By default, the form intake will be accessible to the user and the from intake output will result in a draft creation.
+
+### Advanced draft settings
+
+This section in the form intake is dedicated to control the parameters linked to the draft creation. 
+You can control fields default values & allow (or not) users to edit them:
+
+- Draft name: you can define a default value and allow users to edit it.
+- Draft description: you can define a default value for draft description and allow users to edit it.
+- Draft Assignee: you can define default assignees for your draft and allow users to edit them.
+- Draft Participant: you can define default participants and allow participants to edit them.
+- Draft author: Draft author is a bit specific, since it offers you 3 choices. You can either **reuse the main entity author**, **specify a specific author** or **do not apply default value**. Please be aware that when applying specific author, the user may not have access to this author due to RBAC (which should show as "restricted" on the main draft page).
+- Apply Authorize members: you can activate the restriction. Doing so, then you can apply some specific authorized members on the **draft itself**. Some authorized members are a bit specific, the ones indicated as "Dynamic form draft".
+
+##### Authorized members dynamic from draft
+
+Some specific authorized members have been introduced, to allow you to have a dynamic approach: 
+
+- draft author (org) allows you to select the entity being the Author of the Draft. If this entity happens to be an organization, then you can also select an intersection with a group. **This allows you to perform the following use case: I want users part of the group analyst pertaning to the organisation that submitted the draft to be able to edit the draft, while users from the organisation that submitted the draft but are not analyst are in view only.** 
+- creator: allows you to directly apply some rights to the draft creator.
+- assignee: allows you to directly apply some rights to the draft assignees.
+- participant: allows you to directly apply some rights to the draft participants.
+
+### Configuration issues
+
+#### Default and mandatory values between form intake & draft in entity/customization
+
+Any default value or mandatory value set at the form intake level will override any default value or mandatory values set in entity/customization for drafts. 
+
+The rational vbehind this approach is that a form intake should provide an expected output which is decided by the admin. As a result, the conditions defined in the form intake will apply. 
+
+### Provide "Can manage" to a user not having the "Manage Authorize members capability"
+
+A user which is granted the "can manage" capability via authorized members but who does not have the capability "manage authorized members" provided via its role will not be able to manage the authorized members on a draft.
+
+
 
 ## Main entity definition
 Defining a main entity sets two variables: 
@@ -120,7 +169,7 @@ We support the following field types:
 
 **Warning:** If you have defined additional mandatory fields for an entity (e.g. description) and your description is not added, your entity will not be created. 
 
-## Additionnal entities definition
+## Additional entities definition
 
 Once you have defined your main entity, you can define additional entities to allow your users to add additional entities within the same form submission. 
 
@@ -149,13 +198,6 @@ When you add a relation, you need to choose:
 **Warning**: adding some relations in the form definition will not allow users to create the relation manually in the form. You need to toggle the **required** field to create the relation automatically at form submission. This means that any entities matching as source & targets will have a relation created between them.
 
 
-## Finalizing the submission: draft or not
-
-You have the option, within the main entity, to enable an option **Create as draft by default**. If this option is enabled, you can then choose to **Allow users to uncheck draft mode**.
-
-This has been built to offer advanced users the option to directly submit their input to the main database instead of a draft.
-
-However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (entreprise edition)](../administration/users.md) then the user will not able to untick the box.
 
 ## Places to submit a form intake: 
 
