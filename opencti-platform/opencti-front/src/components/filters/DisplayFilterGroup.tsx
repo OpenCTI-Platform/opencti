@@ -316,13 +316,13 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         color="warning"
         onClick={handleClickOpen}
         label={(
-          <>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, textTransform: 'none' }}>
             {t_i18n('Filters are not fully displayed')}
             <InformationOutline
               fontSize="small"
               color="secondary"
             />
-          </>
+          </span>
         )}
       />
 
@@ -333,19 +333,18 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         aria-describedby="Show Filter groups configuration"
       >
         <DialogTitle id="filter-groups-dialog-title">
-          This filter contains imbricated filter groups, that are not fully
-          supported yet in the platform display and can only be edited via the
-          API. They might have been created via the API or a migration from a
-          previous filter format. For your information, here is the content of
-          the filter object
+          {t_i18n('Filter group configuration')}
         </DialogTitle>
         <DialogContent>
           <Typography
-            variant="h2"
+            variant="h3"
             sx={{ textTransform: 'none' }}
             gutterBottom={true}
           >
-            Your filter group cannot be modified yet :
+            <div style={{ marginBottom: '8px' }}>
+              {t_i18n('This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here are information about the content of the filter object.')}
+            </div>
+            {t_i18n('Your filter group cannot be modified yet:')}
           </Typography>
           <DisplayFiltersFilterGroups
             filtersRepresentativesMap={filtersRepresentativesMap}
@@ -353,18 +352,18 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
             filterMode={filterMode}
           />
           <Typography
-            variant="h2"
+            variant="h3"
             sx={{ textTransform: 'none' }}
             gutterBottom={true}
           >
-            The complete Filter object is as follows:
+            {t_i18n('The complete Filter object is as follows:')}
           </Typography>
           <CodeBlock
             code={JSON.stringify(filterObj, null, 2)}
             language="json"
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ marginRight: '16px', marginBottom: '16px' }}>
           <Button onClick={handleClose} autoFocus>
             {t_i18n('Close')}
           </Button>
