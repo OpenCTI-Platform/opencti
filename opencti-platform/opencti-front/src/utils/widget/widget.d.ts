@@ -20,11 +20,25 @@ export type WidgetHost = {
 
 export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
+export type WidgetColumnAttributeType
+  = | 'date'
+    | 'boolean'
+    | 'markdown'
+    | 'tag'
+    | 'tag_list'
+    | 'text_list'
+    | 'score'
+    | 'cvss_score'
+    | 'open_vocab'
+    | 'open_vocab_list'
+    | 'copy';
+
 interface WidgetColumn {
   attribute: string | null;
   displayStyle?: string | null;
   label?: string | null;
   variableName?: string | null;
+  attributeType?: WidgetColumnAttributeType;
 }
 
 export interface WidgetTimeSeriesData {
