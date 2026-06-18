@@ -212,6 +212,28 @@ describe('Filters utils', () => {
       const result = removeIdAndIncorrectKeysFromFilterGroupObject(filters, ['entity_type']);
       expect(result!.filters.length).toEqual(0);
     });
+
+    it('should strip empty or undefined imbricated filterGroups', () => {
+      const filters: FilterGroup = {
+        mode: 'and',
+        filters: [
+          { id: 'f1', key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [
+          emptyFilterGroup, // empty group, should be removed
+          {
+            mode: 'or',
+            filters: [
+              { id: 'f2', key: 'objectLabel', values: ['label1'], operator: 'eq', mode: 'or' },
+            ],
+            filterGroups: [],
+          },
+        ],
+      };
+      const result = removeIdAndIncorrectKeysFromFilterGroupObject(filters, ['entity_type', 'objectLabel']);
+      expect(result!.filterGroups.length).toEqual(1);
+      expect(result!.filterGroups[0].filters[0].key).toEqual('objectLabel');
+    });
   });
 
   describe('getEntityTypeTwoFirstLevelsFilterValues', () => {
@@ -746,6 +768,24 @@ describe('Function normalizeFilterGroupForBackend', () => {
     const result = normalizeFilterGroupForBackend(input);
     expect(result?.filterGroups![0].filters[0].key).toEqual(['name']);
     expect(result?.filterGroups![0].filters[0]).not.toHaveProperty('id');
+  });
+
+  it('should ignore imbricated empty filter groups', () => {
+    const input: FilterGroup = {
+      mode: 'and',
+      filters: [
+        { id: 'f1', key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [emptyFilterGroup],
+    };
+    const result = normalizeFilterGroupForBackend(input);
+    expect(result).toEqual({
+      mode: 'and',
+      filters: [
+        { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    });
   });
 });
 
