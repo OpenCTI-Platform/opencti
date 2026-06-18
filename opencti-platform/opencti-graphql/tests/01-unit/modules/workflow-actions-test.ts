@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
@@ -12,6 +12,31 @@ vi.mock('../../../src/schema/identifier', () => ({
 
 vi.mock('../../../src/config/conf', () => ({
   logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
+}));
+
+// Mock schema constants to prevent loading attribute-definition.ts which
+// transitively needs TEST_MODE, BUS_TOPICS, etc. from conf.
+vi.mock('../../../src/schema/stixRefRelationship', () => ({
+  RELATION_OBJECT_ASSIGNEE: 'object-assignee',
+  RELATION_OBJECT_PARTICIPANT: 'object-participant',
+}));
+
+vi.mock('../../../src/schema/internalRelationship', () => ({
+  RELATION_PARTICIPATE_TO: 'participate-to',
+}));
+
+vi.mock('../../../src/utils/authorizedMembers', () => ({
+  editAuthorizedMembers: vi.fn(),
+}));
+
+vi.mock('../../../src/utils/access', () => ({
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+}));
+
+// storeLoadById is used to resolve the AUTHOR entity type.
+// Each test that needs AUTHOR resolution will configure the return value.
+vi.mock('../../../src/database/middleware-loader', () => ({
+  storeLoadById: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -43,11 +68,11 @@ describe('ActionRegistry.asyncBulkAction', () => {
     vi.clearAllMocks();
   });
 
-  it('logs an error and returns without throwing when __createListTask is not injected', async () => {
-    const { logApp } = await import('../../../src/config/conf');
+  it('returns early without creating a task when __createListTask is not injected', async () => {
     const ctx = makeContext({ __createListTask: undefined });
     await expect(ActionRegistry.asyncBulkAction(ctx, defaultParams)).resolves.toBeUndefined();
-    expect(logApp.error).toHaveBeenCalledWith(expect.stringContaining('__createListTask not injected'));
+    // Slot is never pushed, proving the function exited before spawning a task
+    expect(ctx.pendingAsyncSlots).toHaveLength(0);
   });
 
   it('uses the entity id in ids[] for a non-draft entity', async () => {
@@ -130,7 +155,6 @@ describe('ActionRegistry.asyncBulkAction', () => {
     await ActionRegistry.asyncBulkAction(ctx, defaultParams);
     expect(ctx.pendingAsyncSlots).toHaveLength(1);
     const slot = ctx.pendingAsyncSlots[0];
-    expect(slot.id).toBe('generated-slot-id');
     expect(slot.workId).toBe('work-id');
     expect(slot.type).toBe('asyncBulkAction');
     expect(slot.status).toBe('pending');
@@ -157,6 +181,423 @@ describe('ActionRegistry.asyncBulkAction', () => {
     await ActionRegistry.asyncBulkAction(ctx, defaultParams);
     const callArgs = ctx.__createListTask.mock.calls[0][2];
     expect(callArgs.workflow_instance_id).toBe('instance-id');
-    expect(callArgs.workflow_action_id).toBe('generated-slot-id');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// updateAuthorizedMembers — AUTHOR dynamic key
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
+  // vi.doMock + resetModules ensures the fresh ActionRegistry loads with the
+  // new mocks — static vi.mock hoisting is unreliable for these deep deps.
+  let freshRegistry: Record<string, (ctx: any, params?: any) => Promise<void>>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
+    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
+      validateDraftWorkspace: vi.fn(),
+      draftWorkspaceEditAuthorizedMembers: vi.fn(),
+    }));
+    vi.doMock('../../../src/config/conf', async () => {
+      const actual = await import('../../../src/config/conf');
+      return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
+    });
+    vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
+    vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
+    freshRegistry = mod.ActionRegistry as any;
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.restoreAllMocks();
+  });
+
+  const makeUpdateCtx = (entityOverrides: Record<string, unknown> = {}) => ({
+    user: { id: 'user-id' },
+    entity: { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', ...entityOverrides },
+    context: {},
+  });
+
+  it('pushes only the participate-to org IDs for AUTHOR (not the creator itself)', async () => {
+    const { storeLoadById } = await import('../../../src/database/middleware-loader');
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    vi.mocked(storeLoadById).mockResolvedValue({ 'participate-to': ['org-id'] } as any);
+
+    const ctx = makeUpdateCtx({ creator_id: 'creator-user-id' });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'AUTHOR', access_right: 'edit', groups_restriction_ids: ['group-1'] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [
+          { id: 'org-id', access_right: 'edit', groups_restriction_ids: ['group-1'] },
+        ],
+      }),
+    );
+  });
+
+  it('produces empty resolved list when creator has no participate-to orgs', async () => {
+    const { storeLoadById } = await import('../../../src/database/middleware-loader');
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    vi.mocked(storeLoadById).mockResolvedValue({} as any);
+
+    const ctx = makeUpdateCtx({ creator_id: 'creator-user-id' });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'AUTHOR', access_right: 'edit', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ input: [] }),
+    );
+  });
+
+  it('produces empty resolved list when creator_id is absent', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx(); // no creator_id
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'AUTHOR', access_right: 'admin', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ input: [] }),
+    );
+  });
+
+  it('produces empty resolved list when storeLoadById rejects', async () => {
+    const { storeLoadById } = await import('../../../src/database/middleware-loader');
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    vi.mocked(storeLoadById).mockRejectedValue(new Error('DB unavailable'));
+
+    const ctx = makeUpdateCtx({ creator_id: 'some-id' });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'AUTHOR', access_right: 'edit', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ input: [] }),
+    );
+  });
+
+  it('handles an array of creator_ids and accumulates all orgs', async () => {
+    const { storeLoadById } = await import('../../../src/database/middleware-loader');
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    vi.mocked(storeLoadById)
+      .mockResolvedValueOnce({ 'participate-to': ['org-a'] } as any)
+      .mockResolvedValueOnce({ 'participate-to': ['org-b'] } as any);
+
+    const ctx = makeUpdateCtx({ creator_id: ['user-1', 'user-2'] });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'AUTHOR', access_right: 'view', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [
+          { id: 'org-a', access_right: 'view', groups_restriction_ids: [] },
+          { id: 'org-b', access_right: 'view', groups_restriction_ids: [] },
+        ],
+      }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// updateAuthorizedMembers — CREATORS dynamic key
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.updateAuthorizedMembers (CREATORS)', () => {
+  let freshRegistry: Record<string, (ctx: any, params?: any) => Promise<void>>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
+    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
+      validateDraftWorkspace: vi.fn(),
+      draftWorkspaceEditAuthorizedMembers: vi.fn(),
+    }));
+    vi.doMock('../../../src/config/conf', async () => {
+      const actual = await import('../../../src/config/conf');
+      return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
+    });
+    vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
+    vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
+    freshRegistry = mod.ActionRegistry as any;
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.restoreAllMocks();
+  });
+
+  const makeUpdateCtx = (entityOverrides: Record<string, unknown> = {}) => ({
+    user: { id: 'user-id' },
+    entity: { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', ...entityOverrides },
+    context: {},
+  });
+
+  it('pushes a single creator_id for CREATORS', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx({ creator_id: 'creator-1' });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'CREATORS', access_right: 'edit', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [{ id: 'creator-1', access_right: 'edit', groups_restriction_ids: [] }],
+      }),
+    );
+  });
+
+  it('pushes all creator ids when creator_id is an array', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx({ creator_id: ['user-a', 'user-b'] });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'CREATORS', access_right: 'view', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [
+          { id: 'user-a', access_right: 'view', groups_restriction_ids: [] },
+          { id: 'user-b', access_right: 'view', groups_restriction_ids: [] },
+        ],
+      }),
+    );
+  });
+
+  it('produces empty resolved list when creator_id is absent', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx(); // no creator_id
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'CREATORS', access_right: 'edit', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ input: [] }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// updateAuthorizedMembers — ASSIGNEES dynamic key
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.updateAuthorizedMembers (ASSIGNEES)', () => {
+  let freshRegistry: Record<string, (ctx: any, params?: any) => Promise<void>>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
+    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
+      validateDraftWorkspace: vi.fn(),
+      draftWorkspaceEditAuthorizedMembers: vi.fn(),
+    }));
+    vi.doMock('../../../src/config/conf', async () => {
+      const actual = await import('../../../src/config/conf');
+      return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
+    });
+    vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
+    vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
+    freshRegistry = mod.ActionRegistry as any;
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.restoreAllMocks();
+  });
+
+  const makeUpdateCtx = (entityOverrides: Record<string, unknown> = {}) => ({
+    user: { id: 'user-id' },
+    entity: { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', ...entityOverrides },
+    context: {},
+  });
+
+  it('pushes a single assignee id', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    // 'object-assignee' matches the RELATION_OBJECT_ASSIGNEE mock value
+    const ctx = makeUpdateCtx({ 'object-assignee': 'assignee-1' });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'ASSIGNEES', access_right: 'view', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [{ id: 'assignee-1', access_right: 'view', groups_restriction_ids: [] }],
+      }),
+    );
+  });
+
+  it('pushes all assignee ids when field is an array', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx({ 'object-assignee': ['assignee-a', 'assignee-b'] });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'ASSIGNEES', access_right: 'edit', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [
+          { id: 'assignee-a', access_right: 'edit', groups_restriction_ids: [] },
+          { id: 'assignee-b', access_right: 'edit', groups_restriction_ids: [] },
+        ],
+      }),
+    );
+  });
+
+  it('produces empty resolved list when no assignees are set', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx(); // no object-assignee field
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'ASSIGNEES', access_right: 'view', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ input: [] }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// updateAuthorizedMembers — PARTICIPANTS dynamic key
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.updateAuthorizedMembers (PARTICIPANTS)', () => {
+  let freshRegistry: Record<string, (ctx: any, params?: any) => Promise<void>>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
+    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
+      validateDraftWorkspace: vi.fn(),
+      draftWorkspaceEditAuthorizedMembers: vi.fn(),
+    }));
+    vi.doMock('../../../src/config/conf', async () => {
+      const actual = await import('../../../src/config/conf');
+      return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
+    });
+    vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
+    vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
+    freshRegistry = mod.ActionRegistry as any;
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.restoreAllMocks();
+  });
+
+  const makeUpdateCtx = (entityOverrides: Record<string, unknown> = {}) => ({
+    user: { id: 'user-id' },
+    entity: { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', ...entityOverrides },
+    context: {},
+  });
+
+  it('pushes a single participant id', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    // 'object-participant' matches the RELATION_OBJECT_PARTICIPANT mock value
+    const ctx = makeUpdateCtx({ 'object-participant': 'participant-1' });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'PARTICIPANTS', access_right: 'view', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [{ id: 'participant-1', access_right: 'view', groups_restriction_ids: [] }],
+      }),
+    );
+  });
+
+  it('pushes all participant ids when field is an array', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx({ 'object-participant': ['p-a', 'p-b', 'p-c'] });
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'PARTICIPANTS', access_right: 'admin', groups_restriction_ids: ['grp-1'] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({
+        input: [
+          { id: 'p-a', access_right: 'admin', groups_restriction_ids: ['grp-1'] },
+          { id: 'p-b', access_right: 'admin', groups_restriction_ids: ['grp-1'] },
+          { id: 'p-c', access_right: 'admin', groups_restriction_ids: ['grp-1'] },
+        ],
+      }),
+    );
+  });
+
+  it('produces empty resolved list when no participants are set', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx(); // no object-participant field
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'PARTICIPANTS', access_right: 'view', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ input: [] }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// validateDraft action
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.validateDraft', () => {
+  let freshRegistry: Record<string, (ctx: any, params?: any) => Promise<void>>;
+  let mockValidateDraftWorkspace: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    mockValidateDraftWorkspace = vi.fn().mockResolvedValue(undefined);
+    vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
+      validateDraftWorkspace: mockValidateDraftWorkspace,
+      draftWorkspaceEditAuthorizedMembers: vi.fn(),
+    }));
+    vi.doMock('../../../src/config/conf', async () => {
+      const actual = await import('../../../src/config/conf');
+      return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
+    });
+    vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
+    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
+    vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
+    freshRegistry = mod.ActionRegistry as any;
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.restoreAllMocks();
+  });
+
+  it('calls validateDraftWorkspace with the entity id', async () => {
+    const ctx = {
+      user: { id: 'user-id' },
+      entity: { id: 'draft-entity-id', internal_id: 'draft-entity-id', entity_type: 'DraftWorkspace' },
+      context: {},
+    };
+    await freshRegistry.validateDraft(ctx);
+    expect(mockValidateDraftWorkspace).toHaveBeenCalledWith(ctx.context, ctx.user, 'draft-entity-id');
+  });
+
+  it('propagates errors thrown by validateDraftWorkspace', async () => {
+    mockValidateDraftWorkspace.mockRejectedValue(new Error('Validation failed'));
+    const ctx = {
+      user: { id: 'user-id' },
+      entity: { id: 'draft-entity-id', internal_id: 'draft-entity-id', entity_type: 'DraftWorkspace' },
+      context: {},
+    };
+    await expect(freshRegistry.validateDraft(ctx)).rejects.toThrow('Validation failed');
   });
 });

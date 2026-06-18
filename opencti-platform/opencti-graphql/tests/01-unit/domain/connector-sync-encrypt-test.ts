@@ -23,9 +23,16 @@ vi.mock('../../../src/database/rabbitmq', () => ({
   unregisterConnector: vi.fn(), registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(), getConnectorQueueDetails: vi.fn(), unregisterExchanges: vi.fn(),
 }));
-vi.mock('../../../src/database/repository', () => ({
-  connector: vi.fn(), connectors: vi.fn(), connectorsFor: vi.fn(), completeConnector: vi.fn(),
-}));
+vi.mock('../../../src/database/repository', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/database/repository')>();
+  return {
+    ...actual,
+    connector: vi.fn(),
+    connectors: vi.fn(),
+    connectorsFor: vi.fn(),
+    completeConnector: vi.fn(),
+  };
+});
 vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn(), fullEntitiesList: vi.fn(), internalLoadById: vi.fn(), pageEntitiesConnection: vi.fn(),
 }));
