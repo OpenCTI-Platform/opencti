@@ -533,9 +533,11 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
   const values = [
     error?.[fieldName],
     error?.cause?.[fieldName],
+    error?.cause?.meta?.body?.error?.[fieldName],
     error?.originalError?.[fieldName],
     error?.meta?.body?.error?.[fieldName],
     error?.extensions?.data?.cause?.[fieldName],
+    error?.extensions?.data?.cause?.meta?.body?.error?.[fieldName],
     error?.extensions?.exception?.[fieldName],
   ];
 
