@@ -16614,7 +16614,6 @@ export type MeUser = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
   firstname?: Maybe<Scalars['String']['output']>;
-  force_password_change?: Maybe<Scalars['Boolean']['output']>;
   groups?: Maybe<GroupConnection>;
   id: Scalars['ID']['output'];
   individual_id?: Maybe<Scalars['String']['output']>;
@@ -16630,6 +16629,7 @@ export type MeUser = BasicObject & InternalObject & {
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
+  password_valid_until?: Maybe<Scalars['DateTime']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -36263,7 +36263,6 @@ export type User = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
   firstname?: Maybe<Scalars['String']['output']>;
-  force_password_change?: Maybe<Scalars['Boolean']['output']>;
   groups?: Maybe<GroupConnection>;
   id: Scalars['ID']['output'];
   individual_id?: Maybe<Scalars['String']['output']>;
@@ -36279,6 +36278,7 @@ export type User = BasicObject & InternalObject & {
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
+  password_valid_until?: Maybe<Scalars['DateTime']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -47182,7 +47182,6 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  force_password_change?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<MeUserGroupsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47198,6 +47197,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -52424,7 +52424,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  force_password_change?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<UserGroupsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -52440,6 +52439,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;

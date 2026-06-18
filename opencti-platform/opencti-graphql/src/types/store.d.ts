@@ -427,7 +427,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   revoked: boolean;
   is_family: boolean;
   is_inferred: boolean;
-  force_password_change: boolean;
+  password_valid_until: Date | null;
   // custom
   x_opencti_detection: boolean;
   x_opencti_cisa_kev: boolean;
