@@ -180,7 +180,6 @@ const WidgetCreationDataSelection = () => {
       {perspective === 'relationships' && (
         <Stack direction="row">
           <Button
-            disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             size="small"
             onClick={() => handleAddDataSelection('relationships')}
             style={{

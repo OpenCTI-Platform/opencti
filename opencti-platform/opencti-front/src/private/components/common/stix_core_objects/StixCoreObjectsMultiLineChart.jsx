@@ -80,6 +80,7 @@ const StixCoreObjectsMultiLineChart = ({
                 }))}
                 interval={parameters.interval}
                 hasLegend={parameters.legend}
+                strokeWidth={3}
                 onMounted={setChart}
               />
             );

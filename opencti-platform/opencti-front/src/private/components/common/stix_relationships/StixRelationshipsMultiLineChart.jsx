@@ -104,6 +104,7 @@ const StixRelationshipsMultiLineChart = ({
       chart={chart}
       action={popover}
     >
+      halo
       {renderContent()}
     </WidgetContainer>
   );

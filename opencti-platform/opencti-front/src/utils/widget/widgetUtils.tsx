@@ -84,7 +84,7 @@ const widgetVisualizationTypes = [
   {
     key: 'line',
     name: 'Line',
-    dataSelectionLimit: 5,
+    dataSelectionLimit: 10,
     category: 'timeseries',
     availableParameters: ['legend'],
     isRelationships: true,
