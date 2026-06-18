@@ -16,7 +16,7 @@ interface BulkTextModalProps {
   onSelectKey?: (key: string) => void;
 }
 
-const MAX_LINES = 150;
+const MAX_LINES = 100;
 
 const BulkTextModal = ({
   open,
