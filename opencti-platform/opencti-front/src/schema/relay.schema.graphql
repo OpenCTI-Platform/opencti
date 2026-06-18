@@ -1745,7 +1745,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
-  force_password_change: Boolean
+  password_valid_until: DateTime
   user_service_account: Boolean
   lastname: String
   theme: String
@@ -1791,7 +1791,7 @@ type MeUser implements BasicObject & InternalObject {
   firstname: String
   otp_activated: Boolean
   otp_qr: String
-  force_password_change: Boolean
+  password_valid_until: DateTime
   lastname: String
   theme: String
   language: String

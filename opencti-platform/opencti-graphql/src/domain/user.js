@@ -927,9 +927,10 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 
 // User related
 export const userEditField = async (context, user, userId, rawInputs) => {
-  const inputs = [];
+  let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
+  const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (userToUpdate.external && input.key === 'name') {
@@ -938,8 +939,8 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (userToUpdate.external && input.key === 'user_email') {
       throw FunctionalError('Email cannot be updated for external user', { userId });
     }
-    if (userToUpdate.external && input.key === 'force_password_change' && R.head(input.value) === true) {
-      throw FunctionalError('Password change cannot be forced for external user', { userId });
+    if (userToUpdate.external && input.key === 'password_valid_until') {
+      throw FunctionalError('Cannot force password change for external user', { userId });
     }
     if (input.key === 'password') {
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
@@ -1009,6 +1010,11 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (!skipThisInput) {
       inputs.push(input);
     }
+  }
+  // Reset the password validity window whenever the password changes.
+  if (hasPasswordUpdate) {
+    inputs = inputs.filter((input) => input.key !== 'password_valid_until');
+    inputs.push({ key: 'password_valid_until', value: [null] });
   }
   // Editing the draft context (entering/exiting a draft) is a navigation action performed on the
   // user's own entity, which is never part of the draft data. It must run outside of any draft
@@ -1922,12 +1928,20 @@ const internalAuthenticateUser = async (context, req, user) => {
 };
 
 /**
+ * Returns true when the user must change the password before using the platform.
+ *
+ * @param {AuthUser} user
+ * @returns {boolean}
+ */
+export const isPasswordExpired = (user) => user.password_valid_until != null && utcDate().isAfter(utcDate(user.password_valid_until));
+
+/**
  * Validates a user before granting authorization.
  *
  * @param {AuthUser} user
  * @param {Object} settings
  * @param {Object} [opts]
- * @param {boolean} [opts.skipForcePasswordCheck] - When true, skips the force_password_change check.
+ * @param {boolean} [opts.skipForcePasswordCheck] - When true, skips the password_valid_until expiration check.
  *   Used at session creation so the user can authenticate and be redirected to the password screen.
  * @throws {AuthenticationFailure} if the user has an invalid account status.
  */
@@ -1944,9 +1958,9 @@ const validateUser = (user, settings, { skipForcePasswordCheck = false } = {}) =
   if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
     throw AuthenticationFailure(ACCOUNT_STATUSES[user.account_status]);
   }
-  // Require users flagged by an admin to update their password before using the platform.
+  // Require users with expired password validity to update their password before using the platform.
   // Skipped at session creation so the user can authenticate and be redirected to the change-password screen.
-  if (!skipForcePasswordCheck && user.force_password_change === true) {
+  if (!skipForcePasswordCheck && isPasswordExpired(user)) {
     throw PasswordChangeRequired();
   }
 };
