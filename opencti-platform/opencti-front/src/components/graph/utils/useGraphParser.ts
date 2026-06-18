@@ -212,8 +212,8 @@ const useGraphParser = () => {
   /**
    * Check if a relationship is nested, i.e. its from or to is itself a relationship.
    */
-  const isNestedRelationship = (data: ObjectToParse) => {
-    return data.from && data.to && (data.from.relationship_type || data.to.relationship_type);
+  const isNestedRelationship = (data: ObjectToParse): boolean => {
+    return !!(data.from && data.to && (data.from.relationship_type || data.to.relationship_type));
   };
 
   /**
