@@ -785,25 +785,85 @@ export const useFetchFilterKeysSchema = () => {
   return filterKeysSchema;
 };
 
+export type FilterKeysComputationMode = 'union' | 'intersection';
+
+const areFilterDefinitionsCompatible = (left?: FilterDefinition, right?: FilterDefinition) => {
+  if (!left || !right) {
+    return false;
+  }
+  return left.type === right.type
+    && left.multiple === right.multiple;
+};
+
 export const getBuildFilterKeysMapFromEntityType = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   entityTypes = ['Stix-Core-Object'],
+  opts?: { mode?: FilterKeysComputationMode },
 ): Map<string, FilterDefinition> => {
+  const mode = opts?.mode ?? 'union';
+  if (entityTypes.length === 0) {
+    return new Map();
+  }
+
   // 1. case one entity type
   if (entityTypes.length === 1) {
     return filterKeysSchema.get(entityTypes[0]) ?? new Map();
   }
-  // 2. case several entity types
-  const filterKeysMap = new Map();
+
+  // 2. case several entity types with intersection mode
+  if (mode === 'intersection') {
+    const [firstEntityType, ...otherEntityTypes] = entityTypes;
+    const firstMap = filterKeysSchema.get(firstEntityType) ?? new Map();
+    const intersectionMap = new Map<string, FilterDefinition>();
+    firstMap.forEach((firstDefinition, key) => {
+      const allDefinitions = [firstDefinition];
+      let existsForAllTypes = true;
+      otherEntityTypes.forEach((entityType) => {
+        const entityMap = filterKeysSchema.get(entityType) ?? new Map();
+        const definition = entityMap.get(key);
+        if (!definition) {
+          existsForAllTypes = false;
+          return;
+        }
+        allDefinitions.push(definition);
+      });
+      if (!existsForAllTypes) {
+        return;
+      }
+      const firstCompatibleDefinition = allDefinitions[0];
+      const areAllDefinitionsCompatible = allDefinitions.every((definition) => areFilterDefinitionsCompatible(firstCompatibleDefinition, definition));
+      if (!areAllDefinitionsCompatible) {
+        return;
+      }
+      intersectionMap.set(key, {
+        ...firstCompatibleDefinition,
+        subEntityTypes: entityTypes,
+      });
+    });
+    return intersectionMap;
+  }
+
+  // 3. case several entity types with union mode (legacy behavior)
+  const filterKeysMap = new Map<string, FilterDefinition>();
   entityTypes.forEach((entityType) => {
     const currentMap = filterKeysSchema.get(entityType) ?? new Map();
     currentMap.forEach((value, key) => {
-      const valueToSet = filterKeysMap.has(key)
-        ? { ...value, subEntityTypes: filterKeysMap.get(key).subEntityTypes.concat([entityType]) }
+      const existingDefinition = filterKeysMap.get(key);
+      const valueToSet = existingDefinition
+        ? { ...value, subEntityTypes: existingDefinition.subEntityTypes.concat([entityType]) }
         : value;
       filterKeysMap.set(key, valueToSet);
     });
   });
+  return filterKeysMap;
+};
+
+export const useBuildFilterKeysMapFromEntityType = (
+  entityTypes = ['Stix-Core-Object'],
+  opts?: { mode?: FilterKeysComputationMode },
+): Map<string, FilterDefinition> => {
+  const { filterKeysSchema } = useAuth().schema;
+  const filterKeysMap = getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes, opts);
   // add entity_type filter if several types are given (entity_type filter already present for abstract types)
   if (entityTypes.length > 0) {
     filterKeysMap.set('entity_type', {
@@ -818,27 +878,23 @@ export const getBuildFilterKeysMapFromEntityType = (
   return filterKeysMap;
 };
 
-export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
-  const { filterKeysSchema } = useAuth().schema;
-  return getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes);
-};
-
 export const getAvailableFilterKeysForEntityTypes = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   entityTypes: string[],
   addNotCleanableFilterKeys = false,
+  opts?: { mode?: FilterKeysComputationMode },
 ) => {
-  const filterKeysMap = getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes);
+  const filterKeysMap = getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes, opts);
   return uniqueArray(filterKeysMap.keys() ?? [])
     .concat(addNotCleanableFilterKeys ? NOT_CLEANABLE_FILTER_KEYS : []);
 };
 
 export const useAvailableFilterKeysForEntityTypes = (
   entityTypes: string[],
-  addNotCleanableFilterKeys = false,
+  opts?: { mode?: FilterKeysComputationMode },
 ) => {
-  const { filterKeysSchema } = useAuth().schema;
-  return getAvailableFilterKeysForEntityTypes(filterKeysSchema, entityTypes, addNotCleanableFilterKeys);
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes, opts);
+  return uniqueArray(filterKeysMap.keys() ?? []);
 };
 
 const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {

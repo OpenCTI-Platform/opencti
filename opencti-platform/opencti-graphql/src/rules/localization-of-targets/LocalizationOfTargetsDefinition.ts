@@ -16,7 +16,7 @@ const display = {
       identifier_color: '#673ab7',
     },
     {
-      source: 'Relation C',
+      source: 'Targeting relation C',
       source_color: '#673ab7',
       relation: 'relationship_located-at',
       target: 'Location D',

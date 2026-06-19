@@ -10,6 +10,7 @@ export interface PlaybookConfig {
   applyWithFilters?: string;
   actions?: PlaybookUpdateAction[];
   triggerTime?: string;
+  description?: string;
 }
 
 export interface PlaybookDefinitionNode {
@@ -37,6 +38,7 @@ export type PlaybookNode = Node<{
   description?: string;
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
+  configurationInvalid?: boolean;
   openConfig: (nodeId: string) => void;
   openReplace: (nodeId: string) => void;
   openAddSibling: (nodeId: string) => void;

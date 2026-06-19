@@ -44,6 +44,7 @@ import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTarg
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { getShortComponentDescription } from '../utils/playbookComponentDescriptions';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -97,11 +98,23 @@ const PlaybookFlowForm = ({
   const configurationSchema = selectedComponent?.configuration_schema
     ? JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema
     : null;
+  const descriptionPlaceholder = getShortComponentDescription(selectedComponent?.name, selectedComponent?.description);
 
   // Submit function that formats correctly the data for the backend.
   const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
-    const { name, description, actionsFormValues, ...config } = values;
+    const {
+      name,
+      description,
+      actionsFormValues,
+      ...config
+    } = values;
     let finalConfig: PlaybookConfig = config;
+
+    const normalizedDescription = description?.trim();
+    finalConfig = {
+      ...finalConfig,
+      description: normalizedDescription && normalizedDescription.length > 0 ? normalizedDescription : undefined,
+    };
 
     // Special work in case of filters,
     // (get filters from React state and and them in config).
@@ -225,8 +238,23 @@ const PlaybookFlowForm = ({
                 multiline
                 style={fieldSpacingContainerStyle}
               />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="description"
+                label={t_i18n('Description')}
+                placeholder={descriptionPlaceholder ? t_i18n(descriptionPlaceholder) : ''}
+                InputLabelProps={{ shrink: true }}
+                multiline
+                minRows={2}
+                fullWidth
+                style={fieldSpacingContainerStyle}
+              />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([propName, property]) => {
+                  if (propName === 'description') {
+                    return null;
+                  }
                   if (propName === 'access_restrictions') {
                     return <PlaybookFlowFieldAccessRestrictions key={propName} />;
                   }

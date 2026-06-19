@@ -134,7 +134,10 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
+    # Upload artifact only when images are not published to registry.
+    # When publish_to_registry is true, /tmp/opencti-worker.tar is not created.
     - name: Upload artifact
+      if: ${{ inputs.publish_to_registry == 'false' }}
       uses: actions/upload-artifact@v7
       with:
         name: docker-image-opencti-worker
