@@ -44,7 +44,7 @@ import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
 import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { listenPirEvents } from './listenPirEventsUtils';
-import { buildFilterEventContext, isDebugPlaybook, isValidEventType } from './playbookManagerUtils';
+import { buildFilterEventContext, isDebugPlaybook, isValidEventType, StreamDataEventTypeEnum } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
 import { InterruptibleTimer } from '../interruptible-timer';
@@ -121,9 +121,9 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
 
                 const isValidEvent = isValidEventType(type, configuration);
                 // Build event context for has_changed/not_has_changed filter evaluation
-                const eventContext = type === 'update'
+                const eventContext = type === StreamDataEventTypeEnum.UPDATE
                   ? buildFilterEventContext(streamEvent.data as UpdateEvent)
-                  : type === 'create'
+                  : type === StreamDataEventTypeEnum.CREATE
                     ? { changedAttributes: [], isCreation: true }
                     : undefined;
                 const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters, eventContext);
