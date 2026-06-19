@@ -169,6 +169,15 @@ export const queryEntitySettingSchemaAttributes = async (
   return getEntitySettingSchemaAttributes(context, user, entitySetting);
 };
 
+export const queryEntitySettingAttributeLabels = async (
+  context: AuthContext,
+  user: AuthUser,
+  entitySetting: BasicStoreEntityEntitySetting,
+): Promise<{ name: string; label: string | null }[]> => {
+  const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
+  return attributes.map((a) => ({ name: a.name, label: a.label ?? null }));
+};
+
 export const queryScaleAttributesForSetting = async (
   context: AuthContext,
   user: AuthUser,

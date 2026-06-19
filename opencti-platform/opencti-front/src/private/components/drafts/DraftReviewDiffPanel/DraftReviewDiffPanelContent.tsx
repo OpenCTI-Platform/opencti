@@ -24,7 +24,7 @@ const draftReviewDiffPanelContentQuery = graphql`
   query DraftReviewDiffPanelContentQuery($entityType: String!) {
     subType(id: $entityType) {
       settings {
-        attributesDefinitions {
+        attributeLabels {
           name
           label
         }
@@ -52,7 +52,7 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
     queryRef,
   );
 
-  const labelMap = buildFieldLabelMap(subTypeData.subType?.settings?.attributesDefinitions);
+  const labelMap = buildFieldLabelMap(subTypeData.subType?.settings?.attributeLabels);
 
   const renderHeader = () => {
     const link = resolveLink(entity.entity_type);

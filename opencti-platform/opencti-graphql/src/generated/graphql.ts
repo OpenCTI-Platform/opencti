@@ -1380,6 +1380,12 @@ export type AttributeEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
 };
 
+export type AttributeLabel = {
+  __typename?: 'AttributeLabel';
+  label?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+};
+
 export type AttributePath = {
   __typename?: 'AttributePath';
   configuration?: Maybe<AttributeColumnConfiguration>;
@@ -8721,6 +8727,7 @@ export enum EmailTemplateOrdering {
 
 export type EntitySetting = BasicObject & InternalObject & {
   __typename?: 'EntitySetting';
+  attributeLabels: Array<AttributeLabel>;
   attributesDefinitions: Array<TypeAttribute>;
   attributes_configuration?: Maybe<Scalars['String']['output']>;
   availableSettings: Array<Scalars['String']['output']>;
@@ -39354,6 +39361,7 @@ export type ResolversTypes = ResolversObject<{
   AttributeConnection: ResolverTypeWrapper<AttributeConnection>;
   AttributeEdge: ResolverTypeWrapper<AttributeEdge>;
   AttributeEditMutations: ResolverTypeWrapper<AttributeEditMutations>;
+  AttributeLabel: ResolverTypeWrapper<AttributeLabel>;
   AttributePath: ResolverTypeWrapper<AttributePath>;
   AttributeRef: ResolverTypeWrapper<AttributeRef>;
   AttributeRefInput: AttributeRefInput;
@@ -40498,6 +40506,7 @@ export type ResolversParentTypes = ResolversObject<{
   AttributeConnection: AttributeConnection;
   AttributeEdge: AttributeEdge;
   AttributeEditMutations: AttributeEditMutations;
+  AttributeLabel: AttributeLabel;
   AttributePath: AttributePath;
   AttributeRef: AttributeRef;
   AttributeRefInput: AttributeRefInput;
@@ -41912,6 +41921,11 @@ export type AttributeEdgeResolvers<ContextType = any, ParentType extends Resolve
 export type AttributeEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeEditMutations'] = ResolversParentTypes['AttributeEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Attribute']>, ParentType, ContextType, RequireFields<AttributeEditMutationsFieldPatchArgs, 'input'>>;
+}>;
+
+export type AttributeLabelResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeLabel'] = ResolversParentTypes['AttributeLabel']> = ResolversObject<{
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type AttributePathResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributePath'] = ResolversParentTypes['AttributePath']> = ResolversObject<{
@@ -44323,6 +44337,7 @@ export type EmailTemplateEdgeResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type EntitySettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySetting'] = ResolversParentTypes['EntitySetting']> = ResolversObject<{
+  attributeLabels?: Resolver<Array<ResolversTypes['AttributeLabel']>, ParentType, ContextType>;
   attributesDefinitions?: Resolver<Array<ResolversTypes['TypeAttribute']>, ParentType, ContextType>;
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -53068,6 +53083,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AttributeConnection?: AttributeConnectionResolvers<ContextType>;
   AttributeEdge?: AttributeEdgeResolvers<ContextType>;
   AttributeEditMutations?: AttributeEditMutationsResolvers<ContextType>;
+  AttributeLabel?: AttributeLabelResolvers<ContextType>;
   AttributePath?: AttributePathResolvers<ContextType>;
   AttributeRef?: AttributeRefResolvers<ContextType>;
   AttributesMap?: AttributesMapResolvers<ContextType>;

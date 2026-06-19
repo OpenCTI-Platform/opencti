@@ -16,6 +16,11 @@ type TypeAttribute {
   scale: String
 }
 
+type AttributeLabel {
+  name: String!
+  label: String
+}
+
 
 type ScaleAttribute {
   name: String!
@@ -52,6 +57,7 @@ type EntitySetting implements InternalObject & BasicObject {
   # The underlying data is already exposed through mandatoryAttributes / scaleAttributes /
   # defaultValuesAttributes (all plain @auth), so this only requires authentication.
   attributesDefinitions: [TypeAttribute!]! @auth
+  attributeLabels: [AttributeLabel!]! @auth
   mandatoryAttributes: [String!]! @auth
   scaleAttributes: [ScaleAttribute!]! @auth
   defaultValuesAttributes: [DefaultValueAttribute!]! @auth

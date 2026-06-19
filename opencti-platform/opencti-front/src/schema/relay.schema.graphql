@@ -10836,6 +10836,7 @@ type EntitySetting implements InternalObject & BasicObject {
   enforce_reference: Boolean
   attributes_configuration: String
   attributesDefinitions: [TypeAttribute!]!
+  attributeLabels: [AttributeLabel!]!
   mandatoryAttributes: [String!]!
   scaleAttributes: [ScaleAttribute!]!
   defaultValuesAttributes: [DefaultValueAttribute!]!
@@ -13099,6 +13100,11 @@ type TypeAttribute {
   label: String
   defaultValues: [DefaultValue!]
   scale: String
+}
+
+type AttributeLabel {
+  name: String!
+  label: String
 }
 
 type ScaleAttribute {
