@@ -94,6 +94,7 @@ import {
   DatabaseExportOutline,
   FileDelimitedOutline,
   FileOutline,
+  FilterOutline,
   FilterVariant,
   Fire,
   FlaskOutline,
@@ -614,6 +615,8 @@ const iconSelector = (
       return <LockMinusOutline style={style} fontSize={fontSize} role="img" />;
     case 'customview':
       return <Insights style={style} fontSize={fontSize} role="img" />;
+    case 'savedfilter':
+      return <FilterOutline style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:
