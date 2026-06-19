@@ -12,7 +12,7 @@ import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import type { FilterGroup } from '../../utils/filters/filtersHelpers-types';
-import FilterGroupsDisplay from './FilterGroupsDisplay';
+import FilterGroupsVisualDisplay from './FilterGroupsVisualDisplay';
 
 interface ImbricatedFilterGroupDisplayProps {
   filterObj: FilterGroup;
@@ -87,7 +87,7 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
           >
             {t_i18n('Your filter group cannot be modified yet:')}
           </Typography>
-          <FilterGroupsDisplay
+          <FilterGroupsVisualDisplay
             filtersRepresentativesMap={filtersRepresentativesMap}
             filterGroups={filterGroups}
             filterMode={filterMode}

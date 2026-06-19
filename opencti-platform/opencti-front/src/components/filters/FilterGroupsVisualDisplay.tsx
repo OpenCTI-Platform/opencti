@@ -75,13 +75,13 @@ const FilterValuesDisplay: FunctionComponent<FilterValuesDisplayProps> = ({
 
 // ─── FilterGroupsDisplay ─────────────────────────────────────────────
 
-interface FilterGroupsDisplayProps {
+interface FilterGroupsVisualDisplayProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   filterGroups: FilterGroup[];
   filterMode: string;
 }
 
-const FilterGroupsDisplay: FunctionComponent<FilterGroupsDisplayProps> = ({
+const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProps> = ({
   filtersRepresentativesMap,
   filterGroups,
   filterMode,
@@ -126,7 +126,7 @@ const FilterGroupsDisplay: FunctionComponent<FilterGroupsDisplayProps> = ({
           ))}
           {values.filter((v) => v.key === 'dynamic').map((value) => (
             <span key="regardingOf-dynamic">
-              <FilterGroupsDisplay
+              <FilterGroupsVisualDisplay
                 filterGroups={value.values}
                 filtersRepresentativesMap={filtersRepresentativesMap}
                 filterMode="and"
@@ -140,7 +140,7 @@ const FilterGroupsDisplay: FunctionComponent<FilterGroupsDisplayProps> = ({
     // case of filters with filters in 'values'
     if (key === 'dynamicTo' || key === 'dynamicFrom') {
       return (
-        <FilterGroupsDisplay
+        <FilterGroupsVisualDisplay
           filterGroups={values}
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterMode={mode ?? 'or'}
@@ -208,7 +208,6 @@ const FilterGroupsDisplay: FunctionComponent<FilterGroupsDisplayProps> = ({
             ...modeBadgeSx,
             display: 'inline-block',
             height: 'fit-content',
-            marginBottom: '8px',
           }}
         >
           {filterMode}
@@ -235,7 +234,7 @@ const FilterGroupsDisplay: FunctionComponent<FilterGroupsDisplayProps> = ({
             >
               {f.mode}
             </Box>
-            <FilterGroupsDisplay
+            <FilterGroupsVisualDisplay
               filtersRepresentativesMap={filtersRepresentativesMap}
               filterGroups={f.filterGroups}
               filterMode={filterMode}
@@ -247,4 +246,4 @@ const FilterGroupsDisplay: FunctionComponent<FilterGroupsDisplayProps> = ({
   ));
 };
 
-export default FilterGroupsDisplay;
+export default FilterGroupsVisualDisplay;
