@@ -8,6 +8,7 @@ import {
   LIVE_STREAM_NAME,
   NOTIFICATION_STREAM_NAME,
   type RawStreamClient,
+  type SizedNotifEvent,
   type StreamProcessor,
   type StreamProcessorOption,
 } from './stream/stream-utils';
@@ -227,14 +228,63 @@ const rawFetchStreamEventsRangeFromEventId = async (
 
 // region opencti notification stream
 const notificationTrimming = conf.get('redis:notification_trimming') || 50000;
+// Number of notification stream entries fetched per XRANGE batch when reading a range (digest computation).
+// Reading the whole range in a single pass can exhaust the memory heap when the stream holds a very large number
+// of events, so we paginate and let the caller filter/transform each batch incrementally
+// (see handleDigestNotifications) instead of materializing the whole range at once.
+const notificationRangeBatchSize = conf.get('redis:notification_range_batch_size') || 1000;
 const rawStoreNotificationEvent = async <T extends StreamNotifEvent> (event: T) => {
   const eventStreamData = mapJSToStream(event);
   await getClientBase().call('XADD', REDIS_NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...eventStreamData);
 };
-const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (start: Date, end: Date): Promise<Array<T>> => {
-  const streamResult = await getClientBase().call('XRANGE', REDIS_NOTIFICATION_STREAM_NAME, start.getTime(), end.getTime()) as any[];
-  const streamElements: Array<SseEvent<T>> = streamResult.map((r) => mapStreamToJS(r));
-  return streamElements.filter((s) => s.event === 'live').map((e) => e.data);
+// Byte size of a raw XRANGE entry [id, [field, value, ...]]: sum of the already-serialized stored
+// strings. Cheaper and more faithful than re-stringifying the parsed object to budget memory.
+const rawEntryByteSize = (rawFields: any[]): number => {
+  let size = 0;
+  for (let i = 0; i < rawFields.length; i += 1) {
+    size += Buffer.byteLength(rawFields[i]);
+  }
+  return size;
+};
+const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (
+  start: Date,
+  end: Date,
+  // Called for each batch of 'live' notification events (with their stored byte size) in the range.
+  // Return false to stop the iteration early.
+  callback: (events: Array<SizedNotifEvent<T>>) => Promise<boolean | void> | boolean | void,
+): Promise<void> => {
+  const client = getClientBase();
+  const endId = `${end.getTime()}`;
+  let fromId = `${start.getTime()}`;
+  let isFirstBatch = true;
+  for (;;) {
+    // The '(' prefix excludes the cursor entry already processed at the end of the previous batch.
+    // cursor is in the form "timestamp - eventCursor"
+    const startId = isFirstBatch ? fromId : `(${fromId}`;
+    const streamResult = await client.call('XRANGE', REDIS_NOTIFICATION_STREAM_NAME, startId, endId, 'COUNT', notificationRangeBatchSize) as any[];
+    if (!streamResult || streamResult.length === 0) {
+      break;
+    }
+    const events: Array<SizedNotifEvent<T>> = [];
+    for (let i = 0; i < streamResult.length; i += 1) {
+      const parsed = mapStreamToJS(streamResult[i]);
+      if (parsed.event === 'live') {
+        events.push({ event: parsed.data as T, byteSize: rawEntryByteSize(streamResult[i][1]) });
+      }
+    }
+    if (events.length > 0) {
+      const shouldContinue = await callback(events);
+      if (shouldContinue === false) {
+        break;
+      }
+    }
+    // A short batch means the range is exhausted, no need for an extra empty XRANGE call.
+    if (streamResult.length < notificationRangeBatchSize) {
+      break;
+    }
+    fromId = R.last(streamResult)[0];
+    isFirstBatch = false;
+  }
 };
 // endregion
 
