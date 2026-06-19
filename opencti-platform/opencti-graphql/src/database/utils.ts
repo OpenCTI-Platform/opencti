@@ -195,6 +195,7 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
       break;
     case 'hour':
       dateFormat = 'YYYY-MM-DD HH:mm:ss';
+      startDateParsed = startDateParsed.startOf('hour');
       break;
     default:
       dateFormat = 'YYYY-MM-DD';
