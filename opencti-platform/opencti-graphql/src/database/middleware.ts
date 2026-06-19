@@ -3580,7 +3580,6 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
-  alreadyLocked?: boolean;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,
