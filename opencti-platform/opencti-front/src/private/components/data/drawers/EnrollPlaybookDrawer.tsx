@@ -14,10 +14,15 @@ import { EnrollPlaybookDrawerQuery$data } from '@components/data/drawers/__gener
 
 const toolBarPlaybooksQuery = graphql`
   query EnrollPlaybookDrawerQuery {
-    playbooksForEnrollment {
-      id
-      name
-      description
+    playbooks(first: 500, orderBy: name, orderMode: asc) {
+      edges {
+        node {
+          id
+          name
+          description
+          playbook_running
+        }
+      }
     }
   }
 `;
@@ -44,8 +49,9 @@ const EnrollPlaybookDrawer = ({ open, onClose, onLaunch }: Props) => {
       .toPromise()
       .then((playbooks) => {
         const data = playbooks as EnrollPlaybookDrawerQuery$data;
-        const fetched = (data?.playbooksForEnrollment ?? [])
-          .filter((p): p is NonNullable<typeof p> => Boolean(p))
+        const fetched = (data?.playbooks?.edges ?? [])
+          .map((edge) => edge?.node)
+          .filter((p): p is NonNullable<typeof p> => Boolean(p && p.playbook_running))
           .map((p) => ({
             label: p.name,
             value: p.id,
