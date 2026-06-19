@@ -235,8 +235,8 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
         fragments.push(stripJsComments(text));
       } else {
         // keep the same output size in order to permit to easy code edition
-        // replace the first char by a semicolon, so multiple EJS tag on the same would not lead to invalid JS code
-        const cleaned = `;${text.replaceAll(/[^\r\n]/g, ' ').substring(1)}`;
+        // replace the first char by a line break, so multiple EJS tag on the same would not lead to invalid JS code
+        const cleaned = `\n${text.replaceAll(/[^\r\n]/g, ' ').substring(1)}`;
         fragments.push(cleaned);
       }
     }
