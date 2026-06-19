@@ -55,11 +55,13 @@ Playbooks can be used to assist in a variety of use cases such as:
 
 ### Manually enrolling an entity in a playbook
 
-You can enroll an individual entity into a playbook using the **“Enroll in playbook”** action from the entity detail view.
+You can enroll an individual entity into a playbook using the **“Enroll in playbook”** action from the entity detail view. You can also bulk enroll entities from any entity list view using the toolbar. 
 
 ![Enroll entity in playbook](assets/playbook_enroll_entity.png)
 
-This opens a drawer where you can select the playbook to trigger.
+![Enroll_bulk_selected_entities_in_playbook](assets/playbook_bulk_enroll_entities.png)
+
+Either option opens a drawer where you can select the playbook to trigger.
 
 ![Select playbook](assets/playbook_enroll_select.png)
 
