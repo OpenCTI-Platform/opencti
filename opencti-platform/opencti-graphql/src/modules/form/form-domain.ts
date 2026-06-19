@@ -332,6 +332,7 @@ const makeCompositeKey = (id: string, groupsRestrictionIds: string[] | undefined
 export const resolveAuthorizedMembersForDraft = (
   user: AuthUser,
   rawRules: unknown[],
+  createdBy: string | null = null,
 ): MemberAccessInput[] => {
   const authorizedMembersMap = new Map<string, MemberAccessInput>();
   rawRules.forEach((rule) => {
@@ -355,19 +356,16 @@ export const resolveAuthorizedMembersForDraft = (
     }
 
     if (value === 'AUTHOR') {
-      if (user.organizations) {
-        user.organizations.forEach((org) => {
-          // Each (org, groupsRestriction) combination is a separate entry so that
-          // e.g. "Org A + analyst → edit" and "Org A + manager → view" are kept distinct.
-          const key = makeCompositeKey(org.internal_id, groupsRestrictionIds);
-          if (!authorizedMembersMap.has(key)) {
-            authorizedMembersMap.set(key, {
-              id: org.internal_id,
-              access_right: accessRight,
-              groups_restriction_ids: groupsRestrictionIds,
-            });
-          }
-        });
+      if (createdBy) {
+        // AUTHOR resolves to the STIX author of the draft (the createdBy entity, typically an Organization).
+        const key = makeCompositeKey(createdBy, groupsRestrictionIds);
+        if (!authorizedMembersMap.has(key)) {
+          authorizedMembersMap.set(key, {
+            id: createdBy,
+            access_right: accessRight,
+            groups_restriction_ids: groupsRestrictionIds,
+          });
+        }
       }
       return;
     }
@@ -489,9 +487,9 @@ export const formSubmit = async (
       const canOverrideAuthorizedMembers = isFormIntakeDefaultsEnabled && (isBypass || schema.draftDefaults?.authorizedMembers?.isEditable);
       let authorized_members: MemberAccessInput[] = [];
       if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
+        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
       } else if (isFormIntakeDefaultsEnabled && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
+        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
       }
 
       const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {

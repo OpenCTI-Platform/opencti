@@ -6,33 +6,26 @@ import { z } from 'zod';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 import type { MemberAccessInput } from '../../../generated/graphql';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
-import { storeLoadById } from '../../../database/middleware-loader';
-import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
-import { RELATION_PARTICIPATE_TO } from '../../../schema/internalRelationship';
-import type { BasicOrganizationEntity } from '../../../types/store';
+import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
 
 /**
  * Resolves dynamic authorized member keys (AUTHOR, CREATORS, ASSIGNEES, PARTICIPANTS)
  */
-const resolveDynamicAuthorizedMembers = async (
-  context: any,
-  user: any,
+const resolveDynamicAuthorizedMembers = (
   entity: any,
   rawMembers: Array<{ id: string; access_right: string; groups_restriction_ids?: string[] }>,
-): Promise<MemberAccessInput[]> => {
+): MemberAccessInput[] => {
   const resolved: MemberAccessInput[] = [];
   for (const member of rawMembers) {
     const { id, access_right, groups_restriction_ids } = member;
     if (id === 'AUTHOR') {
-      // It resolves to the organization of the draft author
-      const creatorIds: string[] = Array.isArray(entity.creator_id)
-        ? entity.creator_id
-        : (entity.creator_id ? [entity.creator_id] : []);
-      for (const creatorId of creatorIds) {
-        const userEntity = await storeLoadById<BasicOrganizationEntity>(context, user, creatorId, 'Basic-Object').catch(() => null);
-        for (const orgId of userEntity?.[RELATION_PARTICIPATE_TO] ?? []) {
-          resolved.push({ id: orgId, access_right, groups_restriction_ids });
-        }
+      // AUTHOR resolves to the STIX author of the draft (the createdBy entity, typically an Organization).
+      const createdByRef = entity[RELATION_CREATED_BY];
+      const createdByIds: string[] = Array.isArray(createdByRef)
+        ? createdByRef
+        : (createdByRef ? [createdByRef] : []);
+      for (const authorId of createdByIds) {
+        if (authorId) resolved.push({ id: authorId, access_right, groups_restriction_ids });
       }
     } else if (id === 'CREATORS') {
       const creatorIds: string[] = Array.isArray(entity.creator_id)
@@ -96,7 +89,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
   updateAuthorizedMembers: async (executionContext, params) => {
     const { entity, context, user } = executionContext;
     const rawMembers: Array<{ id: string; access_right: string; groups_restriction_ids?: string[] }> = params?.authorized_members ?? [];
-    const resolvedMembers = await resolveDynamicAuthorizedMembers(context, user, entity, rawMembers);
+    const resolvedMembers = resolveDynamicAuthorizedMembers(entity, rawMembers);
 
     if (entity?.entity_type === 'DraftWorkspace') {
       await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, resolvedMembers);
