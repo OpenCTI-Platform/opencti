@@ -105,6 +105,29 @@ describe('Filters utils', () => {
       };
       expect(removeFrontendIdAndEmptyFiltersFromFilterGroupObject(filters as unknown as FilterGroup)).toStrictEqual(filtersResult);
     });
+
+    it('should preserve filters with has_changed/not_has_changed operators despite empty values', () => {
+      const filters = {
+        mode: 'and',
+        filters: [
+          { id: 'id-1', key: 'confidence', values: [], operator: 'has_changed' },
+          { id: 'id-2', key: 'x_opencti_workflow_id', values: [], operator: 'not_has_changed' },
+          { id: 'id-3', key: 'objectMarking', values: [], operator: 'eq' },
+          { id: 'id-4', key: 'entity_type', values: ['Report'], operator: 'eq' },
+        ],
+        filterGroups: [],
+      };
+      const filtersResult = {
+        mode: 'and',
+        filters: [
+          { key: 'confidence', values: [], operator: 'has_changed' },
+          { key: 'x_opencti_workflow_id', values: [], operator: 'not_has_changed' },
+          { key: 'entity_type', values: ['Report'], operator: 'eq' },
+        ],
+        filterGroups: [],
+      };
+      expect(removeFrontendIdAndEmptyFiltersFromFilterGroupObject(filters as unknown as FilterGroup)).toStrictEqual(filtersResult);
+    });
   });
 
   describe('removeIdAndIncorrectKeysFromFilterGroupObject', () => {
