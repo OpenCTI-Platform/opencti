@@ -16,6 +16,8 @@ import { INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
+import { schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
@@ -169,13 +171,18 @@ export const queryEntitySettingSchemaAttributes = async (
   return getEntitySettingSchemaAttributes(context, user, entitySetting);
 };
 
-export const queryEntitySettingAttributeLabels = async (
-  context: AuthContext,
-  user: AuthUser,
+export const queryEntitySettingAttributeLabels = (
   entitySetting: BasicStoreEntityEntitySetting,
-): Promise<{ name: string; label: string | null }[]> => {
-  const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
-  return attributes.map((a) => ({ name: a.name, label: a.label ?? null }));
+): { name: string; label: string | null }[] => {
+  if (!entitySetting) return [];
+  const { target_type } = entitySetting;
+  const attrsFromSchema = Array.from(schemaAttributesDefinition.getAttributes(target_type).values())
+    .filter((attr) => attr.editDefault || attr.mandatoryType === 'external' || attr.mandatoryType === 'customizable')
+    .map((attr) => ({ name: attr.name, label: attr.label ?? null }));
+  const attrsFromRefs = Array.from(schemaRelationsRefDefinition.getRelationsRef(target_type).values())
+    .filter((ref) => ref.mandatoryType === 'external' || ref.mandatoryType === 'customizable')
+    .map((ref) => ({ name: ref.name, label: ref.label ?? null }));
+  return [...attrsFromSchema, ...attrsFromRefs];
 };
 
 export const queryScaleAttributesForSetting = async (

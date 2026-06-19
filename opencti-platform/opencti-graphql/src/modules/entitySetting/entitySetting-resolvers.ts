@@ -26,7 +26,7 @@ const entitySettingResolvers: Resolvers = {
   },
   EntitySetting: {
     attributesDefinitions: (entitySetting, _, context) => queryEntitySettingSchemaAttributes(context, context.user, entitySetting),
-    attributeLabels: (entitySetting, _, context) => queryEntitySettingAttributeLabels(context, context.user, entitySetting),
+    attributeLabels: (entitySetting) => queryEntitySettingAttributeLabels(entitySetting),
     mandatoryAttributes: (entitySetting, _, context) => queryMandatoryAttributesForSetting(context, context.user, entitySetting),
     scaleAttributes: (entitySetting, _, context) => queryScaleAttributesForSetting(context, context.user, entitySetting),
     defaultValuesAttributes: (entitySetting, _, context) => queryDefaultValuesAttributesForSetting(context, context.user, entitySetting),
