@@ -13,6 +13,7 @@ type SavedFilterSelectionProps = {
   data: SavedFiltersSelectionData[];
   currentSavedFilter?: SavedFiltersSelectionData;
   setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
+  onRefetch: () => void;
 };
 
 export type SavedFiltersAutocompleteOptionType = {
@@ -28,6 +29,7 @@ const SavedFilterSelection = ({
   data,
   currentSavedFilter,
   setCurrentSavedFilter,
+  onRefetch,
 }: SavedFilterSelectionProps) => {
   const { me } = useAuth();
   const {
@@ -97,6 +99,18 @@ const SavedFilterSelection = ({
     }
   }, [currentSavedFilter]);
 
+  // Sync local state when the underlying data changes (e.g. after a name edit)
+  useEffect(() => {
+    if (selectedSavedFilter) {
+      const updated = sortedOptions.find((o) => o.value.id === selectedSavedFilter.value.id);
+      if (updated && updated.label !== selectedSavedFilter.label) {
+        setSelectedSavedFilter(updated);
+        setInputValue(updated.label);
+        setCurrentSavedFilter(updated.value);
+      }
+    }
+  }, [data]);
+
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
       handleReset();
@@ -129,6 +143,7 @@ const SavedFilterSelection = ({
         value={selectedSavedFilter}
         inputValue={inputValue}
         localStorageKey={localStorageKey}
+        onRefetch={onRefetch}
       />
       {!!savedFilterToDelete && (
         <SavedFilterDeleteDialog

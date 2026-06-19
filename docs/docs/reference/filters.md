@@ -40,6 +40,45 @@ You can add as many filters as you want, even use the same key twice with differ
 
 The boolean modes (and/or) are either **global** (between every attribute filters) or **local** (between values inside a filter). Both can be switched with a single click, changing the logic of your filtering.
 
+## Sharing filters
+
+OpenCTI allows you to save filters and share them with other members (users, groups, organizations). This feature enables teams to collaborate by reusing the same filter configurations across different views.
+Sharing saved filters and managing saved filters created by other users requires the **Share filters** capability.
+
+The shared saved filters are available in the **Saved filters** section, alongside the saved filters you have created.
+
+![Shared saved filters selection](./assets/filters-shareSavedFilter-selection.png)
+
+### How to share a saved filter
+
+Save a filter in any entity list view using the save button.
+Open the sharing settings of the saved filter.
+Add authorized members with the appropriate access right:
+
+  - **can view**: the member can see and use the shared filter.
+  - **can manage**: the member can see, use, update the name, manage sharing and delete the saved filter.
+
+The creator of the saved filter always has the **can manage** access right. At least one member with the **can manage** access right must remain at all times.
+
+![Sharing a saved filter](./assets/filters-shareSavedFilter-creation.png)
+
+### Access rights
+
+Access rights on saved filters depend on whether the user has the **Share filters** capability or not.
+
+#### Without the "Share filters" capability
+
+A user without this capability can fully manage (view, use, update the name, delete) saved filters they have created. They can also view and use filters shared with them by other users who granted them the **can view** access right.
+
+#### With the "Share filters" capability
+
+A user with this capability can share saved filters with other members. The actions they can perform on a shared filter depend on the access right granted to them (see the table below).
+Note that the creator of a saved filter always has the **can manage** access right.
+
+| Access right | Can view | Can use | Can update | Can delete | Can manage sharing |
+|--------------|----------|---------|------------|------------|-------------------|
+| can view     | ✅        | ✅       | ❌          | ❌          | ❌                 |
+| can manage   | ✅        | ✅       | ✅          | ✅          | ✅                 |
 
 ## Filters format
 

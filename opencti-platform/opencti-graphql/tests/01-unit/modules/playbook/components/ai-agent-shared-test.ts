@@ -29,7 +29,20 @@ vi.mock('../../../../../src/config/conf', () => ({
 
 vi.mock('../../../../../src/utils/access', () => ({
   AUTOMATION_MANAGER_USER: { id: 'automation-manager', user_email: 'AUTOMATION MANAGER' },
+  SYSTEM_USER: { id: 'system', user_email: 'SYSTEM' },
   executionContext: vi.fn((source: string) => ({ source })),
+}));
+
+vi.mock('../../../../../src/database/middleware-loader', () => ({
+  internalLoadById: vi.fn(),
+}));
+
+vi.mock('../../../../../src/schema/internalObject', () => ({
+  ENTITY_TYPE_USER: 'User',
+}));
+
+vi.mock('../../../../../src/schema/general', () => ({
+  OPENCTI_ADMIN_UUID: 'admin-uuid',
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────────
@@ -38,7 +51,10 @@ import nconf from 'nconf';
 import xtmOneClient from '../../../../../src/modules/xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../../../../../src/domain/xtm-auth';
 import { getHttpClient } from '../../../../../src/utils/http-client';
-import { AUTOMATION_MANAGER_USER } from '../../../../../src/utils/access';
+import { AUTOMATION_MANAGER_USER, SYSTEM_USER } from '../../../../../src/utils/access';
+import { internalLoadById } from '../../../../../src/database/middleware-loader';
+import { ENTITY_TYPE_USER } from '../../../../../src/schema/internalObject';
+import { OPENCTI_ADMIN_UUID } from '../../../../../src/schema/general';
 import {
   AGENT_CALL_TIMEOUT_MS,
   buildAgentMessageContent,
@@ -46,6 +62,7 @@ import {
   buildPlaybookAutomationContext,
   callXtmAgent,
   isAgentBoundToIntent,
+  resolveRunAsUserId,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
 
@@ -181,11 +198,34 @@ describe('ai-agent-shared', () => {
     });
   });
 
+  describe('resolveRunAsUserId', () => {
+    it('should return undefined when no run-as value is set', () => {
+      expect(resolveRunAsUserId(undefined)).toBeUndefined();
+      expect(resolveRunAsUserId(null)).toBeUndefined();
+      expect(resolveRunAsUserId('')).toBeUndefined();
+      expect(resolveRunAsUserId('   ')).toBeUndefined();
+      expect(resolveRunAsUserId({})).toBeUndefined();
+      expect(resolveRunAsUserId({ value: '   ' })).toBeUndefined();
+    });
+
+    it('should return the trimmed id from a raw string value', () => {
+      expect(resolveRunAsUserId('  user-1  ')).toBe('user-1');
+    });
+
+    it('should return the trimmed value from a member-picker option object', () => {
+      expect(resolveRunAsUserId({ label: 'Alice', value: '  user-2 ' })).toBe('user-2');
+    });
+  });
+
   describe('callXtmAgent', () => {
+    const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
+
     beforeEach(() => {
       vi.mocked(issueXtmJwt).mockResolvedValue('signed.jwt');
       vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
       vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
+      // No run-as user configured by default -> the seeded admin is resolved.
+      vi.mocked(internalLoadById).mockResolvedValue(ADMIN_JWT_USER as any);
     });
 
     it('should return null and not call the HTTP client when XTM One is not configured', async () => {
@@ -198,14 +238,21 @@ describe('ai-agent-shared', () => {
       expect(getHttpClient).not.toHaveBeenCalled();
     });
 
-    it('should mint the JWT as AUTOMATION_MANAGER_USER and POST a non-streaming chat message', async () => {
+    it('should default to the seeded admin and POST a non-streaming chat message', async () => {
       const post = vi.fn().mockResolvedValue({ data: { content: 'agent reply' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
       const result = await callXtmAgent('agent-slug', 'hello world');
 
       expect(result).toBe('agent reply');
-      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
+      // No run-as user -> resolve the seeded admin by its fixed UUID.
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        OPENCTI_ADMIN_UUID,
+        { type: ENTITY_TYPE_USER },
+      );
+      expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
       expect(getHttpClient).toHaveBeenCalledTimes(1);
       const headers = vi.mocked(getHttpClient).mock.calls[0][0].headers as Record<string, string>;
       expect(headers.Authorization).toBe('Bearer signed.jwt');
@@ -215,6 +262,53 @@ describe('ai-agent-shared', () => {
         { agent_slug: 'agent-slug', content: 'hello world', stream: false },
         { timeout: AGENT_CALL_TIMEOUT_MS },
       );
+    });
+
+    it('should mint the JWT for the resolved run-as user when a runAsUserId is provided', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-7', user_email: 'analyst@org.test' } as any);
+      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await callXtmAgent('agent-slug', 'content', 'user-7');
+
+      expect(result).toBe('ok');
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        'user-7',
+        { type: ENTITY_TYPE_USER },
+      );
+      expect(issueXtmJwt).toHaveBeenCalledWith({ id: 'user-7', user_email: 'analyst@org.test' }, 'https://xtm-one.test');
+    });
+
+    it('should fall back to AUTOMATION_MANAGER_USER when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      await callXtmAgent('agent-slug', 'content', 'missing-user');
+
+      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
+    });
+
+    it('should fall back to AUTOMATION_MANAGER_USER when the resolved user has no email', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-9' } as any);
+      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      await callXtmAgent('agent-slug', 'content', 'user-9');
+
+      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
+    });
+
+    it('should fall back to AUTOMATION_MANAGER_USER when resolving the run-as user throws', async () => {
+      vi.mocked(internalLoadById).mockRejectedValue(new Error('ES down'));
+      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      await callXtmAgent('agent-slug', 'content', 'user-x');
+
+      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
     });
 
     it('should return null when the assistant content field is missing', async () => {

@@ -7,6 +7,7 @@ vi.mock('../../../../../src/modules/playbook/components/ai-agent-shared', () => 
   buildAgentSlugOneOf: vi.fn(),
   callXtmAgent: vi.fn(),
   isAgentBoundToIntent: vi.fn(),
+  resolveRunAsUserId: vi.fn(),
 }));
 
 vi.mock('../../../../../src/config/conf', () => ({
@@ -16,7 +17,13 @@ vi.mock('../../../../../src/config/conf', () => ({
 // ── Imports (after mocks) ───────────────────────────────────────────────
 
 import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from '../../../../../src/modules/playbook/components/ai-agent-send-component';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from '../../../../../src/modules/playbook/components/ai-agent-shared';
+import {
+  buildAgentMessageContent,
+  buildAgentSlugOneOf,
+  callXtmAgent,
+  isAgentBoundToIntent,
+  resolveRunAsUserId,
+} from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
 import type { ExecutorParameters } from '../../../../../src/modules/playbook/playbook-types';
 
@@ -51,6 +58,8 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(buildAgentMessageContent).mockReturnValue('built content');
+    // No run-as user configured by default; tests that need it override this.
+    vi.mocked(resolveRunAsUserId).mockReturnValue(undefined);
     // Default to "agent slug is bound to the consumer intent" so the
     // existing tests exercise the live path; tests that need the
     // negative branch override this explicitly.
@@ -129,7 +138,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       );
 
       expect(buildAgentMessageContent).toHaveBeenCalledWith(BUNDLE, 'do something');
-      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content');
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', undefined);
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
       expect(result.forceBundleTracking).toBe(true);
@@ -142,10 +151,21 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content');
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', undefined);
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
       expect(result.forceBundleTracking).toBe(true);
+    });
+
+    it('should resolve the configured run-as user and forward it to the agent call', async () => {
+      vi.mocked(resolveRunAsUserId).mockReturnValue('run-as-user-id');
+      vi.mocked(callXtmAgent).mockResolvedValue('reply');
+
+      await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', 'run-as-user-id');
     });
   });
 });

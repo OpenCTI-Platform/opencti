@@ -97,6 +97,7 @@ export const reportWorkflowAsyncActionResult = async (
     if (!actionFn) {
       logApp.error('[workflow-async-completion] Unknown syncAction type', { type: actionConfig.type });
       await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
         { key: 'pendingStatus', value: ['error'] },
         { key: 'pendingError', value: [`Unknown syncAction type: ${actionConfig.type}`] },
       ]);
@@ -108,8 +109,35 @@ export const reportWorkflowAsyncActionResult = async (
       const syncErrorMsg = syncError instanceof Error ? syncError.message : String(syncError);
       logApp.error('[workflow-async-completion] syncAction failed', { type: actionConfig.type, error: syncErrorMsg });
       await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
         { key: 'pendingStatus', value: ['error'] },
         { key: 'pendingError', value: [`syncAction '${actionConfig.type}' failed: ${syncErrorMsg}`] },
+      ]);
+      return;
+    }
+  }
+
+  // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block)
+  for (const actionConfig of (pendingTransition.onEnterActions ?? [])) {
+    const actionFn = ActionRegistry[actionConfig.type];
+    if (!actionFn) {
+      logApp.error('[workflow-async-completion] Unknown onEnter action type', { type: actionConfig.type });
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: [`Unknown onEnter action type: ${actionConfig.type}`] },
+      ]);
+      return;
+    }
+    try {
+      await actionFn(workflowContext, actionConfig.params);
+    } catch (onEnterError) {
+      const onEnterErrorMsg = onEnterError instanceof Error ? onEnterError.message : String(onEnterError);
+      logApp.error('[workflow-async-completion] onEnter action failed', { type: actionConfig.type, error: onEnterErrorMsg });
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: [`onEnter action '${actionConfig.type}' failed: ${onEnterErrorMsg}`] },
       ]);
       return;
     }

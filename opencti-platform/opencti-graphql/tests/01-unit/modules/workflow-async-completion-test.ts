@@ -280,6 +280,108 @@ describe('reportWorkflowAsyncActionResult', () => {
     expect(history[history.length - 1].state).toBe('reviewing');
   });
 
+  it('sets pendingStatus=error and persists pendingTransition when an unknown onEnter action type is encountered', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      onEnterActions: [{ type: 'unknownOnEnterType', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).unknownOnEnterType = undefined;
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const calls = (updateAttribute as any).mock.calls;
+    const lastPatches = calls[calls.length - 1][4];
+    expect(lastPatches.find((p: any) => p.key === 'pendingStatus')?.value[0]).toBe('error');
+    expect(lastPatches.find((p: any) => p.key === 'pendingError')?.value[0]).toContain('Unknown onEnter action type');
+    // pendingTransition must be persisted so the UI shows the correct slot statuses
+    const ptPatch = lastPatches.find((p: any) => p.key === 'pendingTransition');
+    expect(ptPatch).toBeDefined();
+    const ptPersisted = JSON.parse(ptPatch.value[0]);
+    expect(ptPersisted.asyncActions[0].status).toBe('success');
+  });
+
+  it('sets pendingStatus=error and persists pendingTransition when an onEnter action throws', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      onEnterActions: [{ type: 'throwingOnEnter', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).throwingOnEnter = vi.fn().mockRejectedValue(new Error('onEnter blew up'));
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const calls = (updateAttribute as any).mock.calls;
+    const lastPatches = calls[calls.length - 1][4];
+    expect(lastPatches.find((p: any) => p.key === 'pendingStatus')?.value[0]).toBe('error');
+    expect(lastPatches.find((p: any) => p.key === 'pendingError')?.value[0]).toContain('onEnter blew up');
+    const ptPatch = lastPatches.find((p: any) => p.key === 'pendingTransition');
+    expect(ptPatch).toBeDefined();
+    const ptPersisted = JSON.parse(ptPatch.value[0]);
+    expect(ptPersisted.asyncActions[0].status).toBe('success');
+  });
+
+  it('runs onEnterActions after syncActions and then advances state', async () => {
+    const executionOrder: string[] = [];
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [{ type: 'syncFirst', params: {} }],
+      onEnterActions: [{ type: 'onEnterSecond', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).syncFirst = vi.fn().mockImplementation(() => { executionOrder.push('sync'); });
+    (ActionRegistry as any).onEnterSecond = vi.fn().mockImplementation(() => { executionOrder.push('onEnter'); });
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    // syncActions must run before onEnterActions
+    expect(executionOrder).toEqual(['sync', 'onEnter']);
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    expect(patches.find((p: any) => p.key === 'currentState')?.value[0]).toBe('reviewing');
+    expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
+    expect(patches.find((p: any) => p.key === 'pendingStatus')?.value[0]).toBeNull();
+  });
+
+  it('advances state when all slots succeed and onEnterActions all succeed', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      onEnterActions: [{ type: 'onEnterOk', params: { flag: true } }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).onEnterOk = vi.fn().mockResolvedValue(undefined);
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    expect((ActionRegistry as any).onEnterOk).toHaveBeenCalledTimes(1);
+    expect(updateAttribute).toHaveBeenCalledTimes(1);
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    expect(patches.find((p: any) => p.key === 'currentState')?.value[0]).toBe('reviewing');
+    expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
+  });
+
   it('accepts a pendingTransition stored as a JSON object (not a string)', async () => {
     const pt = makePendingTransition({
       asyncActions: [

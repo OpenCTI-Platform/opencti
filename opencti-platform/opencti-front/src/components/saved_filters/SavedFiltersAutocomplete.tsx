@@ -10,7 +10,6 @@ import { useFormatter } from 'src/components/i18n';
 import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 import SavedFilterEditDialog from './SavedFilterEditDialog';
 import type { Theme } from '../Theme';
-import useHelper from '../../utils/hooks/useHelper';
 import useGranted from '../../utils/hooks/useGranted';
 
 type SavedFiltersAutocompleteProps = {
@@ -22,6 +21,7 @@ type SavedFiltersAutocompleteProps = {
   onDelete?: (value: SavedFiltersSelectionData) => void;
   options?: SavedFiltersAutocompleteOptionType[];
   localStorageKey?: string;
+  onRefetch?: () => void;
 };
 const SavedFiltersAutocomplete = ({
   isDisabled,
@@ -32,10 +32,8 @@ const SavedFiltersAutocomplete = ({
   onDelete,
   options,
   localStorageKey,
+  onRefetch,
 }: SavedFiltersAutocompleteProps) => {
-  const { isFeatureEnable } = useHelper();
-  const isSharingSavedFilterFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
-
   const hasSharingSavedFiltersCapability = useGranted(['KNOWLEDGE_KNSHAREFILTERS']);
 
   const theme = useTheme<Theme>();
@@ -69,18 +67,16 @@ const SavedFiltersAutocomplete = ({
           </Tooltip>
           {canManage && (
             <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
-              {isSharingSavedFilterFeatureEnabled && (
-                <Tooltip title={t_i18n('Edit this saved filter')}>
-                  <IconButton
-                    color="primary"
-                    onClick={handleEdit(option.value)}
-                    size="small"
-                    sx={{ padding: '4px' }}
-                  >
-                    <EditOutlined sx={{ fontSize: 18 }} />
-                  </IconButton>
-                </Tooltip>
-              )}
+              <Tooltip title={t_i18n('Edit this saved filter')}>
+                <IconButton
+                  color="primary"
+                  onClick={handleEdit(option.value)}
+                  size="small"
+                  sx={{ padding: '4px' }}
+                >
+                  <EditOutlined sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
               <Tooltip title={t_i18n('Delete this saved filter')}>
                 <IconButton
                   color="primary"
@@ -112,10 +108,7 @@ const SavedFiltersAutocomplete = ({
         isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
         inputValue={inputValue}
         options={options ?? []}
-        groupBy={isSharingSavedFilterFeatureEnabled
-          ? (option) => handleFiltersGroupBy(option.isOwner)
-          : undefined
-        }
+        groupBy={(option) => handleFiltersGroupBy(option.isOwner)}
         sx={{ width: 200 }}
         slotProps={{
           listbox: {
@@ -148,7 +141,7 @@ const SavedFiltersAutocomplete = ({
           isOpen={!!savedFilterToEdit}
           onClose={() => setSavedFilterToEdit(undefined)}
           savedFilter={savedFilterToEdit}
-          localStorageKey={localStorageKey}
+          onSaved={onRefetch}
         />
       )}
     </>

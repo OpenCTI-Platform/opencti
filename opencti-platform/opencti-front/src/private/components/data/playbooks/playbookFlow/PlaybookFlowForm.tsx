@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import Button from '@common/button/Button';
 import OpenVocabField from '@components/common/form/OpenVocabField';
+import ObjectMembersField from '@components/common/form/ObjectMembersField';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
@@ -259,6 +260,17 @@ const PlaybookFlowForm = ({
                   }
                   if (propName === 'authorized_members') {
                     return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
+                  }
+                  if (propName === 'run_as') {
+                    return (
+                      <ObjectMembersField
+                        key={propName}
+                        name={propName}
+                        label={t_i18n(property.$ref ?? 'Run as')}
+                        entityTypes={['User']}
+                        style={fieldSpacingContainerStyle}
+                      />
+                    );
                   }
                   if (propName === 'periodicity' || propName === 'duration') {
                     return (

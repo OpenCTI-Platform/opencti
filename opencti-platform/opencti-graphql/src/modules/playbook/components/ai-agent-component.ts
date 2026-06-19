@@ -18,7 +18,7 @@ import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import type { StixBundle, StixObject } from '../../../types/stix-2-1-common';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, resolveRunAsUserId } from './ai-agent-shared';
 
 // Canonical STIX 2.1 ID shape: `<type>--<uuid>` where the UUID is the
 // 8-4-4-4-12 hex layout. Stricter than the loose `[\w-]{36}` pattern in
@@ -31,6 +31,10 @@ const STIX_UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
 
 interface AiAgentTransformConfiguration {
   agent_slug: string;
+  // User the agent call runs as: the cross-platform JWT carries this
+  // user's email so XTM One (and any write-back to OpenCTI) attributes the
+  // work to a real account. Stored as the member-picker option.
+  run_as?: { label: string; value: string };
   prompt?: string;
 }
 
@@ -43,6 +47,16 @@ const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA: JSONSchemaType<AiAgentTransf
       type: 'string',
       $ref: 'AI agent',
       // Populated dynamically from the XTM One intent catalog at schema() time.
+      oneOf: [],
+    },
+    run_as: {
+      type: 'object',
+      $ref: 'Run as',
+      nullable: true,
+      default: null,
+      // Stored as the member-picker option ({ label, value }). The empty
+      // oneOf keeps AJV's JSONSchemaType satisfied without enumerating the
+      // option shape (same escape as the access-restrictions component).
       oneOf: [],
     },
     prompt: {
@@ -153,7 +167,7 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
     );
   },
   executor: async ({ playbookNode, bundle }) => {
-    const { agent_slug, prompt } = playbookNode.configuration;
+    const { agent_slug, prompt, run_as } = playbookNode.configuration;
     if (!agent_slug) {
       logApp.warn('[PLAYBOOK AI AGENT] No agent configured, returning bundle unmodified');
       return { output_port: 'unmodified', bundle };
@@ -172,7 +186,7 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
       return { output_port: 'unmodified', bundle };
     }
     const content = buildAgentMessageContent(bundle, prompt);
-    const rawResponse = await callXtmAgent(agent_slug, content);
+    const rawResponse = await callXtmAgent(agent_slug, content, resolveRunAsUserId(run_as));
     if (rawResponse === null) {
       return { output_port: 'unmodified', bundle };
     }

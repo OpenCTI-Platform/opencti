@@ -1422,6 +1422,9 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_banner_text: String
   platform_banner_level: String
   platform_no_access_message: String
+  platform_ip_whitelist: [String!]
+  platform_ip_whitelist_enabled: Boolean
+  platform_ip_whitelist_exclusions: [Member!]
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
   platform_whitemark: Boolean
@@ -1449,6 +1452,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   cert_auth: CertAuthConfig
   headers_auth: HeadersAuthConfig
   platform_https_enabled: Boolean!
+  caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!]

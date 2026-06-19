@@ -1226,6 +1226,88 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(result.success).toBe(false);
     expect(result.reason).toContain('DB connection error');
   });
+
+  // Helper shared by the three tests below
+  const setupAsyncPendingMocks = (definitionContent: string) => {
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]' });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({
+        success: true,
+        executionStatus: 'pending',
+        asyncActionSlots: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction' }],
+      }),
+      getCurrentState: vi.fn().mockReturnValue('reviewing'),
+    });
+    (updateAttribute as any).mockResolvedValue({ element: {} });
+  };
+
+  const getPendingTransitionArg = (): any => {
+    const patches: Array<{ key: string; value: any[] }> = (updateAttribute as any).mock.calls[0][4];
+    return JSON.parse(patches.find((p) => p.key === 'pendingTransition')!.value[0]);
+  };
+
+  // lines 761-763 (toStateId from transition.to) + line 774 (onEnterActions present)
+  it('stores onEnterActions in pendingTransition when the target state defines onEnter actions', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [
+        { statusId: 'draft' },
+        { statusId: 'reviewing', onEnter: [{ type: 'validateDraft' }] },
+      ],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit', syncActions: [{ type: 'validateDraft' }] }],
+    });
+    setupAsyncPendingMocks(definitionContent);
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    const stored = getPendingTransitionArg();
+    expect(stored.toState).toBe('reviewing');
+    expect(stored.onEnterActions).toEqual([{ type: 'validateDraft' }]);
+  });
+
+  // line 774 (onEnterActions absent when serializedOnEnterActions is empty)
+  it('omits onEnterActions from pendingTransition when the target state has no onEnter actions', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [
+        { statusId: 'draft' },
+        { statusId: 'reviewing' }, // no onEnter
+      ],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit' }],
+    });
+    setupAsyncPendingMocks(definitionContent);
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    const stored = getPendingTransitionArg();
+    expect(stored).not.toHaveProperty('onEnterActions');
+  });
+
+  // line 761 — toStateId falls back to instance.getCurrentState() when transition has no "to"
+  it('uses instance.getCurrentState() as toState when the matched transition has no "to" field', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [
+        { statusId: 'draft' },
+        { statusId: 'reviewing' },
+      ],
+      transitions: [{ from: 'draft', event: 'submit' }], // no "to" — forces the ?? fallback
+    });
+    setupAsyncPendingMocks(definitionContent);
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    const stored = getPendingTransitionArg();
+    // getCurrentState() mock returns 'reviewing', so toState must equal that value
+    expect(stored.toState).toBe('reviewing');
+  });
 });
 
 // ===========================================================================

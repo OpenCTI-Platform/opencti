@@ -8,7 +8,6 @@ import type { InputMaybe, MemberAccessInput, MutationSavedFilterFieldPatchArgs, 
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { getUserAccessRight, isUserHasCapability, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isFeatureEnabled } from '../../config/conf';
 
 const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
@@ -37,14 +36,11 @@ export const addSavedFilter = (context: AuthContext, user: AuthUser, input: Save
   // Force context out of draft to force creation in live index
   const contextOutOfDraft = { ...context, draft_context: '' };
   // construct final creation input
-  const canShare = isFeatureEnabled('SHARE_FILTERS')
-    && isUserHasCapability(user, KNOWLEDGE_KNSHAREFILTERS);
-  const savedFiltersToCreate = canShare
-    ? {
-        ...input,
-        restricted_members: initializeAuthorizedMembers(input.authorized_members, user),
-      }
-    : input;
+  const canShare = isUserHasCapability(user, KNOWLEDGE_KNSHAREFILTERS);
+  const savedFiltersToCreate = {
+    ...input,
+    restricted_members: initializeAuthorizedMembers(canShare ? input.authorized_members : undefined, user),
+  };
   return createInternalObject<StoreEntitySavedFilter>(contextOutOfDraft, user, savedFiltersToCreate, ENTITY_TYPE_SAVED_FILTER);
 };
 
@@ -94,9 +90,6 @@ export const savedFilterEditAuthorizedMembers = async (
   savedFilterId: string,
   input: MemberAccessInput[],
 ) => {
-  if (!isFeatureEnabled('SHARE_FILTERS')) {
-    throw ForbiddenAccess('Sharing saved filters is disabled');
-  }
   const args = {
     entityId: savedFilterId,
     input,

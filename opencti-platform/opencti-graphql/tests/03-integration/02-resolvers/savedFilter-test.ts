@@ -122,6 +122,35 @@ describe('Saved Filter Resolver', () => {
       expect(authorizedMembers.length).toEqual(1);
       expect(authorizedMembers[0].access_right).toEqual('admin');
     });
+
+    it('should create a filter with creator as admin in authorized members even without KNOWLEDGE_KNSHAREFILTERS capability', async () => {
+      const input = {
+        name: 'filter without share capability',
+        filters: JSON.stringify(newFilter),
+        scope: 'Incident',
+      };
+
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
+        query: CREATE_SAVED_FILTER_MUTATION,
+        variables: {
+          input: { ...input },
+        },
+      });
+
+      expect(result?.data?.savedFilterAdd).toBeDefined();
+      expect(result?.data?.savedFilterAdd.name).toEqual('filter without share capability');
+
+      const { authorizedMembers } = result.data.savedFilterAdd;
+      expect(authorizedMembers.length).toEqual(1);
+      expect(authorizedMembers[0].name).toEqual(USER_PARTICIPATE.email);
+      expect(authorizedMembers[0].access_right).toEqual('admin');
+
+      // Cleanup: delete the filter as the creator
+      await queryAsUserWithSuccess(USER_PARTICIPATE, {
+        query: DELETE_SAVED_FILTER_MUTATION,
+        variables: { id: result.data.savedFilterAdd.id },
+      });
+    });
   });
 
   describe('savedFilters', () => {

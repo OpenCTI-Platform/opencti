@@ -183,7 +183,14 @@ const IngestionCatalogCard = ({
             <ConnectorTitle title={connector.title} />
           </>
         )}
-        action={connector.verified && <VerifiedOutlined color="success" />}
+        action={(
+          <Tooltip
+            title={connector.verified ? t_i18n('Verified by Filigran') : t_i18n('Not verified by Filigran')}
+            slotProps={{ popper: { sx: { textTransform: 'none' } } }}
+          >
+            <VerifiedOutlined color={connector.verified ? 'success' : 'disabled'} />
+          </Tooltip>
+        )}
       />
 
       <CardContent

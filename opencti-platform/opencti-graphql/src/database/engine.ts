@@ -113,7 +113,7 @@ import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -2055,6 +2055,8 @@ const BASE_SEARCH_ATTRIBUTES = [
   'event_type',
   'event_scope',
   'context_data.message',
+  'context_data.search',
+  'context_data.input.search',
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
@@ -2166,26 +2168,57 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
   const searchPhrase = R.uniq(querySearch).join(' ');
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|https?:/g, '')));
   if (args.historyFiltering) {
-    pushAll(shouldSearch, cleanExactSearch.map((ex) => [{
-      nested: {
-        path: 'context_data.history_changes',
-        query: {
-          bool: {
-            must: [
-              {
-                multi_match: {
-                  type: 'phrase',
-                  query: ex,
-                  lenient: true,
-                  fields: BASE_SEARCH_HISTORY,
-                },
+    pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+      {
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              multi_match: {
+                type: 'phrase',
+                query: ex,
+                lenient: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
               },
-            ],
+            },
+          ],
+        },
+      },
+      {
+        nested: {
+          path: 'context_data.history_changes',
+          query: {
+            bool: {
+              must: [
+                {
+                  multi_match: {
+                    type: 'phrase',
+                    query: ex,
+                    lenient: true,
+                    fields: BASE_SEARCH_HISTORY,
+                  },
+                },
+              ],
+            },
           },
         },
       },
-    }]).flat());
+    ]).flat());
     if (searchPhrase) {
+      shouldSearch.push({
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              query_string: {
+                query: searchPhrase,
+                analyze_wildcard: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
+              },
+            },
+          ],
+        },
+      });
       shouldSearch.push({
         nested: {
           path: 'context_data.history_changes',
