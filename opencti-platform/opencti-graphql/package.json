@@ -99,7 +99,7 @@
     "axios-cookiejar-support": "6.0.5",
     "bcryptjs": "3.0.3",
     "bluebird": "3.7.2",
-    "body-parser": "2.2.2",
+    "body-parser": "2.3.0",
     "canonicalize": "3.0.0",
     "compression": "1.8.1",
     "content-disposition": "2.0.1",
