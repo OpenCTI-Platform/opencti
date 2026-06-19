@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { testRenderHook } from '../tests/test-render';
 
 const mockFetchQuery = vi.fn();
 

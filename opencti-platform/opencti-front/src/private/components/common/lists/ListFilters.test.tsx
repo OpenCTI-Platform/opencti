@@ -35,7 +35,7 @@ describe('ListFilters', () => {
     availableFilterKeys: ['entity_type', 'name', 'workflow_user'],
     filterElement: <div />,
     entityTypes: ['Stix-Core-Object'],
-    helpers: mockHelpers as any,
+    helpers: mockHelpers as unknown as import('src/utils/filters/filtersHelpers-types').handleFilterHelpers,
   };
 
   it('renders without crashing', () => {

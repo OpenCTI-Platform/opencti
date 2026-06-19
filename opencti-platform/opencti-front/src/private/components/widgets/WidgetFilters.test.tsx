@@ -23,13 +23,13 @@ vi.mock('../../../utils/filters/useFiltersState', () => ({
 
 vi.mock('../../../utils/filters/filtersUtils', () => ({
   isFilterGroupNotEmpty: () => false,
-  isDraftWorkspaceFilterGroup: (filters: any) => {
+  isDraftWorkspaceFilterGroup: (filters: import('src/utils/filters/filtersHelpers-types').FilterGroup | null | undefined) => {
     if (!filters) return false;
-    const entityTypeFilter = filters.filters?.find((f: any) => f.key === 'entity_type');
+    const entityTypeFilter = filters.filters?.find((f: import('src/utils/filters/filtersHelpers-types').Filter) => f.key === 'entity_type');
     if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
-    return entityTypeFilter.values.every((v: any) => {
+    return entityTypeFilter.values.every((v: import('src/utils/filters/filtersHelpers-types').FilterValue) => {
       if (typeof v === 'string') return v === 'DraftWorkspace';
-      return (v?.value ?? v?.id) === 'DraftWorkspace';
+      return (v?.value ?? (v as { id?: string })?.id) === 'DraftWorkspace';
     });
   },
   useAvailableFilterKeysForEntityTypes: (entityTypes: string[]) => {
@@ -54,7 +54,7 @@ describe('WidgetFilters', () => {
       <WidgetFilters
         perspective="entities"
         type="number"
-        dataSelection={baseDataSelection as any}
+        dataSelection={baseDataSelection as import('../../../utils/widget/widget').WidgetDataSelection}
         setDataSelection={vi.fn()}
       />,
       {
@@ -87,7 +87,7 @@ describe('WidgetFilters', () => {
       <WidgetFilters
         perspective="entities"
         type="number"
-        dataSelection={draftDataSelection as any}
+        dataSelection={draftDataSelection as import('../../../utils/widget/widget').WidgetDataSelection}
         setDataSelection={vi.fn()}
       />,
       {

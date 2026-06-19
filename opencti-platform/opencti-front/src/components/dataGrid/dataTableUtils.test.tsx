@@ -39,7 +39,7 @@ describe('dataTableUtils - workflowInstance column', () => {
   it('renders ItemStatus with disabled=true when workflowInstance is undefined', () => {
     const renderFn = workflowInstanceCol?.render;
     if (!renderFn) throw new Error('render function not found');
-    const { container } = render(<>{renderFn({ workflowInstance: undefined } as any)}</>);
+    const { container } = render(<>{renderFn({ workflowInstance: undefined })}</>);
     expect(container).toBeTruthy();
   });
 
@@ -51,7 +51,7 @@ describe('dataTableUtils - workflowInstance column', () => {
         currentStatus: { id: 'status-1', template: { name: 'In Progress', color: '#ff0' } },
       },
     };
-    const { container } = render(<>{renderFn(mockData as any)}</>);
+    const { container } = render(<>{renderFn(mockData)}</>);
     expect(container).toBeTruthy();
   });
 });
