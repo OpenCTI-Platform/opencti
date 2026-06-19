@@ -290,7 +290,7 @@ export const isPlaybookJSONValid = (playbook: { name: string; playbook_definitio
   try {
     const definition = JSON.parse(playbook_definition || '{}'); // {} to ensure empty playbooks are valid.
     (definition.nodes ?? []).forEach((node: NodeDefinition) => {
-      JSON.parse(node.configuration);
+      JSON.parse(node.configuration || '{}');
     });
   } catch (error) {
     logApp.error(`[PLAYBOOK] Invalid JSON for playbook ${playbook.name}`, { playbook, error });

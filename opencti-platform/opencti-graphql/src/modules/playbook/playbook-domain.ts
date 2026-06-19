@@ -188,7 +188,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     description: input.description || undefined,
   };
   if (!isPlaybookNodeJSONValid(node)) {
-    throw UnsupportedError('Invalid JSON in node config');
+    throw FunctionalError('Invalid JSON in node configuration');
   }
   definition.nodes.push(node);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
@@ -303,7 +303,7 @@ export const playbookInsertNode = async (
     description: input.description || undefined,
   };
   if (!isPlaybookNodeJSONValid(node)) {
-    throw UnsupportedError('Invalid JSON in node config');
+    throw FunctionalError('Invalid JSON in node configuration');
   }
   definition.nodes.push(node);
   // Replace node with new position
@@ -507,7 +507,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     playbook_definition: config.playbook_definition,
   };
   if (!isPlaybookJSONValid(importData)) {
-    throw UnsupportedError('Invalid JSON in playbook definition');
+    throw FunctionalError('Invalid JSON in playbook definition');
   }
   const importPlaybook = await createPlaybook(context, user, importData);
   const importPlaybookId = importPlaybook.id;

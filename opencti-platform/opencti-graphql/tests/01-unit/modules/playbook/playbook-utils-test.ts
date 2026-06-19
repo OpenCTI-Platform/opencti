@@ -488,7 +488,7 @@ describe('Playbook utils unit tests', () => {
     });
   });
 
-  describe('Function checkPlaybookJSON()', () => {
+  describe('Function isPlaybookJSONValid()', () => {
     it('should return true if playbook definition is empty', () => {
       expect(isPlaybookJSONValid({
         name: 'valid playbook',
@@ -542,7 +542,7 @@ describe('Playbook utils unit tests', () => {
 
     it('should return false if playbook node config is invalid', () => {
       expect(isPlaybookNodeJSONValid({
-        name: 'valid config',
+        name: 'invalid config',
         configuration: '{"filters":{},"filterGroups":[]"}',
       })).toEqual(false);
     });
