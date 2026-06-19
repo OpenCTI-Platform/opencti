@@ -278,10 +278,13 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const baseIndicator = {
     ...indicator,
     pattern: formattedPattern,
-    x_opencti_main_observable_type: observableType,
     [X_SCORE]: indicatorBaseScore,
-    x_opencti_detection: indicator.x_opencti_detection ?? false,
   };
+  // Do not set Unknown to prevent upsert with Unknown value
+  // Unknown will be set at creation time thanks to the defaultNullValue of x_opencti_main_observable_type attribute
+  if (observableType !== 'Unknown') {
+    baseIndicator.x_opencti_main_observable_type = observableType;
+  }
   delete baseIndicator.basedOn;
   delete baseIndicator.createObservables;
 

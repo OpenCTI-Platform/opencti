@@ -166,10 +166,26 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
   return undefined;
 };
 
+const fillDefaultNullValues = (input: Record<string, any>, entitySetting: BasicStoreEntityEntitySetting) => {
+  const entityType = entitySetting.target_type;
+  const entityAttributes = [...schemaAttributesDefinition.getAttributes(entityType).values()];
+  const attributesWithDefaultNullValues = entityAttributes.filter((a) => a.defaultNullValue !== undefined);
+  if (attributesWithDefaultNullValues.length === 0) {
+    return input;
+  }
+  const filledValues = new Map();
+  attributesWithDefaultNullValues.forEach((attr) => {
+    if (input[attr.name] === undefined || input[attr.name] === null) {
+      filledValues.set(attr.name, attr.defaultNullValue);
+    }
+  });
+  return { ...input, ...Object.fromEntries(filledValues) };
+};
+
 export const fillDefaultValues = (user: any, input: any, entitySetting: any) => {
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
   if (!attributesConfiguration) {
-    return input;
+    return fillDefaultNullValues(input, entitySetting);
   }
   const filledValues = new Map();
   attributesConfiguration.filter((attr) => attr.default_values)
@@ -213,5 +229,6 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
       }
     });
 
-  return { ...input, ...Object.fromEntries(filledValues) };
+  const inputWithDefaults = { ...input, ...Object.fromEntries(filledValues) };
+  return fillDefaultNullValues(inputWithDefaults, entitySetting);
 };
