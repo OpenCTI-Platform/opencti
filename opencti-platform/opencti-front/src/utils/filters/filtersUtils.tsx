@@ -163,6 +163,16 @@ const getStringFilterKey = (key: string | string[]): string => {
   return Array.isArray(key) ? key[0] : key;
 };
 
+export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
+  if (!filters) return false;
+  const entityTypeFilter = filters.filters.find((f) => f.key === 'entity_type');
+  if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
+  return entityTypeFilter.values.every((v) => {
+    const val = typeof v === 'string' ? v : (v?.value ?? v?.id);
+    return val === 'DraftWorkspace';
+  });
+};
+
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
   return !!(
     filterGroup

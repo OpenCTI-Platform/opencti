@@ -1,11 +1,18 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { addDraftWorkspace } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, draftWorkspacesNumber } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import * as middleware from '../../../src/database/middleware';
+import * as middlewareLoader from '../../../src/database/middleware-loader';
+import * as engine from '../../../src/database/engine';
+import * as draftContextUtils from '../../../src/utils/draftContext';
 import * as accessModule from '../../../src/utils/authorizedMembers';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import * as redis from '../../../src/database/redis';
+import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 
 vi.mock('../../../src/database/middleware');
+vi.mock('../../../src/database/middleware-loader');
+vi.mock('../../../src/database/engine');
 vi.mock('../../../src/manager/telemetryManager');
 vi.mock('../../../src/database/redis');
 
@@ -89,6 +96,89 @@ describe('addDraftWorkspace', () => {
       }),
       'DraftWorkspace',
       expect.objectContaining({ bypassMandatoryAttributes: false }),
+    );
+  });
+});
+
+describe('resolveWorkflowInstanceStatusFilter (via draftWorkspacesNumber)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.spyOn(engine, 'elCount').mockResolvedValue(0);
+    vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+  });
+
+  it('should not call fullEntitiesList when no workflowInstanceCurrentState filter is present', async () => {
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'name', values: ['my-draft'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+    };
+    await draftWorkspacesNumber(mockContext, mockUser, args);
+    expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it('should replace workflowInstanceCurrentState filter with matching entity ids', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([
+      { entity_id: 'draft-uuid-1' },
+      { entity_id: 'draft-uuid-2' },
+    ] as any);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+    };
+    await draftWorkspacesNumber(mockContext, mockUser, args);
+    expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [ENTITY_TYPE_WORKFLOW_INSTANCE],
+      expect.objectContaining({
+        filters: expect.objectContaining({
+          filters: expect.arrayContaining([
+            expect.objectContaining({ key: ['currentState'], values: ['status-template-abc'] }),
+          ]),
+        }),
+      }),
+    );
+    expect(engine.elCount).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        filters: expect.objectContaining({
+          filters: expect.arrayContaining([
+            expect.objectContaining({ key: ['id'], values: ['draft-uuid-1', 'draft-uuid-2'] }),
+          ]),
+        }),
+      }),
+    );
+  });
+
+  it('should use <no-match> fallback when no WorkflowInstance entities match the filter', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([] as any);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-xyz'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+    };
+    await draftWorkspacesNumber(mockContext, mockUser, args);
+    expect(engine.elCount).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        filters: expect.objectContaining({
+          filters: expect.arrayContaining([
+            expect.objectContaining({ key: ['id'], values: ['<no-match>'] }),
+          ]),
+        }),
+      }),
     );
   });
 });

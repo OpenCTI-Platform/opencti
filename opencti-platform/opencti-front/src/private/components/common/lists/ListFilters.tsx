@@ -127,7 +127,8 @@ const ListFilters = ({
 
   const getGroupLabel = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): string => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    if (key === 'name' && filterDefinition?.label === 'Draft name') {
+    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
+    if (isDraftSpecificKey) {
       return t_i18n('Draft filters');
     }
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
@@ -141,10 +142,11 @@ const ListFilters = ({
 
   const getGroupOrder = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): number => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
+    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
       return 1;
     }
-    if (key === 'name' && filterDefinition?.label === 'Draft name') {
+    if (isDraftSpecificKey) {
       return 2;
     }
     if (isFilterKeyForAllTypes(subEntityTypes)) {

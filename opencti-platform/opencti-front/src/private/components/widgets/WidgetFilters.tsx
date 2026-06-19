@@ -5,7 +5,7 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '../../../components/Theme';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, isDraftWorkspaceFilterGroup, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
@@ -47,7 +47,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       'Stix-Cyber-Observable',
       'DraftWorkspace',
     ];
-    searchContext = { entityTypes: ['Stix-Core-Object'] };
+    const isDraftWorkspaceOnly = isDraftWorkspaceFilterGroup(filters);
+    searchContext = isDraftWorkspaceOnly
+      ? { entityTypes: ['Stix-Core-Object', 'DraftWorkspace'] }
+      : { entityTypes: ['Stix-Core-Object'] };
   }
 
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);
