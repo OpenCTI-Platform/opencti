@@ -39,7 +39,13 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
+import {
+  checkPlaybookFiltersAndBuildConfigWithCorrectFilters,
+  deleteLinksAndAllChildren,
+  isPlaybookJSONValid,
+  isPlaybookNodeJSONValid,
+  updateImportedPlaybookDefinitionScope,
+} from './playbook-utils';
 import { type SharingConfiguration } from './components/sharing-component';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
@@ -173,14 +179,18 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
   }
   const nodeId = uuidv4();
-  definition.nodes.push({
+  const node = {
     id: nodeId,
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration, // TODO Check valid json
+    configuration,
     description: input.description || undefined,
-  });
+  };
+  if (!isPlaybookNodeJSONValid(node)) {
+    throw UnsupportedError('Invalid JSON in node config');
+  }
+  definition.nodes.push(node);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   if (relatedComponent.is_entry_point) {
     patch.playbook_start = nodeId;
@@ -284,14 +294,18 @@ export const playbookInsertNode = async (
   }
   // Add the new node
   const nodeId = uuidv4();
-  definition.nodes.push({
+  const node = {
     id: nodeId,
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration: input.configuration ?? '{}', // TODO Check valid json
+    configuration: input.configuration ?? '{}',
     description: input.description || undefined,
-  });
+  };
+  if (!isPlaybookNodeJSONValid(node)) {
+    throw UnsupportedError('Invalid JSON in node config');
+  }
+  definition.nodes.push(node);
   // Replace node with new position
   definition.nodes = definition.nodes.map((n) => {
     if (n.id === childNodeId) {
@@ -492,6 +506,9 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     playbook_mode: config.playbook_mode,
     playbook_definition: config.playbook_definition,
   };
+  if (!isPlaybookJSONValid(importData)) {
+    throw UnsupportedError('Invalid JSON in node config');
+  }
   const importPlaybook = await createPlaybook(context, user, importData);
   const importPlaybookId = importPlaybook.id;
   await publishUserAction({

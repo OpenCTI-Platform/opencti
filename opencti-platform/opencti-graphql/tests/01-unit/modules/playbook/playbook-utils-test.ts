@@ -4,6 +4,8 @@ import { FilterMode } from '../../../../src/generated/graphql';
 import {
   filterBundleElements,
   isBundleElementMatchFilters,
+  isPlaybookJSONValid,
+  isPlaybookNodeJSONValid,
   MINIMAL_COMPATIBLE_SCOPE_VERSION,
   updateImportedPlaybookDefinitionScope,
 } from '../../../../src/modules/playbook/playbook-utils';
@@ -483,6 +485,66 @@ describe('Playbook utils unit tests', () => {
 
         expect(result).toEqual(expectedResult);
       });
+    });
+  });
+
+  describe('Function checkPlaybookJSON()', () => {
+    it('should return true if playbook definition is empty', () => {
+      expect(isPlaybookJSONValid({
+        name: 'valid playbook',
+        playbook_definition: '',
+      })).toEqual(true);
+    });
+
+    it('should return true if playbook definition has 0 node', () => {
+      expect(isPlaybookJSONValid({
+        name: 'valid playbook',
+        playbook_definition: '{"nodes":[],"links":[]}',
+      })).toEqual(true);
+    });
+
+    it('should return true if playbook definition is valid', () => {
+      expect(isPlaybookJSONValid({
+        name: 'valid playbook',
+        playbook_definition: '{"nodes":[{"id":"21f1f363-2b34-4327-802c-57ef2c3eb2ea","name":"Available for manual enrollment / trigger","position":{"x":0,"y":0},"component_id":"PLAYBOOK_INTERNAL_MANUAL_TRIGGER","configuration":"{}","description":"coucou"}],"links":[]}',
+      })).toEqual(true);
+    });
+
+    it('should return false if playbook definition is invalid', () => {
+      expect(isPlaybookJSONValid({
+        name: 'invalid playbook',
+        playbook_definition: '{"nodes":[],"links":[]}"',
+      })).toEqual(false);
+    });
+
+    it('should return false if playbook component config is invalid', () => {
+      expect(isPlaybookJSONValid({
+        name: 'invalid playbook',
+        playbook_definition: '{"nodes":[{"id":"21f1f363-2b34-4327-802c-57ef2c3eb2ea","name":"Available for manual enrollment / trigger","position":{"x":0,"y":0},"component_id":"PLAYBOOK_INTERNAL_MANUAL_TRIGGER","configuration":"{\\"filters\\":"{\\"mode\\":\\"and\\",\\"filters\\":[{\\"key\\":[\\"entity_type\\"],\\"operator\\":\\"eq\\",\\"values\\":[\\"AI-Prompt\\"],\\"mode\\":\\"or\\"}],\\"filterGroups\\":[]}\\"}","description":"coucou"}],"links":[]}',
+      })).toEqual(false);
+    });
+  });
+
+  describe('Function isPlaybookNodeJSONValid()', () => {
+    it('should return true if playbook node config is empty', () => {
+      expect(isPlaybookNodeJSONValid({
+        name: 'valid config',
+        configuration: '',
+      })).toEqual(true);
+    });
+
+    it('should return true if playbook node config is valid', () => {
+      expect(isPlaybookNodeJSONValid({
+        name: 'valid config',
+        configuration: '{"filters":{},"filterGroups":[]}',
+      })).toEqual(true);
+    });
+
+    it('should return false if playbook node config is invalid', () => {
+      expect(isPlaybookNodeJSONValid({
+        name: 'valid config',
+        configuration: '{"filters":{},"filterGroups":[]"}',
+      })).toEqual(false);
     });
   });
 });
