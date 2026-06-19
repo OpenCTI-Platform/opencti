@@ -4,6 +4,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { monthsAgo, now } from '../../../../utils/Time';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -67,7 +68,9 @@ const DraftsMultiLineChart = ({
     host,
   });
 
-  const { startDate, endDate } = computeStartEndDates(config);
+  const { startDate: rawStartDate, endDate: rawEndDate } = computeStartEndDates(config);
+  const startDate = rawStartDate ?? monthsAgo(12);
+  const endDate = rawEndDate ?? now();
 
   const refreshToken = useDashboardRefreshToken();
   const [localRefreshKey, setLocalRefreshKey] = useState(0);
