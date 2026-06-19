@@ -33,9 +33,9 @@ import {
   playbookExport,
   playbookImport,
   playbookDuplicate,
-  findPlaybooksForEnrollment,
+  validatePlaybookNodeConfigs,
 } from './playbook-domain';
-import { executePlaybookOnEntity, playbookStepExecution, getManagerInfo } from '../../manager/playbookManager/playbookManager';
+import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
 import { loadCreators } from '../../database/members';
@@ -45,11 +45,10 @@ const playbookResolvers: Resolvers = {
     playbook: (_, { id }, context) => findById(context, context.user, id),
     playbooks: (_, args, context) => findPlaybookPaginated(context, context.user, args),
     playbooksForEntity: (_, { id }, context) => findPlaybooksForEntity(context, context.user, id),
-    playbooksForEnrollment: (_, __, context) => findPlaybooksForEnrollment(context),
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     playbookComponents: (_, __, context) => availableComponents(context),
-    playbookManagerInfo: (_, __, ___) => getManagerInfo(),
+    playbookNodeConfigurationValidation: (_, { id }, context) => validatePlaybookNodeConfigs(context, context.user, id),
   },
   Playbook: {
     creators: async (current, _, context) => loadCreators(context, context.user, current),
