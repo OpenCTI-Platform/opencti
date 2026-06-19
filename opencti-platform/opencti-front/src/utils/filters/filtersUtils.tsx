@@ -878,6 +878,17 @@ export const useBuildFilterKeysMapFromEntityType = (
   return filterKeysMap;
 };
 
+export const getAvailableFilterKeysForEntityTypes = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  entityTypes: string[],
+  addNotCleanableFilterKeys = false,
+  opts?: { mode?: FilterKeysComputationMode },
+) => {
+  const filterKeysMap = getBuildFilterKeysMapFromEntityType(filterKeysSchema, entityTypes, opts);
+  return uniqueArray(filterKeysMap.keys() ?? [])
+    .concat(addNotCleanableFilterKeys ? NOT_CLEANABLE_FILTER_KEYS : []);
+};
+
 export const useAvailableFilterKeysForEntityTypes = (
   entityTypes: string[],
   opts?: { mode?: FilterKeysComputationMode },
