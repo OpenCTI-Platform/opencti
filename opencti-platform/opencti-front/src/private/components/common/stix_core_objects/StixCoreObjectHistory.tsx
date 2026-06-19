@@ -108,9 +108,9 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
     <div style={{ height: '100%' }} data-testid="sco-history-content">
       <Grid
         container
-        spacing={3}
+        spacing={1}
         sx={{
-          marginBottom: theme.spacing(2),
+          marginBottom: 0,
         }}
       >
         <Grid
