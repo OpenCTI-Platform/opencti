@@ -14076,6 +14076,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | IMEI
   | ICCID
   | IMSI
+  | SavedFilter
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -14169,6 +14170,7 @@ union StixObjectOrStixRelationship =
   | IMEI
   | ICCID
   | IMSI
+  | SavedFilter
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
