@@ -329,7 +329,7 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <Grid item xs={12} style={{ paddingTop: 8 }}>
+        <Grid item xs={12} style={{ paddingTop: 14 }}>
           <StixCoreObjectHistory
             stixCoreObjectId={id}
             withoutRelations={withoutRelations}
