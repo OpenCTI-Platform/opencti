@@ -507,7 +507,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     playbook_definition: config.playbook_definition,
   };
   if (!isPlaybookJSONValid(importData)) {
-    throw UnsupportedError('Invalid JSON in node config');
+    throw UnsupportedError('Invalid JSON in playbook definition');
   }
   const importPlaybook = await createPlaybook(context, user, importData);
   const importPlaybookId = importPlaybook.id;
