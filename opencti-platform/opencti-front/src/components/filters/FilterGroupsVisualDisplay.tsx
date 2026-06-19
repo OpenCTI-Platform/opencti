@@ -26,10 +26,9 @@ const operatorBadgeSx = {
   padding: '8px',
 } as const;
 
-const inlineModeBadgeSx = {
+const innerValuesModeBadgeSx = {
   textTransform: 'uppercase',
   fontFamily: 'Consolas, monaco, monospace',
-  backgroundColor: 'action.selected',
   fontWeight: 'bold',
   display: 'inline-block',
   padding: '8px',
@@ -59,10 +58,7 @@ const FilterValuesDisplay: FunctionComponent<FilterValuesDisplayProps> = ({
           </span>
           {j + 1 < values.length && (
             <Box
-              sx={{
-                ...inlineModeBadgeSx,
-                backgroundColor: mode ? 'rgba(255, 255, 255, .1)' : 'transparent',
-              }}
+              sx={innerValuesModeBadgeSx}
             >
               {t_i18n(mode ?? 'or')}
             </Box>
@@ -108,8 +104,7 @@ const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProp
           {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0 && (
             <Box
               sx={{
-                ...inlineModeBadgeSx,
-                backgroundColor: 'rgba(255, 255, 255, .1)',
+                ...innerValuesModeBadgeSx,
                 margin: '0 8px',
               }}
             >
@@ -183,7 +178,7 @@ const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProp
               gap: '16px',
               borderRadius: '24px',
               padding: '0 16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.16)',
+              backgroundColor: 'rgba(255, 255, 255, 0.35)',
               width: 'fit-content',
             }}
           >
@@ -216,7 +211,7 @@ const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProp
       <Box
         sx={{
           padding: '16px',
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          backgroundColor: 'rgba(0, 0, 0, 0.25)',
           marginBottom: '16px',
         }}
       >
