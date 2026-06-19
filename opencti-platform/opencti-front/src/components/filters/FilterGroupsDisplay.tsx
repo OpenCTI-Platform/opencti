@@ -1,15 +1,6 @@
-import React, { CSSProperties, Fragment, FunctionComponent, useState } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import { InformationOutline } from 'mdi-material-ui';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import React, { Fragment, FunctionComponent } from 'react';
 import Box from '@mui/material/Box';
-import { Stack, useTheme } from '@mui/material';
-import CodeBlock from '@components/common/CodeBlock';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import type { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
@@ -44,15 +35,15 @@ const inlineModeBadgeSx = {
   padding: '8px',
 } as const;
 
-// ─── DisplayFiltersValues ────────────────────────────────────────────
+// ─── FilterValuesDisplay ─────────────────────────────────────────────
 
-interface DisplayFiltersValuesProps {
+interface FilterValuesDisplayProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   values: string[];
   mode?: string;
 }
 
-const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
+const FilterValuesDisplay: FunctionComponent<FilterValuesDisplayProps> = ({
   filtersRepresentativesMap,
   values,
   mode,
@@ -82,22 +73,22 @@ const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
   );
 };
 
-// ─── DisplayFiltersFilterGroups ──────────────────────────────────────
+// ─── FilterGroupsDisplay ─────────────────────────────────────────────
 
-interface DisplayFilterGroupsProps {
+interface FilterGroupsDisplayProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   filterGroups: FilterGroup[];
   filterMode: string;
 }
 
-const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = ({
+const FilterGroupsDisplay: FunctionComponent<FilterGroupsDisplayProps> = ({
   filtersRepresentativesMap,
   filterGroups,
   filterMode,
 }) => {
   const { t_i18n } = useFormatter();
 
-  const displayFilterValues = (f: Filter) => {
+  const renderFilterValues = (f: Filter) => {
     const { key, values, mode } = f;
 
     // case of filters with subfilters
@@ -108,7 +99,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             .filter((v) => v.key === 'relationship_type')
             .map((value) => (
               <span key="relationship_type">
-                <DisplayFiltersValues
+                <FilterValuesDisplay
                   filtersRepresentativesMap={filtersRepresentativesMap}
                   values={value.values}
                 />
@@ -127,7 +118,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
           )}
           {values.filter((v) => v.key === 'id').map((value) => (
             <span key="regardingOf-id">
-              <DisplayFiltersValues
+              <FilterValuesDisplay
                 filtersRepresentativesMap={filtersRepresentativesMap}
                 values={value.values}
               />
@@ -135,7 +126,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
           ))}
           {values.filter((v) => v.key === 'dynamic').map((value) => (
             <span key="regardingOf-dynamic">
-              <DisplayFiltersFilterGroups
+              <FilterGroupsDisplay
                 filterGroups={value.values}
                 filtersRepresentativesMap={filtersRepresentativesMap}
                 filterMode="and"
@@ -149,7 +140,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
     // case of filters with filters in 'values'
     if (key === 'dynamicTo' || key === 'dynamicFrom') {
       return (
-        <DisplayFiltersFilterGroups
+        <FilterGroupsDisplay
           filterGroups={values}
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterMode={mode ?? 'or'}
@@ -159,7 +150,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
 
     // classic filters
     return (
-      <DisplayFiltersValues
+      <FilterValuesDisplay
         filtersRepresentativesMap={filtersRepresentativesMap}
         values={values}
         mode={mode ?? 'or'}
@@ -167,7 +158,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
     );
   };
 
-  const displayFilterFilters = (filters: Filter[], parentMode: string) => {
+  const renderFilters = (filters: Filter[], parentMode: string) => {
     return filters.map((f, i) => {
       const { key, operator, id } = f;
       return (
@@ -201,7 +192,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
               {operator}
             </Box>
             <Box sx={{ display: 'inline-block' }}>
-              {displayFilterValues(f)}
+              {renderFilterValues(f)}
             </Box>
           </Box>
         </Box>
@@ -231,7 +222,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
         }}
       >
         <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
-          {displayFilterFilters(f.filters, f.mode)}
+          {renderFilters(f.filters, f.mode)}
         </Stack>
         {f.filterGroups.length > 0 && (
           <Stack direction="row">
@@ -244,7 +235,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             >
               {f.mode}
             </Box>
-            <DisplayFiltersFilterGroups
+            <FilterGroupsDisplay
               filtersRepresentativesMap={filtersRepresentativesMap}
               filterGroups={f.filterGroups}
               filterMode={filterMode}
@@ -256,106 +247,4 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
   ));
 };
 
-// ─── DisplayFilterGroup (main export) ────────────────────────────────
-
-interface DisplayFilterGroupProps {
-  filterObj: FilterGroup;
-  filterMode: string;
-  filtersRepresentativesMap: Map<string, FilterRepresentative>;
-  filterStyle?: CSSProperties;
-}
-
-const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
-  filterObj,
-  filterMode,
-  filtersRepresentativesMap,
-  filterStyle,
-}) => {
-  const { filterGroups } = filterObj;
-  const [open, setOpen] = useState(false);
-  const { t_i18n } = useFormatter();
-  const theme = useTheme();
-
-  const handleClickOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  return (
-    <>
-      <Chip
-        style={filterStyle}
-        sx={{
-          '& .MuiChip-label': {
-            lineHeight: '32px',
-            maxWidth: 400,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-          },
-        }}
-        color="warning"
-        onClick={handleClickOpen}
-        label={(
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, textTransform: 'none' }}>
-            {t_i18n('Filters are not fully displayed')}
-            <InformationOutline
-              fontSize="small"
-              color="secondary"
-            />
-          </span>
-        )}
-      />
-
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="filter-groups-dialog-title"
-        aria-describedby="Show Filter groups configuration"
-      >
-        <DialogTitle id="filter-groups-dialog-title">
-          {t_i18n('Imbricated filter groups')}
-        </DialogTitle>
-        <DialogContent>
-          <Typography
-            variant="body2"
-            sx={{ marginBottom: theme.spacing(2) }}
-          >
-            {t_i18n('This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is information about the content of the filter object.')}
-          </Typography>
-          <Typography
-            variant="h3"
-            sx={{ textTransform: 'none' }}
-            gutterBottom
-          >
-            {t_i18n('Your filter group cannot be modified yet:')}
-          </Typography>
-          <DisplayFiltersFilterGroups
-            filtersRepresentativesMap={filtersRepresentativesMap}
-            filterGroups={filterGroups}
-            filterMode={filterMode}
-          />
-          <Typography
-            variant="h3"
-            sx={{ textTransform: 'none' }}
-            gutterBottom
-          >
-            {t_i18n('The complete Filter object is as follows:')}
-          </Typography>
-          <CodeBlock
-            code={JSON.stringify(filterObj, null, 2)}
-            language="json"
-          />
-        </DialogContent>
-        <DialogActions sx={{ mr: 2, mb: 2 }}>
-          <Button onClick={handleClose} autoFocus>
-            {t_i18n('Close')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  );
-};
-
-export default DisplayFilterGroup;
+export default FilterGroupsDisplay;

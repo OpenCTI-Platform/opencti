@@ -14,7 +14,7 @@ import { DataColumns } from './list_lines';
 import type { WidgetHost } from '../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
-import DisplayFilterGroup from './filters/DisplayFilterGroup';
+import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
@@ -380,7 +380,7 @@ const FilterIconButtonContainer: FunctionComponent<
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-        <DisplayFilterGroup
+        <component
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}

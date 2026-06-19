@@ -11,7 +11,7 @@ import { useFormatter } from './i18n';
 import { convertOperatorToIcon, filterOperatorsWithIcon, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
-import DisplayFilterGroup from './filters/DisplayFilterGroup';
+import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -136,7 +136,7 @@ const TaskFilterValue = ({
       })}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && (
-        <DisplayFilterGroup
+        <component
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}
