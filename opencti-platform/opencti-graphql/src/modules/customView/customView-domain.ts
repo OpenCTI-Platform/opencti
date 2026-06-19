@@ -397,6 +397,7 @@ export const exportCustomView = async (
     configuration: {
       name: customView.name,
       manifest: generatedManifest,
+      target_entity_type: customView.target_entity_type,
     },
   };
   return JSON.stringify(exportConfigration);
@@ -405,23 +406,27 @@ export const exportCustomView = async (
 export const importCustomViewConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  targetEntityType: string,
+  targetEntityType: string | undefined | null,
   file: Promise<FileHandle>,
 ) => {
-  if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
-    throw FunctionalError(
-      'Custom views cannot be created for given entity type', {
-        entityType: targetEntityType,
-      });
-  }
   const parsedData: CustomViewExport = await extractContentFrom(file);
   const { manifest } = parsedData.configuration;
+  const resolvedTargetEntityType = targetEntityType ?? parsedData.configuration.target_entity_type;
+  if (!resolvedTargetEntityType) {
+    throw FunctionalError('Missing target entity type for custom view import');
+  }
+  if (!isCustomViewsAvailableForEntityType(resolvedTargetEntityType)) {
+    throw FunctionalError(
+      'Custom views cannot be created for given entity type', {
+        entityType: resolvedTargetEntityType,
+      });
+  }
   // Manifest ids must be rewritten for filters
   const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
   const customViewToCreate = {
     name: parsedData.configuration.name,
     manifest: generatedManifest,
-    target_entity_type: targetEntityType,
+    target_entity_type: resolvedTargetEntityType,
     slug: slugify(parsedData.configuration.name),
     default: false,
     enabled: false,

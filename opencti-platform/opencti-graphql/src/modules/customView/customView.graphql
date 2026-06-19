@@ -83,6 +83,6 @@ type Mutation {
     customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewDuplicate(input: CustomViewDuplicateInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewDelete(id: ID!): ID! @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    customViewConfigurationImport(targetEntityType: String!, file: Upload!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewConfigurationImport(targetEntityType: String, file: Upload!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
