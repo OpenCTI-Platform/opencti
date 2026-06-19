@@ -136,7 +136,7 @@ const TaskFilterValue = ({
       })}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && (
-        <component
+        <ImbricatedFilterGroupDisplay
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}

@@ -380,7 +380,7 @@ const FilterIconButtonContainer: FunctionComponent<
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-        <component
+        <ImbricatedFilterGroupDisplay
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}
