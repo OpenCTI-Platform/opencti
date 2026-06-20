@@ -448,3 +448,20 @@ def test_split_bundle_group_by_deps_endpoints_beat_relationship_own_refs():
         rel,
     } <= grouped, "endpoints grouped ahead of the relationship's author"
     assert len(rel_bundle) <= 3
+
+
+def test_split_bundle_group_by_deps_internal_id_refs():
+    # Dependencies expressed via OpenCTI internal ids (this fixture has a created_by_ref
+    # that is an internal UUID, not a STIX id) must still be indexed, so grouping keeps
+    # the partition exact rather than dropping the dependency.
+    with open("./tests/data/bundle_with_internal_ids.json") as file:
+        content = file.read()
+    base_ids = {obj["id"] for obj in json.loads(content)["objects"]}
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        content, group_by_deps=True
+    )
+    assert expectations == 4
+    seen = [obj["id"] for b in bundles for obj in json.loads(b)["objects"]]
+    assert len(seen) == len(set(seen)), "no object duplicated across grouped bundles"
+    assert set(seen) == base_ids, "every input object emitted exactly once"
