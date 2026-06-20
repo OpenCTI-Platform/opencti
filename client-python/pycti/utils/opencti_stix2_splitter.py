@@ -250,7 +250,9 @@ class OpenCTIStix2Splitter:
         relationship with both endpoints before pulling its secondary refs.
         """
         refs = self.cache_refs.get(element["id"], [])
-        if len(refs) <= 1:
+        # Only relationships/sightings have endpoints to prioritise; for an entity the ref
+        # order (created_by/markings) doesn't affect grouping, so skip the reordering.
+        if len(refs) <= 1 or element.get("type") not in ("relationship", "sighting"):
             return refs
         ref_set = set(refs)
         ordered = []
@@ -284,12 +286,14 @@ class OpenCTIStix2Splitter:
         Independent elements still land in separate groups, preserving cross-worker
         parallelism.
 
-        Groups are emitted in build order (heaviest root first), and that order is
-        dependency-safe across group boundaries: a shared dependency is pulled in by its
-        highest-``nb_deps`` referencer, so the group holding it is built, and therefore
-        emitted, before any later group that only references it. (Cross-group references
-        remain best-effort under concurrent workers and rely on the platform's existing
-        MISSING_REFERENCE retry; grouping removes the within-group races entirely.)
+        Groups are emitted in build order (heaviest root first). With a normal
+        ``max_group_size`` a shared dependency is pulled into its highest-``nb_deps``
+        referencer's group, which is emitted before any later group that only references
+        it. This cross-group ordering is best-effort, not a guarantee: a very small cap can
+        leave an element separated from a dependency (``max_group_size=1`` emits a
+        relationship before its endpoints), and concurrent workers may process groups out
+        of order -- both cases fall back to the platform's existing MISSING_REFERENCE
+        retry. Grouping removes the within-group races entirely.
 
         ``self.cache_refs`` holds each element's dependency ids (built by
         ``enlist_element``); a ref may be a STIX id or an OpenCTI internal id, so the
@@ -311,13 +315,12 @@ class OpenCTIStix2Splitter:
                 by_id[internal_id] = element
         emitted = set()
         groups = []
-        # Heaviest roots first (relationships before their endpoints), pulling the refs
-        # they depend on into the same group up to the cap. Breadth-first so the direct
-        # refs (a relationship's source/target) are taken before transitive ones. Build
-        # order is the emit order: a shared dependency is pulled by its highest-nb_deps
-        # referencer, so the group holding it precedes any later group that only
-        # references it across a boundary.
-        for root in sorted(self.elements, key=lambda e: e["nb_deps"], reverse=True):
+        # self.elements is already sorted ascending by nb_deps in the caller; iterate in
+        # reverse for heaviest roots first (relationships before their endpoints) without
+        # re-sorting. Each root pulls the refs it depends on into its group up to the cap,
+        # breadth-first so direct refs (a relationship's source/target) win over
+        # transitive ones.
+        for root in reversed(self.elements):
             if root["id"] in emitted:
                 continue
             group_ids = []
@@ -337,12 +340,8 @@ class OpenCTIStix2Splitter:
                 (by_id[element_id] for element_id in group_ids),
                 key=lambda e: e["nb_deps"],
             )
-            groups.append(
-                {
-                    "nb_deps": max(element["nb_deps"] for element in elements),
-                    "elements": elements,
-                }
-            )
+            # elements is sorted ascending, so the last carries the group's max nb_deps
+            groups.append({"nb_deps": elements[-1]["nb_deps"], "elements": elements})
         # Keep build order: re-sorting here could place a group before the group that
         # holds one of its (de-duplicated) cross-boundary dependencies, reintroducing the
         # MISSING_REFERENCE race this feature removes.

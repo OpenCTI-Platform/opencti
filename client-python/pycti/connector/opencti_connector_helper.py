@@ -3582,8 +3582,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # cross-worker lock contention / MISSING_REFERENCE retries for related objects.
         # Only the amqp queue path consumes the split result; the api path sends the
         # original bundle, so don't spend the grouping there.
-        group_by_deps = kwargs.get("group_by_deps", False) and self.queue_protocol == (
-            "amqp"
+        group_by_deps = (
+            kwargs.get("group_by_deps", False) and self.queue_protocol == "amqp"
         )
         max_group_size = kwargs.get("max_group_size", 50)
 
