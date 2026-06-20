@@ -239,3 +239,83 @@ def test_split_bundle_group_by_deps_colocates_relationship():
     assert {ind, mal, rel} <= set(order), "relationship grouped with both endpoints"
     assert order.index(ind) < order.index(rel), "source precedes the relationship"
     assert order.index(mal) < order.index(rel), "target precedes the relationship"
+
+
+def test_split_bundle_group_by_deps_orders_shared_dependency_first():
+    # A shared dependency can live in only one group. The bundle that holds it must be
+    # emitted before any bundle that only references it across a group boundary, even
+    # when the holding group is heavier (rel_a carries an extra author dep). Guards
+    # against re-ordering the groups, which would reintroduce a MISSING_REFERENCE race.
+    shared = "malware--11111111-1111-4111-8111-111111111111"
+    author = "identity--22222222-2222-4222-8222-222222222222"
+    ind_a = "indicator--aaaaaaaa-1111-4111-8111-111111111111"
+    ind_b = "indicator--bbbbbbbb-1111-4111-8111-111111111111"
+    rel_a = "relationship--aaaaaaaa-2222-4222-8222-222222222222"
+    rel_b = "relationship--bbbbbbbb-2222-4222-8222-222222222222"
+
+    def indicator(identifier, name, created_by=None):
+        obj = {
+            "type": "indicator",
+            "id": identifier,
+            "spec_version": "2.1",
+            "name": name,
+            "pattern_type": "stix",
+            "pattern": "[file:name = '%s']" % name,
+        }
+        if created_by is not None:
+            obj["created_by_ref"] = created_by
+        return obj
+
+    def relationship(identifier, source):
+        return {
+            "type": "relationship",
+            "id": identifier,
+            "spec_version": "2.1",
+            "relationship_type": "indicates",
+            "source_ref": source,
+            "target_ref": shared,
+        }
+
+    bundle = json.dumps(
+        {
+            "type": "bundle",
+            "id": "bundle--" + str(uuid.uuid4()),
+            "objects": [
+                {
+                    "type": "malware",
+                    "id": shared,
+                    "spec_version": "2.1",
+                    "name": "Fam",
+                    "is_family": True,
+                },
+                {
+                    "type": "identity",
+                    "id": author,
+                    "spec_version": "2.1",
+                    "name": "A",
+                    "identity_class": "organization",
+                },
+                indicator(ind_a, "a", created_by=author),
+                indicator(ind_b, "b"),
+                relationship(rel_a, ind_a),
+                relationship(rel_b, ind_b),
+            ],
+        }
+    )
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle, group_by_deps=True
+    )
+    assert expectations == 6
+
+    def ids(serialized):
+        return [obj["id"] for obj in json.loads(serialized)["objects"]]
+
+    holder_idx = next(i for i, b in enumerate(bundles) if shared in ids(b))
+    for i, b in enumerate(bundles):
+        objects = json.loads(b)["objects"]
+        references_shared = any(obj.get("target_ref") == shared for obj in objects)
+        if references_shared and shared not in ids(b):
+            assert (
+                holder_idx < i
+            ), "bundle holding the shared dependency must come first"

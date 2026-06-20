@@ -241,30 +241,41 @@ class OpenCTIStix2Splitter:
         return nb_deps
 
     def _group_by_dependencies(self, max_group_size):
-        """Group each element with the direct refs it depends on into one sub-bundle.
+        """Group each element with the objects it depends on into one sub-bundle.
 
-        A relationship is grouped with its source/target, an object with its
-        created_by/markings. Sent no_split, a group is processed by a single worker in
-        one request, in dependency order, so objects that reference each other never
-        race across workers on the same entity ("too many concurrent call on the same
-        entities") and their shared refs resolve once instead of per object. Independent
-        elements still land in separate groups, preserving cross-worker parallelism.
+        A relationship is grouped with its source/target and, transitively, the refs
+        those depend on (e.g. their author/markings), up to ``max_group_size``. Sent
+        no_split, a group is processed by a single worker in one request, in dependency
+        order, so objects that reference each other do not race across workers on the same
+        entity ("too many concurrent call on the same entities") and their shared refs
+        resolve once instead of per object. Independent elements still land in separate
+        groups, preserving cross-worker parallelism.
 
-        ``self.cache_refs`` already holds each element's direct dependency ids (built by
+        Groups are emitted in build order (heaviest root first), and that order is
+        dependency-safe across group boundaries: a shared dependency is pulled in by its
+        highest-``nb_deps`` referencer, so the group holding it is built, and therefore
+        emitted, before any later group that only references it. (Cross-group references
+        remain best-effort under concurrent workers and rely on the platform's existing
+        MISSING_REFERENCE retry; grouping removes the within-group races entirely.)
+
+        ``self.cache_refs`` already holds each element's dependency ids (built by
         ``enlist_element``); this only partitions the already-sorted elements, every
         element ending up in exactly one group so the expectation count is unchanged.
 
-        :param max_group_size: maximum objects per group (oversized dependency chains
-            fall back to smaller groups)
+        :param max_group_size: maximum objects per group (oversized dependency chains fall
+            back to smaller groups); coerced to at least 1
         :type max_group_size: int
         :return: list of ``{"nb_deps": int, "elements": list}`` groups
         :rtype: list
         """
+        max_group_size = max(1, int(max_group_size))
         by_id = {element["id"]: element for element in self.elements}
         emitted = set()
         groups = []
-        # Roots with the most dependencies first (relationships before their endpoints),
-        # pulling their direct refs into the same group up to a safety cap.
+        # Heaviest roots first (relationships before their endpoints), pulling the refs
+        # they depend on into the same group up to the cap. Build order is the emit order:
+        # a shared dependency is pulled by its highest-nb_deps referencer, so the group
+        # holding it precedes any later group that only references it across a boundary.
         for root in sorted(self.elements, key=lambda e: e["nb_deps"], reverse=True):
             if root["id"] in emitted:
                 continue
@@ -290,8 +301,9 @@ class OpenCTIStix2Splitter:
                     "elements": elements,
                 }
             )
-        # emit lighter (entity-only) groups before relationship-bearing ones
-        groups.sort(key=lambda group: group["nb_deps"])
+        # Keep build order: re-sorting here could place a group before the group that
+        # holds one of its (de-duplicated) cross-boundary dependencies, reintroducing the
+        # MISSING_REFERENCE race this feature removes.
         return groups
 
     def split_bundle_with_expectations(
@@ -306,10 +318,10 @@ class OpenCTIStix2Splitter:
         """Split a valid STIX2 bundle into a list of bundles.
 
         When ``group_by_deps`` is True, each emitted bundle contains an element together
-        with the direct refs it depends on (instead of exactly one object), so it can be
-        sent ``no_split`` and processed atomically by one worker -- avoiding the
-        cross-worker lock contention and MISSING_REFERENCE retries that one-object-per-
-        bundle splitting causes for dependency-heavy data.
+        with the objects it depends on (instead of exactly one object), so it can be sent
+        ``no_split`` and processed atomically by one worker -- avoiding the cross-worker
+        lock contention and MISSING_REFERENCE retries that one-object-per-bundle splitting
+        causes for dependency-heavy data.
 
         :param bundle: the STIX2 bundle to split
         :type bundle: str or dict
@@ -319,14 +331,21 @@ class OpenCTIStix2Splitter:
         :type event_version: str or None
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
-        :param group_by_deps: group each element with the direct refs it depends on into
-            one bundle (sent no_split) instead of one object per bundle
+        :param group_by_deps: group each element with the objects it depends on into one
+            bundle (sent no_split) instead of one object per bundle
         :type group_by_deps: bool
         :param max_group_size: maximum objects per group when group_by_deps is set
         :type max_group_size: int
         :return: tuple of (number of expectations, incompatible items, list of bundles)
         :rtype: Tuple[int, list, list]
         """
+        # Reset per-call state so a reused splitter instance does not leak objects
+        # between bundles.
+        self.cache_index = {}
+        self.cache_refs = {}
+        self.elements = []
+        self.incompatible_items = []
+
         if use_json:
             try:
                 bundle_data = json.loads(bundle)
