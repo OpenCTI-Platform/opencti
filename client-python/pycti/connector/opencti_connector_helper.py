@@ -3540,7 +3540,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param group_by_deps: emit dependency-complete sub-bundles (an element with the
             objects it depends on) sent no_split, so related objects are processed
             atomically by a single worker instead of racing across workers on the same
-            entity (default: False)
+            entity. Only affects the message-queue (amqp) path; it is ignored when
+            no_split is True (the whole bundle is sent as-is) or queue_protocol is "api"
+            (default: False)
         :type group_by_deps: bool, optional
         :param max_group_size: maximum objects per group when group_by_deps is set
             (default: 50)

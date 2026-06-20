@@ -319,3 +319,66 @@ def test_split_bundle_group_by_deps_orders_shared_dependency_first():
             assert (
                 holder_idx < i
             ), "bundle holding the shared dependency must come first"
+
+
+def test_split_bundle_group_by_deps_keeps_endpoints_under_small_cap():
+    # Breadth-first traversal must take the relationship's direct source/target before
+    # any transitive ref, so even a tight max_group_size keeps both endpoints with the
+    # relationship. The target carries an author; a depth-first walk could pull that
+    # author into the cap and drop the source endpoint.
+    author = "identity--22222222-2222-4222-8222-222222222222"
+    ind = "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7"
+    mal = "malware--9c4638ec-f1de-4ddb-b58d-a0e0b1c2d3e4"
+    rel = "relationship--0c4638ec-f1de-4ddb-b58d-a0e0b1c2d3e5"
+    bundle = json.dumps(
+        {
+            "type": "bundle",
+            "id": "bundle--" + str(uuid.uuid4()),
+            "objects": [
+                {
+                    "type": "identity",
+                    "id": author,
+                    "spec_version": "2.1",
+                    "name": "A",
+                    "identity_class": "organization",
+                },
+                {
+                    "type": "malware",
+                    "id": mal,
+                    "spec_version": "2.1",
+                    "name": "X",
+                    "is_family": True,
+                    "created_by_ref": author,
+                },
+                {
+                    "type": "indicator",
+                    "id": ind,
+                    "spec_version": "2.1",
+                    "name": "h",
+                    "pattern_type": "stix",
+                    "pattern": "[file:name = 'x']",
+                },
+                {
+                    "type": "relationship",
+                    "id": rel,
+                    "spec_version": "2.1",
+                    "relationship_type": "indicates",
+                    "source_ref": ind,
+                    "target_ref": mal,
+                },
+            ],
+        }
+    )
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle, group_by_deps=True, max_group_size=3
+    )
+    assert expectations == 4
+    rel_bundle = next(
+        json.loads(b)["objects"]
+        for b in bundles
+        if any(obj["id"] == rel for obj in json.loads(b)["objects"])
+    )
+    grouped = {obj["id"] for obj in rel_bundle}
+    assert {ind, mal, rel} <= grouped, "both endpoints kept with the relationship"
+    assert len(rel_bundle) <= 3

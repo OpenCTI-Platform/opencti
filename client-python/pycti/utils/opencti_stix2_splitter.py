@@ -1,5 +1,6 @@
 import json
 import uuid
+from collections import deque
 from typing import Tuple
 
 from typing_extensions import deprecated
@@ -243,13 +244,15 @@ class OpenCTIStix2Splitter:
     def _group_by_dependencies(self, max_group_size):
         """Group each element with the objects it depends on into one sub-bundle.
 
-        A relationship is grouped with its source/target and, transitively, the refs
-        those depend on (e.g. their author/markings), up to ``max_group_size``. Sent
-        no_split, a group is processed by a single worker in one request, in dependency
-        order, so objects that reference each other do not race across workers on the same
-        entity ("too many concurrent call on the same entities") and their shared refs
-        resolve once instead of per object. Independent elements still land in separate
-        groups, preserving cross-worker parallelism.
+        A relationship is grouped with its source/target first and then, breadth-first,
+        the refs those depend on (e.g. their author/markings), up to ``max_group_size`` --
+        direct refs are taken before transitive ones, so a small cap still keeps a
+        relationship with both endpoints. Sent no_split, a group is processed by a single
+        worker in one request, in dependency order, so objects that reference each other
+        do not race across workers on the same entity ("too many concurrent call on the
+        same entities") and their shared refs resolve once instead of per object.
+        Independent elements still land in separate groups, preserving cross-worker
+        parallelism.
 
         Groups are emitted in build order (heaviest root first), and that order is
         dependency-safe across group boundaries: a shared dependency is pulled in by its
@@ -258,8 +261,9 @@ class OpenCTIStix2Splitter:
         remain best-effort under concurrent workers and rely on the platform's existing
         MISSING_REFERENCE retry; grouping removes the within-group races entirely.)
 
-        ``self.cache_refs`` already holds each element's dependency ids (built by
-        ``enlist_element``); this only partitions the already-sorted elements, every
+        ``self.cache_refs`` holds each element's dependency ids (built by
+        ``enlist_element``); a ref may be a STIX id or an OpenCTI internal id, so the
+        lookup is indexed by both. This only partitions the already-sorted elements, every
         element ending up in exactly one group so the expectation count is unchanged.
 
         :param max_group_size: maximum objects per group (oversized dependency chains fall
@@ -269,27 +273,35 @@ class OpenCTIStix2Splitter:
         :rtype: list
         """
         max_group_size = max(1, int(max_group_size))
-        by_id = {element["id"]: element for element in self.elements}
+        # Index by STIX id and internal ids: a _ref may be expressed either way.
+        by_id = {}
+        for element in self.elements:
+            by_id[element["id"]] = element
+            for internal_id in self.get_internal_ids_in_extension(element):
+                by_id[internal_id] = element
         emitted = set()
         groups = []
         # Heaviest roots first (relationships before their endpoints), pulling the refs
-        # they depend on into the same group up to the cap. Build order is the emit order:
-        # a shared dependency is pulled by its highest-nb_deps referencer, so the group
-        # holding it precedes any later group that only references it across a boundary.
+        # they depend on into the same group up to the cap. Breadth-first so the direct
+        # refs (a relationship's source/target) are taken before transitive ones. Build
+        # order is the emit order: a shared dependency is pulled by its highest-nb_deps
+        # referencer, so the group holding it precedes any later group that only
+        # references it across a boundary.
         for root in sorted(self.elements, key=lambda e: e["nb_deps"], reverse=True):
             if root["id"] in emitted:
                 continue
             group_ids = []
-            stack = [root["id"]]
-            while stack and len(group_ids) < max_group_size:
-                current = stack.pop()
-                if current in emitted or current not in by_id:
+            queue = deque([root])
+            while queue and len(group_ids) < max_group_size:
+                current = queue.popleft()
+                if current["id"] in emitted:
                     continue
-                emitted.add(current)
-                group_ids.append(current)
-                for dependency in self.cache_refs.get(current, []):
-                    if dependency not in emitted and dependency in by_id:
-                        stack.append(dependency)
+                emitted.add(current["id"])
+                group_ids.append(current["id"])
+                for dependency_id in self.cache_refs.get(current["id"], []):
+                    dependency = by_id.get(dependency_id)
+                    if dependency is not None and dependency["id"] not in emitted:
+                        queue.append(dependency)
             # dependencies first so referenced entities precede their relationships
             elements = sorted(
                 (by_id[element_id] for element_id in group_ids),
