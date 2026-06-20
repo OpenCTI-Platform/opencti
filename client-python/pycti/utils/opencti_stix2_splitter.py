@@ -241,6 +241,36 @@ class OpenCTIStix2Splitter:
 
         return nb_deps
 
+    def _ordered_dependencies(self, element):
+        """Dependency ids of ``element`` with relationship/sighting endpoints first.
+
+        A relationship may also carry secondary refs (``created_by_ref``, markings); put
+        the endpoints (``source_ref``/``target_ref``/``sighting_of_ref``/
+        ``where_sighted_refs``) ahead of them so a tight ``max_group_size`` keeps a
+        relationship with both endpoints before pulling its secondary refs.
+        """
+        refs = self.cache_refs.get(element["id"], [])
+        if len(refs) <= 1:
+            return refs
+        ref_set = set(refs)
+        ordered = []
+        seen = set()
+        endpoints = [
+            element.get("source_ref"),
+            element.get("target_ref"),
+            element.get("sighting_of_ref"),
+            *(element.get("where_sighted_refs") or []),
+        ]
+        for value in endpoints:
+            if value in ref_set and value not in seen:
+                ordered.append(value)
+                seen.add(value)
+        for value in refs:
+            if value not in seen:
+                ordered.append(value)
+                seen.add(value)
+        return ordered
+
     def _group_by_dependencies(self, max_group_size):
         """Group each element with the objects it depends on into one sub-bundle.
 
@@ -298,7 +328,7 @@ class OpenCTIStix2Splitter:
                     continue
                 emitted.add(current["id"])
                 group_ids.append(current["id"])
-                for dependency_id in self.cache_refs.get(current["id"], []):
+                for dependency_id in self._ordered_dependencies(current):
                     dependency = by_id.get(dependency_id)
                     if dependency is not None and dependency["id"] not in emitted:
                         queue.append(dependency)

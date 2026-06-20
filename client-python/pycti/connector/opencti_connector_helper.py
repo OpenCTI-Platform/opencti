@@ -3580,7 +3580,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # Emit dependency-complete sub-bundles (an element + the objects it depends on)
         # sent no_split, so related objects are processed atomically by one worker - no
         # cross-worker lock contention / MISSING_REFERENCE retries for related objects.
-        group_by_deps = kwargs.get("group_by_deps", False)
+        # Only the amqp queue path consumes the split result; the api path sends the
+        # original bundle, so don't spend the grouping there.
+        group_by_deps = kwargs.get("group_by_deps", False) and self.queue_protocol == (
+            "amqp"
+        )
         max_group_size = kwargs.get("max_group_size", 50)
 
         # In case of enrichment ingestion, ensure the sharing if needed
