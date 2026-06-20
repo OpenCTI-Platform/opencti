@@ -1029,13 +1029,24 @@ class PingAlive(threading.Thread):
                 # (frequent under high platform latency) from overwriting the
                 # connector's own freshly written state.
                 raw_timestamp = result.get("connector_state_timestamp")
-                reset_timestamp = (
-                    datetime.datetime.fromisoformat(
-                        raw_timestamp.replace("Z", "+00:00")
-                    )
-                    if raw_timestamp
-                    else None
-                )
+                reset_timestamp = None
+                if raw_timestamp:
+                    try:
+                        reset_timestamp = datetime.datetime.fromisoformat(
+                            raw_timestamp.replace("Z", "+00:00")
+                        )
+                        if reset_timestamp.tzinfo is None:
+                            reset_timestamp = reset_timestamp.replace(
+                                tzinfo=datetime.timezone.utc
+                            )
+                    except (TypeError, ValueError):
+                        self.connector_logger.debug(
+                            "Invalid connector_state_timestamp received from platform; ignoring reset timestamp",
+                            {"connector_state_timestamp": raw_timestamp},
+                        )
+                        reset_timestamp = datetime.datetime.min.replace(
+                            tzinfo=datetime.timezone.utc
+                        )
                 last_local_write = self.get_state_last_write()
                 is_genuine_reset = remote_state is None and (
                     reset_timestamp is None
