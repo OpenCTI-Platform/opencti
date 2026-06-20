@@ -3537,6 +3537,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type send_to_s3: bool, optional
         :param no_split: Whether to send without splitting (default: False)
         :type no_split: bool, optional
+        :param group_by_deps: emit dependency-complete sub-bundles (an element with the direct refs it depends on) sent no_split, so related objects are processed atomically by a single worker instead of racing across workers on the same entity (default: False)
+        :type group_by_deps: bool, optional
+        :param max_group_size: maximum objects per group when group_by_deps is set (default: 50)
+        :type max_group_size: int, optional
 
         :return: List of processed bundle chunks
         :rtype: list
@@ -3567,6 +3571,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         bundle_send_to_s3 = kwargs.get("send_to_s3", self.bundle_send_to_s3)
         no_split = kwargs.get("no_split", False)
+        # Emit dependency-complete sub-bundles (an element + the direct refs it depends
+        # on) sent no_split, so related objects are processed atomically by one worker -
+        # no cross-worker lock contention / MISSING_REFERENCE retries for related objects.
+        group_by_deps = kwargs.get("group_by_deps", False)
+        max_group_size = kwargs.get("max_group_size", 50)
 
         # In case of enrichment ingestion, ensure the sharing if needed
         if self.enrichment_shared_organizations is not None:
@@ -3709,6 +3718,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     use_json=True,
                     event_version=event_version,
                     cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
+                    group_by_deps=group_by_deps,
+                    max_group_size=max_group_size,
                 )
             )
 
@@ -3759,7 +3770,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         sequence=sequence,
                         update=update,
                         draft_id=draft_id,
-                        no_split=no_split,
+                        # grouped bundles must be processed whole, not re-split per object
+                        no_split=no_split or group_by_deps,
                     )
                 channel.close()
                 pika_connection.close()

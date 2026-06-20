@@ -240,14 +240,76 @@ class OpenCTIStix2Splitter:
 
         return nb_deps
 
+    def _group_by_dependencies(self, max_group_size):
+        """Group each element with the direct refs it depends on into one sub-bundle.
+
+        A relationship is grouped with its source/target, an object with its
+        created_by/markings. Sent no_split, a group is processed by a single worker in
+        one request, in dependency order, so objects that reference each other never
+        race across workers on the same entity ("too many concurrent call on the same
+        entities") and their shared refs resolve once instead of per object. Independent
+        elements still land in separate groups, preserving cross-worker parallelism.
+
+        ``self.cache_refs`` already holds each element's direct dependency ids (built by
+        ``enlist_element``); this only partitions the already-sorted elements, every
+        element ending up in exactly one group so the expectation count is unchanged.
+
+        :param max_group_size: maximum objects per group (oversized dependency chains
+            fall back to smaller groups)
+        :type max_group_size: int
+        :return: list of ``{"nb_deps": int, "elements": list}`` groups
+        :rtype: list
+        """
+        by_id = {element["id"]: element for element in self.elements}
+        emitted = set()
+        groups = []
+        # Roots with the most dependencies first (relationships before their endpoints),
+        # pulling their direct refs into the same group up to a safety cap.
+        for root in sorted(self.elements, key=lambda e: e["nb_deps"], reverse=True):
+            if root["id"] in emitted:
+                continue
+            group_ids = []
+            stack = [root["id"]]
+            while stack and len(group_ids) < max_group_size:
+                current = stack.pop()
+                if current in emitted or current not in by_id:
+                    continue
+                emitted.add(current)
+                group_ids.append(current)
+                for dependency in self.cache_refs.get(current, []):
+                    if dependency not in emitted and dependency in by_id:
+                        stack.append(dependency)
+            # dependencies first so referenced entities precede their relationships
+            elements = sorted(
+                (by_id[element_id] for element_id in group_ids),
+                key=lambda e: e["nb_deps"],
+            )
+            groups.append(
+                {
+                    "nb_deps": max(element["nb_deps"] for element in elements),
+                    "elements": elements,
+                }
+            )
+        # emit lighter (entity-only) groups before relationship-bearing ones
+        groups.sort(key=lambda group: group["nb_deps"])
+        return groups
+
     def split_bundle_with_expectations(
         self,
         bundle,
         use_json=True,
         event_version=None,
         cleanup_inconsistent_bundle=False,
+        group_by_deps=False,
+        max_group_size=50,
     ) -> Tuple[int, list, list]:
         """Split a valid STIX2 bundle into a list of bundles.
+
+        When ``group_by_deps`` is True, each emitted bundle contains an element together
+        with the direct refs it depends on (instead of exactly one object), so it can be
+        sent ``no_split`` and processed atomically by one worker -- avoiding the
+        cross-worker lock contention and MISSING_REFERENCE retries that one-object-per-
+        bundle splitting causes for dependency-heavy data.
 
         :param bundle: the STIX2 bundle to split
         :type bundle: str or dict
@@ -257,6 +319,11 @@ class OpenCTIStix2Splitter:
         :type event_version: str or None
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
+        :param group_by_deps: group each element with the direct refs it depends on into
+            one bundle (sent no_split) instead of one object per bundle
+        :type group_by_deps: bool
+        :param max_group_size: maximum objects per group when group_by_deps is set
+        :type max_group_size: int
         :return: tuple of (number of expectations, incompatible items, list of bundles)
         :rtype: Tuple[int, list, list]
         """
@@ -298,9 +365,12 @@ class OpenCTIStix2Splitter:
 
         self.elements.sort(key=by_dep_size)
 
-        elements_with_deps = list(
-            map(lambda e: {"nb_deps": e["nb_deps"], "elements": [e]}, self.elements)
-        )
+        if group_by_deps:
+            elements_with_deps = self._group_by_dependencies(max_group_size)
+        else:
+            elements_with_deps = list(
+                map(lambda e: {"nb_deps": e["nb_deps"], "elements": [e]}, self.elements)
+            )
 
         number_expectations = 0
         for entity in elements_with_deps:

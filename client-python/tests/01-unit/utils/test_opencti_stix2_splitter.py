@@ -167,3 +167,75 @@ def test_create_bundle():
     ]:
         assert key in bundle
     assert len(bundle.keys()) == 6
+
+
+def test_split_bundle_group_by_deps_partition():
+    # group_by_deps must still emit every object exactly once (disjoint partition),
+    # so the work expectation count is unchanged versus one-object-per-bundle splitting.
+    with open("./tests/data/DATA-TEST-STIX2_v2.json") as file:
+        content = file.read()
+    base_ids = {obj["id"] for obj in json.loads(content)["objects"]}
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        content, group_by_deps=True
+    )
+    assert expectations == 59
+    seen = [obj["id"] for b in bundles for obj in json.loads(b)["objects"]]
+    assert len(seen) == len(set(seen)), "no object duplicated across grouped bundles"
+    assert set(seen) == base_ids, "every input object emitted exactly once"
+    assert any(
+        len(json.loads(b)["objects"]) > 1 for b in bundles
+    ), "grouping must produce at least one multi-object bundle"
+
+
+def test_split_bundle_group_by_deps_colocates_relationship():
+    # A relationship and both of its endpoints must land in the same bundle, endpoints
+    # first, so a single worker creates them in order with no cross-worker race.
+    ind = "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7"
+    mal = "malware--9c4638ec-f1de-4ddb-b58d-a0e0b1c2d3e4"
+    rel = "relationship--0c4638ec-f1de-4ddb-b58d-a0e0b1c2d3e5"
+    bundle = json.dumps(
+        {
+            "type": "bundle",
+            "id": "bundle--" + str(uuid.uuid4()),
+            "objects": [
+                {
+                    "type": "malware",
+                    "id": mal,
+                    "spec_version": "2.1",
+                    "name": "X",
+                    "is_family": True,
+                },
+                {
+                    "type": "indicator",
+                    "id": ind,
+                    "spec_version": "2.1",
+                    "name": "h",
+                    "pattern_type": "stix",
+                    "pattern": "[file:name = 'x']",
+                },
+                {
+                    "type": "relationship",
+                    "id": rel,
+                    "spec_version": "2.1",
+                    "relationship_type": "indicates",
+                    "source_ref": ind,
+                    "target_ref": mal,
+                },
+            ],
+        }
+    )
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle, group_by_deps=True
+    )
+    assert expectations == 3
+    rel_bundle = next(
+        json.loads(b)["objects"]
+        for b in bundles
+        if any(obj["id"] == rel for obj in json.loads(b)["objects"])
+    )
+    order = [obj["id"] for obj in rel_bundle]
+    assert {ind, mal, rel} <= set(order), "relationship grouped with both endpoints"
+    assert order.index(ind) < order.index(rel), "source precedes the relationship"
+    assert order.index(mal) < order.index(rel), "target precedes the relationship"
