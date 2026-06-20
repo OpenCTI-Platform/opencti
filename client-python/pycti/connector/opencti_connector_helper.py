@@ -946,7 +946,7 @@ class PingAlive(threading.Thread):
     :param get_state: Function to retrieve current connector state
     :type get_state: Callable[[], Optional[Dict]]
     :param set_state: Function to update connector state
-    :type set_state: Callable[[str], None]
+    :type set_state: Callable[[Optional[Dict]], None]
     :param metric: Metric handler for recording ping statistics
     :type metric: OpenCTIMetricHandler
     :param connector_info: ConnectorInfo instance with runtime details
@@ -959,10 +959,12 @@ class PingAlive(threading.Thread):
         connector_id: str,
         api,
         get_state: Callable[[], Optional[Dict]],
-        set_state: Callable[[str], None],
+        set_state: Callable[[Optional[Dict]], None],
         metric,
         connector_info,
-        get_state_last_write=None,
+        get_state_last_write: Optional[
+            Callable[[], Optional[datetime.datetime]]
+        ] = None,
     ) -> None:
         """Initialize the PingAlive daemon thread.
 
@@ -975,11 +977,14 @@ class PingAlive(threading.Thread):
         :param get_state: Function to retrieve current connector state
         :type get_state: Callable[[], Optional[Dict]]
         :param set_state: Function to update connector state
-        :type set_state: Callable[[str], None]
+        :type set_state: Callable[[Optional[Dict]], None]
         :param metric: Metric handler for recording ping statistics
         :type metric: OpenCTIMetricHandler
         :param connector_info: ConnectorInfo instance with runtime details
         :type connector_info: ConnectorInfo
+        :param get_state_last_write: Returns the connector's last local state
+            write as a timezone-aware UTC datetime (or None)
+        :type get_state_last_write: Callable[[], Optional[datetime.datetime]]
         """
         threading.Thread.__init__(self, daemon=True)
         self.connector_logger = connector_logger
