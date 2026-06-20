@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik, FormikConfig } from 'formik';
-import Axios from 'axios';
 import ItemIcon from 'src/components/ItemIcon';
 import Loader from 'src/components/Loader';
 import Button from '@common/button/Button';
@@ -123,11 +122,12 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     });
   };
 
-  const loadFileContent = () => {
+  const loadFileContent = async () => {
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(data.file_id)}`;
-    Axios.get(url).then((res) => {
-      handleSetInitialValues(res.data);
-    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+    const fileContent = await res.text();
+    handleSetInitialValues(fileContent);
   };
 
   useEffect(() => {

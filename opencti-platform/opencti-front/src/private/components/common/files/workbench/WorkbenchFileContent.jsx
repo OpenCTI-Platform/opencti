@@ -18,7 +18,6 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import Axios from 'axios';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import { useEffect, useState } from 'react';
@@ -394,14 +393,14 @@ const WorkbenchFileContentComponent = ({
   // endregion
 
   // region file
-  const loadFileContent = () => {
+  const loadFileContent = async () => {
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(file.id)}`;
-    Axios.get(url).then(async (res) => {
-      const fileObjects = res.data.objects ?? [];
-      setFileObjectsJson(JSON.stringify(fileObjects));
-      computeState(fileObjects);
-      return true;
-    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+    const data = await res.json();
+    const fileObjects = data.objects ?? [];
+    setFileObjectsJson(JSON.stringify(fileObjects));
+    computeState(fileObjects);
   };
 
   const saveFile = () => {

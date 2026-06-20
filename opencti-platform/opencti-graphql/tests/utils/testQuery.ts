@@ -1,7 +1,5 @@
-import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print, type ASTNode } from 'graphql';
-import axios, { type AxiosInstance } from 'axios';
 
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
@@ -16,6 +14,40 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organizatio
 import type { ConfidenceLevel } from '../../src/generated/graphql';
 import { findById } from '../../src/domain/user';
 // endregion
+
+// -- Fetch-based test HTTP client with cookie jar support --
+export interface TestHttpClient {
+  post: (url: string, data: any, opts?: { withCredentials?: boolean; headers?: Record<string, string> }) => Promise<{ data: any; status: number; headers: Record<string, string> }>;
+}
+
+const createFetchClient = (defaultHeaders: Record<string, string>, jar?: CookieJar): TestHttpClient => {
+  return {
+    post: async (url: string, data: any, opts: { withCredentials?: boolean; headers?: Record<string, string> } = {}) => {
+      const mergedHeaders: Record<string, string> = { ...defaultHeaders, ...opts.headers };
+      if (jar) {
+        const cookieString = await jar.getCookieString(url);
+        if (cookieString) mergedHeaders.Cookie = cookieString;
+      }
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: mergedHeaders,
+        body: JSON.stringify(data),
+      });
+      if (jar) {
+        const setCookies = response.headers.getSetCookie?.() ?? [];
+        for (const cookie of setCookies) {
+          await jar.setCookie(cookie, url);
+        }
+      }
+      const responseData = await response.json();
+      const responseHeaders: Record<string, string> = {};
+      response.headers.forEach((v, k) => {
+        responseHeaders[k] = v;
+      });
+      return { data: responseData, status: response.status, headers: responseHeaders };
+    },
+  };
+};
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
 export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_uri');
@@ -45,39 +77,32 @@ export const generateBasicAuth = (email?: string, password?: string) => {
   return `Basic ${buff.toString('base64')}`;
 };
 
-export const createHttpClient = (email?: string, password?: string) => {
-  return wrapper(axios.create({
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      authorization: generateBasicAuth(email, password),
-    },
-  }));
+export const createHttpClient = (email?: string, password?: string): TestHttpClient => {
+  return createFetchClient({
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    authorization: generateBasicAuth(email, password),
+  });
 };
 
-export const createTokenHttpClient = (token: string) => {
-  return wrapper(axios.create({
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      authorization: `Bearer ${token}`,
-    },
-  }));
+export const createTokenHttpClient = (token: string): TestHttpClient => {
+  return createFetchClient({
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    authorization: `Bearer ${token}`,
+  });
 };
 
-export const createUnauthenticatedClient = () => {
+export const createUnauthenticatedClient = (): TestHttpClient => {
   const jar = new CookieJar();
-  return wrapper(axios.create({
-    jar,
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-  }));
+  return createFetchClient({
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  }, jar);
 };
 
-export const executeExternalQuery = async (client: AxiosInstance, uri: string, query: unknown, variables = {}) => {
-  const response = await client.post(uri, { query, variables }, { withCredentials: true });
+export const executeExternalQuery = async (client: TestHttpClient, uri: string, query: unknown, variables = {}) => {
+  const response = await client.post(uri, { query, variables });
   const { data } = response.data;
   return data;
 };
@@ -91,16 +116,16 @@ interface QueryOption {
   draftId?: string;
 }
 
-const executeInitPlatformQuery = async (client: AxiosInstance, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+const executeInitPlatformQuery = async (client: TestHttpClient, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
   const queryStr = typeof query === 'string' ? query : print(query);
-  const headers: any = {};
+  const headers: Record<string, string> = {};
   if (options.workId) headers['opencti-work-id'] = options.workId;
   if (options.eventId) headers['opencti-event-id'] = options.eventId;
   if (options.previousStandard) headers['previous-standard'] = options.previousStandard;
   if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
   if (options.applicantId) headers['opencti-applicant-id'] = options.applicantId;
   if (options.draftId) headers['opencti-draft-id'] = options.draftId;
-  const response = await client.post(`${API_URI}/graphql`, { query: queryStr, variables }, { withCredentials: true, headers });
+  const response = await client.post(`${API_URI}/graphql`, { query: queryStr, variables }, { headers });
   return response.data;
 };
 const adminClient = createHttpClient();
