@@ -425,6 +425,19 @@ class OpenCTIStix2Splitter:
 
         self.elements.sort(key=by_dep_size)
 
+        # enlist_element can append the same object twice when it is first reached via an
+        # internal id (e.g. a created_by_ref expressed as an OpenCTI UUID) and then again
+        # via its STIX id in the top-level loop. De-duplicate by canonical id so both the
+        # grouped and non-grouped paths emit each object exactly once with the same
+        # expectation count.
+        seen_ids = set()
+        unique_elements = []
+        for element in self.elements:
+            if element["id"] not in seen_ids:
+                seen_ids.add(element["id"])
+                unique_elements.append(element)
+        self.elements = unique_elements
+
         if group_by_deps:
             elements_with_deps = self._group_by_dependencies(max_group_size)
         else:

@@ -465,3 +465,44 @@ def test_split_bundle_group_by_deps_internal_id_refs():
     seen = [obj["id"] for b in bundles for obj in json.loads(b)["objects"]]
     assert len(seen) == len(set(seen)), "no object duplicated across grouped bundles"
     assert set(seen) == base_ids, "every input object emitted exactly once"
+
+
+def test_split_bundle_dedups_object_reached_by_internal_id():
+    # X is referenced by its internal id (A.created_by_ref) and A appears first, so
+    # enlist_element reaches X via the internal id before its STIX id and can list it
+    # twice. The grouped and non-grouped paths must report the SAME expectation count
+    # (each object once) -- not double-count X on one path and dedup it on the other.
+    x_internal = "11111111-1111-4111-8111-111111111111"
+    x_stix = "identity--22222222-2222-4222-8222-222222222222"
+    a_stix = "malware--33333333-3333-4333-8333-333333333333"
+    bundle = json.dumps(
+        {
+            "type": "bundle",
+            "id": "bundle--" + str(uuid.uuid4()),
+            "objects": [
+                {
+                    "type": "malware",
+                    "id": a_stix,
+                    "spec_version": "2.1",
+                    "name": "A",
+                    "is_family": True,
+                    "created_by_ref": x_internal,
+                },
+                {
+                    "type": "identity",
+                    "id": x_stix,
+                    "spec_version": "2.1",
+                    "name": "X",
+                    "identity_class": "organization",
+                    "x_opencti_id": x_internal,
+                },
+            ],
+        }
+    )
+    n_split, _, _ = OpenCTIStix2Splitter().split_bundle_with_expectations(bundle)
+    n_grouped, _, grouped = OpenCTIStix2Splitter().split_bundle_with_expectations(
+        bundle, group_by_deps=True
+    )
+    assert n_split == n_grouped == 2, "both paths count each object exactly once"
+    seen = [obj["id"] for b in grouped for obj in json.loads(b)["objects"]]
+    assert sorted(seen) == sorted([a_stix, x_stix])
