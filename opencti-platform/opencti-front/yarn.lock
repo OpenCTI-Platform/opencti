@@ -13631,7 +13631,7 @@ __metadata:
     react-cookie: "npm:8.1.2"
     react-csv: "npm:2.2.2"
     react-dom: "npm:19.2.7"
-    react-draggable: "npm:4.6.0"
+    react-draggable: "npm:4.7.0"
     react-force-graph-2d: "npm:1.29.1"
     react-force-graph-3d: "npm:1.29.1"
     react-grid-layout: "npm:2.2.3"
@@ -14687,7 +14687,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-draggable@npm:4.6.0, react-draggable@npm:^4.4.6, react-draggable@npm:^4.5.0":
+"react-draggable@npm:4.7.0":
+  version: 4.7.0
+  resolution: "react-draggable@npm:4.7.0"
+  dependencies:
+    clsx: "npm:^2.1.1"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    react: ">= 16.3.0"
+    react-dom: ">= 16.3.0"
+  checksum: 10c0/4bfd46025b6009585a644d17721cafcd7976c058c250086c06c1a952724230c83caa548c54f9b5849c3a148144e3ed6610a1745b2afc6db685c85c56a0b4f775
+  languageName: node
+  linkType: hard
+
+"react-draggable@npm:^4.4.6, react-draggable@npm:^4.5.0":
   version: 4.6.0
   resolution: "react-draggable@npm:4.6.0"
   dependencies:
