@@ -2444,16 +2444,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.4.7":
-  version: 1.4.7
-  resolution: "@langchain/openai@npm:1.4.7"
+"@langchain/openai@npm:1.5.1":
+  version: 1.5.1
+  resolution: "@langchain/openai@npm:1.5.1"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^6.37.0"
+    openai: "npm:^6.41.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.1.48
-  checksum: 10c0/f8ec5897603dee5c8ae482bc347f9fa904694def45f0ad32d569d35240237a5abb55a802f7a9f92f5a34d14e447355f3c8d61d26173985ef7ee9dcf650d5545f
+    "@langchain/core": ^1.2.0
+  checksum: 10c0/1c1d2e32c11f8d2c49e71963c4c5a4ca8ddb0c8972a00e31711fc5f5b9c890acb16f421f29fdd5be3435a5b7af8c2a14428b487cf24436e4fed687b579680c0a
   languageName: node
   linkType: hard
 
@@ -10121,7 +10121,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:6.44.0":
+"openai@npm:6.44.0, openai@npm:^6.41.0":
   version: 6.44.0
   resolution: "openai@npm:6.44.0"
   peerDependencies:
@@ -10133,21 +10133,6 @@ __metadata:
     zod:
       optional: true
   checksum: 10c0/745c5461e7d1316aac37303699b1fd7b14d50df0ae8c1b5cc7cc358f9c9d0a29e2af2cbf6009370a143387a19df61b9962b1a9fd20c4b19a6e257d03b4d878cb
-  languageName: node
-  linkType: hard
-
-"openai@npm:^6.37.0":
-  version: 6.42.0
-  resolution: "openai@npm:6.42.0"
-  peerDependencies:
-    ws: ^8.18.0
-    zod: ^3.25 || ^4.0
-  peerDependenciesMeta:
-    ws:
-      optional: true
-    zod:
-      optional: true
-  checksum: 10c0/df30024c14c758ad159885016a3d6ed7f6596b2b3de3cc7b7c625bebe032fd676f9b324fd2b9f4b5061e7ce64b0f7ae7e52060decc5b0c6cce9029cba3afd3fc
   languageName: node
   linkType: hard
 
@@ -10174,7 +10159,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.2.0"
     "@langchain/mistralai": "npm:1.2.0"
-    "@langchain/openai": "npm:1.4.7"
+    "@langchain/openai": "npm:1.5.1"
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.15.1"
