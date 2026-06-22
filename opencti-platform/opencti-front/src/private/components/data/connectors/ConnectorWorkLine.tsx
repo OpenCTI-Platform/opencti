@@ -96,7 +96,7 @@ const ConnectorWorkLine: FunctionComponent<
             </Grid>
             <Grid item xs={4}>
               <Label>
-                {t_i18n('Status')}
+                {t_i18n('Validation progress')}
               </Label>
               <TaskStatus status={workStatus} label={t_i18n(workStatus)} />
             </Grid>
