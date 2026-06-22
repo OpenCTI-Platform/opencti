@@ -76,9 +76,10 @@ import { testSync } from '../../../src/domain/connector-utils';
 import { updateAttribute, createEntity } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { notify } from '../../../src/database/redis';
+import { getHttpClient } from '../../../src/utils/http-client';
 import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
 import { verifyIngestionUri } from '../../../src/modules/ingestion/ingestion-common';
-import { syncEditField, registerSync, findSyncById } from '../../../src/domain/connector';
+import { syncEditField, registerSync, findSyncById, testSync as connectorTestSync, fetchRemoteStreams } from '../../../src/domain/connector';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 
 const fakeContext = {} as any;
@@ -268,5 +269,63 @@ describe('connector.ts — findSyncById', () => {
 
     expect(storeLoadById).toHaveBeenCalledWith(fakeContext, fakeUser, 'test-sync-id', 'Sync');
     expect(result).toEqual({ id: 'test-sync-id', name: 'My Sync' });
+  });
+});
+
+describe('connector.ts — testSync deny-list coverage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(verifyIngestionUri).mockImplementation(() => undefined);
+    vi.mocked(testSync).mockResolvedValue('Connection success' as never);
+  });
+
+  it('should validate uri against deny list before testing sync', async () => {
+    const input = {
+      uri: 'https://example.allowed.com',
+      token: '',
+      ssl_verify: false,
+    } as never;
+
+    await connectorTestSync(fakeContext, fakeUser, input);
+
+    expect(verifyIngestionUri).toHaveBeenCalledWith('https://example.allowed.com');
+    expect(testSync).toHaveBeenCalledWith(fakeContext, fakeUser, input);
+  });
+
+  it('should reject verify when uri is denied', async () => {
+    vi.mocked(verifyIngestionUri).mockImplementation(() => {
+      throw new Error('This URI is not allowed for ingestion.');
+    });
+    const input = {
+      uri: 'https://example.denied.com',
+      token: '',
+      ssl_verify: false,
+    } as never;
+
+    await expect(connectorTestSync(fakeContext, fakeUser, input))
+      .rejects.toThrow('This URI is not allowed for ingestion.');
+
+    expect(testSync).not.toHaveBeenCalled();
+  });
+});
+
+describe('connector.ts — fetchRemoteStreams deny-list coverage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(verifyIngestionUri).mockImplementation(() => undefined);
+  });
+
+  it('should reject validate when uri is denied before any HTTP call', async () => {
+    vi.mocked(verifyIngestionUri).mockImplementation(() => {
+      throw new Error('This URI is not allowed for ingestion.');
+    });
+
+    await expect(fetchRemoteStreams(fakeContext, fakeUser, {
+      uri: 'https://example.denied.com',
+      token: '',
+      ssl_verify: false,
+    } as never)).rejects.toThrow('This URI is not allowed for ingestion.');
+
+    expect(getHttpClient).not.toHaveBeenCalled();
   });
 });

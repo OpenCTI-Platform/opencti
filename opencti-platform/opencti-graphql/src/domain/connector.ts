@@ -37,7 +37,6 @@ import {
   type EditManagedConnectorInput,
   type HealthConnectorStatusInput,
   type LogsConnectorStatusInput,
-  type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
   type RegisterConnectorsManagerInput,
   type RequestConnectorStatusInput,
@@ -537,7 +536,8 @@ export const findSyncPaginated = async (context: AuthContext, user: AuthUser, op
   return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 
-export const testSync = async (context: AuthContext, user: AuthUser, sync: MutationSynchronizerTestArgs) => {
+export const testSync = async (context: AuthContext, user: AuthUser, sync: SynchronizerAddInput) => {
+  verifyIngestionUri(sync.uri);
   return testSyncUtils(context, user, sync);
 };
 
@@ -552,6 +552,7 @@ export const computeStreamRemoteUrl = (inputUri: string) => {
 
 export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input: SynchronizerFetchInput) => {
   const { token, uri, ssl_verify } = input;
+  verifyIngestionUri(uri);
   try {
     const query = `
     query SyncCreationStreamCollectionQuery {
