@@ -7788,7 +7788,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.14.2, graphql@npm:^16.0.0, graphql@npm:^16.10.0, graphql@npm:^16.9.0":
+"graphql@npm:17.0.1":
+  version: 17.0.1
+  resolution: "graphql@npm:17.0.1"
+  checksum: 10c0/95e4766eefa97bbc37cb4452527d24e12068f170e03c564611a3911f30a77361dfcfbdbfeea00f643c82585c02312c1f41ba6a6263049996d279c49951454980
+  languageName: node
+  linkType: hard
+
+"graphql@npm:^16.0.0, graphql@npm:^16.10.0, graphql@npm:^16.9.0":
   version: 16.14.2
   resolution: "graphql@npm:16.14.2"
   checksum: 10c0/a95a96961eaff55cc9fe9d31fae6f33499ac988b972d07ea5085024cb1333f515b902f376e7393a5489aa82200a8aff3eb96580e4d1b69d702ed19b6eb1ce97a
@@ -10248,7 +10255,7 @@ __metadata:
     file-type: "npm:21.3.4"
     github-api: "npm:3.4.0"
     globals: "npm:17.6.0"
-    graphql: "npm:16.14.2"
+    graphql: "npm:17.0.1"
     graphql-constraint-directive: "npm:6.0.0"
     graphql-no-alias: "npm:3.0.3"
     graphql-rate-limit-directive: "npm:2.0.6"
