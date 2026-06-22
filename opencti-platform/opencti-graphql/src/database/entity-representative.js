@@ -95,10 +95,36 @@ export const extractEntityRepresentativeName = (entityData) => {
   return String(mainValue);
 };
 
+const extractInternalObjectRepresentativeName = (internalObject) => {
+  if (isNotEmptyField(internalObject.name)) {
+    return internalObject.name;
+  }
+  if (isNotEmptyField(internalObject.title)) { // NewsFeedItem
+    return internalObject.title;
+  }
+  if (isNotEmptyField(internalObject.main_entity_name)) { // DeleteOperation
+    return internalObject.main_entity_name;
+  }
+  if (isNotEmptyField(internalObject.target_type)) { // EntitySetting
+    return internalObject.target_type;
+  }
+  if (isNotEmptyField(internalObject.manager_id)) { // ManagerConfiguration
+    return internalObject.manager_id;
+  }
+  return 'Unknown'; // Settings has no representative
+};
+
 const extractEntityRepresentative = (entityData) => {
   return {
     main: extractEntityRepresentativeName(entityData),
     secondary: extractRepresentativeDescription(entityData),
+  };
+};
+
+export const extractInternalObjectRepresentative = (internalObject) => {
+  return {
+    main: extractInternalObjectRepresentativeName(internalObject),
+    secondary: undefined,
   };
 };
 

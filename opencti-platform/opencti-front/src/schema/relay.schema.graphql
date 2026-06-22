@@ -1173,6 +1173,7 @@ interface BasicObject {
 interface InternalObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
 }
 
 type Module {
@@ -1395,6 +1396,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   platform_enterprise_edition: PlatformEE!
@@ -1514,6 +1516,7 @@ type Group implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   auto_integration_assignation: [String]!
   parent_types: [String!]!
   metrics: [Metric]
@@ -1730,6 +1733,7 @@ type User implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   user_email: String!
@@ -1779,6 +1783,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   user_email: String!
@@ -1918,6 +1923,7 @@ type Role implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -1952,6 +1958,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -2269,6 +2276,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -2318,6 +2326,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -2346,6 +2355,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -10824,6 +10834,7 @@ type EntitySetting implements InternalObject & BasicObject {
   workflow_id: String
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -10923,6 +10934,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   workflowInstance: WorkflowInstance
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -11065,6 +11077,7 @@ input ChannelAddInput {
 type Catalog implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -11641,6 +11654,7 @@ type Trigger implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -11728,6 +11742,7 @@ type Notification implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   created: DateTime
   name: String!
   notification_type: String!
@@ -12357,6 +12372,7 @@ type TaskTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -12489,6 +12505,7 @@ type CaseTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -13133,6 +13150,7 @@ type EntitySettingEdge {
 type Workspace implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13356,6 +13374,7 @@ input MalwareAnalysisAddInput {
 type ManagerConfiguration implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13391,6 +13410,7 @@ type Notifier implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -13622,6 +13642,7 @@ type PlayBookExecution {
 type Playbook implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13724,6 +13745,7 @@ input PlaybookAddLinkInput {
 type IngestionRss implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13818,6 +13840,7 @@ enum IngestionAuthType {
 type IngestionTaxii implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13905,6 +13928,7 @@ input IngestionTaxiiAddAutoUserInput {
 type IngestionTaxiiCollection implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13949,6 +13973,7 @@ input IngestionTaxiiCollectionAddInput {
 type IngestionCsv implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14056,6 +14081,7 @@ type IngestionQueryAttribute {
 type IngestionJson implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   connector_id: String!
   standard_id: String!
   parent_types: [String!]!
@@ -14344,6 +14370,7 @@ type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -14400,6 +14427,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -14658,6 +14686,7 @@ type CsvMapperAddInputFromImport {
 type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14867,6 +14896,7 @@ type JsonMapperVariable {
 type JsonMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14898,6 +14928,7 @@ input JsonMapperAddInput {
 type PublicDashboard implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14960,6 +14991,7 @@ type Theme implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   name: String!
   theme_background: String!
@@ -15054,6 +15086,7 @@ type DeletedElement {
 type DeleteOperation implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -15090,6 +15123,7 @@ type SupportPackage implements InternalObject & BasicObject {
   name: String!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -15139,6 +15173,7 @@ type ExclusionList implements InternalObject & BasicObject {
   description: String
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -15283,6 +15318,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15331,6 +15367,7 @@ type DisseminationList implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -15376,6 +15413,7 @@ type SavedFilter implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15484,6 +15522,7 @@ type PirInformation {
 type Pir implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -15615,6 +15654,7 @@ type FintelDesign implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15937,6 +15977,7 @@ type EmailTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15976,6 +16017,7 @@ type Form implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   spec_version: String!
@@ -16053,6 +16095,7 @@ type NewsFeedItem implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   title: String!
@@ -16353,6 +16396,7 @@ type AuthenticationProvider implements InternalObject & BasicObject & Authentica
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -16430,6 +16474,7 @@ type AvailableSecretInfo {
 type CustomView implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]

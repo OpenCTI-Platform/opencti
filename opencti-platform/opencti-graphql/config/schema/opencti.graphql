@@ -1107,6 +1107,7 @@ interface InternalObject {
   # BasicObject
   id: ID! # internal_id!
   entity_type: String!
+  representative: Representative!
 }
 
 ############## Settings
@@ -1321,6 +1322,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Settings
@@ -1443,6 +1445,7 @@ type Group implements InternalObject & BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   auto_integration_assignation: [String]!
   parent_types: [String!]!
   metrics:[Metric]
@@ -1647,6 +1650,7 @@ type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # User
@@ -1712,6 +1716,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   user_email: String!
@@ -1844,6 +1849,7 @@ type Role implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Role
@@ -1876,6 +1882,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Capability
@@ -2189,6 +2196,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Connector
@@ -2239,6 +2247,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Connector
@@ -2269,6 +2278,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Manager

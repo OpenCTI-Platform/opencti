@@ -1453,6 +1453,7 @@ export type AuthenticationProvider = AuthenticationProviderBase & BasicObject & 
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   runtime_status: AuthenticationProviderRuntimeStatus;
   standard_id: Scalars['String']['output'];
   type: AuthenticationProviderType;
@@ -2516,6 +2517,7 @@ export type Capability = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -3787,6 +3789,7 @@ export type CaseTemplate = BasicObject & InternalObject & {
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   tasks: TaskTemplateConnection;
 };
@@ -3841,6 +3844,7 @@ export type Catalog = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -4575,6 +4579,7 @@ export type Connector = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   playbook_compatible?: Maybe<Scalars['Boolean']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   title: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -4658,6 +4663,7 @@ export type ConnectorManager = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   public_key: Scalars['String']['output'];
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -6298,6 +6304,7 @@ export type CsvMapper = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   representations: Array<CsvMapperRepresentation>;
+  representative: Representative;
   separator: Scalars['String']['output'];
   skipLineChar?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
@@ -6451,6 +6458,7 @@ export type CustomView = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   path: Scalars['String']['output'];
+  representative: Representative;
   slug: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   targetEntityType: Scalars['String']['output'];
@@ -7091,6 +7099,7 @@ export type DecayExclusionRule = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -7152,6 +7161,7 @@ export type DecayRule = BasicObject & InternalObject & {
   order: Scalars['Int']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -7237,6 +7247,7 @@ export type DeleteOperation = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -7540,6 +7551,7 @@ export type DisseminationList = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -7898,6 +7910,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   objectsCount: DraftObjectsCount;
   parent_types: Array<Scalars['String']['output']>;
   processingCount: Scalars['Int']['output'];
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   validationWork?: Maybe<Work>;
   workflowInstance?: Maybe<WorkflowInstance>;
@@ -8689,6 +8702,7 @@ export type EmailTemplate = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   sender_email: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   template_body: Scalars['String']['output'];
@@ -8737,6 +8751,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
   scaleAttributes: Array<ScaleAttribute>;
   standard_id: Scalars['String']['output'];
@@ -9071,6 +9086,7 @@ export type ExclusionList = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -9860,6 +9876,7 @@ export type FintelDesign = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   textColor?: Maybe<Scalars['String']['output']>;
 };
@@ -9901,6 +9918,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   settings_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   start_date?: Maybe<Scalars['DateTime']['output']>;
@@ -9957,6 +9975,7 @@ export type Form = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
@@ -10038,6 +10057,7 @@ export type Group = BasicObject & InternalObject & {
   not_shareable_marking_types: Array<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
   roles?: Maybe<RoleConnection>;
   standard_id: Scalars['String']['output'];
@@ -13718,6 +13738,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
@@ -13807,6 +13828,7 @@ export type IngestionJson = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   query_attributes?: Maybe<Array<IngestionQueryAttribute>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
@@ -13887,6 +13909,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
+  representative: Representative;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
@@ -13966,6 +13989,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
@@ -14013,6 +14037,7 @@ export type IngestionTaxiiCollection = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<Creator>;
@@ -14070,6 +14095,7 @@ export enum IngestionTaxiiOrdering {
 export type InternalObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  representative: Representative;
 };
 
 export type InternalRelationship = BasicRelationship & {
@@ -14473,6 +14499,7 @@ export type JsonMapper = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   representations: Array<JsonMapperRepresentation>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
   variables?: Maybe<Array<JsonMapperVariable>>;
@@ -16339,6 +16366,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -16353,6 +16381,7 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
   manager_setting?: Maybe<Scalars['JSON']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -16569,6 +16598,7 @@ export type MeUser = BasicObject & InternalObject & {
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
+  representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
@@ -20898,6 +20928,7 @@ export type NewsFeedItem = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   news_feed_type: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   tags: Array<Scalars['String']['output']>;
   title: Scalars['String']['output'];
@@ -21307,6 +21338,7 @@ export type Notification = BasicObject & InternalObject & {
   notification_type: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   user_id?: Maybe<Scalars['String']['output']>;
@@ -21363,6 +21395,7 @@ export type Notifier = BasicObject & InternalObject & {
   notifier_connector: NotifierConnector;
   notifier_connector_id: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -23257,6 +23290,7 @@ export type Pir = BasicObject & InternalObject & {
   pir_type: PirType;
   queue_messages: Scalars['Int']['output'];
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -23513,6 +23547,7 @@ export type Playbook = BasicObject & InternalObject & {
   playbook_definition?: Maybe<Scalars['String']['output']>;
   playbook_running?: Maybe<Scalars['Boolean']['output']>;
   queue_messages: Scalars['Int']['output'];
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -24206,6 +24241,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   private_manifest?: Maybe<Scalars['String']['output']>;
   public_manifest?: Maybe<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri_key: Scalars['String']['output'];
@@ -28789,6 +28825,7 @@ export type Role = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -29201,6 +29238,7 @@ export type SavedFilter = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   scope: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
 };
@@ -30243,6 +30281,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_xtmhub_url?: Maybe<Scalars['String']['output']>;
   playground_enabled: Scalars['Boolean']['output'];
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   request_access_enabled: Scalars['Boolean']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -33164,6 +33203,7 @@ export type SupportPackage = BasicObject & InternalObject & {
   package_upload_dir?: Maybe<Scalars['String']['output']>;
   package_url?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -33903,6 +33943,7 @@ export type TaskTemplate = BasicObject & InternalObject & {
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
 };
 
@@ -34244,6 +34285,7 @@ export type Theme = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   theme_accent: Scalars['String']['output'];
   theme_background: Scalars['String']['output'];
@@ -35791,6 +35833,7 @@ export type Trigger = BasicObject & InternalObject & {
   period?: Maybe<DigestPeriod>;
   recipients?: Maybe<Array<Member>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   trigger_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   trigger_time?: Maybe<Scalars['String']['output']>;
@@ -36153,6 +36196,7 @@ export type User = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
   roles: Array<Role>;
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
@@ -38102,6 +38146,7 @@ export type Workspace = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   refresh_interval?: Maybe<Scalars['Int']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
   standard_id: Scalars['String']['output'];
   tags?: Maybe<Array<Scalars['String']['output']>>;
   toConfigurationExport: Scalars['String']['output'];
@@ -41954,6 +41999,7 @@ export type AuthenticationProviderResolvers<ContextType = any, ParentType extend
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   runtime_status?: Resolver<ResolversTypes['AuthenticationProviderRuntimeStatus'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
@@ -42277,6 +42323,7 @@ export type CapabilityResolvers<ContextType = any, ParentType extends ResolversP
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -42631,6 +42678,7 @@ export type CaseTemplateResolvers<ContextType = any, ParentType extends Resolver
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tasks?: Resolver<ResolversTypes['TaskTemplateConnection'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -42654,6 +42702,7 @@ export type CatalogResolvers<ContextType = any, ParentType extends ResolversPare
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -42910,6 +42959,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_compatible?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -42969,6 +43019,7 @@ export type ConnectorManagerResolvers<ContextType = any, ParentType extends Reso
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   public_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -43439,6 +43490,7 @@ export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversPa
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   representations?: Resolver<Array<ResolversTypes['CsvMapperRepresentation']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   skipLineChar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -43527,6 +43579,7 @@ export type CustomViewResolvers<ContextType = any, ParentType extends ResolversP
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   targetEntityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -43723,6 +43776,7 @@ export type DecayExclusionRuleResolvers<ContextType = any, ParentType extends Re
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -43767,6 +43821,7 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -43822,6 +43877,7 @@ export type DeleteOperationResolvers<ContextType = any, ParentType extends Resol
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -43932,6 +43988,7 @@ export type DisseminationListResolvers<ContextType = any, ParentType extends Res
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -44078,6 +44135,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   objectsCount?: Resolver<ResolversTypes['DraftObjectsCount'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   validationWork?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
@@ -44303,6 +44361,7 @@ export type EmailTemplateResolvers<ContextType = any, ParentType extends Resolve
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   sender_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   template_body?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44336,6 +44395,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44445,6 +44505,7 @@ export type ExclusionListResolvers<ContextType = any, ParentType extends Resolve
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -44738,6 +44799,7 @@ export type FintelDesignResolvers<ContextType = any, ParentType extends Resolver
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   textColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -44762,6 +44824,7 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   settings_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44795,6 +44858,7 @@ export type FormResolvers<ContextType = any, ParentType extends ResolversParentT
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44845,6 +44909,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   not_shareable_marking_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   roles?: Resolver<Maybe<ResolversTypes['RoleConnection']>, ParentType, ContextType, Partial<GroupRolesArgs>>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45858,6 +45923,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45906,6 +45972,7 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   query_attributes?: Resolver<Maybe<Array<ResolversTypes['IngestionQueryAttribute']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45952,6 +46019,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45999,6 +46067,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46023,6 +46092,7 @@ export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType exte
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -46054,6 +46124,7 @@ export type InternalObjectResolvers<ContextType = any, ParentType extends Resolv
   __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
 }>;
 
 export type InternalRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalRelationship'] = ResolversParentTypes['InternalRelationship']> = ResolversObject<{
@@ -46214,6 +46285,7 @@ export type JsonMapperResolvers<ContextType = any, ParentType extends ResolversP
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   representations?: Resolver<Array<ResolversTypes['JsonMapperRepresentation']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   variables?: Resolver<Maybe<Array<ResolversTypes['JsonMapperVariable']>>, ParentType, ContextType>;
@@ -46843,6 +46915,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -46857,6 +46930,7 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
   manager_setting?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -47006,6 +47080,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47868,6 +47943,7 @@ export type NewsFeedItemResolvers<ContextType = any, ParentType extends Resolver
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   news_feed_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47990,6 +48066,7 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
   notification_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48035,6 +48112,7 @@ export type NotifierResolvers<ContextType = any, ParentType extends ResolversPar
   notifier_connector?: Resolver<ResolversTypes['NotifierConnector'], ParentType, ContextType>;
   notifier_connector_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -48606,6 +48684,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   pir_type?: Resolver<ResolversTypes['PirType'], ParentType, ContextType>;
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -48757,6 +48836,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   playbook_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48990,6 +49070,7 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   private_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   public_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -49801,6 +49882,7 @@ export type RoleResolvers<ContextType = any, ParentType extends ResolversParentT
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -49972,6 +50054,7 @@ export type SavedFilterResolvers<ContextType = any, ParentType extends Resolvers
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   scope?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -50341,6 +50424,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_xtmhub_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playground_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   request_access_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -51282,6 +51366,7 @@ export type SupportPackageResolvers<ContextType = any, ParentType extends Resolv
   package_upload_dir?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   package_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -51515,6 +51600,7 @@ export type TaskTemplateResolvers<ContextType = any, ParentType extends Resolver
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -51627,6 +51713,7 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52105,6 +52192,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   period?: Resolver<Maybe<ResolversTypes['DigestPeriod']>, ParentType, ContextType>;
   recipients?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   trigger_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   trigger_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -52226,6 +52314,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType, Partial<UserRolesArgs>>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
@@ -52930,6 +53019,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refresh_interval?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

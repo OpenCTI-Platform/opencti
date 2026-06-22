@@ -53,6 +53,7 @@ type Trigger implements InternalObject & BasicObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
+    representative: Representative!
     parent_types: [String!]!
     metrics:[Metric]
     created: DateTime
@@ -133,6 +134,7 @@ type Notification implements InternalObject & BasicObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
+    representative: Representative!
     created: DateTime
     name: String!
     notification_type: String!
