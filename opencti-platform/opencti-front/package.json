@@ -200,8 +200,7 @@
     "json5": "2.2.3",
     "react": "19.2.7",
     "webpack": "5.107.2",
-    "@radix-ui/react-tooltip": "1.2.8",
-    "@radix-ui/react-dropdown-menu": "2.1.16",
+    "@radix-ui/react-primitive": "2.1.5",
     "unrs-resolver": "1.11.1"
   },
   "dependenciesMeta": {
