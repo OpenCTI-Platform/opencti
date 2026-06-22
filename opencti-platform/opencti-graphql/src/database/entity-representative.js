@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { isEmptyField, isNotEmptyField, REDACTED_INFORMATION } from './utils';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { observableValue } from '../utils/format';
 import { ENABLED_DEMO_MODE } from '../config/conf';
@@ -121,7 +121,7 @@ const extractEntityRepresentative = (entityData) => {
   };
 };
 
-export const extractInternalObjectRepresentative = (internalObject) => {
+const extractInternalObjectRepresentative = (internalObject) => {
   return {
     main: extractInternalObjectRepresentativeName(internalObject),
     secondary: undefined,
@@ -138,6 +138,9 @@ export const extractRepresentative = (entityData) => {
   // otherwise we find extract it depending on the entity type
   if (isStixRelationship(entityData.entity_type)) {
     return extractRelationshipRepresentative(entityData);
+  }
+  if (isInternalObject(entityData.entity_type)) {
+    return extractInternalObjectRepresentative(entityData);
   }
 
   return extractEntityRepresentative(entityData);

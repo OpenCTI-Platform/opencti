@@ -2,7 +2,7 @@ import { internalObjectCleanContext, internalObjectEditContext } from '../domain
 import { BUS_TOPICS } from '../config/conf';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
-import { extractInternalObjectRepresentative } from '../database/entity-representative';
+import { extractRepresentative } from '../database/entity-representative';
 
 const internalObjectResolvers = {
   InternalObject: {
@@ -14,7 +14,7 @@ const internalObjectResolvers = {
       return 'Unknown';
     },
     representative(obj) {
-      return extractInternalObjectRepresentative(obj);
+      return extractRepresentative(obj);
     },
   },
   Subscription: {
