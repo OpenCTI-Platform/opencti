@@ -56,8 +56,8 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const tiptapEnabled = !isOldEditorEnable();
   const [openDelete, setOpenDelete] = useState(false);
 
   const [pdf, setPdf] = useState<File>();

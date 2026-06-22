@@ -178,8 +178,8 @@ const StixCoreObjectFileExportComponent = ({
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const oldEditorEnabled = isOldEditorEnable();
 
   const {
     connectorsForExport,
@@ -316,7 +316,7 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value, tiptapEnabled);
+          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value, !oldEditorEnabled);
           const blob = await PDF.getBlob();
           uploadFile({
             id: scoId,
@@ -341,8 +341,8 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value, tiptapEnabled)
-          : htmlToPdf(fileId, fileData, tiptapEnabled);
+          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value, !oldEditorEnabled)
+          : htmlToPdf(fileId, fileData, !oldEditorEnabled);
         const blob = await PDF.getBlob();
         uploadFile({
           id: scoId,

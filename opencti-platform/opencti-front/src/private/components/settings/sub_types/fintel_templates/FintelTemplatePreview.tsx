@@ -57,8 +57,8 @@ const FintelTemplatePreview = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const tiptapEnabled = !isOldEditorEnable();
   const { editorValue } = useFintelTemplateContext();
 
   const [pdf, setPdf] = useState<File>();

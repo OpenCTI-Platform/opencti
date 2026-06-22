@@ -107,8 +107,8 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const { fullyActive } = useAI();
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const oldEditorEnabled = isOldEditorEnable();
   const isLegacyMode = !agentMode;
 
   // Agent mode state (XTM One path)
@@ -200,7 +200,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         markdownFieldRef.current.scrollTop = markdownFieldRef.current.scrollHeight;
       }
     } else if (format === 'html') {
-      const selector = tiptapEnabled
+      const selector = !oldEditorEnabled
         ? '.tiptap-editor-content.ProseMirror'
         : '.ck-content.ck-editor__editable.ck-editor__editable_inline';
       const elementEditor = document.querySelector(selector);
@@ -305,7 +305,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           } : undefined}
         />
       )}
-      {format === 'html' && tiptapEnabled && (
+      {format === 'html' && !oldEditorEnabled && (
         <RichTextEditor
           id="response-dialog-editor"
           data={content}
@@ -315,7 +315,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           disabled={effectiveDisabled}
         />
       )}
-      {format === 'html' && !tiptapEnabled && (
+      {format === 'html' && oldEditorEnabled && (
         <CKEditor
           id="response-dialog-editor"
           data={content}

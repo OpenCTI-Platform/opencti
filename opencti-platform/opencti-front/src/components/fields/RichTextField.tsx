@@ -48,7 +48,7 @@ const RichTextField = ({
 }: RichTextFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isTiptapEditorEnable } = useHelper();
+  const { isOldEditorEnable } = useHelper();
   const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
@@ -56,7 +56,7 @@ const RichTextField = ({
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
-  const RichTextEditorInstance = isTiptapEditorEnable() ? (
+  const RichTextEditorInstance = !isOldEditorEnable() ? (
     <RichTextEditor
       onTextSelection={(text) => {
         if (onTextSelection && disabled && !fullScreen && text.length > 2) {
