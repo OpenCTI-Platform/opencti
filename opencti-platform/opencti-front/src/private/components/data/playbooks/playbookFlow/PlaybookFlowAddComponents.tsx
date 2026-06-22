@@ -72,9 +72,7 @@ const PlaybookFlowAddComponents = ({
   const componentName = selectedComponent?.name ?? selectedNode?.data?.component?.name;
 
   const drawerTitle = isUpdate
-    ? componentName
-      ? t_i18n(componentName)
-      : t_i18n('Update component')
+    ? t_i18n('Update component: {component_name}', { values: { component_name: componentName ? t_i18n(componentName) : '' } })
     : t_i18n('Add component: {component_name}', { values: { component_name: componentName ? t_i18n(componentName) : '' } });
 
   return (

@@ -19,53 +19,10 @@ import ListSubheader from '@mui/material/ListSubheader';
 import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
 import { PlaybookComponent, PlaybookComponents, PlaybookNode } from '../types/playbook-types';
-import { getShortComponentDescription } from '../utils/playbookComponentDescriptions';
-
-type PlaybookSectionComponent = {
-  name: string;
-  displayName?: string;
-};
-
-const normalizeComponentName = (name: string) => name.trim().toLowerCase().replace(/\s+/g, ' ');
-
-const nonEntrySections: Array<{ title: string; components: PlaybookSectionComponent[] }> = [
-  {
-    title: 'Transform and Enrich',
-    components: [
-      { name: 'Apply predefined rule' },
-      { name: 'Container Wrapper' },
-      { name: 'Enrich through connector' },
-      { name: 'Extract observables from indicator' },
-      { name: 'Match knowledge', displayName: 'Filter Bundle' },
-      { name: 'Manipulate knowledge', displayName: 'Manipulate Bundle' },
-      { name: 'Promote observable to indicator' },
-      { name: 'Reduce knowledge', displayName: 'Reduce Bundle' },
-      { name: 'Security Coverage', displayName: 'Create Security Coverage' },
-      { name: 'Log data in standard output' },
-    ],
-  },
-  {
-    title: 'Share and Access',
-    components: [
-      { name: 'Manage access restrictions' },
-      { name: 'Remove access restrictions' },
-      { name: 'Share with organizations' },
-      { name: 'Unshare with organizations' },
-    ],
-  },
-  {
-    title: 'End Playbook',
-    components: [
-      { name: 'Send email from template' },
-      { name: 'Send for ingestion', displayName: 'Send to knowledge' },
-      { name: 'Send to notifier' },
-    ],
-  },
-];
+import { groupAndSortPlaybookComponents } from './playbookComponents-utils';
 
 interface PlaybookSelectComponentProps {
   components: PlaybookComponents;
@@ -83,11 +40,12 @@ const PlaybookFlowSelectComponent = ({
   const isSelectedNodeEntryPoint = selectedNode?.data?.component?.is_entry_point ?? false;
   const grouped = groupAndSortPlaybookComponents(components, isSelectedNodeEntryPoint);
 
-  if (isSelectedNodeEntryPoint) {
-    return (
-      <List>
-        {entryComponents.map((component) => {
-          return (
+  return (
+    <List>
+      {grouped.map(({ category, items }, index) => (
+        <React.Fragment key={category}>
+          <ListSubheader disableSticky sx={index > 0 ? { paddingTop: '8px' } : undefined}>{t_i18n(category)}</ListSubheader>
+          {items.map((component) => (
             <ListItemButton
               divider
               key={component.id}
@@ -98,72 +56,12 @@ const PlaybookFlowSelectComponent = ({
               </ListItemIcon>
               <ListItemText
                 primary={t_i18n(component.name)}
-                secondary={t_i18n(getShortComponentDescription(component.name, component.description))}
+                secondary={t_i18n(component.description)}
               />
             </ListItemButton>
-          );
-        })}
-      </List>
-    );
-  }
-
-  const componentsByName = new Map(
-    entryComponents.map((component) => [normalizeComponentName(component.name), component]),
-  );
-  const consumedComponentIds = new Set<string>();
-
-  return (
-    <List>
-      {nonEntrySections.map((section) => {
-        const sectionComponents = section.components
-          .map((sectionComponent) => {
-            const component = componentsByName.get(normalizeComponentName(sectionComponent.name));
-            if (!component) return null;
-            consumedComponentIds.add(component.id);
-            return { component, displayName: sectionComponent.displayName ?? component.name };
-          })
-          .filter((item): item is { component: PlaybookComponent; displayName: string } => Boolean(item));
-
-        if (sectionComponents.length === 0) return null;
-
-        return (
-          <div key={section.title}>
-            <ListSubheader disableSticky>{t_i18n(section.title)}</ListSubheader>
-            {sectionComponents.map(({ component, displayName }) => (
-              <ListItemButton
-                divider
-                key={component.id}
-                onClick={() => onSelect(component)}
-              >
-                <ListItemIcon>
-                  <ItemIcon type={component.icon} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={t_i18n(displayName)}
-                  secondary={t_i18n(getShortComponentDescription(component.name, component.description))}
-                />
-              </ListItemButton>
-            ))}
-          </div>
-        );
-      })}
-      {entryComponents
-        .filter((component) => !consumedComponentIds.has(component.id))
-        .map((component) => (
-          <ListItemButton
-            divider
-            key={component.id}
-            onClick={() => onSelect(component)}
-          >
-            <ListItemIcon>
-              <ItemIcon type={component.icon} />
-            </ListItemIcon>
-            <ListItemText
-              primary={t_i18n(component.name)}
-              secondary={t_i18n(getShortComponentDescription(component.name, component.description))}
-            />
-          </ListItemButton>
-        ))}
+          ))}
+        </React.Fragment>
+      ))}
     </List>
   );
 };

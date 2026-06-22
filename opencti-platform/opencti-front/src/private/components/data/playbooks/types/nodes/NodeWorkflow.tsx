@@ -5,74 +5,14 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { MoreVert, LoginOutlined, ErrorOutlined } from '@mui/icons-material';
+import { MoreVert, LoginOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../../components/i18n';
-import { getShortComponentDescription } from '../../utils/playbookComponentDescriptions';
+import { truncate } from '../../../../../../utils/String';
 
 type node = {
   id: string;
 };
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  node: {
-    position: 'relative',
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.12)'
-        : '1px solid rgba(0, 0, 0, 0.12)',
-    borderRadius: 4,
-    backgroundColor: theme.palette.background.paper,
-    width: 220,
-    minHeight: 60,
-    padding: '8px 5px 5px 5px',
-  },
-  name: {
-    maxWidth: 160,
-    fontSize: 10,
-    whiteSpace: 'normal',
-    overflowWrap: 'anywhere',
-    lineHeight: 1.2,
-  },
-  component: {
-    maxWidth: 160,
-    color:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.5)'
-        : 'rgba(0, 0, 0, 0.5)',
-    fontSize: 8,
-    whiteSpace: 'normal',
-    overflowWrap: 'anywhere',
-    lineHeight: 1.2,
-    marginTop: 4,
-  },
-  componentError: {
-    maxWidth: 160,
-    color: theme.palette.error.main,
-    fontSize: 8,
-    whiteSpace: 'normal',
-    overflowWrap: 'anywhere',
-    lineHeight: 1.2,
-    marginTop: 4,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 2,
-  },
-  handlesWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  handle: {
-    position: 'absolute',
-  },
-}));
 
 const getHandlePositionStyle = (count: number, index: number, width = 220): React.CSSProperties | undefined => {
   // we distribute evenly the output ports at the bottom using CSS
@@ -87,11 +27,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const { getNode } = useReactFlow();
-  const componentDescription = getShortComponentDescription(data.component?.name, data.component?.description);
-  const nodeDescription = data.description?.trim() || t_i18n(componentDescription);
-
-  const configurationInvalid = data.configurationInvalid ?? false;
-
+  const displayDescription = data.description || data.component?.description;
   return (
     <div style={{
       position: 'relative',
@@ -112,18 +48,19 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
             {t_i18n(truncate(data.name, 100, false))}
           </div>
         </Tooltip>
-        {configurationInvalid ? (
-          <Tooltip title={t_i18n('One or more configuration values are missing or refer to entities that no longer exist. Open the component to reconfigure it.')}>
-            <div className={classes.componentError}>
-              <ErrorOutlined style={{ fontSize: 8, marginRight: 2 }} />
-              {t_i18n('Configuration required')}
-            </div>
-          </Tooltip>
-        ) : (
-          <Tooltip title={nodeDescription}>
-            <div className={classes.component}>{nodeDescription}</div>
-          </Tooltip>
-        )}
+        <Tooltip title={t_i18n(displayDescription)}>
+          <div style={{
+            maxWidth: 160,
+            fontSize: 8,
+            color: theme.palette.mode === 'dark'
+              ? 'rgba(255, 255, 255, 0.5)'
+              : 'rgba(0, 0, 0, 0.5)',
+            wordBreak: 'break-word',
+          }}
+          >
+            {t_i18n(truncate(displayDescription, 150, false))}
+          </div>
+        </Tooltip>
       </div>
       <div className="clearfix" />
       <div style={{ position: 'absolute', top: 0, right: 0 }}>

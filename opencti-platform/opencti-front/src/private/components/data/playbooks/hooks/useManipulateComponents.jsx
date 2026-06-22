@@ -161,7 +161,7 @@ const useManipulateComponents = (playbook) => {
             type: 'workflow',
             data: {
               name,
-              description: configuration?.description,
+              description,
               configuration,
               component,
               openConfig: (nodeId) => {
@@ -213,7 +213,7 @@ const useManipulateComponents = (playbook) => {
       type: 'workflow',
       data: {
         name,
-        description: configuration?.description,
+        description,
         configuration,
         component,
         openConfig: (nodeId) => {
@@ -295,7 +295,7 @@ const useManipulateComponents = (playbook) => {
       type: 'workflow',
       data: {
         name,
-        description: configuration?.description,
+        description,
         configuration,
         component,
         openConfig: (nodeId) => {
@@ -418,7 +418,7 @@ const useManipulateComponents = (playbook) => {
           type: 'workflow',
           data: {
             name,
-            description: configuration?.description,
+            description,
             configuration,
             component,
             openConfig: (nodeId) => {
