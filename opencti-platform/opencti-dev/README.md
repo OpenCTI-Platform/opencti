@@ -10,7 +10,7 @@ podman compose up -d
 Will start:
 - elasticsearch + Kibana (`opencti-dev-elasticsearch` & `opencti-dev-kibana`)
 - rabbitMq (`opencti-dev-rabbitmq`)
-- MinIO (`opencti-dev-minio`)
+- RustFS (`opencti-dev-rustfs`)
 - Redis + redis insight (`opencti-dev-redis` & `opencti-dev-redis-insight`)
 - [Fake smtp server](#fake-smtp-server) (`opencti-dev-smtp`)
 
