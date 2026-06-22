@@ -622,7 +622,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   {
                     type: 'Threat-Actor-Individual',
                     link: '/dashboard/threats/threat_actors_individual',
-                    label: 'Threat actors (individual)',
+                    label: t_i18n('Threat actors (individual)'),
                     icon: <LaptopAccount fontSize="small" />,
                   },
                   { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },
