@@ -281,7 +281,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
           bundleObjects: bundleWithMultipleObjects.objects,
           configuration: {
             ...playbookNode.configuration,
-            authorized_members: [{ value: 'CREATOR' }],
+            authorized_members: [{ value: 'AUTHOR' }],
             applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
@@ -297,7 +297,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
           bundleObjects: bundleWithMultipleObjects.objects,
           configuration: {
             ...playbookNode.configuration,
-            authorized_members: [{ value: 'CREATOR' }],
+            authorized_members: [{ value: 'AUTHOR' }],
             applyToElements: playbookBundleElementsToApply.allElements.value,
           },
         }));
@@ -317,7 +317,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
           bundleObjects: bundleWithMultipleObjects.objects,
           configuration: {
             ...playbookNode.configuration,
-            authorized_members: [{ value: 'CREATOR' }],
+            authorized_members: [{ value: 'AUTHOR' }],
             applyToElements: playbookBundleElementsToApply.allExceptMain.value,
           },
         }));
@@ -333,33 +333,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         const ATTACK_PATTERN_ID = 'attack-pattern--09bd862a-70c8-55ae-ac7d-3344746f1b0c';
         const bundleWithMultipleObjectsWithSameCreator = {
           objects: [
-            {
-              id: MAIN_ID,
-              type: 'indicator',
-              extensions: {
-                [STIX_EXT_OCTI]: {
-                  created_by_ref_id: MAIN_CREATOR_ID,
-                },
-              },
-            } as unknown as StixObject,
-            {
-              id: MALWARE_ID,
-              type: 'malware',
-              extensions: {
-                [STIX_EXT_OCTI]: {
-                  created_by_ref_id: MALWARE_CREATOR_ID,
-                },
-              },
-            } as unknown as StixObject,
-            {
-              id: CAMPAIGN_ID,
-              type: 'campaign',
-              extensions: {
-                [STIX_EXT_OCTI]: {
-                  created_by_ref_id: CAMPAIGN_CREATOR_ID,
-                },
-              },
-            } as unknown as StixObject,
+            ...bundleWithMultipleObjects.objects,
             {
               id: ATTACK_PATTERN_ID,
               type: 'attack-pattern',
@@ -377,7 +351,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
           bundleObjects: bundleWithMultipleObjectsWithSameCreator.objects,
           configuration: {
             ...playbookNode.configuration,
-            authorized_members: [{ value: 'CREATOR' }],
+            authorized_members: [{ value: 'AUTHOR' }],
             applyToElements: playbookBundleElementsToApply.allElements.value,
           },
         }));
