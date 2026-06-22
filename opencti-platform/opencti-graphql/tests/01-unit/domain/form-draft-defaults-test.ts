@@ -229,21 +229,20 @@ describe('resolveAuthorizedMembersForDraft', () => {
     expect(result).toContainEqual({ id: 'org-a', access_right: 'view', groups_restriction_ids: ['group-analyst'] });
   });
 
-  it('should produce separate AUTHOR entries per org when multiple orgs have different restrictions', () => {
-    const user = makeUser([{ internal_id: 'org-a' }, { internal_id: 'org-b' }]);
+  it('should produce separate AUTHOR entries per group restriction for the createdBy org', () => {
+    const user = makeUser();
+    const createdBy = 'org-a';
     const rules = [
       { type: 'AUTHOR_ORG', intersectionGroup: 'group-analyst' },
       { type: 'AUTHOR_ORG', intersectionGroup: 'group-manager' },
     ];
 
-    const result = resolveAuthorizedMembersForDraft(user, rules);
+    const result = resolveAuthorizedMembersForDraft(user, rules, createdBy);
 
-    // Each org gets two entries (one per group restriction)
-    expect(result).toHaveLength(4);
+    // Each group restriction produces a separate entry for the createdBy org
+    expect(result).toHaveLength(2);
     expect(result).toContainEqual({ id: 'org-a', access_right: 'admin', groups_restriction_ids: ['group-analyst'] });
     expect(result).toContainEqual({ id: 'org-a', access_right: 'admin', groups_restriction_ids: ['group-manager'] });
-    expect(result).toContainEqual({ id: 'org-b', access_right: 'admin', groups_restriction_ids: ['group-analyst'] });
-    expect(result).toContainEqual({ id: 'org-b', access_right: 'admin', groups_restriction_ids: ['group-manager'] });
   });
 
   it('should always produce a single unrestricted CREATORS entry regardless of duplicates', () => {
