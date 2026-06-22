@@ -25,13 +25,14 @@ import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
+import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from '../../../utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
+import useHelper from '../../../utils/hooks/useHelper';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
@@ -43,6 +44,7 @@ const WidgetCreationParameters = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
@@ -69,6 +71,17 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_max',
     'opinions_metrics_min',
     'opinions_metrics_total',
+  ];
+
+  const draftWorkspaceSortByValues = [
+    'name',
+    'created_at',
+    'draft_status',
+    'objectAssignee',
+    'objectParticipant',
+    'creator',
+    'createdBy',
+    ...(isFeatureEnable('DRAFT_WORKFLOW') ? ['workflowInstance'] : []),
   ];
 
   const AUDIT_WIDGET_ATTRIBUTES = [
@@ -498,7 +511,7 @@ const WidgetCreationParameters = () => {
                         )
                         }
                       >
-                        {sortByValues.map((value) => (
+                        {(isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? draftWorkspaceSortByValues : sortByValues).map((value) => (
                           <MenuItem
                             key={value}
                             value={value}

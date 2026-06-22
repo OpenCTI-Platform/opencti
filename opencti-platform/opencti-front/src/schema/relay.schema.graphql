@@ -15223,6 +15223,7 @@ enum DraftWorkspacesOrdering {
   createdBy
   objectAssignee
   objectParticipant
+  workflowInstance
   _score
 }
 

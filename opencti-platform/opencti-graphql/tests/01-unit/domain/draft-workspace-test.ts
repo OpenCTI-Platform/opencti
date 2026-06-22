@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { addDraftWorkspace, draftWorkspacesNumber } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, draftWorkspacesNumber, findDraftWorkspacePaginated } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import * as middleware from '../../../src/database/middleware';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import * as engine from '../../../src/database/engine';
@@ -180,5 +180,114 @@ describe('resolveWorkflowInstanceStatusFilter (via draftWorkspacesNumber)', () =
         }),
       }),
     );
+  });
+});
+
+describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () => {
+  const mockDraftA = { id: 'draft-a', name: 'Alpha Draft' };
+  const mockDraftB = { id: 'draft-b', name: 'Beta Draft' };
+  const mockDraftC = { id: 'draft-c', name: 'Gamma Draft (no workflow)' };
+
+  const mockWorkflowInstances = [
+    { entity_id: 'draft-a', currentState: 'status-template-new' },
+    { entity_id: 'draft-b', currentState: 'status-template-review' },
+  ];
+
+  const mockStatusTemplates = [
+    { id: 'status-template-new', name: 'New' },
+    { id: 'status-template-review', name: 'Review' },
+  ];
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+  });
+
+  it('should fall through to pageEntitiesConnection when orderBy is not workflowInstance', async () => {
+    vi.spyOn(middlewareLoader, 'pageEntitiesConnection').mockResolvedValue({ edges: [], pageInfo: { globalCount: 0 } } as any);
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([] as any);
+
+    const args: any = { orderBy: 'name', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    await findDraftWorkspacePaginated(mockContext, mockUser, args);
+
+    expect(middlewareLoader.pageEntitiesConnection).toHaveBeenCalled();
+  });
+
+  it('should sort drafts ascending by workflow status name, nulls last', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce(mockWorkflowInstances as any) // WorkflowInstances
+      .mockResolvedValueOnce([mockDraftB, mockDraftA, mockDraftC] as any); // DraftWorkspaces (unsorted)
+    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
+
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
+
+    const ids = result.edges.map((e: any) => e.node.id);
+    expect(ids).toEqual(['draft-a', 'draft-b', 'draft-c']); // New < Review, then no-workflow last
+  });
+
+  it('should sort drafts descending by workflow status name, nulls last', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce(mockWorkflowInstances as any)
+      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
+    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
+
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'desc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
+
+    const ids = result.edges.map((e: any) => e.node.id);
+    expect(ids).toEqual(['draft-b', 'draft-a', 'draft-c']); // Review > New, then no-workflow last
+  });
+
+  it('should set hasNextPage=true when more results exist beyond the page', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce(mockWorkflowInstances as any)
+      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
+    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
+
+    const args: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
+
+    expect(result.edges).toHaveLength(2);
+    expect(result.pageInfo.hasNextPage).toBe(true);
+    expect(result.pageInfo.globalCount).toBe(3);
+  });
+
+  it('should paginate correctly using the after cursor', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce(mockWorkflowInstances as any)
+      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
+    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
+
+    // First page
+    const firstArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const firstPage = await findDraftWorkspacePaginated(mockContext, mockUser, firstArgs);
+    const afterCursor = firstPage.pageInfo.endCursor;
+
+    // Reset mocks for second call
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce(mockWorkflowInstances as any)
+      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
+
+    const secondArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', after: afterCursor, filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const secondPage = await findDraftWorkspacePaginated(mockContext, mockUser, secondArgs);
+
+    expect(secondPage.edges).toHaveLength(1);
+    expect(secondPage.edges[0].node.id).toBe('draft-c');
+    expect(secondPage.pageInfo.hasNextPage).toBe(false);
+  });
+
+  it('should return empty result when there are no drafts', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce([] as any) // no WorkflowInstances
+      .mockResolvedValueOnce([] as any); // no DraftWorkspaces
+    vi.spyOn(engine, 'elFindByIds').mockResolvedValue([] as any);
+
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
+
+    expect(result.edges).toHaveLength(0);
+    expect(result.pageInfo.hasNextPage).toBe(false);
+    expect(result.pageInfo.globalCount).toBe(0);
   });
 });

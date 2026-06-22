@@ -225,10 +225,11 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       percentWidth: 10,
       isSortable: true,
       render: (node) => (
-        <DraftStatusChip
-          draftStatus={node.draft_status}
-          workflowCurrentStatus={node.workflowInstance?.currentStatus}
-        />
+        node.workflowInstance?.currentStatus ? (
+          <ItemStatus status={node.workflowInstance.currentStatus} />
+        ) : (
+          <DraftStatusChip draftStatus={node.draft_status} />
+        )
       ),
     },
     draft_validation_progress: {
@@ -271,10 +272,11 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       percentWidth: 10,
       isSortable: true,
       render: (node) => (
-        <DraftStatusChip
-          draftStatus={node.draft_status}
-          workflowCurrentStatus={node.workflowInstance?.currentStatus}
-        />
+        node.workflowInstance?.currentStatus ? (
+          <ItemStatus status={node.workflowInstance.currentStatus} />
+        ) : (
+          <DraftStatusChip draftStatus={node.draft_status} />
+        )
       ),
     },
     draft_validation_progress: {

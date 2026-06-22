@@ -7956,7 +7956,8 @@ export enum DraftWorkspacesOrdering {
   DraftStatus = 'draft_status',
   Name = 'name',
   ObjectAssignee = 'objectAssignee',
-  ObjectParticipant = 'objectParticipant'
+  ObjectParticipant = 'objectParticipant',
+  WorkflowInstance = 'workflowInstance'
 }
 
 export type EditContext = {

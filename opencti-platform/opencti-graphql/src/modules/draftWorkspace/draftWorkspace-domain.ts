@@ -17,7 +17,7 @@ import { type EntityOptions, fullEntitiesList, fullRelationsList, pageEntitiesCo
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
-import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { buildPagination, computeSumOfList, cursorToOffset, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
   DraftChangeType,
@@ -37,7 +37,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixRefRelationship, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -124,7 +124,74 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 };
 
+// Helper: application-level sort by workflow instance current status name.
+// Required because workflowInstance.currentState is stored on a separate WorkflowInstance
+// document, not on the DraftWorkspace document itself, making native ES sorting impossible.
+const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  if ((args.orderBy as string) !== 'workflowInstance') return null;
+
+  const first = args.first ?? 10;
+  const asc = (args.orderMode ?? 'asc') === 'asc';
+  const executionCtx = bypassDraftContext(context);
+
+  // 1. Load all WorkflowInstances → map entity_id → StatusTemplate ID (currentState)
+  const allWorkflowInstances: any[] = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], { first: 5000 });
+  const draftToStatusTemplateId = new Map<string, string>();
+  for (const wi of allWorkflowInstances) {
+    if (wi.entity_id && wi.currentState) {
+      draftToStatusTemplateId.set(wi.entity_id as string, wi.currentState as string);
+    }
+  }
+
+  // 2. Load StatusTemplates → map id → name
+  const statusTemplateIds = [...new Set(draftToStatusTemplateId.values())];
+  const statusNameMap = new Map<string, string>();
+  if (statusTemplateIds.length > 0) {
+    const statusTemplates = await elFindByIds(executionCtx, executionCtx.user!, statusTemplateIds, { type: ENTITY_TYPE_STATUS_TEMPLATE }) as any[];
+    for (const st of statusTemplates) {
+      statusNameMap.set(st.id, st.name as string);
+    }
+  }
+
+  // 3. Load all DraftWorkspaces with filters applied (no sort, no pagination limit)
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    ...resolvedArgs,
+    first: 5000,
+    orderBy: 'created_at',
+  });
+
+  // 4. Sort in memory by status name (nulls last)
+  const sorted = [...allDrafts].sort((a, b) => {
+    const aName = statusNameMap.get(draftToStatusTemplateId.get(a.id) ?? '') ?? '';
+    const bName = statusNameMap.get(draftToStatusTemplateId.get(b.id) ?? '') ?? '';
+    if (!aName && !bName) return 0;
+    if (!aName) return 1;
+    if (!bName) return -1;
+    const cmp = aName.localeCompare(bName);
+    return asc ? cmp : -cmp;
+  });
+
+  // 5. Cursor-based pagination: cursor encodes the last-seen array index
+  let startIndex = 0;
+  if (args.after) {
+    const sortResults = cursorToOffset(args.after);
+    const lastIndex = Array.isArray(sortResults) ? (sortResults[0] as number) : 0;
+    startIndex = lastIndex + 1;
+  }
+  const page = sorted.slice(startIndex, startIndex + first);
+
+  const instances = page.map((node, idx) => ({
+    node,
+    sort: [startIndex + idx] as [number],
+  }));
+
+  return buildPagination<BasicStoreEntityDraftWorkspace>(first, args.after ?? null, instances, sorted.length);
+};
+
 export const findDraftWorkspacePaginated = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  const sortedConnection = await resolveSortByWorkflowInstance(context, user, args);
+  if (sortedConnection) return sortedConnection;
   const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };

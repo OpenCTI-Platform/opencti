@@ -3,7 +3,7 @@ import Chip from '@mui/material/Chip';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
-import { DraftChip } from '@components/common/draft/DraftChip';
+import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
@@ -355,6 +355,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ workflowInstance }) => (
       <ItemStatus status={workflowInstance?.currentStatus ?? null} disabled={!workflowInstance?.currentStatus} />
     ),
+  },
+  draft_status: {
+    id: 'draft_status',
+    label: 'Status',
+    percentWidth: 12,
+    isSortable: true,
+    render: ({ draft_status }) => <DraftStatusChip draftStatus={draft_status} />,
   },
   due_date: {
     id: 'due_date',
