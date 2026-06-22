@@ -46,7 +46,7 @@ const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProp
     return (
       <Alert severity="warning">
         <Typography>
-          {t_i18n('This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.')}
+          {t_i18n('This connector has been developed by the community and is not supported by Filigran.')}
         </Typography>
       </Alert>
     );
