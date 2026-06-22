@@ -67,6 +67,11 @@ const auditsDistributionListDistributionQuery = graphql`
           id
           entity_type
         }
+        ... on InternalObject {
+          representative {
+            main
+          }
+        }
         ... on StixObject {
           representative {
             main
