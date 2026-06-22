@@ -340,6 +340,94 @@ def test_prepare_export_prefers_x_opencti_type_for_relative_embedded_markdown_im
     assert fetch_calls[0][2] is True
 
 
+def test_extract_embedded_relationships_resolves_open_vocab_by_entity_type(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    def fake_query(_query):
+        return {
+            "data": {
+                "vocabularyCategories": [
+                    {
+                        "key": "threat_actor_group_role_ov",
+                        "entity_types": ["Threat-Actor-Group"],
+                        "fields": [{"key": "roles", "required": False, "multiple": True}],
+                    },
+                    {
+                        "key": "threat_actor_individual_role_ov",
+                        "entity_types": ["Threat-Actor-Individual"],
+                        "fields": [{"key": "roles", "required": False, "multiple": True}],
+                    },
+                ]
+            }
+        }
+
+    monkeypatch.setattr(opencti_stix2.opencti, "query", fake_query)
+
+    resolved_categories = []
+
+    def fake_read_or_create_unchecked_with_cache(vocab, cache, field):
+        resolved_categories.append(field["category"])
+        if field["category"] == "threat_actor_group_role_ov":
+            return {"name": vocab}
+        return None
+
+    monkeypatch.setattr(
+        opencti_stix2.opencti.vocabulary,
+        "read_or_create_unchecked_with_cache",
+        fake_read_or_create_unchecked_with_cache,
+    )
+
+    stix_object = {
+        "id": "threat-actor--11111111-1111-4111-8111-111111111111",
+        "type": "threat-actor",
+        "x_opencti_type": "Threat-Actor-Group",
+        "name": "TA_20250505",
+        "roles": ["agent", "independent"],
+    }
+
+    embedded = opencti_stix2.extract_embedded_relationships(stix_object)
+
+    assert embedded["open_vocabs"]["roles"] == ["agent", "independent"]
+    assert resolved_categories == ["threat_actor_group_role_ov", "threat_actor_group_role_ov"]
+
+
+def test_extract_embedded_relationships_resolves_open_vocab_with_lowercase_entity_type(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    def fake_query(_query):
+        return {
+            "data": {
+                "vocabularyCategories": [
+                    {
+                        "key": "threat_actor_group_role_ov",
+                        "entity_types": ["Threat-Actor-Group"],
+                        "fields": [{"key": "roles", "required": False, "multiple": True}],
+                    },
+                ]
+            }
+        }
+
+    monkeypatch.setattr(opencti_stix2.opencti, "query", fake_query)
+
+    monkeypatch.setattr(
+        opencti_stix2.opencti.vocabulary,
+        "read_or_create_unchecked_with_cache",
+        lambda vocab, cache, field: {"name": vocab},
+    )
+
+    stix_object = {
+        "id": "threat-actor--11111111-1111-4111-8111-111111111111",
+        "type": "threat-actor",
+        "x_opencti_type": "threat-actor-group",
+        "name": "TA_20250505",
+        "roles": ["agent", "independent"],
+    }
+
+    embedded = opencti_stix2.extract_embedded_relationships(stix_object)
+
+    assert embedded["open_vocabs"]["roles"] == ["agent", "independent"]
+
+
 def test_prepare_export_does_not_rewrite_markdown_image_uri_in_descriptions_list(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):

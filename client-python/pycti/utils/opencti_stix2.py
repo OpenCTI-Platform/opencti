@@ -528,9 +528,11 @@ class OpenCTIStix2:
                     query getVocabCategories {
                       vocabularyCategories {
                         key
+                        entity_types
                         fields{
                           key
                           required
+                          multiple
                         }
                       }
                     }
@@ -538,21 +540,47 @@ class OpenCTIStix2:
             result = self.opencti.query(query)
             for category in result["data"]["vocabularyCategories"]:
                 for field in category["fields"]:
-                    self.mapping_cache_permanent[
-                        "vocabularies_definition_fields"
-                    ].append(field)
-                    self.mapping_cache_permanent["category_" + field["key"]] = category[
-                        "key"
-                    ]
-        if any(
-            field["key"] in stix_object
+                    self.mapping_cache_permanent["vocabularies_definition_fields"].append(
+                        {
+                            "key": field["key"],
+                            "required": field["required"],
+                            "multiple": field["multiple"],
+                            "category": category["key"],
+                            "entity_types": category["entity_types"],
+                        }
+                    )
+
+        # Open vocabulary field keys can exist on multiple entity types (for example: `roles`).
+        # We only resolve vocabularies for the current object entity type to avoid overriding
+        # values with unrelated categories.
+        stix_object_entity_type = (
+            stix_object.get("x_opencti_type")
+            or self.opencti.get_attribute_in_extension("type", stix_object)
+            or stix_object.get("type")
+        )
+        normalized_stix_object_entity_type = (
+            stix_object_entity_type.lower()
+            if isinstance(stix_object_entity_type, str)
+            else None
+        )
+
+        vocabulary_fields = [
+            field
             for field in self.mapping_cache_permanent["vocabularies_definition_fields"]
-        ):
-            for f in self.mapping_cache_permanent["vocabularies_definition_fields"]:
-                if (
-                    stix_object.get(f["key"]) is None
-                    or len(stix_object.get(f["key"])) == 0
-                ):
+            if field["key"] in stix_object
+            and (
+                normalized_stix_object_entity_type
+                in [entity_type.lower() for entity_type in field["entity_types"]]
+                or not field["entity_types"]
+            )
+        ]
+
+        if vocabulary_fields:
+            for f in vocabulary_fields:
+                value = stix_object.get(f["key"])
+                if value is None:
+                    continue
+                if hasattr(value, "__len__") and len(value) == 0:
                     continue
                 if isinstance(stix_object.get(f["key"]), list):
                     object_open_vocabularies[f["key"]] = []
