@@ -29,10 +29,10 @@ const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnve
     <Dialog
       open={isOpen}
       onClose={onClose}
-      title={t_i18n('Deploy unverified connector')}
+      title={t_i18n('Deploy a Community Connector')}
       size="medium"
     >
-      <Typography>{t_i18n('This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.')}</Typography>
+      <Typography>{t_i18n('This connector has been developed by the community and is not supported by Filigran.')}</Typography>
       <Alert
         severity="info"
         variant="outlined"
@@ -46,7 +46,7 @@ const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnve
               checked={isAcknowledged}
             />
           )}
-          label={t_i18n('I understand and accept the risks of deploying an unverified connector')}
+          label={t_i18n('I acknowledge that this connector is not supported by Filigran and deploy it at my own risk')}
         />
       </Alert>
       <DialogActions>
