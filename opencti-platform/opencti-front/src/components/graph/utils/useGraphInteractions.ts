@@ -11,6 +11,7 @@ const useGraphInteractions = () => {
     buildLink,
     buildCorrelationData,
     buildGraphData,
+    buildGraphDataAfterRelationshipLinkToNodeConversion,
   } = useGraphParser();
 
   const {
@@ -451,13 +452,23 @@ const useGraphInteractions = () => {
     if (!rawObjects.find((o) => o.id === data.id)) {
       setRawObjects((old) => ([...old, data]));
     }
-    const link = buildLink(data); // TODO does it work with nested?
     setGraphData((oldData) => {
-      const withoutExisting = (oldData?.links ?? []).filter((l) => l.id !== link.id);
-      return {
-        links: [...withoutExisting, link],
-        nodes: oldData?.nodes ?? [],
-      };
+      let newGraphData = oldData;
+      // If the from or the to of the link to add is a relationship displayed as a link
+      // add it as a node so the link to add can be drawn properly.
+      if (data.from?.relationship_type) {
+        newGraphData = buildGraphDataAfterRelationshipLinkToNodeConversion(newGraphData, rawObjects, rawPositions, data.from);
+      }
+      if (data.to?.relationship_type) {
+        newGraphData = buildGraphDataAfterRelationshipLinkToNodeConversion(newGraphData, rawObjects, rawPositions, data.to);
+      }
+      // link to add
+      const link = buildLink(data);
+      const withoutExisting = (newGraphData?.links ?? []).filter((l) => l.id !== link.id);
+      const newLinks = [...withoutExisting, link];
+      const newNodes = newGraphData?.nodes ?? [];
+      // set the new links and nodes
+      return { links: newLinks, nodes: newNodes };
     });
   };
 
