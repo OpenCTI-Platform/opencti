@@ -2621,6 +2621,7 @@
   "Listen knowledge events": "Прослушать события знаний",
   "Listen queue": "Очередь на прослушивание",
   "Listing playbooks with entry points manual or live trigger (events) and matching filters.": "Листинг плейбуков с точками входа, ручными или живыми триггерами (событиями) и соответствующими фильтрами.",
+  "Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.": "Список сценариев с точками входа (ручным вводом или триггерами в реальном времени) и соответствующими фильтрами. На совместимость проверены только первые 5000 объектов; любые несовместимые объекты не будут обрабатываться выбранным сценарием.",
   "Live streams": "Прямые трансляции",
   "Live Streams | Data Sharing | Data": "Прямые трансляции | Обмен данными | Данные",
   "Live trigger": "Живой триггер",

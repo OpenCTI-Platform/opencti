@@ -9693,7 +9693,8 @@ type Query {
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
   playbooksForEntity(id: String!): [Playbook]
-  playbooksForEnrollment: [Playbook]
+  playbooksForEnrollment(ids: [String!]!): [Playbook]
+  playbooksForEnrollmentByFilters(filters: FilterGroup, search: String, excludedIds: [String!]): [Playbook!]!
   playbookManagerInfo: PlaybookManager
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection

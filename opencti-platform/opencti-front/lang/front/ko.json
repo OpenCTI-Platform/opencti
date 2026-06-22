@@ -2621,6 +2621,7 @@
   "Listen knowledge events": "지식 이벤트 듣기",
   "Listen queue": "대기열 듣기",
   "Listing playbooks with entry points manual or live trigger (events) and matching filters.": "진입점 수동 또는 실시간 트리거(이벤트) 및 일치하는 필터가 있는 플레이북을 나열합니다.",
+  "Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.": "시작점(수동 또는 실시간 트리거(이벤트))과 일치하는 필터를 가진 플레이북 목록입니다. 호환성 검사는 처음 5,000개의 엔티티에 대해서만 수행되었으며, 호환되지 않는 엔티티는 선택한 플레이북에서 처리되지 않습니다.",
   "Live streams": "실시간 스트림",
   "Live Streams | Data Sharing | Data": "실시간 스트림 | 데이터 공유 | 데이터",
   "Live trigger": "실시간 트리거",

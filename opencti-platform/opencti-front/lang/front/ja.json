@@ -2621,6 +2621,7 @@
   "Listen knowledge events": "ナレッジイベントをリッスン",
   "Listen queue": "キューを聞く",
   "Listing playbooks with entry points manual or live trigger (events) and matching filters.": "手動またはライブトリガー(イベント)をエントリーポイントとするプレイブックと、それにマッチするフィルタをリストアップする。",
+  "Listing playbooks with entry points manual or live trigger (events) and matching filters. Only the first 5000 entities have been checked for compatibility, any incompatible entities will not be processed by the selected playbook.": "エントリポイント（手動またはライブトリガー（イベント））と一致するフィルターを持つプレイブックを一覧表示します。互換性の確認は最初の5000件のエンティティに対してのみ行われており、互換性のないエンティティは、選択されたプレイブックによって処理されません。",
   "Live streams": "ライブストリーム",
   "Live Streams | Data Sharing | Data": "ライブストリーム｜データ共有｜データ",
   "Live trigger": "ライブトリガー",
