@@ -14,6 +14,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetColumn, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsListQuery$data } from './__generated__/DraftsListQuery.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const defaultDraftColumns: WidgetColumn[] = [
   { attribute: 'name', label: 'Name' },
@@ -98,6 +99,8 @@ const DraftsList = ({
   host?: WidgetHost;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const { startDate, endDate } = computeStartEndDates(config);
 
   const refreshToken = useDashboardRefreshToken();
@@ -120,7 +123,8 @@ const DraftsList = ({
     host,
   });
   const selection = resolvedDataSelection[0];
-  const columns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
+  const rawColumns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
+  const columns = isDraftWorkflowEnabled ? rawColumns : rawColumns.filter((c) => c.attribute !== 'workflowInstance');
 
   const sortBy = selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by

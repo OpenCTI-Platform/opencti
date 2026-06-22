@@ -12,6 +12,7 @@ import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
 import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap } from '../../../../utils/filters/filtersUtils';
+import useHelper from '../../../../utils/hooks/useHelper';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 
@@ -75,6 +76,8 @@ const ListFilters = ({
   hideSavedFilters = false,
 }: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
 
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
@@ -127,7 +130,7 @@ const ListFilters = ({
 
   const getGroupLabel = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): string => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
+    const isDraftSpecificKey = isDraftWorkflowEnabled && subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
     if (isDraftSpecificKey) {
       return t_i18n('Draft filters');
     }
@@ -142,7 +145,7 @@ const ListFilters = ({
 
   const getGroupOrder = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): number => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
+    const isDraftSpecificKey = isDraftWorkflowEnabled && subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
       return 1;
     }
