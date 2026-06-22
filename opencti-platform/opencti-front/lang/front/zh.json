@@ -451,6 +451,7 @@
   "auto:": "自动:",
   "Automated using enrichment": "自动使用浓缩",
   "Automatic": "自动",
+  "Automatic notifications for assignees and participants have been disabled by your platform administrator": "您的平台管理员已禁用针对任务接收人和参与者的自动通知功能",
   "Automatic references at file upload": "文件上传时自动引用",
   "Automatic trigger": "自动触发",
   "Automatically add users to default groups": "自动将用户添加到默认组",

@@ -451,6 +451,7 @@
   "auto:": "자동:",
   "Automated using enrichment": "인텐셔닝을 사용하여 자동화",
   "Automatic": "자동",
+  "Automatic notifications for assignees and participants have been disabled by your platform administrator": "플랫폼 관리자에 의해 담당자 및 참가자에 대한 자동 알림 기능이 비활성화되었습니다.",
   "Automatic references at file upload": "파일 업로드 시 자동 참조",
   "Automatic trigger": "자동 트리거",
   "Automatically add users to default groups": "기본 그룹에 사용자를 자동으로 추가",

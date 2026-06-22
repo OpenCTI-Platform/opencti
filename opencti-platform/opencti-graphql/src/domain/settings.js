@@ -6,7 +6,7 @@ import { delEditContext, getRedisVersion, notify, setEditContext } from '../data
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -189,6 +189,10 @@ const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'platform_ai_enabled',
 ];
 
+const CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS = [
+  'platform_notifier_auto_trigger_assignee',
+];
+
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_token',
   'xtm_hub_registration_user_id',
@@ -204,10 +208,12 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const hasSetParameterCapability = isUserHasCapability(user, SETTINGS_SETPARAMETERS);
+  const hasSetCustomizationCapability = isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
   const keysUserCannotModify = [
     ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetParameterCapability ? [] : PARAMETERS_SETTINGS_RESTRICTED_KEYS),
+    ...(hasSetCustomizationCapability ? [] : CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
   ];
 

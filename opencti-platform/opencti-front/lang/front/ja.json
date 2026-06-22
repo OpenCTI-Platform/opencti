@@ -451,6 +451,7 @@
   "auto:": "自動: ",
   "Automated using enrichment": "エンリッチメントによる自動化",
   "Automatic": "自動",
+  "Automatic notifications for assignees and participants have been disabled by your platform administrator": "プラットフォーム管理者により、担当者および参加者への自動通知が無効にされています",
   "Automatic references at file upload": "ファイルアップロード時の自動参照",
   "Automatic trigger": "自動起動",
   "Automatically add users to default groups": "ユーザーを自動的にデフォルトグループに追加する",

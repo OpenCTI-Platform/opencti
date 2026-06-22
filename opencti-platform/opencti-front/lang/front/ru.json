@@ -451,6 +451,7 @@
   "auto:": "авто:",
   "Automated using enrichment": "Автоматизация с помощью обогащения",
   "Automatic": "Автоматический",
+  "Automatic notifications for assignees and participants have been disabled by your platform administrator": "Администратор вашей платформы отключил автоматические уведомления для ответственных лиц и участников",
   "Automatic references at file upload": "Автоматические ссылки при загрузке файла",
   "Automatic trigger": "Автоматический триггер",
   "Automatically add users to default groups": "Автоматическое добавление пользователей в группы по умолчанию",

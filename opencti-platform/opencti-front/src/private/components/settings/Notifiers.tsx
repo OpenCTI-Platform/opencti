@@ -21,6 +21,7 @@ import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { NotifiersSettingsQuery } from './__generated__/NotifiersSettingsQuery.graphql';
 import { NotifiersSettings$key } from './__generated__/NotifiersSettings.graphql';
+import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../utils/hooks/useGranted';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -64,6 +65,7 @@ const Notifiers = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notifiers | Customization | Settings'));
 
+  const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const settingsData = useLazyLoadQuery<NotifiersSettingsQuery>(notifiersSettingsQuery, {});
   const settings = useFragment<NotifiersSettings$key>(notifiersSettingsFragment, settingsData.settings);
   const [commitFieldPatch] = useApiMutation(notifiersSettingsFieldPatchMutation);
@@ -125,6 +127,7 @@ const Notifiers = () => {
             <Switch
               checked={settings.platform_notifier_auto_trigger_assignee}
               onChange={handleToggleAutoTrigger}
+              disabled={!isGrantedToCustomization}
             />
           )}
           label={t_i18n('Automatically notify users when they are assigned as participant or assignee')}

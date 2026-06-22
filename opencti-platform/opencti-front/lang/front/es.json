@@ -451,6 +451,7 @@
   "auto:": "auto :",
   "Automated using enrichment": "Automatizado mediante enriquecimiento",
   "Automatic": "Automático",
+  "Automatic notifications for assignees and participants have been disabled by your platform administrator": "El administrador de tu plataforma ha desactivado las notificaciones automáticas para los asignados y los participantes.",
   "Automatic references at file upload": "Referencias automáticas al cargar el archivo",
   "Automatic trigger": "Activación automática",
   "Automatically add users to default groups": "Añadir automáticamente usuarios a grupos por defecto",
