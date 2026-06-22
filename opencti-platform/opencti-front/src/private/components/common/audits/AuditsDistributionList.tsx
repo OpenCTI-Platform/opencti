@@ -87,9 +87,6 @@ const auditsDistributionListDistributionQuery = graphql`
           entity_type
           name
         }
-        ... on Group {
-          name
-        }
       }
     }
   }

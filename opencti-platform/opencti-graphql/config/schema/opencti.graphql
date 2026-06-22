@@ -14087,6 +14087,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | ICCID
   | IMSI
   | SavedFilter
+  | Vocabulary
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
