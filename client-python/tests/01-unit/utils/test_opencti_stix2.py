@@ -350,12 +350,16 @@ def test_extract_embedded_relationships_resolves_open_vocab_by_entity_type(
                     {
                         "key": "threat_actor_group_role_ov",
                         "entity_types": ["Threat-Actor-Group"],
-                        "fields": [{"key": "roles", "required": False, "multiple": True}],
+                        "fields": [
+                            {"key": "roles", "required": False, "multiple": True}
+                        ],
                     },
                     {
                         "key": "threat_actor_individual_role_ov",
                         "entity_types": ["Threat-Actor-Individual"],
-                        "fields": [{"key": "roles", "required": False, "multiple": True}],
+                        "fields": [
+                            {"key": "roles", "required": False, "multiple": True}
+                        ],
                     },
                 ]
             }
@@ -388,7 +392,10 @@ def test_extract_embedded_relationships_resolves_open_vocab_by_entity_type(
     embedded = opencti_stix2.extract_embedded_relationships(stix_object)
 
     assert embedded["open_vocabs"]["roles"] == ["agent", "independent"]
-    assert resolved_categories == ["threat_actor_group_role_ov", "threat_actor_group_role_ov"]
+    assert resolved_categories == [
+        "threat_actor_group_role_ov",
+        "threat_actor_group_role_ov",
+    ]
 
 
 def test_extract_embedded_relationships_resolves_open_vocab_with_lowercase_entity_type(
@@ -401,7 +408,9 @@ def test_extract_embedded_relationships_resolves_open_vocab_with_lowercase_entit
                     {
                         "key": "threat_actor_group_role_ov",
                         "entity_types": ["Threat-Actor-Group"],
-                        "fields": [{"key": "roles", "required": False, "multiple": True}],
+                        "fields": [
+                            {"key": "roles", "required": False, "multiple": True}
+                        ],
                     },
                 ]
             }

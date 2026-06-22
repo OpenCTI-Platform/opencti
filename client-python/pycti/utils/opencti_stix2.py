@@ -540,7 +540,9 @@ class OpenCTIStix2:
             result = self.opencti.query(query)
             for category in result["data"]["vocabularyCategories"]:
                 for field in category["fields"]:
-                    self.mapping_cache_permanent["vocabularies_definition_fields"].append(
+                    self.mapping_cache_permanent[
+                        "vocabularies_definition_fields"
+                    ].append(
                         {
                             "key": field["key"],
                             "required": field["required"],
