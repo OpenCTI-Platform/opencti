@@ -190,6 +190,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
                 workExpectedNumber={validationWork.tracking?.import_processed_number}
                 workProcessedNumber={validationWork.tracking?.import_expected_number}
                 workErrors={validationWork.errors}
+                statusLabel={t_i18n('Validation progress')}
                 readOnly
               />
             </Paper>
