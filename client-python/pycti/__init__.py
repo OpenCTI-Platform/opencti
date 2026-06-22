@@ -10,6 +10,7 @@ from .connector.opencti_connector_helper import (
     get_config_variable,
 )
 from .connector.opencti_metric_handler import OpenCTIMetricHandler
+from .connector.opencti_ng_connector_helper import OpenCTINGConnectorHelper
 from .entities.opencti_attack_pattern import AttackPattern
 from .entities.opencti_campaign import Campaign
 from .entities.opencti_capability import Capability
@@ -140,6 +141,7 @@ __all__ = [
     "OpenCTIApiWork",
     "OpenCTIConnector",
     "OpenCTIConnectorHelper",
+    "OpenCTINGConnectorHelper",
     "OpenCTIMetricHandler",
     "OpenCTIStix2",
     "OpenCTIStix2Splitter",
