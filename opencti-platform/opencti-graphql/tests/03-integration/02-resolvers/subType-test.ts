@@ -1,7 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, isSorted, testContext } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { ADMIN_USER, isSorted, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_DATA_COMPONENT } from '../../../src/schema/stixDomainObject';
 import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
@@ -34,6 +34,19 @@ const SUB_TYPE_ATTRIBUTES_QUERY = gql`
           name
         }
         mandatoryAttributes
+      }
+    }
+  }
+`;
+
+const SUB_TYPE_ATTRIBUTE_LABELS_QUERY = gql`
+  query subType($id: String!) {
+    subType(id: $id) {
+      settings {
+        attributeLabels {
+          name
+          label
+        }
       }
     }
   }
@@ -132,6 +145,16 @@ describe('SubType resolver standard behavior', () => {
     expect(mandatoryAttributes.includes('name')).toBeTruthy();
     expect(mandatoryAttributes.length).toEqual(1);
   });
+  it('should return attributeLabels for a user with KNOWLEDGE capability only', async () => {
+    const queryResult = await queryAsUser(USER_PARTICIPATE, { query: SUB_TYPE_ATTRIBUTE_LABELS_QUERY, variables: { id: ENTITY_TYPE_DATA_COMPONENT } });
+    const attributeLabels = queryResult?.data?.subType.settings.attributeLabels;
+    expect(attributeLabels).toBeDefined();
+    expect(attributeLabels.map((attr: { name: string }) => attr.name).includes('name')).toBeTruthy();
+    expect(attributeLabels.length).toEqual(5);
+  });
+  it('should forbid attributesDefinitions for a user with KNOWLEDGE capability only', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SUB_TYPE_ATTRIBUTES_QUERY, variables: { id: ENTITY_TYPE_DATA_COMPONENT } });
+  });
 });
 
 describe('SubType resolver for RFI and request access use case', () => {
@@ -173,7 +196,7 @@ describe('SubType resolver for RFI use case', () => {
           order: 2,
           template_id: inProgressStatusId,
           scope: StatusScope.Global,
-        }
+        },
       },
     });
 
@@ -185,7 +208,7 @@ describe('SubType resolver for RFI use case', () => {
           order: 0,
           template_id: newStatusId,
           scope: StatusScope.Global,
-        }
+        },
       },
     });
     const rfiEntitySettingsWithWorkflow = await queryAsAdminWithSuccess({
