@@ -25,7 +25,6 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
   const mockContext = { id: 'context' } as unknown as AuthContext;
   const mockPlaybook = { id: 'playbook-id', name: 'Test Playbook' } as unknown as BasicStoreEntityPlaybook;
   const mockSettings = { id: 'settings-id' } as unknown as BasicStoreIdentifier;
-  const mockBundle = { objects: [{ id: 'obj1', type: 'indicator' } as unknown as StixObject] } as unknown as StixBundle;
   const playbookNode = {
     id: 'playbook-node-id',
     name: 'Notifier Node',
@@ -40,10 +39,13 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue(mockPlaybook);
     vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue(mockSettings);
     vi.spyOn(streamHandler, 'storeNotificationEvent').mockResolvedValue(undefined);
+    vi.spyOn(utils, 'isUserInPlatformOrganization').mockReturnValue(true);
+    vi.spyOn(utils, 'isUserCanAccessStixElement').mockResolvedValue(true);
   });
 
   describe('executor', () => {
     describe('message generation', () => {
+      const mockBundle = { objects: [{ id: 'obj1', type: 'indicator' } as unknown as StixObject] } as unknown as StixBundle;
       const mockUser = {
         id: 'user-1',
         name: 'Alice',
