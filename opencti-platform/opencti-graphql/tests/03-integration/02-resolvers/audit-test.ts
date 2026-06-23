@@ -159,7 +159,6 @@ describe('audits query', () => {
 
     expect(searchTerm).toBeDefined();
     expect(foundEdges.length).toBeGreaterThan(0);
-    expect(foundEdges).toEqual('test');
     expect(foundEdges.every((edge) => edge.node.entity_type === 'Activity')).toBe(true);
   });
 
