@@ -103,14 +103,14 @@ opencti:
 
 ### 1. Verify RSA key
 
-Check that your RSA key is valid:
+Check that your RSA key is valid (`openssl pkey` works with the PKCS#8 keys used by XTM Composer):
 ```bash
-openssl rsa -in private_key_4096.pem -check
+openssl pkey -in private_key_4096.pem -check -noout
 ```
 
 Expected output:
 ```
-RSA key ok
+Key is valid
 ```
 
 If the key is invalid:
@@ -118,7 +118,7 @@ If the key is invalid:
 - Ensure it's in PKCS#8 PEM format
 - Verify the key size is 4096 bits
 
-### Wrong key format (PKCS#1 instead of PKCS#8)
+#### Wrong key format (PKCS#1 instead of PKCS#8)
 
 XTM Composer requires the private key in **PKCS#8** PEM format. If the composer fails to start with an error such as:
 
@@ -126,7 +126,7 @@ XTM Composer requires the private key in **PKCS#8** PEM format. If the composer 
 Invalid private key format. Expected PKCS#8 PEM format with 'BEGIN PRIVATE KEY' and 'END PRIVATE KEY' markers
 ```
 
-the key is most likely in PKCS#1 format (`BEGIN RSA PRIVATE KEY`), which is what the legacy `openssl genrsa` command produces. Check the header of your key:
+The key is most likely in PKCS#1 format (`BEGIN RSA PRIVATE KEY`), which is what the legacy `openssl genrsa` command produces. Check the header of your key:
 
 ```bash
 head -n 1 private_key_4096.pem
@@ -142,6 +142,10 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
     -in private_key_4096.pem \
     -out private_key_4096_pkcs8.pem
 ```
+
+Then either rename the converted key back to the original filename or update
+`credentials_key_filepath` in your configuration to point at the new
+`private_key_4096_pkcs8.pem` file, and restart XTM Composer.
 
 ### 2. Check file permissions
 
