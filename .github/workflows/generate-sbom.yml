@@ -42,7 +42,7 @@ jobs:
           TAG: ${{ matrix.tag }}
         run: |
           syft "opencti/platform:${TAG}" \
-            -c opencti/.syft.yaml \
+            -c ./.syft.yaml \
             -o "cyclonedx-json=opencti-platform:${TAG}.cdx.json"
 
       - name: Upload SBOM artifact
