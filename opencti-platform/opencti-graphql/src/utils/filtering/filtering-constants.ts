@@ -108,6 +108,11 @@ export const PIR_SCORE_SUBFILTER = 'score';
 export const LAST_PIR_SCORE_DATE_SUBFILTER = 'date';
 export const PIR_IDS_SUBFILTER = 'pir_ids';
 
+// for coverage score
+export const COVERAGE_SCORE_FILTER = 'coverageScore';
+export const COVERAGE_SCORE_NAME_SUBFILTER = 'coverage_name';
+export const COVERAGE_SCORE_VALUE_SUBFILTER = 'score';
+
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 
@@ -146,6 +151,7 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   BULK_SEARCH_KEYWORDS_FILTER, // set of keywords used in bulk search
   PIR_SCORE_FILTER, // should be associated to Pir Ids
   LAST_PIR_SCORE_DATE_FILTER, // should be associated to Pir Ids
+  COVERAGE_SCORE_FILTER, // should be associated to coverage name
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {

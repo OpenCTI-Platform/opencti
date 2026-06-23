@@ -23,6 +23,9 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  COVERAGE_SCORE_FILTER,
+  COVERAGE_SCORE_NAME_SUBFILTER,
+  COVERAGE_SCORE_VALUE_SUBFILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -483,6 +486,34 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       multiple: false,
       elementsForFilterValuesSearch: ['Stix-Core-Object'],
       subEntityTypes: [],
+    });
+  }
+  if (isStixRelationshipExceptRef(type)) {
+    filterDefinitionsMap.set(COVERAGE_SCORE_FILTER, {
+      filterKey: COVERAGE_SCORE_FILTER,
+      type: 'nested',
+      label: 'Coverage score',
+      multiple: false,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+      subFilters: [
+        {
+          filterKey: COVERAGE_SCORE_NAME_SUBFILTER,
+          type: 'enum',
+          label: 'Coverage type',
+          multiple: false,
+          elementsForFilterValuesSearch: ['detection', 'prevention', 'vulnerability'],
+          subEntityTypes: [],
+        },
+        {
+          filterKey: COVERAGE_SCORE_VALUE_SUBFILTER,
+          type: 'float',
+          label: 'Score value',
+          multiple: false,
+          elementsForFilterValuesSearch: [],
+          subEntityTypes: [],
+        },
+      ],
     });
   }
 };

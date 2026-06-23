@@ -299,6 +299,30 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       </Stack>
     );
   }
+  // coverageScore has sub-filter objects as values (coverage_name + score)
+  if (filterKey === 'coverageScore') {
+    const hasSubFilters = filterValues.some((v) => typeof v === 'object' && v !== null);
+    if (hasSubFilters) {
+      const coverageName = filterValues.find((v: { key: string }) => v.key === 'coverage_name')?.values?.[0] ?? '';
+      const scoreValue = filterValues.find((v: { key: string }) => v.key === 'score')?.values?.[0] ?? '';
+      const operatorLabel = filterOperator ?? 'eq';
+      const displayValue = coverageName
+        ? `${coverageName} ${operatorLabel} ${scoreValue}`
+        : `${operatorLabel} ${scoreValue}`;
+      return (
+        <>
+          <strong
+            style={labelStyle}
+            onClick={onCLick}
+          >
+            {label}
+          </strong>{' '}
+          <span>{displayValue}</span>
+        </>
+      );
+    }
+    // flat string values fall through to default rendering
+  }
   if (noLabelDisplay) {
     return (
       <>{values}</>

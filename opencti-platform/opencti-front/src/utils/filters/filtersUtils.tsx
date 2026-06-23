@@ -86,6 +86,19 @@ const lastPirScoreDateFilterDefinition = {
   elementsForFilterValuesSearch: [],
 };
 
+const COVERAGE_SCORE_FILTER = 'coverageScore';
+const COVERAGE_SCORE_NAME_SUBFILTER = 'coverage_name';
+
+const coverageNameFilterDefinition = {
+  filterKey: COVERAGE_SCORE_NAME_SUBFILTER,
+  label: 'Coverage type',
+  multiple: false,
+  type: 'enum',
+  subFilters: [],
+  subEntityTypes: [],
+  elementsForFilterValuesSearch: ['detection', 'prevention', 'vulnerability'],
+};
+
 // filters which possible values are entity types or relationship types
 export const entityTypesFilters = [
   'entity_type',
@@ -715,6 +728,12 @@ export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: s
     }
     return [];
   }
+  if (filterKey === 'coverageScore') {
+    if (subKey === 'score') {
+      return ['gt', 'gte', 'lt', 'lte'];
+    }
+    return ['eq', 'not_eq'];
+  }
 
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
@@ -957,6 +976,9 @@ export const getFilterDefinitionFromFilterKeysMap = (
   }
   if (filterKey === LAST_PIR_SCORE_DATE_FILTER) {
     return lastPirScoreDateFilterDefinition;
+  }
+  if (filterKey === COVERAGE_SCORE_NAME_SUBFILTER) {
+    return coverageNameFilterDefinition;
   }
   return filterKeysMap.get(filterKey);
 };
