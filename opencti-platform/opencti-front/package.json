@@ -85,7 +85,7 @@
     "leaflet": "1.9.4",
     "markdown-to-jsx": "9.8.2",
     "marked": "18.0.5",
-    "mdi-material-ui": "7.9.4",
+    "mdi-material-ui": "8.0.0",
     "moment": "2.30.1",
     "moment-timezone": "0.6.2",
     "monaco-editor": "0.52.2",
