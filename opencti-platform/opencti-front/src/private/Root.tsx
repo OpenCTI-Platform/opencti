@@ -1,6 +1,7 @@
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
+import { Navigate, useLocation } from 'react-router-dom';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
@@ -403,6 +404,20 @@ const computeBannerSettings = (settings: RootSettings$data) => {
     sessionLimit,
   };
 };
+
+const FORCE_PASSWORD_CHANGE_PATH = '/dashboard/force-password-change';
+
+const isPasswordExpiredFront = (user: { password_valid_until?: string | null }) => {
+  if (!user.password_valid_until) {
+    return false;
+  }
+  const expiryDate = new Date(user.password_valid_until);
+  if (Number.isNaN(expiryDate.getTime())) {
+    return false;
+  }
+  return new Date() > expiryDate;
+};
+
 interface RootComponentProps {
   queryData: RootPrivateQuery$data;
 }
@@ -424,6 +439,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
   } = queryData;
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const me = useFragment<RootMe_data$key>(meUserFragment, meFragment);
+  const location = useLocation();
 
   const { activeTheme } = useActiveTheme({
     userThemeId: me?.theme,
@@ -491,6 +507,17 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
     tz,
   }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
     schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
+
+  const passwordExpired = isPasswordExpiredFront(me);
+  const onForcePasswordChangeRoute = location.pathname.startsWith(FORCE_PASSWORD_CHANGE_PATH);
+
+  if (passwordExpired && !onForcePasswordChangeRoute) {
+    return <Navigate to={FORCE_PASSWORD_CHANGE_PATH} replace={true} />;
+  }
+
+  if (!passwordExpired && onForcePasswordChangeRoute) {
+    return <Navigate to="/dashboard" replace={true} />;
+  }
 
   return (
     <UserContext.Provider value={contextValue}>
