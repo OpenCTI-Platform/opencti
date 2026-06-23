@@ -175,7 +175,7 @@
     "knip": "6.17.1",
     "license-checker-rseidelsohn": "5.0.1",
     "monocart-reporter": "2.11.2",
-    "relay-compiler": "20.1.1",
+    "relay-compiler": "21.0.1",
     "relay-test-utils": "21.0.1",
     "typescript": "6.0.3",
     "typescript-eslint": "8.61.1",
