@@ -892,8 +892,8 @@ export const distributionEntities = async (
       },
       {
         ...distributionArgs,
-        size: limit,
-      }
+        size: limit ?? undefined,
+      },
     );
   } else {
     const aggregationNotSupported = field.includes('.')
