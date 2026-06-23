@@ -273,9 +273,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     <>
                       <AskArianeButton />
                       <CtemCommandCenterButton />
-                      {/* Discrete separator between the AI (XTM One) actions and
-                          the standard platform actions. */}
-                      <Divider orientation="vertical" sx={{ height: '24px', alignSelf: 'center' }} />
+                      {/* Discrete full-height separator between the AI (XTM One)
+                          actions and the standard platform actions. */}
+                      <Divider orientation="vertical" flexItem sx={{ mx: 1.5 }} />
                     </>
                   )
                 }
