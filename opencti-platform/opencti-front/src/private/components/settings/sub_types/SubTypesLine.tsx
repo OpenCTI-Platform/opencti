@@ -14,6 +14,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -92,6 +93,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const nodeSubType = useFragment(subTypesLinesFragment, node);
 
   const renderOptionIcon = (option: string) => {
@@ -107,7 +109,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
     if (!nodeSubType.settings?.availableSettings?.includes('workflow_configuration')) {
       return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
     }
-    if (nodeSubType.label === 'DraftWorkspace') {
+    if (nodeSubType.label === 'DraftWorkspace' && isFeatureEnable('DRAFT_WORKFLOW')) {
       return nodeSubType.settings?.workflow_id
         ? <CheckCircleOutlined fontSize="small" color="success" />
         : <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
