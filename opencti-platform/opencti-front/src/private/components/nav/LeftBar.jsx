@@ -482,21 +482,21 @@ const LeftBarComponent = ({ queryRef }) => {
                 {...itemProps}
                 id="dashboards"
                 icon={<InsertChartOutlinedOutlined />}
-                label="Dashboards"
+                label={t_i18n('Dashboards')}
                 link="/dashboard/workspaces/dashboards"
                 subItems={[
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards',
-                    label: 'Custom dashboards',
+                    label: t_i18n('Custom dashboards'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_public',
-                    label: 'Public dashboards',
+                    label: t_i18n('Public dashboards'),
                     exact: true,
                   },
                 ]}
