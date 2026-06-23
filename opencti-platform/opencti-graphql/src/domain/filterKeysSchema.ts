@@ -23,6 +23,9 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  COVERAGE_SCORE_FILTER,
+  COVERAGE_SCORE_NAME_SUBFILTER,
+  COVERAGE_SCORE_VALUE_SUBFILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -51,6 +54,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -532,6 +536,34 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       multiple: false,
       elementsForFilterValuesSearch: ['Stix-Core-Object'],
       subEntityTypes: [],
+    });
+  }
+  if (isStixRelationshipExceptRef(type) || type === ENTITY_TYPE_SECURITY_COVERAGE) {
+    filterDefinitionsMap.set(COVERAGE_SCORE_FILTER, {
+      filterKey: COVERAGE_SCORE_FILTER,
+      type: 'nested',
+      label: 'Coverage score',
+      multiple: false,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+      subFilters: [
+        {
+          filterKey: COVERAGE_SCORE_NAME_SUBFILTER,
+          type: 'vocabulary',
+          label: 'Coverage type',
+          multiple: false,
+          elementsForFilterValuesSearch: ['coverage_ov'],
+          subEntityTypes: [],
+        },
+        {
+          filterKey: COVERAGE_SCORE_VALUE_SUBFILTER,
+          type: 'float',
+          label: 'Score value',
+          multiple: false,
+          elementsForFilterValuesSearch: [],
+          subEntityTypes: [],
+        },
+      ],
     });
   }
 };
