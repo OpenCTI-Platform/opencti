@@ -79,58 +79,73 @@ const workflowStatuses = (context: AuthContext) => {
 export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
   const initialFilterGroup = JSON.stringify(emptyFilterGroup);
   const filteringIds: string[] = []; // will contain the ids that are in the instance filters values
-  if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
-    const streamFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup),
-    );
-    pushAll(filteringIds, streamFilterIds);
-  } else if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
-    const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup),
-    );
-    pushAll(filteringIds, triggerFilterIds);
-  } else if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
-    const connFilters = (instance as BasicStoreEntityConnector).connector_trigger_filters?.length > 0
-      ? (instance as BasicStoreEntityConnector).connector_trigger_filters
-      : initialFilterGroup;
-    const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
-    pushAll(filteringIds, connFilterIds);
-  } else if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
-    const definition = JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition) as ComponentDefinition;
-    const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
-    // IDs from filters in playbook components.
-    const playbookFilterIds = configurations
-      .flatMap((config) => [config.filters, config.applyWithFilters])
-      .filter((f) => isNotEmptyField(f))
-      .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
-    // IDs from list of PIRs to listen.
-    const playbookInPirFilterIds = configurations
-      .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
-      .flat();
-    pushAll(filteringIds, playbookFilterIds);
-    pushAll(filteringIds, playbookInPirFilterIds);
-  } else if (instance.entity_type === ENTITY_TYPE_PIR) {
-    const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pir_filters));
-    const pirCriteriaIds = (instance as BasicStoreEntityPir).pir_criteria
-      .map((c) => extractFilterGroupValuesToResolveForCache(JSON.parse(c.filters)))
-      .flat();
-    pushAll(filteringIds, pirFilterIds);
-    pushAll(filteringIds, pirCriteriaIds);
-  } else if (instance.entity_type === ENTITY_TYPE_DECAY_RULE) {
-    const decayRuleFilters = (instance as BasicStoreEntityDecayRule).decay_filters;
-    if (decayRuleFilters) {
-      const decayRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse(decayRuleFilters));
-      pushAll(filteringIds, decayRuleIds);
+  try {
+    if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
+      const streamFilterIds = extractFilterGroupValuesToResolveForCache(
+        JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup),
+      );
+      pushAll(filteringIds, streamFilterIds);
+    } else if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
+      const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
+        JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup),
+      );
+      pushAll(filteringIds, triggerFilterIds);
+    } else if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
+      const connFilters = (instance as BasicStoreEntityConnector).connector_trigger_filters?.length > 0
+        ? (instance as BasicStoreEntityConnector).connector_trigger_filters
+        : initialFilterGroup;
+      const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
+      pushAll(filteringIds, connFilterIds);
+    } else if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
+      const definition = JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition) as ComponentDefinition;
+      const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
+      // IDs from filters in playbook components.
+      const playbookFilterIds = configurations
+        .flatMap((config) => [config.filters, config.applyWithFilters])
+        .filter((f) => isNotEmptyField(f))
+        .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
+      // IDs from list of PIRs to listen.
+      const playbookInPirFilterIds = configurations
+        .map((config) => config.inPirFilters)
+        .map((f) => (f ?? []).map((i: { value: string }) => i.value))
+        .flat();
+      pushAll(filteringIds, playbookFilterIds);
+      pushAll(filteringIds, playbookInPirFilterIds);
+    } else if (instance.entity_type === ENTITY_TYPE_PIR) {
+      const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pir_filters));
+      const pirCriteriaIds = (instance as BasicStoreEntityPir).pir_criteria
+        .map((c) => extractFilterGroupValuesToResolveForCache(JSON.parse(c.filters)))
+        .flat();
+      pushAll(filteringIds, pirFilterIds);
+      pushAll(filteringIds, pirCriteriaIds);
+    } else if (instance.entity_type === ENTITY_TYPE_DECAY_RULE) {
+      const decayRuleFilters = (instance as BasicStoreEntityDecayRule).decay_filters;
+      if (decayRuleFilters) {
+        const decayRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse(decayRuleFilters));
+        pushAll(filteringIds, decayRuleIds);
+      }
+    } else if (instance.entity_type === ENTITY_TYPE_DECAY_EXCLUSION_RULE) {
+      const decayExclusionRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityDecayExclusionRule).decay_exclusion_filters));
+      pushAll(filteringIds, decayExclusionRuleIds);
+    } else {
+      throw FunctionalError(
+        'Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type',
+        { entity_type: instance.entity_type },
+      );
     }
-  } else if (instance.entity_type === ENTITY_TYPE_DECAY_EXCLUSION_RULE) {
-    const decayExclusionRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityDecayExclusionRule).decay_exclusion_filters));
-    pushAll(filteringIds, decayExclusionRuleIds);
-  } else {
-    throw FunctionalError(
-      'Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type',
-      { entity_type: instance.entity_type },
-    );
+  } catch (e) {
+    // A single instance holding a malformed JSON (e.g. an altered playbook node configuration)
+    // must not break the loading of the whole cache. Log the faulty instance and skip its
+    // filters instead. Other errors (e.g. unsupported entity type) are still propagated.
+    if (e instanceof SyntaxError) {
+      logApp.error('[OPENCTI-MODULE] Cache manager failed to parse the filters of an instance, skipping it', {
+        cause: e,
+        id: instance.internal_id,
+        entity_type: instance.entity_type,
+      });
+      return [];
+    }
+    throw e;
   }
   return filteringIds;
 };
