@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import IconButton from '@common/button/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
@@ -77,6 +77,11 @@ const ContainerAddStixCoreObjects = (props) => {
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
+  // Callback ref: fires when Drawer's inner container div mounts/unmounts.
+  // Using useState (not useRef) so that a state update triggers a re-render,
+  // which propagates the resolved element down to ListLinesContent so
+  // WindowScroller binds to the drawer container (not window).
+  const [drawerContainerEl, setDrawerContainerEl] = useState(null);
 
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
   const {
@@ -141,7 +146,6 @@ const ContainerAddStixCoreObjects = (props) => {
   } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext(targetStixCoreObjectTypes, filters);
 
-  const containerRef = useRef(null);
   const [mappingSearch, setMappingSearch] = useState(null);
   const [currentSelectedText, setCurrentSelectedText] = useState(selectedText);
   if (currentSelectedText !== selectedText) {
@@ -364,9 +368,9 @@ const ContainerAddStixCoreObjects = (props) => {
               onDelete={onDelete}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               mapping={mapping}
-              containerRef={containerRef}
               enableReferences={enableReferences}
               onLabelClick={helpers.handleAddFilter}
+              containerRef={{ current: drawerContainerEl }}
             />
           )}
         />
@@ -431,7 +435,7 @@ const ContainerAddStixCoreObjects = (props) => {
           }
         }}
         title={t_i18n('Add entities')}
-        containerRef={containerRef}
+        containerRef={setDrawerContainerEl}
       >
         <>
           {renderSearchResults(searchPaginationOptions)}
