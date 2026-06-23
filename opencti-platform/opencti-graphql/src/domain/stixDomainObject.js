@@ -46,7 +46,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteR
 import { entityLocationType, identityClass, xOpenctiType } from '../schema/attribute-definition';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { isOnlyOrgaAdmin, validateMarking } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
@@ -302,7 +302,7 @@ const verifyGrantableGroupInput = (user, input) => {
   if (!grantableGroupsInput) {
     return;
   }
-  if (isOnlyOrgaAdmin(user)) {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     throw ForbiddenAccess();
   }
 };
