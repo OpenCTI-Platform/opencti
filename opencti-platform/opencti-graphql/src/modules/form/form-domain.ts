@@ -515,6 +515,7 @@ export const formSubmit = async (
       work_id: work.id,
       draft_id: draftId,
       update: true,
+      no_split: true,
     });
 
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
