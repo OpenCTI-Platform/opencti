@@ -32,7 +32,7 @@ const buildRawQueryUrl = (baseUrl: string, request: RawQueryRequest) => {
   params.set('multilineOutput', String(request.multilineOutput ?? false));
 
   const prefix = baseUrl ? `${baseUrl}` : '';
-  return `${prefix}/api/opencti/query/raw?${params.toString()}`;
+  return `${prefix}/api/api/opencti/query/raw?${params.toString()}`;
 };
 
 export async function rawQueryApi(
