@@ -10,6 +10,22 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { useChatbot } from './ChatbotContext';
 
 /**
+ * Only `http(s)` URLs are safe to hand to `window.open` as a top-level
+ * navigation. `xtm_one_url` is server-side config surfaced by `/chatbot/config`,
+ * so this guards against a misconfigured or tampered value (e.g. a `javascript:`
+ * or `data:` URL) ever being opened. Returns the original URL when valid, else null.
+ */
+const toSafeHttpUrl = (rawUrl: string | null): string | null => {
+  if (!rawUrl) return null;
+  try {
+    const { protocol } = new URL(rawUrl);
+    return protocol === 'http:' || protocol === 'https:' ? rawUrl : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
  * Top-bar shortcut to the XTM One CTEM Command Center (the cross-product exposure
  * posture dashboard / XTM One home). Opens the XTM One URL in a new tab.
  *
@@ -27,10 +43,11 @@ const CtemCommandCenterButton = () => {
   const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
   const { xtmOneConfigured, xtmOneUrl } = useChatbot();
 
+  const safeXtmOneUrl = toSafeHttpUrl(xtmOneUrl);
   if (
     filigran_chatbot_ai_cgu_status === CGUStatus.disabled
     || xtmOneConfigured !== true
-    || !xtmOneUrl
+    || !safeXtmOneUrl
   ) {
     return null;
   }
@@ -48,7 +65,7 @@ const CtemCommandCenterButton = () => {
     >
       <IconButton
         size="default"
-        onClick={() => window.open(xtmOneUrl, '_blank', 'noopener,noreferrer')}
+        onClick={() => window.open(safeXtmOneUrl, '_blank', 'noopener,noreferrer')}
         aria-label={t_i18n('CTEM Command Center')}
       >
         <RadarOutlined fontSize="medium" sx={{ color: theme.palette.ai.main }} />
