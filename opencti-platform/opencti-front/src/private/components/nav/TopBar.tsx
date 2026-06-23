@@ -1,7 +1,7 @@
 import IconButton from '@common/button/IconButton';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
-import { alpha, Badge, Stack } from '@mui/material';
+import { alpha, Badge, Divider, Stack } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -29,6 +29,7 @@ import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
+import CtemCommandCenterButton from '../chatbox/CtemCommandCenterButton';
 import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
@@ -269,7 +270,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <>
                 {
                   filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
-                    <AskArianeButton />
+                    <>
+                      <AskArianeButton />
+                      <CtemCommandCenterButton />
+                      {/* Discrete separator between the AI (XTM One) actions and
+                          the standard platform actions. */}
+                      <Divider orientation="vertical" sx={{ height: '24px', alignSelf: 'center' }} />
+                    </>
                   )
                 }
               </>
