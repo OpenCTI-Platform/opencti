@@ -278,3 +278,39 @@ export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string
   });
   return finalPlaybookDefinition;
 };
+
+/**
+ * Check if the JSON strings in a Playbook are valid or not.
+ *
+ * @param playbook Playbook to control validity
+ * @returns True if valid, false otherwise
+ */
+export const isPlaybookJSONValid = (playbook: { name: string; playbook_definition: string }): boolean => {
+  const { playbook_definition } = playbook;
+  try {
+    const definition = JSON.parse(playbook_definition || '{}'); // {} to ensure empty playbooks are valid.
+    (definition.nodes ?? []).forEach((node: NodeDefinition) => {
+      JSON.parse(node.configuration || '{}');
+    });
+  } catch (error) {
+    logApp.error(`[PLAYBOOK] Invalid JSON for playbook ${playbook.name}`, { playbook, error });
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Check if the JSON string in a Playbook node config is valid or not.
+ *
+ * @param node Playbook node to control validity
+ * @returns True if valid, false otherwise
+ */
+export const isPlaybookNodeJSONValid = (node: { name: string; configuration: string }): boolean => {
+  try {
+    JSON.parse(node.configuration || '{}'); // {} to ensure empty config is valid.
+  } catch (error) {
+    logApp.error(`[PLAYBOOK] Invalid JSON for playbook node ${node.name}`, { node, error });
+    return false;
+  }
+  return true;
+};
