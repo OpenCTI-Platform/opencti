@@ -1,0 +1,54 @@
+name: Generate SBOM files
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'JSON array of image tags (e.g. ["7.260619.0", "7.260619.0-ubi9", "7.260619.0-fips"])'
+        required: true
+        type: string
+      overwrite:
+        description: "Overwrite existing artifacts if they already exist"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  generate-sbom:
+    name: Generate SBOM - ${{ matrix.tag }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{ fromJSON(inputs.tags) }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Verify that docker image exists
+        env:
+          TAG: ${{ matrix.tag }}
+        run: |
+          if ! docker manifest inspect "opencti/platform:${TAG}" > /dev/null 2>&1; then
+            echo "::error::Image opencti/platform:${TAG} does not exist in the registry"
+            exit 1
+          fi
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Generate SBOM
+        env:
+          TAG: ${{ matrix.tag }}
+        run: |
+          syft "opencti/platform:${TAG}" \
+            -c opencti/.syft.yaml \
+            -o "cyclonedx-json=opencti-platform:${TAG}.cdx.json"
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-opencti-platform-${{ matrix.tag }}
+          path: "opencti-platform:${{ matrix.tag }}.cdx.json"
+          overwrite: ${{ inputs.overwrite }}
+          retention-days: 365
