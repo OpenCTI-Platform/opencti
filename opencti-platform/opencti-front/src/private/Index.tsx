@@ -46,6 +46,7 @@ const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
+const ForcePasswordChange = lazy(() => import('./components/profile/ForcePasswordChange'));
 
 interface IndexProps {
   settings: RootSettings$data;
@@ -144,6 +145,7 @@ const Index = ({ settings }: IndexProps) => {
                 <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
                 <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
                 <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
+                <Route path="/force-password-change" element={boundaryWrapper(ForcePasswordChange)} />
                 <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
                 <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
                 <Route path="/*" element={<NoMatch />} />
