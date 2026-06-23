@@ -571,13 +571,22 @@ export const getWorkflowInstance = async (
     }
   }
 
+  // Parse the stored history defensively: a malformed history field must not
+  // crash the whole resolver (same guarding as the other history parses in this file).
+  let history: any[];
+  try {
+    history = JSON.parse(instanceEntity?.history || '[]');
+  } catch {
+    history = [];
+  }
+
   return {
     id,
     internal_id: id,
     __typename: 'WorkflowInstance',
     currentState: currentState || '',
     allowedTransitions,
-    history: JSON.parse(instanceEntity?.history || '[]'),
+    history,
     pendingStatus: instanceEntity?.pendingStatus ?? null,
     pendingError: instanceEntity?.pendingError ?? null,
     pendingTransition: pendingTransitionData,
