@@ -303,11 +303,7 @@ const verifyGrantableGroupInput = (user, input) => {
     return;
   }
   if (isOnlyOrgaAdmin(user)) {
-    const newGrantableGroups = grantableGroupsInput.value;
-    const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
-    if (newGrantableGroups.any((g) => !myGrantableGroups.includes(g))) {
-      throw ForbiddenAccess();
-    }
+    throw ForbiddenAccess();
   }
 };
 
