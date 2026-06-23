@@ -111,10 +111,10 @@ jobs:
       run: docker logs opencti-pycti-start
 
     # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+    - name: Log backends (RustFS, Elastic, RabbitMQ, Redis)
       continue-on-error: true
       run: |
-          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs RustFS \n\n"; docker logs rustfs
           echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
           echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
           echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis

@@ -29,25 +29,24 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
-  minio:
-    container_name: minio
+  rustfs:
+    # RustFS — Apache-2.0, S3-compatible drop-in for MinIO (POC #16749).
+    # S3 on 9000, console on 9001 (same defaults as MinIO); reached via MINIO__ENDPOINT=rustfs.
+    container_name: rustfs
     profiles: ["backend"]
-    image: minio/minio:latest
+    image: rustfs/rustfs:latest
+    user: "0:0" # run as root so /data is writable in the container layer
     networks:
       - runner-docker-network
     ports:
       - "9000:9000"
       - "9001:9001"
-      - "35300:35300"
     environment:
-      MINIO_ROOT_USER: ChangeMe
-      MINIO_ROOT_PASSWORD: ChangeMe
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      RUSTFS_ROOT_USER: ChangeMe
+      RUSTFS_ROOT_PASSWORD: ChangeMe
+      RUSTFS_VOLUMES: /data
+      RUSTFS_CONSOLE_ENABLE: "true" # console must be enabled explicitly (unlike MinIO's --console-address)
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
     restart: unless-stopped
   rabbitmq:
     profiles: ["backend"]
