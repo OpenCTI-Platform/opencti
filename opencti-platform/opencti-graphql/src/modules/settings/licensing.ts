@@ -36,6 +36,10 @@ const LICENSE_TYPES = [
 ];
 export const IS_LTS_PLATFORM = PLATFORM_VERSION.includes('lts');
 
+// Custom hardcoded token: if app:custom_license_token in config matches this value,
+// the Enterprise Edition is considered validated without a real PEM license.
+const CUSTOM_LICENSE_TOKEN = 'RESAA-EE-VALID-2026';
+
 // https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 // 62944 - Filigran
 export const LICENSE_OID_TYPE = '1.3.6.1.4.1.62944.10';
@@ -155,7 +159,37 @@ let cachedLicence: PlatformEe | undefined = undefined;
 let cachedPem: string | undefined = undefined;
 let cacheExpiration: number | undefined = undefined;
 
+const isCustomLicenseValid = (): boolean => {
+  const configuredToken: string | undefined = conf.get('app:custom_license_token');
+  return isNotEmptyField(configuredToken) && configuredToken === CUSTOM_LICENSE_TOKEN;
+};
+
+const buildCustomValidLicense = (): PlatformEe => {
+  const farFuture = new Date('2099-12-31T23:59:59Z');
+  return {
+    license_enterprise: true,
+    license_validated: true,
+    license_by_configuration: true,
+    license_valid_cert: true,
+    license_extra_expiration: false,
+    license_extra_expiration_days: 0,
+    license_customer: 'Custom License',
+    license_expired: false,
+    license_expiration_date: farFuture,
+    license_start_date: new Date(0),
+    license_platform: 'global',
+    license_type: 'standard',
+    license_expiration_prevention: false,
+    license_platform_match: true,
+    license_creator: 'Custom',
+    license_global: true,
+  };
+};
+
 export const getEnterpriseEditionInfo = (settings: BasicStoreSettings) => {
+  if (isCustomLicenseValid()) {
+    return buildCustomValidLicense();
+  }
   const { pem } = getEnterpriseEditionActivePem(settings);
   const now = Date.now();
   if (cachedLicence === undefined || cachedPem !== pem || (cacheExpiration !== undefined && now > cacheExpiration)) {

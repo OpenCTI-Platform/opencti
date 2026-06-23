@@ -4,6 +4,7 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enterprise_edition_license": "",
+    "custom_license_token": "RESAA-EE-VALID-2026",
     "enabled": true,
     "enabled_ui": true,
     "enabled_dev_features": [],
