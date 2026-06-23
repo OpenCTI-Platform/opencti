@@ -114,9 +114,34 @@ RSA key ok
 ```
 
 If the key is invalid:
-- Regenerate the key: `openssl genrsa -out private_key_4096.pem 4096`
+- Regenerate the key: `openssl genpkey -algorithm RSA -out private_key_4096.pem -pkeyopt rsa_keygen_bits:4096`
 - Ensure it's in PKCS#8 PEM format
 - Verify the key size is 4096 bits
+
+### Wrong key format (PKCS#1 instead of PKCS#8)
+
+XTM Composer requires the private key in **PKCS#8** PEM format. If the composer fails to start with an error such as:
+
+```
+Invalid private key format. Expected PKCS#8 PEM format with 'BEGIN PRIVATE KEY' and 'END PRIVATE KEY' markers
+```
+
+the key is most likely in PKCS#1 format (`BEGIN RSA PRIVATE KEY`), which is what the legacy `openssl genrsa` command produces. Check the header of your key:
+
+```bash
+head -n 1 private_key_4096.pem
+```
+
+- PKCS#8 (correct): `-----BEGIN PRIVATE KEY-----`
+- PKCS#1 (needs conversion): `-----BEGIN RSA PRIVATE KEY-----`
+
+Convert an existing PKCS#1 key to PKCS#8 without regenerating it:
+
+```bash
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
+    -in private_key_4096.pem \
+    -out private_key_4096_pkcs8.pem
+```
 
 ### 2. Check file permissions
 
