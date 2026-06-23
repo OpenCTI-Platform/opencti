@@ -1,12 +1,12 @@
 import React from 'react';
-import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { Stack } from '@mui/material';
+import { Stack, useTheme } from '@mui/material';
 import FormHelperText from '@mui/material/FormHelperText';
 import Button from '@common/button/Button';
-import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
+import { commitMutation, handleError, MESSAGING$ } from '../../../../../relay/environment';
+import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import PasswordPolicies from '../../../common/form/PasswordPolicies';
 
@@ -41,7 +41,9 @@ const formatExpiryDate = (value) => {
   }).format(date);
 };
 
-const UserEditionPasswordComponent = ({ classes, t, theme, user }) => {
+const UserEditionPasswordComponent = ({ user }) => {
+  const { t_i18n: t } = useFormatter();
+  const theme = useTheme();
   const external = user.external === true;
   const isLocked = user.account_status === 'Locked';
   const formattedExpiry = formatExpiryDate(user.password_valid_until);
@@ -56,6 +58,9 @@ const UserEditionPasswordComponent = ({ classes, t, theme, user }) => {
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('Password change will be required at next login');
+      },
+      onError: (error) => {
+        handleError(error);
       },
     });
   };
@@ -110,7 +115,7 @@ const UserEditionPasswordComponent = ({ classes, t, theme, user }) => {
               <Button
                 variant="secondary"
                 onClick={handleForcePasswordChange}
-                classes={{ root: classes.button }}
+                style={{ marginLeft: theme.spacing(2) }}
               >
                 {t('Force password change')}
               </Button>
@@ -132,15 +137,6 @@ const UserEditionPasswordComponent = ({ classes, t, theme, user }) => {
       )}
     </Formik>
   );
-};
-
-UserEditionPasswordComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  user: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
 };
 
 const UserEditionPassword = createFragmentContainer(
