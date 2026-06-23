@@ -6,7 +6,7 @@ import useWorkflowLayout, { LayoutOptions, Direction } from './hooks/useWorkflow
 import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
@@ -21,12 +21,51 @@ import { useStatusConnection } from './hooks/useStatusConnection';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
+import { MESSAGING$ } from '../../../../../relay/environment';
 
 export interface WorkflowValidationError {
   type: string;
   message: string;
   path?: Array<{ id: string; entity_type: string }> | null;
 }
+
+interface WorkflowValidationErrorsToastContentProps {
+  errors: WorkflowValidationError[];
+  t_i18n: (key: string) => string;
+}
+
+const WorkflowValidationErrorsToastContent = ({ errors, t_i18n }: WorkflowValidationErrorsToastContentProps) => {
+  const groupedErrors = errors.reduce((acc, error) => {
+    if (!acc[error.type]) acc[error.type] = [];
+    acc[error.type].push(error);
+    return acc;
+  }, {} as Record<string, WorkflowValidationError[]>);
+
+  return (
+    <Box>
+      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+        {t_i18n('Workflow validation errors')} ({errors.length})
+      </Typography>
+      {Object.entries(groupedErrors).map(([type, typeErrors]) => (
+        <Box key={type} sx={{ mt: 0.5 }}>
+          <Typography variant="caption" sx={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
+            {type.replace(/_/g, ' ')}
+          </Typography>
+          {typeErrors.map((error, index) => (
+            <Typography key={index} variant="caption" component="div" sx={{ ml: 1 }}>
+              • {error.message}
+              {error.path && error.path.length > 0 && (
+                <Typography variant="caption" component="span" sx={{ ml: 0.5, fontStyle: 'italic' }}>
+                  ({error.path.map((ref) => `${ref.entity_type} ${ref.id}`).join(', ')})
+                </Typography>
+              )}
+            </Typography>
+          ))}
+        </Box>
+      ))}
+    </Box>
+  );
+};
 
 const workflowDefinitionSetMutation = graphql`
   mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
@@ -169,7 +208,10 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
   // Handle publish action
   const handlePublish = () => {
     if (workflowDefinitionStatus.validationErrors.length > 0) {
-      return; // Should not happen as button is disabled
+      MESSAGING$.notifyError(
+        <WorkflowValidationErrorsToastContent errors={workflowDefinitionStatus.validationErrors} t_i18n={t_i18n} />,
+      );
+      return;
     }
     publishWorkflowDefinition({
       variables: { entityType: 'DraftWorkspace' },
