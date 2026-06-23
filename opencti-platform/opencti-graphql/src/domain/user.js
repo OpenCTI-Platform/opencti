@@ -2008,7 +2008,7 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   const withOrigin = userWithOrigin(req, logged);
   const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session
-  req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
+  req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged.password_valid_until ?? null };
   req.session.session_provider = provider;
   req.session.save();
   // Publish the login event
