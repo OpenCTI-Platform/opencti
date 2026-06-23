@@ -20,7 +20,6 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
         name={`${name}.params.authorized_members`}
         component={AuthorizedMembersField}
         showAllMembersLine
-        showCreatorLine
         withDynamicKeys
         allowDynamicGroupsRestriction
         dynamicContextTypeLabel="Dynamic from draft"

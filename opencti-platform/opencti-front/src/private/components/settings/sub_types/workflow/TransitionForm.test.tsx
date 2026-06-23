@@ -8,7 +8,6 @@ import { WorkflowActionType, CommentMode } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
 // ---------------------------------------------------------------------------
 // Mock heavy sub-components with no relevance to the tested logic
@@ -222,7 +221,7 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
-  it('pre-populates CREATOR with admin access when toggling "Update authorized members" ON', async () => {
+  it('pre-populates CREATORS with admin access when toggling "Update authorized members" ON', async () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
 
@@ -235,7 +234,7 @@ describe('TransitionForm – action toggles', () => {
       const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
       expect(uamAction?.params?.authorized_members).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+          expect.objectContaining({ value: 'CREATORS', accessRight: 'admin' }),
         ]),
       );
     });

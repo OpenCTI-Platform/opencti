@@ -137,10 +137,6 @@ describe('formSubmit', () => {
 
   it('should resolve authorized members with intersection logic', async () => {
     const orgId = 'org-1';
-    const userWithOrg = {
-      ...mockUser,
-      organizations: [{ internal_id: orgId }],
-    };
 
     const input = {
       formId: 'form-1',
@@ -154,6 +150,7 @@ describe('formSubmit', () => {
       ],
       mainEntityType: 'Individual',
       draftDefaults: {
+        author: { type: 'static', defaultValue: orgId, isEditable: false },
         authorizedMembers: {
           enabled: true,
           defaults: [
@@ -164,7 +161,7 @@ describe('formSubmit', () => {
     });
     mockStoreLoadById.mockResolvedValue(form);
 
-    await formSubmit(mockContext, userWithOrg, input, true);
+    await formSubmit(mockContext, mockUser, input, true);
 
     expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledWith(
       expect.anything(),
@@ -182,10 +179,6 @@ describe('formSubmit', () => {
 
   it('should resolve dynamic authorized members logic (AUTHOR)', async () => {
     const orgId = 'org-1';
-    const userWithOrg = {
-      ...mockUser,
-      organizations: [{ internal_id: orgId }],
-    };
 
     const input = {
       formId: 'form-1',
@@ -199,6 +192,7 @@ describe('formSubmit', () => {
       ],
       mainEntityType: 'Individual',
       draftDefaults: {
+        author: { type: 'static', defaultValue: orgId, isEditable: false },
         authorizedMembers: {
           enabled: true,
           defaults: [
@@ -209,7 +203,7 @@ describe('formSubmit', () => {
     });
     mockStoreLoadById.mockResolvedValue(form);
 
-    await formSubmit(mockContext, userWithOrg, input, true);
+    await formSubmit(mockContext, mockUser, input, true);
 
     expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledWith(
       expect.anything(),
@@ -269,10 +263,6 @@ describe('formSubmit', () => {
 
   it('should resolve groupsRestriction from id entries in schema defaults', async () => {
     const orgId = 'org-1';
-    const userWithOrg = {
-      ...mockUser,
-      organizations: [{ internal_id: orgId }],
-    };
 
     const input = {
       formId: 'form-1',
@@ -286,6 +276,7 @@ describe('formSubmit', () => {
       ],
       mainEntityType: 'Individual',
       draftDefaults: {
+        author: { type: 'static', defaultValue: orgId, isEditable: false },
         authorizedMembers: {
           enabled: true,
           defaults: [
@@ -296,7 +287,7 @@ describe('formSubmit', () => {
     });
     mockStoreLoadById.mockResolvedValue(form);
 
-    await formSubmit(mockContext, userWithOrg, input, true);
+    await formSubmit(mockContext, mockUser, input, true);
 
     expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledWith(
       expect.anything(),

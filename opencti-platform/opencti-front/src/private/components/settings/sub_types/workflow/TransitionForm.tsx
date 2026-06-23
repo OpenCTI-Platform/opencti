@@ -11,7 +11,6 @@ import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
 import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
-import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
 const TransitionForm = () => {
   const { t_i18n } = useFormatter();
@@ -44,7 +43,7 @@ const TransitionForm = () => {
     const currentActions = values.syncActions ?? [];
     if (checked) {
       const newAction = actionType === WorkflowActionType.updateAuthorizedMembers
-        ? { type: actionType, params: { authorized_members: [{ label: 'Creator', type: CREATOR_AUTHORIZED_CONFIG.type, value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' as const, groupsRestriction: [] }] } }
+        ? { type: actionType, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } }
         : { type: actionType };
       setFieldValue('syncActions', [...currentActions, newAction]);
     } else {

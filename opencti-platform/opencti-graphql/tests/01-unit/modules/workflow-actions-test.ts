@@ -17,12 +17,9 @@ vi.mock('../../../src/config/conf', () => ({
 // Mock schema constants to prevent loading attribute-definition.ts which
 // transitively needs TEST_MODE, BUS_TOPICS, etc. from conf.
 vi.mock('../../../src/schema/stixRefRelationship', () => ({
+  RELATION_CREATED_BY: 'created-by',
   RELATION_OBJECT_ASSIGNEE: 'object-assignee',
   RELATION_OBJECT_PARTICIPANT: 'object-participant',
-}));
-
-vi.mock('../../../src/schema/internalRelationship', () => ({
-  RELATION_PARTICIPATE_TO: 'participate-to',
 }));
 
 vi.mock('../../../src/utils/authorizedMembers', () => ({
@@ -31,12 +28,6 @@ vi.mock('../../../src/utils/authorizedMembers', () => ({
 
 vi.mock('../../../src/utils/access', () => ({
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
-}));
-
-// storeLoadById is used to resolve the AUTHOR entity type.
-// Each test that needs AUTHOR resolution will configure the return value.
-vi.mock('../../../src/database/middleware-loader', () => ({
-  storeLoadById: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -196,7 +187,6 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
-    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
       validateDraftWorkspace: vi.fn(),
       draftWorkspaceEditAuthorizedMembers: vi.fn(),
@@ -207,6 +197,11 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
     });
     vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
     vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    vi.doMock('../../../src/schema/stixRefRelationship', () => ({
+      RELATION_CREATED_BY: 'created-by',
+      RELATION_OBJECT_ASSIGNEE: 'object-assignee',
+      RELATION_OBJECT_PARTICIPANT: 'object-participant',
+    }));
     const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
     freshRegistry = mod.ActionRegistry as any;
   });
@@ -222,75 +217,23 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
     context: {},
   });
 
-  it('pushes only the participate-to org IDs for AUTHOR (not the creator itself)', async () => {
-    const { storeLoadById } = await import('../../../src/database/middleware-loader');
+  it('resolves AUTHOR to the createdBy entity ID (string)', async () => {
     const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
-    vi.mocked(storeLoadById).mockResolvedValue({ 'participate-to': ['org-id'] } as any);
-
-    const ctx = makeUpdateCtx({ creator_id: 'creator-user-id' });
+    const ctx = makeUpdateCtx({ 'created-by': 'org-id' });
     await freshRegistry.updateAuthorizedMembers(ctx, {
       authorized_members: [{ id: 'AUTHOR', access_right: 'edit', groups_restriction_ids: ['group-1'] }],
     });
     expect(editAuthorizedMembers).toHaveBeenCalledWith(
       ctx.context, ctx.user,
       expect.objectContaining({
-        input: [
-          { id: 'org-id', access_right: 'edit', groups_restriction_ids: ['group-1'] },
-        ],
+        input: [{ id: 'org-id', access_right: 'edit', groups_restriction_ids: ['group-1'] }],
       }),
     );
   });
 
-  it('produces empty resolved list when creator has no participate-to orgs', async () => {
-    const { storeLoadById } = await import('../../../src/database/middleware-loader');
+  it('resolves AUTHOR to all IDs when createdBy is an array', async () => {
     const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
-    vi.mocked(storeLoadById).mockResolvedValue({} as any);
-
-    const ctx = makeUpdateCtx({ creator_id: 'creator-user-id' });
-    await freshRegistry.updateAuthorizedMembers(ctx, {
-      authorized_members: [{ id: 'AUTHOR', access_right: 'edit', groups_restriction_ids: [] }],
-    });
-    expect(editAuthorizedMembers).toHaveBeenCalledWith(
-      ctx.context, ctx.user,
-      expect.objectContaining({ input: [] }),
-    );
-  });
-
-  it('produces empty resolved list when creator_id is absent', async () => {
-    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
-    const ctx = makeUpdateCtx(); // no creator_id
-    await freshRegistry.updateAuthorizedMembers(ctx, {
-      authorized_members: [{ id: 'AUTHOR', access_right: 'admin', groups_restriction_ids: [] }],
-    });
-    expect(editAuthorizedMembers).toHaveBeenCalledWith(
-      ctx.context, ctx.user,
-      expect.objectContaining({ input: [] }),
-    );
-  });
-
-  it('produces empty resolved list when storeLoadById rejects', async () => {
-    const { storeLoadById } = await import('../../../src/database/middleware-loader');
-    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
-    vi.mocked(storeLoadById).mockRejectedValue(new Error('DB unavailable'));
-
-    const ctx = makeUpdateCtx({ creator_id: 'some-id' });
-    await freshRegistry.updateAuthorizedMembers(ctx, {
-      authorized_members: [{ id: 'AUTHOR', access_right: 'edit', groups_restriction_ids: [] }],
-    });
-    expect(editAuthorizedMembers).toHaveBeenCalledWith(
-      ctx.context, ctx.user,
-      expect.objectContaining({ input: [] }),
-    );
-  });
-
-  it('handles an array of creator_ids and accumulates all orgs', async () => {
-    const { storeLoadById } = await import('../../../src/database/middleware-loader');
-    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
-    vi.mocked(storeLoadById)
-      .mockResolvedValueOnce({ 'participate-to': ['org-a'] } as any)
-      .mockResolvedValueOnce({ 'participate-to': ['org-b'] } as any);
-
-    const ctx = makeUpdateCtx({ creator_id: ['user-1', 'user-2'] });
+    const ctx = makeUpdateCtx({ 'created-by': ['org-a', 'org-b'] });
     await freshRegistry.updateAuthorizedMembers(ctx, {
       authorized_members: [{ id: 'AUTHOR', access_right: 'view', groups_restriction_ids: [] }],
     });
@@ -302,6 +245,18 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
           { id: 'org-b', access_right: 'view', groups_restriction_ids: [] },
         ],
       }),
+    );
+  });
+
+  it('produces empty resolved list when createdBy is absent', async () => {
+    const { editAuthorizedMembers } = await import('../../../src/utils/authorizedMembers');
+    const ctx = makeUpdateCtx(); // no 'created-by' field
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'AUTHOR', access_right: 'admin', groups_restriction_ids: [] }],
+    });
+    expect(editAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ input: [] }),
     );
   });
 });
@@ -316,7 +271,7 @@ describe('ActionRegistry.updateAuthorizedMembers (CREATORS)', () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
-    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/schema/stixRefRelationship', () => ({ RELATION_CREATED_BY: 'created-by', RELATION_OBJECT_ASSIGNEE: 'object-assignee', RELATION_OBJECT_PARTICIPANT: 'object-participant' }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
       validateDraftWorkspace: vi.fn(),
       draftWorkspaceEditAuthorizedMembers: vi.fn(),
@@ -396,7 +351,7 @@ describe('ActionRegistry.updateAuthorizedMembers (ASSIGNEES)', () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
-    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/schema/stixRefRelationship', () => ({ RELATION_CREATED_BY: 'created-by', RELATION_OBJECT_ASSIGNEE: 'object-assignee', RELATION_OBJECT_PARTICIPANT: 'object-participant' }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
       validateDraftWorkspace: vi.fn(),
       draftWorkspaceEditAuthorizedMembers: vi.fn(),
@@ -477,7 +432,7 @@ describe('ActionRegistry.updateAuthorizedMembers (PARTICIPANTS)', () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
-    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/schema/stixRefRelationship', () => ({ RELATION_CREATED_BY: 'created-by', RELATION_OBJECT_ASSIGNEE: 'object-assignee', RELATION_OBJECT_PARTICIPANT: 'object-participant' }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
       validateDraftWorkspace: vi.fn(),
       draftWorkspaceEditAuthorizedMembers: vi.fn(),
@@ -569,7 +524,7 @@ describe('ActionRegistry.validateDraft', () => {
       return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
     });
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
-    vi.doMock('../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+    vi.doMock('../../../src/schema/stixRefRelationship', () => ({ RELATION_CREATED_BY: 'created-by', RELATION_OBJECT_ASSIGNEE: 'object-assignee', RELATION_OBJECT_PARTICIPANT: 'object-participant' }));
     vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
     vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
     const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
