@@ -8744,6 +8744,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   updated_at: Scalars['DateTime']['output'];
   workflow_configuration?: Maybe<Scalars['Boolean']['output']>;
   workflow_id?: Maybe<Scalars['String']['output']>;
+  workflow_published_version_id?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -44346,6 +44347,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflow_configuration?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  workflow_published_version_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

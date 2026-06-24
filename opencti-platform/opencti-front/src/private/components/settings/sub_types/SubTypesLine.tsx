@@ -53,7 +53,7 @@ const subTypesLinesFragment = graphql`
       platform_hidden_type
       target_type
       availableSettings
-      workflow_id
+      workflow_published_version_id
     }
     statuses {
       id
@@ -110,7 +110,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
       return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
     }
     if (nodeSubType.label === 'DraftWorkspace' && isFeatureEnable('DRAFT_WORKFLOW')) {
-      return nodeSubType.settings?.workflow_id
+      return nodeSubType.settings?.workflow_published_version_id
         ? <CheckCircleOutlined fontSize="small" color="success" />
         : <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
     }

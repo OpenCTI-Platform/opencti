@@ -7,6 +7,7 @@ import {
   getAllowedTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
+  getWorkflowPublishedVersionId,
   publishWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
@@ -109,6 +110,11 @@ const workflowResolvers = {
     entity: (result: any) => result.entity,
     executionStatus: (result: any) => result.executionStatus ?? null,
     pendingTransition: (result: any) => result.instance?.pendingTransition ?? null,
+  },
+  EntitySetting: {
+    workflow_published_version_id: (entitySetting: any, _: any, context: AuthContext) => {
+      return getWorkflowPublishedVersionId(context, entitySetting);
+    },
   },
   DraftWorkspace: {
     workflowInstance: (draft: any, _: any, context: AuthContext) => {

@@ -10825,6 +10825,7 @@ type WorkflowEntityRef {
 type EntitySetting implements InternalObject & BasicObject {
   workflow_configuration: Boolean
   workflow_id: String
+  workflow_published_version_id: String
   id: ID!
   entity_type: String!
   standard_id: String!

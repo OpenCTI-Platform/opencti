@@ -273,6 +273,24 @@ export const getWorkflowDefinition = async (
 };
 
 /**
+ * Returns the ID of the published version for the given entity setting's workflow, or null if not published.
+ */
+export const getWorkflowPublishedVersionId = async (
+  context: AuthContext,
+  entitySetting: BasicStoreEntityEntitySetting,
+): Promise<string | null> => {
+  if (!entitySetting.workflow_id) return null;
+  const executionContext = bypassDraftContext(context);
+  const workflowDefinitionEntity = await storeLoadById(
+    executionContext,
+    executionContext.user!,
+    entitySetting.workflow_id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ) as WorkflowDefinitionEntity | undefined;
+  return workflowDefinitionEntity?.published_version?.id ?? null;
+};
+
+/**
  * Create or update workflow definition for an entity type.
  */
 export const setWorkflowDefinition = async (
