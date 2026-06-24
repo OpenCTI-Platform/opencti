@@ -1,5 +1,4 @@
 import React, { FunctionComponent, Suspense } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -11,48 +10,28 @@ import { resolveLink } from '../../../../utils/Entity';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 import { ErrorBoundary } from '../../Error';
 import { DraftEntitySelection } from '../DraftReviewEntityList';
-import { DraftReviewDiffPanelContentQuery } from './__generated__/DraftReviewDiffPanelContentQuery.graphql';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { buildFieldLabelMap, parseUpdatesPatch, RenderChangeValuesFn } from './draftReviewDiffPanelUtils';
 import ContainerObjectsTab from './ContainerObjectsTab';
 import EntityRelationsTab from './EntityRelationsTab';
 import EntityContainerRefsTab from './EntityContainerRefsTab';
 import DraftReviewResolvedChanges from './DraftReviewResolvedChanges';
 import DraftReviewEntityFields from './DraftReviewEntityFields';
-
-const draftReviewDiffPanelContentQuery = graphql`
-  query DraftReviewDiffPanelContentQuery($entityType: String!) {
-    subType(id: $entityType) {
-      settings {
-        attributeLabels {
-          name
-          label
-        }
-      }
-    }
-  }
-`;
+import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 
 interface DraftReviewDiffPanelContentComponentProps {
-  queryRef: PreloadedQuery<DraftReviewDiffPanelContentQuery>;
   draftId: string;
   entity: DraftEntitySelection;
 }
 
 const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPanelContentComponentProps> = ({
-  queryRef,
   draftId,
   entity,
 }) => {
   const { t_i18n } = useFormatter();
   const entityId = entity.id;
 
-  const subTypeData = usePreloadedQuery<DraftReviewDiffPanelContentQuery>(
-    draftReviewDiffPanelContentQuery,
-    queryRef,
-  );
-
-  const labelMap = buildFieldLabelMap(subTypeData.subType?.settings?.attributeLabels);
+  const entitySettings = useEntitySettings(entity.entity_type);
+  const labelMap = buildFieldLabelMap(entitySettings[0]?.attributeLabels);
 
   const renderHeader = () => {
     const link = resolveLink(entity.entity_type);
@@ -209,15 +188,9 @@ interface DraftReviewDiffPanelContentProps {
 }
 
 const DraftReviewDiffPanelContent: FunctionComponent<DraftReviewDiffPanelContentProps> = ({ draftId, entity }) => {
-  const queryRef = useQueryLoading<DraftReviewDiffPanelContentQuery>(
-    draftReviewDiffPanelContentQuery,
-    { entityType: entity.entity_type },
-  );
   return (
     <Suspense fallback={<Loader />}>
-      {queryRef && (
-        <DraftReviewDiffPanelContentComponent queryRef={queryRef} draftId={draftId} entity={entity} />
-      )}
+      <DraftReviewDiffPanelContentComponent draftId={draftId} entity={entity} />
     </Suspense>
   );
 };

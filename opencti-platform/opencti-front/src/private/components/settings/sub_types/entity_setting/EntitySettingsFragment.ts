@@ -26,6 +26,10 @@ export const entitySettingsFragment = graphql`
       width
       label
     }
+    attributeLabels {
+      name
+      label
+    }
     requestAccessConfiguration {
       id
       approval_admin {
