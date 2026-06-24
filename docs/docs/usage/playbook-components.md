@@ -31,6 +31,10 @@ With this event source, the playbook triggers on any knowledge event (create, up
 
 To make this playbook available for manual enrollment, activate the ****Available for manual enrollment**** toggle. The playbook then appears as an option when you select an entity that matches the event source filter criteria. Deactivate this toggle to hide the playbook from manual enrollment.
 
+***Component details***
+
+As this component listens to the stream of events from knowledge it is able to be triggered with two additonal conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for temporal event changes on an entity such as when the status or score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue. These trigger conditions are particularly useful in combination with dynamic notifications or emails that can notify users when a case they are participating in has the status changed or similar actions. 
+
 ![Playbook listening for creation events on TLP:GREEN IP addresses and domain names](assets/playbook_listen.png)
 
 ### Listen PIR events
@@ -45,12 +49,11 @@ This event source listens to Priority Intelligence Requirement (PIR) events. You
 > Note: By default, if no PIR is selected, all available PIR events will be processed by the playbook.
 
 ***Component details***
-***Change to status/score***
-As this component listens to the stream of events from knowledge it is able to be triggered with two additonal conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for temporal event changes on an entity such as when the score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue.  
+
+The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score. Additionally as this component listens to the stream of events from knowledge it can be triggered with two specific conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for specific properrty changes for an entity that is part of the PIR. 
 
 ![Playbook configuration panel for listening to PIR events](assets/listen-pir-events-in-playbook.png)
 
-The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score.
 
 ### Query knowledge on a regular basis
 
@@ -337,7 +340,7 @@ For more details, see [Organization segregation](https://docs.opencti.io/latest/
 
 ### Transform with AI
 
-This component sends the bundle to the configured AI agent. By default this will be set to the "CTI STIX transformer" agent this agent is configured to only use the STIX 2.1 data schema and will send back a stix bundle that can then be further processed by the playbook. Add 'Additional user instructions' to provide the agent with a user prompt to follow.   
+This component sends the bundle to the configured AI agent. By default this will be set to the "CTI STIX transformer" agent this agent is configured to only use the STIX 2.1 data schema and will send back a stix bundle that can then be further processed by the playbook. Use the 'Additional user instructions' to provide the agent with a user prompt to follow and choose the user the agent should run as so that the agent can only run with access to the data it needs.    
 
 !!! warning "This component requires access to the XTM One platform and will consume usage of your XTM One quota."
 
@@ -395,7 +398,7 @@ This component passes the STIX 2.1 bundle to the data stream for writing. It has
 
 ### Send to AI
 
-This component passes the STIX 2.1 bundle to the AI agent, by default this will be set to the CTI STIX Consumer, with the additional user provided instructions. Once the data is processed the playbook will complete and the bundle will continue to be processed by the AI agent depending on instructions. For example the instructions may specify the creation of a new weekly grouping of data to be created in OpenCTI, the AI agent would then create a Draft within OpenCTI where an analyst can review the AI agent's output.
+This component passes the STIX 2.1 bundle to the AI agent, by default this will be set to the CTI STIX Consumer. Configure this component with the additional user provided instructions that will act as the user prompt and set the user account that the agent will run as to ensure it has the correct access permissions. Once the data is processed the playbook will complete and the bundle will continue to be processed by the AI agent depending on instructions. For example the instructions may specify the creation of a new weekly grouping of data to be created in OpenCTI, the AI agent would then create the new grouping in the Draft space within OpenCTI where an analyst can review the AI agent's output.
 
 ### Send to notifier
 
