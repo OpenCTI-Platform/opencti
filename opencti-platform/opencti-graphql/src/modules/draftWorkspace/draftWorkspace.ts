@@ -29,7 +29,7 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
     { name: 'name', label: 'Draft name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', editDefault: true, mandatoryType: 'customizable', multiple: false, upsert: true, isFilterable: true },
     { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'draft_status', label: 'Draft status', type: 'string', format: 'enum', values: getDraftStatuses(), mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'draft_status', label: 'Processing status', type: 'string', format: 'enum', values: getDraftStatuses(), mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'validation_work_id', label: 'Validation work', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_WORK], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { ...draftChange, isFilterable: false },
     creators,

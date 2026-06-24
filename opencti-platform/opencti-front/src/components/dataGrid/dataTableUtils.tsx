@@ -358,7 +358,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   draft_status: {
     id: 'draft_status',
-    label: 'Status',
+    label: 'Processing status',
     percentWidth: 12,
     isSortable: true,
     render: ({ draft_status }) => <DraftStatusChip draftStatus={draft_status} />,

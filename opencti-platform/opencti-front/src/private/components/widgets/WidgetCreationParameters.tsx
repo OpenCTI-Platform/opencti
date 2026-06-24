@@ -73,15 +73,15 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_total',
   ];
 
-  const draftWorkspaceSortByValues = [
-    'name',
-    'created_at',
-    'draft_status',
-    'objectAssignee',
-    'objectParticipant',
-    'creator',
-    'createdBy',
-    ...(isFeatureEnable('DRAFT_WORKFLOW') ? ['workflowInstance'] : []),
+  const draftWorkspaceSortByValues: { value: string; label: string }[] = [
+    { value: 'name', label: 'Name' },
+    { value: 'created_at', label: 'Creation date' },
+    { value: 'draft_status', label: 'Processing status' },
+    { value: 'objectAssignee', label: 'Assignee' },
+    { value: 'objectParticipant', label: 'Participant' },
+    { value: 'creator', label: 'Creator' },
+    { value: 'createdBy', label: 'Author' },
+    ...(isFeatureEnable('DRAFT_WORKFLOW') ? [{ value: 'workflowInstance', label: 'Workflow status' }] : []),
   ];
 
   const AUDIT_WIDGET_ATTRIBUTES = [
@@ -511,12 +511,12 @@ const WidgetCreationParameters = () => {
                         )
                         }
                       >
-                        {(isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? draftWorkspaceSortByValues : sortByValues).map((value) => (
+                        {(isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? draftWorkspaceSortByValues : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))).map(({ value, label }) => (
                           <MenuItem
                             key={value}
                             value={value}
                           >
-                            {t_i18n(capitalizeFirstLetter(value))}
+                            {t_i18n(label)}
                           </MenuItem>
                         ))}
                       </Select>
@@ -722,67 +722,88 @@ const WidgetCreationParameters = () => {
                           <InputLabel id="entities-attribute">
                             {t_i18n('Attribute')}
                           </InputLabel>
-                          <QueryRenderer
-                            query={stixCyberObservablesLinesAttributesQuery}
-                            variables={{
-                              elementType: getCurrentSelectedEntityTypes(i),
-                            }}
-                            render={({ props: resultProps }: { props: StixCyberObservablesLinesAttributesQuery$data }) => {
-                              if (resultProps
-                                && resultProps.schemaAttributeNames
-                              ) {
-                                let attributesValues = (resultProps.schemaAttributeNames.edges)
-                                  .map((n) => n.node.value)
-                                  .filter(
-                                    (n) => !R.includes(
-                                      n,
-                                      ignoredAttributesInDashboards,
-                                    ) && !n.startsWith('i_'),
-                                  );
-                                if (
-                                  attributesValues.filter((n) => n === 'hashes').length > 0
+                          {isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
+                            <Select
+                              labelId="entities-attribute"
+                              fullWidth={true}
+                              value={dataSelection[i].attribute}
+                              onChange={(event) => handleChangeDataValidationParameter(i, 'attribute', event.target.value)}
+                            >
+                              {[
+                                { value: 'draft_status', label: 'Processing status' },
+                                { value: 'object-assignee.internal_id', label: 'Assignee' },
+                                { value: 'object-participant.internal_id', label: 'Participant' },
+                                { value: 'creator_id', label: 'Creator' },
+                                ...(isFeatureEnable('DRAFT_WORKFLOW') ? [{ value: 'workflowInstance', label: 'Workflow status' }] : []),
+                              ].map(({ value, label }) => (
+                                <MenuItem key={value} value={value}>
+                                  {t_i18n(label)}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          ) : (
+                            <QueryRenderer
+                              query={stixCyberObservablesLinesAttributesQuery}
+                              variables={{
+                                elementType: getCurrentSelectedEntityTypes(i),
+                              }}
+                              render={({ props: resultProps }: { props: StixCyberObservablesLinesAttributesQuery$data }) => {
+                                if (resultProps
+                                  && resultProps.schemaAttributeNames
                                 ) {
-                                  attributesValues = [
-                                    ...attributesValues,
-                                    'hashes.MD5',
-                                    'hashes.SHA-1',
-                                    'hashes.SHA-256',
-                                    'hashes.SHA-512',
-                                  ].filter((n) => n !== 'hashes').sort();
-                                }
-                                return (
-                                  <Select
-                                    labelId="entities-attribute"
-                                    fullWidth={true}
-                                    value={dataSelection[i].attribute}
-                                    onChange={(event) => handleChangeDataValidationParameter(
-                                      i,
-                                      'attribute',
-                                      event.target.value,
-                                    )
-                                    }
-                                  >
-                                    {[
+                                  let attributesValues = (resultProps.schemaAttributeNames.edges)
+                                    .map((n) => n.node.value)
+                                    .filter(
+                                      (n) => !R.includes(
+                                        n,
+                                        ignoredAttributesInDashboards,
+                                      ) && !n.startsWith('i_'),
+                                    );
+                                  if (
+                                    attributesValues.filter((n) => n === 'hashes').length > 0
+                                  ) {
+                                    attributesValues = [
                                       ...attributesValues,
-                                      ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
-                                    ].map((value) => (
-                                      <MenuItem
-                                        key={value}
-                                        value={value}
-                                      >
-                                        {t_i18n(
-                                          capitalizeFirstLetter(
-                                            value,
-                                          ),
-                                        )}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                );
-                              }
-                              return <div />;
-                            }}
-                          />
+                                      'hashes.MD5',
+                                      'hashes.SHA-1',
+                                      'hashes.SHA-256',
+                                      'hashes.SHA-512',
+                                    ].filter((n) => n !== 'hashes').sort();
+                                  }
+                                  return (
+                                    <Select
+                                      labelId="entities-attribute"
+                                      fullWidth={true}
+                                      value={dataSelection[i].attribute}
+                                      onChange={(event) => handleChangeDataValidationParameter(
+                                        i,
+                                        'attribute',
+                                        event.target.value,
+                                      )
+                                      }
+                                    >
+                                      {[
+                                        ...attributesValues,
+                                        ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
+                                      ].map((value) => (
+                                        <MenuItem
+                                          key={value}
+                                          value={value}
+                                        >
+                                          {t_i18n(
+                                            capitalizeFirstLetter(
+                                              value,
+                                            ),
+                                          )}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  );
+                                }
+                                return <div />;
+                              }}
+                            />
+                          )}
                         </FormControl>
                       )}
 

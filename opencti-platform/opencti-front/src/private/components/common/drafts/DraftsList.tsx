@@ -18,7 +18,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 
 const defaultDraftColumns: WidgetColumn[] = [
   { attribute: 'name', label: 'Name' },
-  { attribute: 'draft_status', label: 'Status' },
+  { attribute: 'draft_status', label: 'Processing status' },
   { attribute: 'workflowInstance', label: 'Workflow status' },
   { attribute: 'creators', label: 'Creators' },
   { attribute: 'objectAssignee' },
