@@ -53,6 +53,20 @@ const describeError = (err: any) => ({
   errorStack: err?.stack,
 });
 
+// Add every non-empty id reachable from a denormalized rel_<type>.internal_id value into `into`.
+// Values are normally a flat string array, but the field is read defensively (an element could itself
+// be an array): we recurse into nested arrays and add scalars straight into the Set, so no intermediate
+// flattened copy is allocated even for heavily-connected targets.
+const collectConnectedIds = (value: any, into: Set<string>) => {
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i += 1) {
+      collectConnectedIds(value[i], into);
+    }
+  } else if (isNotEmptyField(value)) {
+    into.add(value);
+  }
+};
+
 // Build the "already connected" map from the target's own denormalized rel_<type>.internal_id fields.
 // It is the cheap source of truth to deduplicate source relations against the target without ever
 // loading the (potentially huge) target neighborhood.
@@ -63,8 +77,9 @@ const buildTargetConnected = (target: DynEntity): Record<string, Set<string>> =>
     const key = keys[i];
     if (key.startsWith(REL_PREFIX) && key.endsWith(REL_SUFFIX)) {
       const relType = key.substring(REL_PREFIX.length, key.length - REL_SUFFIX.length);
-      const ids = (target[key] ?? []).flat(Infinity).filter((id: string) => isNotEmptyField(id));
-      connected[relType] = new Set(ids);
+      const ids = new Set<string>();
+      collectConnectedIds(target[key], ids);
+      connected[relType] = ids;
     }
   }
   return connected;
@@ -201,8 +216,11 @@ const lowLevelMergeGroup = async (
     return true;
   };
 
-  await fullRelationsList(context, SYSTEM_USER, ABSTRACT_STIX_RELATIONSHIP, { fromId: sourceIds, callback: processRelations });
-  await fullRelationsList(context, SYSTEM_USER, ABSTRACT_STIX_RELATIONSHIP, { toId: sourceIds, callback: processRelations });
+  // baseData keeps the streamed payload minimal: the callback only needs the base fields (internal_id,
+  // entity_type, _index) plus `connections`, which is part of the base projection and from which the
+  // engine reconstructs fromId / toId / fromType / toType on read.
+  await fullRelationsList(context, SYSTEM_USER, ABSTRACT_STIX_RELATIONSHIP, { fromId: sourceIds, baseData: true, callback: processRelations });
+  await fullRelationsList(context, SYSTEM_USER, ABSTRACT_STIX_RELATIONSHIP, { toId: sourceIds, baseData: true, callback: processRelations });
 
   // Merge identity-bearing attributes onto the target and move its standard_id to the new value. The
   // previous standard_id and all source ids are archived in x_opencti_stix_ids so older references resolve.
