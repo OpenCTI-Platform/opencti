@@ -78,6 +78,7 @@ const DataTableInternalFilters = ({
             <SearchInput
               variant="small"
               onSubmit={helpers.handleSearch}
+              searchContext={searchContextFinal}
               keyword={searchTerm}
             />
           )}

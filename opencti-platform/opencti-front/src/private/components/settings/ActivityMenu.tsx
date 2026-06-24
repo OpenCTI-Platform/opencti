@@ -15,6 +15,10 @@ const ActivityMenu: FunctionComponent = () => {
       path: '/dashboard/settings/activity/alerting',
       label: 'Alerting',
     },
+    {
+      path: '/dashboard/settings/activity/searches',
+      label: 'Searches',
+    },
   ];
 
   return <NavToolbarMenu entries={entries} />;

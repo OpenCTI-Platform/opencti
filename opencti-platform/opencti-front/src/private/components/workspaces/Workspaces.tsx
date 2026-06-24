@@ -198,7 +198,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
             setNumberOfElements: storageHelpers.handleSetNumberOfElements,
           }}
           lineFragment={workspaceLineFragment}
-          entityTypes={['Workspace']}
+          entityTypes={['Internal-Object']}
           searchContextFinal={{ entityTypes: ['Workspace'] }}
           createButton={(
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>

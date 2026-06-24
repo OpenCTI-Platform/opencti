@@ -504,6 +504,13 @@ enum LogsOrdering {
   created_at
   event_type
   event_scope
+  search
+  result_count
+  entity_type
+  user
+  organization
+  search_location,
+  groups,
   _score
 }
 type LogConnection {
@@ -526,7 +533,7 @@ type ContextData {
   entity_type: String
   from_id: String
   to_id: String
-  message: String!
+  message: String
   commit: String
   external_references: [ExternalReference!]
   workspace_type: String
@@ -534,7 +541,13 @@ type ContextData {
   pir_score: Int @auth(for: [PIRAPI])
   pir_match_from: Boolean @auth(for: [PIRAPI])
   changes: [HistoryChange]
+  search: String
+  result_count: Int
+  organization: String
+  search_location: String,
+  groups: String,
 }
+
 type Log {
   id: ID!
   entity_type: String
@@ -549,6 +562,28 @@ type Log {
   context_data(tz: String, locale: String, unit_system: String): ContextData
   user_metadata: JSON
 }
+
+type SearchAnalytics {
+  summary: SearchSummary!
+  locations: [TermCount]!
+  organizations: [TermCount]!
+  searchCounts: [TermCount]!
+  withResults: [TermCount]!
+  noResults: [TermCount]!
+}
+
+type SearchSummary {
+  total_searches: Int!
+  total_locations: Int!
+  total_organizations: Int!
+  total_users: Int!
+}
+
+type TermCount {
+  value:String!
+  count:Int!
+}
+
 
 ############## Attributes
 type AttributesMap {
@@ -14817,7 +14852,23 @@ type Query {
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
   guessMimeType(fileId: String!): String @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
   askAiActivity(busId: String, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
-
+  searchLogs(
+    first: Int
+    after: ID
+    types: [String!]
+    orderBy: LogsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): LogConnection @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  searchAnalytics(
+    first: Int
+    startDate:DateTime
+    endDate:DateTime
+    binSize:Int
+    minBin:Int
+    maxBin:Int
+  ): SearchAnalytics @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
   indexedFilesCount(search: String): Int @auth(for: [KNOWLEDGE])
@@ -15003,6 +15054,15 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  localSearch(
+    first: Int
+    after: ID
+    search: String
+    types: [String]
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   stixCoreObjectsRestricted(
     first: Int

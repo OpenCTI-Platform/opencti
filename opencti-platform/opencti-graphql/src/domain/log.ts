@@ -1,11 +1,11 @@
 import * as R from 'ramda';
-import { elCount, elPaginate, type PaginateOpts, elCardinalityCount } from '../database/engine';
+import { elCount, elPaginate, elMultipleFieldCountAggregation, type PaginateOpts, elHistogramWithOutlierBinsQuery, elDateRangeCount, elCardinalityCount } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
-import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
-import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import { INDEX_HISTORY, INDEX_SEARCH, READ_INDEX_HISTORY, READ_INDEX_SEARCH } from '../database/utils';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SEARCH } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
-import { OrderingMode, type QueryAuditsArgs, type QueryLogsArgs } from '../generated/graphql';
+import { OrderingMode, type QueryAuditsArgs, type QueryLogsArgs, type QuerySearchLogsArgs } from '../generated/graphql';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { isUserHasCapability, KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
@@ -105,4 +105,56 @@ export const logsWorkerConfig = () => {
     elasticsearch_api_key: conf.get('elasticsearch:api_key') || null,
     elasticsearch_ssl_reject_unauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
   };
+};
+
+export const findSearchLogs = (context: AuthContext, user: AuthUser, args: QuerySearchLogsArgs) => {
+  const orderBy = ['organization', 'groups', 'result_count', 'search', 'search_location'].includes(args.orderBy ?? 'timestamp') ? `context_data.${args.orderBy}` : args.orderBy;
+  const finalArgs = { ...args, orderBy: orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_SEARCH] };
+  return elPaginate(context, user, READ_INDEX_SEARCH, finalArgs as PaginateOpts);
+};
+
+export const findSearchAnalytics = async (context: AuthContext, user: AuthUser, args: any) => {
+  // return the size of the index
+  const aggFields = [
+    { field: 'internal_id.keyword', name: 'searches' },
+    { field: 'context_data.search_location.keyword', name: 'location' },
+    { field: 'context_data.organization.keyword', name: 'organization' },
+    { field: 'user_id.keyword', name: 'user' },
+  ];
+  const noResultsFilter = {
+    bool: {
+      must: [
+        { term: { 'context_data.result_count': 0 } },
+      ],
+    },
+  };
+
+  const withResultsFilter = {
+    bool: {
+      must_not: [
+        { term: { 'context_data.result_count': 0 } },
+      ],
+    },
+  };
+
+  const searchAgg = await elMultipleFieldCountAggregation(context, user, INDEX_SEARCH, aggFields, { startDate: args.startDate, endDate: args.endDate });
+  // return the distribution of searches grouped by contextData.search_location
+  const locationResult = searchAgg.get('location') ?? [];
+  const searchCount = await elDateRangeCount(context, user, INDEX_SEARCH, { startDate: args.startDate, endDate: args.endDate }) ?? 0;
+  // return the distribution of searches grouped by contextData.organization
+  const organizationResult = searchAgg.get('organization') ?? [];
+  // gets a distinct list of users, though the list is currrently unused
+  const userResult = searchAgg.get('user') ?? [];
+  const histogramResult: { bin: string; count: number }[] = await elHistogramWithOutlierBinsQuery(context, user, INDEX_SEARCH, { field: 'context_data.result_count', name: 'results' }, { startDate: args.startDate, endDate: args.endDate }, args.binSize, args.minBin, args.maxBin);
+  const searchTermsWithResults = await elMultipleFieldCountAggregation(context, user, INDEX_SEARCH, [{ field: 'context_data.search.keyword', name: 'search' }], { startDate: args.startDate, endDate: args.endDate, first: args.first }, withResultsFilter);
+  const searchTermsWithNoResults = await elMultipleFieldCountAggregation(context, user, INDEX_SEARCH, [{ field: 'context_data.search.keyword', name: 'search' }], { startDate: args.startDate, endDate: args.endDate, first: args.first }, noResultsFilter);
+  const response = {
+    summary: { total_searches: searchCount, total_locations: locationResult.length, total_organizations: organizationResult.length, total_users: userResult.length },
+    locations: locationResult,
+    organizations: organizationResult,
+    searchCounts: histogramResult,
+    withResults: searchTermsWithResults.get('search'),
+    noResults: searchTermsWithNoResults.get('search'),
+  };
+  return response;
 };

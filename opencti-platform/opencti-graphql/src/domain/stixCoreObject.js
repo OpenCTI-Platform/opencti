@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { v4 as uuid } from 'uuid';
 import {
   buildRestrictedEntity,
   createEntity,
@@ -28,6 +29,7 @@ import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
+  BASE_TYPE_ENTITY,
   buildRefRelationKey,
   CONNECTOR_INTERNAL_ANALYSIS,
   CONNECTOR_INTERNAL_ENRICHMENT,
@@ -53,18 +55,19 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SEARCH, isInternalObject } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
+import { elCount, elFindByIds, elIndexElements, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import {
+  INDEX_SEARCH,
   isEmptyField,
   isNotEmptyField,
   READ_ENTITIES_INDICES,
@@ -114,6 +117,85 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-typ
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { buildTranslatedIdsMap } from '../database/data-changes';
+const logSearch = async (context, user, results, contextData) => {
+  if (!contextData.search || contextData.search.length === 0) {
+    return;
+  }
+  const internal_id = uuid();
+  const standard_id = generateStandardId(ENTITY_TYPE_SEARCH, { internal_id });
+  const timestamp = new Date();
+  // Maps to [<Organization Name>: <Internal_ID>, ....] for easier Organization mapping metrics
+  const organization = (user.organizations ?? []).map((o) => o.name)[0];
+  const groupsString = (user.groups ?? []).reduce(
+    (acc, group) => {
+      if (!group.default_assignation) acc.push(group.name);
+      return acc;
+    }, []).toString();
+  const searchElement = {
+    _index: INDEX_SEARCH,
+    internal_id,
+    standard_id,
+    entity_type: ENTITY_TYPE_SEARCH,
+    event_type: 'mutation',
+    base_type: BASE_TYPE_ENTITY,
+    created_at: timestamp,
+    updated_at: timestamp,
+    timestamp,
+    user_id: user.id,
+    user: {
+      account_status: user.account_status,
+      name: user.name,
+      personal_notifiers: user.personal_notifiers,
+      user_email: user.user_email,
+    },
+    context_data: {
+      ...contextData,
+      result_count: results?.pageInfo?.globalCount,
+      organization: organization,
+      search_location: contextData.search_location,
+      groups: groupsString,
+    },
+  };
+
+  await elIndexElements(context, user, ENTITY_TYPE_SEARCH, [searchElement]);
+};
+
+export const localSearch = async (context, user, args) => {
+  let types = [];
+  if (isNotEmptyField(args.types)) {
+    types = args.types.filter((type) => isStixCoreObject(type) || isStixMetaObject(type) || isInternalObject(type));
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_OBJECT);
+  }
+  const promise = pageEntitiesConnection(context, user, types, args);
+  // const promise = listEntitiesPaginated(context, user, types, args);
+  const contextData = {};
+  if (args.search && args.search.length > 0) {
+    contextData.search = args.search;
+  }
+  if (args.types && args.types.length > 0) {
+    contextData.search_location = args.types[0];
+  }
+  promise.then(
+    async (results) => await publishUserAction({
+      user,
+      event_type: 'command',
+      event_scope: 'search',
+      event_access: 'extended',
+      context_data: contextData,
+    }).then(() => logSearch(
+      context,
+      user,
+      results,
+      contextData,
+    )),
+    (error) => {
+      logApp.error('[LOCAL SEARCH] Error occurred publishing user action', { error });
+    },
+  );
+  return promise;
+};
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -159,13 +241,44 @@ export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
 
 export const findStixCoreObjectPaginated = async (context, user, args) => {
   const types = extractStixCoreObjectTypesFromArgs(args);
-  return pageEntitiesConnection(context, user, types, args);
+  const promise = pageEntitiesConnection(context, user, types, args);
+  // const promise = listEntitiesPaginated(context, user, types, args);
+  if (args.globalSearch) {
+    const contextData = {};
+    if (args.search && args.search.length > 0) {
+      contextData.search = args.search;
+    }
+    if (args.types && args.types.length > 0) {
+      contextData.search_location = args.types[0];
+    } else {
+      contextData.search_location = 'Global';
+    }
+    promise.then(
+      async (results) => await publishUserAction({
+        user,
+        event_type: 'command',
+        event_scope: 'search',
+        event_access: 'extended',
+        context_data: contextData,
+      }).then(() => logSearch(
+        context,
+        user,
+        results,
+        contextData,
+      )),
+      (error) => {
+        logApp.error('[FIND ALL] Error occurred publishing user action', { error });
+      },
+    );
+  }
+  return promise;
 };
 
 export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
-  return findStixCoreObjectPaginated(context, user, args);
+  const modifiedAgs = { ...args, globalSearch: true };
+  return findStixCoreObjectPaginated(context, user, modifiedAgs);
 };
 
 export const findUnknownStixCoreObjects = async (context, user, args) => {

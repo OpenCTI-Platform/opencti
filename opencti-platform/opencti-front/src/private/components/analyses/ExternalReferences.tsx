@@ -161,7 +161,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={externalReferencesLineFragment}
-          entityTypes={['External-Reference']}
+          entityTypes={['Stix-Meta-Object']}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ExternalReferenceCreation
@@ -170,6 +170,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
               />
             </Security>
           )}
+          searchContextFinal={{ entityTypes: ['External-Reference'] }}
         />
       )}
     </div>
