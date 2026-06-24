@@ -513,7 +513,10 @@ const WidgetCreationParameters = () => {
                         )
                         }
                       >
-                        {(isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? draftWorkspaceSortByValues : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))).map(({ value, label }) => (
+                        {(isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(dataSelection[i].filters)
+                          ? draftWorkspaceSortByValues
+                          : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
+                        ).map(({ value, label }) => (
                           <MenuItem
                             key={value}
                             value={value}
