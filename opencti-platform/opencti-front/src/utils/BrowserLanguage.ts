@@ -1,5 +1,3 @@
-import * as R from 'ramda';
-
 export const LANGUAGES: Record<string, string> = {
   AUTO: 'auto',
   CHINESE: 'zh-cn',
@@ -48,16 +46,12 @@ interface NonStandardNavigator {
 export const detectedLocale = (navigatorInstance: (Partial<Navigator> & NonStandardNavigator) | null | undefined): string | undefined => {
   if (!navigatorInstance) return undefined;
 
-  const pickLanguages = R.pick(browserLanguagePropertyKeys) as (nav: Partial<Navigator> & NonStandardNavigator) => Record<string, string | readonly string[] | undefined>;
-  const properties = pickLanguages(navigatorInstance);
+  const nav = navigatorInstance as Record<string, string | string[] | undefined>;
+  const languages = browserLanguagePropertyKeys
+    .flatMap((key) => nav[key] ?? [])
+    .map((x) => x.toLowerCase());
 
-  const values = R.values(properties);
-  const flatValues = R.flatten(values) as (string | undefined)[];
-  const activeLanguages = R.reject(R.isNil, flatValues) as string[];
-
-  const lowercaseLanguages = R.map((x) => x.toLowerCase(), activeLanguages);
-
-  return R.find((x) => R.includes(x, availableLanguages), lowercaseLanguages);
+  return languages.find((x) => availableLanguages.includes(x));
 };
 
 export default detectedLocale(window.navigator) || DEFAULT_LANG; // If no locale is detected, fallback to 'en'
