@@ -18,9 +18,9 @@ import { getWidgetColumns, getDefaultWidgetColumns } from './WidgetListsDefaultC
 
 describe('WidgetListsDefaultColumns', () => {
   describe('getWidgetColumns for DraftWorkspace', () => {
-    it('returns exactly 7 columns', () => {
+    it('returns exactly 8 columns', () => {
       const columns = getWidgetColumns('entities', 'DraftWorkspace');
-      expect(columns).toHaveLength(7);
+      expect(columns).toHaveLength(8);
     });
 
     it('includes workflowInstance column', () => {
@@ -36,6 +36,7 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).toContain('name');
       expect(attributes).toContain('draft_status');
       expect(attributes).toContain('creators');
+      expect(attributes).toContain('createdBy');
       expect(attributes).toContain('objectAssignee');
       expect(attributes).toContain('objectParticipant');
       expect(attributes).toContain('created_at');

@@ -10,6 +10,7 @@ import * as redis from '../../../src/database/redis';
 import * as cacheModule from '../../../src/database/cache';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { OrderingMode } from '../../../src/generated/graphql';
 
 vi.mock('../../../src/database/middleware');
 vi.mock('../../../src/database/middleware-loader');
@@ -427,7 +428,7 @@ describe('resolveSortByRefUsers (via findDraftWorkspacePaginated with objectAssi
 
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
       orderBy: 'objectAssignee' as any,
-      orderMode: 'asc',
+      orderMode: OrderingMode.Asc,
       first: 10,
     });
 
@@ -440,7 +441,7 @@ describe('resolveSortByRefUsers (via findDraftWorkspacePaginated with objectAssi
 
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
       orderBy: 'objectAssignee' as any,
-      orderMode: 'desc',
+      orderMode: OrderingMode.Desc,
       first: 10,
     });
 
@@ -455,7 +456,7 @@ describe('resolveSortByRefUsers (via findDraftWorkspacePaginated with objectAssi
 
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
       orderBy: 'objectParticipant' as any,
-      orderMode: 'asc',
+      orderMode: OrderingMode.Asc,
       first: 10,
     });
 
@@ -468,7 +469,7 @@ describe('resolveSortByRefUsers (via findDraftWorkspacePaginated with objectAssi
 
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
       orderBy: 'objectAssignee' as any,
-      orderMode: 'asc',
+      orderMode: OrderingMode.Asc,
       first: 10,
     });
 
@@ -482,7 +483,7 @@ describe('resolveSortByRefUsers (via findDraftWorkspacePaginated with objectAssi
 
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
       orderBy: 'objectAssignee' as any,
-      orderMode: 'asc',
+      orderMode: OrderingMode.Asc,
       first: 10,
     });
 
