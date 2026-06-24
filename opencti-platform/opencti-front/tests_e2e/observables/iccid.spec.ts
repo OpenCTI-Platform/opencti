@@ -68,7 +68,7 @@ test('ICCID CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await observableForm.chooseType('ICCID');
   await observableForm.openBulk();
   await observableForm.bulkValuesField.fill(`${bulkIccid1}\n${bulkIccid2}`);
-  await observableForm.validateBulk();
+  await observableForm.validateBulk(2);
   await observableForm.submit();
   await observableForm.closeBulk();
 

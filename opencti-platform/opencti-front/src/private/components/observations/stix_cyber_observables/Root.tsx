@@ -117,6 +117,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
             )}
           />
           <StixDomainObjectMain
+            entity={stixCyberObservable}
             basePath={basePath}
             pages={{
               overview: (

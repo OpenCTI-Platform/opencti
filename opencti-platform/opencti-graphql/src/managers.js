@@ -38,6 +38,8 @@ import authenticationProviderListener from './modules/authenticationProvider/aut
 import supportPackageListener from './modules/support/supportPackage-listener';
 
 export const startModules = async () => {
+  const startingPromises = [];
+
   // region API initialization
   if (ENABLED_API) {
     await httpServer.start();
@@ -46,105 +48,115 @@ export const startModules = async () => {
     logApp.info('[OPENCTI] API not started (disabled by configuration)');
   }
   // endregion
+
   // region Expiration manager
   if (ENABLED_EXPIRED_MANAGER) {
-    await expiredManager.start();
+    startingPromises.push(expiredManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Expiration manager not started (disabled by configuration)');
   }
   // endregion
+
   // region connector manager
   if (ENABLED_CONNECTOR_MANAGER) {
-    await connectorManager.start();
+    startingPromises.push(connectorManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Connector manager not started (disabled by configuration)');
   }
   // endregion
+
   // region import csv built in connector
   if (ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR) {
-    await importCsvConnector.start();
+    startingPromises.push(importCsvConnector.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Connector built in manager not started (disabled by configuration)');
   }
   // endregion
-  // region draft validation built in connector
-  await draftValidationConnector.start();
 
+  // region draft validation built in connector
+  startingPromises.push(draftValidationConnector.start());
   // endregion
+
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {
-    await taskManager.start();
+    startingPromises.push(taskManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Task manager not started (disabled by configuration)');
   }
   // endregion
+
   // region Inference engine
   if (ENABLED_RULE_ENGINE) {
-    await ruleEngine.start();
+    startingPromises.push(ruleEngine.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Rule engine not started (disabled by configuration)');
   }
   // endregion
+
   // region Sync manager
   if (ENABLED_SYNC_MANAGER) {
-    await syncManager.start();
+    startingPromises.push(syncManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Sync manager not started (disabled by configuration)');
   }
   if (ENABLED_INGESTION_MANAGER) {
-    await ingestionManager.start();
+    startingPromises.push(ingestionManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Ingestion manager not started (disabled by configuration)');
   }
   // endregion
+
   // region History manager
   if (ENABLED_HISTORY_MANAGER) {
-    await historyManager.start();
+    startingPromises.push(historyManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] History manager not started (disabled by configuration)');
   }
   // endregion
+
   // region notification
   if (ENABLED_NOTIFICATION_MANAGER) {
-    await notificationManager.start();
+    startingPromises.push(notificationManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Notification manager not started (disabled by configuration)');
   }
   if (ENABLED_PUBLISHER_MANAGER) {
-    await publisherManager.start();
+    startingPromises.push(publisherManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Publisher manager not started (disabled by configuration)');
   }
   // endregion
+
   // region playbook manager
   if (ENABLED_PLAYBOOK_MANAGER) {
-    await playbookManager.start();
+    startingPromises.push(playbookManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Playbook manager not started (disabled by configuration)');
   }
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
-    await fileIndexManager.start();
+    startingPromises.push(fileIndexManager.start());
   } else if (ENABLED_FILE_INDEX_MANAGER && !isAttachmentProcessorEnabled()) {
     logApp.info('[OPENCTI-MODULE] File index manager not started : attachment processor is not configured.');
   } else {
     logApp.info('[OPENCTI-MODULE] File index manager not started (disabled by configuration)');
   }
 
+  // region Audit
+  startingPromises.push(activityListener.start());
+  startingPromises.push(activityManager.start());
+  // endregion
+
+  startingPromises.push(supportPackageListener.start());
+  startingPromises.push(authenticationProviderListener.start());
+
+  await Promise.all(startingPromises);
+
   // refactoring in module in progress
   // all managers will be started only in this method
   await startAllManagers();
 
-  // endregion
-  // region Cluster manager
+  // cluster manager checks all manager statuses, so better at the end
   await clusterManager.start();
-  // endregion
-  // region Audit
-  await activityListener.start();
-  await activityManager.start();
-  // endregion
-
-  await supportPackageListener.start();
-  await authenticationProviderListener.start();
 };
 
 export const shutdownModules = async () => {
@@ -210,13 +222,9 @@ export const shutdownModules = async () => {
   // endregion
   // region file index manager
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
-    await fileIndexManager.shutdown();
+    stoppingPromises.push(fileIndexManager.shutdown());
   }
   // endregion
-
-  // refactoring in module in progress
-  // all managers will be started only in this method
-  await shutdownAllManagers();
 
   // endregion
   // region Cluster manager
@@ -229,5 +237,9 @@ export const shutdownModules = async () => {
   stoppingPromises.push(supportPackageListener.shutdown());
   stoppingPromises.push(authenticationProviderListener.shutdown());
   await Promise.all(stoppingPromises);
+
+  // refactoring in module in progress
+  // all managers will be shutdown only in this method
+  await shutdownAllManagers();
 };
 // endregion

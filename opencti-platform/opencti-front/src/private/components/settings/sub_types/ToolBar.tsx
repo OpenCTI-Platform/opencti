@@ -110,7 +110,7 @@ const ToolBar: FunctionComponent<{
     setDisplay(false);
     setValue(false);
   };
-  const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) => entitySettingsSelectedFiltered.filter(({ [currentKey]: v }) => v === null);
+  const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) => entitySettingsSelectedFiltered.filter((setting) => setting[currentKey] === null);
   const handleOpenFilesRef = () => {
     handleOpen();
     setTitle(t_i18n('Automatic references at file upload'));

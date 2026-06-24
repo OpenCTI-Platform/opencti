@@ -23,6 +23,7 @@ type StreamCollection {
   name: String
   description: String
   filters: String
+  origin_filters: String
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String @auth(for: [TAXIIAPI])
@@ -42,6 +43,7 @@ input StreamCollectionAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   filters: String
+  origin_filters: String
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String

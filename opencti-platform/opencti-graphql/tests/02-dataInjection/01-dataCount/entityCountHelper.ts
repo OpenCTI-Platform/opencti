@@ -4,7 +4,7 @@ export const entitiesCounter = {
   AdministrativeArea: 1,
   AttackPattern: 2,
   Campaign: 1,
-  Capability: 55,
+  Capability: 56,
   City: 1,
   Country: 1,
   CourseOfAction: 1,
@@ -45,7 +45,7 @@ export const entitiesCounter = {
   User: TESTING_USERS.length + 1,
   Vocabulary: 355,
   EmailTemplate: 1,
-  RetentionRule: 2,
+  RetentionRule: 4,
 };
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
@@ -55,7 +55,7 @@ export const relationsCounter = {
   'attributed-to': 2,
   'created-by': 22,
   'external-reference': 7,
-  'has-capability': 73,
+  'has-capability': 74,
   'has-role': 9,
   indicates: 4,
   'kill-chain-phase': 3,

@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import { useTheme } from '@mui/styles';
 import { AuditsListComponentQuery$data } from '../../private/components/common/audits/__generated__/AuditsListComponentQuery.graphql';
-import MarkdownDisplay from '../MarkdownDisplay';
+import MarkdownDisplay from '../markdownDisplay/MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { resolveLink } from '../../utils/Entity';
 import { useGenerateAuditMessage } from '../../utils/history';

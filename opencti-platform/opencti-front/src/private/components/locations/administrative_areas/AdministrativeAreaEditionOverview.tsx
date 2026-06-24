@@ -274,6 +274,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={administrativeArea.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

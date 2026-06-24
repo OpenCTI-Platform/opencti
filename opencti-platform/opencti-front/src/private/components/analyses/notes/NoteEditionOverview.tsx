@@ -205,6 +205,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
+            uploadEntityId={note.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="content" />
             }

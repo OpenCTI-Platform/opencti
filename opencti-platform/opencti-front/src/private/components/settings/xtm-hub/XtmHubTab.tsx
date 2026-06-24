@@ -126,8 +126,11 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         id: settings?.id ?? '',
         input: [
           { key: 'xtm_hub_token', value: '' },
-          { key: 'xtm_hub_registration_date', value: '' },
           { key: 'xtm_hub_registration_status', value: 'unregistered' },
+          { key: 'xtm_hub_registration_user_id', value: '' },
+          { key: 'xtm_hub_registration_user_name', value: '' },
+          { key: 'xtm_hub_registration_date', value: '' },
+          { key: 'xtm_hub_last_connectivity_check', value: '' },
         ],
       },
       onCompleted: () => {

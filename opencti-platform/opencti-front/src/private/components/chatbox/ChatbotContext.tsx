@@ -8,6 +8,7 @@ interface ChatbotContextType {
   sidebarWidth: number;
   isResizing: boolean;
   xtmOneConfigured: boolean | null;
+  xtmOneUrl: string | null;
   openChat: () => void;
   closeChat: () => void;
   toggleChat: () => void;
@@ -20,6 +21,7 @@ const ChatbotContext = createContext<ChatbotContextType | null>(null);
 
 const SIDEBAR_WIDTH_STORAGE_KEY = 'arianeChatSidebarWidth';
 const CHAT_MODE_STORAGE_KEY = 'arianeChatMode';
+const CHAT_OPEN_STORAGE_KEY = 'arianeChatOpen';
 const DEFAULT_SIDEBAR_WIDTH = 400;
 
 interface ChatbotProviderProps {
@@ -27,8 +29,9 @@ interface ChatbotProviderProps {
 }
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(() => localStorage.getItem(CHAT_OPEN_STORAGE_KEY) === 'true');
   const [xtmOneConfigured, setXtmOneConfigured] = useState<boolean | null>(null);
+  const [xtmOneUrl, setXtmOneUrl] = useState<string | null>(null);
   const [mode, setModeState] = useState<ChatMode>(() => {
     const stored = localStorage.getItem(CHAT_MODE_STORAGE_KEY);
     return (stored as ChatMode) || 'sidebar';
@@ -48,15 +51,29 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         setXtmOneConfigured(data?.xtm_one_configured === true);
+        setXtmOneUrl(typeof data?.xtm_one_url === 'string' ? data.xtm_one_url : null);
       })
       .catch(() => {
         setXtmOneConfigured(false);
+        setXtmOneUrl(null);
       });
   }, []);
 
-  const openChat = useCallback(() => setIsOpen(true), []);
-  const closeChat = useCallback(() => setIsOpen(false), []);
-  const toggleChat = useCallback(() => setIsOpen((prev) => !prev), []);
+  const openChat = useCallback(() => {
+    setIsOpen(true);
+    localStorage.setItem(CHAT_OPEN_STORAGE_KEY, 'true');
+  }, []);
+  const closeChat = useCallback(() => {
+    setIsOpen(false);
+    localStorage.setItem(CHAT_OPEN_STORAGE_KEY, 'false');
+  }, []);
+  const toggleChat = useCallback(() => {
+    setIsOpen((prev) => {
+      const next = !prev;
+      localStorage.setItem(CHAT_OPEN_STORAGE_KEY, String(next));
+      return next;
+    });
+  }, []);
 
   const setMode = useCallback((newMode: ChatMode) => {
     setModeState(newMode);
@@ -74,13 +91,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
     sidebarWidth,
     isResizing,
     xtmOneConfigured,
+    xtmOneUrl,
     openChat,
     closeChat,
     toggleChat,
     setMode,
     setSidebarWidth,
     setIsResizing,
-  }), [isOpen, mode, sidebarWidth, isResizing, xtmOneConfigured, openChat, closeChat, toggleChat, setMode, setSidebarWidth]);
+  }), [isOpen, mode, sidebarWidth, isResizing, xtmOneConfigured, xtmOneUrl, openChat, closeChat, toggleChat, setMode, setSidebarWidth]);
 
   return (
     <ChatbotContext.Provider value={value}>
@@ -95,37 +113,4 @@ export const useChatbot = (): ChatbotContextType => {
     throw new Error('useChatbot must be used within a ChatbotProvider');
   }
   return context;
-};
-
-// Hook to get the margin right for content when sidebar is open
-export const useChatbotContentMargin = (): number => {
-  const context = useContext(ChatbotContext);
-  if (!context) return 0;
-
-  const { isOpen, mode, sidebarWidth } = context;
-  if (isOpen && mode === 'sidebar') {
-    return sidebarWidth;
-  }
-  return 0;
-};
-
-interface TransitionTheme {
-  transitions: {
-    create: (props: string | string[], options?: { easing?: string; duration?: number }) => string;
-    easing: { easeInOut: string };
-    duration: { enteringScreen: number };
-  };
-}
-
-export const useChatbotContentTransition = (theme: TransitionTheme): string => {
-  const context = useContext(ChatbotContext);
-  if (!context) return 'none';
-
-  const { isResizing } = context;
-  if (isResizing) return 'none';
-
-  return theme.transitions.create(['margin-right'], {
-    easing: theme.transitions.easing.easeInOut,
-    duration: theme.transitions.duration.enteringScreen,
-  });
 };

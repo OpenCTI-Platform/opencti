@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
@@ -23,6 +23,12 @@ const SettingsOrganizationDetails: FunctionComponent<
       <Grid container={true} spacing={2}>
         <Grid item xs={12}>
           <Label>
+            {t_i18n('Description')}
+          </Label>
+          <ExpandableMarkdown source={organization.description} limit={400} />
+        </Grid>
+        <Grid item xs={12}>
+          <Label>
             {t_i18n('Organization type')}
           </Label>
           <FieldOrEmpty source={organization.x_opencti_organization_type}>
@@ -30,12 +36,6 @@ const SettingsOrganizationDetails: FunctionComponent<
               label={organization.x_opencti_organization_type}
             />
           </FieldOrEmpty>
-          <Label
-            sx={{ marginTop: 2 }}
-          >
-            {t_i18n('Description')}
-          </Label>
-          <ExpandableMarkdown source={organization.description} limit={400} />
           <Label
             sx={{ marginTop: 2 }}
           >

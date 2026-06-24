@@ -36,12 +36,13 @@ interface IngestionCreationUserHandlingComponentProps extends IngestionCreationU
 
 export interface BasicUserHandlingValues {
   name: string;
+  display_name?: string;
   user_id: string | FieldOption;
   automatic_user?: boolean;
   confidence_level?: string;
 }
 
-const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {
+export const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {
   const { t_i18n } = useFormatter();
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const { values, setFieldValue, validateField } = useFormikContext<BasicUserHandlingValues>();
@@ -50,13 +51,14 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
   const data = usePreloadedQuery(ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery, queryRef);
 
   useEffect(() => {
+    const userName = values.display_name ?? values.name;
     setFieldValue(
       'user_id',
       values.automatic_user === false
         ? ''
-        : { label: `[${labelTag}] ${values.name}`, value: `[${labelTag}] ${values.name}` },
+        : { label: `[${labelTag}] ${userName}`, value: `[${labelTag}] ${userName}` },
     );
-  }, [values.name, values.automatic_user, labelTag]);
+  }, [values.display_name, values.name, values.automatic_user, labelTag]);
 
   useEffect(() => {
     setFieldValue(

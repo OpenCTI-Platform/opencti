@@ -1,6 +1,17 @@
 import purify from 'dompurify';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { displayEntityTypeForTranslation, translateDateInterval, isStringSafe, sanitize, extractJsonContent } from './String';
+import {
+  displayEntityTypeForTranslation,
+  translateDateInterval,
+  isStringSafe,
+  sanitize,
+  extractJsonContent,
+  splitIntoLines,
+  splitAndTrim,
+  splitAndTrimArray,
+  uniqWithByFields,
+  computeDuplicates,
+} from './String';
 
 describe('String utils', () => {
   describe('translateDateInterval', () => {
@@ -124,6 +135,168 @@ describe('String utils', () => {
     it('should return trimmed string for empty input', () => {
       expect(extractJsonContent('')).toBe('');
       expect(extractJsonContent('   ')).toBe('');
+    });
+  });
+
+  describe('splitIntoLines', () => {
+    it('should split text by newlines', () => {
+      expect(splitIntoLines('a\nb\nc')).toBe('a\nb\nc');
+    });
+
+    it('should split text by commas', () => {
+      expect(splitIntoLines('a,b,c')).toBe('a\nb\nc');
+    });
+
+    it('should split text by semicolons', () => {
+      expect(splitIntoLines('a;b;c')).toBe('a\nb\nc');
+    });
+
+    it('should split text with mixed separators', () => {
+      expect(splitIntoLines('a,b;c\nd,e')).toBe('a\nb\nc\nd\ne');
+    });
+
+    it('should handle a single value without separators', () => {
+      expect(splitIntoLines('hello')).toBe('hello');
+    });
+
+    it('should handle empty string', () => {
+      expect(splitIntoLines('')).toBe('');
+    });
+
+    it('should handle consecutive separators', () => {
+      expect(splitIntoLines('a,,b')).toBe('a\n\nb');
+    });
+  });
+
+  describe('uniqWithByFields', () => {
+    it('should remove duplicates based on a single field', () => {
+      const data = [{ id: '1', name: 'a' }, { id: '2', name: 'b' }, { id: '1', name: 'c' }];
+      const result = uniqWithByFields<typeof data[0]>(['id'])(data);
+      expect(result).toEqual([{ id: '1', name: 'a' }, { id: '2', name: 'b' }]);
+    });
+
+    it('should remove duplicates based on multiple fields', () => {
+      const data = [
+        { x: 1, y: 2, z: 'a' },
+        { x: 1, y: 2, z: 'b' },
+        { x: 1, y: 3, z: 'c' },
+      ];
+      const result = uniqWithByFields<typeof data[0]>(['x', 'y'])(data);
+      expect(result).toEqual([
+        { x: 1, y: 2, z: 'a' },
+        { x: 1, y: 3, z: 'c' },
+      ]);
+    });
+
+    it('should return empty array for empty input', () => {
+      expect(uniqWithByFields(['id'])([])).toEqual([]);
+    });
+
+    it('should handle deep equality for object fields', () => {
+      const data = [
+        { id: '1', meta: { a: 1 } },
+        { id: '2', meta: { a: 1 } },
+        { id: '3', meta: { a: 2 } },
+      ];
+      const result = uniqWithByFields<typeof data[0]>(['meta'])(data);
+      expect(result).toEqual([
+        { id: '1', meta: { a: 1 } },
+        { id: '3', meta: { a: 2 } },
+      ]);
+    });
+  });
+
+  describe('computeDuplicates', () => {
+    it('should group consecutive elements with same field values', () => {
+      const data = [
+        { id: '1', name: 'a' },
+        { id: '1', name: 'b' },
+        { id: '2', name: 'c' },
+        { id: '2', name: 'd' },
+        { id: '1', name: 'e' },
+      ];
+      const result = computeDuplicates(['id'], data);
+      expect(result).toEqual([
+        [{ id: '1', name: 'a' }, { id: '1', name: 'b' }],
+        [{ id: '2', name: 'c' }, { id: '2', name: 'd' }],
+        [{ id: '1', name: 'e' }],
+      ]);
+    });
+
+    it('should return empty array for empty input', () => {
+      expect(computeDuplicates(['id'], [])).toEqual([]);
+    });
+
+    it('should return single group if all elements match', () => {
+      const data = [{ x: 1, y: 'a' }, { x: 1, y: 'b' }];
+      expect(computeDuplicates(['x'], data)).toEqual([[{ x: 1, y: 'a' }, { x: 1, y: 'b' }]]);
+    });
+
+    it('should return one group per element if none are consecutive duplicates', () => {
+      const data = [{ id: '1' }, { id: '2' }, { id: '3' }];
+      expect(computeDuplicates(['id'], data)).toEqual([[{ id: '1' }], [{ id: '2' }], [{ id: '3' }]]);
+    });
+
+    it('should group by multiple fields', () => {
+      const data = [
+        { a: 1, b: 2, c: 'x' },
+        { a: 1, b: 2, c: 'y' },
+        { a: 1, b: 3, c: 'z' },
+      ];
+      const result = computeDuplicates(['a', 'b'], data);
+      expect(result).toEqual([
+        [{ a: 1, b: 2, c: 'x' }, { a: 1, b: 2, c: 'y' }],
+        [{ a: 1, b: 3, c: 'z' }],
+      ]);
+    });
+  });
+
+  describe('splitAndTrim', () => {
+    it('should split by comma and trim whitespace', () => {
+      expect(splitAndTrim('a, b, c')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should remove empty entries', () => {
+      expect(splitAndTrim('a,,b, ,c')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should return empty array for empty string', () => {
+      expect(splitAndTrim('')).toEqual([]);
+    });
+
+    it('should return empty array for null or undefined', () => {
+      expect(splitAndTrim(null)).toEqual([]);
+      expect(splitAndTrim(undefined)).toEqual([]);
+    });
+
+    it('should support a custom separator', () => {
+      expect(splitAndTrim('a; b; c', ';')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should handle a single value with no separator', () => {
+      expect(splitAndTrim('  hello  ')).toEqual(['hello']);
+    });
+  });
+
+  describe('splitAndTrimArray', () => {
+    it('should split and trim each entry of the array', () => {
+      expect(splitAndTrimArray(['a, b', 'c , d'])).toEqual(['a', 'b', 'c', 'd']);
+    });
+
+    it('should remove empty entries from all elements', () => {
+      expect(splitAndTrimArray(['a,', ' ,b', ''])).toEqual(['a', 'b']);
+    });
+
+    it('should return empty array for an empty input array', () => {
+      expect(splitAndTrimArray([])).toEqual([]);
+    });
+
+    it('should handle entries without the separator', () => {
+      expect(splitAndTrimArray(['  foo  ', '  bar  '])).toEqual(['foo', 'bar']);
+    });
+
+    it('should support a custom separator', () => {
+      expect(splitAndTrimArray(['a; b', 'c; d'], ';')).toEqual(['a', 'b', 'c', 'd']);
     });
   });
 });

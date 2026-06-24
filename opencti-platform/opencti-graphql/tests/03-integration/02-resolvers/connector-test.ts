@@ -242,7 +242,7 @@ describe('Connector resolver standard behaviour', () => {
     // Read work and verify status
     queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.work.status).toEqual('progress');
+    expect(queryResult.data.work.status).toEqual('complete');
   });
   it('should delete work', async () => {
     // Delete the work
@@ -378,7 +378,7 @@ describe.todo('Connector sending multiple bundles during the same multi-part wor
 
       // Status should have changed to `complete`
       queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
-      expect(queryResult.data.work.status).toEqual('progress');
+      expect(queryResult.data.work.status).toEqual('complete');
       expect(queryResult.data.work.completed_number).toEqual(5);
     });
   });

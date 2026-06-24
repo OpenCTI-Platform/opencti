@@ -9,7 +9,7 @@ import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: readonly any[];
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];
   isDistributed?: boolean;
@@ -35,7 +35,7 @@ const WidgetTree = ({
       return item;
     });
     return [{ data: chartData }];
-  }, [data, groupBy]);
+  }, [data, groupBy, t_i18n]);
 
   const options: ApexOptions = useMemo(() => {
     return treeMapOptions(
@@ -44,7 +44,7 @@ const WidgetTree = ({
       'bottom',
       isDistributed,
     ) as ApexOptions;
-  }, [isDistributed]);
+  }, [theme, isDistributed]);
 
   return (
     <Chart

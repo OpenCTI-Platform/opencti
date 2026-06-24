@@ -14,43 +14,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
-import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { type PlaybookComponent } from './playbook-types';
+import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import type { BasicStoreRelation, StoreRelation } from '../../types/store';
-import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
-import { convertStixToInternalTypes, generateInternalType, getParentTypes } from '../../schema/schemaUtils';
+import { generateInternalType } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
-import { getEntityFromCache } from '../../database/cache';
+import { fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { stixLoadByIds } from '../../database/middleware';
-import { usableNotifiers } from '../notifier/notifier-domain';
-import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
-import { storeNotificationEvent } from '../../database/stream/stream-handler';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
-import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { FilterMode } from '../../generated/graphql';
-import { generateCreateMessage } from '../../database/data-changes';
-import { findAllByCaseTemplateId } from '../task/task-domain';
-import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
-import type { BasicStoreSettings } from '../../types/settings';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
+import { extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
-import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate-knowledge-component';
@@ -61,6 +49,9 @@ import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-rest
 import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remove-access-restrictions-component';
 import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from './components/create-indicator-component';
 import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observable-component';
+import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from './components/ai-agent-component';
+import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from './components/ai-agent-send-component';
+import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -88,6 +79,7 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
   name: 'Log data in standard output',
   description: 'Print bundle in platform logs',
   icon: 'console',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
@@ -124,6 +116,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   name: 'Listen knowledge events',
   description: 'Listen for all platform knowledge events',
   icon: 'stream',
+  category: 'start_playbook',
   is_entry_point: true,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
@@ -147,8 +140,9 @@ const PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA: JSONSchemaType<ManualTriggerConfi
 const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
   name: 'Available for manual enrollment / trigger',
-  description: 'To be used in manual enrollment / trigger',
+  description: 'Use to trigger manual enrollment from any entity in OpenCTI',
   icon: 'manual',
+  category: 'start_playbook',
   is_entry_point: true,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
@@ -180,8 +174,9 @@ const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
 export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_DATA_CRON',
   name: 'Query knowledge on a regular basis',
-  description: 'Query knowledge on the platform',
+  description: 'Run regular knowledge queries',
   icon: 'cron',
+  category: 'start_playbook',
   is_entry_point: true,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
@@ -197,8 +192,9 @@ interface IngestionConfiguration {}
 const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
   id: 'PLAYBOOK_INGESTION_COMPONENT',
   name: 'Send for ingestion',
-  description: 'Send STIX data for ingestion',
+  description: 'Send STIX bundle to knowledge for ingestion',
   icon: 'storage',
+  category: 'end_playbook',
   is_entry_point: false,
   is_internal: true,
   ports: [],
@@ -233,8 +229,9 @@ const PLAYBOOK_MATCHING_COMPONENT_SCHEMA: JSONSchemaType<MatchConfiguration> = {
 export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
   name: 'Match knowledge',
-  description: 'Match STIX data according to filter (pass if match)',
+  description: 'Match STIX bundle to filter (pass bundle to OUT if filter matches)',
   icon: 'filter',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'no-match', type: 'out' }],
@@ -274,8 +271,9 @@ const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = 
 export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   id: 'PLAYBOOK_REDUCING_COMPONENT',
   name: 'Reduce knowledge',
-  description: 'Reduce STIX data according to the filter (keep only matching)',
+  description: 'Remove data from STIX bundle that does not match the filter. The main element will always remain.',
   icon: 'reduce',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'unmatch', type: 'out' }],
@@ -341,6 +339,7 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
   name: 'Enrich through connector',
   description: 'Use a registered platform connector for enrichment',
   icon: 'connector',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: false,
   ports: [{ id: 'out', type: 'out' }], // { id: 'unmodified', type: 'out' }]
@@ -373,6 +372,7 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
         },
         event: {
           entity_id: dataInstanceId,
+          entity_type: baseData.extensions?.[STIX_EXT_OCTI]?.type,
           bundle,
         },
       };
@@ -419,41 +419,6 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
   },
 };
 
-export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTaskTemplate, container: StixContainer) => {
-  const taskData = {
-    name: taskTemplate.name,
-    description: taskTemplate.description,
-  };
-  const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
-  const storeTask = {
-    internal_id: generateInternalId(),
-    standard_id: taskStandardId,
-    entity_type: ENTITY_TYPE_CONTAINER_TASK,
-    parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
-    ...taskData,
-  } as StoreEntityTask;
-  const task = convertStoreToStix_2_1(storeTask) as StixTask;
-  task.object_refs = [container.id];
-  task.object_marking_refs = container.object_marking_refs;
-  return task;
-};
-
-export const createTaskFromCaseTemplates = async (
-  caseTemplates: { label: string; value: string }[],
-  container: StixContainer,
-) => {
-  const context = executionContext('playbook_components');
-  const tasks = [];
-  for (let i = 0; i < caseTemplates.length; i += 1) {
-    const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
-    for (let j = 0; j < taskTemplates.length; j += 1) {
-      const task = buildStixTaskFromTaskTemplate(taskTemplates[j], container);
-      tasks.push(task);
-    }
-  }
-  return tasks;
-};
-
 const DATE_SEEN_RULE = 'seen_dates';
 const RESOLVE_CONTAINER = 'resolve_container';
 const RESOLVE_NEIGHBORS = 'resolve_neighbors';
@@ -490,8 +455,9 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
 const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   id: 'PLAYBOOK_RULE_COMPONENT',
   name: 'Apply predefined rule',
-  description: 'Execute advanced predefined computing',
+  description: 'Run predefined rule on STIX bundle',
   icon: 'memory',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
@@ -625,75 +591,6 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   },
 };
 
-export interface NotifierConfiguration {
-  notifiers: string[];
-  authorized_members: object;
-}
-const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
-  type: 'object',
-  properties: {
-    notifiers: {
-      type: 'array',
-      uniqueItems: true,
-      default: [],
-      $ref: 'Notifiers',
-      items: { type: 'string', oneOf: [] },
-    },
-    authorized_members: { type: 'object' },
-  },
-  required: ['notifiers', 'authorized_members'],
-};
-const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
-  id: 'PLAYBOOK_NOTIFIER_COMPONENT',
-  name: 'Send to notifier',
-  description: 'Send user notification',
-  icon: 'notification',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [],
-  configuration_schema: PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA,
-  schema: async () => {
-    const context = executionContext('playbook_components');
-    const notifiers = await usableNotifiers(context, SYSTEM_USER);
-    const elements = notifiers.map((c) => ({ const: c.id, title: c.name }));
-    const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
-    return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
-  },
-  executor: async ({ dataInstanceId, playbookId, playbookNode, bundle }) => {
-    const context = executionContext('playbook_components');
-    const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
-    const { notifiers, authorized_members } = playbookNode.configuration;
-    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const targetUsers = await convertMembersToUsers(authorized_members as { value: string }[], baseData, bundle);
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const notificationsCall = [];
-    for (let index = 0; index < targetUsers.length; index += 1) {
-      const targetUser = targetUsers[index];
-      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
-      const userContext = { ...context, user_inside_platform_organization };
-      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
-      const notificationEvent: DigestEvent = {
-        version: EVENT_NOTIFICATION_VERSION,
-        playbook_source: playbook.name,
-        notification_id: playbookNode.id,
-        target: convertToNotificationUser(targetUser, notifiers),
-        type: 'digest',
-        data: stixElements.map((stixObject) => ({
-          notification_id: playbookNode.id,
-          instance: stixObject,
-          type: 'create', // TODO Improve that with type event follow up
-          message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
-        })),
-      };
-      notificationsCall.push(storeNotificationEvent(context, notificationEvent));
-    }
-    if (notificationsCall.length > 0) {
-      await Promise.all(notificationsCall);
-    }
-    return { output_port: undefined, bundle };
-  },
-};
-
 // @ts-expect-error TODO improve playbook types to avoid this
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_INTERNAL_MANUAL_TRIGGER.id]: PLAYBOOK_INTERNAL_MANUAL_TRIGGER,
@@ -717,4 +614,6 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_REDUCING_COMPONENT.id]: PLAYBOOK_REDUCING_COMPONENT,
   [PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id]: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT,
   [PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT.id]: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT,
+  [PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.id]: PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT,
+  [PLAYBOOK_AI_AGENT_SEND_COMPONENT.id]: PLAYBOOK_AI_AGENT_SEND_COMPONENT,
 };

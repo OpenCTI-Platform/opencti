@@ -71,7 +71,7 @@ vi.mock('../../../src/domain/settings', () => ({
 import passport from 'passport';
 import { addUser, sessionLogin } from '../../../src/domain/user';
 import { createEntity } from '../../../src/database/middleware';
-import { getEntitiesMapFromCache } from '../../../src/database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { sanitizeUser } from '../../../src/utils/templateContextSanitizer';
 
@@ -236,5 +236,43 @@ describe('sessionLogin — must return null, not the session token', () => {
     await expect(
       sessionLogin(context, { email: 'wrong@example.com', password: 'bad' }),
     ).rejects.toThrow();
+  });
+
+  it('throws AuthenticationFailure when the IP is rejected by the whitelist', async () => {
+    vi.mocked(passport.authenticate as any).mockImplementation(
+      (_s: string, _o: unknown, cb: (_e: unknown, _u: unknown, _i: unknown) => void) => () => cb(null, cachedUser, null),
+    );
+    // Mock the settings cache to enable IP whitelist with an IP that doesn't match 127.0.0.1
+    vi.mocked(getEntityFromCache).mockResolvedValue({
+      platform_organization: null,
+      platform_session_max_concurrent: 0,
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+    } as any);
+
+    await expect(
+      sessionLogin(context, { email: 'user@example.com', password: 'pass' }),
+    ).rejects.toThrow('Your IP address is not allowed to access this platform');
+  });
+
+  it('allows login when the IP is rejected by the whitelist but user is in exclusion list', async () => {
+    vi.mocked(passport.authenticate as any).mockImplementation(
+      (_s: string, _o: unknown, cb: (_e: unknown, _u: unknown, _i: unknown) => void) => () => cb(null, cachedUser, null),
+    );
+    // Mock the settings cache to enable IP whitelist, IP doesn't match, but user is excluded
+    vi.mocked(getEntityFromCache).mockResolvedValue({
+      platform_organization: null,
+      platform_session_max_concurrent: 0,
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+      platform_ip_whitelist_exclusion_ids: [cachedUser.internal_id],
+    } as any);
+
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(
+      new Map([[cachedUser.internal_id, cachedUser]]) as any,
+    );
+
+    const result = await sessionLogin(context, { email: 'user@example.com', password: 'pass' });
+    expect(result).toBeNull(); // Successful login returns null
   });
 });

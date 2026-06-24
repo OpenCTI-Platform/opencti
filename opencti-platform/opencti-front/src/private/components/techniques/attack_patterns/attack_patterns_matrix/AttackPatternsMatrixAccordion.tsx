@@ -16,7 +16,7 @@ import {
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
 import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
-import SecurityCoverageInformation from '../../../analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 
@@ -160,7 +160,7 @@ const AccordionAttackPattern = ({
 
         {isCoverage && attackPattern.isCovered && (
           <Box sx={{ marginLeft: 'auto' }}>
-            <SecurityCoverageInformation
+            <SecurityCoverageScores
               coverage_information={coverage || null}
               variant="matrix"
             />

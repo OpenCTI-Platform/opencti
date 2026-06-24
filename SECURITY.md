@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Only the current stable major release (ie. X.X) is supported for update and bug fixes (as of October 2023, 5.11.X). Any previous versions are currently not supported and users are advised to use them "at their own risk".
+Only the current stable major release (ie. X.X) is supported for updates and bug fixes. Any previous versions are currently not supported and users are advised to use them "at their own risk".
 
 ## Reporting a Vulnerability
 
@@ -21,7 +21,7 @@ Optionally you may also add your estimated CVSS 3.1 score, though we may adjust.
 
 You will receive a response from us within 72 hours. If the issue is confirmed, we will release a patch as soon as possible depending on complexity but historically within a few days.
 
-Please note that we follow a very strict internal and public disclosure policy, typically a patch will be issued and included in a release. We then will place a warning that a security vulnerability has been patched and delay detailed disclosure from 2 to 8 weeks depending on the severity of the issue. If you have any resources such as blog posts that you intend to publish on and would like us to include these in our disclosure please advise us ASAP.
+Please note that we follow a very strict internal and public disclosure policy, typically a patch will be issued and included in a release. We then will place a warning that a security vulnerability has been patched and delay detailed disclosure by 2 to 8 weeks depending on the severity of the issue. If you have any resources such as blog posts that you intend to publish and would like us to include these in our disclosure, please advise us ASAP.
 
 Before doing any public disclosure we do ask that you speak to us first to ensure we are not releasing too much information before a patch is available and time has been given to users to upgrade their projects.
 
@@ -47,7 +47,7 @@ Below is a breakdown of our security process in order to set expectations:
 
 ## Other reporting platforms and bounties
 
-Filigran does not support other reporting platforms, all security vulnerabilities must be made via GitHub Advisory system. If you are unable to report via this method you may open a security ticket with us by emailing security@filigran.io and we will create one on your behalf but if you do not have a GitHub user account we will not be able to share the private fork, pull request, or any other information with you during the process.
+Filigran does not support other reporting platforms, all security vulnerabilities must be reported via the GitHub Advisory system. If you are unable to report via this method, you may open a security ticket with us by emailing security@filigran.io and we will create one on your behalf. However, if you do not have a GitHub user account, we will not be able to share the private fork, pull request, or any other information with you during the process.
 
 List of some (though not all) platforms **we do not support**:
 

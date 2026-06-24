@@ -8,7 +8,7 @@ import InputLabel from '@mui/material/InputLabel';
 import { FieldProps } from 'formik';
 import VisuallyHiddenInput from '../VisuallyHiddenInput';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
+import { splitAndTrim, truncate } from '../../../../utils/String';
 
 interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefined>> {
   setFieldValue: (
@@ -115,7 +115,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
 
     // check the file type; user might still provide something bypassing 'accept'
     // this will work only if accept is using MIME types only
-    const acceptedList = acceptMimeTypes?.split(',').map((a) => a.trim()) || [];
+    const acceptedList = splitAndTrim(acceptMimeTypes);
     if (
       acceptedList.length > 0
       && !!file?.type

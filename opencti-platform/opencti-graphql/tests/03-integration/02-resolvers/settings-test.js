@@ -24,6 +24,11 @@ const READ_QUERY = gql`
       platform_title
       platform_email
       platform_language
+      platform_ip_whitelist_enabled
+      caller_ip
+      platform_ip_whitelist_exclusions {
+        id
+      }
       platform_theme {
         name
       }
@@ -52,7 +57,7 @@ describe('Settings resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     const { about } = queryResult.data;
     expect(about).not.toBeNull();
-    expect(about.dependencies.length).toEqual(3);
+    expect(about.dependencies.length).toEqual(4);
   });
   it('should settings information', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
@@ -62,6 +67,9 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.platform_title).toEqual(PLATFORM_TITLE);
     expect(settings.platform_email).toEqual('admin@opencti.io');
     expect(settings.platform_language).toEqual('auto');
+    expect(settings.platform_ip_whitelist_enabled).toBeDefined();
+    expect(settings.caller_ip).toBeDefined();
+    expect(settings.platform_ip_whitelist_exclusions).toBeDefined();
     expect(settings.platform_theme.name).toEqual('Dark');
     expect(settings.editContext.length).toEqual(0);
   });
@@ -91,6 +99,28 @@ describe('Settings resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.settingsEdit.fieldPatch.platform_title).toEqual(PLATFORM_TITLE);
+  });
+  it('should fail when updating filigran_chatbot_ai_cgu_status with an invalid value', async () => {
+    const UPDATE_QUERY = gql`
+      mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+        settingsEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    const settingsInternalId = await settingsId();
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: settingsInternalId,
+        input: { key: 'filigran_chatbot_ai_cgu_status', value: ['INVALID_STATUS'] },
+      },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors[0].message).toContain('Invalid CGU status');
   });
   it('should context patch settings', async () => {
     const CONTEXT_PATCH_QUERY = gql`

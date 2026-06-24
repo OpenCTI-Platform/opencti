@@ -23,6 +23,7 @@ class TestLocalExporter:
             file_markings=self.file_markings,
         )
 
+
 if __name__ == "__main__":
     try:
         TestLocalExporter(

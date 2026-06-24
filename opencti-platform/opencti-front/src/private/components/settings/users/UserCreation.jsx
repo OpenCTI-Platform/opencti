@@ -25,6 +25,7 @@ import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
+import { Stack } from '@mui/material';
 
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
@@ -161,149 +162,146 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
             onSubmit={onSubmit}
             onReset={onClose}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Stack sx={{ gap: 2.5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="user_service_account"
+                      label={t_i18n('This user is a service account')}
+                    />
+                    <Tooltip
+                      title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ cursor: 'default' }}
+                      />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t_i18n('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="user_email"
+                    label={t_i18n('Email address')}
+                    fullWidth={true}
+                    data-testid="user-creation-email-address-input"
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="firstname"
+                    label={t_i18n('Firstname')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="lastname"
+                    label={t_i18n('Lastname')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={MarkdownField}
+                    name="description"
+                    label={t_i18n('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={4}
+                  />
+                  <Stack sx={{ gap: 2.5 }}>
+                    <PasswordPolicies value={values.password} />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="password"
+                      label={t_i18n('Password')}
+                      type="password"
+                      fullWidth={true}
+                      data-testid="user-creation-password-input"
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="confirmation"
+                      label={t_i18n('Confirmation')}
+                      type="password"
+                      fullWidth={true}
+                    />
+                  </Stack>
+                  <ObjectOrganizationField
+                    outlined={false}
+                    name="objectOrganization"
+                    label="Organizations"
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <GroupField
+                    name="groups"
+                    label="Groups"
+                    style={fieldSpacingContainerStyle}
+                    showConfidence={true}
+                  />
                   <Field
                     component={SwitchField}
                     type="checkbox"
-                    name="user_service_account"
-                    label={t_i18n('This user is a service account')}
+                    name="prevent_default_groups"
+                    label={(
+                      <div style={{ display: 'flex' }}>
+                        <>{t_i18n('Don\'t add the user to the default groups')}</>
+                        <Tooltip
+                          title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
+                        >
+                          <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
+                        </Tooltip>
+                      </div>
+                    )}
                   />
-                  <Tooltip
-                    title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="account_status"
+                    label={t_i18n('Account Status')}
+                    fullWidth={true}
+                    containerstyle={fieldSpacingContainerStyle}
                   >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ cursor: 'default' }}
-                    />
-                  </Tooltip>
-                </div>
-                <Field
-                  component={TextField}
-                  name="name"
-                  label={t_i18n('Name')}
-                  fullWidth={true}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="user_email"
-                  label={t_i18n('Email address')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  data-testid="user-creation-email-address-input"
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="firstname"
-                  label={t_i18n('Firstname')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="lastname"
-                  label={t_i18n('Lastname')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t_i18n('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                />
-                <PasswordPolicies />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="password"
-                  label={t_i18n('Password')}
-                  type="password"
-                  style={{ marginTop: 20 }}
-                  fullWidth={true}
-                  data-testid="user-creation-password-input"
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="confirmation"
-                  label={t_i18n('Confirmation')}
-                  type="password"
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <ObjectOrganizationField
-                  outlined={false}
-                  name="objectOrganization"
-                  label="Organizations"
-                  style={fieldSpacingContainerStyle}
-                />
-                <GroupField
-                  name="groups"
-                  label="Groups"
-                  style={fieldSpacingContainerStyle}
-                  showConfidence={true}
-                />
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="prevent_default_groups"
-                  label={(
-                    <div style={{ display: 'flex' }}>
-                      <>{t_i18n('Don\'t add the user to the default groups')}</>
-                      <Tooltip
-                        title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
-                      >
-                        <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
-                      </Tooltip>
-                    </div>
-                  )}
-                  containerstyle={{ marginTop: 20 }}
-                />
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="account_status"
-                  label={t_i18n('Account Status')}
-                  fullWidth={true}
-                  containerstyle={fieldSpacingContainerStyle}
-                >
-                  {settings.platform_user_statuses.map((s) => {
-                    return (
-                      <MenuItem key={s.status} value={s.status}>
-                        {t_i18n(s.status)}
-                      </MenuItem>
-                    );
-                  })}
-                </Field>
-                <Field
-                  component={DateTimePickerField}
-                  name="account_lock_after_date"
-                  textFieldProps={{
-                    label: t_i18n('Account Expire Date'),
-                    style: fieldSpacingContainerStyle,
-                    variant: 'standard',
-                    fullWidth: true,
-                  }}
-                />
-                <EmailTemplateField
-                  name="email_template_id"
-                  label={t_i18n('Email template')}
-                />
-                {hasSetAccess && (
-                  <UserConfidenceLevelField
-                    name="user_confidence_level"
-                    label={t_i18n('Max Confidence Level')}
+                    {settings.platform_user_statuses.map((s) => {
+                      return (
+                        <MenuItem key={s.status} value={s.status}>
+                          {t_i18n(s.status)}
+                        </MenuItem>
+                      );
+                    })}
+                  </Field>
+                  <Field
+                    component={DateTimePickerField}
+                    name="account_lock_after_date"
+                    textFieldProps={{
+                      label: t_i18n('Account Expire Date'),
+                      style: fieldSpacingContainerStyle,
+                      variant: 'standard',
+                      fullWidth: true,
+                    }}
                   />
-                )}
+                  <EmailTemplateField
+                    name="email_template_id"
+                    label={t_i18n('Email template')}
+                  />
+                  {hasSetAccess && (
+                    <UserConfidenceLevelField
+                      name="user_confidence_level"
+                      label={t_i18n('Max Confidence Level')}
+                    />
+                  )}
+                </Stack>
                 <FormButtonContainer>
                   <Button
                     variant="secondary"

@@ -1,4 +1,4 @@
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
@@ -13,6 +13,7 @@ import {
   isStreamPublishable,
   LIVE_STREAM_NAME,
   type RawStreamClient,
+  STREAM_FULL_DEBUG_ACTIVATED,
   type StreamProcessor,
   type StreamProcessorOption,
 } from './stream-utils';
@@ -20,6 +21,7 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
+import { logApp } from '../../config/conf';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
 export const initializeStreamStack = async () => {
@@ -32,10 +34,15 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
+    if (STREAM_FULL_DEBUG_ACTIVATED) {
+      logApp.info('Pushing event to stream', { event: eventToPush });
+    }
     const pushToStreamFn = async () => {
       await streamClient.rawPushToStream(eventToPush);
     };
     await telemetry(context, user, 'INSERT STREAM', {
+      [ATTR_DB_NAMESPACE]: 'stream_engine',
+      // Deprecated attribute to be removed when transition done
       [SEMATTRS_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
   }

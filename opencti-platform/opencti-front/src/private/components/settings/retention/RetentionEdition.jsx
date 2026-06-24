@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
@@ -12,7 +9,7 @@ import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
@@ -29,42 +26,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useTheme } from '@mui/material/styles';
-
-const styles = (theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    borderBottom: '1px solid #5c5c5c',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  title: {
-    float: 'left',
-  },
-});
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const retentionMutationFieldPatch = graphql`
     mutation RetentionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
@@ -83,17 +45,23 @@ const RetentionCheckMutation = graphql`
 `;
 
 const RetentionEditionContainer = (props) => {
-  const { classes, open, handleClose, retentionRule } = props;
+  const { open, handleClose, retentionRule } = props;
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit'], retentionRule);
+  const initialValues = {
+    name: retentionRule.name,
+    max_retention: retentionRule.max_retention,
+    retention_unit: retentionRule.retention_unit,
+    active: retentionRule.active,
+  };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
-  const [verified, setVerified] = useState(true);
+  const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
 
   const retentionValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     max_retention: Yup.number().min(1, t_i18n('This field must be >= 1')),
+    active: Yup.boolean(),
   });
 
   const onSubmit = (values, { setSubmitting }) => {
@@ -151,14 +119,16 @@ const RetentionEditionContainer = (props) => {
         validationSchema={retentionValidation}
         onSubmit={onSubmit}
       >
-        {({ isSubmitting, submitForm, values }) => (
+        {({ isSubmitting, submitForm, values: formValues, validateForm, setTouched }) => (
           <Form>
             <Field
               component={TextField}
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              onChange={() => setVerified(false)}
               fullWidth={true}
+              mandatory
             />
             <Field
               component={SelectField}
@@ -167,6 +137,7 @@ const RetentionEditionContainer = (props) => {
               label={t_i18n('Unit')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
+              onChange={() => setVerified(false)}
             >
               <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
               <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
@@ -200,6 +171,20 @@ const RetentionEditionContainer = (props) => {
                 },
               }}
             />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="active"
+              label={t_i18n('Active')}
+              containerstyle={{ marginTop: 20 }}
+            />
+            {retentionRule.scope === 'activity'
+              && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {t_i18n('The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)')}
+                </Alert>
+              )
+            }
             {retentionRule.scope === 'file'
               && (
                 <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
@@ -248,37 +233,35 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
-            <div className={classes.buttons}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
               <Button
                 color="secondary"
-                onClick={() => handleVerify(values)}
+                onClick={async () => {
+                  const errors = await validateForm();
+                  setTouched({ name: true, retention_unit: true, max_retention: true });
+                  if (Object.keys(errors).length === 0) {
+                    handleVerify(formValues);
+                  }
+                }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Verify')}
               </Button>
               <Button
                 color="primary"
                 onClick={submitForm}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: theme.spacing(2) }}
                 disabled={!verified || isSubmitting}
               >
                 {t_i18n('Update')}
               </Button>
-            </div>
+            </Box>
           </Form>
         )}
       </Formik>
     </Drawer>
   );
-};
-
-RetentionEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  retentionRule: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const RetentionEditionFragment = createFragmentContainer(
@@ -292,12 +275,10 @@ const RetentionEditionFragment = createFragmentContainer(
                 max_retention
                 filters
                 scope
+                active
             }
         `,
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(RetentionEditionFragment);
+export default RetentionEditionFragment;

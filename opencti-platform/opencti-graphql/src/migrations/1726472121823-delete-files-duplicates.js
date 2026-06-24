@@ -33,7 +33,7 @@ export const up = async (next) => {
     const finalFilesToDelete = filesToDelete.map((h) => ({ _index: h._index, internal_id: h.internal_id }));
     logApp.info(`Deleting ${finalFilesToDelete.length} files that have duplicates.`);
     // delete the files
-    await elDeleteInstances(finalFilesToDelete);
+    await elDeleteInstances(context, finalFilesToDelete);
   } else {
     logApp.info(`${message} > no multiple indices found for internal objects, no need to run migration`);
   }

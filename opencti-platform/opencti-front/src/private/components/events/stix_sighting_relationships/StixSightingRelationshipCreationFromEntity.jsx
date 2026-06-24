@@ -310,7 +310,7 @@ const StixSightingRelationshipCreationFromEntity = ({
               />
             );
           }
-          return stixCoreObjectTypes.length === 0 ? (
+          return !stixCoreObjectTypes || stixCoreObjectTypes.length === 0 ? (
             renderFakeList()
           ) : (
             <div> &nbsp; </div>

@@ -1,4 +1,4 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
@@ -68,7 +68,11 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     return findStatusPaginated(context, user, args);
   };
   return telemetry(context, user, 'QUERY type statuses', {
+    [ATTR_DB_NAMESPACE]: 'statuses_domain',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
@@ -91,7 +95,11 @@ export const batchRequestAccessStatusesByType = async (context: AuthContext, use
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
+    [ATTR_DB_NAMESPACE]: 'statuses_domain',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
@@ -112,7 +120,11 @@ export const batchGlobalStatusesByType = async (context: AuthContext, user: Auth
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
+    [ATTR_DB_NAMESPACE]: 'statuses_domain',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
@@ -182,7 +194,15 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);
 };
+import { isStatusTemplateUsedInWorkflows } from '../modules/workflow/domain/workflow-domain';
+import { FunctionalError } from '../config/errors';
+
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  const isUsedInWorkflow = await isStatusTemplateUsedInWorkflows(context, user, statusTemplateId);
+  if (isUsedInWorkflow) {
+    throw FunctionalError('Cannot delete a status template that is used in a workflow');
+  }
+
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['template_id'], values: [statusTemplateId] }],

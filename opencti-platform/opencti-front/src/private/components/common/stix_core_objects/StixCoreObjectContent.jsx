@@ -20,10 +20,10 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectContentBar from './StixCoreObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import RichTextEditor from '../../../../components/RichTextEditor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import CKEditor from '../../../../components/CKEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
@@ -463,7 +463,7 @@ class StixCoreObjectContentComponent extends Component {
       .replaceAll(regex, '');
     const fragment = stixCoreObject.name.split('/');
     const currentName = R.last(fragment);
-    await htmlToPdf('content', htmlData, this.props.isTiptapEditorEnable).download(`${currentName}.pdf`);
+    await htmlToPdf('content', htmlData, !this.props.isOldEditorEnable).download(`${currentName}.pdf`);
   }
 
   render() {
@@ -592,7 +592,7 @@ class StixCoreObjectContentComponent extends Component {
                   className={classes.editorContainer}
                   style={{ minHeight: height, height }}
                 >
-                  {this.props.isTiptapEditorEnable ? (
+                  {!this.props.isOldEditorEnable ? (
                     <RichTextEditor
                       data={currentContent ?? ''}
                       onChange={(_, adapter) => {
@@ -960,8 +960,8 @@ const withAttributes = (Component) => {
 
 const withHelperFF = (Component) => {
   const WithHelperFF = (props) => {
-    const { isTiptapEditorEnable } = useHelper();
-    return <Component {...props} isTiptapEditorEnable={isTiptapEditorEnable()} />;
+    const { isOldEditorEnable } = useHelper();
+    return <Component {...props} isOldEditorEnable={isOldEditorEnable()} />;
   };
   WithHelperFF.displayName = `WithHelperFF(${Component.displayName || Component.name || 'Component'})`;
   return WithHelperFF;

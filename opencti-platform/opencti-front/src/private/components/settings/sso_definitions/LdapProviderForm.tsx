@@ -19,6 +19,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
+import { splitAndTrim } from '../../../../utils/String';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -258,11 +259,11 @@ const LdapProviderForm = ({
         group_base: values.group_base,
         group_filter: values.group_filter,
         allow_self_signed: values.allow_self_signed,
-        search_attributes: values.search_attributes ? values.search_attributes.split(',').map((s) => s.trim()).filter(Boolean) : null,
+        search_attributes: values.search_attributes ? splitAndTrim(values.search_attributes) : null,
         username_field: values.username_field || null,
         password_field: values.password_field || null,
         credentials_lookup: values.credentials_lookup || null,
-        group_search_attributes: values.group_search_attributes ? values.group_search_attributes.split(',').map((s) => s.trim()).filter(Boolean) : null,
+        group_search_attributes: values.group_search_attributes ? splitAndTrim(values.group_search_attributes) : null,
         user_info_mapping: {
           email_expr: values.email_expr,
           name_expr: values.name_expr,

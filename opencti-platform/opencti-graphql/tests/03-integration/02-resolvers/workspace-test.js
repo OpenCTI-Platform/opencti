@@ -276,16 +276,10 @@ describe('Workspace resolver standard behavior', () => {
     });
 
     expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
-    expect(queryResult.data.workspaceDuplicate.name).toBe(
-      'Dashboard to duplicate',
-    );
+    expect(queryResult.data.workspaceDuplicate.name).toBe('Dashboard to duplicate');
     expect(queryResult.data.workspaceDuplicate.entity_type).toBe('Workspace');
-    expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(
-      1,
-    );
-    expect(
-      queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right,
-    ).toBe('admin');
+    expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
+    expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: queryResult.data.workspaceDuplicate.id },

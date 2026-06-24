@@ -128,6 +128,7 @@ class RootCourseOfAction extends Component {
                       enableEnrollPlaybook={true}
                     />
                     <StixDomainObjectMain
+                      entity={courseOfAction}
                       basePath={basePath}
                       pages={{
                         overview:

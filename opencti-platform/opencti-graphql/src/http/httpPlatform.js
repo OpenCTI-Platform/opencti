@@ -8,13 +8,13 @@ import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import { marked } from 'marked';
-import archiver from 'archiver';
 import validator from 'validator';
-import archiverZipEncrypted from 'archiver-zip-encrypted';
-import contentDisposition from 'content-disposition';
+import ZipEncrypted from 'archiver-zip-encrypted';
+import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
@@ -32,7 +32,20 @@ import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
-import { getChatbotConfig, getChatbotAgents, postChatbotSession, postChatbotMessage, postAgentMessage, postAgentMessageStream, getLegacyChatbotProxy } from './httpChatbotProxy';
+import {
+  getChatbotConfig,
+  getChatbotAgents,
+  postChatbotSession,
+  getChatbotSessions,
+  deleteChatbotSession,
+  postChatbotMessage,
+  postChatbotMessageSteer,
+  postChatbotUpload,
+  getChatbotFileDownload,
+  postAgentMessage,
+  postAgentMessageStream,
+  getLegacyChatbotProxy,
+} from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
@@ -88,9 +101,22 @@ const publishFileRead = async (executeContext, auth, file) => {
   });
 };
 
+export const decodeStoragePath = (fileParts = []) => fileParts
+  .map((part) => {
+    try {
+      return decodeURIComponent(part);
+    } catch {
+      return part;
+    }
+  })
+  .join('/');
+
 const createApp = async (app, schema) => {
   // Init the http server
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  const defaultTrustedProxies = ['loopback', 'linklocal', 'uniquelocal'];
+  const extraProxies = nconf.get('trust_proxy_addresses') || [];
+  const trustedProxies = [...defaultTrustedProxies, ...extraProxies];
+  app.set('trust proxy', trustedProxies);
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
@@ -106,6 +132,12 @@ const createApp = async (app, schema) => {
     } else {
       defaultSecurityMiddleware(req, res, next);
     }
+  });
+
+  // complement the <meta name="robots" tag in index.html
+  app.use((_req, res, next) => {
+    res.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
+    next();
   });
 
   app.use(compression({
@@ -145,9 +177,6 @@ const createApp = async (app, schema) => {
     }
   });
 
-  // -- Register the encryption module
-  archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
-
   // -- API schema
   app.get(`${basePath}/schema`, async (req, res) => {
     const context = await createAuthenticatedContext(req, res, 'schema_get');
@@ -168,11 +197,11 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
-      const stream = await downloadFile(file);
+      const stream = await downloadFile(data.id);
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
@@ -190,10 +219,10 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
-      res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
+      res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set({ Pragma: 'no-cache' });
@@ -202,7 +231,7 @@ const createApp = async (app, schema) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(file);
+      const stream = await downloadFile(data.id);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
@@ -216,17 +245,27 @@ const createApp = async (app, schema) => {
   const embeddedFileGetPath = new RegExp(`${basePath}/(.*)/(${uuidPattern})/(.*)embedded/(.*)$`, 'i');
   app.get(embeddedFileGetPath, async (req, res) => {
     try {
-      const [_, id, __, filename] = Object.values(req.params);
+      const [_, id, __, rawFilename] = Object.values(req.params);
+
+      // Embedded markdown links can carry percent-encoded filenames (spaces, parentheses, etc.).
+      let filename = rawFilename;
+      try {
+        filename = decodeURIComponent(rawFilename);
+      } catch {
+        // keep raw filename
+      }
+
       const context = await createAuthenticatedContext(req, res, 'storage_view_embedded');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
       const element = await internalLoadById(context, context.user, id);
+
       const file = `embedded/${element.entity_type}/${id}/${filename}`;
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
-      res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
+      res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set({ Pragma: 'no-cache' });
@@ -235,7 +274,8 @@ const createApp = async (app, schema) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(file);
+
+      const stream = await downloadFile(data.id);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
@@ -252,7 +292,7 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
@@ -280,11 +320,11 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
-      const file = req.params.file.join('/');
+      const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
-      const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
+      const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
       archive.append(await downloadFile(file), { name: filename });
       await archive.finalize();
       res.attachment(`${filename}.zip`);
@@ -451,6 +491,12 @@ const createApp = async (app, schema) => {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await sessionAuthenticateUser(context, req, logged, provider);
+      // Check IP whitelist after successful auth
+      const ipBlocked = await checkIpWhitelistForRequest(req, logged.id);
+      if (ipBlocked) {
+        req.session.destroy(() => {});
+        setCookieError(res, 'Your IP address is not allowed to access this platform');
+      }
     } catch (err) {
       if (err instanceof AuthenticationProviderError) {
         setCookieError(res, err.message);
@@ -506,7 +552,12 @@ const createApp = async (app, schema) => {
   // XTM One Platform Chat API routes (used when xtm_one_token is set)
   app.get(`${basePath}/chatbot/agents`, getChatbotAgents);
   app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
+  app.get(`${basePath}/chatbot/sessions`, getChatbotSessions);
+  app.delete(`${basePath}/chatbot/sessions/:conversationId`, deleteChatbotSession);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
+  app.post(`${basePath}/chatbot/messages/steer`, postChatbotMessageSteer);
+  app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
+  app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);
   app.post(`${basePath}/chatbot/agent/stream`, postAgentMessageStream);
   // Legacy Flowise proxy (used when xtm_one_token is NOT set)

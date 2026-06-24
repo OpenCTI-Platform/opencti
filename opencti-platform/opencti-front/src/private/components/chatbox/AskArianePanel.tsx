@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChatPanel, ChatMode } from '@filigran/chatbot';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
-import { APP_BASE_PATH } from '../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 import FiligranIcon from '@components/common/FiligranIcon';
+
+const TOP_BAR_HEIGHT = 64;
 
 interface AskArianePanelProps {
   mode: ChatMode;
@@ -27,14 +31,23 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   onResizeStart,
   onResizeEnd,
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
+  const { me, bannerSettings: { bannerHeightNumber } } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const [xtmOneUrl, setXtmOneUrl] = useState<string | null>(null);
 
-  const topOffset = 64 + settingsMessagesBannerHeight;
+  // Stack all the floating banners that sit above the top bar so the chatbot
+  // panel sticks right under the actual top bar in every configuration.
+  // See `TopBar.tsx` which uses the same sum to offset its toolbar.
+  const topOffset = TOP_BAR_HEIGHT
+    + bannerHeightNumber
+    + topBannerHeight
+    + settingsMessagesBannerHeight;
 
   const firstName = me.user_email?.split('@')[0] ?? 'User';
 
@@ -55,6 +68,30 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
     t_i18n('Show me recent reports'),
     t_i18n('Analyze this indicator'),
   ];
+
+  const draftId = me.draftContext?.id;
+  const requestHeaders = draftId ? { 'opencti-draft-id': draftId } : undefined;
+  const draftBorderColor = draftId
+    ? theme.palette.designSystem.alert.warning.primary
+    : undefined;
+
+  // Forward the user's current in-app location so the agent is always aware
+  // of the page (URI) the question is being asked from. The router uses
+  // `basename={APP_BASE_PATH}`, so `location.pathname` is already
+  // app-relative (e.g. `/dashboard/analyses/reports/<id>/overview`). Only the
+  // pathname is sent — the query string is intentionally omitted because
+  // OpenCTI encodes UI state (filters, view settings, …) there, which would
+  // bloat the payload and could leak more than the agent needs. The shape is
+  // extensible — more context (page title, selected entity, etc.) can be
+  // added here later.
+  const pageContext = { url: location.pathname };
+
+  const handleRelativeLinkClick = (href: string) => {
+    const normalizedHref = APP_BASE_PATH && href.startsWith(APP_BASE_PATH)
+      ? href.slice(APP_BASE_PATH.length) || '/'
+      : href;
+    navigate(normalizedHref);
+  };
 
   useEffect(() => {
     fetch(`${APP_BASE_PATH}/chatbot/config`)
@@ -95,17 +132,33 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       topOffset={topOffset}
       backendType="rest"
       apiBaseUrl={`${APP_BASE_PATH}/chatbot`}
-      apiEndpoints={{ agents: '/agents', messages: '/messages', sessions: '/sessions' }}
+      apiEndpoints={{
+        agents: '/agents',
+        messages: '/messages',
+        // Mid-run steering — must be set explicitly because the chatbot
+        // default ('/chat/messages/steer') assumes XTM One-style paths,
+        // while the OpenCTI proxy exposes '/messages/steer'.
+        steer: '/messages/steer',
+        sessions: '/sessions',
+        upload: '/upload',
+        download: '/files',
+      }}
       user={{ firstName }}
+      disableFileManagement={false}
       t={t_i18n}
       accentColor={accentColor}
       logoIcon={logoIcon}
       agentDashboardUrl={xtmOneUrl || undefined}
       promptSuggestions={promptSuggestions}
+      draftBorderColor={draftBorderColor}
       resizable={mode === 'sidebar'}
       onWidthChange={onWidthChange}
       onResizeStart={onResizeStart}
       onResizeEnd={onResizeEnd}
+      requestHeaders={requestHeaders}
+      pageContext={pageContext}
+      onRelativeLinkClick={handleRelativeLinkClick}
+      onTaskComplete={(_title, body) => MESSAGING$.notifySuccess(body)}
     />,
     container,
   );

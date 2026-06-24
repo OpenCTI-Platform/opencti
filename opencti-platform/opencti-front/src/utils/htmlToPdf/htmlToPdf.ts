@@ -27,9 +27,15 @@ import { dateFormat } from '../Time';
  *
  * @param pdfMakeObject Definition of the PDF to generate.
  * @param checkOrientation True if check content to determine PDF orientation.
+
+ * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF ready to be downloaded.
  */
-const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = false, isTiptapEnabled = false) => {
+const generatePdf = (
+  pdfMakeObject: TDocumentDefinitions,
+  checkOrientation = false,
+  isTiptapEnabled = false,
+) => {
   const docDefinition = { ...pdfMakeObject };
   if (checkOrientation) {
     docDefinition.pageOrientation = determineOrientation(isTiptapEnabled);
@@ -44,9 +50,14 @@ const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = fal
  *
  * @param fileName name of the file to transform.
  * @param content The content of the file.
+ * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF object ready to be downloaded.
  */
-export const htmlToPdf = (fileName: string, content: string, isTiptapEnabled = false) => {
+export const htmlToPdf = (
+  fileName: string,
+  content: string,
+  isTiptapEnabled = false,
+) => {
   let htmlData = removeUnnecessaryHtml(content);
   htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
 
@@ -61,6 +72,11 @@ export const htmlToPdf = (fileName: string, content: string, isTiptapEnabled = f
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
+  pdfMakeObject.images = normalizePdfMakeImageReferences(
+    pdfMakeObject.images,
+    resolvedEntityBaseUrl,
+  );
+
   return generatePdf(pdfMakeObject, false, isTiptapEnabled);
 };
 
@@ -74,6 +90,32 @@ const normalizeEntityBaseUrl = (url: string) =>
 
 const entityBaseUrl = `${window.location.origin}${window.location.pathname}`.replace(/\/$/, '');
 const resolvedEntityBaseUrl = normalizeEntityBaseUrl(entityBaseUrl);
+
+const resolvePdfImageUrl = (rawUrl: string, baseUrl: string) => {
+  if (/^https?:\/\//i.test(rawUrl) || rawUrl.startsWith('data:')) return rawUrl;
+  if (rawUrl.startsWith('//')) return `${window.location.protocol}${rawUrl}`;
+  if (rawUrl.startsWith('/')) return `${window.location.origin}${rawUrl}`;
+  if (rawUrl.startsWith('storage/')) return `${window.location.origin}/${rawUrl}`;
+  if (APP_BASE_PATH && rawUrl.startsWith(APP_BASE_PATH)) {
+    return `${window.location.origin}${rawUrl}`;
+  }
+  return `${baseUrl}/${rawUrl.replace(/^\/+/, '')}`;
+};
+
+const normalizePdfMakeImageReferences = (
+  images: TDocumentDefinitions['images'],
+  baseUrl: string,
+): Record<string, string | ImageDefinition> => {
+  if (!images) return {};
+
+  return Object.fromEntries(
+    Object.entries(images).map(([key, value]) => {
+      const strValue = typeof value === 'string' ? value : null;
+      if (!strValue || strValue.startsWith('embedded/')) return [key, value] as const;
+      return [key, resolvePdfImageUrl(strValue, baseUrl)] as const;
+    }),
+  );
+};
 
 export const resolvePdfMakeEmbeddedImages = async (
   images: TDocumentDefinitions['images'],
@@ -107,6 +149,7 @@ export const resolvePdfMakeEmbeddedImages = async (
  * @param templateName Name of the template used for PDF generation.
  * @param markingNames Markings of the outcome report.
  * @param fintelDesign Design of the template
+ * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdfReport = async (
@@ -163,6 +206,11 @@ export const htmlToPdfReport = async (
       )
     : pdfMakeObject.images;
 
+  const normalizedImages = normalizePdfMakeImageReferences(
+    resolvedImages,
+    resolvedEntityBaseUrl,
+  );
+
   const linearGradiant = [
     fintelDesign?.gradiantFromColor || DARK,
     fintelDesign?.gradiantToColor || DARK_BLUE,
@@ -183,15 +231,13 @@ export const htmlToPdfReport = async (
       fontSize: 12,
     },
     ...pdfMakeObject,
-    images: resolvedImages,
+    images: normalizedImages,
     content: [
       {
         columns: [
-          {
-            image: !isLogoSvg ? logo : undefined,
-            svg: isLogoSvg ? logo : undefined,
-            width: 133,
-          },
+          isLogoSvg
+            ? { svg: logo, width: 133 }
+            : { image: logo, width: 133 },
           {
             text: dateFormat(new Date()) ?? '',
             alignment: 'right',
@@ -225,14 +271,11 @@ export const htmlToPdfReport = async (
           linearGradient: linearGradiant,
         }],
       },
-      {
-        image: !isLogoSvg ? logo : undefined,
-        svg: isLogoSvg ? logo : undefined,
-        width: 133,
-        alignment: 'center',
-        margin: [0, 380, 0, 0],
-      },
-    ],
+      ...(isLogoSvg
+        ? [{ svg: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
+        : [{ image: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
+      ),
+    ] as Content[],
     background: pdfBackground(linearGradiant),
     header: pdfHeader(linearGradiant),
     footer: pdfFooter(markingNames),

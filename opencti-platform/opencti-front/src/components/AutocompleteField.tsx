@@ -47,7 +47,6 @@ const AutocompleteField = <
   ...muiProps
 }: AutocompleteFieldProps<M, Value, DC, FSolo>) => {
   type MuiProps = AutocompleteProps<Value, M, DC, FSolo>;
-
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
@@ -137,6 +136,13 @@ const AutocompleteField = <
       />
     ),
   });
+
+  // When multiple is true, MUI Autocomplete expects value to be an array.
+  // Formik fields may be initialized as null/undefined/empty string, causing
+  // a "value.some is not a function" crash in useAutocomplete.
+  if (fieldProps.multiple && !Array.isArray(fieldProps.value)) {
+    fieldProps.value = (fieldProps.value != null && fieldProps.value !== '' ? [fieldProps.value] : []) as unknown as typeof fieldProps.value;
+  }
 
   return (
     <div style={{ position: 'relative' }}>

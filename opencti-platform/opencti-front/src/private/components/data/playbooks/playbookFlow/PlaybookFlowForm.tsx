@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import Button from '@common/button/Button';
 import OpenVocabField from '@components/common/form/OpenVocabField';
+import ObjectMembersField from '@components/common/form/ObjectMembersField';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
@@ -50,6 +51,7 @@ export type PlaybookFlowFormData
     & {
     // Common for every component
       name: string;
+      description?: string;
       // Component: CRON
       time?: string;
       period?: string;
@@ -63,8 +65,8 @@ interface PlaybookFlowFormProps {
   selectedNode: PlaybookNode | null;
   playbookComponents: PlaybookComponents;
   componentId: string | null;
-  onConfigAdd: (component: unknown, name: string, config: unknown) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown) => void;
+  onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
   handleClose: () => void;
 }
 
@@ -86,6 +88,11 @@ const PlaybookFlowForm = ({
     : emptyFilterGroup,
   );
 
+  const elementsFiltersState = useFiltersState(currentConfig?.applyWithFilters
+    ? deserializeFilterGroupForFrontend(currentConfig.applyWithFilters)
+    : emptyFilterGroup,
+  );
+
   const selectedComponent = playbookComponents.find((c) => c?.id === componentId);
   const configurationSchema = selectedComponent?.configuration_schema
     ? JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema
@@ -93,7 +100,7 @@ const PlaybookFlowForm = ({
 
   // Submit function that formats correctly the data for the backend.
   const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
-    const { name, actionsFormValues, ...config } = values;
+    const { name, description, actionsFormValues, ...config } = values;
     let finalConfig: PlaybookConfig = config;
 
     // Special work in case of filters,
@@ -102,9 +109,13 @@ const PlaybookFlowForm = ({
       const jsonFilters = serializeFilterGroupForBackend(filtersState[0]);
       finalConfig = { ...finalConfig, filters: jsonFilters };
     }
+    if (configurationSchema?.properties?.applyWithFilters) {
+      const jsonFilters = serializeFilterGroupForBackend(elementsFiltersState[0]);
+      finalConfig = { ...finalConfig, applyWithFilters: jsonFilters };
+    }
     // Special work in case of CRON component,
     // (format trigger time to have correct format).
-    if (configurationSchema?.properties?.triggerTime) {
+    if (configurationSchema?.properties?.triggerTime && values.time) {
       // Important to translate to UTC before formatting
       let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
       if (values.period !== 'minute' && values.period !== 'hour' && values.period !== 'day') {
@@ -125,11 +136,13 @@ const PlaybookFlowForm = ({
 
     resetForm();
     if (nodeData?.component?.id && (action === 'config' || action === 'replace')) {
-      onConfigReplace(selectedComponent, name, finalConfig);
+      onConfigReplace(selectedComponent, name, finalConfig, description);
     } else {
-      onConfigAdd(selectedComponent, name, finalConfig);
+      onConfigAdd(selectedComponent, name, finalConfig, description);
     }
   };
+
+  const requiredProperties = configurationSchema?.required ?? [];
 
   const addComponentValidation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
@@ -139,11 +152,13 @@ const PlaybookFlowForm = ({
 
   const initialValues: PlaybookFlowFormData = {
     name: '',
+    description: '',
   };
 
   if (!currentConfig) {
     // Get default values from schema.
     initialValues.name = selectedComponent?.name ?? '';
+    initialValues.description = '';
     Object.entries(configurationSchema?.properties ?? {})
       .forEach(([propName, property]) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -156,6 +171,9 @@ const PlaybookFlowForm = ({
     initialValues.name = nodeData?.component?.id === selectedComponent?.id
       ? nodeData?.name ?? ''
       : selectedComponent?.name ?? '';
+    initialValues.description = nodeData?.component?.id === selectedComponent?.id
+      ? nodeData?.description ?? ''
+      : '';
     const actionsFormValues: PlaybookUpdateAction['value'][] = [];
     Object.entries(currentConfig)
       .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
@@ -168,6 +186,14 @@ const PlaybookFlowForm = ({
         }
         initialValues.actionsFormValues = actionsFormValues;
       });
+    // Ensure applyToElements defaults to 'only-main' for existing configs missing it
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      initialValues.applyToElements = 'only-main';
+    }
   }
 
   // endregion
@@ -195,6 +221,17 @@ const PlaybookFlowForm = ({
                 value={values.name ? t_i18n(values.name) : ''}
                 label={t_i18n('Name')}
                 fullWidth
+                required
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="description"
+                label={t_i18n('Description')}
+                placeholder={t_i18n(selectedComponent?.description ?? '')}
+                fullWidth
+                multiline
+                style={fieldSpacingContainerStyle}
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([propName, property]) => {
@@ -203,6 +240,17 @@ const PlaybookFlowForm = ({
                   }
                   if (propName === 'authorized_members') {
                     return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
+                  }
+                  if (propName === 'run_as') {
+                    return (
+                      <ObjectMembersField
+                        key={propName}
+                        name={propName}
+                        label={t_i18n(property.$ref ?? 'Run as')}
+                        entityTypes={['User']}
+                        style={fieldSpacingContainerStyle}
+                      />
+                    );
                   }
                   if (propName === 'periodicity' || propName === 'duration') {
                     return (
@@ -264,6 +312,16 @@ const PlaybookFlowForm = ({
                       />
                     );
                   }
+                  if (propName === 'applyWithFilters') {
+                    return (
+                      <PlaybookFlowFieldFilters
+                        label={t_i18n('Apply when')}
+                        key={propName}
+                        componentId={componentId}
+                        filtersState={elementsFiltersState}
+                      />
+                    );
+                  }
                   if (propName === 'period') {
                     return <PlaybookFlowFieldPeriod key={propName} />;
                   }
@@ -289,13 +347,8 @@ const PlaybookFlowForm = ({
                   }
                   if (property.type === 'boolean') {
                     let helperText = '';
-                    let disabled = false;
                     if (propName === 'create_rel') {
                       helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
-                    }
-                    // excludeMainElement depends on 'all' being enabled
-                    if (propName === 'excludeMainElement') {
-                      disabled = !values.all;
                     }
                     return (
                       <PlaybookFlowFieldBoolean
@@ -303,7 +356,6 @@ const PlaybookFlowForm = ({
                         name={propName}
                         helperText={helperText}
                         label={t_i18n(property.$ref ?? propName)}
-                        disabled={disabled}
                       />
                     );
                   }
@@ -314,6 +366,7 @@ const PlaybookFlowForm = ({
                         name={propName}
                         label={t_i18n(property.$ref ?? propName)}
                         options={property.oneOf as PlaybookFlowFieldArrayProps['options']}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -328,11 +381,14 @@ const PlaybookFlowForm = ({
                       />
                     );
                   }
+                  const isTextarea = property.format === 'textarea';
                   return (
                     <PlaybookFlowFieldString
                       key={propName}
                       name={propName}
                       label={t_i18n(property.$ref ?? propName)}
+                      multiline={isTextarea}
+                      rows={isTextarea ? 3 : undefined}
                     />
                   );
                 },

@@ -17,6 +17,7 @@ import {
   LockOpenOutlined,
   MergeOutlined,
   MoveToInboxOutlined,
+  PrecisionManufacturingOutlined,
   RestoreOutlined,
   TransformOutlined,
   UnpublishedOutlined,
@@ -73,6 +74,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
+  AUTOMATION,
   BYPASS,
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
@@ -97,6 +99,8 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
+
+import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -195,6 +199,15 @@ const styles = (theme) => ({
   },
   autoCompleteIndicator: {
     display: 'none',
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
+  },
+  noResult: {
+    color: theme.palette.text.primary,
+    fontSize: 15,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
@@ -372,6 +385,7 @@ class DataTableToolBar extends Component {
       displayShare: false,
       displayUnshare: false,
       displayPromote: false,
+      displayEnrollPlaybook: false,
       displaySendEmail: false,
       containerCreation: false,
       organizationCreation: false,
@@ -489,6 +503,26 @@ class DataTableToolBar extends Component {
 
   handleClosePromote() {
     this.setState({ displayPromote: false });
+  }
+
+  handleOpenEnrollPlaybook() {
+    this.setState({ displayEnrollPlaybook: true });
+  }
+
+  handleCloseEnrollPlaybook() {
+    this.setState({ displayEnrollPlaybook: false });
+  }
+
+  handleLaunchEnrollPlaybook(playbookId, playbookName) {
+    const actions = [{
+      type: 'ENROLL_PLAYBOOK',
+      context: { values: [{ id: playbookId, name: playbookName }] },
+    }];
+    const description = `ENROLL IN PLAYBOOK ${playbookName}`;
+    this.setState({ description, actions }, () => {
+      this.handleCloseEnrollPlaybook();
+      this.handleOpenTask();
+    });
   }
 
   handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
@@ -1457,6 +1491,7 @@ class DataTableToolBar extends Component {
     const { t, classes } = this.props;
 
     const { actionsInputs } = this.state;
+
     const selectedField = actionsInputs[i]?.field;
     const disabled = selectedField == null || selectedField === '';
 
@@ -2136,6 +2171,7 @@ class DataTableToolBar extends Component {
       deleteDisable,
       mergeDisable,
       trashOperationsEnabled,
+      disableBulkEnroll,
       removeAuthMembersEnabled,
       removeFromDraftEnabled,
       markAsReadEnabled,
@@ -2163,6 +2199,7 @@ class DataTableToolBar extends Component {
         {({ schema, settings, me }) => {
           const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
           const isInDraft = me.draftContext;
+
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -2524,6 +2561,25 @@ class DataTableToolBar extends Component {
                         </Security>
                       </>
                     )}
+                    {!isInDraft
+                      && (!taskScope || taskScope === 'KNOWLEDGE')
+                      && !disableBulkEnroll
+                      && (
+                        <Security needs={[AUTOMATION]}>
+                          <Tooltip title={t('Enroll in playbook')}>
+                            <span>
+                              <IconButton
+                                aria-label="enroll-playbook"
+                                disabled={numberOfSelectedElements === 0 || this.state.processing}
+                                onClick={this.handleOpenEnrollPlaybook.bind(this)}
+                                size="small"
+                              >
+                                <PrecisionManufacturingOutlined fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Security>
+                      )}
                     {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
                       <Security needs={[deleteCapability]}>
                         <Tooltip title={warningMessage || t('Delete')}>
@@ -3328,6 +3384,16 @@ class DataTableToolBar extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
+              <EnrollPlaybookDrawer
+                open={this.state.displayEnrollPlaybook}
+                onClose={this.handleCloseEnrollPlaybook.bind(this)}
+                onLaunch={this.handleLaunchEnrollPlaybook.bind(this)}
+                entityIds={this.props.selectAll ? undefined : Object.keys(this.props.selectedElements || {})}
+                isSelectAll={this.props.selectAll}
+                filters={this.props.selectAll ? this.props.filters : undefined}
+                search={this.props.selectAll ? this.props.search : undefined}
+                excludedIds={this.props.selectAll ? Object.keys(this.props.deSelectedElements || {}) : undefined}
+              />
             </>
           );
         }}
@@ -3356,6 +3422,7 @@ DataTableToolBar.propTypes = {
   rightOffset: PropTypes.number,
   mergeDisable: PropTypes.bool,
   trashOperationsEnabled: PropTypes.bool,
+  disableBulkEnroll: PropTypes.bool,
   removeAuthMembersEnabled: PropTypes.bool,
   removeFromDraft: PropTypes.bool,
   markAsReadEnabled: PropTypes.bool,

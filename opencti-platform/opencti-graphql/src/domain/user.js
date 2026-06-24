@@ -15,6 +15,7 @@ import conf, {
   logApp,
 } from '../config/conf';
 import { AuthenticationFailure, ConfigurationError, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
@@ -997,7 +998,14 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push(input);
     }
   }
-  const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
+  // Editing the draft context (entering/exiting a draft) is a navigation action performed on the
+  // user's own entity, which is never part of the draft data. It must run outside of any draft
+  // context, otherwise a user who entered a draft they cannot edit would be blocked by the draft
+  // authorized-members access check and would be unable to exit it (see issue #16273).
+  const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
+  const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
+  const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
+  const { element } = await updateAttribute(editContext, editUser, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
@@ -1484,6 +1492,42 @@ export const otpUserDeactivation = async (context, user, id) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
+/**
+ * Checks if the IP whitelist should block this user after successful authentication.
+ * If blocked, throws an AuthenticationFailure with the IP blocked message.
+ * The middleware will block any subsequent requests from this IP.
+ */
+const checkIpWhitelistOnLogin = async (context, loggedUser) => {
+  // Global kill switch via configuration file (app:ip_whitelist_enabled)
+  const ipWhitelistConfEnabled = conf.get('app:ip_whitelist_enabled') ?? true;
+  if (!ipWhitelistConfEnabled) return;
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  if (!settings?.platform_ip_whitelist_enabled) return;
+  const whitelist = settings.platform_ip_whitelist;
+  if (!whitelist || whitelist.length === 0) return;
+
+  const sourceIp = context.req?.ip;
+  if (!sourceIp) return;
+
+  // If IP matches whitelist, allow
+  if (ipMatchesWhitelist(sourceIp, whitelist)) return;
+
+  // Check exclusion list
+  const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
+  if (isNotEmptyField(exclusionIds)) {
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const fullUser = platformUsers.get(loggedUser.id);
+    if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
+      return;
+    }
+  }
+
+  logApp.warn('[IP_WHITELIST] Login rejected for IP', { ip: sourceIp, user_id: loggedUser.id });
+  // Use AuthenticationFailure so the error is handled like a login failure
+  // and properly displayed in the login form
+  throw AuthenticationFailure('Your IP address is not allowed to access this platform');
+};
+
 export const sessionLogin = async (context, input) => {
   // We need to iterate on each provider to find one that validated the credentials
   let loggedUser;
@@ -1509,6 +1553,7 @@ export const sessionLogin = async (context, input) => {
     });
     // As soon as credential is validated, stop looking for another provider
     if (user) {
+      await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
       break;
     }
@@ -1526,6 +1571,7 @@ export const sessionLogin = async (context, input) => {
     });
     // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
     if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
+      await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
     }
   }
@@ -1948,7 +1994,7 @@ export const authenticateUserFromRequest = async (context, req) => {
     // If bearer is a JWT
     if (bearerToken.startsWith(JWT_TOKEN_PREFIX)) {
       try {
-        return authenticateUserByJWT(context, req, bearerToken);
+        return await authenticateUserByJWT(context, req, bearerToken);
       } catch (err) {
         logApp.warn('Error resolving user by JWT', { cause: err });
         return undefined;

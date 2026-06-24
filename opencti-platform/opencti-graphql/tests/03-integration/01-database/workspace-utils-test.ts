@@ -6,7 +6,7 @@ import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { internalFindByIds } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
-import type {BasicStoreBase} from '../../../src/types/store';
+import type { BasicStoreBase } from '../../../src/types/store';
 
 describe('Workspace utils', () => {
   it('should convert widget filters ids', async () => {
@@ -42,7 +42,7 @@ describe('Workspace utils', () => {
             { key: 'objectMarking', values: ['markingId1'] },
           ],
           filterGroups: [],
-        }
+        },
       ],
     };
     const input = [
@@ -57,7 +57,7 @@ describe('Workspace utils', () => {
           filters,
           dynamicFrom: emptyFilterGroup,
         }],
-      }
+      },
     ];
 
     // construct the expected widget input result (filters with internal ids)
@@ -79,7 +79,7 @@ describe('Workspace utils', () => {
             { key: 'objectMarking', values: ['markingId1'] },
           ],
           filterGroups: [],
-        }
+        },
       ],
     };
     const convertedInput = [
@@ -94,7 +94,7 @@ describe('Workspace utils', () => {
           filters: convertedFilters,
           dynamicFrom: emptyFilterGroup,
         }],
-      }
+      },
     ];
     // check the result
     await convertWidgetsIds(testContext, ADMIN_USER, input, 'internal');
@@ -150,7 +150,7 @@ describe('Workspace utils', () => {
           dynamicFrom: emptyFilterGroup,
           dynamicTo: emptyFilterGroup,
         }],
-      }
+      },
     ];
 
     const convertedFilters = {
@@ -192,7 +192,7 @@ describe('Workspace utils', () => {
           dynamicFrom: emptyFilterGroup,
           dynamicTo: emptyFilterGroup,
         }],
-      }
+      },
     ];
 
     await convertWidgetsIds(testContext, ADMIN_USER, input, 'internal');
@@ -237,7 +237,7 @@ describe('Workspace utils', () => {
           dynamicFrom: emptyFilterGroup,
           dynamicTo: emptyFilterGroup,
         }],
-      }
+      },
     ];
 
     const convertedFilters = {
@@ -277,7 +277,7 @@ describe('Workspace utils', () => {
           dynamicFrom: emptyFilterGroup,
           dynamicTo: emptyFilterGroup,
         }],
-      }
+      },
     ];
 
     await convertWidgetsIds(testContext, ADMIN_USER, input, 'internal');

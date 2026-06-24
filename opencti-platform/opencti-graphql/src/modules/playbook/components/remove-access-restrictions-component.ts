@@ -1,41 +1,63 @@
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../../schema/general';
 import { generateInternalType } from '../../../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch } from '../playbook-utils';
+import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import { executionContext } from '../../../utils/access';
 
 export interface RemoveAccessRestrictionsConfiguration {
-  all: boolean;
+  applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
 }
 const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<RemoveAccessRestrictionsConfiguration> = {
   type: 'object',
   properties: {
-    all: { type: 'boolean', $ref: 'Remove access restrictions on all elements included in the bundle', default: false },
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
+    },
   },
-  required: [],
+  required: ['applyToElements'],
 };
 export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<RemoveAccessRestrictionsConfiguration> = {
   id: 'PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT',
   name: 'Remove access restrictions',
-  description: 'Remove advanced access restrictions on entities',
+  description: 'Remove access restrictions to the STIX bundle',
   icon: 'lock-remove',
+  category: 'share_and_access',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { all } = playbookNode.configuration;
+    const context = executionContext('playbook_components');
+    const { applyToElements, applyWithFilters } = playbookNode.configuration;
     const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
-      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && (all || element.id === dataInstanceId)) {
+      const isTypeCompatible = AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType);
+      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
+
+      if (isTypeCompatible && isFilteredElement && isElementInScope) {
         const patchValue = {
           op: EditOperation.Replace,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,

@@ -20,7 +20,7 @@ const WidgetScatter = ({
       ...options,
       theme,
     });
-  }, []);
+  }, [options, theme]);
 
   return (
     <Chart

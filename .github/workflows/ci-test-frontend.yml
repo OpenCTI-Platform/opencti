@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.checkout_ref }}
 
@@ -43,7 +43,7 @@ jobs:
             '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         path: frontend-e2e-test
         ref: ${{ inputs.checkout_ref }}
@@ -99,6 +99,7 @@ jobs:
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
           -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
+          -e APP__SESSION_TIMEOUT=3600000 \
           -e APP__HEALTH_ACCESS_KEY=cihealthkey \
           -e REDIS__HOSTNAME=redis \
           -e REDIS__NAMESPACE=e2e-start \
@@ -161,6 +162,7 @@ jobs:
           -e BACK_END_URL=http://opencti-e2e-start:4100 \
           -e E2E_TEST=true \
           -e TEAMS_WEBHOOK="teams-webhook-url" \
+          -e NODE_OPTIONS=--max_old_space_size=8192 \
           node:22.21.0 \
           sh -c 'set -ex;
               echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
@@ -168,9 +170,10 @@ jobs:
               apt-get -y install netcat-traditional
               cd /home/workspace/opencti-platform/opencti-front
               npm install -g corepack
+              corepack enable
               cp /home/workspace/opencti-platform/.yarnrc.yml .
               yarn install
-              npx playwright install --with-deps chromium
+              yarn playwright install --with-deps chromium
               yarn build
               yarn test:e2e
             '
@@ -215,7 +218,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.checkout_ref }}
 

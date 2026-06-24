@@ -1,4 +1,4 @@
-import { capitalizeFirstLetter, EMPTY_VALUE } from 'src/utils/String';
+import { capitalizeFirstLetter, EMPTY_VALUE } from '../../../utils/String';
 
 interface TextListProps {
   list?: readonly (string | null | undefined)[] | null | undefined;

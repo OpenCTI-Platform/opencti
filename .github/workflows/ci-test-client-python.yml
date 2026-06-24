@@ -9,6 +9,38 @@ on:
         default: ${{ github.sha }}
 
 jobs:
+  ensure-formatting-pycti:
+    runs-on: ubuntu-latest
+    name: pycti formatting check
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        cd client-python
+        pip3 install -r requirements.txt
+        pip3 install -r test-requirements.txt
+
+    - name: Run isort check
+      run: cd client-python && isort --check-only .
+
+    - name: Run black check
+      run: cd client-python && black --check .
+
+    - name: flake8 Lint
+      uses: py-actions/flake8@v2
+      with:
+        ignore: "E,W"
+        path: "client-python"
+
   client-python-test:
     runs-on: ubuntu-latest
     name: pycti test - python ${{ matrix.python-version }}
@@ -18,7 +50,7 @@ jobs:
         python-version: [ "3.10", "3.11", "3.12" ]
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.checkout_ref }}
 
@@ -30,12 +62,6 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: flake8 Lint
-      uses: py-actions/flake8@v2
-      with:
-          ignore: "E,W"
-          path: "/client-python" 
 
     - name: Download image platform
       continue-on-error: true
@@ -80,7 +106,7 @@ jobs:
           '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/client-python/coverage.xml

@@ -232,6 +232,7 @@ const Playbooks: FunctionComponent = () => {
                   <PlaybookCreation />
                 </Security>
               )}
+              hideSavedFilters
             />
           )}
         </>

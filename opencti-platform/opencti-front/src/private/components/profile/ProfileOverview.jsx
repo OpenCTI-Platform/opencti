@@ -31,7 +31,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import NotifierField from '../common/form/NotifierField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
-import DashboardSettings from '../DashboardSettings';
+import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
@@ -206,8 +206,7 @@ const ProfileOverviewComponent = (props) => {
   const { t, me, classes, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
-  const { isPlaygroundEnable, isFeatureEnable } = useHelper();
-  const isXTMHubNewsFeedEnabled = isFeatureEnable('XTMHUB_NEWS_FEED_ENABLED');
+  const { isPlaygroundEnable } = useHelper();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Profile'));
   const objectOrganization = convertOrganizations(me);
@@ -461,23 +460,28 @@ const ProfileOverviewComponent = (props) => {
                 variant="outlined"
                 style={{ margin: '10px 0 0 0' }}
               >
-                {t_i18n('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}
+                {settings.platform_notifier_auto_trigger_assignee
+                  ? t_i18n('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')
+                  : t_i18n('Automatic notifications for assignees and participants have been disabled by your platform administrator')
+                }
               </Alert>
-              <NotifierField
-                label={t('Personal notifiers')}
-                name="personal_notifiers"
-                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
-              />
+              {settings.platform_notifier_auto_trigger_assignee && (
+                <NotifierField
+                  label={t('Personal notifiers')}
+                  name="personal_notifiers"
+                  onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+                />
+              )}
             </Form>
           )}
         </Formik>
       </Card>
       {hasKnowledgeAccess ? (
         <Card title={t('Dashboard settings')}>
-          <DashboardSettings />
+          <HomeDashboardSettings />
         </Card>
       ) : null}
-      {isXTMHubNewsFeedEnabled && settings.xtm_hub_available_news_feed_types?.length > 0 && (
+      {settings.xtm_hub_registration_status === 'registered' && settings.xtm_hub_available_news_feed_types?.length > 0 && (
         <ProfileOverviewNewsFeed
           availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
           unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
@@ -521,38 +525,38 @@ const ProfileOverviewComponent = (props) => {
             validationSchema={passwordValidation(t)}
             onSubmit={handleSubmitPasswords}
           >
-            {({ submitForm, isSubmitting }) => (
+            {({ submitForm, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="current_password"
-                  label={t('Current password')}
-                  type="password"
-                  fullWidth={true}
-                  disabled={external}
-                />
-                <PasswordPolicies />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="password"
-                  label={t('New password')}
-                  type="password"
-                  fullWidth={true}
-                  style={{ marginTop: 16 }}
-                  disabled={external}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="confirmation"
-                  label={t('Confirmation')}
-                  type="password"
-                  fullWidth={true}
-                  style={{ marginTop: 16 }}
-                  disabled={external}
-                />
+                <Stack gap={2}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="current_password"
+                    label={t('Current password')}
+                    type="password"
+                    fullWidth={true}
+                    disabled={external}
+                  />
+                  <PasswordPolicies value={values.password} />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="password"
+                    label={t('New password')}
+                    type="password"
+                    fullWidth={true}
+                    disabled={external}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="confirmation"
+                    label={t('Confirmation')}
+                    type="password"
+                    fullWidth={true}
+                    disabled={external}
+                  />
+                </Stack>
                 <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
                   <Button
                     type="button"
@@ -652,6 +656,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   settings: graphql`
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
+      platform_notifier_auto_trigger_assignee
+      xtm_hub_registration_status
       xtm_hub_available_news_feed_types
     }
   `,

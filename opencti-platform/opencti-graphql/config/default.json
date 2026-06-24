@@ -155,6 +155,7 @@
   "no_proxy": "",
   "https_proxy_ca": [],
   "https_proxy_reject_unauthorized": false,
+  "trust_proxy_addresses": [],
   "relations_deduplication": {
     "past_days": 30,
     "next_days": 30,
@@ -209,6 +210,7 @@
     "model_images": "",
     "max_tokens": 30000,
     "insights_refresh_timeout": 60,
+    "agents_refresh_timeout": 1440,
     "ai_azure_instance": "",
     "ai_azure_deployment": "",
     "timeout": 60000
@@ -288,7 +290,9 @@
   "hub_registration_manager": {
     "enabled": true,
     "lock_key": "hub_registration_manager_lock",
-    "interval": 3600000
+    "interval": 3600000,
+    "news_feed_cleanup_interval_value": 180,
+    "news_feed_cleanup_interval_unit": "days"
   },
   "indicator_decay_manager": {
     "enabled": true,
@@ -319,6 +323,7 @@
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
     "interval": 30000,
+    "uri_deny_list": [],
     "taxii_feed": {
       "limit_per_request": 0
     },

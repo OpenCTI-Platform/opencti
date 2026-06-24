@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import MarkdownDisplay from '../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 import { displayEntityTypeForTranslation } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
 import { useFormatter } from '../../../components/i18n';

@@ -45,6 +45,7 @@ import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -246,7 +247,7 @@ export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_
 
 // Gather all request header that are configured to be added to audit or activity logs.
 export const getRequestAuditHeaders = (req) => {
-  const sourceIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const sourceIp = req.ip;
   const allHeadersRequested = R.mergeAll((auditRequestHeaderToKeep).map((header) => ({ [header]: req.header(header) })));
   return { ...allHeadersRequested, ip: sourceIp };
 };
@@ -592,8 +593,6 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-export const FEATURE_ACTIVITY_HISTORY_RETENTION = 'ACTIVITY_HISTORY_RETENTION';
-
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
@@ -793,6 +792,14 @@ export const BUS_TOPICS = {
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_ADDED_TOPIC`,
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_DELETE_TOPIC`,
+  },
+  [ENTITY_TYPE_NEWS_FEED_ITEM]: {
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NEWS_FEED_ITEM_ADDED_TOPIC`,
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NEWS_FEED_ITEM_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NEWS_FEED_ITEM_DELETE_TOPIC`,
+  },
+  [NEWS_FEED_NUMBER]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC`,
   },
 };
 

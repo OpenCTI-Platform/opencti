@@ -309,11 +309,12 @@ export const redisIsAlive = async () => {
   }
 };
 export const redisInit = async () => {
+  logApp.info('[CHECK] Checking if Redis is available');
   try {
     await initializeRedisClients();
     await redisIsAlive();
     const redisMode: string = conf.get('redis:mode');
-    logApp.info('[REDIS] Clients initialized', { redisMode });
+    logApp.info('[REDIS] Clients initialized, Redis is alive', { redisMode });
     return true;
   } catch {
     throw DatabaseError('Redis seems down');
@@ -480,8 +481,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 
 // region work handling
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
-  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
-  return Promise.all(ids.map((id) => getClientBase().del(id)));
+  return Promise.all(internalIds.map((id) => getClientBase().del(id)));
 };
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
@@ -747,6 +747,13 @@ export const redisGetTelemetry = async (gaugeName: string) => {
 export const redisClearTelemetry = async () => {
   return getClientBase().del(TELEMETRY_EVENT_KEY);
 };
+
+/**
+ * Delete specific gauge entry
+ */
+export const redisClearTelemetryGauge = async (gaugeName: string) => {
+  return getClientBase().hdel(TELEMETRY_EVENT_KEY, gaugeName);
+};
 // endregion - telemetry gauges
 
 // region - manager stream state
@@ -839,3 +846,77 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
     logApp.error('Failed to delete auth log history from Redis', { cause: err });
   }
 };
+
+// region - XTM One registration result
+const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';
+
+export const redisSetXtmRegistrationResult = async (result: object, ttlSeconds: number) => {
+  await getClientBase().set(XTM_REGISTRATION_RESULT_KEY, JSON.stringify(result), 'EX', ttlSeconds);
+};
+
+export const redisGetXtmRegistrationResult = async (): Promise<object | null> => {
+  const raw = await getClientBase().get(XTM_REGISTRATION_RESULT_KEY);
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    logApp.error('[XTM One] Registration result in Redis could not be parsed', { raw });
+    return null;
+  }
+};
+// endregion - XTM One registration result
+
+// region - XTM agent response cache
+// Caches the full content returned by an XTM One agent stream call so that
+// reopening AI Insights for the same entity within the TTL window returns
+// instantly instead of re-running an expensive agent execution.
+const XTM_AGENT_CACHE_KEY_PREFIX = 'xtm_agent_cache:';
+
+export interface XtmAgentCachedResponse {
+  content: string;
+  cached_at: string;
+}
+
+const isXtmAgentCachedResponse = (value: unknown): value is XtmAgentCachedResponse => {
+  return !!value
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && typeof (value as XtmAgentCachedResponse).content === 'string'
+    && typeof (value as XtmAgentCachedResponse).cached_at === 'string';
+};
+
+export const redisGetXtmAgentResponse = async (cacheKey: string): Promise<XtmAgentCachedResponse | null> => {
+  try {
+    const raw = await getClientBase().get(`${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Defensive shape check — Redis can hold any JSON the writer puts in
+    // (legacy entries, manual edits, attacker-set keys), so refuse to
+    // replay anything that isn't a `{ content: string, cached_at: string }`
+    // object instead of letting the consumer emit a `done` SSE event with
+    // `content: undefined`.
+    if (!isXtmAgentCachedResponse(parsed)) {
+      logApp.warn('[XTM One] Agent response cache payload has unexpected shape, ignoring', { cacheKey });
+      return null;
+    }
+    return parsed;
+  } catch (err) {
+    logApp.warn('[XTM One] Agent response cache read failed', { cause: err });
+    return null;
+  }
+};
+
+export const redisSetXtmAgentResponse = async (cacheKey: string, content: string, ttlSeconds: number): Promise<void> => {
+  if (ttlSeconds <= 0) return;
+  try {
+    const value: XtmAgentCachedResponse = { content, cached_at: new Date().toISOString() };
+    await getClientBase().set(
+      `${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`,
+      JSON.stringify(value),
+      'EX',
+      ttlSeconds,
+    );
+  } catch (err) {
+    logApp.warn('[XTM One] Agent response cache write failed', { cause: err });
+  }
+};
+// endregion - XTM agent response cache

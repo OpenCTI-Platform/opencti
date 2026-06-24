@@ -1,12 +1,13 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
+import ipaddr from 'ipaddr.js';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -21,6 +22,8 @@ import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
+import { CguStatus } from '../generated/graphql';
+import { getXtmOneRegistrationVersion } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -31,11 +34,14 @@ export const getApplicationInfo = () => ({
   debugStats: {}, // Lazy loaded
 });
 
-export const getApplicationDependencies = (context) => ([
-  { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
-  { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
-  { name: 'Redis', version: getRedisVersion() },
-]);
+export const getApplicationDependencies = async (context) => {
+  return [
+    { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
+    { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
+    { name: 'Redis', version: getRedisVersion() },
+    { name: 'XTM-One', version: getXtmOneRegistrationVersion() }, // Do not change this, client relies on the name to activate feature
+  ];
+};
 
 const getAIEndpointType = () => {
   if (isEmptyField(nconf.get('ai:endpoint'))) {
@@ -182,6 +188,30 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
 const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'filigran_chatbot_ai_cgu_status',
   'platform_ai_enabled',
+  'platform_title',
+  'platform_favicon',
+  'platform_email',
+  'platform_language',
+  'platform_whitemark',
+  'platform_login_message',
+  'platform_banner_text',
+  'platform_banner_level',
+  'platform_consent_message',
+  'platform_consent_confirm_text',
+  'platform_no_access_message',
+  'platform_map_tile_server_dark',
+  'platform_map_tile_server_light',
+  'platform_session_idle_timeout',
+  'platform_session_timeout',
+  'platform_session_max_concurrent',
+  'analytics_google_analytics_v4',
+  'enterprise_license',
+  'platform_trash_enabled',
+  'platform_reference_attachment',
+];
+
+const CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS = [
+  'platform_notifier_auto_trigger_assignee',
 ];
 
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
@@ -199,10 +229,12 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const hasSetParameterCapability = isUserHasCapability(user, SETTINGS_SETPARAMETERS);
+  const hasSetCustomizationCapability = isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
   const keysUserCannotModify = [
     ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetParameterCapability ? [] : PARAMETERS_SETTINGS_RESTRICTED_KEYS),
+    ...(hasSetCustomizationCapability ? [] : CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
   ];
 
@@ -223,6 +255,34 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       }
     }
   }
+  const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
+  if (cguStatus && cguStatus.value) {
+    const validStatuses = Object.values(CguStatus);
+    if (!Array.isArray(cguStatus.value) || cguStatus.value.length > 1 || !validStatuses.includes(cguStatus.value[0])) {
+      throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
+    }
+  }
+
+  const ipWhitelist = data.find((inputData) => inputData.key === 'platform_ip_whitelist');
+  if (ipWhitelist && Array.isArray(ipWhitelist.value) && ipWhitelist.value.length > 0) {
+    const invalidEntries = ipWhitelist.value.filter((entry) => {
+      if (typeof entry !== 'string' || entry.trim() === '') return true;
+      try {
+        if (entry.includes('/')) {
+          ipaddr.parseCIDR(entry.trim());
+        } else {
+          ipaddr.parse(entry.trim());
+        }
+        return false;
+      } catch {
+        return true;
+      }
+    });
+    if (invalidEntries.length > 0) {
+      throw UnsupportedError(`Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`);
+    }
+  }
+
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
   await publishUserAction({
     user,

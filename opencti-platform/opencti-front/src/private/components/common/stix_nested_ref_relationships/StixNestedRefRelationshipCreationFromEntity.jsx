@@ -31,7 +31,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import Drawer from '../drawer/Drawer';
 
@@ -486,7 +486,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const renderSelectEntity = () => {
     const searchPaginationOptions = {
       search: searchTerm,
-      filters: removeIdFromFilterGroupObject(filters),
+      filters: normalizeFilterGroupForBackend(filters),
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       types: targetStixCoreObjectTypes,

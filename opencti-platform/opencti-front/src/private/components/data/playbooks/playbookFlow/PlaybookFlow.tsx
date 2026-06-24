@@ -13,8 +13,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { useEffect } from 'react';
 import ReactFlow from 'reactflow';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, useFragment, useRefetchableFragment } from 'react-relay';
 import PlaybookFlowAddComponents from './PlaybookFlowAddComponents';
 import PlaybookFlowDeleteNode from './PlaybookFlowDeleteNode';
 import useManipulateComponents from '../hooks/useManipulateComponents';
@@ -37,12 +38,14 @@ const playbookFragment = graphql`
 `;
 
 const playbookComponentsFragment = graphql`
-  fragment PlaybookFlow_playbookComponents on Query {
+  fragment PlaybookFlow_playbookComponents on Query
+  @refetchable(queryName: "PlaybookFlowComponentsRefetchQuery") {
     playbookComponents {
       id
       name
       description
       icon
+      category
       is_entry_point
       is_internal
       configuration_schema
@@ -61,7 +64,10 @@ interface PlaybookFlowProps {
 
 const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProps) => {
   const playbook = useFragment(playbookFragment, dataPlaybook);
-  const { playbookComponents } = useFragment(playbookComponentsFragment, dataPlaybookComponents);
+  const [{ playbookComponents }, refetchComponents] = useRefetchableFragment(
+    playbookComponentsFragment,
+    dataPlaybookComponents,
+  );
   const definition = JSON.parse(playbook.playbook_definition || '{}');
 
   const {
@@ -75,6 +81,21 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
     onConfigReplace,
     deleteNode,
   } = useManipulateComponents(playbook);
+
+  // Some components (the XTM One AI agent nodes) expose a dynamic agent
+  // picker whose options are resolved live from the XTM One intent catalog
+  // when the `playbookComponents` query executes. That query is preloaded
+  // once when the playbook opens, so an agent bound to an intent afterwards
+  // would only show up after a full page reload. Refetch the component
+  // catalog whenever the add / replace / configure drawer opens so newly
+  // bound agents appear without reloading.
+  const isComponentDrawerOpen = (action === 'add' || action === 'replace' || action === 'config')
+    && (selectedNode !== null || selectedEdge !== null);
+  useEffect(() => {
+    if (isComponentDrawerOpen) {
+      refetchComponents({}, { fetchPolicy: 'store-and-network' });
+    }
+  }, [isComponentDrawerOpen, refetchComponents]);
 
   const initialNodes = computeNodes(
     definition.nodes ?? [],

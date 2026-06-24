@@ -64,7 +64,7 @@ export const up = async (next) => {
   let currentProcessing = 0;
   const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
   const concurrentUpdate = async (bulk) => {
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
+    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
     logApp.info(`[OPENCTI] Migrating reports ${currentProcessing} / ${bulkOperations.length}`);
   };

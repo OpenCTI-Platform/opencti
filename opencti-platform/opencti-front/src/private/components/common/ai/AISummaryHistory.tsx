@@ -108,9 +108,6 @@ const LegacyAISummaryHistory = ({ id, loading, setLoading }: AISummaryHistoryPro
     }),
     [busId],
   );
-    // TODO: Check by the engineering team
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
   useSubscription(subConfig);
 
   // Query
@@ -177,12 +174,12 @@ const XtmOneHistory = ({ id, loading, setLoading, selectedAgent }: XtmOneHistory
     setLoading(streamLoading);
   }, [streamLoading, setLoading]);
 
-  const executeCall = useCallback(() => {
+  const executeCall = useCallback((forceRefresh = false) => {
     if (!selectedAgent) return;
     const prompt = `Summarize the internal history (audit logs, modifications) of the OpenCTI entity with ID: ${id}. `
       + 'Provide a chronological summary of significant changes.'
       + `Answer using ${language} language.`;
-    execute(selectedAgent.slug, prompt);
+    execute(selectedAgent.slug, prompt, forceRefresh);
   }, [selectedAgent, id, language, execute]);
 
   useEffect(() => {
@@ -201,7 +198,7 @@ const XtmOneHistory = ({ id, loading, setLoading, selectedAgent }: XtmOneHistory
       loading={loading}
       content={content}
       generatedAt={generatedAt}
-      onRetry={executeCall}
+      onRetry={() => executeCall(true)}
     />
   );
 };

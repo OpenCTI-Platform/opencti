@@ -297,18 +297,19 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
           <Field
             component={DateTimePickerField}
             name="created"
-            required={(mandatoryAttributes.includes('created'))}
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
+            onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Request for takedown date'),
               variant: 'standard',
+              required: (mandatoryAttributes.includes('created')),
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created" />
               ),
             }}
+            containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
             label={t_i18n('Request for takedown types')}
@@ -365,6 +366,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={caseData.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

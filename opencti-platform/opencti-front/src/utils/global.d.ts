@@ -22,3 +22,8 @@ declare module 'use-analytics' {
 }
 
 declare module '@analytics/google-analytics' ;
+
+declare module '*.css' {
+  const content: Record<string, string>;
+  export default content;
+}

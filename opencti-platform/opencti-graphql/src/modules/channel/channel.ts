@@ -1,4 +1,4 @@
-import { convertChannelToStix_2_1 } from './channel-converter';
+import { convertChannelToStix_2_0, convertChannelToStix_2_1 } from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import {
   RELATION_AMPLIFIES,
@@ -26,7 +26,7 @@ import {
   ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
-import { ENTITY_TYPE_CHANNEL, type StixChannel, type StoreEntityChannel } from './channel-types';
+import { ENTITY_TYPE_CHANNEL, type Stix2Channel, type StixChannel, type StoreEntityChannel } from './channel-types';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
@@ -46,7 +46,7 @@ import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
-export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
+export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel, Stix2Channel> = {
   type: {
     id: 'channels',
     name: ENTITY_TYPE_CHANNEL,
@@ -158,6 +158,7 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
     return stix.name;
   },
   converter_2_1: convertChannelToStix_2_1,
+  converter_2_0: convertChannelToStix_2_0,
 };
 
 registerDefinition(CHANNEL_DEFINITION);

@@ -1,7 +1,3 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
@@ -73,8 +69,6 @@ const CountryKnowledgeComponent = ({
               entityId={country.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
-              defaultStartTime={country.startTime}
-              defaultStopTime={country.stopTime}
               allDirections
             />
           )}
@@ -291,7 +285,6 @@ const CountryKnowledgeComponent = ({
             <EntityStixSightingRelationships
               entityId={country.id}
               entityLink={link}
-              noRightBar={true}
               isTo={true}
             />
           )}

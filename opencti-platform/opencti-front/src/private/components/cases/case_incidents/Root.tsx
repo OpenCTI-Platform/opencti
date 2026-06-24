@@ -1,10 +1,7 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useLocation, useParams } from 'react-router-dom';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
@@ -20,7 +17,6 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 import CaseIncident from './CaseIncident';
 import IncidentKnowledge from './IncidentKnowledge';
-import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -31,6 +27,7 @@ import CaseIncidentEdition from './CaseIncidentEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseIncidentDeletion from './CaseIncidentDeletion';
 import { PATH_CASE_INCIDENT, PATH_CASE_INCIDENTS } from '@components/common/routes/paths';
+import type { IncidentKnowledge_case$data } from './__generated__/IncidentKnowledge_case.graphql';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -93,7 +90,12 @@ const caseIncidentQuery = graphql`
   }
 `;
 
-const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
+interface RootCaseIncidentComponentProps {
+  queryRef: PreloadedQuery<RootIncidentCaseQuery>;
+  caseId: string;
+}
+
+const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentComponentProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
     () => ({
       subscription,
@@ -117,6 +119,10 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
+  const IncidentKnowledgeComponent = IncidentKnowledge as React.ComponentType<{
+    caseData: FragmentRef<IncidentKnowledge_case$data>;
+    enableReferences: boolean;
+  }>;
   return (
     <div style={{ paddingRight }} data-testid="incident-details-page">
       <Breadcrumbs elements={[
@@ -143,11 +149,12 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         enableEnricher={true}
       />
       <StixDomainObjectMain
+        entity={caseData}
         basePath={basePath}
         pages={{
           overview: <CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />,
           knowledge: (
-            <IncidentKnowledge
+            <IncidentKnowledgeComponent
               caseData={caseData}
               enableReferences={enableReferences}
             />
@@ -193,8 +200,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
 };
 
 const Root = () => {
-  const { caseId } = useParams();
-  const queryRef = useQueryLoading<RootIncidentQuery>(caseIncidentQuery, {
+  const { caseId } = useParams() as { caseId: string };
+  const queryRef = useQueryLoading<RootIncidentCaseQuery>(caseIncidentQuery, {
     id: caseId,
   });
   return (

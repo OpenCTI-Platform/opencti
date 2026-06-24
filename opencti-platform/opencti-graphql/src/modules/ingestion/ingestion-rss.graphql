@@ -18,6 +18,7 @@ type IngestionRss implements InternalObject & BasicObject {
     current_state_date: DateTime
     last_execution_date: DateTime
     ingestion_running: Boolean
+    ssl_verify: Boolean
     toConfigurationExport: String!
 }
 enum IngestionRssOrdering {
@@ -83,6 +84,7 @@ input IngestionRssAddInput {
     created_by_ref: String
     object_marking_refs: [String]
     report_types: [String!]
+    ssl_verify: Boolean
 }
 
 input IngestionRssAddAutoUserInput {

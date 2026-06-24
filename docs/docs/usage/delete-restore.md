@@ -3,7 +3,7 @@
 Knowledge can be deleted from OpenCTI either in an overview of an object or using [background tasks](background-tasks.md).
 When an object is deleted, all its relationships and references to other objects are also deleted. 
 
-The deletion event is written to the [stream](../reference/streaming.md), to trigger automated [playbooks](./automation.md) or synchronize another platform.
+The deletion event is written to the [stream](../reference/streaming.md), to trigger automated [playbooks](./playbook-automation.md) or synchronize another platform.
 
 Since OpenCTI 6.1, a record of the deleted objects is kept for a given period of a time, allowing to restore them on demand. This does not impact the stream events or other side effect of the deletion: the object is still _deleted_.
 
@@ -42,7 +42,7 @@ From the Trash panel, it is also possible to delete permanently the object, its 
 
 ## Trash retention
 
-Deleted objects are kept in trash during a fixed period of time (7 days by default), then they are permanently deleted by the [trash manager](../deployment/managers.md#trash-manager).
+Deleted objects are kept in trash during a fixed period of time (7 days by default), then they are permanently deleted by the [trash manager](../deployment/advanced/managers.md#trash-manager).
 
 ## Configuration
 
@@ -74,4 +74,3 @@ Please also note that attempting to restore a deeply nested object (for instance
 
     The trash system is designed to save some precious time when a user deleted knowledge from the platform by mistake.
     It is not meant to be a complete backup system for your database.
-  

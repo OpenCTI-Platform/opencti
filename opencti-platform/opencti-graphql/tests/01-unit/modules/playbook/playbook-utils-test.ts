@@ -1,0 +1,567 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as stixFiltering from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
+import { FilterMode } from '../../../../src/generated/graphql';
+import {
+  filterBundleElements,
+  isBundleElementMatchFilters,
+  convertMembersToUsersFromElements,
+  MINIMAL_COMPATIBLE_SCOPE_VERSION,
+  updateImportedPlaybookDefinitionScope,
+} from '../../../../src/modules/playbook/playbook-utils';
+import { testContext } from '../../../utils/testQuery';
+import type { StixObject } from '../../../../src/types/stix-2-1-common';
+import * as cache from '../../../../src/database/cache';
+import type { AuthUser } from '../../../../src/types/user';
+import { convertMembersToUsers, extractBundleBaseElement } from '../../../../src/modules/playbook/playbook-utils';
+import type { StixBundle, StixDomainObject } from '../../../../src/types/stix-2-1-common';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
+import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+
+describe('Playbook utils unit tests', () => {
+  const matchingFilter = JSON.stringify({
+    filterGroups: [],
+    filters: [],
+    mode: FilterMode.And,
+  });
+  const nonMatchingFilter = JSON.stringify({
+    filterGroups: [],
+    filters: [],
+    mode: FilterMode.Or,
+  });
+  const stixElement1 = { id: 'malware--345243' } as unknown as StixObject;
+  const stixElement2 = { id: 'campaign--2348746' } as unknown as StixObject;
+  const stixElements = [stixElement1, stixElement2];
+  const platformUsersWithGroupsAndOrganizations = [
+    {
+      _id: 'id-1',
+      id: 'id-1',
+      name: 'user-with-correct-member-id@opencti.io',
+      groups: [],
+      organizations: [],
+    },
+    {
+      _id: 'id-2',
+      id: 'id-2',
+      name: 'user-with-correct-group@opencti.io',
+      groups: [
+        {
+          _index: 'test_internal_objects-000001',
+          _id: 'id-3',
+          id: 'id-3',
+          sort: [1761291916492],
+          standard_id: 'group--id-4',
+          internal_id: 'id-3',
+          parent_types: ['Basic-Object', 'Internal-Object'],
+          no_creators: false,
+          confidence: 100,
+          description: 'GROUP 1',
+          created_at: '2025-10-24T07:45:16.492Z',
+          auto_new_marking: false,
+          restrict_delete: false,
+          entity_type: 'Group',
+          base_type: 'ENTITY',
+          group_confidence_level: { max_confidence: 100, overrides: [] },
+          updated_at: '2025-10-24T07:45:16.492Z',
+          refreshed_at: '2025-10-24T07:45:31.781Z',
+          name: 'GROUP 1',
+
+          default_assignation: true,
+        },
+        {
+          _index: 'test_internal_objects-000001',
+          _id: 'id-5',
+          id: 'id-5',
+          sort: [1761291930468],
+          standard_id: 'group--913fd3d5-fc8a-5835-8a30-392631282820',
+          internal_id: 'id-5',
+          parent_types: ['Basic-Object', 'Internal-Object'],
+          no_creators: false,
+          confidence: 100,
+          created_at: '2025-10-24T07:45:30.468Z',
+          auto_new_marking: false,
+          restrict_delete: false,
+          entity_type: 'Group',
+          base_type: 'ENTITY',
+          group_confidence_level: { max_confidence: 100, overrides: [] },
+          updated_at: '2025-10-24T07:45:30.468Z',
+          refreshed_at: '2025-10-24T07:45:30.715Z',
+          name: 'GROUP 2',
+
+          default_assignation: false,
+        },
+      ],
+      organizations: [],
+    },
+    {
+      _id: 'id-2',
+      id: 'id-2',
+      name: 'user-with-correct-organization@opencti.io',
+      groups: [],
+      organizations: [
+        {
+          _index: 'test_stix_domain_objects-000001',
+          _id: 'id-6',
+          id: 'id-6',
+          sort: [1761291927301],
+          standard_id: 'identity--id-7',
+          identity_class: 'organization',
+          internal_id: 'id-6',
+          parent_types: [
+            'Basic-Object',
+            'Stix-Object',
+            'Stix-Core-Object',
+            'Stix-Domain-Object',
+            'Identity',
+          ],
+          created: '2025-10-24T07:45:27.301Z',
+          confidence: 100,
+          created_at: '2025-10-24T07:45:27.301Z',
+          revoked: false,
+          entity_type: 'Organization',
+          base_type: 'ENTITY',
+          updated_at: '2025-10-24T07:45:27.301Z',
+          refreshed_at: '2025-10-24T07:45:30.870Z',
+          name: 'PlatformOrganization',
+
+          modified: '2025-10-24T07:45:27.301Z',
+          i_aliases_ids: [],
+          x_opencti_stix_ids: [],
+          lang: 'en',
+          'rel_participate-to.internal_id.keyword': [
+            'id-8',
+            'id-2',
+          ],
+          'participate-to': [
+            'id-8',
+            'id-2',
+          ],
+        },
+      ],
+    },
+    {
+      _id: 'id-9',
+      id: 'id-9',
+      name: 'user-author@opencti.io',
+      groups: [],
+      organizations: [],
+    },
+    {
+      _id: 'id-10',
+      id: 'id-10',
+      name: 'user-creator@opencti.io',
+      groups: [],
+      organizations: [],
+    },
+    {
+      _id: 'id-11',
+      id: 'id-11',
+      name: 'user-assignee@opencti.io',
+      groups: [],
+      organizations: [],
+    },
+    {
+      _id: 'id-12',
+      id: 'id-12',
+      name: 'user-participant@opencti.io',
+      groups: [],
+      organizations: [],
+    },
+    {
+      _id: 'id-bundle-organizations',
+      id: 'id-bundle-organizations',
+      name: 'user-bundle-organization@opencti.io',
+      groups: [],
+      organizations: [],
+    },
+  ] as unknown as AuthUser[];
+
+  beforeEach(() => {
+    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup')
+      .mockImplementation(async (_, __, ___, filterGroup) => {
+        return filterGroup?.mode === FilterMode.And;
+      });
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockImplementation(async () => {
+      return platformUsersWithGroupsAndOrganizations;
+    });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Function: isBundleElementMatchFilters()', () => {
+    it('should return true if matching filter', async () => {
+      const result = await isBundleElementMatchFilters(
+        testContext,
+        stixElement1,
+        matchingFilter,
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should return false if non matching filter', async () => {
+      const result = await isBundleElementMatchFilters(
+        testContext,
+        stixElement1,
+        nonMatchingFilter,
+      );
+      expect(result).toBe(false);
+    });
+
+    it('should return true if no filters given', async () => {
+      const result = await isBundleElementMatchFilters(
+        testContext,
+        stixElement1,
+        '',
+      );
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('Function: filterBundleElements()', () => {
+    it('should return full bundle if no filters', async () => {
+      const result = await filterBundleElements(
+        testContext,
+        stixElements,
+        '',
+      );
+      expect(result.length).toBe(2);
+    });
+
+    it('should return full bundle if matching filters', async () => {
+      const result = await filterBundleElements(
+        testContext,
+        stixElements,
+        matchingFilter,
+      );
+      expect(result.length).toBe(2);
+    });
+
+    it('should return empty bundle if non matching filters', async () => {
+      const result = await filterBundleElements(
+        testContext,
+        stixElements,
+        nonMatchingFilter,
+      );
+      expect(result.length).toBe(0);
+    });
+  });
+
+  describe('Function: extractBundleBaseElement()', () => {
+    const testBundle: StixBundle = {
+      id: 'id-13',
+      spec_version: '2.1',
+      type: 'bundle',
+      objects: [
+        {
+          id: 'malware--id-14',
+          spec_version: '2.1',
+          type: 'malware',
+        } as unknown as StixDomainObject,
+      ],
+    };
+
+    it('should throw an error if the data is not found in bundle', () => {
+      const call = () => extractBundleBaseElement('not-present-id', testBundle);
+      expect(call).toThrowError('Playbook base element no longer accessible');
+    });
+
+    it('should return data for the given ID', () => {
+      const data = extractBundleBaseElement(
+        'malware--id-14',
+        testBundle,
+      );
+      expect(data).toEqual({
+        id: 'malware--id-14',
+        spec_version: '2.1',
+        type: 'malware',
+      });
+    });
+  });
+
+  describe('Function: convertMembersToUsers()', () => {
+    const testBundle: StixBundle = {
+      id: 'id-13',
+      spec_version: '2.1',
+      type: 'bundle',
+      objects: [
+        {
+          id: 'malware--id-14',
+          spec_version: '2.1',
+          type: 'malware',
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              created_by_ref_id: 'id-9',
+              creator_ids: [
+                'id-10',
+                'id-15',
+              ],
+              assignee_ids: [
+                'id-11',
+              ],
+              participant_ids: [
+                'id-12',
+                'id-10',
+              ],
+              type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+              id: 'id-bundle-organizations',
+            },
+          },
+        } as unknown as StixDomainObject,
+      ],
+    };
+    const baseData = testBundle.objects[0];
+
+    it('should return an empty array if members is empty', async () => {
+      expect(await convertMembersToUsers([], baseData, testBundle)).toEqual([]);
+    });
+
+    it('should return users directly set in members array', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        // ID of user with correct member id.
+        { value: 'id-1' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-with-correct-member-id@opencti.io']);
+    });
+
+    it('should return users from a group set in members array', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        // ID of group GROUP 1.
+        { value: 'id-3' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-with-correct-group@opencti.io']);
+    });
+
+    it('should return users from an organization set in members array', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        // ID of organization PlatformOrganization.
+        { value: 'id-6' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-with-correct-organization@opencti.io']);
+    });
+
+    it('should replace dynamic key AUTHOR by the correct user', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        { value: 'AUTHOR' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-author@opencti.io']);
+    });
+
+    it('should replace dynamic key CREATORS by the correct users', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        { value: 'CREATORS' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-creator@opencti.io']);
+    });
+
+    it('should replace dynamic key ASSIGNEES by the correct users', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        { value: 'ASSIGNEES' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-assignee@opencti.io']);
+    });
+
+    it('should replace dynamic key PARTICIPANTS by the correct users', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        { value: 'PARTICIPANTS' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-creator@opencti.io', 'user-participant@opencti.io']);
+    });
+
+    it('should replace dynamic key BUNDLE_ORGANIZATIONS by the correct users', async () => {
+      const members = [
+        { value: 'invalid_id' },
+        { value: 'BUNDLE_ORGANIZATIONS' },
+      ];
+      const users = await convertMembersToUsers(members, baseData, testBundle);
+      const usersNames = users.map((u) => u.name);
+      expect(usersNames).toEqual(['user-bundle-organization@opencti.io']);
+    });
+  });
+
+  describe('Function: updateImportedPlaybookDefinitionScope()', () => {
+    describe('with version older than MINIMAL_COMPATIBLE_SCOPE_VERSION', () => {
+      const oldVersionMock = '6.9.0';
+
+      it('should not update a component not listed in the listOfScopedPlaybookComponents even if all key is defined', () => {
+        const PLAYBOOK_DEFINITION_OUT_OF_LIST = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Manipulate knowledge","position":{"x":-100,"y":300},"component_id":"RANDOM_PLAYBOOK_COMPONENT","configuration":"{\\"actions\\":[],\\"all\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_OUT_OF_LIST, oldVersionMock);
+
+        expect(result).toEqual(PLAYBOOK_DEFINITION_OUT_OF_LIST);
+      });
+
+      describe('When component is in the list of updated components', () => {
+        it('should keep the applyToElements value if defined and remove all and excludeMainElement keys if defined', () => {
+          const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+          const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+          const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+          expect(result).toEqual(expectedResult);
+        });
+
+        describe('When component has not applyToElements defined', () => {
+          it('should return applyToElements = all-except-main if all and excludeMainElement are true', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-except-main\\"}"}],"links":[]}';
+
+            expect(result).toEqual(expectedResult);
+          });
+
+          it('should return applyToElements = all-elements if all is true and excludeMainElement is false', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":false,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-elements\\"}"}],"links":[]}';
+
+            expect(result).toEqual(expectedResult);
+          });
+
+          it('should return applyToElements = only-main if all is false', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+
+            expect(result).toEqual(expectedResult);
+          });
+
+          it('should return applyToElements = only-main if all is not defined', () => {
+            const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+            const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, oldVersionMock);
+            const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"only-main\\"}"}],"links":[]}';
+
+            expect(result).toEqual(expectedResult);
+          });
+        });
+      });
+    });
+
+    describe('with version newer than MINIMAL_COMPATIBLE_SCOPE_VERSION', () => {
+      const recentVersionMock = '8.260428.0';
+
+      it('should not change playbook definition even if playbook is in the list and all and excludeMainElement are defined', () => {
+        const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyToElements\\":\\"only-main\\",\\"all\\":false,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, recentVersionMock);
+
+        expect(result).toEqual(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS);
+      });
+    });
+
+    describe('with version equals to MINIMAL_COMPATIBLE_SCOPE_VERSION and component is in the list of updated components', () => {
+      const sameVersionMock = MINIMAL_COMPATIBLE_SCOPE_VERSION;
+
+      it('should return applyToElements = all-except-main if all and excludeMainElement are true', () => {
+        const PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"all\\":true,\\"excludeMainElement\\":true,\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\"}"}],"links":[]}';
+
+        const result = updateImportedPlaybookDefinitionScope(PLAYBOOK_DEFINITION_WITH_APPLY_TO_ELEMENTS, sameVersionMock);
+        const expectedResult = '{"nodes":[{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"applyToElements\\":\\"all-except-main\\"}"}],"links":[]}';
+
+        expect(result).toEqual(expectedResult);
+      });
+    });
+  });
+
+  describe('Function: convertMembersToUsersFromElements()', () => {
+    const element1 = {
+      id: 'report--elem1',
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          created_by_ref_id: 'id-9',
+          creator_ids: ['id-10'],
+          assignee_ids: ['id-11'],
+          participant_ids: ['id-12'],
+          type: 'Report',
+          id: 'report--elem1',
+        },
+      },
+    } as unknown as StixObject;
+
+    const element2 = {
+      id: 'incident--elem2',
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          created_by_ref_id: 'id-1',
+          creator_ids: ['id-10'],
+          assignee_ids: ['id-1'],
+          participant_ids: ['id-11', 'id-12'],
+          type: 'Incident',
+          id: 'incident--elem2',
+        },
+      },
+    } as unknown as StixObject;
+
+    const testBundle: StixBundle = {
+      id: 'bundle--1',
+      spec_version: '2.1',
+      type: 'bundle',
+      objects: [element1, element2],
+    };
+
+    it('should aggregate ASSIGNEES from multiple source elements', async () => {
+      const members = [{ value: 'ASSIGNEES' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // element1 has assignee id-11, element2 has assignee id-1
+      expect(userIds).toContain('id-11');
+      expect(userIds).toContain('id-1');
+    });
+
+    it('should aggregate PARTICIPANTS from multiple source elements', async () => {
+      const members = [{ value: 'PARTICIPANTS' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // element1 has participant id-12, element2 has participants id-11 and id-12
+      expect(userIds).toContain('id-12');
+      expect(userIds).toContain('id-11');
+    });
+
+    it('should deduplicate users appearing in multiple elements', async () => {
+      // Both elements have creator id-10
+      const members = [{ value: 'CREATORS' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // id-10 should appear only once
+      expect(userIds.filter((id) => id === 'id-10').length).toBe(1);
+    });
+
+    it('should resolve AUTHOR from multiple source elements', async () => {
+      const members = [{ value: 'AUTHOR' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // element1 author is id-9, element2 author is id-1
+      expect(userIds).toContain('id-9');
+      expect(userIds).toContain('id-1');
+    });
+
+    it('should return empty array for empty members', async () => {
+      const users = await convertMembersToUsersFromElements([], [element1], testBundle);
+      expect(users).toEqual([]);
+    });
+  });
+});

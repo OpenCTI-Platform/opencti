@@ -42,7 +42,7 @@ export const workspaceMutationFieldPatch = graphql`
   ) {
     workspaceFieldPatch(id: $id, input: $input) {
       ...WorkspaceEditionOverview_workspace
-      ...Dashboard_workspace
+      ...CustomDashboard_workspace
       ...Investigation_workspace
     }
   }
@@ -62,7 +62,9 @@ export const workspaceEditionOverviewFocus = graphql`
 const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
   const { id } = workspace;
   const { t_i18n } = useFormatter();
-  const initialValues = pick(['name', 'description'], workspace);
+  const initialValues = {
+    ...pick(['name', 'description'], workspace),
+  };
 
   const workspaceValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -123,6 +125,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={workspace.id}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
@@ -153,6 +156,7 @@ const WorkspaceEditionOverview = createFragmentContainer(
         name
         description
         type
+        refresh_interval
       }
     `,
   },

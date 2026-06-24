@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
@@ -49,6 +46,7 @@ const infrastructureQuery = graphql`
   query RootInfrastructureQuery($id: String!) {
     infrastructure(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation
@@ -77,7 +75,12 @@ const infrastructureQuery = graphql`
   }
 `;
 
-const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
+interface RootInfrastructureComponentProps {
+  queryRef: PreloadedQuery<RootInfrastructureQuery>;
+  infrastructureId: string;
+}
+
+const RootInfrastructureComponent = ({ queryRef, infrastructureId }: RootInfrastructureComponentProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootInfrastructureSubscription>>(
     () => ({
       subscription,
@@ -131,6 +134,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
+            entity={infrastructure}
             basePath={basePath}
             pages={{
               overview: <Infrastructure data={infrastructure} />,

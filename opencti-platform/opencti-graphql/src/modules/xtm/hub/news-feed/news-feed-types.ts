@@ -3,9 +3,11 @@ import type { StixObject, StixOpenctiExtensionSDO } from '../../../../types/stix
 import { STIX_EXT_OCTI } from '../../../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_NEWS_FEED_ITEM = 'NewsFeedItem';
+export const NEWS_FEED_NUMBER = 'NewsFeedNumber';
 
 export enum NewsFeedItemType {
   RESOURCE_CUSTOM_DASHBOARD = 'RESOURCE_CUSTOM_DASHBOARD',
+  RESOURCE_PLAYBOOK = 'RESOURCE_PLAYBOOK',
 }
 
 export interface NewsFeedItemMetadata {
@@ -14,6 +16,7 @@ export interface NewsFeedItemMetadata {
 }
 
 export interface BasicStoreEntityNewsFeedItem extends BasicStoreEntity {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];
@@ -24,6 +27,7 @@ export interface BasicStoreEntityNewsFeedItem extends BasicStoreEntity {
 }
 
 export interface StoreEntityNewsFeedItem extends StoreEntity {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];
@@ -34,6 +38,7 @@ export interface StoreEntityNewsFeedItem extends StoreEntity {
 }
 
 export interface StixNewsFeedItem extends StixObject {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];
@@ -47,6 +52,7 @@ export interface StixNewsFeedItem extends StixObject {
 }
 
 export interface NewsFeedAddInput {
+  news_feed_item_id: string;
   title: string;
   news_feed_type: NewsFeedItemType;
   tags: string[];

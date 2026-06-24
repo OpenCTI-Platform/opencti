@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import $monacoEditorPlugin from 'vite-plugin-monaco-editor';
+
+// Handle ESM/CJS interop for vite-plugin-monaco-editor
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const monacoEditorPlugin = ((($monacoEditorPlugin as any).default ?? $monacoEditorPlugin) as typeof $monacoEditorPlugin);
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -205,6 +210,12 @@ export default defineConfig({
     target: ['chrome58'],
   },
 
+  define: {
+    // Workaround to circumvent usage of process.env in react-draggable.
+    // To remove once https://github.com/react-grid-layout/react-draggable/issues/806 is addressed.
+    'process.env.DRAGGABLE_DEBUG': JSON.stringify(process.env.DRAGGABLE_DEBUG === 'true'),
+  },
+
   resolve: {
     alias: {
       '@components': path.resolve(__dirname, './src/private/components'),
@@ -247,7 +258,16 @@ export default defineConfig({
       }
     },
     react(),
-    relay
+    relay,
+    monacoEditorPlugin({
+      languageWorkers: ['editorWorkerService', 'json'],
+      customWorkers: [
+        {
+          label: 'graphql',
+          entry: 'monaco-graphql/esm/graphql.worker.js',
+        },
+      ],
+    })
   ],
 
   server: {

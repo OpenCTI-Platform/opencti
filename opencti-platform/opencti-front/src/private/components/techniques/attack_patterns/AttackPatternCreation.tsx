@@ -18,6 +18,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -117,12 +118,14 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: AttackPatternCreationMutation$variables['input'] = {
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
       x_mitre_id: values.x_mitre_id,
@@ -132,7 +135,6 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
     };
     commit({
       variables: {
@@ -207,6 +209,9 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
           />
           <ConfidenceField
             entityType="Attack-Pattern"

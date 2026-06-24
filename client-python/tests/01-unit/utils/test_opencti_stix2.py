@@ -136,24 +136,6 @@ def test_import_bundle_from_file(opencti_stix2: OpenCTIStix2, caplog) -> None:
     assert "The bundle file does not exist" in caplog.text
 
 
-def test_extract_embedded_storage_path_from_get_path(opencti_stix2: OpenCTIStix2):
-    uri = "/storage/get/embedded/Note/internal-note-id/a.png"
-
-    result = opencti_stix2._extract_embedded_storage_path(uri)
-
-    assert result == "embedded/Note/internal-note-id/a.png"
-
-
-def test_extract_embedded_storage_path_from_absolute_view_path(
-    opencti_stix2: OpenCTIStix2,
-):
-    uri = "https://remote.example/storage/view/embedded/Note/internal-note-id/a.png"
-
-    result = opencti_stix2._extract_embedded_storage_path(uri)
-
-    assert result == "embedded/Note/internal-note-id/a.png"
-
-
 def test_extract_embedded_storage_path_ignores_query_string(
     opencti_stix2: OpenCTIStix2,
 ):
@@ -172,7 +154,21 @@ def test_extract_embedded_storage_path_ignores_fragment(opencti_stix2: OpenCTISt
     assert result is None
 
 
-def test_prepare_export_rewrites_embedded_markdown_image_uri(
+def test_extract_embedded_storage_path_from_relative_embedded_path_with_context(
+    opencti_stix2: OpenCTIStix2,
+):
+    uri = "embedded/upload_image_example.png"
+
+    result = opencti_stix2._extract_embedded_storage_path(
+        uri,
+        entity_type="Report",
+        entity_id="internal-report-id",
+    )
+
+    assert result == "embedded/Report/internal-report-id/upload_image_example.png"
+
+
+def test_prepare_export_rewrites_relative_embedded_markdown_image_uri(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
     monkeypatch.setattr(
@@ -190,43 +186,11 @@ def test_prepare_export_rewrites_embedded_markdown_image_uri(
     monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
 
     entity = {
-        "id": "note--11111111-1111-4111-8111-111111111111",
-        "type": "note",
-        "x_opencti_id": "internal-note-id",
-        "description": "desc ![img](/storage/get/embedded/Note/internal-note-id/a.png)",
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][1] is True
-    assert fetch_calls[0][2] is True
-
-
-def test_prepare_export_rewrites_embedded_markdown_image_uri_view_path(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--55555555-5555-4555-8555-555555555555",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-5",
-        "description": "desc ![img](/storage/view/embedded/Note/internal-note-id-5/a.png)",
+        "id": "internal-report-id-embedded",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": "internal-report-id-embedded",
+        "description": "desc ![img](embedded/upload_image_example.png)",
     }
 
     result = opencti_stix2.prepare_export(entity=entity, mode="simple")
@@ -235,7 +199,142 @@ def test_prepare_export_rewrites_embedded_markdown_image_uri_view_path(
     assert "data:image/png;base64,Zm9v" in result[0]["description"]
     assert len(fetch_calls) == 1
     assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Note/internal-note-id-5/a.png"
+        "/storage/get/embedded/Report/internal-report-id-embedded/upload_image_example.png"
+    )
+    assert fetch_calls[0][1] is True
+    assert fetch_calls[0][2] is True
+
+
+def test_bundle_level_rewrite_rewrites_relative_embedded_markdown_image_uri(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    fetch_calls = []
+
+    def fake_fetch(url, binary=False, serialize=False):
+        fetch_calls.append((url, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
+
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--11111111-1111-4111-8111-111111111111",
+        "objects": [
+            {
+                "type": "report",
+                "id": "report--392ef26a-4496-50ae-9828-4c3c72328245",
+                "x_opencti_type": "Report",
+                "x_opencti_id": "bf8359d6-030a-43b3-9fe2-1ba678ecb3ed",
+                "description": "![upload_image_example.png](embedded/upload_image_example.png)",
+            }
+        ],
+    }
+
+    opencti_stix2._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
+
+    description = bundle["objects"][0]["description"]
+    assert "data:image/png;base64,Zm9v" in description
+    assert len(fetch_calls) == 1
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Report/bf8359d6-030a-43b3-9fe2-1ba678ecb3ed/upload_image_example.png"
+    )
+    assert fetch_calls[0][1] is True
+    assert fetch_calls[0][2] is True
+
+
+def test_import_observable_passes_embedded_flags_to_create(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    monkeypatch.setattr(
+        opencti_stix2,
+        "extract_embedded_relationships",
+        lambda stix_object, types=None: {
+            "created_by": None,
+            "object_marking": None,
+            "object_label": None,
+            "open_vocabs": {},
+            "granted_refs": [],
+            "kill_chain_phases": [],
+            "object_refs": [],
+            "external_references": [],
+            "reports": {},
+            "sample_refs": [],
+        },
+    )
+    monkeypatch.setattr(
+        opencti_stix2.opencti,
+        "file",
+        lambda name, data, mime_type: {
+            "name": name,
+            "data": data,
+            "mime_type": mime_type,
+        },
+    )
+
+    captured_kwargs = {}
+
+    def fake_create(**kwargs):
+        captured_kwargs.update(kwargs)
+        return {"id": "observable--1", "entity_type": "Stix-Cyber-Observable"}
+
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_cyber_observable,
+        "create",
+        fake_create,
+    )
+
+    stix_object = {
+        "id": "ipv4-addr--11111111-1111-4111-8111-111111111111",
+        "type": "ipv4-addr",
+        "value": "1.2.3.4",
+        "x_opencti_files": [
+            {
+                "name": "img.png",
+                "data": "Zm9v",
+                "mime_type": "image/png",
+                "embedded": True,
+            }
+        ],
+    }
+
+    opencti_stix2.import_observable(stix_object, update=False)
+
+    assert captured_kwargs.get("embedded") == [True]
+
+
+def test_prepare_export_prefers_x_opencti_type_for_relative_embedded_markdown_image_uri(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    fetch_calls = []
+
+    def fake_fetch(url, binary=False, serialize=False):
+        fetch_calls.append((url, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
+
+    entity = {
+        "id": "internal-report-id-embedded",
+        "type": "report",
+        "entity_type": "Note",
+        "x_opencti_type": "Report",
+        "x_opencti_id": "internal-report-id-embedded",
+        "description": "desc ![img](embedded/upload_image_example.png)",
+    }
+
+    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    assert "data:image/png;base64,Zm9v" in result[0]["description"]
+    assert len(fetch_calls) == 1
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Report/internal-report-id-embedded/upload_image_example.png"
     )
     assert fetch_calls[0][1] is True
     assert fetch_calls[0][2] is True
@@ -279,120 +378,6 @@ def test_prepare_export_does_not_rewrite_markdown_image_uri_in_descriptions_list
     assert len(fetch_calls) == 0
 
 
-def test_prepare_export_rewrites_embedded_markdown_image_uri_with_escaped_alt_bracket(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--12121212-1212-4121-8121-121212121212",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-12",
-        "description": (
-            "desc ![A text like \\[this\\]]"
-            "(/storage/get/embedded/Note/internal-note-id-12/a.png)"
-        ),
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert "![A text like \\[this\\]]" in result[0]["description"]
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Note/internal-note-id-12/a.png"
-    )
-
-
-def test_prepare_export_rewrites_urlencoded_view_embedded_markdown_image_uri(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--77777777-7777-4777-8777-777777777777",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-7",
-        "description": "desc ![img](/storage/view/embedded%2FNote%2Finternal-note-id-7%2Fa.png)",
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Note/internal-note-id-7/a.png"
-    )
-    assert fetch_calls[0][1] is True
-    assert fetch_calls[0][2] is True
-
-
-def test_prepare_export_rewrites_embedded_markdown_image_uri_with_parentheses_in_filename(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "report--11111111-1111-4111-8111-111111111111",
-        "type": "report",
-        "x_opencti_id": "internal-report-id-1",
-        "description": (
-            "desc ![img]("
-            "/storage/view/embedded%2FReport%2Finternal-report-id-1%2F"
-            "test%20file%20(1)-abc123.png)"
-        ),
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Report/internal-report-id-1/test file (1)-abc123.png"
-    )
-    assert fetch_calls[0][1] is True
-    assert fetch_calls[0][2] is True
-
-
 def test_prepare_export_does_not_corrupt_malformed_markdown_image_syntax(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
@@ -419,128 +404,6 @@ def test_prepare_export_does_not_corrupt_malformed_markdown_image_syntax(
 
     assert len(result) == 1
     assert result[0]["description"] == malformed
-
-
-def test_prepare_export_rewrites_embedded_view_url_with_parentheses_and_trailing_text(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "report--33333333-3333-4333-8333-333333333333",
-        "type": "report",
-        "x_opencti_id": "4279ab6f-2948-4972-b055-6e6f152829af",
-        "description": (
-            "This is **a test!!**\\n\\n"
-            "![02 osint vulnerability triage queue (1).png]("
-            "/storage/view/embedded%2FReport%2F4279ab6f-2948-4972-b055-6e6f152829af%2F"
-            "02%20osint%20vulnerability%20triage%20queue%20(1)-5f463558.png)\\n\\n"
-            "dsfsdfd\\n\\n"
-            "![beautiful](https://images.pexels.com/photos/35823637/pexels-photo-35823637.jpeg) "
-            "dslfkdsfmf() ()()()()("
-        ),
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert (
-        "https://images.pexels.com/photos/35823637/pexels-photo-35823637.jpeg"
-        in result[0]["description"]
-    )
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Report/4279ab6f-2948-4972-b055-6e6f152829af/"
-        "02 osint vulnerability triage queue (1)-5f463558.png"
-    )
-
-
-def test_prepare_export_retries_with_encoded_storage_path_when_raw_fetch_fails(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        if "%20" in url:
-            return "Zm9v"
-        return None
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "report--44444444-4444-4444-8444-444444444444",
-        "type": "report",
-        "x_opencti_id": "4279ab6f-2948-4972-b055-6e6f152829af",
-        "description": (
-            "![img]("
-            "/storage/view/embedded%2FReport%2F4279ab6f-2948-4972-b055-6e6f152829af%2F"
-            "02%20osint%20vulnerability%20triage%20queue%20(1)-5f463558.png)"
-        ),
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert len(fetch_calls) == 2
-    assert "%20" not in fetch_calls[0][0]
-    assert "%20" in fetch_calls[1][0]
-
-
-def test_prepare_export_rewrites_urlencoded_get_embedded_markdown_image_uri(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--88888888-8888-4888-8888-888888888888",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-8",
-        "description": "desc ![img](/storage/get/embedded%2FNote%2Finternal-note-id-8%2Fa.png)",
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Note/internal-note-id-8/a.png"
-    )
-    assert fetch_calls[0][1] is True
-    assert fetch_calls[0][2] is True
 
 
 def test_prepare_export_keeps_non_embedded_markdown_image_uri(
@@ -572,149 +435,3 @@ def test_prepare_export_keeps_non_embedded_markdown_image_uri(
     assert len(result) == 1
     assert result[0]["description"] == "desc ![img](/storage/get/import/global/a.png)"
     assert len(fetch_calls) == 0
-
-
-def test_prepare_export_rewrites_absolute_embedded_markdown_image_uri(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--33333333-3333-4333-8333-333333333333",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-3",
-        "description": (
-            "desc ![img](https://remote.example/storage/get/embedded/"
-            "Note/internal-note-id-3/a.png)"
-        ),
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Note/internal-note-id-3/a.png"
-    )
-    assert fetch_calls[0][1] is True
-    assert fetch_calls[0][2] is True
-
-
-def test_prepare_export_rewrites_absolute_embedded_markdown_image_uri_view_path(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--66666666-6666-4666-8666-666666666666",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-6",
-        "description": (
-            "desc ![img](https://remote.example/storage/view/embedded/"
-            "Note/internal-note-id-6/a.png)"
-        ),
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Note/internal-note-id-6/a.png"
-    )
-    assert fetch_calls[0][1] is True
-    assert fetch_calls[0][2] is True
-
-
-def test_prepare_export_keeps_embedded_non_image_markdown_uri(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--44444444-4444-4444-8444-444444444444",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-4",
-        "description": "desc ![doc](/storage/get/embedded/Note/internal-note-id-4/a.pdf)",
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert (
-        result[0]["description"]
-        == "desc ![doc](/storage/get/embedded/Note/internal-note-id-4/a.pdf)"
-    )
-    assert len(fetch_calls) == 1
-
-
-def test_prepare_export_keeps_embedded_unknown_mime_markdown_uri_after_fetch(
-    opencti_stix2: OpenCTIStix2, monkeypatch
-):
-    monkeypatch.setattr(
-        opencti_stix2.opencti.stix_nested_ref_relationship,
-        "list",
-        lambda **kwargs: [],
-    )
-
-    fetch_calls = []
-
-    def fake_fetch(url, binary=False, serialize=False):
-        fetch_calls.append((url, binary, serialize))
-        return "Zm9v"
-
-    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
-
-    entity = {
-        "id": "note--99999999-9999-4999-8999-999999999999",
-        "type": "note",
-        "x_opencti_id": "internal-note-id-9",
-        "description": "desc ![img](/storage/get/embedded/Note/internal-note-id-9/image-without-extension)",
-    }
-
-    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
-
-    assert len(result) == 1
-    assert (
-        result[0]["description"]
-        == "desc ![img](/storage/get/embedded/Note/internal-note-id-9/image-without-extension)"
-    )
-    assert len(fetch_calls) == 1

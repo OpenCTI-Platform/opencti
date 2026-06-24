@@ -91,8 +91,8 @@ describe('pirManager: checkEventOnPir()', () => {
 
   beforeAll(() => {
     vi.spyOn(StixFiltering, 'isStixMatchFilterGroup')
-      .mockImplementation(async (...args) => {
-        return isStixMatchFilterGroup_MockableForUnitTests(...args, MOCK_RESOLUTION_MAP);
+      .mockImplementation(async (context, user, stix, filterGroup, eventContext) => {
+        return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, MOCK_RESOLUTION_MAP, eventContext);
       });
   });
 

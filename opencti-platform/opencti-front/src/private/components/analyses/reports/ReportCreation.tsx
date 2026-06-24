@@ -26,6 +26,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -108,6 +109,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -137,10 +139,13 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Report')} ${t_i18n('successfully created')}` },
   );
+
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
+
     const input: ReportCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -155,7 +160,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectParticipant: values.objectParticipant.map(({ value }) => value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+      ...filesInput,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
@@ -275,6 +280,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
           />
           <Field
             component={RichTextField}

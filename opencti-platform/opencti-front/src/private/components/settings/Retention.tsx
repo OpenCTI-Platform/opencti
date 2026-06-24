@@ -50,17 +50,17 @@ const Retention = () => {
     },
     max_retention: {
       label: 'Max retention',
-      width: '15%',
+      width: '12%',
       isSortable: true,
     },
     last_execution_date: {
       label: 'Last execution',
-      width: '15%',
+      width: '13%',
       isSortable: true,
     },
     remaining_count: {
       label: 'Remaining',
-      width: '10%',
+      width: '8%',
       isSortable: true,
     },
     scope: {
@@ -68,9 +68,14 @@ const Retention = () => {
       width: '10%',
       isSortable: true,
     },
+    active: {
+      label: 'Status',
+      width: '10%',
+      isSortable: true,
+    },
     filters: {
       label: 'Apply on',
-      width: '35%',
+      width: '32%',
       isSortable: false,
     },
   } as DataColumns;

@@ -36,7 +36,6 @@ import {
   type EditInput,
   type EditManagedConnectorInput,
   type HealthConnectorStatusInput,
-  IngestionAuthType,
   type LogsConnectorStatusInput,
   type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
@@ -53,26 +52,26 @@ import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
+
 import { createOnTheFlyUser } from '../modules/user/user-domain';
 import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { Work } from '../types/work';
 import { AxiosError } from 'axios';
 import { URL } from 'node:url';
-import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
+import { encryptSynchronizerCredential } from './connector-sync-crypto';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
-  const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
-  let sanitized = withHyphens
+  let sanitized = label
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .toLowerCase()
     .replace(/^-+/, '')
@@ -224,6 +223,7 @@ export const managedConnectorEdit = async (
   );
   const patch: any = {
     name: input.name,
+    title: input.title,
     connector_type: targetContract.container_type,
     connector_user_id: input.connector_user_id,
     manager_contract_configuration: contractConfigurations,
@@ -322,7 +322,7 @@ export const registerConnector = async (
   opts: RegisterOptions = {},
 ) => {
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
-  const { auto = null, auto_update = null, enrichment_resolution = null } = connectorData;
+  const { auto = null, auto_update = null, enrichment_resolution = null, xtm_one_intent = null } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -339,6 +339,7 @@ export const registerConnector = async (
       only_contextual,
       playbook_compatible,
       listen_callback_uri,
+      xtm_one_intent,
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false,
     };
@@ -362,6 +363,7 @@ export const registerConnector = async (
     only_contextual,
     playbook_compatible,
     listen_callback_uri,
+    xtm_one_intent,
     connector_user_id: opts.connector_user_id ?? user.id,
     connector_state_timestamp: now(),
     built_in: opts.built_in ?? false,
@@ -527,12 +529,8 @@ export const patchSync = async (context: AuthContext, user: AuthUser, id: string
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
-export const findSyncById = async (context: AuthContext, user: AuthUser, syncId: string, removeCredentials = false) => {
-  const basicIngestion = await storeLoadById<BasicStoreEntitySynchronizer>(context, user, syncId, ENTITY_TYPE_SYNC);
-  if (removeCredentials) {
-    basicIngestion.token = removeAuthenticationCredentials(IngestionAuthType.Bearer, basicIngestion.token) ?? null;
-  }
-  return basicIngestion;
+export const findSyncById = async (context: AuthContext, user: AuthUser, syncId: string) => {
+  return storeLoadById<BasicStoreEntitySynchronizer>(context, user, syncId, ENTITY_TYPE_SYNC);
 };
 export const findSyncPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
@@ -616,6 +614,10 @@ export const registerSync = async (
 
   await testSyncUtils(context, user, synchronizerToCreate);
 
+  if (synchronizerToCreate.token) {
+    synchronizerToCreate.token = await encryptSynchronizerCredential(synchronizerToCreate.token);
+  }
+
   const { element, isCreation } = await createEntity(
     context,
     user,
@@ -673,6 +675,10 @@ export const synchronizerAddAutoUser = async (context: AuthContext, user: AuthUs
 };
 
 export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
+  const tokenInput = input.find((i) => i.key === 'token');
+  if (tokenInput && tokenInput.value[0]) {
+    tokenInput.value[0] = await encryptSynchronizerCredential(tokenInput.value[0]);
+  }
   const { element } = await updateAttribute<StoreEntity>(context, user, syncId, ENTITY_TYPE_SYNC, input);
   await publishUserAction({
     user,

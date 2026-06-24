@@ -15,12 +15,13 @@ import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
-import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';
+import { handleConfidenceToScoreTransformation } from '../manager/ingestionManager';
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { TAXIIAPI } from '../domain/user';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
 
 const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = ['application/taxii+json', 'application/vnd.oasis.stix+json'];
 const TAXII_VERSION = '2.1';
@@ -86,7 +87,7 @@ export const extractUserAndCollection = async (req, res, id) => {
 };
 
 const isValidTaxiiPostContentType = (req) => {
-  const contentTypeFromRequest = parseContentType(req);
+  const contentTypeFromRequest = parseContentType(req.headers['content-type']);
   return (TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION);
 };
 
@@ -235,21 +236,19 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.post(`${basePath}/taxii2/root/collections/:id/objects/`, JsonTaxiiMiddleware, async (req, res) => {
+  app.post(`${basePath}/taxii2/root/collections/:id/objects/`, async (req, res, next) => {
     try {
-    // Authentication is checked in this method, keep it first but inside try block.
-      const context = await checkAuthenticationFromRequest(req, res);
+      // Verify authentication
+      req.taxiiContext = await checkAuthenticationFromRequest(req, res);
+
+      // Verify content type
       if (!isValidTaxiiPostContentType(req)) {
         throw TaxiiError('Content-Type in request is missing or invalid', 400);
       }
 
-      const { id } = req.params;
-      const { objects = [] } = req.body;
-
-      if (objects.length === 0) {
-        throw UnsupportedError('Objects required');
-      }
       // Find and validate the collection
+      const { id } = req.params;
+      const context = req.taxiiContext;
       const ingestion = await findTaxiiCollection(context, context.user, id);
       if (!ingestion) {
         throw TaxiiError('Collection not found', 404);
@@ -257,6 +256,26 @@ const initTaxiiApi = (app) => {
       if (ingestion.ingestion_running !== true) {
         throw TaxiiError('Collection not found', 404);
       }
+
+      // Store ingestion data to avoid a second lookup
+      res.locals.ingestion = ingestion;
+
+      // Then parse json body
+      return next();
+    } catch (e) {
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
+    }
+  }, JsonTaxiiMiddleware, async (req, res) => {
+    try {
+      const context = req.taxiiContext;
+      const { ingestion } = res.locals;
+      const { objects = [] } = req.body;
+
+      if (objects.length === 0) {
+        throw UnsupportedError('Objects required');
+      }
+
       const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
       // Push the bundle in queue, return the job id
       const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: stixObjects };

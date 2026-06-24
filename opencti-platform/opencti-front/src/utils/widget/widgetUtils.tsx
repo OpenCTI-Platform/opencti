@@ -18,7 +18,7 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 
-import type { WidgetDataSelection } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries } from './widget';
 
 const widgetVisualizationTypes = [
   {
@@ -212,6 +212,8 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
+export const customViewsWidgetVisualizationTypes = workspacesWidgetVisualizationTypes;
+
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
 
 export const getCurrentCategory = (type: string | null) => {
@@ -321,4 +323,20 @@ export const isWidgetUsingRelationsAggregation = (
   ];
 
   return widgetTypesWithRelationsAggregation.includes(widgetType);
+};
+
+// value above which the unique count is estimated and may differ from the actual number of distinct values
+export const UNIQUE_COUNT_ESTIMATION_THRESHOLD = 40000;
+export const UNIQUE_COUNT_ESTIMATION_WARNING = 'Datasets with more than 40000 distinct values have estimated counts and may differ slightly from the amount of actual distinct values';
+
+/**
+ * Determines whether the estimation warning should be displayed for the given widget data.
+ * Returns `true` if any data selection flagged as `unique` contains at least one data point
+ * whose value exceeds `UNIQUE_COUNT_ESTIMATION_THRESHOLD`, indicating that counts are
+ * approximated and may differ from the actual number of distinct values.
+ */
+export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelection[], data: WidgetMultiTimeSeries[]) => {
+  return dataSelection.some((selection, i) => (
+    selection.unique && data[i]?.data.some((d) => d.value > UNIQUE_COUNT_ESTIMATION_THRESHOLD)
+  ));
 };

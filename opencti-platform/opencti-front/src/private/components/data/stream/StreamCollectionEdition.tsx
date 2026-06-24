@@ -7,14 +7,17 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import AlertTitle from '@mui/material/AlertTitle';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
 import { StreamCollectionEdition_streamCollection$data } from '@components/data/stream/__generated__/StreamCollectionEdition_streamCollection.graphql';
 import { FormikConfig } from 'formik/dist/types';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend, stixFilters, streamOriginFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
@@ -61,6 +64,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
     stream_public_user_id: convertUser(streamCollection, 'stream_public_user'),
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
+  const [originFilters, originHelpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.origin_filters) ?? undefined);
   const handleSubmitField = (name: string, value: FieldOption[] | string) => {
     streamCollectionValidation(t_i18n('This field is required'))
       .validateAt(name, { [name]: value })
@@ -117,6 +121,25 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       updater: undefined,
     });
   }, [filters]);
+  useEffect(() => {
+    const jsonOriginFilters = isFilterGroupNotEmpty(originFilters)
+      ? serializeFilterGroupForBackend(originFilters)
+      : '';
+    const variables = {
+      id: streamCollection.id,
+      input: { key: 'origin_filters', value: jsonOriginFilters },
+    };
+    commitMutation({
+      mutation: streamCollectionMutationFieldPatch,
+      variables,
+      setSubmitting: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      updater: undefined,
+    });
+  }, [originFilters]);
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = () => {};
 
   return (
@@ -236,6 +259,39 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
           />
+          <Accordion style={{ marginTop: theme.spacing(2) }}>
+            <AccordionSummary id="accordion-panel-advanced-options">
+              <Typography>{t_i18n('Advanced options')}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <Alert
+                  icon={false}
+                  severity="warning"
+                  variant="outlined"
+                  style={{ position: 'relative', width: '100%', overflow: 'hidden' }}
+                >
+                  <div>
+                    {t_i18n('Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.')}
+                  </div>
+                </Alert>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Filters
+                    availableFilterKeys={streamOriginFilters}
+                    helpers={originHelpers}
+                    searchContext={{ entityTypes: ['History'] }}
+                  />
+                </Box>
+                <FilterIconButton
+                  filters={originFilters}
+                  helpers={originHelpers}
+                  redirection={true}
+                  searchContext={{ entityTypes: ['History'] }}
+                  entityTypes={['History']}
+                />
+              </div>
+            </AccordionDetails>
+          </Accordion>
         </Form>
       )}
     </Formik>
@@ -251,6 +307,7 @@ const StreamCollectionEditionFragment = createFragmentContainer(
                 name
                 description
                 filters
+                origin_filters
                 stream_live
                 stream_public
                 stream_public_user {

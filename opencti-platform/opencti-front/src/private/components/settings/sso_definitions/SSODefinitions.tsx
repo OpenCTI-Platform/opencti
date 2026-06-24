@@ -21,6 +21,7 @@ import Box from '@mui/material/Box';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import SSOSingletonStrategies from '@components/settings/sso_definitions/SSOSingletonStrategies';
 import AuthenticationGlobalSettings from '@components/settings/sso_definitions/AuthenticationGlobalSettings';
+import IpWhitelistSettings from '@components/settings/sso_definitions/IpWhitelistSettings';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
@@ -31,8 +32,6 @@ import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefini
 import { SSODefinitionEditionFragment$data, SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Typography from '@mui/material/Typography';
 import { SSODefinitionsAvailableSecretsQuery } from '@components/settings/sso_definitions/__generated__/SSODefinitionsAvailableSecretsQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
@@ -328,30 +327,17 @@ const SSODefinitions = () => {
       {settings.is_authentication_by_env && (
         <>
           <AuthenticationGlobalSettings />
+          <IpWhitelistSettings />
           <SSOSingletonStrategies />
-          <Alert severity="error" variant="outlined" sx={{ mt: 2 }}>
-            <AlertTitle>{t_i18n('Deprecated — Authentication management is disabled by environment configuration')}</AlertTitle>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {t_i18n('Your platform is running with the legacy authentication configuration defined through environment variables. This safeguard was enabled in your configuration because the authentication migration to the new v7 model encountered issues that needed to be resolved first.')}
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              <strong>{t_i18n('This compatibility mode is deprecated and will be permanently removed in the next major version of OpenCTI.')}</strong>{' '}
-              {t_i18n('Once removed, the platform will no longer be able to start with this configuration, and authentication providers will have to be properly migrated.')}
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {t_i18n('While this safeguard is active, authentication providers cannot be managed from this interface. The platform continues to operate with the previous environment-based implementation.')}
-            </Typography>
-            <Typography variant="body1">
-              {t_i18n('To resolve this situation before the next version, please')}{' '}
-              <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('contact the Filigran team')}</a>{' '}
-              {t_i18n('so they can assist you with the migration process.')}
-            </Typography>
+          <Alert severity="info" variant="outlined" sx={{ mt: 2 }}>
+            {t_i18n('Your platform is currently using environment variables to define authentication strategies. As a result, any update on any strategies (except password policy or 2FA) won\'t be taken into account.')}
           </Alert>
         </>
       )}
       {!settings.is_authentication_by_env && (
         <>
           <AuthenticationGlobalSettings />
+          <IpWhitelistSettings />
           <SSOSingletonStrategies />
           {queryRef && (
             <>

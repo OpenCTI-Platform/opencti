@@ -260,6 +260,7 @@ const CountryEditionOverviewComponent: FunctionComponent<
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={country.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

@@ -1,7 +1,3 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectKnowledgeBar from '@components/common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -96,8 +92,6 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               entityId={infrastructureData.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
-              defaultStartTime={infrastructure.startTime}
-              defaultStopTime={infrastructure.stopTime}
               allDirections
             />
           )}
@@ -180,6 +174,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
                 'technology-to',
                 'technology',
               ]}
+              isRelationReversed={false}
             />
           )}
         />
@@ -313,7 +308,6 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
             <EntityStixSightingRelationships
               entityId={infrastructureData.id}
               entityLink={link}
-              noRightBar={true}
               stixCoreObjectTypes={[
                 'Region',
                 'Country',
@@ -324,8 +318,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
                 'Individual',
                 'System',
               ]}
-              defaultStartTime={infrastructureData.first_seen}
-              defaultStopTime={infrastructureData.last_seen}
+              isTo={false}
             />
           )}
         />

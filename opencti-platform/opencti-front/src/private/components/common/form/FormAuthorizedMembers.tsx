@@ -5,7 +5,7 @@ import DialogActions from '@mui/material/DialogActions';
 import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { Creator } from '../../../../utils/authorizedMembers';
+import { AccessRight, Creator } from '../../../../utils/authorizedMembers';
 
 export interface FormAuthorizedMembersInputs {
   authorizedMembers: AuthorizedMembersFieldValue;
@@ -22,7 +22,7 @@ interface FormAuthorizedMembersProps {
   owner?: Creator;
   canDeactivate?: boolean;
   showAllMembersLine?: boolean;
-  isCanUseEnable?: boolean;
+  customAccessRights?: AccessRight[];
   customInfoMessage?: string;
   isDraftEntity?: boolean;
 }
@@ -35,7 +35,7 @@ const FormAuthorizedMembers = ({
   owner,
   canDeactivate,
   showAllMembersLine,
-  isCanUseEnable,
+  customAccessRights,
   customInfoMessage,
   isDraftEntity,
 }: FormAuthorizedMembersProps) => {
@@ -67,7 +67,7 @@ const FormAuthorizedMembers = ({
                 showAllMembersLine={showAllMembersLine}
                 canDeactivate={canDeactivate}
                 addMeUserWithAdminRights
-                isCanUseEnable={isCanUseEnable}
+                customAccessRights={customAccessRights}
                 customInfoMessage={customInfoMessage}
                 isDraftEntity={isDraftEntity}
               />

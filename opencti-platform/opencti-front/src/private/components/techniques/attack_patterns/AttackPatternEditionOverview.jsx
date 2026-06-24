@@ -237,6 +237,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={attackPattern.id}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

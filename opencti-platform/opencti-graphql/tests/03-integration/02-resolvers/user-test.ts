@@ -842,7 +842,7 @@ describe('User has no settings capability and is organization admin query behavi
     `;
 
   const UPDATE_ORGANIZATION_QUERY = gql`
-    mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+    mutation OrganizationEdit($id: ID!, $input: [EditInput!]!) {
       organizationFieldPatch(id: $id, input: $input) {
         id
         name
@@ -909,7 +909,7 @@ describe('User has no settings capability and is organization admin query behavi
     const editorUserQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userEditorId } });
     expect(editorUserQueryResult).not.toBeNull();
     expect(editorUserQueryResult.data?.user).not.toBeNull();
-    expect(editorUserQueryResult.data?.user.capabilities.length).toEqual(10);
+    expect(editorUserQueryResult.data?.user.capabilities.length).toEqual(11);
     const capabilities = editorUserQueryResult.data?.user.capabilities ?? [];
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });

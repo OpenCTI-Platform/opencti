@@ -305,18 +305,19 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           <Field
             component={DateTimePickerField}
             name="created"
-            required={(mandatoryAttributes.includes('created'))}
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
+            onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Request for Information date'),
               variant: 'standard',
+              required: (mandatoryAttributes.includes('created')),
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created" />
               ),
               style: { marginTop: 20 },
             }}
+            containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
             label={t_i18n('Request for information types')}
@@ -373,6 +374,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={caseData.id}
             askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />

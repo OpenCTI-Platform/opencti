@@ -23,6 +23,7 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   connector_user_id; string;
   connector_info: ConnectorInfo;
   playbook_compatible: boolean;
+  xtm_one_intent: string | null;
 }
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
   public_key: string;

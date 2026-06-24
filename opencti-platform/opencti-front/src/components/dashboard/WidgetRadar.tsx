@@ -10,7 +10,7 @@ import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetRadarProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: readonly any[];
   label: string;
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];
@@ -31,8 +31,9 @@ const WidgetRadar = ({
     data: data.map((n) => n.value),
   }], [data, label]);
 
-  const options: ApexOptions = useMemo(() => {
+  const options = useMemo<ApexOptions>(() => {
     const labels = buildWidgetLabelsOption(data, groupBy);
+    // @ts-expect-error fixed when Charts in tsx
     return radarChartOptions(
       theme,
       labels,
@@ -40,7 +41,7 @@ const WidgetRadar = ({
       [],
       true,
     ) as ApexOptions;
-  }, [data, groupBy]);
+  }, [data, groupBy, theme]);
 
   return (
     <Chart

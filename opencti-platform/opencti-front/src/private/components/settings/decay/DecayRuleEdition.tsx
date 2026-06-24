@@ -23,7 +23,7 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { enabledFilters } from './utils/enabledFilters';
 import { useTheme } from '@mui/material/styles';
 
@@ -44,7 +44,7 @@ interface DecayRuleEditionFormData {
   decay_pound: number;
   decay_points: number[];
   decay_revoke_score: number;
-  decay_filters: string;
+  decay_filters?: string | null;
 }
 
 interface DecayRuleEditionFormProps {
@@ -58,7 +58,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
-  const [filters, filterHelpers] = useFiltersState(deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? emptyFilterGroup);
+  const [filters, filterHelpers] = useFiltersState(deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? undefined);
 
   useEffect(() => {
     commitUpdate({
@@ -274,7 +274,7 @@ const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({
     decay_pound: decayRule.decay_pound,
     decay_points: decayRule.decay_points ? [...decayRule.decay_points] : [],
     decay_revoke_score: decayRule.decay_revoke_score,
-    decay_filters: decayRule.decay_filters ?? '',
+    decay_filters: decayRule.decay_filters,
   };
   return (
     <Drawer

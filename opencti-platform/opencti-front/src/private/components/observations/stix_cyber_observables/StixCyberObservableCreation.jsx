@@ -35,6 +35,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import ArtifactField from '../../common/form/ArtifactField';
@@ -313,6 +314,7 @@ const StixCyberObservableCreation = ({
       }
     },
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -408,6 +410,7 @@ const StixCyberObservableCreation = ({
         createIndicator: values.createIndicator,
         [inputObsType]: {
           ...adaptedValue,
+          ...buildCreationFilesInput(),
           obsContent: values.obsContent?.value,
         },
       };
@@ -797,6 +800,9 @@ const StixCyberObservableCreation = ({
                           multiline={true}
                           rows="4"
                           style={{ marginTop: 20 }}
+                          autoPersistOnBlur={false}
+                          registerMarkdownImagesController={registerMarkdownImagesController}
+                          uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
                         />
                         {attributes.map((attribute) => {
                           if (bulkConf && attribute.value === bulkSelectedKey) {
@@ -921,6 +927,29 @@ const StixCyberObservableCreation = ({
                                 key={attribute.value}
                                 attributeName={attribute.value}
                                 onChange={setFieldValue}
+                              />
+                            );
+                          }
+                          if (
+                            attribute.value === 'name'
+                            && status.type === 'Autonomous-System'
+                          ) {
+                            const setDefaultAutonomousSystemId = (_, value) => {
+                              const match = value.match(/^as(\d+)$/i);
+                              if (match && !values.number) {
+                                setFieldValue('number', parseInt(match[1], 10));
+                              }
+                            };
+                            return (
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                key={attribute.value}
+                                name={attribute.value}
+                                label={t_i18n(attribute.value)}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onSubmit={setDefaultAutonomousSystemId}
                               />
                             );
                           }

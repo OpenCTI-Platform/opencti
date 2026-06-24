@@ -1,6 +1,6 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
@@ -300,9 +300,12 @@ const publishWithConfirm = (channel, exchangeName, routingKey, message) => {
         });
       }
     } catch (err) {
-      // Channel might have been closed between getting it and publishing
-      // Reset channel and reject so caller can retry
-      persistentChannel = null;
+      // Channel might have been closed between getting it and publishing.
+      // Do not reset persistentChannel here: the channel 'error'/'close' handlers
+      // are the single source of truth that invalidate it and trigger a clean
+      // reconnection. Nulling it here (without closing the connection) races with
+      // those handlers and can leave the publisher stuck retrying on a zombie state.
+      // Just reject so the caller can retry.
       reject(err);
     }
   });
@@ -484,7 +487,11 @@ export const metrics = async (context, user) => {
     return { overview, consumers, queues: platformQueues };
   };
   return telemetry(context, user, 'QUEUE metrics', {
+    [ATTR_DB_NAMESPACE]: 'messaging_engine',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'messaging_engine',
+    [ATTR_DB_OPERATION_NAME]: 'metrics',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'metrics',
   }, metricApi);
 };
@@ -675,7 +682,8 @@ export const unregisterExchanges = async () => {
 };
 
 export const rabbitMQIsAlive = async () => {
-  return amqpExecute(async (channel) => {
+  logApp.info('[CHECK] Checking if RabbitMq is available');
+  const assertExchangeResult = await amqpExecute(async (channel) => {
     const assertExchange = util.promisify(channel.assertExchange).bind(channel);
     return assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
   }).catch(
@@ -683,6 +691,8 @@ export const rabbitMQIsAlive = async () => {
       throw DatabaseError('RabbitMQ seems down', { cause: e });
     },
   );
+  logApp.info('[CHECK] RabbitMq is alive');
+  return assertExchangeResult;
 };
 
 export const pushToWorkerForConnector = (connectorId, message) => {

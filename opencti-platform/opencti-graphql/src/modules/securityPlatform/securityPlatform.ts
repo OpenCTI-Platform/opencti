@@ -1,14 +1,14 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type StixSecurityPlatform, type StoreEntitySecurityPlatform } from './securityPlatform-types';
-import convertSecurityPlatformToStix from './securityPlatform-converter';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type Stix2SecurityPlatform, type StixSecurityPlatform, type StoreEntitySecurityPlatform } from './securityPlatform-types';
+import convertSecurityPlatformToStix, { convertSecurityPlatformToStix_2_0 } from './securityPlatform-converter';
 import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 
-const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform> = {
+const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform, Stix2SecurityPlatform> = {
   type: {
     id: 'security-platform',
     name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM,
@@ -48,6 +48,7 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
     return stix.name;
   },
   converter_2_1: convertSecurityPlatformToStix,
+  converter_2_0: convertSecurityPlatformToStix_2_0,
 };
 
 registerDefinition(SECURITY_PLATFORM_DEFINITION);

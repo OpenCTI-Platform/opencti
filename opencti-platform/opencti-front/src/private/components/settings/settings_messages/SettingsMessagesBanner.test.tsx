@@ -1,5 +1,5 @@
 import React from 'react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { act } from '@testing-library/react';
 import ReactDOM from 'react-dom/client';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
@@ -9,10 +9,28 @@ import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnviro
 import SettingsMessagesBanner, { settingsMessagesQuery } from './SettingsMessagesBanner';
 import AppIntlProvider from '../../../../components/AppIntlProvider';
 import ThemeDark from '../../../../components/ThemeDark';
+import useAuth from '../../../../utils/hooks/useAuth';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
+
+vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../utils/hooks/useAuth')>();
+  return {
+    ...actual,
+    default: vi.fn(),
+  };
+});
+vi.mock('../../../../utils/hooks/useTopBanner', () => ({ default: vi.fn() }));
 
 let container: HTMLDivElement | null;
 
 beforeEach(() => {
+  localStorage.clear();
+  (useAuth as Mock).mockReturnValue({
+    bannerSettings: { bannerHeightNumber: 0 },
+  });
+  (useTopBanner as Mock).mockReturnValue({
+    height: 0,
+  });
   container = document.createElement('div');
   document.body.appendChild(container);
 });

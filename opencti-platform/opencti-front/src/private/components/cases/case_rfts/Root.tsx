@@ -1,10 +1,7 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
@@ -28,6 +25,8 @@ import CaseRftEdition from './CaseRftEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseRftDeletion from './CaseRftDeletion';
 import { PATH_RFT, PATH_RFTS } from '@components/common/routes/paths';
+import type { RootCaseRftCaseSubscription } from './__generated__/RootCaseRftCaseSubscription.graphql';
+import type { CaseRftKnowledge_case$data } from './__generated__/CaseRftKnowledge_case.graphql';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -79,7 +78,12 @@ const caseRftQuery = graphql`
   }
 `;
 
-const RootCaseRftComponent = ({ queryRef, caseId }) => {
+interface RootCaseRftComponentProps {
+  queryRef: PreloadedQuery<RootCaseRftCaseQuery>;
+  caseId: string;
+}
+
+const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
   >(
@@ -106,6 +110,10 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
+  const CaseRftKnowledgeComponent = CaseRftKnowledge as React.ComponentType<{
+    caseData: FragmentRef<CaseRftKnowledge_case$data>;
+    enableReferences: boolean;
+  }>;
   return (
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
@@ -132,11 +140,12 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         enableEnricher={true}
       />
       <StixDomainObjectMain
+        entity={caseData}
         basePath={basePath}
         pages={{
           overview: <CaseRft caseRftData={caseData} enableReferences={enableReferences} />,
           knowledge: (
-            <CaseRftKnowledge
+            <CaseRftKnowledgeComponent
               caseData={caseData}
               enableReferences={enableReferences}
             />

@@ -16,6 +16,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
@@ -100,11 +101,18 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     undefined,
     { successMessage: `${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}` },
   );
+
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
+    const uploadedFile = typeof values.file === 'string' || !values.file ? [] : [values.file];
+    const finalValues = {
+      ...R.dissoc('file', values),
+      ...buildCreationFilesInput(uploadedFile),
+    };
     if (dryrun && onCreate) {
       onCreate(values, true);
       handleClose();
@@ -138,7 +146,11 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   };
 
   const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
+    const uploadedFile = typeof values.file === 'string' || !values.file ? [] : [values.file];
+    const finalValues = {
+      ...R.dissoc('file', values),
+      ...buildCreationFilesInput(uploadedFile),
+    };
     if (dryrun && creationCallback && handleCloseContextual) {
       creationCallback({
         externalReferenceAdd: values,
@@ -254,6 +266,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
+                  autoPersistOnBlur={false}
+                  registerMarkdownImagesController={registerMarkdownImagesController}
                 />
                 <FormButtonContainer>
                   <Button
@@ -339,6 +353,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20, marginBottom: 20 }}
+                  autoPersistOnBlur={false}
+                  registerMarkdownImagesController={registerMarkdownImagesController}
                 />
                 <DialogActions>
                   <Button

@@ -20,7 +20,7 @@ import { useComputeDefaultValues } from '../../../../../utils/hooks/useDefaultVa
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { DefaultValues, defaultValuesToStringArray } from '../../../../../utils/defaultValues';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { capitalizeFirstLetter } from 'src/utils/String';
+import { capitalizeFirstLetter } from '../../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

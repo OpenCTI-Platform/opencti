@@ -1,4 +1,5 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import gql from 'graphql-tag';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
@@ -84,6 +85,15 @@ const REPLACE_NODE_PLAYBOOK = gql`
     }
 `;
 
+const INSERT_NODE_PLAYBOOK = gql`
+    mutation playbookInsertNode($id: ID!, $parentNodeId: ID!, $parentPortId: ID!, $childNodeId: ID!, $input: PlaybookAddNodeInput!) {
+        playbookInsertNode(id: $id, parentNodeId: $parentNodeId, parentPortId: $parentPortId, childNodeId: $childNodeId, input: $input) {
+            nodeId
+            linkId
+        }
+    }
+`;
+
 const ADD_LINK_PLAYBOOK = gql`
     mutation playbookAddLink($id: ID!, $input: PlaybookAddLinkInput!) {
         playbookAddLink(id: $id, input: $input)
@@ -109,6 +119,14 @@ const DELETE_LINK_PLAYBOOK = gql`
 const DELETE_PLAYBOOK = gql`
   mutation playbookDelete($id: ID!) {
     playbookDelete(id:$id)
+  }
+`;
+const PLAYBOOK_MANAGER_INFO = gql`
+  query playbookManagerInfo {
+    playbookManagerInfo {
+      activated
+      lastProcessedEventDate
+    }
   }
 `;
 
@@ -210,6 +228,9 @@ describe('Playbook resolver standard behavior', () => {
   let linkId = '';
 
   beforeAll(async () => {
+    // Activate EE
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     const playbook = await createPlaybook('Playbook1');
     playbookId = playbook.id;
     playbookCreatedAt = playbook.created_at;
@@ -393,6 +414,41 @@ describe('Playbook resolver standard behavior', () => {
         UNSUPPORTED_ERROR,
       );
     });
+
+    it('should persist description when adding a node', async () => {
+      await clearPlaybook(playbookId);
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'node-with-description',
+        description: 'My custom description',
+        position: { x: 1, y: 1 },
+      };
+      await queryAsAdminWithSuccess({
+        query: ADD_NODE_PLAYBOOK,
+        variables: { id: playbookId, input: addNodeInput },
+      });
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const node = playbookDef.nodes[0];
+      expect(node.description).toEqual('My custom description');
+    });
+
+    it('should not set description on node when omitted', async () => {
+      await clearPlaybook(playbookId);
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'node-without-description',
+        position: { x: 1, y: 1 },
+      };
+      await queryAsAdminWithSuccess({
+        query: ADD_NODE_PLAYBOOK,
+        variables: { id: playbookId, input: addNodeInput },
+      });
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const node = playbookDef.nodes[0];
+      expect(node.description).toBeUndefined();
+    });
   });
 
   describe('playbookReplaceNode', () => {
@@ -474,6 +530,88 @@ describe('Playbook resolver standard behavior', () => {
         query: REPLACE_NODE_PLAYBOOK,
         variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
       });
+    });
+
+    it('should persist description when replacing a node', async () => {
+      const replaceNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'replaced-with-description',
+        description: 'Replaced description',
+        position: { x: 1, y: 1 },
+      };
+      await queryAsAdminWithSuccess({
+        query: REPLACE_NODE_PLAYBOOK,
+        variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
+      });
+      const updatedDef = await readPlaybookDefinition(playbookId);
+      const replacedNode = updatedDef.nodes.find((n: { id: string }) => n.id === entryNodeId);
+      expect(replacedNode?.description).toEqual('Replaced description');
+    });
+  });
+
+  describe('playbookInsertNode', () => {
+    beforeAll(async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId);
+      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+    });
+
+    it('should persist description when inserting a node', async () => {
+      const insertNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'inserted-with-description',
+        description: 'Inserted description',
+        position: { x: 3, y: 3 },
+      };
+      const insertResult = await queryAsAdminWithSuccess({
+        query: INSERT_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          parentNodeId: entryNodeId,
+          parentPortId: 'out',
+          childNodeId: matchingNodeId,
+          input: insertNodeInput,
+        },
+      });
+      const insertedNodeId = insertResult.data?.playbookInsertNode.nodeId;
+      expect(insertedNodeId).toBeDefined();
+
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const insertedNode = playbookDef.nodes.find((n: { id: string }) => n.id === insertedNodeId);
+      expect(insertedNode?.description).toEqual('Inserted description');
+    });
+
+    it('should not set description on inserted node when omitted', async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId);
+      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+
+      const insertNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'inserted-without-description',
+        position: { x: 3, y: 3 },
+      };
+      const insertResult = await queryAsAdminWithSuccess({
+        query: INSERT_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          parentNodeId: entryNodeId,
+          parentPortId: 'out',
+          childNodeId: matchingNodeId,
+          input: insertNodeInput,
+        },
+      });
+      const insertedNodeId = insertResult.data?.playbookInsertNode.nodeId;
+      expect(insertedNodeId).toBeDefined();
+
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const insertedNode = playbookDef.nodes.find((n: { id: string }) => n.id === insertedNodeId);
+      expect(insertedNode?.description).toBeUndefined();
     });
   });
 
@@ -671,5 +809,15 @@ describe('Playbook resolver standard behavior', () => {
       });
       expect(queryResult.data?.playbookDelete).toEqual(playbookId);
     });
+  });
+});
+
+describe('Playbook manager info', () => {
+  it('should return playbook manager info', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: PLAYBOOK_MANAGER_INFO });
+    const managerInfo = queryResult.data?.playbookManagerInfo;
+    expect(managerInfo).toBeDefined();
+    expect(managerInfo.activated).toBeDefined();
+    expect(typeof managerInfo.activated).toBe('boolean');
   });
 });

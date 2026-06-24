@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
@@ -35,6 +35,7 @@ const DataTableBody = ({
       viewStorage: { filters },
     },
     data,
+    enableInfiniteScroll,
   } = useDataTableContext();
 
   const {
@@ -48,8 +49,12 @@ const DataTableBody = ({
     if (!queryData) {
       return [];
     }
+    if (enableInfiniteScroll) {
+      // show all loaded data; scroll listener will trigger loadMore
+      return resolvePath(queryData);
+    }
     return resolvePath(queryData).slice(pageStart, pageStart + pageSize);
-  }, [queryData, pageStart, pageSize]);
+  }, [queryData, pageStart, pageSize, enableInfiniteScroll]);
 
   useEffect(() => {
     if (resolvePath(queryData).length < pageStart + pageSize && hasMore?.()) {
@@ -147,6 +152,30 @@ const DataTableBody = ({
     width: rowWidth,
   };
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  // ROW_HEIGHT represents the theme.spacing(6) (48) + 1px borderBottom from DataTableLine
+  const ROW_HEIGHT = 49;
+  const OVERSCAN = 5;
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setScrollTop(el.scrollTop);
+    if (!enableInfiniteScroll || isLoading || !hasMore?.()) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
+      loadMore?.(pageSize);
+    }
+  }, [isLoading, hasMore, loadMore, pageSize, enableInfiniteScroll]);
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return undefined;
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
   if (!tableWidth) {
     return null;
   }
@@ -159,22 +188,58 @@ const DataTableBody = ({
         )}
       </div>
 
-      <div style={containerLinesStyle}>
+      <div ref={scrollContainerRef} style={containerLinesStyle}>
         {resolvedData.length === 0 && !!emptyStateMessage && (
           <DataTableEmptyState message={emptyStateMessage} />
         )}
-        {/* If we have perf issues we should find a way to memoize this */}
-        {resolvedData.map((row: { id: string }, index: number) => {
-          return (
-            <DataTableLine
-              key={row.id}
-              row={row}
-              index={index}
-              onToggleShiftEntity={onToggleShiftEntity}
-            />
+        {enableInfiniteScroll ? (() => {
+          const visibleHeight = tableHeight - (hideHeaders ? 0 : SELECT_COLUMN_SIZE);
+          const firstVisible = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+          const lastVisible = Math.min(
+            resolvedData.length,
+            Math.ceil((scrollTop + visibleHeight) / ROW_HEIGHT) + OVERSCAN,
           );
-        })}
-        {isLoading && <DataTableLinesDummy number={Math.max(pageSize, 10)} />}
+          const loadedHeight = resolvedData.length * ROW_HEIGHT;
+          const rowsMissingInViewport = Math.max(
+            0,
+            Math.floor((scrollTop + visibleHeight - loadedHeight) / ROW_HEIGHT),
+          );
+          const loadingRowsToShow = (isLoading && lastVisible >= resolvedData.length)
+            ? Math.min(Math.max(pageSize, 10), rowsMissingInViewport)
+            : 0;
+          const totalHeight = loadedHeight + loadingRowsToShow * ROW_HEIGHT;
+          const offsetY = firstVisible * ROW_HEIGHT;
+          return (
+            <div style={{ height: totalHeight, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: offsetY, width: '100%' }}>
+                {resolvedData.slice(firstVisible, lastVisible).map((row: { id: string }, i: number) => (
+                  <DataTableLine
+                    key={row.id}
+                    row={row}
+                    index={firstVisible + i}
+                    onToggleShiftEntity={onToggleShiftEntity}
+                  />
+                ))}
+                {loadingRowsToShow > 0 && (
+                  <DataTableLinesDummy number={loadingRowsToShow} />
+                )}
+              </div>
+            </div>
+          );
+        })() : (
+          <>
+            {/* If we have perf issues we should find a way to memoize this */}
+            {resolvedData.map((row: { id: string }, index: number) => (
+              <DataTableLine
+                key={row.id}
+                row={row}
+                index={index}
+                onToggleShiftEntity={onToggleShiftEntity}
+              />
+            ))}
+            {isLoading && <DataTableLinesDummy number={Math.max(pageSize, 10)} />}
+          </>
+        )}
       </div>
     </>
   );

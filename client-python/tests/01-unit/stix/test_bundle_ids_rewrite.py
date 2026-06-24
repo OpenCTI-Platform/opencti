@@ -23,9 +23,16 @@ def test_ids_generation():
     gen_id = get_cti_helper().generate_standard_id_from_stix
     # attack-pattern
     assert gen_id({"type": "attack-pattern", "name": "attack"}) =='attack-pattern--25f21617-8de8-5d5e-8cd4-b7e88547ba76'
-    assert gen_id({"type": "attack-pattern", "name": "attack", "x_opencti_external_id": 'MITREID'}) == 'attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9'
-    assert gen_id({"type": "attack-pattern", "name": "Spear phishing messages with malicious links", "x_mitre_id": 'T1368'}) == 'attack-pattern--a01046cc-192f-5d52-8e75-6e447fae3890'
-    assert gen_id({"type": "attack-pattern", "x_mitre_id": "MITREID"}) == 'attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9'
+    assert gen_id({"type": "attack-pattern", "name": "attack", "x_opencti_external_id": 'MITREID'}) == 'attack-pattern--66488b4f-c9d1-5e36-99cc-372b34ebeeee'
+    assert gen_id({"type": "attack-pattern", "name": "Spear phishing messages with malicious links", "x_mitre_id": 'T1368'}) == 'attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498'
+    assert gen_id({"type": "attack-pattern", "x_mitre_id": "MITREID"}) == 'attack-pattern--66488b4f-c9d1-5e36-99cc-372b34ebeeee'
+    # x_mitre_id is case-insensitive: 'MITREID' and 'mitreid' must resolve to the same standard id
+    assert gen_id({"type": "attack-pattern", "x_mitre_id": "mitreid"}) == 'attack-pattern--66488b4f-c9d1-5e36-99cc-372b34ebeeee'
+    # x_mitre_id is also whitespace-trimmed so the canonical id is stable across STIX bundles
+    assert gen_id({"type": "attack-pattern", "x_mitre_id": "  MITREID  "}) == 'attack-pattern--66488b4f-c9d1-5e36-99cc-372b34ebeeee'
+    # Whitespace-only x_mitre_id is treated as unset and falls back to name, matching the backend
+    # behaviour (filteredIdContributions filters out empty contributing fields).
+    assert gen_id({"type": "attack-pattern", "x_mitre_id": "   ", "name": "attack"}) == 'attack-pattern--25f21617-8de8-5d5e-8cd4-b7e88547ba76'
     assert gen_id({"type": "attack-pattern", "name": "Evil Pattern!", "description": "Test Attack Pattern!"}) == 'attack-pattern--23a5b210-f675-5936-ae14-21327e9798e2'
     # campaign
     assert gen_id({"type": "campaign", "name": "attack"}) == 'campaign--25f21617-8de8-5d5e-8cd4-b7e88547ba76'
@@ -40,8 +47,15 @@ def test_ids_generation():
     # report
     assert gen_id({"type": "report", "name": "Report", "published": "2022-11-25T19:00:05.000Z"}) == "report--761c6602-975f-5e5e-b220-7a2d41f33ce4"
     # course-of-action
-    assert gen_id({"type": "course-of-action", "x_mitre_id": "MITREID"}) == "course-of-action--b74cfee2-7b14-585e-862f-fea45e802da9"
-    assert gen_id({"type": "course-of-action", "x_mitre_id": "MITREID", "name": "Name"}) == "course-of-action--b74cfee2-7b14-585e-862f-fea45e802da9"
+    assert gen_id({"type": "course-of-action", "x_mitre_id": "MITREID"}) == "course-of-action--66488b4f-c9d1-5e36-99cc-372b34ebeeee"
+    assert gen_id({"type": "course-of-action", "x_mitre_id": "MITREID", "name": "Name"}) == "course-of-action--66488b4f-c9d1-5e36-99cc-372b34ebeeee"
+    # x_mitre_id is case-insensitive: 'MITREID' and 'mitreid' must resolve to the same standard id
+    assert gen_id({"type": "course-of-action", "x_mitre_id": "mitreid"}) == "course-of-action--66488b4f-c9d1-5e36-99cc-372b34ebeeee"
+    # x_mitre_id is also whitespace-trimmed so the canonical id is stable across STIX bundles
+    assert gen_id({"type": "course-of-action", "x_mitre_id": "  MITREID  "}) == "course-of-action--66488b4f-c9d1-5e36-99cc-372b34ebeeee"
+    # Whitespace-only x_mitre_id is treated as unset and falls back to name, matching the backend
+    # behaviour (filteredIdContributions filters out empty contributing fields).
+    assert gen_id({"type": "course-of-action", "x_mitre_id": "   ", "name": "Name"}) == "course-of-action--e6e2ee8d-e54d-50cd-b77c-df8c8eea7726"
     assert gen_id({"type": "course-of-action", "name": "Name"}) == "course-of-action--e6e2ee8d-e54d-50cd-b77c-df8c8eea7726"
     # identity
     assert gen_id({"type": "identity", "name": "julien", "identity_class": "Individual"}) == "identity--d969b177-497f-598d-8428-b128c8f5f819"

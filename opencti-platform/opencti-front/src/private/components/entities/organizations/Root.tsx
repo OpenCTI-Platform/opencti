@@ -210,6 +210,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={organization}
               basePath={basePath}
               pages={{
                 overview: (

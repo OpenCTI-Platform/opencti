@@ -31,10 +31,12 @@ import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAI from '../../../../utils/hooks/useAI';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { now } from '../../../../utils/Time';
+import { nowUTC } from '../../../../utils/Time';
+import { buildExportFileName, normalizeExportSourceEntityName } from './StixCoreObjectFileExportForm.utils';
 import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField';
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
+  fileName?: string;
   fileMarkings: {
     id: string;
     name: string;
@@ -116,7 +118,7 @@ const StixCoreObjectFileExportForm = ({
 }: StixCoreObjectFileExportFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { fullyActive } = useAI();
+  const { enabled, configured } = useAI();
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
@@ -230,25 +232,30 @@ const StixCoreObjectFileExportForm = ({
             setFieldValue('template', (templates ?? [])[0] ?? null);
           }
         }, [values.connector]);
+
         useEffect(() => {
-          if (values.template) {
-            setFieldValue('exportFileName', `${values.template.label}_${now()}`);
+          if (values.template || values.fileToExport) {
+            const selectedEntityName = values.connector?.value === BUILT_IN_HTML_TO_PDF.value
+              ? (values.fileToExport?.value === 'mappableContent'
+                  ? scoName
+                  : normalizeExportSourceEntityName(values.fileToExport?.fileName))
+              : scoName;
+            setFieldValue('exportFileName', buildExportFileName({
+              entityName: selectedEntityName,
+              markings: values.fileMarkings,
+              utcIsoDate: nowUTC(),
+            }));
           }
-        }, [values.template]);
-        useEffect(() => {
-          if (values.fileToExport) {
-            setFieldValue(
-              'exportFileName',
-              values.fileToExport.value === 'mappableContent' && scoName
-                ? `${scoName}_${now()}`
-                : `${values.fileToExport.label.split('.')[0]}_${now()}`,
-            );
-          }
-        }, [values.fileToExport]);
+        }, [values.template, values.fileToExport, values.fileMarkings, scoName, setFieldValue]);
 
         useEffect(() => {
           setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
         }, [values.contentMaxMarkings]);
+
+        const shouldDisplayFintelDesign = (
+          (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
+          || (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/'))
+        );
 
         return (
 
@@ -328,12 +335,12 @@ const StixCoreObjectFileExportForm = ({
                       </Card>
                     </Grid>
                   ))}
-                  {isContainer && fullyActive && (
+                  {isContainer && (enabled && configured) && (
                     <Grid size={{ xs: 4 }}>
                       <Card
                         aria-label={t_i18n('Ask AI')}
                         variant="outlined"
-                        onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
+                        onClick={() => (isEnterpriseEdition && (enabled && configured) ? selectFormat(setFieldValue, 'ai') : null)}
                         sx={{
                           textAlign: 'center',
                           height: 150,
@@ -421,9 +428,7 @@ const StixCoreObjectFileExportForm = ({
                           optionLength={80}
                         />
                       )}
-                      {((values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
-                        || (values.connector.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/')))
-                      && (
+                      {shouldDisplayFintelDesign && (
                         <FintelDesignField
                           name="fintelDesign"
                           label={t_i18n('Fintel design')}

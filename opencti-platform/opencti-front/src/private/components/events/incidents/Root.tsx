@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Routes, useParams, useLocation } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -31,6 +28,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
 import { PATH_INCIDENT, PATH_INCIDENTS } from '@components/common/routes/paths';
+import { isPathOverview } from '../../../../utils/tabUtils';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -88,7 +86,11 @@ const incidentQuery = graphql`
   }
 `;
 
-const RootIncidentComponent = ({ queryRef }) => {
+interface RootIncidentComponentProps {
+  queryRef: PreloadedQuery<RootIncidentQuery>;
+}
+
+const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
   const { incidentId } = useParams() as { incidentId: string };
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
     () => ({
@@ -105,7 +107,7 @@ const RootIncidentComponent = ({ queryRef }) => {
   const { incident, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_INCIDENT(incidentId);
   const link = `${basePath}/knowledge`;
-  const isOverview = location.pathname === basePath;
+  const isOverview = isPathOverview(location.pathname, basePath);
   const paddingRightValue = () => {
     if (location.pathname.includes(`${basePath}/knowledge`)) return 200;
     if (location.pathname.includes(`${basePath}/content`)) return 350;
@@ -175,6 +177,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={incident}
               basePath={basePath}
               pages={{
                 overview: <Incident incidentData={incident} />,

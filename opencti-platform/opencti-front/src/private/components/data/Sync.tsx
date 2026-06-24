@@ -29,7 +29,7 @@ const Sync = () => {
   const { settings, isXTMHubAccessible } = useContext(UserContext);
 
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}&integrationType=stream`
     : '';
 
   setTitle(t_i18n('Remote OCTI Streams | Ingestion | Data'));

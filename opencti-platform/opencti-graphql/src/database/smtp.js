@@ -24,11 +24,39 @@ const smtpOptions = {
   },
 };
 
-if (conf.get('smtp:username') && conf.get('smtp:username').length > 0) {
-  smtpOptions.auth = {
-    user: conf.get('smtp:username'),
-    pass: conf.get('smtp:password') || '',
-  };
+export const buildSmtpAuth = (authType, { username, password, oauthUser, oauthClientId, oauthClientSecret, oauthAccessToken }) => {
+  if (authType === 'oauth2') {
+    if (!oauthUser || !oauthClientId || !oauthClientSecret || !oauthAccessToken) {
+      throw new Error('SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret and oauth_access_token are all required.');
+    }
+    return {
+      type: 'OAuth2',
+      user: oauthUser,
+      clientId: oauthClientId,
+      clientSecret: oauthClientSecret,
+      accessToken: oauthAccessToken,
+    };
+  }
+  if (username?.length > 0) {
+    return {
+      user: username,
+      pass: password || '',
+    };
+  }
+  return undefined;
+};
+
+const authType = conf.get('smtp:auth_type') || 'basic';
+const smtpAuth = buildSmtpAuth(authType, {
+  username: conf.get('smtp:username'),
+  password: conf.get('smtp:password'),
+  oauthUser: conf.get('smtp:oauth_user'),
+  oauthClientId: conf.get('smtp:oauth_client_id'),
+  oauthClientSecret: conf.get('smtp:oauth_client_secret'),
+  oauthAccessToken: conf.get('smtp:oauth_access_token'),
+});
+if (smtpAuth) {
+  smtpOptions.auth = smtpAuth;
 }
 
 export const transporter = nodemailer.createTransport(smtpOptions);
@@ -46,12 +74,16 @@ export const smtpComputeFrom = async (from) => {
 };
 
 export const smtpIsAlive = async () => {
+  logApp.info('[CHECK] Checking if SMTP is available');
   if (SMTP_ENABLE) {
     try {
       await transporter.verify();
+      logApp.info('[CHECK] SMTP is alive');
     } catch {
       logApp.warn('SMTP seems down, email notification may not work');
     }
+  } else {
+    logApp.info('[CHECK] SMTP disabled by configuration');
   }
   return true;
 };

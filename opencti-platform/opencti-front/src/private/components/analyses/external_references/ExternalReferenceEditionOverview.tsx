@@ -154,6 +154,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
+              uploadEntityId={externalReference.id}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }

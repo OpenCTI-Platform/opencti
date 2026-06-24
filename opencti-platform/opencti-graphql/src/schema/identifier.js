@@ -138,8 +138,8 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_ICCID]: [{ src: 'value' }],
     [C.ENTITY_IMSI]: [{ src: 'value' }],
     // Types embedded
-    [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
-    [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL
+    [C.ENTITY_EMAIL_MIME_PART_TYPE]: [{ src: 'body' }, { src: 'content_type' }, { src: 'content_disposition' }],
+    [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [{ src: 'name' }, { src: 'data' }, { src: 'data_type' }],
   },
   resolvers: {
     from(from) {
@@ -238,6 +238,12 @@ const stixBaseEntityContribution = {
       return normalizeName(data);
     },
     value(data) {
+      return normalizeName(data);
+    },
+    // x_mitre_id is used as a discriminator for Attack Pattern and Course of Action ids.
+    // Normalize it so MITRE-style identifiers (e.g. T1059 / t1059) deduplicate properly,
+    // consistently with how name is normalized for vulnerabilities, etc.
+    x_mitre_id(data) {
       return normalizeName(data);
     },
     definition(data) {

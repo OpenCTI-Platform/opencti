@@ -3,7 +3,7 @@ import { Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { isEmptyField } from '../../../../utils/utils';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import useGraphParser from '../../../../components/graph/utils/useGraphParser';
 import SimpleGraph2D from '../../../../components/graph/SimpleGraph2D';
 import { resolveLink } from '../../../../utils/Entity';

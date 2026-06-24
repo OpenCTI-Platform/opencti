@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.checkout_ref }}
 
@@ -89,7 +89,7 @@ jobs:
         '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
@@ -154,7 +154,7 @@ jobs:
 
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Runner information
       continue-on-error: true
@@ -211,7 +211,7 @@ jobs:
           '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
@@ -246,7 +246,7 @@ jobs:
 
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Runner information
       continue-on-error: true
@@ -279,7 +279,7 @@ jobs:
         '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json

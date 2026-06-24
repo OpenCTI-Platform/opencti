@@ -13,13 +13,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import React from 'react';
 import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
 import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
 import { PlaybookComponent, PlaybookComponents, PlaybookNode } from '../types/playbook-types';
+import { groupAndSortPlaybookComponents } from './playbookComponents-utils';
 
 interface PlaybookSelectComponentProps {
   components: PlaybookComponents;
@@ -35,30 +38,30 @@ const PlaybookFlowSelectComponent = ({
   const { t_i18n } = useFormatter();
 
   const isSelectedNodeEntryPoint = selectedNode?.data?.component?.is_entry_point ?? false;
-  const entryComponents = components.flatMap((component) => {
-    if (!component || component.is_entry_point !== isSelectedNodeEntryPoint) return [];
-    return component;
-  });
+  const grouped = groupAndSortPlaybookComponents(components, isSelectedNodeEntryPoint);
 
   return (
     <List>
-      {entryComponents.map((component) => {
-        return (
-          <ListItemButton
-            divider
-            key={component.id}
-            onClick={() => onSelect(component)}
-          >
-            <ListItemIcon>
-              <ItemIcon type={component.icon} />
-            </ListItemIcon>
-            <ListItemText
-              primary={t_i18n(component.name)}
-              secondary={t_i18n(component.description)}
-            />
-          </ListItemButton>
-        );
-      })}
+      {grouped.map(({ category, items }, index) => (
+        <React.Fragment key={category}>
+          <ListSubheader disableSticky sx={index > 0 ? { paddingTop: '8px' } : undefined}>{t_i18n(category)}</ListSubheader>
+          {items.map((component) => (
+            <ListItemButton
+              divider
+              key={component.id}
+              onClick={() => onSelect(component)}
+            >
+              <ListItemIcon>
+                <ItemIcon type={component.icon} />
+              </ListItemIcon>
+              <ListItemText
+                primary={t_i18n(component.name)}
+                secondary={t_i18n(component.description)}
+              />
+            </ListItemButton>
+          ))}
+        </React.Fragment>
+      ))}
     </List>
   );
 };

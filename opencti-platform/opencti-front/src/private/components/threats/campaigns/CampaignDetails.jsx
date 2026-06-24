@@ -5,7 +5,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
 
@@ -16,14 +16,14 @@ class CampaignDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <Label>
                 {t('Description')}
               </Label>
               <ExpandableMarkdown source={campaign.description} limit={400} />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
+            </Grid>
+            <Grid item xs={6}>
+              <Label>
                 {t('Objective')}
               </Label>
               <MarkdownDisplay

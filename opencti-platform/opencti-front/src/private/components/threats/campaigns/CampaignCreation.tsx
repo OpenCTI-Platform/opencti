@@ -23,6 +23,7 @@ import { CampaignsCardsPaginationQuery$variables } from './__generated__/Campaig
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import ProgressBar from '../../../../components/ProgressBar';
@@ -103,6 +104,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Campaign')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -131,6 +133,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: CampaignCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -138,7 +141,6 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 
@@ -233,6 +235,9 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               askAi={true}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

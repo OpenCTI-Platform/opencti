@@ -59,7 +59,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
         filters: [
           {
             key: 'entity_type',
-            values: 'Stix-Cyber-Observable',
+            values: ['Stix-Cyber-Observable'],
           },
           {
             key: 'regardingOf',
@@ -73,10 +73,22 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
       },
     },
   ];
+
+  const config = {
+    startDate: undefined,
+    endDate: undefined,
+  };
+
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown source={data.description} limit={400} />
+          </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Infrastructure types')}
@@ -93,12 +105,6 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
                   )}
               </Stack>
             </FieldOrEmpty>
-          </Grid>
-          <Grid item xs={6}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
             <Label>
@@ -122,9 +128,9 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           parameters={{ title: t_i18n('Observables distribution') }}
           variant="inEntity"
           height={300}
-          startDate={undefined}
-          endDate={undefined}
+          config={config}
           popover={undefined}
+          host={undefined}
         />
       </Card>
     </div>

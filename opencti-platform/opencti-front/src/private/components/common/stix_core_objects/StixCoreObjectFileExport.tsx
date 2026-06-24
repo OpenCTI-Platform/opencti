@@ -49,6 +49,8 @@ const stixCoreObjectFileExportQuery = graphql`
       }
       objectMarking {
         id
+        definition
+        definition_type
         representative {
           main
         }
@@ -63,6 +65,8 @@ const stixCoreObjectFileExportQuery = graphql`
             }
             objectMarking {
               id
+              definition
+              definition_type
               representative {
                 main
               }
@@ -80,6 +84,8 @@ const stixCoreObjectFileExportQuery = graphql`
             }
             objectMarking {
               id
+              definition
+              definition_type
               representative {
                 main
               }
@@ -102,6 +108,8 @@ const stixCoreObjectFileExportQuery = graphql`
               }
               objectMarking {
                 id
+                definition
+                definition_type
                 representative {
                   main
                 }
@@ -170,8 +178,8 @@ const StixCoreObjectFileExportComponent = ({
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const oldEditorEnabled = isOldEditorEnable();
 
   const {
     connectorsForExport,
@@ -194,6 +202,7 @@ const StixCoreObjectFileExportComponent = ({
     return {
       value: e.node.id,
       label: getMainRepresentative(e.node),
+      fileName: e.node.name,
       fileMarkings: e.node.objectMarking.map((o) => ({
         id: o.id,
         name: getMainRepresentative(o),
@@ -204,6 +213,7 @@ const StixCoreObjectFileExportComponent = ({
   fileOptions.push({
     value: 'mappableContent',
     label: t_i18n('Mappable main content'),
+    fileName: 'mappableContent',
     fileMarkings: (stixCoreObject?.objectMarking ?? []).map((o) => ({
       id: o.id,
       name: getMainRepresentative(o),
@@ -306,7 +316,7 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value, tiptapEnabled);
+          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value, !oldEditorEnabled);
           const blob = await PDF.getBlob();
           uploadFile({
             id: scoId,
@@ -331,8 +341,8 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value, tiptapEnabled)
-          : htmlToPdf(fileId, fileData, tiptapEnabled);
+          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value, !oldEditorEnabled)
+          : htmlToPdf(fileId, fileData, !oldEditorEnabled);
         const blob = await PDF.getBlob();
         uploadFile({
           id: scoId,
@@ -452,7 +462,7 @@ const StixCoreObjectFileExport = (props: StixCoreObjectFileExportProps) => {
   return (
     <>
       {!connectorsQueryRef && (
-        <OpenFormComponent onOpen={() => {}} isExportPossible={false} />
+        <OpenFormComponent onOpen={() => { }} isExportPossible={false} />
       )}
       {connectorsQueryRef && (
         <React.Suspense>

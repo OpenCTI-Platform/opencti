@@ -8,6 +8,33 @@ const keep = process.argv.slice(2).includes('--keep');
 const buildPath = "./builder/prod/build";
 
 (async () => {
+  // Build Monaco web workers as separate IIFE bundles (required for GraphiQL
+  // schema completion). Entry points come directly from the official npm packages.
+  await esbuild.build({
+      logLevel: "info",
+      entryPoints: {
+        "editor.worker": "monaco-editor/esm/vs/editor/editor.worker.js",
+        "json.worker": "monaco-editor/esm/vs/language/json/json.worker.js",
+        "graphql.worker": "monaco-graphql/esm/graphql.worker.js",
+      },
+      bundle: true,
+      format: "iife",
+      minify: true,
+      target: ["chrome58"],
+      outdir: `${buildPath}/static/workers`,
+      entryNames: "[name]",
+      loader: { ".js": "jsx" },
+      // Prettier v3 uses dynamic imports internally which are incompatible with
+      // esbuild's IIFE format. Stub it out — autocompletion and validation work
+      // fine without it; only "format document" is disabled.
+      alias: {
+        'prettier/standalone': './src/public/workers/prettier-stub.js',
+        'prettier/parser-graphql': './src/public/workers/prettier-stub.js',
+        'prettier/plugins/graphql': './src/public/workers/prettier-stub.js',
+        'prettier': './src/public/workers/prettier-stub.js',
+      },
+    });
+
   await esbuild.build({
       logLevel: "info",
       plugins: [RelayPlugin],
@@ -31,6 +58,11 @@ const buildPath = "./builder/prod/build";
       keepNames: true,
       sourcemap: keep,
       outdir: "builder/prod/build",
+      // Workaround to circumvent usage of process.env in react-draggable.
+      // To remove once https://github.com/react-grid-layout/react-draggable/issues/806 is addressed.
+      define: {
+        'process.env.DRAGGABLE_DEBUG': JSON.stringify(process.env.DRAGGABLE_DEBUG === 'true'),
+      },
     });
   // Copy public files to build
   await cp("./src/static/ext",  `${buildPath}/static/ext`, { recursive: true, overwrite: true });

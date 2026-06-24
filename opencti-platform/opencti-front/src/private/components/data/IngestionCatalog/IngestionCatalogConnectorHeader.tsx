@@ -57,19 +57,19 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
             >
               {connector.title}
             </Typography>
-            {
-              connector.verified && (
-                <ItemBoolean
-                  status
-                  label={(
-                    <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                      <VerifiedOutlined color="success" fontSize="small" />
-                      {t_i18n('Verified')}
-                    </Stack>
-                  )}
-                />
-              )
-            }
+            <ItemBoolean
+              status
+              reverse={!connector.verified}
+              label={(
+                <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
+                  <VerifiedOutlined
+                    color={connector.verified ? 'success' : 'disabled'}
+                    fontSize="small"
+                  />
+                  {connector.verified ? t_i18n('Verified') : t_i18n('Not verified')}
+                </Stack>
+              )}
+            />
           </Stack>
 
           <Stack direction="row">

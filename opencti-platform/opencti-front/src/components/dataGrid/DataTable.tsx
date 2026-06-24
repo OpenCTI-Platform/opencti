@@ -20,7 +20,8 @@ import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
   | 'contextFilters'
-  | 'entityTypes'> & {
+  | 'entityTypes'
+  | 'hideSavedFilters'> & {
     hideSearch?: boolean;
     hideFilters?: boolean;
     availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes'];
@@ -46,6 +47,7 @@ const DataTableInternalFilters = ({
   additionalHeaderToggleButtons: additionalToggleButtons,
   currentView,
   exportContext,
+  hideSavedFilters,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
   const {
@@ -93,6 +95,7 @@ const DataTableInternalFilters = ({
               additionalHeaderButtons={additionalHeaderButtons}
               additionalHeaderToggleButtons={additionalToggleButtons}
               currentView={currentView}
+              hideSavedFilters={hideSavedFilters}
             />
           )}
         </div>
@@ -118,6 +121,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'markAsReadEnabled'
   | 'entityTypes'
   | 'trashOperationsEnabled'
+  | 'disableBulkEnroll'
   | 'deleteDisable'
   | 'container'
 > & {
@@ -137,6 +141,7 @@ const DataTableInternalToolbar = ({
   entityTypes,
   displayEditButtons,
   trashOperationsEnabled,
+  disableBulkEnroll,
   deleteDisable,
   container,
 }: DataTableInternalToolbarProps) => {
@@ -179,6 +184,7 @@ const DataTableInternalToolbar = ({
         markAsReadEnabled={markAsReadEnabled}
         displayEditButtons={displayEditButtons}
         trashOperationsEnabled={trashOperationsEnabled}
+        disableBulkEnroll={disableBulkEnroll}
         deleteDisable={deleteDisable}
         container={container}
       />
@@ -212,6 +218,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'createButton'
   | 'entityTypes'
   | 'actionsColumnWidth'
+  | 'enableInfiniteScroll'
   | 'container'> & {
     lineFragment: GraphQLTaggedNode;
     preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
@@ -240,11 +247,13 @@ const DataTable = (props: OCTIDataTableProps) => {
     currentView,
     hideSearch,
     hideFilters,
+    hideSavedFilters,
     taskScope,
     removeAuthMembersEnabled,
     removeFromDraftEnabled,
     markAsReadEnabled,
     trashOperationsEnabled,
+    disableBulkEnroll,
     deleteDisable,
     container,
   } = props;
@@ -286,6 +295,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             availableRelationFilterTypes={availableRelationFilterTypes}
             hideFilters={hideFilters}
             hideSearch={hideSearch}
+            hideSavedFilters={hideSavedFilters}
             availableRelationshipTypes={availableRelationshipTypes}
             currentView={currentView}
             exportContext={exportContext}
@@ -305,6 +315,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             markAsReadEnabled={markAsReadEnabled}
             displayEditButtons={hasAuthorizedMembersCanEdit}
             trashOperationsEnabled={trashOperationsEnabled}
+            disableBulkEnroll={disableBulkEnroll}
             deleteDisable={deleteDisable}
           />
         )}

@@ -15,7 +15,7 @@ import { SourceMapConsumer } from 'source-map';
 const BACKEND_MAP = './build/back.js.map';
 const FRONT_MAP = '../opencti-front/builder/prod/build/static/js/front.js.map';
 const isExecTypeBack = process.argv[process.argv.length - 1] === 'back';
-const stackData = isExecTypeBack ? process.env.BACKEND_LOG : process.env.frontend_log;
+const stackData = isExecTypeBack ? process.env.BACKEND_LOG : process.env.FRONTEND_LOG;
 
 const sourceMapFile = readFileSync(isExecTypeBack ? BACKEND_MAP : FRONT_MAP, 'utf8');
 const sourceMapContent = JSON.parse(sourceMapFile);

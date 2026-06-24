@@ -5,6 +5,7 @@ import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import withStyles from '@mui/styles/withStyles';
+import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
@@ -71,24 +72,25 @@ class UserEditionPasswordComponent extends Component {
       >
         {({ submitForm, isSubmitting }) => (
           <Form style={{ marginTop: this.props.theme.spacing(2) }}>
-            <PasswordPolicies style={{ marginBottom: 20 }} />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="password"
-              label={t('Password')}
-              type="password"
-              fullWidth={true}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="confirmation"
-              label={t('Confirmation')}
-              type="password"
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-            />
+            <Stack sx={{ gap: 2.5 }}>
+              <PasswordPolicies />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="password"
+                label={t('Password')}
+                type="password"
+                fullWidth={true}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="confirmation"
+                label={t('Confirmation')}
+                type="password"
+                fullWidth={true}
+              />
+            </Stack>
             <div className={classes.buttons}>
               <Button
                 onClick={submitForm}

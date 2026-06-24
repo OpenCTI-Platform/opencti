@@ -38,7 +38,7 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
-import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { findFiltersFromKey, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -51,6 +51,8 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/data-changes';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import { isOriginMatchFilterGroup } from '../utils/filtering/filtering-stream-origin/stream-origin-filtering';
+import { buildFilterEventContext } from '../manager/playbookManager/playbookManagerUtils';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
@@ -120,7 +122,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
       sendErrorStatus(req, res, 401);
       return { error: res.statusMessage };
     }
-    return { streamFilters: null, collection: null };
+    return { streamFilters: null, originFilters: null, collection: null };
   }
   const collections = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
   const collection = collections.find((c) => c.id === id);
@@ -138,9 +140,10 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
     return { error: 'This live stream is stopped' };
   }
   const streamFilters = JSON.parse(collection.filters);
+  const originFilters = collection.origin_filters ? JSON.parse(collection.origin_filters) : null;
   // If bypass or public stream
   if (collection.stream_public) {
-    return { streamFilters, collection };
+    return { streamFilters, originFilters, collection };
   }
   // Access is restricted, user must be authenticated
   if (!user || !isUserHasCapability(user, TAXIIAPI)) {
@@ -172,13 +175,13 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
       return { error: res.statusMessage };
     }
   }
-  return { streamFilters, collection };
+  return { streamFilters, originFilters, collection };
 };
 
 export const authenticateForPublic = async (req, res, next) => {
   const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
   req.expirationTime = utcDate().add(1, 'days').toDate();
-  const { error, collection, streamFilters } = await computeUserAndCollection(req, res, {
+  const { error, collection, streamFilters, originFilters } = await computeUserAndCollection(req, res, {
     context,
     user: context.user ?? SYSTEM_USER,
     id: req.params.id,
@@ -207,6 +210,7 @@ export const authenticateForPublic = async (req, res, next) => {
     req.context = context;
     req.collection = collection;
     req.streamFilters = streamFilters;
+    req.originFilters = originFilters;
     next();
   }
 };
@@ -549,6 +553,7 @@ const createSseMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
+      // No eventContext for dependency checks (we only check entity visibility, not attribute changes)
       const isFromVisible = await isStixMatchFilterGroup(context, user, fromStix, streamFilters);
       const isToVisible = await isStixMatchFilterGroup(context, user, toStix, streamFilters);
       if (isFromVisible || isToVisible) {
@@ -618,7 +623,7 @@ const createSseMiddleware = () => {
         streamQueryIndices.push(READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS);
       }
 
-      let { streamFilters, collection } = req;
+      let { streamFilters, originFilters, collection } = req;
 
       // Create channel.
       const { channel, client } = createSseChannel(req, res, startStreamId);
@@ -654,24 +659,39 @@ const createSseMiddleware = () => {
                 const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
                 const elementType = stix.extensions[STIX_EXT_OCTI].type;
                 if (!isInferredData || (isInferredData && withInferences)) {
-                  const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters);
+                  // Build event context for has_changed/not_has_changed filter evaluation
+                  const eventContext = type === EVENT_TYPE_UPDATE
+                    ? buildFilterEventContext(eventData)
+                    : type === EVENT_TYPE_CREATE
+                      ? { changedAttributes: [], isCreation: true }
+                      : undefined;
+                  const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters, eventContext);
+                  // Only main-event publications are gated by origin. Dependency/container fallbacks
+                  // are intentionally left ungated (they target related data lacking real origin).
+                  const isOriginVisible = isOriginMatchFilterGroup(eventData, originFilters);
                   if (type === EVENT_TYPE_UPDATE) {
                     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
-                    const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
+                    const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters, eventContext);
                     if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
-                      await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
-                      cache.set(stix.id, 'hit');
-                    } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
-                      const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
-                      if (isValidResolution) {
-                        await client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                      if (isOriginVisible) {
+                        await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                         cache.set(stix.id, 'hit');
                       }
+                    } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
+                      if (isOriginVisible) {
+                        const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
+                        if (isValidResolution) {
+                          await client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                          cache.set(stix.id, 'hit');
+                        }
+                      }
                     } else if (isCurrentlyVisible) { // Just an update
-                      const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
-                      if (isValidResolution) {
-                        await client.sendEvent(eventId, event, eventData);
-                        cache.set(stix.id, 'hit');
+                      if (isOriginVisible) {
+                        const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
+                        if (isValidResolution) {
+                          await client.sendEvent(eventId, event, eventData);
+                          cache.set(stix.id, 'hit');
+                        }
                       }
                     } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                       // In case of relationship publication, from or to can be related to something that
@@ -700,16 +720,18 @@ const createSseMiddleware = () => {
                       }
                     }
                   } else if (isCurrentlyVisible) {
-                    if (type === EVENT_TYPE_DELETE) {
-                      if (publishDeletion) {
-                        await client.sendEvent(eventId, event, eventData);
-                        cache.set(stix.id, 'hit');
-                      }
-                    } else { // Create and merge
-                      const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
-                      if (isValidResolution) {
-                        await client.sendEvent(eventId, event, eventData);
-                        cache.set(stix.id, 'hit');
+                    if (isOriginVisible) {
+                      if (type === EVENT_TYPE_DELETE) {
+                        if (publishDeletion) {
+                          await client.sendEvent(eventId, event, eventData);
+                          cache.set(stix.id, 'hit');
+                        }
+                      } else { // Create and merge
+                        const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
+                        if (isValidResolution) {
+                          await client.sendEvent(eventId, event, eventData);
+                          cache.set(stix.id, 'hit');
+                        }
                       }
                     }
                   } else if (isRelation && publishDependencies) { // Not an update and not visible
@@ -726,6 +748,7 @@ const createSseMiddleware = () => {
           channel.setLastEventId(lastEventId);
           const newComputed = await computeUserAndCollection(req, res, { id, user, context });
           streamFilters = newComputed.streamFilters;
+          originFilters = newComputed.originFilters;
           collection = newComputed.collection;
           error = newComputed.error;
         }, opts);
@@ -736,7 +759,23 @@ const createSseMiddleware = () => {
         logApp.info(`[STREAM] Listening stream ${id} from ${startMessage}${recoveringMessage}`);
         // Start recovery if needed
         const isRecoveryMode = isNotEmptyField(recoverIsoDate) && utcDate(recoverIsoDate).isAfter(startIsoDate);
-        if (isRecoveryMode) {
+        // Origin filters can only match against the live event envelope; Elasticsearch does not
+        // store the original origin so a recovery would either flood the consumer with un-filtered
+        // historical data (security/contract violation) or drop everything (useless work).
+        // We bypass the recovery entirely and let the consumer know via an explicit SSE event.
+        const isOriginFilteredStream = isFilterGroupNotEmpty(originFilters);
+        const skipRecoveryForOriginFilters = isRecoveryMode && isOriginFilteredStream;
+        if (skipRecoveryForOriginFilters) {
+          logApp.warn('[STREAM] Skipping Elasticsearch recovery because origin_filters is set on this stream', { streamCollectionId: id });
+          if (channel.connected()) {
+            await channel.sendEvent(streamEventId(utcDate().toDate()), 'no-recover', {
+              stream: id,
+              message: 'Recovery from history is disabled on streams configured with origin filters; resuming from live events only.',
+              resume_from: recoverStreamId,
+            });
+          }
+        }
+        if (isRecoveryMode && !skipRecoveryForOriginFilters) {
           // noinspection UnnecessaryLocalVariableJS
           const queryCallback = async (elements) => {
             const workingElementsIds = elements.filter((e) => !cache.has(e.standard_id)).map((e) => e.internal_id);

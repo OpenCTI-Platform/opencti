@@ -43,7 +43,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
+import { ENTITY_TYPE_DECAY_RULE, type BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import { isNotEmptyField } from '../database/utils';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
@@ -100,10 +100,9 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
     const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
     // IDs from filters in playbook components.
     const playbookFilterIds = configurations
-      .map((config) => config.filters)
+      .flatMap((config) => [config.filters, config.applyWithFilters])
       .filter((f) => isNotEmptyField(f))
-      .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
-      .flat();
+      .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
     // IDs from list of PIRs to listen.
     const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
@@ -118,6 +117,12 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .flat();
     pushAll(filteringIds, pirFilterIds);
     pushAll(filteringIds, pirCriteriaIds);
+  } else if (instance.entity_type === ENTITY_TYPE_DECAY_RULE) {
+    const decayRuleFilters = (instance as BasicStoreEntityDecayRule).decay_filters;
+    if (decayRuleFilters) {
+      const decayRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse(decayRuleFilters));
+      pushAll(filteringIds, decayRuleIds);
+    }
   } else if (instance.entity_type === ENTITY_TYPE_DECAY_EXCLUSION_RULE) {
     const decayExclusionRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityDecayExclusionRule).decay_exclusion_filters));
     pushAll(filteringIds, decayExclusionRuleIds);
@@ -137,9 +142,11 @@ const platformResolvedFilters = (context: AuthContext) => {
     const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR]);
     const playbooks = await fullEntitiesList<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK]);
     const pirs = await fullEntitiesList<BasicStoreEntityPir>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
+    const decayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_RULE]);
     const decayExclusionRules = await fullEntitiesList<BasicStoreEntityDecayExclusionRule>(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_EXCLUSION_RULE]);
     // Fetch the filters of those entities
-    const filteringIds = [...streams, ...triggers, ...connectors, ...playbooks, ...pirs, ...decayExclusionRules].map((s) => extractResolvedFiltersFromInstance(s)).flat();
+    const allFilteredEntities = [...streams, ...triggers, ...connectors, ...playbooks, ...pirs, ...decayRules, ...decayExclusionRules];
+    const filteringIds = allFilteredEntities.map((s) => extractResolvedFiltersFromInstance(s)).flat();
     // Resolve the filters ids
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
@@ -383,6 +390,7 @@ const initCacheManager = () => {
       logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized');
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
       try {
         subscribeAdd.unsubscribe();
@@ -393,6 +401,7 @@ const initCacheManager = () => {
       try {
         subscribeDelete.unsubscribe();
       } catch { /* dont care */ }
+      logApp.info(`[OPENCTI-MODULE] Cache manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };

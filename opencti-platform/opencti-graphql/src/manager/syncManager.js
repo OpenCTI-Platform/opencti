@@ -1,5 +1,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
+import mime from 'mime-types';
 import conf, { booleanConf, logApp } from '../config/conf';
+import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
@@ -16,10 +18,86 @@ import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
+import { InterruptibleTimer } from './interruptible-timer';
+import {
+  ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
+  extractMarkdownImageReferences,
+  MARKDOWN_FIELD_KEYS,
+  resolveEmbeddedStoragePathWithContext,
+  rewriteMarkdownImageUrls,
+} from '../database/markdown-embedded-images';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
+
+const waitLoopTimer = new InterruptibleTimer();
+
+const hasEmbeddedStorageRef = (markdown) => {
+  return markdown.includes('embedded/')
+    || markdown.includes('/storage/get/embedded/')
+    || markdown.includes('/storage/view/embedded');
+};
+
+const extractMimeTypeFromHeader = (response) => {
+  const contentTypeHeader = response?.headers?.['content-type'];
+  if (!contentTypeHeader || typeof contentTypeHeader !== 'string') {
+    return null;
+  }
+  return contentTypeHeader.split(';')[0].trim().toLowerCase();
+};
+
+const extractStorageRelativePath = (candidateUri) => {
+  const normalizedUri = candidateUri.trim();
+  const lowerCaseUri = normalizedUri.toLowerCase();
+  const getIndex = lowerCaseUri.indexOf('/storage/get/');
+  const viewIndex = lowerCaseUri.indexOf('/storage/view/');
+  const candidates = [getIndex, viewIndex].filter((index) => index >= 0);
+  if (candidates.length === 0) {
+    return null;
+  }
+  const pathIndex = Math.min(...candidates);
+  return normalizedUri.substring(pathIndex).replace(/^\/+/, '');
+};
+
+const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
+  if (typeof storageUri !== 'string') {
+    return null;
+  }
+
+  const { entityType, entityId } = options;
+  const trimmedStorageUri = storageUri.trim();
+  if (/^https?:\/\//i.test(trimmedStorageUri)) {
+    try {
+      const parsedUri = new URL(trimmedStorageUri);
+      const extractedPath = extractStorageRelativePath(`${parsedUri.pathname}${parsedUri.search}`);
+      if (extractedPath) {
+        return `${httpBase(syncUri)}${extractedPath}`;
+      }
+      const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
+      if (normalizedPath.startsWith('embedded/')) {
+        const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
+        return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  const extractedPath = extractStorageRelativePath(trimmedStorageUri);
+  if (extractedPath) {
+    return `${httpBase(syncUri)}${extractedPath}`;
+  }
+
+  const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
+  if (normalizedPath.startsWith('embedded/')) {
+    const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
+    return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+  }
+
+  return null;
+};
 
 const syncManagerInstance = (syncId) => {
   // Variables
@@ -35,7 +113,8 @@ const syncManagerInstance = (syncId) => {
   // the generator is suspended, bytes are not read from the socket,
   // TCP receive buffer fills up, and flow control throttles the server.
   const streamEvents = async function* (sseUri, syncElement) {
-    const { token, ssl_verify: ssl = false } = syncElement;
+    const { ssl_verify: ssl = false } = syncElement;
+    const token = await decryptSynchronizerCredential(syncElement.token);
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
     abortController = new AbortController();
     const streamClient = getHttpClient({ headers, rejectUnauthorized: ssl, responseType: 'stream' });
@@ -56,6 +135,11 @@ const syncManagerInstance = (syncId) => {
   const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
     const { uri } = sync;
     const processingData = { ...data };
+    const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
+    const markdownEntityContext = {
+      entityType: octiExtension.type,
+      entityId: octiExtension.id,
+    };
     // Reverse patch the id if modified
     const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
     // Handle file enrichment
@@ -64,12 +148,92 @@ const syncManagerInstance = (syncId) => {
       const entityFile = entityFiles[index];
       const { uri: fileUri } = entityFile;
       try {
-        const response = await httpClient.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`);
-        entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
+        const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
+        if (!fetchUri) {
+          logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
+          continue;
+        }
+        const response = await httpClient.get(fetchUri);
+        entityFile.data = Buffer.from(response.data).toString('base64');
       } catch (e) {
         logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
       }
     }
+
+    const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
+      const embeddedReferences = extractMarkdownImageReferences(markdown)
+        .filter((reference) => reference.isEmbeddedStorage);
+      if (embeddedReferences.length === 0) {
+        return markdown;
+      }
+
+      const uriByReferenceUrl = new Map();
+      const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
+
+      for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
+        const embeddedStorageUri = uniqueReferenceUrls[i];
+        try {
+          const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
+          if (!fetchUri) {
+            logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
+              embeddedStorageUri,
+            });
+            uriByReferenceUrl.set(embeddedStorageUri, null);
+            continue;
+          }
+          const response = await httpClient.get(fetchUri);
+          const headerMimeType = extractMimeTypeFromHeader(response);
+          const pathMimeType = mime.lookup(embeddedStorageUri);
+          const detectedMime = headerMimeType || (pathMimeType || null);
+
+          if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
+            logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
+              embeddedStorageUri,
+              mimeType: detectedMime,
+            });
+            uriByReferenceUrl.set(embeddedStorageUri, null);
+            continue;
+          }
+
+          const base64Data = Buffer.from(response.data).toString('base64');
+          uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
+        } catch (e) {
+          logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
+            embeddedStorageUri,
+            message: e.message,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+        }
+      }
+
+      const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+        return uriByReferenceUrl.get(reference.url) ?? undefined;
+      });
+
+      return rewrittenMarkdown;
+    };
+
+    const resolveEmbeddedImagesMarkdownFields = async (payload) => {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return;
+      }
+
+      for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
+        const key = MARKDOWN_FIELD_KEYS[i];
+        const value = payload[key];
+        if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
+          payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
+        } else if (Array.isArray(value)) {
+          for (let j = 0; j < value.length; j += 1) {
+            if (typeof value[j] === 'string' && hasEmbeddedStorageRef(value[j])) {
+              value[j] = await resolveEmbeddedImagesInMarkdownDescription(value[j]);
+            }
+          }
+        }
+      }
+    };
+
+    await resolveEmbeddedImagesMarkdownFields(processingData);
     return { data: processingData, previous_standard: idOperation?.value };
   };
   const saveCurrentState = async (context, type, eventId) => {
@@ -99,7 +263,8 @@ const syncManagerInstance = (syncId) => {
       logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
       const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
       const synchronized = sync.synchronized ?? false;
-      const { token, ssl_verify: ssl = false } = sync;
+      const { ssl_verify: ssl = false } = sync;
+      const token = await decryptSynchronizerCredential(sync.token);
       const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
       const httpClientOptions = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
       const httpClient = getHttpClient(httpClientOptions);
@@ -230,7 +395,7 @@ const initSyncManager = () => {
     while (syncListening) {
       lock.signal.throwIfAborted();
       await processStep();
-      await wait(WAIT_TIME_ACTION);
+      await waitLoopTimer.start(WAIT_TIME_ACTION);
     }
     // Stopping
     for (const syncManager of syncManagers.values()) {
@@ -272,11 +437,14 @@ const initSyncManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping Sync manager');
       syncListening = false;
+      waitLoopTimer.interrupt();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Sync manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

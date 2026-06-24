@@ -26,6 +26,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 interface SecurityPlatformCreationFormData {
   name: string;
@@ -67,6 +68,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     undefined,
     { successMessage: `${t_i18n('entity_SecurityPlatform')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const {
     bulkCommit,
@@ -97,6 +99,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     const allNames = splitMultilines(values.name);
     const variables: SecurityPlatformCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(),
         name,
         description: values.description,
         security_platform_type: values.security_platform_type,
@@ -195,6 +198,9 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             { /* TODO Improve customization (vocab with letter range) 2662 */}
             <OpenVocabField

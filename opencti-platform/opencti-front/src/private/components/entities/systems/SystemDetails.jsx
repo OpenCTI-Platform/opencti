@@ -7,7 +7,7 @@ import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Label from '../../../../components/common/label/Label';
 
 class SystemDetailsComponent extends Component {
@@ -17,7 +17,7 @@ class SystemDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <Label>
                 {t('Description')}
               </Label>

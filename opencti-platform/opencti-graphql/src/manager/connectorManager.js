@@ -1,13 +1,14 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import { redisDeleteWorks, redisGetConnectorStatus, redisGetWork } from '../database/redis';
+import { redisGetConnectorStatus, redisGetWork } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
-import { elDeleteInstances, elList, elUpdate } from '../database/engine';
+import { elList, elUpdate } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_HISTORY } from '../database/utils';
-import { now, sinceNowInDays } from '../utils/format';
+import { now } from '../utils/format';
+import { deleteWorksRaw } from '../domain/work';
 
 // Manage work created by connectors
 // Update status to complete when needed
@@ -38,28 +39,21 @@ const closeOldWorks = async (context, connector) => {
       for (let i = 0; i < elements.length; i += 1) {
         const element = elements[i];
         try {
-          // If element is too old, just delete it
-          if (sinceNowInDays(element.timestamp) > CONNECTOR_WORK_RANGE) {
-            await elDeleteInstances([element]);
-          } else { // If not, update the status to complete + the number of processed elements
-            const currentWorkStatus = await redisGetWork(element.internal_id);
-            if (currentWorkStatus) {
-              const params = { completed_time: now(), completed_number: parseInt(currentWorkStatus.import_processed_number, 10) };
-              const sourceScript = `ctx._source['status'] = "complete";
-                  ctx._source['completed_time'] = params.completed_time;
-                  ctx._source['completed_number'] = params.completed_number;`;
-              await elUpdate(element._index, element.internal_id, {
-                script: {
-                  source: sourceScript,
-                  lang: 'painless',
-                  params,
-                },
-              });
-              logApp.info('Work completed by force due to age', { workId: element.internal_id });
-            }
+          const currentWorkStatus = await redisGetWork(element.internal_id);
+          if (currentWorkStatus) {
+            const params = { completed_time: now(), completed_number: parseInt(currentWorkStatus.import_processed_number, 10) };
+            const sourceScript = `ctx._source['status'] = "complete";
+                ctx._source['completed_time'] = params.completed_time;
+                ctx._source['completed_number'] = params.completed_number;`;
+            await elUpdate(context, element._index, element.internal_id, {
+              script: {
+                source: sourceScript,
+                lang: 'painless',
+                params,
+              },
+            });
+            logApp.info('Work completed by force due to age', { workId: element.internal_id });
           }
-          // Delete redis tracking key
-          await redisDeleteWorks(element.internal_id);
         } catch (e) {
           logApp.error('[OPENCTI-MODULE] Connector manager error processing work closing', { cause: e });
         }
@@ -91,9 +85,7 @@ export const deleteCompletedWorks = async (context, connector) => {
   const queryCallback = async (elements) => {
     const message = `[WORKS] Deleting ${elements.length} works for ${connector.name}`;
     logApp.info(message);
-    const ids = elements.map((w) => w.internal_id);
-    await redisDeleteWorks(ids);
-    await elDeleteInstances(elements);
+    await deleteWorksRaw(context, elements);
   };
   await elList(context, SYSTEM_USER, [READ_INDEX_HISTORY], {
     filters,
@@ -153,10 +145,12 @@ const initConnectorManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping connector manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Connector manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

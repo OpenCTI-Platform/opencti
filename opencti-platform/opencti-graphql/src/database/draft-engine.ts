@@ -31,17 +31,23 @@ import { storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from './midd
 import { buildRefRelationKey } from '../schema/general';
 import { getFileContent } from './raw-file-storage';
 import { loadFile } from './file-storage';
+import { rewriteMarkdownPatchUpdatesForExport } from './middlewareEmbeddedImages';
 import { EditOperation } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRelation } from '../types/store';
 import { files } from '../schema/attribute-definition';
+
+type ResolveDraftUpdateFilesOptions = {
+  entityType?: string;
+  entityId?: string;
+};
 
 const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]): Promise<void> => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext) {
     return;
   }
-  await elDeleteInstances(elements);
+  await elDeleteInstances(context, elements);
   const elementsIds = elements.map((e) => e.internal_id);
   await elRemoveDraftIdFromElements(context, user, draftContext, elementsIds);
 };
@@ -64,7 +70,7 @@ const elRemoveCreateElementFromDraft = async (context: AuthContext, user: AuthUs
   // Clean up all denormalized rel impact of relations deletion, then delete all relations
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
   await elRemoveRelationConnection(context, user, draftRelationsElementsImpact);
-  await elDeleteInstances([element, ...draftCreatedRelations]);
+  await elDeleteInstances(context, [element, ...draftCreatedRelations]);
 };
 
 const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
@@ -87,7 +93,7 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
   const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
   if (draftCreatedOrDeletedRelations.length > 0) {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    await elReplace(element._index, element._id, { doc: newDraftChange });
+    await elReplace(context, element._index, element._id, { doc: newDraftChange });
   } else {
     await completeDeleteElementsFromDraft(context, user, [element]);
   }
@@ -124,7 +130,7 @@ const removeDraftDeleteLinkedRelations = async (
     R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
-    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
     await Promise.all([bulkPromise]);
   }
 
@@ -143,7 +149,7 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
     const relationshipElement = element as StoreRelation;
     if (isDraftIndex(relationshipElement.from?._index) || isDraftIndex(relationshipElement.to?._index)) {
       const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
-      await elReplace(element._index, element._id, { doc: newDraftChange });
+      await elReplace(context, element._index, element._id, { doc: newDraftChange });
       return;
     }
   }
@@ -200,7 +206,7 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
     await completeDeleteElementsFromDraft(context, user, [element]);
   } else {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    await elReplace(element._index, element._id, { doc: newDraftChange });
+    await elReplace(context, element._index, element._id, { doc: newDraftChange });
   }
 };
 
@@ -274,11 +280,25 @@ export const elDeleteDraftContextFromWorks = async (context: AuthContext, user: 
   });
 };
 
-export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUser, draftUpdates: InternalEditInput[]) => {
-  const resolvedDraftUpdatePatch = [...draftUpdates.filter((k) => k.key !== files.name)];
-  const addedFiles = draftUpdates.find((k) => k.key === files.name && k.operation === EditOperation.Add);
-  if (addedFiles) {
-    const fileIds = addedFiles.value;
+export const resolveDraftUpdateFiles = async (
+  context: AuthContext,
+  user: AuthUser,
+  draftUpdates: InternalEditInput[],
+  options: ResolveDraftUpdateFilesOptions = {},
+) => {
+  // File patches are rebuilt separately with full file payload objects.
+  const nonFileDraftUpdates = draftUpdates.filter((update) => update.key !== files.name);
+  const resolvedNonFilePatches = (options.entityType && options.entityId)
+    ? await rewriteMarkdownPatchUpdatesForExport(context, nonFileDraftUpdates, {
+        entityType: options.entityType,
+        entityId: options.entityId,
+      })
+    : nonFileDraftUpdates;
+  const resolvedDraftUpdatePatch = [...resolvedNonFilePatches];
+
+  const fileAddPatch = draftUpdates.find((update) => update.key === files.name && update.operation === EditOperation.Add);
+  if (fileAddPatch) {
+    const fileIds = fileAddPatch.value;
     const loadedFileValues = [];
     for (let i = 0; i < fileIds.length; i += 1) {
       const currentFileId = fileIds[i];

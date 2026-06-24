@@ -22,6 +22,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import ReportEdition from './ReportEdition';
 import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -110,7 +111,7 @@ const RootReport = () => {
           if (props) {
             if (props.report) {
               const { report } = props;
-              const isOverview = location.pathname === basePath;
+              const isOverview = isPathOverview(location.pathname, basePath);
               const paddingRight = getPaddingRight(location.pathname, basePath, false);
               const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
               const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
@@ -142,6 +143,7 @@ const RootReport = () => {
                     enableEnricher={true}
                   />
                   <StixDomainObjectMain
+                    entity={report}
                     basePath={basePath}
                     pages={{
                       overview:

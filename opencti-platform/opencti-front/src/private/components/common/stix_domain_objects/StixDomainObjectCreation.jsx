@@ -1,7 +1,6 @@
 import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/lab/Alert';
 import { Select, Stack } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import React, { useState } from 'react';
@@ -210,7 +209,7 @@ const StixDomainPanel = ({
     queryData,
     stixDomainObjectTypes,
   );
-  const selectedType = availableEntityTypes.find((item) => item.value === stixDomainObjectTypes) ?? availableEntityTypes.at(0);
+  const selectedType = (stixDomainObjectTypes?.length && availableEntityTypes.find((item) => item.value === stixDomainObjectTypes[0])) ?? availableEntityTypes.at(0);
   const [type, setType] = useState(selectedType.value);
   const baseCreatedBy = defaultCreatedBy
     ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
@@ -793,25 +792,22 @@ const StixDomainPanel = ({
         </Stack>
       )}
     >
-
-      <DialogContent>
-        {renderUnavailableBulkMessage()}
-        <Select
-          value={type}
-          onChange={(event) => setType(event.target.value)}
-          fullWidth={true}
-          size="small"
-        >
-          {availableEntityTypes.map((availableType) => (
-            <MenuItem key={availableType.value} value={availableType.value}>
-              {availableType.label}
-            </MenuItem>
-          ))}
-        </Select>
-        <div style={{ marginTop: '20px' }}>
-          {renderEntityCreationInterface()}
-        </div>
-      </DialogContent>
+      {renderUnavailableBulkMessage()}
+      <Select
+        value={type}
+        onChange={(event) => setType(event.target.value)}
+        fullWidth={true}
+        size="small"
+      >
+        {availableEntityTypes.map((availableType) => (
+          <MenuItem key={availableType.value} value={availableType.value}>
+            {availableType.label}
+          </MenuItem>
+        ))}
+      </Select>
+      <div style={{ marginTop: '20px' }}>
+        {renderEntityCreationInterface()}
+      </div>
     </Dialog>
   );
 };

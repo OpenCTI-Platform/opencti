@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import { OrganizationDetails_organization$key } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import ItemScore from '../../../../components/ItemScore';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
@@ -38,6 +38,15 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown
+              source={organization.description}
+              limit={400}
+            />
+          </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Organization type')}
@@ -47,15 +56,6 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
                 label={organization.x_opencti_organization_type}
               />
             </FieldOrEmpty>
-            <Label
-              sx={{ mt: 2 }}
-            >
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={organization.description}
-              limit={400}
-            />
           </Grid>
           <Grid item xs={6}>
             <Label>

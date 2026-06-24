@@ -67,7 +67,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
             displayEntityOrId(error.parsedError.entity)
           ) : (
             <Tooltip title={t_i18n('Click on details to see more information')}>
-              {truncate(error.rawError.source ?? EMPTY_VALUE, truncateLimit)}
+              <span>{truncate(error.rawError.source ?? EMPTY_VALUE, truncateLimit)}</span>
             </Tooltip>
           )}
         </TableCell>

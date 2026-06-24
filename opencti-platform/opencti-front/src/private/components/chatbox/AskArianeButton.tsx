@@ -17,15 +17,17 @@ import AskArianePanel from './AskArianePanel';
 import ChatbotManager from './ChatbotManager';
 import { useChatbot } from './ChatbotContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
   const { isChatbotAiEnabled } = useHelper();
-  const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
+  const { settings: { filigran_chatbot_ai_cgu_status }, bannerSettings: { bannerHeightNumber } } = useAuth();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const {
     isOpen, mode, openChat, closeChat, setMode,
     setSidebarWidth, setIsResizing, xtmOneConfigured,
@@ -37,14 +39,18 @@ const AskArianeButton = () => {
   const isChatbotEnabled = isEnterpriseEdition && isChatbotAiEnabled();
   const useLegacy = xtmOneConfigured === false;
 
+  // Total height of all floating banners stacked above the top bar.
+  // Forwarded to the legacy chatbot so its window sticks under the real top bar.
+  const totalBannerHeight = bannerHeightNumber + topBannerHeight + settingsMessagesBannerHeight;
+
   // Legacy v1 web-component management (only active when XTM One is NOT configured)
   const chatbotManager = useRef(ChatbotManager.getInstance());
 
   useEffect(() => {
     if (useLegacy && isChatbotEnabled) {
-      chatbotManager.current.configure(theme, t_i18n, settingsMessagesBannerHeight);
+      chatbotManager.current.configure(theme, t_i18n, totalBannerHeight);
     }
-  }, [useLegacy, isChatbotEnabled, theme, t_i18n, settingsMessagesBannerHeight]);
+  }, [useLegacy, isChatbotEnabled, theme, t_i18n, totalBannerHeight]);
 
   useEffect(() => {
     if (useLegacy && !isChatbotEnabled && chatbotManager.current.isReady()) {

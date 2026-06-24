@@ -1,10 +1,11 @@
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { FilterSearchContext, FiltersRestrictions, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
+import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmpty, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
+import type { WidgetHost } from '../utils/widget/widget';
 import FilterIconButtonContainer, { FilterIconButtonVariant } from './FilterIconButtonContainer';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
@@ -28,7 +29,7 @@ export interface FilterIconButtonProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  fintelTemplatesContext?: boolean;
+  host?: WidgetHost;
   hasSavedFilters?: boolean;
 }
 
@@ -57,7 +58,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  fintelTemplatesContext,
+  host,
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
@@ -65,7 +66,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     {
-      filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
+      filters: normalizeFilterGroupForBackend(filters),
       isMeValueForbidden: searchContext?.elementType === 'Playbook-Stix-Component',
     },
   );
@@ -92,7 +93,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
-            fintelTemplatesContext={fintelTemplatesContext}
+            host={host}
             hasSavedFilters={hasSavedFilters}
             filterChipsParams={filterChipsParams}
             setFilterChipsParams={setFilterChipsParams}
@@ -131,7 +132,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
-  fintelTemplatesContext,
+  host,
   hasSavedFilters,
 }) => {
   const hasRenderedRef = useRef(false);
@@ -172,7 +173,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         searchContext={searchContext}
         availableEntityTypes={availableEntityTypes}
         availableRelationshipTypes={availableRelationshipTypes}
-        fintelTemplatesContext={fintelTemplatesContext}
+        host={host}
         hasSavedFilters={hasSavedFilters}
         filterChipsParams={filterChipsParams}
         setFilterChipsParams={setFilterChipsParams}

@@ -259,7 +259,7 @@ export const processDeleteOperation = async (context: AuthContext, user: AuthUse
     }
   }
   // delete elements
-  await elDeleteInstances([...deletedElements]);
+  await elDeleteInstances(context, [...deletedElements]);
   // finally delete deleteOperation
   await elDeleteElements(context, user, [deleteOperation]);
   return id;

@@ -21,6 +21,7 @@ import { OpinionCreationMutation$variables } from './__generated__/OpinionCreati
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -47,7 +48,6 @@ export const opinionCreationUserMutation = graphql`
       parent_types
       opinion
       explanation
-      ...OpinionLine_node
     }
   }
 `;
@@ -64,7 +64,6 @@ export const opinionCreationMutation = graphql`
       parent_types
       opinion
       explanation
-      ...OpinionLine_node
     }
   }
 `;
@@ -116,10 +115,13 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   );
 
   const [commit] = useApiMutation(opinionCreationMutation);
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
+    const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
+
     const input: OpinionCreationMutation$variables['input'] = {
       opinion: values.opinion,
       explanation: values.explanation,
@@ -128,7 +130,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+      ...filesInput,
     };
     commit({
       variables: {
@@ -196,6 +198,9 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
           <ConfidenceField
             entityType="Opinion"
@@ -275,10 +280,13 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   );
 
   const [commit] = useApiMutation(opinionCreationUserMutation);
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
+    const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
+
     const finalValues: OpinionCreationMutation$variables['input'] = {
       opinion: values.opinion,
       explanation: values.explanation,
@@ -287,10 +295,8 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      ...filesInput,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
         input: finalValues,
@@ -357,6 +363,9 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
           <ConfidenceField
             entityType="Opinion"

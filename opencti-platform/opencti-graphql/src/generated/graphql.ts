@@ -1412,10 +1412,12 @@ export enum AttributesOrdering {
 }
 
 export type AuditsTimeSeriesParameters = {
+  countField?: InputMaybe<Scalars['String']['input']>;
   field: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  unique?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type AuthLogEntry = {
@@ -1780,6 +1782,7 @@ export enum BackgroundTaskActionType {
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
   Enrichment = 'ENRICHMENT',
+  EnrollPlaybook = 'ENROLL_PLAYBOOK',
   Merge = 'MERGE',
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
@@ -2469,6 +2472,7 @@ export enum Capabilities {
   KnowledgeKngetexport = 'KNOWLEDGE_KNGETEXPORT',
   KnowledgeKngetexportKnaskexport = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
   KnowledgeKnparticipate = 'KNOWLEDGE_KNPARTICIPATE',
+  KnowledgeKnsharefilters = 'KNOWLEDGE_KNSHAREFILTERS',
   KnowledgeKnupdate = 'KNOWLEDGE_KNUPDATE',
   KnowledgeKnupdateKndelete = 'KNOWLEDGE_KNUPDATE_KNDELETE',
   KnowledgeKnupdateKnmanageauthmembers = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
@@ -4575,6 +4579,7 @@ export type Connector = BasicObject & InternalObject & {
   title: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
+  xtm_one_intent?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -6435,17 +6440,73 @@ export type CurrentConnectorStatusInput = {
 
 export type CustomView = BasicObject & InternalObject & {
   __typename?: 'CustomView';
-  authorizedMembers: Array<MemberAccess>;
   created_at: Scalars['DateTime']['output'];
+  default: Scalars['Boolean']['output'];
   description?: Maybe<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   manifest?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  path: Scalars['String']['output'];
+  slug: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
+  targetEntityType: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
+  toWidgetExport: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+};
+
+
+export type CustomViewToWidgetExportArgs = {
+  widgetId: Scalars['ID']['input'];
+};
+
+export type CustomViewAddInput = {
+  default?: InputMaybe<Scalars['Boolean']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  manifest?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  targetEntityType: Scalars['String']['input'];
+};
+
+export type CustomViewDuplicateInput = {
+  default?: InputMaybe<Scalars['Boolean']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  manifest?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  targetEntityType: Scalars['String']['input'];
+};
+
+export type CustomViewImportWidgetInput = {
+  file: Scalars['Upload']['input'];
+  manifest?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CustomViewsConnection = {
+  __typename?: 'CustomViewsConnection';
+  edges: Array<CustomViewsEdge>;
+  pageInfo: PageInfo;
+};
+
+export type CustomViewsEdge = {
+  __typename?: 'CustomViewsEdge';
+  cursor: Scalars['String']['output'];
+  node: CustomView;
+};
+
+export enum CustomViewsOrdering {
+  Enabled = 'enabled',
+  Name = 'name'
+}
+
+export type CustomViewsSettings = {
+  __typename?: 'CustomViewsSettings';
+  canEntityTypeHaveCustomViews: Scalars['Boolean']['output'];
 };
 
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -7078,7 +7139,7 @@ export type DecayRule = BasicObject & InternalObject & {
   built_in?: Maybe<Scalars['Boolean']['output']>;
   created_at: Scalars['DateTime']['output'];
   decaySettingsChartData?: Maybe<DecayData>;
-  decay_filters: Scalars['String']['output'];
+  decay_filters?: Maybe<Scalars['String']['output']>;
   decay_lifetime: Scalars['Int']['output'];
   decay_points?: Maybe<Array<Scalars['Int']['output']>>;
   decay_pound: Scalars['Float']['output'];
@@ -7097,7 +7158,7 @@ export type DecayRule = BasicObject & InternalObject & {
 
 export type DecayRuleAddInput = {
   active: Scalars['Boolean']['input'];
-  decay_filters: Scalars['String']['input'];
+  decay_filters?: InputMaybe<Scalars['String']['input']>;
   decay_lifetime: Scalars['Int']['input'];
   decay_points?: InputMaybe<Array<Scalars['Int']['input']>>;
   decay_pound: Scalars['Float']['input'];
@@ -7739,12 +7800,55 @@ export type DomainNameAddInput = {
   value: Scalars['String']['input'];
 };
 
+export enum DraftChangeType {
+  Add = 'add',
+  Create = 'create',
+  Delete = 'delete',
+  Remove = 'remove'
+}
+
+export type DraftContainerObjectChange = {
+  __typename?: 'DraftContainerObjectChange';
+  draft_operation: DraftChangeType;
+  entity_id: Scalars['String']['output'];
+  entity_type: Scalars['String']['output'];
+  representative_main?: Maybe<Scalars['String']['output']>;
+};
+
+export type DraftEntityContainerRef = {
+  __typename?: 'DraftEntityContainerRef';
+  container_id: Scalars['String']['output'];
+  container_name: Scalars['String']['output'];
+  container_type: Scalars['String']['output'];
+  draft_operation: DraftChangeType;
+};
+
+export type DraftEntityField = {
+  __typename?: 'DraftEntityField';
+  field: Scalars['String']['output'];
+  values: Array<Scalars['String']['output']>;
+};
+
+export type DraftEntityRelation = {
+  __typename?: 'DraftEntityRelation';
+  draft_operation: DraftChangeType;
+  from_id: Scalars['String']['output'];
+  from_name: Scalars['String']['output'];
+  from_type: Scalars['String']['output'];
+  relation_id: Scalars['String']['output'];
+  relationship_type: Scalars['String']['output'];
+  to_id: Scalars['String']['output'];
+  to_name: Scalars['String']['output'];
+  to_type: Scalars['String']['output'];
+};
+
 export type DraftObjectsCount = {
   __typename?: 'DraftObjectsCount';
   containersCount: Scalars['Int']['output'];
   entitiesCount: Scalars['Int']['output'];
   observablesCount: Scalars['Int']['output'];
   relationshipsCount: Scalars['Int']['output'];
+  reviewsCount: Scalars['Int']['output'];
   sightingsCount: Scalars['Int']['output'];
   totalCount: Scalars['Int']['output'];
 };
@@ -7757,6 +7861,12 @@ export enum DraftOperation {
   UpdateLinked = 'update_linked'
 }
 
+export type DraftResolvedId = {
+  __typename?: 'DraftResolvedId';
+  id: Scalars['String']['output'];
+  representative_main?: Maybe<Scalars['String']['output']>;
+};
+
 export enum DraftStatus {
   Open = 'open',
   Validated = 'validated'
@@ -7766,6 +7876,7 @@ export type DraftVersion = {
   __typename?: 'DraftVersion';
   draft_id: Scalars['String']['output'];
   draft_operation: DraftOperation;
+  draft_updates_patch?: Maybe<Scalars['String']['output']>;
 };
 
 export type DraftWorkspace = BasicObject & InternalObject & {
@@ -7789,6 +7900,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   validationWork?: Maybe<Work>;
+  workflowInstance?: Maybe<WorkflowInstance>;
   works?: Maybe<Array<Work>>;
 };
 
@@ -7838,10 +7950,13 @@ export type DraftWorkspaceEditRelationDeleteArgs = {
 
 export enum DraftWorkspacesOrdering {
   Score = '_score',
+  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   DraftStatus = 'draft_status',
-  Name = 'name'
+  Name = 'name',
+  ObjectAssignee = 'objectAssignee',
+  ObjectParticipant = 'objectParticipant'
 }
 
 export type EditContext = {
@@ -7860,6 +7975,7 @@ export type EditManagedConnectorInput = {
   id: Scalars['ID']['input'];
   manager_contract_configuration: Array<ContractConfigInput>;
   name: Scalars['String']['input'];
+  title: Scalars['String']['input'];
 };
 
 export enum EditOperation {
@@ -8626,6 +8742,8 @@ export type EntitySetting = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   target_type: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+  workflow_configuration?: Maybe<Scalars['Boolean']['output']>;
+  workflow_id?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -9713,6 +9831,7 @@ export enum FilterOperator {
   Eq = 'eq',
   Gt = 'gt',
   Gte = 'gte',
+  HasChanged = 'has_changed',
   Lt = 'lt',
   Lte = 'lte',
   Match = 'match',
@@ -9720,6 +9839,7 @@ export enum FilterOperator {
   NotContains = 'not_contains',
   NotEndsWith = 'not_ends_with',
   NotEq = 'not_eq',
+  NotHasChanged = 'not_has_changed',
   NotNil = 'not_nil',
   NotOnlyEqTo = 'not_only_eq_to',
   NotStartsWith = 'not_starts_with',
@@ -12534,6 +12654,11 @@ export enum IncidentsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum InconsistencyCleaningType {
+  All = 'ALL',
+  RefDuplicateClean = 'REF_DUPLICATE_CLEAN'
+}
+
 export type IndexedFile = {
   __typename?: 'IndexedFile';
   entity?: Maybe<StixObject>;
@@ -13596,6 +13721,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
+  ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13623,6 +13749,7 @@ export type IngestionCsvAddInput = {
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
   name: Scalars['String']['input'];
   scheduling_period?: InputMaybe<Scalars['String']['input']>;
+  ssl_verify?: InputMaybe<Scalars['Boolean']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
 };
@@ -13683,6 +13810,7 @@ export type IngestionJson = BasicObject & InternalObject & {
   query_attributes?: Maybe<Array<IngestionQueryAttribute>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
+  ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
@@ -13707,6 +13835,7 @@ export type IngestionJsonAddInput = {
   pagination_with_sub_page_query_verb?: InputMaybe<Scalars['String']['input']>;
   query_attributes?: InputMaybe<Array<QueryAttribute>>;
   scheduling_period?: InputMaybe<Scalars['String']['input']>;
+  ssl_verify?: InputMaybe<Scalars['Boolean']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
   verb: Scalars['String']['input'];
@@ -13761,6 +13890,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
+  ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13784,6 +13914,7 @@ export type IngestionRssAddInput = {
   object_marking_refs?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   report_types?: InputMaybe<Array<Scalars['String']['input']>>;
   scheduling_period?: InputMaybe<Scalars['String']['input']>;
+  ssl_verify?: InputMaybe<Scalars['Boolean']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
 };
@@ -13838,6 +13969,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
+  ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13864,6 +13996,7 @@ export type IngestionTaxiiAddInput = {
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   scheduling_period?: InputMaybe<Scalars['String']['input']>;
+  ssl_verify?: InputMaybe<Scalars['Boolean']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
   version: TaxiiVersion;
@@ -16886,6 +17019,7 @@ export type Mutation = {
   checkXTMHubConnectivity: CheckXtmHubConnectivityResponse;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
+  clearWorkflowPendingState: WorkflowInstance;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -16899,6 +17033,12 @@ export type Mutation = {
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
   csvMapperTest?: Maybe<CsvMapperTestResult>;
+  customViewAdd: CustomView;
+  customViewConfigurationImport: CustomView;
+  customViewDelete: Scalars['ID']['output'];
+  customViewDuplicate?: Maybe<CustomView>;
+  customViewEdit?: Maybe<CustomView>;
+  customViewWidgetConfigurationImport?: Maybe<CustomView>;
   dataComponentAdd?: Maybe<DataComponent>;
   dataComponentContextClean?: Maybe<DataComponent>;
   dataComponentContextPatch?: Maybe<DataComponent>;
@@ -17059,6 +17199,7 @@ export type Mutation = {
   managedConnectorAdd?: Maybe<ManagedConnector>;
   managedConnectorEdit?: Maybe<ManagedConnector>;
   managerConfigurationFieldPatch?: Maybe<ManagerConfiguration>;
+  markAllNewsFeedItemsAsRead?: Maybe<Scalars['Boolean']['output']>;
   markingDefinitionAdd?: Maybe<MarkingDefinition>;
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
   meEdit?: Maybe<MeUser>;
@@ -17131,6 +17272,7 @@ export type Mutation = {
   registerConnectorsManager?: Maybe<ConnectorManager>;
   reportAdd?: Maybe<Report>;
   reportEdit?: Maybe<ReportEditMutations>;
+  reportWorkflowAsyncActionResult?: Maybe<Scalars['Boolean']['output']>;
   requestAccessAdd?: Maybe<Scalars['ID']['output']>;
   requestAccessConfigure?: Maybe<RequestAccessConfiguration>;
   resetFileIndexing?: Maybe<Scalars['Boolean']['output']>;
@@ -17152,6 +17294,7 @@ export type Mutation = {
   samlProviderEdit?: Maybe<AuthenticationProvider>;
   savedFilterAdd?: Maybe<SavedFilter>;
   savedFilterDelete?: Maybe<Scalars['ID']['output']>;
+  savedFilterEditAuthorizedMembers?: Maybe<SavedFilter>;
   savedFilterFieldPatch?: Maybe<SavedFilter>;
   sectorAdd?: Maybe<Sector>;
   sectorEdit?: Maybe<SectorEditMutations>;
@@ -17250,6 +17393,7 @@ export type Mutation = {
   triggerKnowledgeDigestAdd?: Maybe<Trigger>;
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
+  triggerWorkflowEvent: WorkflowTriggerResult;
   updateConnectorCurrentStatus?: Maybe<ManagedConnector>;
   updateConnectorHealth: Scalars['ID']['output'];
   updateConnectorLogs: Scalars['ID']['output'];
@@ -17278,6 +17422,9 @@ export type Mutation = {
   workAdd: Work;
   workDelete?: Maybe<Scalars['Boolean']['output']>;
   workEdit?: Maybe<WorkEditMutations>;
+  workflowDefinitionDelete?: Maybe<EntitySetting>;
+  workflowDefinitionPublish?: Maybe<WorkflowDefinitionMutationResult>;
+  workflowDefinitionSet?: Maybe<WorkflowDefinitionMutationResult>;
   workspaceAdd?: Maybe<Workspace>;
   workspaceConfigurationImport: Scalars['String']['output'];
   workspaceContextClean?: Maybe<Workspace>;
@@ -17640,6 +17787,11 @@ export type MutationCityEditArgs = {
 };
 
 
+export type MutationClearWorkflowPendingStateArgs = {
+  entityId: Scalars['String']['input'];
+};
+
+
 export type MutationConnectorMigrateToManagedArgs = {
   input: MigrateConnectorToManagedInput;
 };
@@ -17710,6 +17862,39 @@ export type MutationCsvMapperFieldPatchArgs = {
 export type MutationCsvMapperTestArgs = {
   configuration: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+};
+
+
+export type MutationCustomViewAddArgs = {
+  input: CustomViewAddInput;
+};
+
+
+export type MutationCustomViewConfigurationImportArgs = {
+  file: Scalars['Upload']['input'];
+  targetEntityType: Scalars['String']['input'];
+};
+
+
+export type MutationCustomViewDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCustomViewDuplicateArgs = {
+  input: CustomViewDuplicateInput;
+};
+
+
+export type MutationCustomViewEditArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationCustomViewWidgetConfigurationImportArgs = {
+  id: Scalars['ID']['input'];
+  input: CustomViewImportWidgetInput;
 };
 
 
@@ -18776,7 +18961,7 @@ export type MutationOrganizationEditAuthorizedAuthoritiesArgs = {
 export type MutationOrganizationFieldPatchArgs = {
   commitMessage?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
-  input: Array<InputMaybe<EditInput>>;
+  input: Array<EditInput>;
   references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -19004,6 +19189,14 @@ export type MutationReportEditArgs = {
 };
 
 
+export type MutationReportWorkflowAsyncActionResultArgs = {
+  error?: InputMaybe<Scalars['String']['input']>;
+  status: Scalars['String']['input'];
+  workflowActionId: Scalars['String']['input'];
+  workflowInstanceId: Scalars['String']['input'];
+};
+
+
 export type MutationRequestAccessAddArgs = {
   input: RequestAccessAddInput;
 };
@@ -19108,6 +19301,12 @@ export type MutationSavedFilterAddArgs = {
 
 export type MutationSavedFilterDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSavedFilterEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<MemberAccessInput>;
 };
 
 
@@ -19720,6 +19919,14 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 };
 
 
+export type MutationTriggerWorkflowEventArgs = {
+  comment?: InputMaybe<Scalars['String']['input']>;
+  entityId: Scalars['String']['input'];
+  eventName: Scalars['String']['input'];
+  runtimeParams?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+
 export type MutationUpdateConnectorCurrentStatusArgs = {
   input: CurrentConnectorStatusInput;
 };
@@ -19874,6 +20081,22 @@ export type MutationWorkDeleteArgs = {
 
 export type MutationWorkEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationWorkflowDefinitionDeleteArgs = {
+  entityType: Scalars['String']['input'];
+};
+
+
+export type MutationWorkflowDefinitionPublishArgs = {
+  entityType: Scalars['String']['input'];
+};
+
+
+export type MutationWorkflowDefinitionSetArgs = {
+  definition: Scalars['String']['input'];
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -20660,6 +20883,52 @@ export type NetworkTrafficAddInput = {
   start?: InputMaybe<Scalars['DateTime']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
 };
+
+export type NewsFeedCount = {
+  __typename?: 'NewsFeedCount';
+  count?: Maybe<Scalars['Int']['output']>;
+  user_id?: Maybe<Scalars['String']['output']>;
+};
+
+export type NewsFeedItem = BasicObject & InternalObject & {
+  __typename?: 'NewsFeedItem';
+  creation_date: Scalars['DateTime']['output'];
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  is_read: Scalars['Boolean']['output'];
+  metadata: Array<NewsFeedItemMetadata>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  news_feed_type: Scalars['String']['output'];
+  parent_types: Array<Scalars['String']['output']>;
+  standard_id: Scalars['String']['output'];
+  tags: Array<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+  user_id: Scalars['String']['output'];
+};
+
+export type NewsFeedItemConnection = {
+  __typename?: 'NewsFeedItemConnection';
+  edges: Array<NewsFeedItemEdge>;
+  pageInfo: PageInfo;
+};
+
+export type NewsFeedItemEdge = {
+  __typename?: 'NewsFeedItemEdge';
+  cursor: Scalars['String']['output'];
+  node: NewsFeedItem;
+};
+
+export type NewsFeedItemMetadata = {
+  __typename?: 'NewsFeedItemMetadata';
+  key: Scalars['String']['output'];
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+export enum NewsFeedItemsOrdering {
+  CreationDate = 'creation_date',
+  NewsFeedType = 'news_feed_type',
+  Title = 'title'
+}
 
 export type Note = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Note';
@@ -23265,12 +23534,21 @@ export type PlaybookAddLinkInput = {
 export type PlaybookAddNodeInput = {
   component_id: Scalars['String']['input'];
   configuration?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   position: PositionInput;
 };
 
+export enum PlaybookCategory {
+  EndPlaybook = 'end_playbook',
+  ShareAndAccess = 'share_and_access',
+  StartPlaybook = 'start_playbook',
+  TransformAndEnrich = 'transform_and_enrich'
+}
+
 export type PlaybookComponent = {
   __typename?: 'PlaybookComponent';
+  category: PlaybookCategory;
   configuration_schema?: Maybe<Scalars['String']['output']>;
   description: Scalars['String']['output'];
   icon: Scalars['String']['output'];
@@ -23303,6 +23581,18 @@ export type PlaybookInsertResult = {
   __typename?: 'PlaybookInsertResult';
   linkId: Scalars['String']['output'];
   nodeId: Scalars['String']['output'];
+};
+
+export type PlaybookManager = {
+  __typename?: 'PlaybookManager';
+  activated: Scalars['Boolean']['output'];
+  firstStreamEventDate?: Maybe<Scalars['DateTime']['output']>;
+  firstStreamEventId?: Maybe<Scalars['String']['output']>;
+  lastProcessedEventDate?: Maybe<Scalars['DateTime']['output']>;
+  lastProcessedEventId?: Maybe<Scalars['String']['output']>;
+  lastStreamEventDate?: Maybe<Scalars['DateTime']['output']>;
+  lastStreamEventId?: Maybe<Scalars['String']['output']>;
+  managerInGoodHealth?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export enum PlaybooksOrdering {
@@ -23976,6 +24266,13 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   __typename?: 'PublicSettings';
   id: Scalars['ID']['output'];
   metrics_definition?: Maybe<Array<MetricDefinition>>;
+  password_policy_max_length?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_length?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_lowercase?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_numbers?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_symbols?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_uppercase?: Maybe<Scalars['Int']['output']>;
+  password_policy_min_words?: Maybe<Scalars['Int']['output']>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
@@ -23999,6 +24296,7 @@ export type Query = {
   about?: Maybe<AppInfo>;
   administrativeArea?: Maybe<AdministrativeArea>;
   administrativeAreas?: Maybe<AdministrativeAreaConnection>;
+  allowedTransitions: Array<WorkflowTransition>;
   askAiActivity?: Maybe<AiActivity>;
   assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
@@ -24072,6 +24370,9 @@ export type Query = {
   /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
+  customView?: Maybe<CustomView>;
+  customViews: CustomViewsConnection;
+  customViewsSettings: CustomViewsSettings;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
   dataSource?: Maybe<DataSource>;
@@ -24086,8 +24387,13 @@ export type Query = {
   disseminationList?: Maybe<DisseminationList>;
   disseminationLists?: Maybe<DisseminationListConnection>;
   draftWorkspace?: Maybe<DraftWorkspace>;
+  draftWorkspaceContainerObjects: Array<DraftContainerObjectChange>;
   draftWorkspaceEntities?: Maybe<StixCoreObjectConnection>;
+  draftWorkspaceEntityContainerRefs: Array<DraftEntityContainerRef>;
+  draftWorkspaceEntityFields: Array<DraftEntityField>;
+  draftWorkspaceEntityRelations: Array<DraftEntityRelation>;
   draftWorkspaceRelationships?: Maybe<StixRelationshipConnection>;
+  draftWorkspaceResolveIds: Array<DraftResolvedId>;
   draftWorkspaceSightingRelationships?: Maybe<StixSightingRelationshipConnection>;
   draftWorkspaces?: Maybe<DraftWorkspaceConnection>;
   draftWorkspacesRestricted?: Maybe<DraftWorkspaceConnection>;
@@ -24184,8 +24490,10 @@ export type Query = {
   markingDefinitions?: Maybe<MarkingDefinitionConnection>;
   me: MeUser;
   members?: Maybe<MemberConnection>;
+  myNewsFeeds?: Maybe<NewsFeedItemConnection>;
   myNotifications?: Maybe<NotificationConnection>;
   myOpinion?: Maybe<Opinion>;
+  myUnreadNewsFeedsCount?: Maybe<Scalars['Int']['output']>;
   myUnreadNotificationsCount?: Maybe<Scalars['Int']['output']>;
   narrative?: Maybe<Narrative>;
   narratives?: Maybe<NarrativeConnection>;
@@ -24226,7 +24534,10 @@ export type Query = {
   pirs?: Maybe<PirConnection>;
   playbook?: Maybe<Playbook>;
   playbookComponents: Array<Maybe<PlaybookComponent>>;
+  playbookManagerInfo?: Maybe<PlaybookManager>;
   playbooks?: Maybe<PlaybookConnection>;
+  playbooksForEnrollment?: Maybe<Array<Maybe<Playbook>>>;
+  playbooksForEnrollmentByFilters: Array<Playbook>;
   playbooksForEntity?: Maybe<Array<Maybe<Playbook>>>;
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
@@ -24386,6 +24697,8 @@ export type Query = {
   vulnerabilities?: Maybe<VulnerabilityConnection>;
   vulnerability?: Maybe<Vulnerability>;
   work?: Maybe<Work>;
+  workflowDefinition?: Maybe<WorkflowSchema>;
+  workflowInstance?: Maybe<WorkflowInstance>;
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
@@ -24405,6 +24718,11 @@ export type QueryAdministrativeAreasArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryAllowedTransitionsArgs = {
+  entityId: Scalars['String']['input'];
 };
 
 
@@ -24479,11 +24797,13 @@ export type QueryAuditsMultiTimeSeriesArgs = {
 export type QueryAuditsNumberArgs = {
   dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<FilterGroup>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  unique?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -24860,6 +25180,27 @@ export type QueryCsvMappersArgs = {
 };
 
 
+export type QueryCustomViewArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCustomViewsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  entityType?: InputMaybe<Scalars['String']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<CustomViewsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCustomViewsSettingsArgs = {
+  entityType: Scalars['String']['input'];
+};
+
+
 export type QueryDataComponentArgs = {
   id: Scalars['String']['input'];
 };
@@ -24955,15 +25296,40 @@ export type QueryDraftWorkspaceArgs = {
 };
 
 
+export type QueryDraftWorkspaceContainerObjectsArgs = {
+  containerId: Scalars['String']['input'];
+  draftId: Scalars['String']['input'];
+};
+
+
 export type QueryDraftWorkspaceEntitiesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   draftId: Scalars['String']['input'];
+  draftOperation?: InputMaybe<DraftOperation>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryDraftWorkspaceEntityContainerRefsArgs = {
+  draftId: Scalars['String']['input'];
+  entityId: Scalars['String']['input'];
+};
+
+
+export type QueryDraftWorkspaceEntityFieldsArgs = {
+  draftId: Scalars['String']['input'];
+  entityId: Scalars['String']['input'];
+};
+
+
+export type QueryDraftWorkspaceEntityRelationsArgs = {
+  draftId: Scalars['String']['input'];
+  entityId: Scalars['String']['input'];
 };
 
 
@@ -24976,6 +25342,12 @@ export type QueryDraftWorkspaceRelationshipsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryDraftWorkspaceResolveIdsArgs = {
+  draftId: Scalars['String']['input'];
+  ids: Array<Scalars['String']['input']>;
 };
 
 
@@ -25678,6 +26050,16 @@ export type QueryMembersArgs = {
 };
 
 
+export type QueryMyNewsFeedsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<NewsFeedItemsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryMyNotificationsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
@@ -26016,6 +26398,18 @@ export type QueryPlaybooksArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<PlaybooksOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPlaybooksForEnrollmentArgs = {
+  ids: Array<Scalars['String']['input']>;
+};
+
+
+export type QueryPlaybooksForEnrollmentByFiltersArgs = {
+  excludedIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<FilterGroup>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -27401,6 +27795,17 @@ export type QueryWorkArgs = {
 };
 
 
+export type QueryWorkflowDefinitionArgs = {
+  allowDraft?: InputMaybe<Scalars['Boolean']['input']>;
+  entityType: Scalars['String']['input'];
+};
+
+
+export type QueryWorkflowInstanceArgs = {
+  entityId: Scalars['String']['input'];
+};
+
+
 export type QueryWorksArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
@@ -27843,6 +28248,7 @@ export type RegisterConnectorInput = {
   playbook_compatible?: InputMaybe<Scalars['Boolean']['input']>;
   scope?: InputMaybe<Array<Scalars['String']['input']>>;
   type: ConnectorType;
+  xtm_one_intent?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type RegisterConnectorsManagerInput = {
@@ -28296,6 +28702,7 @@ export type ResolvedInstanceFilter = {
 
 export type RetentionRule = {
   __typename?: 'RetentionRule';
+  active?: Maybe<Scalars['Boolean']['output']>;
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   last_deleted_count?: Maybe<Scalars['Int']['output']>;
@@ -28309,6 +28716,7 @@ export type RetentionRule = {
 };
 
 export type RetentionRuleAddInput = {
+  active?: InputMaybe<Scalars['Boolean']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   max_retention: Scalars['Int']['input'];
   name: Scalars['String']['input'];
@@ -28341,6 +28749,7 @@ export type RetentionRuleEditMutationsFieldPatchArgs = {
 
 export enum RetentionRuleOrdering {
   Score = '_score',
+  Active = 'active',
   LastExecutionDate = 'last_execution_date',
   MaxRetention = 'max_retention',
   Name = 'name',
@@ -28349,6 +28758,7 @@ export enum RetentionRuleOrdering {
 }
 
 export enum RetentionRuleScope {
+  Activity = 'activity',
   File = 'file',
   History = 'history',
   Knowledge = 'knowledge',
@@ -28784,6 +29194,9 @@ export type SamlInput = {
 
 export type SavedFilter = BasicObject & InternalObject & {
   __typename?: 'SavedFilter';
+  authorizedMembers: Array<MemberAccess>;
+  creator_id?: Maybe<Scalars['String']['output']>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -28795,6 +29208,7 @@ export type SavedFilter = BasicObject & InternalObject & {
 };
 
 export type SavedFilterAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   filters: Scalars['String']['input'];
   name: Scalars['String']['input'];
   scope: Scalars['String']['input'];
@@ -29761,6 +30175,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
+  caller_ip?: Maybe<Scalars['String']['output']>;
   cert_auth?: Maybe<CertAuthConfig>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
@@ -29800,12 +30215,17 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_favicon?: Maybe<Scalars['String']['output']>;
   platform_feature_flags?: Maybe<Array<Module>>;
   platform_https_enabled: Scalars['Boolean']['output'];
+  platform_ip_whitelist?: Maybe<Array<Scalars['String']['output']>>;
+  platform_ip_whitelist_enabled?: Maybe<Scalars['Boolean']['output']>;
+  platform_ip_whitelist_exclusions?: Maybe<Array<Member>>;
   platform_language?: Maybe<Scalars['String']['output']>;
   platform_login_message?: Maybe<Scalars['String']['output']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
   platform_map_tile_server_light?: Maybe<Scalars['String']['output']>;
   platform_messages?: Maybe<Array<SettingsMessage>>;
   platform_modules?: Maybe<Array<Module>>;
+  platform_no_access_message?: Maybe<Scalars['String']['output']>;
+  platform_notifier_auto_trigger_assignee: Scalars['Boolean']['output'];
   platform_openaev_url?: Maybe<Scalars['String']['output']>;
   platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
@@ -30436,6 +30856,7 @@ export type StixCoreObjectEditMutations = {
   askAnalysis?: Maybe<Work>;
   askEnrichment?: Maybe<Work>;
   askEnrichments?: Maybe<Array<Work>>;
+  cleanInconsistency?: Maybe<Scalars['Boolean']['output']>;
   clearAccessRestriction?: Maybe<StixCoreObject>;
   delete?: Maybe<Scalars['ID']['output']>;
   exportAsk?: Maybe<Array<File>>;
@@ -30479,6 +30900,11 @@ export type StixCoreObjectEditMutationsAskEnrichmentArgs = {
 
 export type StixCoreObjectEditMutationsAskEnrichmentsArgs = {
   connectorIds: Array<Scalars['ID']['input']>;
+};
+
+
+export type StixCoreObjectEditMutationsCleanInconsistencyArgs = {
+  cleaningTypes: Array<InconsistencyCleaningType>;
 };
 
 
@@ -31920,7 +32346,7 @@ export type StixObject = {
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
-export type StixObjectOrStixRelationship = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | Sector | SecurityCoverage | SecurityPlatform | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
+export type StixObjectOrStixRelationship = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityPlatform | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
 
 export type StixObjectOrStixRelationshipConnection = {
   __typename?: 'StixObjectOrStixRelationshipConnection';
@@ -31934,7 +32360,7 @@ export type StixObjectOrStixRelationshipEdge = {
   node: StixObjectOrStixRelationship;
 };
 
-export type StixObjectOrStixRelationshipOrCreator = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | Sector | SecurityCoverage | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
+export type StixObjectOrStixRelationshipOrCreator = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
 
 export type StixObjectOrStixRelationshipRefConnection = {
   __typename?: 'StixObjectOrStixRelationshipRefConnection';
@@ -32450,6 +32876,7 @@ export type StreamCollection = {
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   name?: Maybe<Scalars['String']['output']>;
+  origin_filters?: Maybe<Scalars['String']['output']>;
   stream_live?: Maybe<Scalars['Boolean']['output']>;
   stream_public?: Maybe<Scalars['Boolean']['output']>;
   stream_public_user?: Maybe<Creator>;
@@ -32461,6 +32888,7 @@ export type StreamCollectionAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  origin_filters?: InputMaybe<Scalars['String']['input']>;
   stream_live?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public_user_id?: InputMaybe<Scalars['String']['input']>;
@@ -32595,6 +33023,10 @@ export type Subscription = {
   managerConfiguration?: Maybe<ManagerConfiguration>;
   markingDefinition?: Maybe<MarkingDefinition>;
   me?: Maybe<MeUser>;
+  newsFeedItem?: Maybe<NewsFeedItem>;
+  newsFeedItemAdded?: Maybe<NewsFeedItem>;
+  newsFeedItemDeleted?: Maybe<Scalars['ID']['output']>;
+  newsFeedsNumber?: Maybe<NewsFeedCount>;
   notification?: Maybe<Notification>;
   notificationsNumber?: Maybe<NotificationCount>;
   securityCoverage?: Maybe<SecurityCoverage>;
@@ -37510,6 +37942,142 @@ export type WorkTracking = {
   import_processed_number?: Maybe<Scalars['Int']['output']>;
 };
 
+export type WorkflowActionConfig = {
+  __typename?: 'WorkflowActionConfig';
+  params?: Maybe<Scalars['JSON']['output']>;
+  type: Scalars['String']['output'];
+};
+
+export type WorkflowActionError = {
+  __typename?: 'WorkflowActionError';
+  message: Scalars['String']['output'];
+  source?: Maybe<Scalars['String']['output']>;
+  timestamp?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type WorkflowDefinitionMutationResult = {
+  __typename?: 'WorkflowDefinitionMutationResult';
+  errors: Array<WorkflowValidationError>;
+  id: Scalars['ID']['output'];
+  published: Scalars['Boolean']['output'];
+  target_type?: Maybe<Scalars['String']['output']>;
+  workflow_id?: Maybe<Scalars['String']['output']>;
+};
+
+export type WorkflowEntityRef = {
+  __typename?: 'WorkflowEntityRef';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+};
+
+export enum WorkflowExecutionStatus {
+  Completed = 'completed',
+  Error = 'error',
+  Pending = 'pending'
+}
+
+export type WorkflowInstance = {
+  __typename?: 'WorkflowInstance';
+  allowedTransitions: Array<WorkflowTransition>;
+  currentState: Scalars['String']['output'];
+  currentStatus?: Maybe<Status>;
+  id: Scalars['ID']['output'];
+  lastHistoryEntry?: Maybe<WorkflowLastHistoryEntry>;
+  pendingError?: Maybe<Scalars['String']['output']>;
+  pendingStatus?: Maybe<WorkflowExecutionStatus>;
+  pendingTransition?: Maybe<WorkflowPendingTransition>;
+};
+
+export type WorkflowLastHistoryEntry = {
+  __typename?: 'WorkflowLastHistoryEntry';
+  comment?: Maybe<Scalars['String']['output']>;
+  event: Scalars['String']['output'];
+  state: Scalars['String']['output'];
+  timestamp: Scalars['String']['output'];
+  user_id: Scalars['String']['output'];
+};
+
+export type WorkflowPendingAsyncAction = {
+  __typename?: 'WorkflowPendingAsyncAction';
+  errors?: Maybe<Array<WorkflowActionError>>;
+  expectedCount?: Maybe<Scalars['Int']['output']>;
+  id: Scalars['ID']['output'];
+  lastActivityAt?: Maybe<Scalars['DateTime']['output']>;
+  processedCount?: Maybe<Scalars['Int']['output']>;
+  startedAt?: Maybe<Scalars['DateTime']['output']>;
+  status: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+  workId: Scalars['String']['output'];
+};
+
+export type WorkflowPendingTransition = {
+  __typename?: 'WorkflowPendingTransition';
+  asyncActions: Array<WorkflowPendingAsyncAction>;
+  event: Scalars['String']['output'];
+  syncActions?: Maybe<Array<WorkflowActionConfig>>;
+  toState: Scalars['String']['output'];
+  triggeredAt: Scalars['DateTime']['output'];
+};
+
+export type WorkflowSchema = {
+  __typename?: 'WorkflowSchema';
+  errors?: Maybe<Array<WorkflowValidationError>>;
+  id: Scalars['ID']['output'];
+  initialState: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  published: Scalars['Boolean']['output'];
+  states: Array<WorkflowSerializedState>;
+  transitions: Array<WorkflowSerializedTransition>;
+};
+
+export type WorkflowSerializedState = {
+  __typename?: 'WorkflowSerializedState';
+  onEnter?: Maybe<Array<WorkflowActionConfig>>;
+  onExit?: Maybe<Array<WorkflowActionConfig>>;
+  statusId: Scalars['String']['output'];
+};
+
+export type WorkflowSerializedTransition = {
+  __typename?: 'WorkflowSerializedTransition';
+  asyncActions?: Maybe<Array<WorkflowActionConfig>>;
+  comment?: Maybe<Scalars['String']['output']>;
+  conditions?: Maybe<Scalars['JSON']['output']>;
+  event: Scalars['String']['output'];
+  from: Array<Scalars['String']['output']>;
+  syncActions?: Maybe<Array<WorkflowActionConfig>>;
+  to: Scalars['String']['output'];
+};
+
+export type WorkflowTransition = {
+  __typename?: 'WorkflowTransition';
+  actions?: Maybe<Array<Scalars['String']['output']>>;
+  comment?: Maybe<Scalars['String']['output']>;
+  event: Scalars['String']['output'];
+  requiresShareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
+  requiresUnshareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
+  toState: Scalars['String']['output'];
+  toStatus?: Maybe<Status>;
+};
+
+export type WorkflowTriggerResult = {
+  __typename?: 'WorkflowTriggerResult';
+  entity?: Maybe<BasicObject>;
+  executionStatus?: Maybe<WorkflowExecutionStatus>;
+  instance?: Maybe<WorkflowInstance>;
+  newState?: Maybe<Scalars['String']['output']>;
+  pendingTransition?: Maybe<WorkflowPendingTransition>;
+  reason?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Status>;
+  success: Scalars['Boolean']['output'];
+};
+
+export type WorkflowValidationError = {
+  __typename?: 'WorkflowValidationError';
+  message: Scalars['String']['output'];
+  path?: Maybe<Array<WorkflowEntityRef>>;
+  type: Scalars['String']['output'];
+};
+
 export enum WorksOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
@@ -37535,6 +38103,7 @@ export type Workspace = BasicObject & InternalObject & {
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   owner?: Maybe<Creator>;
   parent_types: Array<Scalars['String']['output']>;
+  refresh_interval?: Maybe<Scalars['Int']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   tags?: Maybe<Array<Scalars['String']['output']>>;
@@ -37567,6 +38136,7 @@ export type WorkspaceAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   investigated_entities_ids?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name: Scalars['String']['input'];
+  refresh_interval?: InputMaybe<Scalars['Int']['input']>;
   tags?: InputMaybe<Array<Scalars['String']['input']>>;
   type: Scalars['String']['input'];
 };
@@ -38112,6 +38682,7 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( Omit<Region, 'avatar' | 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentRegions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subRegions' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, countries?: Maybe<_RefType['CountryConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, parentRegions?: Maybe<_RefType['RegionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, subRegions?: Maybe<_RefType['RegionConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Report, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'securityCoverage' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, objects?: Maybe<_RefType['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, relatedContainers?: Maybe<_RefType['ContainerConnection']>, reports?: Maybe<_RefType['ReportConnection']>, securityCoverage?: Maybe<_RefType['SecurityCoverage']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<SshKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntitySavedFilter )
     | ( Omit<Sector, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subSectors' | 'targetedOrganizations' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, parentSectors?: Maybe<_RefType['SectorConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, subSectors?: Maybe<_RefType['SectorConnection']>, targetedOrganizations?: Maybe<_RefType['StixCoreRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntitySecurityCoverage )
     | ( BasicStoreEntitySecurityPlatform )
@@ -38208,6 +38779,7 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( Omit<Region, 'avatar' | 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentRegions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subRegions' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, countries?: Maybe<_RefType['CountryConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, parentRegions?: Maybe<_RefType['RegionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, subRegions?: Maybe<_RefType['RegionConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Report, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'securityCoverage' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, objects?: Maybe<_RefType['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, relatedContainers?: Maybe<_RefType['ContainerConnection']>, reports?: Maybe<_RefType['ReportConnection']>, securityCoverage?: Maybe<_RefType['SecurityCoverage']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<SshKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntitySavedFilter )
     | ( Omit<Sector, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subSectors' | 'targetedOrganizations' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, parentSectors?: Maybe<_RefType['SectorConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, subSectors?: Maybe<_RefType['SectorConnection']>, targetedOrganizations?: Maybe<_RefType['StixCoreRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntitySecurityCoverage )
     | ( BasicStoreEntitySecurityPlatform )
@@ -38324,6 +38896,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Mutex, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityNarrative )
     | ( Omit<NetworkTraffic, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( NewsFeedItem )
     | ( Omit<Note, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, objects?: Maybe<_RefType['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, relatedContainers?: Maybe<_RefType['ContainerConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityNotification )
     | ( BasicStoreEntityNotifier )
@@ -38346,7 +38919,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Sector, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subSectors' | 'targetedOrganizations' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, parentSectors?: Maybe<_RefType['SectorConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, subSectors?: Maybe<_RefType['SectorConnection']>, targetedOrganizations?: Maybe<_RefType['StixCoreRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntitySecurityCoverage )
     | ( BasicStoreEntitySecurityPlatform )
-    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
+    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<_RefType['Member']>>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
     | ( Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, vulnerabilities?: Maybe<_RefType['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<StixFile, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, obsContent?: Maybe<_RefType['Artifact']>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntitySupportPackage )
@@ -38438,6 +39011,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<_RefType['User']> } )
     | ( BasicStoreEntityManagerConfiguration )
     | ( Omit<MeUser, 'administrated_organizations' | 'allowed_marking' | 'capabilities' | 'capabilitiesInDraft' | 'default_dashboard' | 'default_dashboards' | 'default_marking' | 'draftContext' | 'effective_confidence_level' | 'groups' | 'max_shareable_marking' | 'personal_notifiers'> & { administrated_organizations: Array<_RefType['Organization']>, allowed_marking?: Maybe<Array<_RefType['MarkingDefinition']>>, capabilities: Array<_RefType['Capability']>, capabilitiesInDraft: Array<_RefType['Capability']>, default_dashboard?: Maybe<_RefType['Workspace']>, default_dashboards: Array<_RefType['Workspace']>, default_marking?: Maybe<Array<_RefType['DefaultMarking']>>, draftContext?: Maybe<_RefType['DraftWorkspace']>, effective_confidence_level?: Maybe<_RefType['EffectiveConfidenceLevel']>, groups?: Maybe<_RefType['GroupConnection']>, max_shareable_marking?: Maybe<Array<_RefType['MarkingDefinition']>>, personal_notifiers?: Maybe<Array<_RefType['Notifier']>> } )
+    | ( NewsFeedItem )
     | ( BasicStoreEntityNotification )
     | ( BasicStoreEntityNotifier )
     | ( BasicStoreEntityPir )
@@ -38445,7 +39019,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityPublicDashboard )
     | ( Omit<Role, 'capabilities' | 'capabilitiesInDraft' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<_RefType['Capability']>>>, capabilitiesInDraft?: Maybe<Array<Maybe<_RefType['Capability']>>>, editContext?: Maybe<Array<_RefType['EditUserContext']>> } )
     | ( BasicStoreEntitySavedFilter )
-    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
+    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<_RefType['Member']>>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
     | ( BasicStoreEntitySupportPackage )
     | ( TaskTemplate )
     | ( BasicStoreEntityTheme )
@@ -38455,7 +39029,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
   ;
   IntlSettings:
     | ( Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<_RefType['Theme']> } )
-    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
+    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<_RefType['Member']>>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
   ;
   JsonAttributeColumnConfiguration: never;
   Location:
@@ -38723,7 +39297,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
   ;
   ThemeSettings:
     | ( Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<_RefType['Theme']> } )
-    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
+    | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<_RefType['Member']>>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
   ;
   ThreatActor:
     | ( Omit<ThreatActorGroup, 'avatar' | 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'locations' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, countries?: Maybe<_RefType['CountryConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, locations?: Maybe<_RefType['LocationConnection']>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -38952,6 +39526,13 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: ResolverTypeWrapper<BasicStoreEntityCustomView>;
+  CustomViewAddInput: CustomViewAddInput;
+  CustomViewDuplicateInput: CustomViewDuplicateInput;
+  CustomViewImportWidgetInput: CustomViewImportWidgetInput;
+  CustomViewsConnection: ResolverTypeWrapper<Omit<CustomViewsConnection, 'edges'> & { edges: Array<ResolversTypes['CustomViewsEdge']> }>;
+  CustomViewsEdge: ResolverTypeWrapper<Omit<CustomViewsEdge, 'node'> & { node: ResolversTypes['CustomView'] }>;
+  CustomViewsOrdering: CustomViewsOrdering;
+  CustomViewsSettings: ResolverTypeWrapper<CustomViewsSettings>;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
@@ -39006,8 +39587,14 @@ export type ResolversTypes = ResolversObject<{
   DocsMetrics: ResolverTypeWrapper<DocsMetrics>;
   DomainName: ResolverTypeWrapper<Omit<DomainName, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   DomainNameAddInput: DomainNameAddInput;
+  DraftChangeType: DraftChangeType;
+  DraftContainerObjectChange: ResolverTypeWrapper<DraftContainerObjectChange>;
+  DraftEntityContainerRef: ResolverTypeWrapper<DraftEntityContainerRef>;
+  DraftEntityField: ResolverTypeWrapper<DraftEntityField>;
+  DraftEntityRelation: ResolverTypeWrapper<DraftEntityRelation>;
   DraftObjectsCount: ResolverTypeWrapper<DraftObjectsCount>;
   DraftOperation: DraftOperation;
+  DraftResolvedId: ResolverTypeWrapper<DraftResolvedId>;
   DraftStatus: DraftStatus;
   DraftVersion: ResolverTypeWrapper<DraftVersion>;
   DraftWorkspace: ResolverTypeWrapper<BasicStoreEntityDraftWorkspace>;
@@ -39164,6 +39751,7 @@ export type ResolversTypes = ResolversObject<{
   IncidentEdge: ResolverTypeWrapper<Omit<IncidentEdge, 'node'> & { node: ResolversTypes['Incident'] }>;
   IncidentEditMutations: ResolverTypeWrapper<Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Incident']>, contextPatch?: Maybe<ResolversTypes['Incident']>, fieldPatch?: Maybe<ResolversTypes['Incident']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Incident']> }>;
   IncidentsOrdering: IncidentsOrdering;
+  InconsistencyCleaningType: InconsistencyCleaningType;
   IndexedFile: ResolverTypeWrapper<Omit<IndexedFile, 'entity'> & { entity?: Maybe<ResolversTypes['StixObject']> }>;
   IndexedFileConnection: ResolverTypeWrapper<Omit<IndexedFileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndexedFileEdge']>>> }>;
   IndexedFileEdge: ResolverTypeWrapper<Omit<IndexedFileEdge, 'node'> & { node: ResolversTypes['IndexedFile'] }>;
@@ -39359,6 +39947,12 @@ export type ResolversTypes = ResolversObject<{
   NarrativesOrdering: NarrativesOrdering;
   NetworkTraffic: ResolverTypeWrapper<Omit<NetworkTraffic, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   NetworkTrafficAddInput: NetworkTrafficAddInput;
+  NewsFeedCount: ResolverTypeWrapper<NewsFeedCount>;
+  NewsFeedItem: ResolverTypeWrapper<NewsFeedItem>;
+  NewsFeedItemConnection: ResolverTypeWrapper<NewsFeedItemConnection>;
+  NewsFeedItemEdge: ResolverTypeWrapper<NewsFeedItemEdge>;
+  NewsFeedItemMetadata: ResolverTypeWrapper<NewsFeedItemMetadata>;
+  NewsFeedItemsOrdering: NewsFeedItemsOrdering;
   Note: ResolverTypeWrapper<Omit<Note, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversTypes['FintelTemplate']>>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, objects?: Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, relatedContainers?: Maybe<ResolversTypes['ContainerConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   NoteAddInput: NoteAddInput;
   NoteConnection: ResolverTypeWrapper<Omit<NoteConnection, 'edges'> & { edges: Array<ResolversTypes['NoteEdge']> }>;
@@ -39461,11 +40055,13 @@ export type ResolversTypes = ResolversObject<{
   PlaybookAddInput: PlaybookAddInput;
   PlaybookAddLinkInput: PlaybookAddLinkInput;
   PlaybookAddNodeInput: PlaybookAddNodeInput;
+  PlaybookCategory: PlaybookCategory;
   PlaybookComponent: ResolverTypeWrapper<PlaybookComponent>;
   PlaybookComponentPort: ResolverTypeWrapper<PlaybookComponentPort>;
   PlaybookConnection: ResolverTypeWrapper<Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversTypes['PlaybookEdge']> }>;
   PlaybookEdge: ResolverTypeWrapper<Omit<PlaybookEdge, 'node'> & { node: ResolversTypes['Playbook'] }>;
   PlaybookInsertResult: ResolverTypeWrapper<PlaybookInsertResult>;
+  PlaybookManager: ResolverTypeWrapper<PlaybookManager>;
   PlaybooksOrdering: PlaybooksOrdering;
   Position: ResolverTypeWrapper<Omit<Position, 'avatar' | 'cases' | 'city' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, city?: Maybe<ResolversTypes['City']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversTypes['FintelTemplate']>>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   PositionAddInput: PositionAddInput;
@@ -39574,7 +40170,7 @@ export type ResolversTypes = ResolversObject<{
   SecurityPlatformOrdering: SecurityPlatformOrdering;
   SendUserMailInput: SendUserMailInput;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
-  Settings: ResolverTypeWrapper<Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversTypes['Member']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversTypes['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversTypes['Organization']>, platform_theme?: Maybe<ResolversTypes['Theme']> }>;
+  Settings: ResolverTypeWrapper<Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversTypes['Member']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversTypes['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<ResolversTypes['Member']>>, platform_messages?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversTypes['Organization']>, platform_theme?: Maybe<ResolversTypes['Theme']> }>;
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']>, updateCertAuth?: Maybe<ResolversTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversTypes['Settings']>, updateLocalAuth?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
@@ -39829,6 +40425,21 @@ export type ResolversTypes = ResolversObject<{
   WorkErrorInput: WorkErrorInput;
   WorkMessage: ResolverTypeWrapper<WorkMessage>;
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
+  WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
+  WorkflowActionError: ResolverTypeWrapper<WorkflowActionError>;
+  WorkflowDefinitionMutationResult: ResolverTypeWrapper<WorkflowDefinitionMutationResult>;
+  WorkflowEntityRef: ResolverTypeWrapper<WorkflowEntityRef>;
+  WorkflowExecutionStatus: WorkflowExecutionStatus;
+  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
+  WorkflowPendingAsyncAction: ResolverTypeWrapper<WorkflowPendingAsyncAction>;
+  WorkflowPendingTransition: ResolverTypeWrapper<WorkflowPendingTransition>;
+  WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
+  WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
+  WorkflowSerializedTransition: ResolverTypeWrapper<WorkflowSerializedTransition>;
+  WorkflowTransition: ResolverTypeWrapper<Omit<WorkflowTransition, 'toStatus'> & { toStatus?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowTriggerResult: ResolverTypeWrapper<Omit<WorkflowTriggerResult, 'entity' | 'instance' | 'status'> & { entity?: Maybe<ResolversTypes['BasicObject']>, instance?: Maybe<ResolversTypes['WorkflowInstance']>, status?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowValidationError: ResolverTypeWrapper<WorkflowValidationError>;
   WorksOrdering: WorksOrdering;
   Workspace: ResolverTypeWrapper<BasicStoreEntityWorkspace>;
   WorkspaceAddInput: WorkspaceAddInput;
@@ -40028,6 +40639,12 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperTestResult: CsvMapperTestResult;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: BasicStoreEntityCustomView;
+  CustomViewAddInput: CustomViewAddInput;
+  CustomViewDuplicateInput: CustomViewDuplicateInput;
+  CustomViewImportWidgetInput: CustomViewImportWidgetInput;
+  CustomViewsConnection: Omit<CustomViewsConnection, 'edges'> & { edges: Array<ResolversParentTypes['CustomViewsEdge']> };
+  CustomViewsEdge: Omit<CustomViewsEdge, 'node'> & { node: ResolversParentTypes['CustomView'] };
+  CustomViewsSettings: CustomViewsSettings;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
@@ -40075,7 +40692,12 @@ export type ResolversParentTypes = ResolversObject<{
   DocsMetrics: DocsMetrics;
   DomainName: Omit<DomainName, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   DomainNameAddInput: DomainNameAddInput;
+  DraftContainerObjectChange: DraftContainerObjectChange;
+  DraftEntityContainerRef: DraftEntityContainerRef;
+  DraftEntityField: DraftEntityField;
+  DraftEntityRelation: DraftEntityRelation;
   DraftObjectsCount: DraftObjectsCount;
+  DraftResolvedId: DraftResolvedId;
   DraftVersion: DraftVersion;
   DraftWorkspace: BasicStoreEntityDraftWorkspace;
   DraftWorkspaceAddInput: DraftWorkspaceAddInput;
@@ -40379,6 +41001,11 @@ export type ResolversParentTypes = ResolversObject<{
   NarrativeEdge: Omit<NarrativeEdge, 'node'> & { node: ResolversParentTypes['Narrative'] };
   NetworkTraffic: Omit<NetworkTraffic, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   NetworkTrafficAddInput: NetworkTrafficAddInput;
+  NewsFeedCount: NewsFeedCount;
+  NewsFeedItem: NewsFeedItem;
+  NewsFeedItemConnection: NewsFeedItemConnection;
+  NewsFeedItemEdge: NewsFeedItemEdge;
+  NewsFeedItemMetadata: NewsFeedItemMetadata;
   Note: Omit<Note, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'objects' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, objects?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, relatedContainers?: Maybe<ResolversParentTypes['ContainerConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   NoteAddInput: NoteAddInput;
   NoteConnection: Omit<NoteConnection, 'edges'> & { edges: Array<ResolversParentTypes['NoteEdge']> };
@@ -40473,6 +41100,7 @@ export type ResolversParentTypes = ResolversObject<{
   PlaybookConnection: Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversParentTypes['PlaybookEdge']> };
   PlaybookEdge: Omit<PlaybookEdge, 'node'> & { node: ResolversParentTypes['Playbook'] };
   PlaybookInsertResult: PlaybookInsertResult;
+  PlaybookManager: PlaybookManager;
   Position: Omit<Position, 'avatar' | 'cases' | 'city' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, city?: Maybe<ResolversParentTypes['City']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   PositionAddInput: PositionAddInput;
   PositionConnection: Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['PositionEdge']>>> };
@@ -40566,7 +41194,7 @@ export type ResolversParentTypes = ResolversObject<{
   SecurityPlatformEdge: Omit<SecurityPlatformEdge, 'node'> & { node: ResolversParentTypes['SecurityPlatform'] };
   SendUserMailInput: SendUserMailInput;
   SessionDetail: SessionDetail;
-  Settings: Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversParentTypes['Member']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversParentTypes['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversParentTypes['Organization']>, platform_theme?: Maybe<ResolversParentTypes['Theme']> };
+  Settings: Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversParentTypes['Member']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversParentTypes['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<ResolversParentTypes['Member']>>, platform_messages?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversParentTypes['Organization']>, platform_theme?: Maybe<ResolversParentTypes['Theme']> };
   SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']>, updateCertAuth?: Maybe<ResolversParentTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversParentTypes['Settings']>, updateLocalAuth?: Maybe<ResolversParentTypes['Settings']> };
   SettingsMessage: Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversParentTypes['Member']>> };
   SettingsMessageInput: SettingsMessageInput;
@@ -40779,6 +41407,20 @@ export type ResolversParentTypes = ResolversObject<{
   WorkErrorInput: WorkErrorInput;
   WorkMessage: WorkMessage;
   WorkTracking: WorkTracking;
+  WorkflowActionConfig: WorkflowActionConfig;
+  WorkflowActionError: WorkflowActionError;
+  WorkflowDefinitionMutationResult: WorkflowDefinitionMutationResult;
+  WorkflowEntityRef: WorkflowEntityRef;
+  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowLastHistoryEntry: WorkflowLastHistoryEntry;
+  WorkflowPendingAsyncAction: WorkflowPendingAsyncAction;
+  WorkflowPendingTransition: WorkflowPendingTransition;
+  WorkflowSchema: WorkflowSchema;
+  WorkflowSerializedState: WorkflowSerializedState;
+  WorkflowSerializedTransition: WorkflowSerializedTransition;
+  WorkflowTransition: Omit<WorkflowTransition, 'toStatus'> & { toStatus?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowTriggerResult: Omit<WorkflowTriggerResult, 'entity' | 'instance' | 'status'> & { entity?: Maybe<ResolversParentTypes['BasicObject']>, instance?: Maybe<ResolversParentTypes['WorkflowInstance']>, status?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowValidationError: WorkflowValidationError;
   Workspace: BasicStoreEntityWorkspace;
   WorkspaceAddInput: WorkspaceAddInput;
   WorkspaceConnection: Omit<WorkspaceConnection, 'edges'> & { edges: Array<ResolversParentTypes['WorkspaceEdge']> };
@@ -40822,6 +41464,7 @@ export type ConstraintDirectiveArgs = {
 export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args = ConstraintDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type FfDirectiveArgs = {
+  defaultValue?: Maybe<Scalars['String']['input']>;
   flags: Array<Scalars['String']['input']>;
   softFail?: Maybe<Scalars['Boolean']['input']>;
 };
@@ -41505,7 +42148,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -42274,6 +42917,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
+  xtm_one_intent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42875,18 +43519,38 @@ export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type CustomViewResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomView'] = ResolversParentTypes['CustomView']> = ResolversObject<{
-  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  default?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  targetEntityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toWidgetExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<CustomViewToWidgetExportArgs, 'widgetId'>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CustomViewsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsConnection'] = ResolversParentTypes['CustomViewsConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['CustomViewsEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type CustomViewsEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsEdge'] = ResolversParentTypes['CustomViewsEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType>;
+}>;
+
+export type CustomViewsSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsSettings'] = ResolversParentTypes['CustomViewsSettings']> = ResolversObject<{
+  canEntityTypeHaveCustomViews?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
@@ -43093,7 +43757,7 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   built_in?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   decaySettingsChartData?: Resolver<Maybe<ResolversTypes['DecayData']>, ParentType, ContextType>;
-  decay_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  decay_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   decay_lifetime?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   decay_points?: Resolver<Maybe<Array<ResolversTypes['Int']>>, ParentType, ContextType>;
   decay_pound?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -43347,18 +44011,56 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type DraftContainerObjectChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftContainerObjectChange'] = ResolversParentTypes['DraftContainerObjectChange']> = ResolversObject<{
+  draft_operation?: Resolver<ResolversTypes['DraftChangeType'], ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative_main?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DraftEntityContainerRefResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftEntityContainerRef'] = ResolversParentTypes['DraftEntityContainerRef']> = ResolversObject<{
+  container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  container_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  container_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  draft_operation?: Resolver<ResolversTypes['DraftChangeType'], ParentType, ContextType>;
+}>;
+
+export type DraftEntityFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftEntityField'] = ResolversParentTypes['DraftEntityField']> = ResolversObject<{
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DraftEntityRelationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftEntityRelation'] = ResolversParentTypes['DraftEntityRelation']> = ResolversObject<{
+  draft_operation?: Resolver<ResolversTypes['DraftChangeType'], ParentType, ContextType>;
+  from_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  from_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  from_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relation_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type DraftObjectsCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftObjectsCount'] = ResolversParentTypes['DraftObjectsCount']> = ResolversObject<{
   containersCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   entitiesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   observablesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   relationshipsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  reviewsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   sightingsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type DraftResolvedIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftResolvedId'] = ResolversParentTypes['DraftResolvedId']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative_main?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type DraftVersionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftVersion'] = ResolversParentTypes['DraftVersion']> = ResolversObject<{
   draft_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   draft_operation?: Resolver<ResolversTypes['DraftOperation'], ParentType, ContextType>;
+  draft_updates_patch?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type DraftWorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspace'] = ResolversParentTypes['DraftWorkspace']> = ResolversObject<{
@@ -43381,6 +44083,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   validationWork?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType>;
+  workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<ResolversTypes['Work']>>, ParentType, ContextType, Partial<DraftWorkspaceWorksArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -43641,6 +44344,8 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  workflow_configuration?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -45157,6 +45862,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45204,6 +45910,7 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   query_attributes?: Resolver<Maybe<Array<ResolversTypes['IngestionQueryAttribute']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45249,6 +45956,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45295,6 +46003,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45345,7 +46054,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
@@ -46535,6 +47244,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkXTMHubConnectivity?: Resolver<ResolversTypes['CheckXTMHubConnectivityResponse'], ParentType, ContextType>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
+  clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -46548,6 +47258,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
+  customViewAdd?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewAddArgs, 'input'>>;
+  customViewConfigurationImport?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewConfigurationImportArgs, 'file' | 'targetEntityType'>>;
+  customViewDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationCustomViewDeleteArgs, 'id'>>;
+  customViewDuplicate?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewDuplicateArgs, 'input'>>;
+  customViewEdit?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewEditArgs, 'id' | 'input'>>;
+  customViewWidgetConfigurationImport?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<MutationCustomViewWidgetConfigurationImportArgs, 'id' | 'input'>>;
   dataComponentAdd?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentAddArgs, 'input'>>;
   dataComponentContextClean?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextCleanArgs, 'id'>>;
   dataComponentContextPatch?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextPatchArgs, 'id' | 'input'>>;
@@ -46708,6 +47424,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   managedConnectorAdd?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, Partial<MutationManagedConnectorAddArgs>>;
   managedConnectorEdit?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, Partial<MutationManagedConnectorEditArgs>>;
   managerConfigurationFieldPatch?: Resolver<Maybe<ResolversTypes['ManagerConfiguration']>, ParentType, ContextType, RequireFields<MutationManagerConfigurationFieldPatchArgs, 'id' | 'input'>>;
+  markAllNewsFeedItemsAsRead?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   markingDefinitionAdd?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionAddArgs, 'input'>>;
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
@@ -46780,6 +47497,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   registerConnectorsManager?: Resolver<Maybe<ResolversTypes['ConnectorManager']>, ParentType, ContextType, Partial<MutationRegisterConnectorsManagerArgs>>;
   reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<MutationReportAddArgs, 'input'>>;
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
+  reportWorkflowAsyncActionResult?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportWorkflowAsyncActionResultArgs, 'status' | 'workflowActionId' | 'workflowInstanceId'>>;
   requestAccessAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
   requestAccessConfigure?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType, RequireFields<MutationRequestAccessConfigureArgs, 'input'>>;
   resetFileIndexing?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -46801,6 +47519,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   samlProviderEdit?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<MutationSamlProviderEditArgs, 'id' | 'input'>>;
   savedFilterAdd?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterAddArgs, 'input'>>;
   savedFilterDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSavedFilterDeleteArgs, 'id'>>;
+  savedFilterEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterEditAuthorizedMembersArgs, 'id' | 'input'>>;
   savedFilterFieldPatch?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterFieldPatchArgs, 'id'>>;
   sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<MutationSectorAddArgs, 'input'>>;
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
@@ -46899,6 +47618,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDigestAddArgs, 'input'>>;
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
+  triggerWorkflowEvent?: Resolver<ResolversTypes['WorkflowTriggerResult'], ParentType, ContextType, RequireFields<MutationTriggerWorkflowEventArgs, 'entityId' | 'eventName'>>;
   updateConnectorCurrentStatus?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorCurrentStatusArgs, 'input'>>;
   updateConnectorHealth?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUpdateConnectorHealthArgs, 'input'>>;
   updateConnectorLogs?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUpdateConnectorLogsArgs, 'input'>>;
@@ -46927,6 +47647,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId' | 'isMultiPartWork'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
+  workflowDefinitionDelete?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionDeleteArgs, 'entityType'>>;
+  workflowDefinitionPublish?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionPublishArgs, 'entityType'>>;
+  workflowDefinitionSet?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionSetArgs, 'definition' | 'entityType'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
   workspaceConfigurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationWorkspaceConfigurationImportArgs, 'file'>>;
   workspaceContextClean?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextCleanArgs, 'id'>>;
@@ -47132,6 +47855,42 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NewsFeedCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedCount'] = ResolversParentTypes['NewsFeedCount']> = ResolversObject<{
+  count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type NewsFeedItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedItem'] = ResolversParentTypes['NewsFeedItem']> = ResolversObject<{
+  creation_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  is_read?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metadata?: Resolver<Array<ResolversTypes['NewsFeedItemMetadata']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  news_feed_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  tags?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NewsFeedItemConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedItemConnection'] = ResolversParentTypes['NewsFeedItemConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['NewsFeedItemEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type NewsFeedItemEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedItemEdge'] = ResolversParentTypes['NewsFeedItemEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['NewsFeedItem'], ParentType, ContextType>;
+}>;
+
+export type NewsFeedItemMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedItemMetadata'] = ResolversParentTypes['NewsFeedItemMetadata']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type NoteResolvers<ContextType = any, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = ResolversObject<{
@@ -48008,6 +48767,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type PlaybookComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookComponent'] = ResolversParentTypes['PlaybookComponent']> = ResolversObject<{
+  category?: Resolver<ResolversTypes['PlaybookCategory'], ParentType, ContextType>;
   configuration_schema?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   icon?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48036,6 +48796,17 @@ export type PlaybookEdgeResolvers<ContextType = any, ParentType extends Resolver
 export type PlaybookInsertResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookInsertResult'] = ResolversParentTypes['PlaybookInsertResult']> = ResolversObject<{
   linkId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type PlaybookManagerResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookManager'] = ResolversParentTypes['PlaybookManager']> = ResolversObject<{
+  activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  firstStreamEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  firstStreamEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastProcessedEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  lastProcessedEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastStreamEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  lastStreamEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  managerInGoodHealth?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type PositionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Position'] = ResolversParentTypes['Position']> = ResolversObject<{
@@ -48256,6 +49027,13 @@ export type PublicProviderResolvers<ContextType = any, ParentType extends Resolv
 export type PublicSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicSettings'] = ResolversParentTypes['PublicSettings']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
+  password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_numbers?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_symbols?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48279,6 +49057,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
   administrativeAreas?: Resolver<Maybe<ResolversTypes['AdministrativeAreaConnection']>, ParentType, ContextType, Partial<QueryAdministrativeAreasArgs>>;
+  allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType, RequireFields<QueryAllowedTransitionsArgs, 'entityId'>>;
   askAiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, Partial<QueryAskAiActivityArgs>>;
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
@@ -48350,6 +49129,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
+  customView?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<QueryCustomViewArgs, 'id'>>;
+  customViews?: Resolver<ResolversTypes['CustomViewsConnection'], ParentType, ContextType, Partial<QueryCustomViewsArgs>>;
+  customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
@@ -48364,8 +49146,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   disseminationList?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<QueryDisseminationListArgs, 'id'>>;
   disseminationLists?: Resolver<Maybe<ResolversTypes['DisseminationListConnection']>, ParentType, ContextType, Partial<QueryDisseminationListsArgs>>;
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
+  draftWorkspaceContainerObjects?: Resolver<Array<ResolversTypes['DraftContainerObjectChange']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceContainerObjectsArgs, 'containerId' | 'draftId'>>;
   draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
+  draftWorkspaceEntityContainerRefs?: Resolver<Array<ResolversTypes['DraftEntityContainerRef']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntityContainerRefsArgs, 'draftId' | 'entityId'>>;
+  draftWorkspaceEntityFields?: Resolver<Array<ResolversTypes['DraftEntityField']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntityFieldsArgs, 'draftId' | 'entityId'>>;
+  draftWorkspaceEntityRelations?: Resolver<Array<ResolversTypes['DraftEntityRelation']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntityRelationsArgs, 'draftId' | 'entityId'>>;
   draftWorkspaceRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceRelationshipsArgs, 'draftId'>>;
+  draftWorkspaceResolveIds?: Resolver<Array<ResolversTypes['DraftResolvedId']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceResolveIdsArgs, 'draftId' | 'ids'>>;
   draftWorkspaceSightingRelationships?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceSightingRelationshipsArgs, 'draftId'>>;
   draftWorkspaces?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesArgs>>;
   draftWorkspacesRestricted?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesRestrictedArgs>>;
@@ -48462,8 +49249,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   markingDefinitions?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType, Partial<QueryMarkingDefinitionsArgs>>;
   me?: Resolver<ResolversTypes['MeUser'], ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['MemberConnection']>, ParentType, ContextType, Partial<QueryMembersArgs>>;
+  myNewsFeeds?: Resolver<Maybe<ResolversTypes['NewsFeedItemConnection']>, ParentType, ContextType, Partial<QueryMyNewsFeedsArgs>>;
   myNotifications?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, Partial<QueryMyNotificationsArgs>>;
   myOpinion?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<QueryMyOpinionArgs, 'id'>>;
+  myUnreadNewsFeedsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   myUnreadNotificationsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   narrative?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<QueryNarrativeArgs, 'id'>>;
   narratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType, Partial<QueryNarrativesArgs>>;
@@ -48504,7 +49293,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   pirs?: Resolver<Maybe<ResolversTypes['PirConnection']>, ParentType, ContextType, Partial<QueryPirsArgs>>;
   playbook?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<QueryPlaybookArgs, 'id'>>;
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
+  playbookManagerInfo?: Resolver<Maybe<ResolversTypes['PlaybookManager']>, ParentType, ContextType>;
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
+  playbooksForEnrollment?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEnrollmentArgs, 'ids'>>;
+  playbooksForEnrollmentByFilters?: Resolver<Array<ResolversTypes['Playbook']>, ParentType, ContextType, Partial<QueryPlaybooksForEnrollmentByFiltersArgs>>;
   playbooksForEntity?: Resolver<Maybe<Array<Maybe<ResolversTypes['Playbook']>>>, ParentType, ContextType, RequireFields<QueryPlaybooksForEntityArgs, 'id'>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;
@@ -48664,6 +49456,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityConnection']>, ParentType, ContextType, Partial<QueryVulnerabilitiesArgs>>;
   vulnerability?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<QueryVulnerabilityArgs>>;
   work?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<QueryWorkArgs, 'id'>>;
+  workflowDefinition?: Resolver<Maybe<ResolversTypes['WorkflowSchema']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionArgs, 'entityType'>>;
+  workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
   workspaces?: Resolver<Maybe<ResolversTypes['WorkspaceConnection']>, ParentType, ContextType, Partial<QueryWorkspacesArgs>>;
@@ -48964,6 +49758,7 @@ export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extend
 }>;
 
 export type RetentionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRule'] = ResolversParentTypes['RetentionRule']> = ResolversObject<{
+  active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_deleted_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -49171,6 +49966,9 @@ export type SamlConfigurationResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type SavedFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['SavedFilter'] = ResolversParentTypes['SavedFilter']> = ResolversObject<{
+  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
+  creator_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -49476,6 +50274,7 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  caller_ip?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cert_auth?: Resolver<Maybe<ResolversTypes['CertAuthConfig']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -49515,12 +50314,17 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_https_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  platform_ip_whitelist?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  platform_ip_whitelist_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  platform_ip_whitelist_exclusions?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
+  platform_no_access_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_notifier_auto_trigger_assignee?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
@@ -49746,6 +50550,7 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   askAnalysis?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskAnalysisArgs, 'contentSource' | 'contentType'>>;
   askEnrichment?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
   askEnrichments?: Resolver<Maybe<Array<ResolversTypes['Work']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentsArgs, 'connectorIds'>>;
+  cleanInconsistency?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsCleanInconsistencyArgs, 'cleaningTypes'>>;
   clearAccessRestriction?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;
@@ -50132,7 +50937,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type StixObjectOrStixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationship'] = ResolversParentTypes['StixObjectOrStixRelationship']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipConnection']> = ResolversObject<{
@@ -50146,7 +50951,7 @@ export type StixObjectOrStixRelationshipEdgeResolvers<ContextType = any, ParentT
 }>;
 
 export type StixObjectOrStixRelationshipOrCreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipOrCreator'] = ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Software' | 'Status' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Software' | 'Status' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipRefConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']> = ResolversObject<{
@@ -50363,6 +51168,7 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  origin_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -50443,6 +51249,10 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   managerConfiguration?: SubscriptionResolver<Maybe<ResolversTypes['ManagerConfiguration']>, "managerConfiguration", ParentType, ContextType, RequireFields<SubscriptionManagerConfigurationArgs, 'id'>>;
   markingDefinition?: SubscriptionResolver<Maybe<ResolversTypes['MarkingDefinition']>, "markingDefinition", ParentType, ContextType, RequireFields<SubscriptionMarkingDefinitionArgs, 'id'>>;
   me?: SubscriptionResolver<Maybe<ResolversTypes['MeUser']>, "me", ParentType, ContextType>;
+  newsFeedItem?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedItem']>, "newsFeedItem", ParentType, ContextType>;
+  newsFeedItemAdded?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedItem']>, "newsFeedItemAdded", ParentType, ContextType>;
+  newsFeedItemDeleted?: SubscriptionResolver<Maybe<ResolversTypes['ID']>, "newsFeedItemDeleted", ParentType, ContextType>;
+  newsFeedsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NewsFeedCount']>, "newsFeedsNumber", ParentType, ContextType>;
   notification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "notification", ParentType, ContextType>;
   notificationsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NotificationCount']>, "notificationsNumber", ParentType, ContextType>;
   securityCoverage?: SubscriptionResolver<Maybe<ResolversTypes['SecurityCoverage']>, "securityCoverage", ParentType, ContextType, RequireFields<SubscriptionSecurityCoverageArgs, 'id'>>;
@@ -51989,6 +52799,122 @@ export type WorkTrackingResolvers<ContextType = any, ParentType extends Resolver
   import_processed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
 }>;
 
+export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowActionConfig'] = ResolversParentTypes['WorkflowActionConfig']> = ResolversObject<{
+  params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowActionErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowActionError'] = ResolversParentTypes['WorkflowActionError']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowDefinitionMutationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowDefinitionMutationResult'] = ResolversParentTypes['WorkflowDefinitionMutationResult']> = ResolversObject<{
+  errors?: Resolver<Array<ResolversTypes['WorkflowValidationError']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  published?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  target_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowEntityRefResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowEntityRef'] = ResolversParentTypes['WorkflowEntityRef']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowInstanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowInstance'] = ResolversParentTypes['WorkflowInstance']> = ResolversObject<{
+  allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
+  currentState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  currentStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  lastHistoryEntry?: Resolver<Maybe<ResolversTypes['WorkflowLastHistoryEntry']>, ParentType, ContextType>;
+  pendingError?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pendingStatus?: Resolver<Maybe<ResolversTypes['WorkflowExecutionStatus']>, ParentType, ContextType>;
+  pendingTransition?: Resolver<Maybe<ResolversTypes['WorkflowPendingTransition']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowLastHistoryEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowLastHistoryEntry'] = ResolversParentTypes['WorkflowLastHistoryEntry']> = ResolversObject<{
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowPendingAsyncActionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowPendingAsyncAction'] = ResolversParentTypes['WorkflowPendingAsyncAction']> = ResolversObject<{
+  errors?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionError']>>, ParentType, ContextType>;
+  expectedCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  lastActivityAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  processedCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  startedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  workId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowPendingTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowPendingTransition'] = ResolversParentTypes['WorkflowPendingTransition']> = ResolversObject<{
+  asyncActions?: Resolver<Array<ResolversTypes['WorkflowPendingAsyncAction']>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  syncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  toState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  triggeredAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type WorkflowSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSchema'] = ResolversParentTypes['WorkflowSchema']> = ResolversObject<{
+  errors?: Resolver<Maybe<Array<ResolversTypes['WorkflowValidationError']>>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  initialState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  published?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  states?: Resolver<Array<ResolversTypes['WorkflowSerializedState']>, ParentType, ContextType>;
+  transitions?: Resolver<Array<ResolversTypes['WorkflowSerializedTransition']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowSerializedStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedState'] = ResolversParentTypes['WorkflowSerializedState']> = ResolversObject<{
+  onEnter?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  onExit?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
+  asyncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  conditions?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  from?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  syncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTransition'] = ResolversParentTypes['WorkflowTransition']> = ResolversObject<{
+  actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  requiresShareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  requiresUnshareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  toState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowTriggerResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTriggerResult'] = ResolversParentTypes['WorkflowTriggerResult']> = ResolversObject<{
+  entity?: Resolver<Maybe<ResolversTypes['BasicObject']>, ParentType, ContextType>;
+  executionStatus?: Resolver<Maybe<ResolversTypes['WorkflowExecutionStatus']>, ParentType, ContextType>;
+  instance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  newState?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pendingTransition?: Resolver<Maybe<ResolversTypes['WorkflowPendingTransition']>, ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type WorkflowValidationErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowValidationError'] = ResolversParentTypes['WorkflowValidationError']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Maybe<Array<ResolversTypes['WorkflowEntityRef']>>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Workspace'] = ResolversParentTypes['Workspace']> = ResolversObject<{
   authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52006,6 +52932,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;
   owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  refresh_interval?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -52245,6 +53172,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CsvMapperSchemaAttributes?: CsvMapperSchemaAttributesResolvers<ContextType>;
   CsvMapperTestResult?: CsvMapperTestResultResolvers<ContextType>;
   CustomView?: CustomViewResolvers<ContextType>;
+  CustomViewsConnection?: CustomViewsConnectionResolvers<ContextType>;
+  CustomViewsEdge?: CustomViewsEdgeResolvers<ContextType>;
+  CustomViewsSettings?: CustomViewsSettingsResolvers<ContextType>;
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;
@@ -52282,7 +53212,12 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Distribution?: DistributionResolvers<ContextType>;
   DocsMetrics?: DocsMetricsResolvers<ContextType>;
   DomainName?: DomainNameResolvers<ContextType>;
+  DraftContainerObjectChange?: DraftContainerObjectChangeResolvers<ContextType>;
+  DraftEntityContainerRef?: DraftEntityContainerRefResolvers<ContextType>;
+  DraftEntityField?: DraftEntityFieldResolvers<ContextType>;
+  DraftEntityRelation?: DraftEntityRelationResolvers<ContextType>;
   DraftObjectsCount?: DraftObjectsCountResolvers<ContextType>;
+  DraftResolvedId?: DraftResolvedIdResolvers<ContextType>;
   DraftVersion?: DraftVersionResolvers<ContextType>;
   DraftWorkspace?: DraftWorkspaceResolvers<ContextType>;
   DraftWorkspaceConnection?: DraftWorkspaceConnectionResolvers<ContextType>;
@@ -52503,6 +53438,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NarrativeConnection?: NarrativeConnectionResolvers<ContextType>;
   NarrativeEdge?: NarrativeEdgeResolvers<ContextType>;
   NetworkTraffic?: NetworkTrafficResolvers<ContextType>;
+  NewsFeedCount?: NewsFeedCountResolvers<ContextType>;
+  NewsFeedItem?: NewsFeedItemResolvers<ContextType>;
+  NewsFeedItemConnection?: NewsFeedItemConnectionResolvers<ContextType>;
+  NewsFeedItemEdge?: NewsFeedItemEdgeResolvers<ContextType>;
+  NewsFeedItemMetadata?: NewsFeedItemMetadataResolvers<ContextType>;
   Note?: NoteResolvers<ContextType>;
   NoteConnection?: NoteConnectionResolvers<ContextType>;
   NoteEdge?: NoteEdgeResolvers<ContextType>;
@@ -52571,6 +53511,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PlaybookConnection?: PlaybookConnectionResolvers<ContextType>;
   PlaybookEdge?: PlaybookEdgeResolvers<ContextType>;
   PlaybookInsertResult?: PlaybookInsertResultResolvers<ContextType>;
+  PlaybookManager?: PlaybookManagerResolvers<ContextType>;
   Position?: PositionResolvers<ContextType>;
   PositionConnection?: PositionConnectionResolvers<ContextType>;
   PositionEdge?: PositionEdgeResolvers<ContextType>;
@@ -52795,6 +53736,20 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkEditMutations?: WorkEditMutationsResolvers<ContextType>;
   WorkMessage?: WorkMessageResolvers<ContextType>;
   WorkTracking?: WorkTrackingResolvers<ContextType>;
+  WorkflowActionConfig?: WorkflowActionConfigResolvers<ContextType>;
+  WorkflowActionError?: WorkflowActionErrorResolvers<ContextType>;
+  WorkflowDefinitionMutationResult?: WorkflowDefinitionMutationResultResolvers<ContextType>;
+  WorkflowEntityRef?: WorkflowEntityRefResolvers<ContextType>;
+  WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;
+  WorkflowLastHistoryEntry?: WorkflowLastHistoryEntryResolvers<ContextType>;
+  WorkflowPendingAsyncAction?: WorkflowPendingAsyncActionResolvers<ContextType>;
+  WorkflowPendingTransition?: WorkflowPendingTransitionResolvers<ContextType>;
+  WorkflowSchema?: WorkflowSchemaResolvers<ContextType>;
+  WorkflowSerializedState?: WorkflowSerializedStateResolvers<ContextType>;
+  WorkflowSerializedTransition?: WorkflowSerializedTransitionResolvers<ContextType>;
+  WorkflowTransition?: WorkflowTransitionResolvers<ContextType>;
+  WorkflowTriggerResult?: WorkflowTriggerResultResolvers<ContextType>;
+  WorkflowValidationError?: WorkflowValidationErrorResolvers<ContextType>;
   Workspace?: WorkspaceResolvers<ContextType>;
   WorkspaceConnection?: WorkspaceConnectionResolvers<ContextType>;
   WorkspaceEdge?: WorkspaceEdgeResolvers<ContextType>;

@@ -21,7 +21,7 @@ directive @constraint(
   exclusiveMax: Int
   multipleOf: Int
 ) on INPUT_FIELD_DEFINITION
-directive @ff(flags: [String!]!, softFail: Boolean = false) on FIELD_DEFINITION
+directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
 
 ### SCALAR
 
@@ -56,6 +56,7 @@ enum Capabilities {
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
   KNOWLEDGE_KNDISSEMINATION
+  KNOWLEDGE_KNSHAREFILTERS
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
@@ -144,6 +145,8 @@ enum FilterOperator {
   within
   only_eq_to
   not_only_eq_to
+  has_changed
+  not_has_changed
 }
 
 enum XTMHubRegistrationStatus {
@@ -368,6 +371,8 @@ input AuditsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
+  countField: String
+  unique: Boolean
 }
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
@@ -949,6 +954,7 @@ enum BackgroundTaskActionType {
   ADD_GROUPS
   REMOVE_GROUPS
   SEND_EMAIL
+  ENROLL_PLAYBOOK
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1233,6 +1239,13 @@ type PublicSettings implements IntlSettings & ThemeSettings {
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
     metrics_definition: [MetricDefinition!]
+    password_policy_min_length: Int
+    password_policy_max_length: Int
+    password_policy_min_symbols: Int
+    password_policy_min_numbers: Int
+    password_policy_min_words: Int
+    password_policy_min_lowercase: Int
+    password_policy_min_uppercase: Int
 }
 
 type MetricAttributes {
@@ -1337,6 +1350,10 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_consent_confirm_text: String
   platform_banner_text: String
   platform_banner_level: String
+  platform_no_access_message: String
+  platform_ip_whitelist: [String!]
+  platform_ip_whitelist_enabled: Boolean
+  platform_ip_whitelist_exclusions: [Member!]
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
   platform_whitemark: Boolean
@@ -1365,6 +1382,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   cert_auth: CertAuthConfig
   headers_auth: HeadersAuthConfig
   platform_https_enabled: Boolean!
+  caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
@@ -1384,6 +1402,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
+  # Notifiers
+  platform_notifier_auto_trigger_assignee: Boolean!
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String
@@ -1959,11 +1979,13 @@ input RegisterConnectorInput {
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
+  xtm_one_intent: String
 }
 
 input EditManagedConnectorInput {
   id: ID!
   name: String! @constraint(minLength:2, format: "not-blank")
+  title: String! @constraint(minLength:2, format: "not-blank")
   connector_user_id: ID!
   manager_contract_configuration: [ContractConfigInput!]!
 }
@@ -2213,6 +2235,7 @@ type Connector implements BasicObject & InternalObject {
   manager_connector_uptime: Int
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
+  xtm_one_intent: String
   jwks: String!
 }
 
@@ -2320,6 +2343,7 @@ enum DraftOperation {
 type DraftVersion {
   draft_id: String!
   draft_operation: DraftOperation!
+  draft_updates_patch: String
 }
 
 interface StixObject {
@@ -14056,6 +14080,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | IMEI
   | ICCID
   | IMSI
+  | SavedFilter
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -14149,6 +14174,7 @@ union StixObjectOrStixRelationship =
   | IMEI
   | ICCID
   | IMSI
+  | SavedFilter
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -14728,6 +14754,8 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
+    field: String
+    unique: Boolean
   ): Number @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsTimeSeries(
     field: String!
@@ -15953,7 +15981,7 @@ type WorkEditMutations {
 ######## INTERNAL OBJECT ENTITIES
 
 type SettingsEditMutations {
-  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY])
+  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION])
   contextPatch(input: EditContext): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   contextClean: Settings @auth(for: [SETTINGS_SETPARAMETERS])
   editMessage(input: SettingsMessageInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
@@ -16077,6 +16105,11 @@ type MappedEntity {
   isEntityInContainer: Boolean!
 }
 
+enum InconsistencyCleaningType {
+  ALL,
+  REF_DUPLICATE_CLEAN,
+}
+
 type StixCoreObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -16095,6 +16128,7 @@ type StixCoreObjectEditMutations {
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
   removeFromDraft: ID @auth(for: [KNOWLEDGE])
+  cleanInconsistency(cleaningTypes: [InconsistencyCleaningType!]!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES

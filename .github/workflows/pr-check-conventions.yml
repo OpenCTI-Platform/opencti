@@ -4,28 +4,41 @@ on:
     types: [opened, edited, reopened, ready_for_review, synchronize]
 jobs:
   check-organization:
-    name: Check if label can be setup based on organization
+    name: Check if PR author is an OpenCTI-Platform member and add label
+    # except for renovate
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'dependencies') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
-      - name: Setting labels
-        uses: FiligranHQ/auto-label@1.0.0
-        with:
-          labels_by_organization: "{\"FiligranHQ\":[\"filigran team\"]}"
+      - name: Check organization membership and set label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Determine author association from PR payload (OWNER/MEMBER/COLLABORATOR/CONTRIBUTOR/...)
+          set -euo pipefail
+          AUTHOR_ASSOCIATION="${{ github.event.pull_request.author_association }}"
+
+          if [ "$AUTHOR_ASSOCIATION" = "OWNER" ] || [ "$AUTHOR_ASSOCIATION" = "MEMBER" ]; then
+            echo "$PR_AUTHOR is associated as $AUTHOR_ASSOCIATION"
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "filigran team" || true
+          fi
   check-pr-title-convention:
     name: Check that PR title follows convention
+    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: Slashgear/action-check-pr-title@76166c63ec0b25cdbe693e5e972e83ca186313fb
         with:
-          regexp: '^\[[a-z]+.+\].+\((#[0-9]+)\)$|^\[deps\].+'
+          regexp: '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z0-9._/-]+\))?!?: .+ \(#[0-9]+(, ?#[0-9]+)*\)$'
           flags: "gm"
-          helpMessage: "Format: '[component] Message (#issuenumber)' for example '[docs] updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
+          helpMessage: "Format: 'type(scope?): description (#issue)' for example 'docs: updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
   check-signed-commits:
     name: Check signed commits in PR
     runs-on: ubuntu-latest

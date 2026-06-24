@@ -1,6 +1,6 @@
-import type { StixDataSource, StoreEntityDataSource } from './dataSource-types';
+import type { Stix2DataSource, StixDataSource, StoreEntityDataSource } from './dataSource-types';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { convertDataSourceToStix_2_1 } from './dataSource-converter';
+import { convertDataSourceToStix_2_0, convertDataSourceToStix_2_1 } from './dataSource-converter';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
@@ -9,7 +9,7 @@ import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 
-const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource> = {
+const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource, Stix2DataSource> = {
   type: {
     id: 'dataSources',
     name: ENTITY_TYPE_DATA_SOURCE,
@@ -56,6 +56,7 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     return stix.name;
   },
   converter_2_1: convertDataSourceToStix_2_1,
+  converter_2_0: convertDataSourceToStix_2_0,
 };
 
 registerDefinition(DATA_SOURCE_DEFINITION);

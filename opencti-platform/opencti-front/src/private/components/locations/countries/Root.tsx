@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Routes, useParams, useLocation } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
@@ -27,6 +24,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import CountryEdition from './CountryEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -52,6 +50,7 @@ const countryQuery = graphql`
   query RootCountryQuery($id: String!) {
     country(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation
@@ -79,7 +78,12 @@ const countryQuery = graphql`
   }
 `;
 
-const RootCountryComponent = ({ queryRef, countryId }) => {
+interface RootCountryComponentProps {
+  queryRef: PreloadedQuery<RootCountryQuery>;
+  countryId: string;
+}
+
+const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
@@ -97,7 +101,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   const { country, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_COUNTRY(countryId);
   const link = `${basePath}/knowledge`;
-  const isOverview = location.pathname === basePath;
+  const isOverview = isPathOverview(location.pathname, basePath);
   const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
@@ -163,6 +167,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={country}
               basePath={basePath}
               pages={{
                 overview: <Country countryData={country} />,

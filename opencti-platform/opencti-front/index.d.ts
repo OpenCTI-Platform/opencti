@@ -11,7 +11,9 @@ declare module '*?worker' {
   export default workerConstructor;
 }
 
-// Monaco Editor environment (used by setupMonacoWorkers.ts)
+// Monaco Editor environment.
+// Set either by `vite-plugin-monaco-editor` (Vite dev, via an inline script in
+// index.html) or by src/public/workers/setupMonacoWorkers.ts (esbuild builds).
 interface Window {
   MonacoEnvironment?: {
     getWorker(workerId: string, label: string): Worker;

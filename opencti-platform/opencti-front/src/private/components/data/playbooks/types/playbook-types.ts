@@ -7,6 +7,7 @@ export type PlaybookComponent = NonNullable<PlaybookComponents[number]>;
 
 export interface PlaybookConfig {
   filters?: string;
+  applyWithFilters?: string;
   actions?: PlaybookUpdateAction[];
   triggerTime?: string;
 }
@@ -17,6 +18,7 @@ export interface PlaybookDefinitionNode {
   component_id: string;
   configuration: string; // json
   position: XYPosition;
+  description?: string;
 }
 
 export interface PlaybookDefinitionEdge {
@@ -32,6 +34,7 @@ export interface PlaybookDefinitionEdge {
 
 export type PlaybookNode = Node<{
   name?: string;
+  description?: string;
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
   openConfig: (nodeId: string) => void;
@@ -52,6 +55,9 @@ export type PlaybookComponentConfigSchema = {
       type: string;
       uniqueItems?: boolean;
       $ref?: string;
+      // UI hint forwarded by backend components to request a specific
+      // input renderer (e.g. ``textarea`` for multi-line strings).
+      format?: string;
       default?: PlaybookConfig[key];
       oneOf?: unknown[];
       items?: {

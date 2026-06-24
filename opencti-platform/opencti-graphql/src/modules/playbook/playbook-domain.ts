@@ -16,16 +16,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS } from '../../config/conf';
-import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, stixLoadById, stixLoadByIds, stixLoadByFilters, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { deleteAllPlaybookExecutions, notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EditInput, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
+import { type EditInput, type FilterGroup, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS, type StreamConfiguration } from './playbook-components';
+import xtmOneClient from '../xtm/one/xtm-one-client';
+import { getEnrollmentEligibility, excludeEntitiesByIds, matchPlaybooksToEntities, type StixFilterMatchFn, ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT } from './playbook-enrollment';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -38,8 +40,8 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren } from './playbook-utils';
-import type { SharingConfiguration } from './components/sharing-component';
+import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
+import { type SharingConfiguration } from './components/sharing-component';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -85,9 +87,63 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
   return filteredPlaybooks;
 };
 
+const getEligiblePlaybooksForEnrollment = async (context: AuthContext) => {
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  return playbooks.map(getEnrollmentEligibility).filter((e): e is NonNullable<typeof e> => e !== null);
+};
+
+export const findPlaybooksForEnrollment = async (
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+) => {
+  await checkEnterpriseEdition(context);
+  const eligible = await getEligiblePlaybooksForEnrollment(context);
+  if (eligible.length === 0) return [];
+  const cappedIds = ids.slice(0, ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT);
+  const stixEntities = await stixLoadByIds(context, user, cappedIds);
+  const isEntityMatchingFilterGroup: StixFilterMatchFn = (entity, filters) => isStixMatchFilterGroup(context, SYSTEM_USER, entity, filters);
+  return matchPlaybooksToEntities(eligible, stixEntities, isEntityMatchingFilterGroup);
+};
+
+export const findPlaybooksForEnrollmentByFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  filters: FilterGroup | null,
+  search: string | null,
+  excludedIds: string[],
+): Promise<BasicStoreEntityPlaybook[]> => {
+  await checkEnterpriseEdition(context);
+  const eligible = await getEligiblePlaybooksForEnrollment(context);
+  if (eligible.length === 0) return [];
+  const stixEntities = await stixLoadByFilters(context, user, [ABSTRACT_STIX_CORE_OBJECT], {
+    filters: filters ?? undefined,
+    search: search ?? undefined,
+    maxSize: ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT,
+  });
+  const filteredEntities = excludeEntitiesByIds(stixEntities, excludedIds);
+  if (filteredEntities.length === 0) return [];
+  const isEntityMatchingFilterGroup: StixFilterMatchFn = (entity, filterGroup) => isStixMatchFilterGroup(context, SYSTEM_USER, entity, filterGroup);
+  return matchPlaybooksToEntities(eligible, filteredEntities, isEntityMatchingFilterGroup);
+};
+
+// IDs of playbook components that delegate their work to an XTM One agent
+// and therefore only make sense to expose to playbook authors when an
+// XTM One token is configured. Same gating contract as the Ask Ariane
+// chatbot and the AI Insights drawers — listing them in the picker when
+// the platform cannot reach XTM One would only let authors build nodes
+// that no-op at runtime.
+const XTM_ONE_DEPENDENT_COMPONENT_IDS: ReadonlySet<string> = new Set([
+  'PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT',
+  'PLAYBOOK_AI_AGENT_SEND_COMPONENT',
+]);
+
 export const availableComponents = async (context: AuthContext) => {
   await checkEnterpriseEdition(context);
-  return Object.values(PLAYBOOK_COMPONENTS);
+  const xtmOneConfigured = xtmOneClient.isConfigured();
+  return Object.values(PLAYBOOK_COMPONENTS).filter((component) => {
+    return xtmOneConfigured || !XTM_ONE_DEPENDENT_COMPONENT_IDS.has(component.id);
+  });
 };
 
 export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
@@ -143,6 +199,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     position: input.position,
     component_id: input.component_id,
     configuration, // TODO Check valid json
+    description: input.description || undefined,
   });
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   if (relatedComponent.is_entry_point) {
@@ -215,6 +272,7 @@ export const playbookReplaceNode = async (
         position: input.position,
         component_id: input.component_id,
         configuration, // TODO Check valid json
+        description: input.description || undefined,
       };
     }
     return n;
@@ -252,6 +310,7 @@ export const playbookInsertNode = async (
     position: input.position,
     component_id: input.component_id,
     configuration: input.configuration ?? '{}', // TODO Check valid json
+    description: input.description || undefined,
   });
   // Replace node with new position
   definition.nodes = definition.nodes.map((n) => {
@@ -442,6 +501,9 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
+  const updatedPlaybookDefinition = updateImportedPlaybookDefinitionScope(config.playbook_definition, parsedData.openCTI_version);
+  config.playbook_definition = updatedPlaybookDefinition;
+
   const importData = {
     name: config.name,
     description: config.description,

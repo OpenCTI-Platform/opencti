@@ -1,9 +1,6 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Routes, useParams, useLocation } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
@@ -27,6 +24,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -52,6 +50,7 @@ const regionQuery = graphql`
   query RootRegionQuery($id: String!) {
     region(id: $id) {
       id
+      entity_type
       draftVersion {
         draft_id
         draft_operation
@@ -79,7 +78,12 @@ const regionQuery = graphql`
   }
 `;
 
-const RootRegionComponent = ({ queryRef, regionId }) => {
+interface RootRegionComponentProps {
+  queryRef: PreloadedQuery<RootRegionQuery>;
+  regionId: string;
+}
+
+const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) => {
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
@@ -97,7 +101,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   const { region, connectorsForImport, connectorsForExport } = data;
   const basePath = PATH_REGION(regionId);
   const link = `${basePath}/knowledge`;
-  const isOverview = location.pathname === basePath;
+  const isOverview = isPathOverview(location.pathname, basePath);
   const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
@@ -164,6 +168,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entity={region}
               basePath={basePath}
               pages={{
                 overview: <Region regionData={region} />,

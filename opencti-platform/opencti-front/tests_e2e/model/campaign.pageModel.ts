@@ -8,6 +8,10 @@ export default class CampaignPageModel {
     return this.page.getByText(name, { exact: true });
   }
 
+  getNthItemFromGrid(nth: number) {
+    return this.page.getByRole('gridcell').nth(nth);
+  }
+
   getPage() {
     return this.page.getByTestId('campaign-page');
   }

@@ -210,6 +210,7 @@ const SystemEditionOverviewComponent = (props) => {
             name="description"
             label={t_i18n('Description')}
             required={(mandatoryAttributes.includes('description'))}
+            uploadEntityId={system.id}
             fullWidth={true}
             multiline={true}
             rows="4"

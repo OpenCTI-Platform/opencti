@@ -2,7 +2,7 @@ services:
   redis:
     container_name: redis
     profiles: ["backend"]
-    image: redis:8.6.2
+    image: redis:8.6.3
     restart: unless-stopped
     networks:
       - runner-docker-network
@@ -11,7 +11,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: elasticsearch:8.19.14
+    image: elasticsearch:8.19.16
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -52,13 +52,21 @@ services:
   rabbitmq:
     profiles: ["backend"]
     container_name: rabbitmq
-    image: rabbitmq:4.2-management
+    image: rabbitmq:4.3-management
     restart: unless-stopped
     networks:
       - runner-docker-network
     ports:
       - 5672:5672
       - 15672:15672
+  smtp:
+    profiles: ["backend"]
+    container_name: smtp
+    image: maildev/maildev:2.2.1
+    restart: unless-stopped
+    ports:
+      - 1025:1025
+      - 1080:1080
 
   opencti-raw-start:
     container_name: opencti-raw-start

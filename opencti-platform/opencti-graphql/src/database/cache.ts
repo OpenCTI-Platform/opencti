@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
 import { DatabaseError, UnsupportedError } from '../config/errors';
@@ -14,6 +14,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { pushAll } from '../utils/arrayUtil';
 
@@ -24,6 +25,7 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_CONNECTOR]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PIR]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_DECAY_RULE]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_LABEL]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_MARKING_DEFINITION]: [ENTITY_TYPE_RESOLVED_FILTERS],
@@ -165,7 +167,11 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     return fromCache.values as Promise<Array<T> | Map<string, T>>;
   };
   return telemetry(context, user, `CACHE ${type}`, {
+    [ATTR_DB_NAMESPACE]: 'cache_engine',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'cache_engine',
+    [ATTR_DB_OPERATION_NAME]: 'select',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'select',
   }, getEntitiesFromCacheFn);
 };

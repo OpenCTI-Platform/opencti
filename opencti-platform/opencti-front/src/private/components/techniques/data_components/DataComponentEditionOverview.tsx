@@ -278,6 +278,7 @@ const DataComponentEditionOverview: FunctionComponent<
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={dataComponent.id}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

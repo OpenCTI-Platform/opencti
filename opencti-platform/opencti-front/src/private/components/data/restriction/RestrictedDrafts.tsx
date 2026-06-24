@@ -228,6 +228,7 @@ const RestrictedDrafts = () => {
             contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={RestrictedDraftLineFragment}
+            disableBulkEnroll
             removeAuthMembersEnabled
           />
         </div>

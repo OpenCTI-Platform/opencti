@@ -3,15 +3,14 @@ import fileDownload from 'js-file-download';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import handleExportJson from 'src/private/components/workspaces/workspaceExportHandler';
 import { fetchQuery } from 'src/relay/environment';
 import Security from 'src/utils/Security';
-import { nowUTC } from 'src/utils/Time';
+import { nowUTC } from '../../../../utils/Time';
 import { EXPLORE_EXUPDATE } from 'src/utils/hooks/useGranted';
 import ExportButtons from 'src/components/ExportButtons';
 import { useGetCurrentUserAccessRight } from 'src/utils/authorizedMembers';
-import { truncate } from 'src/utils/String';
-import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/WorkspaceWidgetConfig';
+import { truncate } from '../../../../utils/String';
+import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
 import { WorkspaceHeaderToStixReportBundleQuery$data } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderToStixReportBundleQuery.graphql';
 import WorkspaceKebabMenu from '@components/workspaces/WorkspaceKebabMenu';
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
@@ -19,6 +18,10 @@ import Button from '@common/button/Button';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { WorkspaceHeaderFragment$key } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import type { Widget } from 'src/utils/widget/widget';
+import { WIDGET_WORKSPACE_HOST } from '../dashboards/custom-dashboards-utils';
+
+export const DASHBOARD_BUTTONS_STYLE: React.CSSProperties = { display: 'flex', gap: '8px' };
 
 const workspaceHeaderFragment = graphql`
   fragment WorkspaceHeaderFragment on Workspace {
@@ -50,8 +53,9 @@ type WorkspaceHeaderProps = {
     endDate: string | null;
     relativeDate: string | null;
   };
-  handleAddWidget?: () => void;
+  handleAddWidget?: (widget: Widget) => void;
   handleImportWidget?: (widgetFile: File) => void;
+  handleExport?: (workspace: { id: string; name: string }) => void;
 };
 
 const WorkspaceHeader = ({
@@ -60,12 +64,13 @@ const WorkspaceHeader = ({
   adjust = () => {},
   handleAddWidget = () => {},
   handleImportWidget = () => {},
+  handleExport = () => {},
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
   const { canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
 
-  const handleExportDashboard = () => handleExportJson(workspace);
+  const handleExportDashboard = () => handleExport(workspace);
   const handleDownloadAsStixReport = () => {
     fetchQuery(workspaceHeaderToStixReportBundleQuery, { id: workspace.id })
       .toPromise()
@@ -87,7 +92,7 @@ const WorkspaceHeader = ({
 
   return (
     <>
-      <div style={{ margin: variant === 'dashboard' ? '0 20px' : 0, display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Tooltip title={workspace.name}>
             <Typography
@@ -104,7 +109,10 @@ const WorkspaceHeader = ({
             canEdit={canEdit}
           />
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div
+          id="dashboard-buttons"
+          style={DASHBOARD_BUTTONS_STYLE}
+        >
           <ExportButtons
             domElementId="container"
             name={workspace.name}
@@ -120,9 +128,10 @@ const WorkspaceHeader = ({
                 needs={[EXPLORE_EXUPDATE]}
                 hasAccess={canEdit}
               >
-                <WorkspaceWidgetConfig
+                <DashboardWidgetConfig
                   onComplete={handleAddWidget}
                   handleImportWidget={handleImportWidget}
+                  host={WIDGET_WORKSPACE_HOST}
                 />
               </Security>
             </>

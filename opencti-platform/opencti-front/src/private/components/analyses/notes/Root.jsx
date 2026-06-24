@@ -128,6 +128,7 @@ const RootNote = () => {
                     />
                   </CollaborativeSecurity>
                   <StixDomainObjectMain
+                    entity={note}
                     basePath={basePath}
                     pages={{
                       overview: <Note noteFragment={note} enableReferences={false} />,

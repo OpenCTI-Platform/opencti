@@ -7,10 +7,13 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
 import { FormikConfig } from 'formik/dist/types';
 import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -18,7 +21,7 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle, FieldOption } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
-import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend, stixFilters, streamOriginFilters } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
@@ -46,6 +49,8 @@ interface StreamCollectionFormProps {
   onCompleted?: () => void;
   filters: FilterGroup;
   helpers: ReturnType<typeof useFiltersState>[1];
+  originFilters: FilterGroup;
+  originHelpers: ReturnType<typeof useFiltersState>[1];
 }
 
 export interface StreamCollectionCreationFormValues {
@@ -62,6 +67,8 @@ const StreamCollectionCreationForm = ({
   onCompleted,
   filters,
   helpers,
+  originFilters,
+  originHelpers,
 }: StreamCollectionFormProps) => {
   const { t_i18n } = useFormatter();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
@@ -73,6 +80,9 @@ const StreamCollectionCreationForm = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
+    const jsonOriginFilters = isFilterGroupNotEmpty(originFilters)
+      ? serializeFilterGroupForBackend(originFilters)
+      : null;
     const authorized_members = values.authorized_members.map(({ value }) => ({
       id: value,
       access_right: 'view',
@@ -87,6 +97,7 @@ const StreamCollectionCreationForm = ({
           stream_public_user_id: (values.stream_public_user_id as FieldOption)?.value ?? null,
           authorized_members,
           filters: jsonFilters,
+          origin_filters: jsonOriginFilters,
         },
       },
       updater: (store) => {
@@ -204,6 +215,38 @@ const StreamCollectionCreationForm = ({
               redirection
               searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             />
+            <Accordion>
+              <AccordionSummary id="accordion-panel-advanced-options">
+                <Typography>{t_i18n('Advanced options')}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <Alert
+                    icon={false}
+                    severity="warning"
+                    variant="outlined"
+                    style={{ position: 'relative', width: '100%', overflow: 'hidden' }}
+                  >
+                    <div>
+                      {t_i18n('Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.')}
+                    </div>
+                  </Alert>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Filters
+                      availableFilterKeys={streamOriginFilters}
+                      helpers={originHelpers}
+                      searchContext={{ entityTypes: ['History'] }}
+                    />
+                  </Box>
+                  <FilterIconButton
+                    filters={originFilters}
+                    helpers={originHelpers}
+                    redirection
+                    searchContext={{ entityTypes: ['History'] }}
+                  />
+                </div>
+              </AccordionDetails>
+            </Accordion>
           </div>
           <FormButtonContainer>
             <Button
@@ -229,6 +272,7 @@ const StreamCollectionCreationForm = ({
 const StreamCollectionCreation = ({ paginationOptions }: { paginationOptions: StreamLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
+  const [originFilters, originHelpers] = useFiltersState(emptyFilterGroup);
 
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -241,11 +285,16 @@ const StreamCollectionCreation = ({ paginationOptions }: { paginationOptions: St
     <CreateEntityControlledDial entityType="StreamCollection" {...props} />
   );
 
+  const handleClose = () => {
+    helpers.handleClearAllFilters();
+    originHelpers.handleClearAllFilters();
+  };
+
   return (
     <Drawer
       title={t_i18n('Create a stream')}
       controlledDial={CreateStreamControlledDial}
-      onClose={helpers.handleClearAllFilters}
+      onClose={handleClose}
     >
       {({ onClose }) => (
         <StreamCollectionCreationForm
@@ -254,6 +303,8 @@ const StreamCollectionCreation = ({ paginationOptions }: { paginationOptions: St
           onReset={onClose}
           filters={filters}
           helpers={helpers}
+          originFilters={originFilters}
+          originHelpers={originHelpers}
         />
       )}
     </Drawer>

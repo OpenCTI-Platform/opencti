@@ -10,7 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
-import { commitLocalUpdate, MESSAGING$ } from '../relay/environment';
+import { MESSAGING$ } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
 import Loader from './Loader';
@@ -18,6 +18,8 @@ import { UserContext } from '../utils/hooks/useAuth';
 import withRouter from '../utils/compat_router/withRouter';
 import { KNOWLEDGE_KNFRONTENDEXPORT } from '../utils/hooks/useGranted';
 import Security from '../utils/Security';
+import { useExportTheme } from '../utils/ExportThemeContext';
+import { DASHBOARD_BUTTONS_STYLE } from '../private/components/workspaces/workspaceHeader/WorkspaceHeader';
 
 const styles = () => ({
   exportButtons: {
@@ -30,13 +32,21 @@ const styles = () => ({
 
 const DELAY = 1000;
 
+export const EXPORT_BUTTONS_STYLE = { display: 'flex', gap: '8px' };
+
+// Reset an element's inline style and re-apply the given style object
+const restoreStyle = (element, style) => {
+  element.removeAttribute('style');
+  Object.assign(element.style, style);
+};
+
 const wait = async (delay = DELAY) => {
   await new Promise((resolve) => {
     setTimeout(resolve, delay);
   });
 };
 
-class ExportButtons extends Component {
+export class ExportButtons extends Component {
   constructor(props) {
     super(props);
     this.adjust = props.adjust;
@@ -57,39 +67,40 @@ class ExportButtons extends Component {
     this.setState({ anchorElImage: null });
   }
 
-  async exportImage({ domElementId, name, themeId, background, themes, userThemeId }) {
-    this.setState({ exporting: true });
-
-    this.handleCloseImage();
-    const { pixelRatio = 1, t } = this.props;
-
-    // let some delay to display the loading state
-    await wait();
-
-    commitLocalUpdate((store) => {
-      const me = store.getRoot().getLinkedRecord('me');
-      me.setValue(themeId, 'theme');
-    });
-
-    const container = document.getElementById(domElementId);
-
+  async exportImage({ domElementId, name, themeNode, background }) {
+    const { pixelRatio = 1, t, setExportTheme } = this.props;
     const exportButtons = document.getElementById('export-buttons');
-    exportButtons?.setAttribute('style', 'display: none');
-
     const viewButtons = document.getElementById('container-view-buttons');
-    viewButtons?.setAttribute('style', 'display: none');
-
-    const { offsetWidth, offsetHeight } = container;
-    // former condition, but don't understand its purpose
-    if (themeId === userThemeId && this.adjust) {
-      container.setAttribute('style', 'width:3840px; height:2160px');
-      this.adjust(true);
-    }
+    const dashboardButtons = document.getElementById('dashboard-buttons');
+    const dashboardRefreshControl = document.getElementById('dashboard-refresh-control');
 
     try {
-      const selectedTheme = themes.edges.find(
-        (edge) => edge.node.id === themeId,
-      )?.node;
+      this.setState({ exporting: true });
+      this.handleCloseImage();
+
+      // let some delay to display the loading state
+      await wait();
+
+      setExportTheme(themeNode);
+
+      const container = document.getElementById(domElementId);
+
+      // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
+      if (dashboardRefreshControl) {
+        dashboardRefreshControl.setAttribute('style', 'display: none');
+      }
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: none');
+      } else {
+        exportButtons?.setAttribute('style', 'display: none');
+        viewButtons?.setAttribute('style', 'display: none');
+      }
+
+      const { offsetWidth, offsetHeight } = container;
+      if (this.adjust) {
+        container.setAttribute('style', 'width:3840px; height:2160px');
+        this.adjust(true);
+      }
 
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
@@ -99,20 +110,23 @@ class ExportButtons extends Component {
         offsetWidth,
         offsetHeight,
         name,
-        background ? selectedTheme?.theme_background : null,
+        background ? themeNode?.theme_background : null,
         pixelRatio,
         this.adjust,
       );
     } catch {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
-      exportButtons?.setAttribute('style', 'display: block');
-      viewButtons?.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
-
-      commitLocalUpdate((store) => {
-        const me = store.getRoot().getLinkedRecord('me');
-        me.setValue(userThemeId, 'theme');
-      });
+      if (dashboardRefreshControl) {
+        restoreStyle(dashboardRefreshControl, { display: 'flex' });
+      }
+      if (dashboardButtons) {
+        restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
+      } else {
+        if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
+        viewButtons?.setAttribute('style', '');
+      }
+      setExportTheme(null);
 
       this.setState({ exporting: false });
     }
@@ -126,48 +140,56 @@ class ExportButtons extends Component {
     this.setState({ anchorElPdf: null });
   }
 
-  async exportPdf({ domElementId, name, themeId, background, themes, userThemeId }) {
-    this.setState({ exporting: true });
-    this.handleClosePdf();
-
-    const { pixelRatio = 1, t } = this.props;
-
-    // add some delay to display loading state
-    await wait();
-
-    commitLocalUpdate((store) => {
-      const me = store.getRoot().getLinkedRecord('me');
-      me.setValue(themeId, 'theme');
-    });
-
-    const buttons = document.getElementById('export-buttons');
-    buttons.setAttribute('style', 'display: none');
-
-    const selectedTheme = themes.edges.find(
-      (edge) => edge.node.id === themeId,
-    )?.node;
+  async exportPdf({ domElementId, name, themeNode, background }) {
+    const { pixelRatio = 1, t, setExportTheme } = this.props;
+    const exportButtons = document.getElementById('export-buttons');
+    const dashboardButtons = document.getElementById('dashboard-buttons');
+    const dashbaordRefreshControl = document.getElementById('dashboard-refresh-control');
 
     try {
+      this.setState({ exporting: true });
+      this.handleClosePdf();
+
+      // Let some delay to display the loading state
+      await wait();
+
+      setExportTheme(themeNode);
+
+      // Hide buttons: dashboard-buttons wraps everything on dashboards
+      if (dashbaordRefreshControl) {
+        dashbaordRefreshControl.setAttribute('style', 'display: none');
+      }
+
+      if (dashboardButtons) {
+        dashboardButtons.setAttribute('style', 'display: none');
+      } else {
+        exportButtons?.setAttribute('style', 'display: none');
+      }
+
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
 
       await exportPdf(
         domElementId,
         name,
-        background ? selectedTheme?.theme_background : null,
+        background ? themeNode?.theme_background : null,
         pixelRatio,
         this.adjust,
       );
     } catch (_e) {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf'));
     } finally {
-      commitLocalUpdate((store) => {
-        const me = store.getRoot().getLinkedRecord('me');
-        me.setValue(userThemeId, 'theme');
-      });
-
+      setExportTheme(null);
       this.setState({ exporting: false });
-      buttons.setAttribute('style', 'display: block');
+
+      if (dashbaordRefreshControl) {
+        restoreStyle(dashbaordRefreshControl, { display: 'flex' });
+      }
+      if (dashboardButtons) {
+        restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
+      } else {
+        if (exportButtons) restoreStyle(exportButtons, EXPORT_BUTTONS_STYLE);
+      }
     }
   }
 
@@ -186,6 +208,8 @@ class ExportButtons extends Component {
       handleExportDashboard,
       investigationAddFromContainer,
       navigate,
+      exportToImage = true,
+      exportToPdf = true,
     } = this.props;
     return (
       <UserContext.Consumer>
@@ -195,22 +219,26 @@ class ExportButtons extends Component {
             <div
               className={classes.exportButtons}
               id="export-buttons"
-              style={{ display: 'flex', gap: '8px' }}
+              style={EXPORT_BUTTONS_STYLE}
             >
-              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-                <Tooltip title={t('Export to image')}>
-                  <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image">
-                    <ImageOutlined fontSize="small" color="primary" />
-                  </ToggleButton>
-                </Tooltip>
-              </Security>
-              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-                <Tooltip title={t('Export to PDF')}>
-                  <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF">
-                    <FilePdfBox fontSize="small" color="primary" />
-                  </ToggleButton>
-                </Tooltip>
-              </Security>
+              {exportToImage && (
+                <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                  <Tooltip title={t('Export to image')}>
+                    <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image">
+                      <ImageOutlined fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                </Security>
+              )}
+              {exportToPdf && (
+                <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                  <Tooltip title={t('Export to PDF')}>
+                    <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF">
+                      <FilePdfBox fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                </Security>
+              )}
               {type === 'dashboard' && handleExportDashboard && (
                 <Tooltip title={t('Export')}>
                   <ToggleButton
@@ -237,7 +265,7 @@ class ExportButtons extends Component {
                   </ToggleButton>
                 </Tooltip>
               )}
-              {type === 'investigation' && (
+              {type === 'investigation' && handleDownloadAsStixReport && (
                 <Tooltip title={t('Download as STIX report')}>
                   <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value="Download-as-STIX-report">
                     <GetAppOutlined fontSize="small" color="primary" />
@@ -262,10 +290,8 @@ class ExportButtons extends Component {
                     onClick={() => this.exportImage({
                       domElementId,
                       name,
-                      themeId: node.id,
+                      themeNode: node,
                       background: true,
-                      themes,
-                      userThemeId: me.theme,
                     })}
                   >
                     {node.name} {t('(with background)')}
@@ -275,10 +301,8 @@ class ExportButtons extends Component {
                     onClick={() => this.exportImage({
                       domElementId,
                       name,
-                      themeId: node.id,
+                      themeNode: node,
                       background: false,
-                      themes,
-                      userThemeId: me.theme,
                     })}
                   >
                     {node.name} {t('(without background)')}
@@ -298,10 +322,8 @@ class ExportButtons extends Component {
                       onClick={() => this.exportPdf({
                         domElementId,
                         name,
-                        themeId: node.id,
+                        themeNode: node,
                         background: true,
-                        themes,
-                        userThemeId: me.theme,
                       })}
                     >
                       {node.name}
@@ -333,7 +355,18 @@ class ExportButtons extends Component {
   }
 }
 
+// HOC to inject setExportTheme from ExportThemeContext into the class component
+const withExportTheme = (WrappedComponent) => {
+  const WithExportTheme = (props) => {
+    const { setExportTheme } = useExportTheme();
+    return <WrappedComponent {...props} setExportTheme={setExportTheme} />;
+  };
+  WithExportTheme.displayName = `withExportTheme(${WrappedComponent.displayName || WrappedComponent.name})`;
+  return WithExportTheme;
+};
+
 export default R.compose(
+  withExportTheme,
   inject18n,
   withTheme,
   withRouter,

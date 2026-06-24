@@ -16,6 +16,7 @@ import {
 import { truncate } from '../../../../../utils/String';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
+import useTopBanner from '../../../../../utils/hooks/useTopBanner';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
@@ -229,6 +230,8 @@ const AttackPatternsMatrixColumns = ({
         .sort((f, s) => f.name.localeCompare(s.name)),
     })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
 
+  const { height: topBannerHeight } = useTopBanner();
+
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
     let rightOffset = !containerTypes.includes(entityType) ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
@@ -241,7 +244,7 @@ const AttackPatternsMatrixColumns = ({
   return (
     <UserContext.Consumer>
       {({ bannerSettings }) => {
-        const matrixHeight = LAYOUT_SIZE.BASE_HEIGHT + (bannerSettings?.bannerHeightNumber || 0) * 2;
+        const matrixHeight = LAYOUT_SIZE.BASE_HEIGHT + (bannerSettings?.bannerHeightNumber || 0) * 2 + topBannerHeight;
         return (
           <Box
             sx={{

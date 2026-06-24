@@ -4,16 +4,31 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import { useFormatter } from '../../../components/i18n';
-import { fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, workspacesWidgetVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import {
+  fintelTemplatesWidgetVisualizationTypes,
+  renderWidgetIcon,
+  workspacesWidgetVisualizationTypes,
+  WidgetVisualizationTypes,
+  customViewsWidgetVisualizationTypes,
+} from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
+import type { WidgetHost } from '../../../utils/widget/widget';
+
+export const getVisualizationTypes = (host: WidgetHost) => {
+  return host.kind === 'workspace'
+    ? workspacesWidgetVisualizationTypes
+    : host.kind === 'fintelTemplate'
+      ? fintelTemplatesWidgetVisualizationTypes
+      : host.kind === 'custom-view'
+        ? customViewsWidgetVisualizationTypes
+        : [];
+};
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
-  const { context, setStep, setConfigWidget, config } = useWidgetConfigContext();
+  const { host, setStep, setConfigWidget, config } = useWidgetConfigContext();
 
-  const visualizationTypes = context === 'workspace'
-    ? workspacesWidgetVisualizationTypes
-    : fintelTemplatesWidgetVisualizationTypes;
+  const visualizationTypes = getVisualizationTypes(host);
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });

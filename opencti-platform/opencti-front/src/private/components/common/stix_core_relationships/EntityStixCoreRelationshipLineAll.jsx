@@ -16,7 +16,7 @@ import withTheme from '@mui/styles/withTheme';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -30,13 +30,23 @@ const styles = (theme) => ({
     paddingLeft: 10,
     height: 50,
   },
+  listItemText: {
+    margin: 0,
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 25,
+    height: '100%',
     fontSize: 13,
-    float: 'left',
+    display: 'flex',
+    alignItems: 'center',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -125,8 +135,9 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
             <ItemIcon type={node.entity_type} isReversed={isReversed} color={node.draftVersion ? getDraftModeColor(theme) : null} />
           </ListItemIcon>
           <ListItemText
+            classes={{ root: classes.listItemText }}
             primary={(
-              <>
+              <div className={classes.row}>
                 {dataColumns.relationship_type && (
                   <div
                     className={classes.bodyItem}
@@ -172,7 +183,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                       overflow: 'visible',
                     }}
                   >
-                    <SecurityCoverageInformation
+                    <SecurityCoverageScores
                       coverage_information={node.coverage_information || null}
                       variant="header"
                     />
@@ -226,7 +237,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                     limit={1}
                   />
                 </div>
-              </>
+              </div>
             )}
           />
         </ListItemButton>
@@ -604,8 +615,9 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
+          classes={{ root: classes.listItemText }}
           primary={(
-            <div>
+            <div className={classes.row}>
               {dataColumns.relationship_type && (
                 <div
                   className={classes.bodyItem}

@@ -7,6 +7,9 @@ body[data-theme="light"] {
 
   /* Overrides the default font size in the theme. */
   --ck-font-size-base: 14px !important;
+  --ck-content-font-size: 0.9rem !important;
+  --ck-content-font-family: "IBM Plex Sans", sans-serif !important;
+  --ck-content-font-color: #151515 !important;
 
   /* Helper variables to avoid duplication in the colors. */
   --ck-custom-background: #f3f6f9 !important;
@@ -106,8 +109,8 @@ body[data-theme="light"] {
 
   /* -- Overrides the default colors used by the ckeditor5-image package. --------------------- */
 
-  --ck-color-image-caption-background: hsl(0, 0%, 97%) !important;
-  --ck-color-image-caption-text: hsl(0, 0%, 20%) !important;
+  --ck-content-color-image-caption-background: hsl(0, 0%, 97%) !important;
+  --ck-content-color-image-caption-text: hsl(0, 0%, 20%) !important;
 
   /* -- Overrides the default colors used by the ckeditor5-widget package. -------------------- */
 

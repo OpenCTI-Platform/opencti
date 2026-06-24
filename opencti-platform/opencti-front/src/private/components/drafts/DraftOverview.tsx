@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { DraftRootFragment$data } from '@components/drafts/__generated__/DraftRootFragment.graphql';
-import { Grid } from '@mui/material';
+import { Grid, Stack } from '@mui/material';
 import useOverviewLayoutCustomization from '../../../utils/hooks/useOverviewLayoutCustomization';
 import DraftBasicInformation from './DraftBasicInformation';
 import DraftDetails from '@components/drafts/DraftDetails';
@@ -19,6 +19,11 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
 
   return (
     <>
+      {canEdit && (
+        <Stack direction="row" justifyContent="flex-end">
+          <DraftEdition draftId={draft.id} overviewData={draft} />
+        </Stack>
+      )}
       <div style={{ display: 'flex', gap: 20 }}>
         <Grid
           container={true}
@@ -46,9 +51,6 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
             })
           }
         </Grid>
-        {canEdit && (
-          <DraftEdition draftId={draft.id} overviewData={draft} />
-        )}
       </div>
     </>
   );

@@ -195,8 +195,10 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 && r.name.includes(capability.name)
                 && capability.name !== 'BYPASS',
             );
-            const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) => r?.name.includes(capability.name));
-            const isDisabled = isCapabilitiesInDraft ? matchingCapabilities.length > 0 || draftCapaMatchingMainCapa.length > 0 : matchingCapabilities.length > 0;
+            const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) => r?.name?.includes(capability.name));
+            const isDisabled = isCapabilitiesInDraft
+              ? matchingCapabilities.length > 0 || (draftCapaMatchingMainCapa.length > 0 && roleCapability === undefined)
+              : matchingCapabilities.length > 0;
             const isChecked = isDisabled || roleCapability !== undefined;
             return (
               <ListItem

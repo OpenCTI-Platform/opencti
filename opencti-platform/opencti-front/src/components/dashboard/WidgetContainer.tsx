@@ -4,7 +4,15 @@ import Card, { CardProps } from '../common/card/Card';
 import Label from '../common/label/Label';
 import ChartExportPopover from '../../private/components/common/charts/ChartExportPopover';
 import { ErrorBoundary } from '@components/Error';
-
+import WidgetNoData from './WidgetNoData';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../components/Theme';
+import { hexToRGB } from '../../utils/Colors';
+import { useFormatter } from '../../components/i18n';
+import Tag from '@common/tag/Tag';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import { Tooltip } from '@mui/material';
 interface WidgetContainerProps {
   children: ReactNode;
   height?: CSSProperties['height'];
@@ -13,6 +21,8 @@ interface WidgetContainerProps {
   padding?: CardProps['padding'];
   chart?: ApexCharts;
   action?: ReactNode;
+  showPreviewTag?: boolean;
+  warning?: string;
 }
 
 const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
@@ -23,13 +33,50 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   padding,
   chart,
   action,
+  showPreviewTag,
+  warning,
 }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const previewColor = theme.palette.designSystem.tertiary.orange['400'];
+  const formattedTitle = warning
+    ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
+          {title}
+          <Tooltip
+            title={warning}
+          >
+            <ReportProblemOutlinedIcon
+              style={{
+                fontSize: 15,
+                color: theme.palette.designSystem.alert.warning.primary,
+              }}
+            />
+          </Tooltip>
+        </div>
+      )
+    : title;
   return (
     <div style={{ height: height || '100%' }}>
       {variant !== 'inLine' && variant !== 'inEntity'
         ? (
             <Card
-              title={title}
+              title={showPreviewTag ? (
+                <Stack direction="row" alignItems="center" gap={1}>
+                  {formattedTitle}
+                  <Tag
+                    label={t_i18n('Preview data')}
+                    size="small"
+                    sx={{
+                      backgroundColor: hexToRGB(previewColor, 0.1),
+                      color: previewColor,
+                      border: `1px solid ${previewColor}`,
+                      fontWeight: 700,
+                      fontSize: '0.65rem',
+                    }}
+                  />
+                </Stack>
+              ) : formattedTitle}
               padding={padding}
               action={(
                 <div>
@@ -38,7 +85,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
                 </div>
               )}
             >
-              <ErrorBoundary>
+              <ErrorBoundary resNotFoundDisplay={<WidgetNoData />}>
                 {children}
               </ErrorBoundary>
             </Card>
@@ -46,7 +93,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
         : (
             <>
               {title && <Label>{title}</Label>}
-              <ErrorBoundary>
+              <ErrorBoundary resNotFoundDisplay={<WidgetNoData />}>
                 {children}
               </ErrorBoundary>
             </>

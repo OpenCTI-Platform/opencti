@@ -9,6 +9,7 @@ import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { StreamDataEvent } from '../../types/event';
+import { isDebugPlaybook } from './playbookManagerUtils';
 
 // Only way to force the step_literal checking
 // Don't try to understand, just trust
@@ -83,6 +84,7 @@ export const playbookExecutor = async ({
   event,
   externalCallback,
 }: ExecutorFn) => {
+  const currentPlaybookInDebug = isDebugPlaybook(playbookId);
   const isExternalCallback = externalCallback !== undefined;
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
@@ -120,6 +122,9 @@ export const playbookExecutor = async ({
         bundle: execution.bundle,
         forceBundleTracking: execution.forceBundleTracking ?? false,
       };
+      if (currentPlaybookInDebug) {
+        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
+      }
       await registerStepObservation(observation);
     } catch (error) {
       // Error executing the step, register
@@ -143,8 +148,14 @@ export const playbookExecutor = async ({
         error: JSON.stringify(logError, null, 2),
         forceBundleTracking: false,
       };
+      if (currentPlaybookInDebug) {
+        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
+      }
       await registerStepObservation(observation);
       return;
+    }
+    if (currentPlaybookInDebug) {
+      logApp.info(`[PLAYBOOK MANAGER] Looking for next port for playbook ${playbookId}`, { output_port: execution.output_port });
     }
     // Send the result to the next component if needed
     if (execution.output_port) {

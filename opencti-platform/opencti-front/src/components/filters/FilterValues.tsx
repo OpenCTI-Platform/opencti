@@ -16,6 +16,7 @@ import useSchema from '../../utils/hooks/useSchema';
 import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
+import type { WidgetHost } from '../../utils/widget/widget';
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -31,6 +32,7 @@ interface FilterValuesProps {
   noLabelDisplay?: boolean;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
+  host?: WidgetHost;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -47,6 +49,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   noLabelDisplay,
   entityTypes,
   filtersRestrictions,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -56,6 +59,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
+  const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   const labelStyle = deactivatePopoverMenu
@@ -79,6 +83,23 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         </strong>{' '}
         <span>
           {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
+        </span>
+      </>
+    );
+  }
+
+  // special case for has_changed/not_has_changed
+  if (isOperatorChange) {
+    return (
+      <>
+        <strong
+          style={labelStyle}
+          onClick={onCLick}
+        >
+          {label}
+        </strong>{' '}
+        <span>
+          {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
         </span>
       </>
     );
@@ -151,6 +172,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   value={value}
                   filterDefinition={filterDefinition}
                   filterOperator={filterOperator}
+                  host={host}
                 />
                 <span>
                   {last(filterValues) === id ? ']' : ', '}
@@ -167,6 +189,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   value={value}
                   filterDefinition={filterDefinition}
                   filterOperator={filterOperator}
+                  host={host}
                 />
                 {last(filterValues) !== id && isRegardingOfFilter
                   && (
@@ -265,6 +288,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         parentFilter={currentFilter}
                         currentFilter={val}
                         filtersRepresentativesMap={filtersRepresentativesMap}
+                        host={host}
                       />
                     )}
                   >
@@ -281,6 +305,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         filtersRepresentativesMap={filtersRepresentativesMap}
                         redirection
                         noLabelDisplay={true}
+                        host={host}
                       />
                     </Box>
                   </Tooltip>

@@ -1,6 +1,22 @@
-import { FilterGroup } from '../filters/filtersHelpers-types';
+import type { GqlFilterGroup } from '../filters/filtersUtils';
+import type { FilterGroup } from '../filters/filtersHelpers-types';
+import type { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
+import { ReactNode } from 'react';
 
-export type WidgetContext = 'workspace' | 'fintelTemplate';
+export type WidgetHost = {
+  kind: 'workspace';
+} | {
+  kind: 'fintelTemplate';
+  fintelWidgets: FintelTemplateWidget[];
+  fintelEntityType: string;
+  fintelEditorValue: string;
+} | {
+  kind: 'custom-view';
+  customViewTargetEntityType: string;
+  customViewTargetEntityId?: string;
+  previewMode?: boolean;
+  missingHostEntityFiller?: ReactNode;
+};
 
 export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
@@ -9,6 +25,15 @@ interface WidgetColumn {
   displayStyle?: string | null;
   label?: string | null;
   variableName?: string | null;
+}
+
+export interface WidgetTimeSeriesData {
+  date: DateTime;
+  value: Int;
+}
+
+export interface WidgetMultiTimeSeries {
+  data: WidgetTimeSeriesData[];
 }
 
 export interface WidgetDataSelection {
@@ -30,7 +55,14 @@ export interface WidgetDataSelection {
   sort_mode?: string | null;
   field?: string;
   relationship_type?: string;
+  unique?: boolean;
 }
+
+type GqlWidgetDataSelection = WidgetDataSelection & {
+  filters?: GqlFilterGroup | null;
+  dynamicFrom?: GqlFilterGroup | null;
+  dynamicTo?: GqlFilterGroup | null;
+};
 
 interface WidgetParameters {
   title?: string | null;
@@ -47,8 +79,8 @@ interface WidgetLayout {
   x: number;
   y: number;
   i: string;
-  moved: boolean;
-  static: boolean;
+  moved?: boolean;
+  static?: boolean;
 }
 
 export interface Widget {
@@ -59,6 +91,10 @@ export interface Widget {
   parameters?: WidgetParameters | null;
   layout?: WidgetLayout | null;
 }
+
+export type GqlWidget = Widget & {
+  dataSelection: GqlWidgetDataSelection[];
+};
 
 interface PirWidgetDataSelection extends WidgetDataSelection {
   pirId: string;

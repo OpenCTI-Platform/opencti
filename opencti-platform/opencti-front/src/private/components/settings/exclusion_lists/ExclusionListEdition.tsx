@@ -8,7 +8,7 @@ import Loader from 'src/components/Loader';
 import Button from '@common/button/Button';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import { now } from 'src/utils/Time';
+import { now } from '../../../../utils/Time';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { availableEntityTypes, exclusionListUpdateValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';

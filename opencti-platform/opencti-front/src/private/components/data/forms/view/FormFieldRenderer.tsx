@@ -28,6 +28,9 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { getVocabularyMappingByAttribute } from '../../../../../utils/vocabularyMapping';
+import { useTheme } from '@mui/styles';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { isBypassUser } from '../../../../../utils/hooks/useGranted';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -97,6 +100,9 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const { me } = useAuth();
+  const isBypass = isBypassUser(me);
 
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
   // Get the nested value for prefixed fields
@@ -487,16 +493,39 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   };
 
   // If grid layout is enabled, wrap in Grid item
-  if (useGridLayout) {
-    return (
-      <Grid item xs={getGridSize()}>
-        {renderFieldContent()}
-      </Grid>
+  const renderFieldWithGrid = (content: React.ReactNode) => {
+    if (useGridLayout) {
+      return (
+        <Grid item xs={getGridSize()}>
+          {content}
+        </Grid>
+      );
+    }
+    return content;
+  };
+
+  const fieldContent = renderFieldContent();
+
+  if (field.isReadOnly && !isBypass) {
+    return null;
+  }
+
+  if (field.isReadOnly && isBypass) {
+    return renderFieldWithGrid(
+      <div style={{ position: 'relative' }}>
+        <Chip
+          size="small"
+          variant="outlined"
+          color="warning"
+          label={t_i18n('Read-Only')}
+          style={{ position: 'absolute', top: -10, right: 0, zIndex: 1, backgroundColor: theme.palette.background.paper }}
+        />
+        {fieldContent}
+      </div>,
     );
   }
 
-  // Otherwise return the field directly
-  return renderFieldContent();
+  return renderFieldWithGrid(fieldContent);
 };
 
 export default FormFieldRenderer;

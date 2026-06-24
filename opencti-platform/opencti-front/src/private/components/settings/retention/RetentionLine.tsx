@@ -4,7 +4,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
-import Slide, { SlideProps } from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
@@ -20,11 +19,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
-
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -63,6 +58,7 @@ const RetentionLineFragment = graphql`
         remaining_count
         filters
         scope
+        active
     }
 `;
 
@@ -76,8 +72,10 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   const classes = useStyles();
   const { nsdt, n, t_i18n } = useFormatter();
   const data = useFragment(RetentionLineFragment, node);
+
+  const isActive = data.active;
   const filters = deserializeFilterGroupForFrontend(data.filters);
-  let scopeColor = 'warning';
+  let scopeColor = 'success';
   let appliedOnContent = t_i18n('Everything');
   if (data.scope === 'file') {
     scopeColor = 'secondary';
@@ -88,6 +86,9 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   } else if (data.scope === 'history') {
     scopeColor = 'error';
     appliedOnContent = t_i18n('Knowledge history logs');
+  } else if (data.scope === 'activity') {
+    scopeColor = 'warning';
+    appliedOnContent = t_i18n('Activity logs');
   }
   return (
     <ListItem
@@ -132,12 +133,23 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               style={{ width: dataColumns.scope.width }}
             >
               <Chip
-                color={scopeColor as 'warning' | 'secondary' | 'primary' | 'error'}
+                color={scopeColor as 'success' | 'secondary' | 'primary' | 'error' | 'warning'}
                 classes={{ root: classes.chipInList }}
                 label={t_i18n(data.scope)}
                 variant="outlined"
               />
             </div>
+            {dataColumns.active && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.active.width }}
+              >
+                <ItemBoolean
+                  status={isActive}
+                  label={isActive ? t_i18n('Active') : t_i18n('Inactive')}
+                />
+              </div>
+            )}
             {isFilterGroupNotEmpty(filters) ? (
               <FilterIconButton
                 filters={filters}
@@ -148,7 +160,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             ) : (
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
-                {data.scope !== 'knowledge' && data.scope !== 'history'
+                {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
                   && (
                     <Tooltip
                       title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
@@ -249,6 +261,19 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 height="100%"
               />
             </div>
+            {dataColumns.active && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.active.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="70%"
+                  height="100%"
+                />
+              </div>
+            )}
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.filters.width }}

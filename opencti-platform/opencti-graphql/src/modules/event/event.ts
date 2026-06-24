@@ -1,6 +1,6 @@
-import convertEventToStix from './event-converter';
+import convertEventToStix, { convertEventToStix_2_0 } from './event-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { ENTITY_TYPE_EVENT, type StixEvent, type StoreEntityEvent } from './event-types';
+import { ENTITY_TYPE_EVENT, type Stix2Event, type StixEvent, type StoreEntityEvent } from './event-types';
 import { RELATION_DERIVED_FROM, RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED } from '../../database/stix';
@@ -8,7 +8,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 
-const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
+const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent, Stix2Event> = {
   type: {
     id: 'events',
     name: ENTITY_TYPE_EVENT,
@@ -56,6 +56,7 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     return stix.name;
   },
   converter_2_1: convertEventToStix,
+  converter_2_0: convertEventToStix_2_0,
 };
 
 registerDefinition(EVENT_DEFINITION);

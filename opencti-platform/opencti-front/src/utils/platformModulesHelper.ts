@@ -4,8 +4,6 @@ export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform admin
 
 export const RUNTIME_SORTING = 'RUNTIME_SORTING';
 
-export const ACTIVITY_HISTORY_RETENTION = 'ACTIVITY_HISTORY_RETENTION';
-
 export const SUBSCRIPTION_MANAGER = 'SUBSCRIPTION_MANAGER';
 export const RULE_ENGINE = 'RULE_ENGINE';
 export const HISTORY_MANAGER = 'HISTORY_MANAGER';
@@ -20,6 +18,7 @@ export const INDICATOR_DECAY_MANAGER = 'INDICATOR_DECAY_MANAGER';
 export const TELEMETRY_MANAGER = 'TELEMETRY_MANAGER';
 export const GARBAGE_COLLECTION_MANAGER = 'GARBAGE_COLLECTION_MANAGER';
 export const TIPTAP_EDITOR = 'TIPTAP_EDITOR';
+export const OLD_EDITOR = 'OLD_EDITOR';
 
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
@@ -41,7 +40,7 @@ export interface ModuleHelper {
   isRequestAccessEnabled: () => boolean;
   isChatbotAiEnabled: () => boolean;
   isTiptapEditorEnable: () => boolean;
-  isActivityHistoryRetentionEnable: () => boolean;
+  isOldEditorEnable: () => boolean;
 }
 
 export const isFeatureEnable = (
@@ -94,7 +93,7 @@ const platformModuleHelper = (
   isRequestAccessEnabled: () => settings.request_access_enabled,
   isChatbotAiEnabled: () => settings.filigran_chatbot_ai_cgu_status === 'enabled',
   isTiptapEditorEnable: () => isFeatureEnable(settings, TIPTAP_EDITOR),
-  isActivityHistoryRetentionEnable: () => isFeatureEnable(settings, ACTIVITY_HISTORY_RETENTION),
+  isOldEditorEnable: () => isFeatureEnable(settings, OLD_EDITOR),
 });
 
 export default platformModuleHelper;

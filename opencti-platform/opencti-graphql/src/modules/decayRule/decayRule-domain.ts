@@ -46,7 +46,7 @@ export interface DecayRuleConfiguration extends DecayModel {
   id?: string;
   name: string;
   description: string;
-  decay_filters: string;
+  decay_filters?: string;
   order: number; // low priority = 0
   active: boolean;
 }
@@ -274,7 +274,7 @@ export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 0.35,
   decay_points: [80, 50],
   decay_revoke_score: 20,
-  decay_filters: '', // Matches all
+  decay_filters: undefined, // Matches all
   order: 0,
   active: true,
 };

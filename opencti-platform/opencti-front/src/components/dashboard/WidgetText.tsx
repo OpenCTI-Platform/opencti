@@ -1,8 +1,7 @@
 import React, { CSSProperties, ReactNode } from 'react';
-import { useTheme } from '@mui/styles';
-import MarkdownDisplay from '../MarkdownDisplay';
+import MarkdownDisplay from '../markdownDisplay/MarkdownDisplay';
 import WidgetContainer from './WidgetContainer';
-import type { Theme } from '../Theme';
+import { Box } from '@mui/material';
 
 interface WidgetTextProps {
   variant?: string;
@@ -20,18 +19,6 @@ const WidgetText = ({
   parameters = {},
   popover,
 }: WidgetTextProps) => {
-  const theme = useTheme<Theme>();
-  const renderContent = () => {
-    return (
-      <div style={{ marginTop: theme.spacing(-1) }}>
-        <MarkdownDisplay
-          content={parameters?.content}
-          remarkGfmPlugin={true}
-          commonmark={true}
-        />
-      </div>
-    );
-  };
   return (
     <WidgetContainer
       height={height}
@@ -39,7 +26,19 @@ const WidgetText = ({
       title={parameters?.title ?? ''}
       action={popover}
     >
-      {renderContent()}
+      <Box
+        sx={{
+          '& h1:first-child, & h2:first-child, & h3:first-child, & h4:first-child, & h5:first-child, & h6:first-child': {
+            marginTop: 0,
+          },
+        }}
+      >
+        <MarkdownDisplay
+          content={parameters?.content}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
+      </Box>
     </WidgetContainer>
   );
 };

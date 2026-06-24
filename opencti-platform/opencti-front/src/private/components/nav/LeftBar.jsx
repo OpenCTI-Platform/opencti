@@ -115,10 +115,12 @@ import useHelper from '../../../utils/hooks/useHelper';
 import useImportAccess from '../../../utils/hooks/useImportAccess';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
+import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -301,7 +303,7 @@ const LeftBarComponent = ({ queryRef }) => {
     localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
   };
   const handleGoToPage = (event, link) => {
-    if (event.ctrlKey) {
+    if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
     } else {
       navigate(link);
@@ -380,6 +382,7 @@ const LeftBarComponent = ({ queryRef }) => {
     },
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const { dimension } = useDimensions();
 
   const isMobile = dimension.width < 768;
@@ -441,6 +444,7 @@ const LeftBarComponent = ({ queryRef }) => {
         logoCollapsed={navCloseLogo}
         navOpen={navOpen}
         bannerHeightNumber={bannerHeightNumber}
+        topBannerHeight={topBannerHeight}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}
         openAEVUrl={openAEVUrl}
         xtmhubUrl={xtmhubUrl}
@@ -478,21 +482,21 @@ const LeftBarComponent = ({ queryRef }) => {
                 {...itemProps}
                 id="dashboards"
                 icon={<InsertChartOutlinedOutlined />}
-                label="Dashboards"
+                label={t_i18n('Dashboards')}
                 link="/dashboard/workspaces/dashboards"
                 subItems={[
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards',
-                    label: 'Custom dashboards',
+                    label: t_i18n('Custom dashboards'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_public',
-                    label: 'Public dashboards',
+                    label: t_i18n('Public dashboards'),
                     exact: true,
                   },
                 ]}
@@ -618,7 +622,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   {
                     type: 'Threat-Actor-Individual',
                     link: '/dashboard/threats/threat_actors_individual',
-                    label: 'Threat actors (individual)',
+                    label: t_i18n('Threat actors (individual)'),
                     icon: <LaptopAccount fontSize="small" />,
                   },
                   { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },

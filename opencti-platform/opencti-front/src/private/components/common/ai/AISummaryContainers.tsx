@@ -232,10 +232,10 @@ const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, sel
       + `Answer using ${language} language.`;
   }, [filters, isContainer, language]);
 
-  const executeCall = useCallback(() => {
+  const executeCall = useCallback((forceRefresh = false) => {
     if (!selectedAgent) return;
     const prompt = buildPrompt();
-    execute(selectedAgent.slug, prompt);
+    execute(selectedAgent.slug, prompt, forceRefresh);
   }, [selectedAgent, buildPrompt, execute]);
 
   // Auto-execute when agent changes (selected from header) or first load
@@ -255,7 +255,7 @@ const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, sel
       loading={loading}
       content={content}
       generatedAt={generatedAt}
-      onRetry={executeCall}
+      onRetry={() => executeCall(true)}
     />
   );
 };
@@ -314,7 +314,7 @@ const LegacyAISummaryContainers = ({ busId, isContainer, filters, loading, setLo
   }, []);
 
   const refetch = useCallback((newFirst: number, newRelative: string) => {
-    let startDate = null;
+    let startDate: string | null = null;
     if (newRelative === 'days-1') {
       startDate = daysAgo(1);
     }

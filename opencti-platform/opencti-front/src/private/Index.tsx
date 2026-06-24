@@ -5,11 +5,11 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
-import LicenseBanner from '@components/LicenseBanner';
-import StartTrialBanner from '@components/xtm_hub/StartTrialBanner';
+import TopBannersManager from '@components/TopBannersManager';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Message from '../components/Message';
+import NewsFeedToastManager from './components/nav/NewsFeedToastManager';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
@@ -22,8 +22,9 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
 import { ChatbotProvider } from './components/chatbox/ChatbotContext';
+import useTopBanner from '../utils/hooks/useTopBanner';
 
-const Dashboard = lazy(() => import('./components/Dashboard'));
+const HomeDashboard = lazy(() => import('./components/HomeDashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
 const RootSearchBulk = lazy(() => import('./components/SearchBulkContainer'));
 const RootAnalyses = lazy(() => import('./components/analyses/Root'));
@@ -58,6 +59,7 @@ const Index = ({ settings }: IndexProps) => {
   } = useAuth();
   const draftContext = useDraftContext();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
 
   // Change the theme body attribute when the mode changes in
   // the palette because some components like legacy editor uses this
@@ -78,7 +80,7 @@ const Index = ({ settings }: IndexProps) => {
     flexGrow: 1,
     overflowY: 'hidden',
     height: '100vh',
-    paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`,
+    paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
 
@@ -92,16 +94,15 @@ const Index = ({ settings }: IndexProps) => {
   return (
     <ChatbotProvider>
       <SystemBanners settings={settings} />
-      <LicenseBanner />
-      <StartTrialBanner />
-      {(settings.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
+      <TopBannersManager />
+      {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
       <SettingsMessagesBanner />
       <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
       <Box
         sx={{
           display: 'flex',
           minWidth: 1400,
-          marginTop: bannerHeight,
+          marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
           marginBottom: bannerHeight,
         }}
       >
@@ -109,6 +110,7 @@ const Index = ({ settings }: IndexProps) => {
         <TopBar />
         <LeftBar />
         <Message />
+        <NewsFeedToastManager />
         <Stack component="main" sx={mainSx}>
           <Box sx={boxSx}>
             <Suspense fallback={<Loader />}>
@@ -119,7 +121,7 @@ const Index = ({ settings }: IndexProps) => {
                     ? (
                         <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
                       )
-                    : boundaryWrapper(Dashboard)}
+                    : boundaryWrapper(HomeDashboard)}
                 />
                 {/* Search need to be rework */}
                 <Route path="/search/*" element={boundaryWrapper(RootSearch)} />

@@ -17,10 +17,10 @@ import ReactMde from 'react-mde';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 
-import RichTextEditor from '../../components/RichTextEditor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import CKEditor from '../../components/CKEditor';
 import { useFormatter } from '../../components/i18n';
-import MarkdownDisplay from '../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import type { AgentAction } from '../../private/components/common/form/TextFieldAskAI';
@@ -107,8 +107,8 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const { fullyActive } = useAI();
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const oldEditorEnabled = isOldEditorEnable();
   const isLegacyMode = !agentMode;
 
   // Agent mode state (XTM One path)
@@ -200,7 +200,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         markdownFieldRef.current.scrollTop = markdownFieldRef.current.scrollHeight;
       }
     } else if (format === 'html') {
-      const selector = tiptapEnabled
+      const selector = !oldEditorEnabled
         ? '.tiptap-editor-content.ProseMirror'
         : '.ck-content.ck-editor__editable.ck-editor__editable_inline';
       const elementEditor = document.querySelector(selector);
@@ -305,7 +305,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           } : undefined}
         />
       )}
-      {format === 'html' && tiptapEnabled && (
+      {format === 'html' && !oldEditorEnabled && (
         <RichTextEditor
           id="response-dialog-editor"
           data={content}
@@ -315,7 +315,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           disabled={effectiveDisabled}
         />
       )}
-      {format === 'html' && !tiptapEnabled && (
+      {format === 'html' && oldEditorEnabled && (
         <CKEditor
           id="response-dialog-editor"
           data={content}

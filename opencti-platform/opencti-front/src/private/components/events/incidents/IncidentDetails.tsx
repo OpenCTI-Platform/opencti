@@ -91,10 +91,22 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
       },
     },
   ];
+
+  const config = {
+    startDate: undefined,
+    endDate: undefined,
+  };
+
   return (
     <div style={{ height: '100%' }} data-testid="incident-details-page">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown source={incident.description} limit={400} />
+          </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Incident type')}
@@ -110,12 +122,6 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               {t_i18n('First seen')}
             </Label>
             {fldt(incident.first_seen)}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown source={incident.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
             <Label>
@@ -157,9 +163,9 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
               height={250}
-              startDate={undefined}
-              endDate={undefined}
+              config={config}
               popover={undefined}
+              host={undefined}
             />
           </Grid>
           <Grid item xs={6}>
@@ -168,9 +174,9 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               parameters={{ title: t_i18n('Observables distribution') }}
               variant="inEntity"
               height={250}
-              startDate={undefined}
-              endDate={undefined}
+              config={config}
               popover={undefined}
+              host={undefined}
             />
           </Grid>
         </Grid>

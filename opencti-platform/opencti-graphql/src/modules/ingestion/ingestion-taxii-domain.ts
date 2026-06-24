@@ -7,7 +7,8 @@ import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
-import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, verifyIngestionUri } from './ingestion-common';
+import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { createOnTheFlyUser } from '../user/user-domain';
 import type { FileHandle } from 'fs/promises';
@@ -16,12 +17,8 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 const MINIMAL_TAXII_FEED_COMPATIBLE_VERSION = '6.9.4';
 
-export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
-  const taxiiIngestion = await storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
-  if (removeCredentials) {
-    taxiiIngestion.authentication_value = removeAuthenticationCredentials(taxiiIngestion.authentication_type, taxiiIngestion.authentication_value) || '';
-  }
-  return taxiiIngestion;
+export const findTaxiiIngestionById = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  return storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
 };
 
 export const findTaxiiIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
@@ -32,7 +29,8 @@ export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser
   return fullEntitiesList<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
-export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
+export const ingestionTaxiiAdd = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
+  verifyIngestionUri(input.uri);
   if (input.automatic_user) {
     const onTheFlyCreatedUser = await createOnTheFlyUser(
       context,
@@ -46,6 +44,9 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
   }
 
   const { automatic_user: _automatic_user, confidence_level: _confidence_level, ...taxiiFeedToCreate } = input;
+  if (taxiiFeedToCreate.authentication_value) {
+    taxiiFeedToCreate.authentication_value = await encryptIngestionCredential(taxiiFeedToCreate.authentication_value);
+  }
   const { element, isCreation } = await createEntity(context, user, taxiiFeedToCreate, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
@@ -82,11 +83,16 @@ export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, 
   return patched.element;
 };
 
-export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+export const ingestionTaxiiEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const uriField = input.find((editInput) => editInput.key === 'uri');
+  if (uriField && uriField.value[0]) {
+    verifyIngestionUri(uriField.value[0]);
+  }
   const patchInput = [...input];
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
-    const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
+    const { authentication_value: encrypted_value, authentication_type } = await findTaxiiIngestionById(context, user, ingestionId);
+    const authentication_value = await decryptIngestionCredential(encrypted_value);
     const authenticationValueField = input.find((editInput) => editInput.key === 'authentication_value');
     if (authenticationValueField?.value[0]) {
       verifyIngestionAuthenticationContent(authentication_type, authenticationValueField?.value[0]);
@@ -96,12 +102,13 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
       authenticationValueField?.value[0],
       authentication_type,
     );
+    const encryptedAuthenticationValue = await encryptIngestionCredential(updatedAuthenticationValue);
 
     const updatedInput = patchInput.map((editInput) => {
       if (editInput.key === 'authentication_value') {
         return {
           ...editInput,
-          value: [updatedAuthenticationValue],
+          value: [encryptedAuthenticationValue],
         };
       }
       return editInput;
@@ -145,14 +152,10 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input },
   });
 
-  const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-  return {
-    ...notif,
-    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value),
-  };
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
-export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+export const ingestionTaxiiDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById<StoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
   await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
@@ -168,7 +171,7 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
 
 export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
-  const ingestionUpdated = await findById(context, user, ingestionId);
+  const ingestionUpdated = await findTaxiiIngestionById(context, user, ingestionId);
 
   await publishUserAction({
     user,
@@ -185,7 +188,7 @@ export const ingestionTaxiiAddAutoUser = async (context: AuthContext, user: Auth
   const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
     { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
 
-  return ingestionEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
+  return ingestionTaxiiEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
 };
 
 export const taxiiFeedAddInputFromImport = async (file: Promise<FileHandle>) => {

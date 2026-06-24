@@ -309,6 +309,29 @@ describe('middleware upsertElement test', () => {
       expect(input.value.some((v) => v.value === labelToAdd.value)).toBe(true);
       expect(input.value.some((v) => v.value === labelToReplace.value)).toBe(true);
     });
+    it('should mergeUpsertInput with indicator : handles non-array elementCurrentValue', () => {
+      const updatePatchInput = {
+        operation: 'add',
+        key: 'indicator_types',
+        value: ['indicator-type-to-add'],
+      };
+      const upsertOperation = {
+        operation: 'remove',
+        key: 'indicator_types',
+        value: ['indicator-type-to-remove'],
+      };
+      // elementCurrentValue is a scalar string, not an array
+      const elementCurrentValue = 'indicator-type-current';
+      const upsertCurrentValue = ['indicator-type-current', 'indicator-type-to-add'];
+      const input = mergeUpsertInput(elementCurrentValue, upsertCurrentValue, updatePatchInput, upsertOperation);
+
+      // The scalar should be wrapped into an array, then the remove filter applied (no match), then add applied
+      expect(input.key).toEqual('indicator_types');
+      expect(input.operation).toEqual('replace');
+      expect(input.value.length).toEqual(2);
+      expect(input.value.includes('indicator-type-current')).toBe(true);
+      expect(input.value.includes('indicator-type-to-add')).toBe(true);
+    });
     it('should mergeUpsertInput with indicator : upsert adds label and operation add labels', () => {
       const labelToAddId = 'eda3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
       const labelToAdd = { ...labelToRemove, value: 'label-to-add', id: labelToAddId, internal_id: labelToAddId, standard_id: labelToAddId };

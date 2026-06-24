@@ -17,16 +17,16 @@ import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { applicationSession } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { userEditField } from '../domain/user';
-import { DraftLockedError, ForbiddenAccess, WorkNotALiveError } from '../config/errors';
+import { ForbiddenAccess, WorkNotALiveError } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
+import { computeLoaders } from './httpAuthenticatedContext';
 import { buildRateLimiterOptions } from './httpUtils';
+import { checkDraftInContext } from './httpServer-draft';
+import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -34,6 +34,40 @@ const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
+
+export const extractWsSessionContext = async (context) => {
+  const req = context.extra.request;
+  const webSocket = context.extra.socket;
+  // This will be run every time the client sends a subscription request
+  const wsSession = await new Promise((resolve) => {
+    // use same session parser as normal gql queries
+    const { session } = applicationSession;
+    session(req, {}, () => {
+      if (req.session) {
+        resolve(req.session);
+      }
+      return false;
+    });
+  });
+  // We have a good session. attach to context
+
+  if (wsSession?.user) {
+    const sessionContext = executionContext('api');
+    const origin = {
+      socket: 'subscription',
+      ip: webSocket._socket.remoteAddress,
+      user_id: wsSession.user?.id,
+      group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
+      organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
+    };
+    const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
+    const logged = platformUsers.get(wsSession?.user.id);
+    sessionContext.user = { ...wsSession?.user, ...logged, origin };
+    sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
+    return sessionContext;
+  }
+  throw ForbiddenAccess('User must be authenticated');
+};
 
 const createHttpServer = async () => {
   logApp.info('[INIT] Configuring HTTP/HTTPS server');
@@ -76,37 +110,7 @@ const createHttpServer = async () => {
   });
   const serverCleanup = useServer({
     schema,
-    context: async (ctx) => {
-      const req = ctx.extra.request;
-      const webSocket = ctx.extra.socket;
-      // This will be run every time the client sends a subscription request
-      const wsSession = await new Promise((resolve) => {
-        // use same session parser as normal gql queries
-        const { session } = applicationSession;
-        session(req, {}, () => {
-          if (req.session) {
-            resolve(req.session);
-          }
-          return false;
-        });
-      });
-      // We have a good session. attach to context
-      if (wsSession?.user) {
-        const context = executionContext('api');
-        const origin = {
-          socket: 'subscription',
-          ip: webSocket._socket.remoteAddress,
-          user_id: wsSession.user?.id,
-          group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
-          organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
-        };
-        const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-        const logged = platformUsers.get(wsSession?.user.id);
-        context.user = { ...wsSession?.user, ...logged, origin };
-        return context;
-      }
-      throw ForbiddenAccess('User must be authenticated');
-    },
+    context: extractWsSessionContext,
   }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
@@ -135,7 +139,15 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
-  app.use(graphqlUploadExpress());
+  // IP whitelist middleware — must be after session middleware to detect session-based auth
+  app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
+  app.use((req, res, next) => {
+    // Skip graphql-upload for chatbot routes (they handle multipart themselves via Busboy)
+    if (req.path.startsWith(`${basePath}/chatbot/`)) {
+      return next();
+    }
+    return graphqlUploadExpress()(req, res, next);
+  });
   app.use(
     `${basePath}/graphql`,
     cors({ origin: basePath }),
@@ -152,25 +164,7 @@ const createHttpServer = async () => {
             throw WorkNotALiveError();
           }
         }
-        // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
-        if (executeContext.draft_context) {
-          const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
-          const draftWorkspace = draftWorkspaces.get(executeContext.draft_context);
-          if (!draftWorkspace) {
-            if (executeContext.user.draft_context === executeContext.draft_context) {
-              // If user is stuck in an invalid draft, remove draft context from user
-              await userEditField(executeContext, executeContext.user, executeContext.user.id, [{ key: 'draft_context', value: '' }]);
-            }
-            throw DraftLockedError('Could not find draft workspace');
-          }
-          if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
-            if (executeContext.user.draft_context === executeContext.draft_context) {
-              // If user is stuck in an invalid draft, remove draft context from user
-              await userEditField(executeContext, executeContext.user, executeContext.user.id, [{ key: 'draft_context', value: '' }]);
-            }
-            throw DraftLockedError('Can not execute request in a draft not in an open state');
-          }
-        }
+        await checkDraftInContext(executeContext);
         return executeContext;
       },
     }),

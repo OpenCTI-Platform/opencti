@@ -231,7 +231,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const catalogId = catalogHelper.getCatalogId();
 
       const testCases = [
-        { input: 'ServiceNow Connector', expected: 'service-now-connector' },
+        { input: 'ServiceNow Connector', expected: 'servicenow-connector' },
         { input: '-Test@Connector#2024!', expected: 'test-connector-2024' },
         { input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters', expected: 'very-long-name-with-special-chars-that-exceeds-the-maximum-leng' },
       ];
@@ -657,6 +657,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const updateInput = {
         id: logLevelConnectorId,
         name: 'Log Level Test Connector',
+        title: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
@@ -719,6 +720,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const updateInput2 = {
         id: logLevelConnectorId,
         name: 'Log Level Test Connector',
+        title: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
@@ -762,10 +764,11 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(logStrings2).toContain('[XTM-Composer] Configuration changed, redeploying connector...');
       expect(logStrings2).toContain('[XTM-Composer] Connector redeployed successfully');
 
-      // Test updating only the name without changing configuration (should not redeploy)
+      // Test updating only the name and title without changing configuration (should not redeploy)
       const updateInput3 = {
         id: logLevelConnectorId,
         name: 'Log Level Test Connector - Updated Name Only',
+        title: 'Log Level Test Connector - Updated Name Only',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
@@ -1239,7 +1242,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(managedConnectorAdd).not.toBeNull();
       managedConnectorId = managedConnectorAdd.id;
       createdConnectorIds.add(managedConnectorId);
-      expect(managedConnectorAdd.name).toEqual('test-ip-info-connector');
+      expect(managedConnectorAdd.name).toEqual('test-ipinfo-connector');
       expect(managedConnectorAdd.connector_user_id).toBeDefined();
       expect(managedConnectorAdd.manager_requested_status).toEqual('stopped');
       expect(managedConnectorAdd.manager_contract_hash).toBeDefined();
@@ -1265,6 +1268,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const input = {
         id: managedConnectorId,
         name: 'Updated IpInfo Connector',
+        title: 'Updated IpInfo Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'updated-token-456' },

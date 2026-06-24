@@ -57,12 +57,12 @@ const FintelTemplatePreview = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEnabled = isTiptapEditorEnable();
+  const { isOldEditorEnable } = useHelper();
+  const tiptapEnabled = !isOldEditorEnable();
   const { editorValue } = useFintelTemplateContext();
 
   const [pdf, setPdf] = useState<File>();
-  const [formValues, setFormValues] = useState<FintelTemplatePreviewFormInputs>();
+  const [formValues, setFormValues] = useState<FintelTemplatePreviewFormInputs | null>();
 
   const { fintel_template_widgets } = useFragment<FintelTemplatePreview_template$key>(
     previewFragment,
@@ -91,7 +91,11 @@ const FintelTemplatePreview = ({
   };
 
   useEffect(() => {
-    const { fileMarkings, entity, contentMaxMarkings, fintelDesign } = formValues ?? {};
+    if (!formValues) {
+      setPdf(undefined);
+      return;
+    }
+    const { fileMarkings, entity, contentMaxMarkings, fintelDesign } = formValues;
     if (!entity || !isTabActive) return;
     buildPreview(
       entity.value,

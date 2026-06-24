@@ -6,7 +6,7 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
 
     For production deployment, we recommend to deploy all components in containers, including dependencies, using native cloud services or orchestration systems such as [Kubernetes](https://kubernetes.io).
 
-    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](clustering.md).
+    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](advanced/clustering.md).
 
 <div class="grid cards" markdown>
 
@@ -96,7 +96,7 @@ cd docker
 
     💡 This parameter is already present in the Docker GitHub repository files.
 
-    - Check the [OpenCTI Integration User Permissions in OpenSearch/ElasticSearch](rollover.md#opencti-integration-user-permissions-in-opensearchelasticsearch) for detailed information about the user permissions required for the OpenSearch/ElasticSearch integration.
+    - Check the [OpenCTI Integration User Permissions in OpenSearch/ElasticSearch](advanced/rollover.md#opencti-integration-user-permissions-in-opensearchelasticsearch) for detailed information about the user permissions required for the OpenSearch/ElasticSearch integration.
 
 !!! warning "RabbitMQ configuration"
 
@@ -112,6 +112,7 @@ cd docker
 Before running the `docker-compose` command, the `docker-compose.yml` file should be configured. By default, the `docker-compose.yml` file is using environment variables available in the file `.env.sample`.
 
 You can either rename the file `.env.sample` as `.env` and enter the values or just directly edit the `docker-compose.yml` with the values for your environment.
+Warning regarding the OPENCTI_ADMIN_TOKEN variable: you must use uuidgen to generate a valid token otherwise the container will not start.
 
 !!! note "Configuration static parameters"
 

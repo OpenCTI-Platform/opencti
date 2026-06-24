@@ -1,20 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import Card from '@common/card/Card';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Label from '../../../../components/common/label/Label';
 import Tag from '@common/tag/Tag';
 
 const GroupingDetailsComponent = (props) => {
-  const { t, grouping } = props;
+  const { t_i18n } = useFormatter();
+  const { grouping } = props;
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
   useEffect(() => {
@@ -31,6 +31,12 @@ const GroupingDetailsComponent = (props) => {
       filters: {
         mode: 'and',
         filters: [
+          {
+            key: 'fromId',
+            values: [grouping.id],
+            operator: 'eq',
+            mode: 'or',
+          },
           {
             key: 'relationship_type',
             values: [
@@ -49,29 +55,29 @@ const GroupingDetailsComponent = (props) => {
 
   return (
     <div style={{ height: '100%' }}>
-      <Card title={t('Entity details')}>
+      <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={6} ref={ref}>
+          <Grid item xs={12}>
             <Label>
-              {t('Description')}
+              {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={grouping.description} limit={400} />
-            <Label sx={{ marginTop: 2 }}>
-              {t('Context')}
+          </Grid>
+          <Grid item xs={6} ref={ref}>
+            <Label>
+              {t_i18n('Context')}
             </Label>
             <Tag label={grouping.context} />
           </Grid>
           <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
             <StixRelationshipsHorizontalBars
-              isWidget={false}
-              fromId={grouping.id}
-              startDate={null}
-              endDate={null}
-              relationshipType="object"
+              config={{
+                startDate: null,
+                endDate: null,
+              }}
               dataSelection={entitiesDistributionDataSelection}
-              parameters={{ title: 'Entities distribution' }}
+              parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
-              isReadOnly={true}
             />
           </Grid>
         </Grid>
@@ -113,4 +119,4 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
 `,
 });
 
-export default R.compose(inject18n)(GroupingDetails);
+export default GroupingDetails;

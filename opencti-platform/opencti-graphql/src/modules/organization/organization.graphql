@@ -252,7 +252,7 @@ input OrganizationAddInput {
 type Mutation {
   organizationAdd(input: OrganizationAddInput!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   organizationDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization @auth(for: [KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES])
+  organizationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Organization @auth(for: [KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES])
   organizationContextPatch(id: ID!, input: EditContext!): Organization @auth(for: [KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES])
   organizationContextClean(id: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])

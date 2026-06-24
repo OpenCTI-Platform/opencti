@@ -113,10 +113,12 @@ const initExpiredManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping expiration manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Expiration manager stopped in ${Date.now() - startTime} ms`);
       return true;
     },
   };

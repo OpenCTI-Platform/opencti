@@ -21,6 +21,9 @@ interface PopoverListItemProps {
   onClick?: () => void;
 }
 
+const OPENAEV_FALLBACK_URL = 'https://filigran.io/platform/openaev/';
+const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
+
 export const PopoverListItem: React.FC<PopoverListItemProps> = ({
   logoSrc,
   href,
@@ -86,6 +89,7 @@ interface LeftBarHeaderProps {
   logoCollapsed?: string;
   navOpen: boolean;
   bannerHeightNumber: number;
+  topBannerHeight: number;
   settingsMessagesBannerHeight: number;
   openAEVUrl?: string;
   xtmhubUrl?: string;
@@ -98,6 +102,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   logoCollapsed,
   navOpen,
   bannerHeightNumber,
+  topBannerHeight,
   settingsMessagesBannerHeight,
   openAEVUrl,
   xtmhubUrl,
@@ -133,7 +138,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         component={Link}
         to="/dashboard"
         style={{
-          marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
+          marginTop: `calc(${topBannerHeight}px + ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
         }}
         sx={{
           padding: navOpen ? 2 : '16px 0',
@@ -202,7 +207,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             <span>
               <PopoverListItem
                 logoSrc={theme.palette.mode === 'dark' ? logoOpenAEVDark : logoOpenAEVLight}
-                href={openAEVUrl}
+                href={isNotEmptyField(openAEVUrl) ? openAEVUrl : OPENAEV_FALLBACK_URL}
                 external
                 onClick={handleMouseLeave}
               />
@@ -214,7 +219,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
             <PopoverListItem
               logoSrc={theme.palette.mode === 'dark' ? logoXTMHubDark : logoXTMHubLight}
-              href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://hub.filigran.io'}
+              href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : XTMHUB_FALLBACK_URL}
               external
               onClick={handleMouseLeave}
             />

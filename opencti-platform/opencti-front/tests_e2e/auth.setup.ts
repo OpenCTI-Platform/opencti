@@ -1,6 +1,7 @@
 import { expect, test as setup } from './fixtures/baseFixtures';
 import DashboardPage from './model/dashboard.pageModel';
 import LoginFormPageModel from './model/form/loginForm.pageModel';
+import { REGISTER_BANNER_DISMISSED_KEY } from '../src/utils/bannerConstants';
 
 const authFile = 'tests_e2e/.setup/.auth/user.json';
 
@@ -12,6 +13,12 @@ setup('authenticate as admin(at)opencti.io by default', async ({ page }) => {
   await page.goto('/');
   await loginPage.login();
   await expect(dashboardPage.getPage()).toBeVisible();
+
+  // Dismiss the RegisterPlatformBanner so its fixed-position button does not intercept clicks in any test
+  await page.evaluate((key) => {
+    localStorage.setItem(key, 'true');
+  }, REGISTER_BANNER_DISMISSED_KEY);
+
   // End of authentication steps.
   await page.context().storageState({ path: authFile });
 });

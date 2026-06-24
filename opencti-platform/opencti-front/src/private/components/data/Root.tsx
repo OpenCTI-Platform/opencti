@@ -49,7 +49,7 @@ const Root = () => {
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
 
-  let redirect = null;
+  let redirect: string | null = null;
   if (isGrantedToKnowledge) {
     redirect = 'entities';
   } else if (isGrantedToIngestion) {

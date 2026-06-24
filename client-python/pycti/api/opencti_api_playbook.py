@@ -81,3 +81,26 @@ class OpenCTIApiPlaybook:
                 "[opencti_playbook] Cannot delete playbook, missing parameter: id"
             )
             return None
+
+    def playbook_execute(self, playbook_id: str, entity_id: str):
+        """Enroll a playbook on an entity.
+
+        :param playbook_id: the playbook id
+        :type playbook_id: str
+        :param entity_id: the entity id to enroll the playbook on
+        :type entity_id: str
+        :return: None
+        :rtype: None
+        """
+        query = """
+            mutation PlaybookExecute($playbook_id: ID!, $entity_id: String!) {
+                playbookExecute(id: $playbook_id, entityId: $entity_id)
+            }
+           """
+        self.api.query(
+            query,
+            {
+                "playbook_id": playbook_id,
+                "entity_id": entity_id,
+            },
+        )

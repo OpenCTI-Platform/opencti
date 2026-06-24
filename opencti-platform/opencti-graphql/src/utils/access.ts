@@ -1,6 +1,6 @@
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
@@ -56,6 +56,7 @@ export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
 export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
 export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
+export const KNOWLEDGE_KNSHAREFILTERS = 'KNOWLEDGE_KNSHAREFILTERS';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
@@ -72,6 +73,7 @@ const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const EXPIRATION_MANAGER_USER_UUID = '21763151-f598-4f49-97c5-9051b2d25a5c';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const AUTOMATION_MANAGER_USER_UUID = 'c49fe040-2dad-412d-af07-ce639204ad55';
+export const WORKFLOW_MANAGER_USER_UUID = '0a9592ed-0e00-4585-a4e8-219e33f4db48';
 export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
 export const GARBAGE_COLLECTION_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c2';
 const TELEMETRY_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c3';
@@ -511,30 +513,49 @@ export const HUB_REGISTRATION_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const WORKFLOW_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: WORKFLOW_MANAGER_USER_UUID,
+  internal_id: WORKFLOW_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'WORKFLOW MANAGER',
+  user_email: 'WORKFLOW MANAGER',
+  origin: { user_id: WORKFLOW_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_tokens: [],
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: { max_confidence: 100, overrides: [] },
+  user_confidence_level: { max_confidence: 100, overrides: [] },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export interface AuthorizedMember { id: string; access_right: string; groups_restriction_ids?: string[] | null }
 
-class TracingContext {
-  ctx: Context | undefined;
+export type TracingContext = {
+  getCtx: () => Context | undefined;
+  getTracer: () => Tracer;
+  setCurrentCtx: (span: Span) => void;
+};
 
-  tracer: Tracer;
-
-  constructor(tracer: Tracer) {
-    this.tracer = tracer;
-    this.ctx = undefined;
-  }
-
-  getCtx() {
-    return this.ctx;
-  }
-
-  getTracer() {
-    return this.tracer;
-  }
-
-  setCurrentCtx(span: Span) {
-    this.ctx = trace.setSpan(telemetryContext.active(), span);
-  }
-}
+const createTracingContext = (tracer: Tracer): TracingContext => {
+  let ctx: Context | undefined;
+  return {
+    getCtx: () => ctx,
+    getTracer: () => tracer,
+    setCurrentCtx: (span: Span) => {
+      ctx = trace.setSpan(telemetryContext.active(), span);
+    },
+  };
+};
 
 export const enforceEnableFeatureFlag = (flag: string) => {
   if (!isFeatureEnabled(flag)) {
@@ -544,7 +565,7 @@ export const enforceEnableFeatureFlag = (flag: string) => {
 
 export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
-  const tracing = new TracingContext(tracer);
+  const tracing = createTracingContext(tracer);
   return {
     otp_mandatory: false,
     user_inside_platform_organization: false,
@@ -567,6 +588,7 @@ export const INTERNAL_USERS = {
   [RESTRICTED_USER.id]: RESTRICTED_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
+  [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -579,6 +601,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
+  [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
 };
 
 export const isInternalUser = (user: AuthUser): boolean => {
@@ -678,12 +701,13 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
-
-  if (isServiceAccountUser(user)) {
+  // Service accounts respect explicit admin rights; otherwise fallback to "edit" to allow read/write access on restricted elements
+  const userAccessRight = getExplicitUserAccessRight(user, element);
+  if ((!userAccessRight || userAccessRight != MEMBER_ACCESS_RIGHT_ADMIN) && isServiceAccountUser(user)) {
     return MEMBER_ACCESS_RIGHT_EDIT;
   }
 
-  return getExplicitUserAccessRight(user, element);
+  return userAccessRight;
 };
 
 export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
@@ -792,7 +816,11 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
+    [ATTR_DB_NAMESPACE]: 'search_engine',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'search_engine',
+    [ATTR_DB_OPERATION_NAME]: 'read',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'read',
   }, userFilterStoreElementsFn);
 };
@@ -919,6 +947,11 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
     && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
   ) {
     return false;
+  }
+
+  // 4.5 DraftWorkspace deletion exception: edit access is enough to delete a draft workspace
+  if (element.entity_type === 'DraftWorkspace' && operation === AccessOperation.DELETE) {
+    return hasUserAccessToOperation(user, element, AccessOperation.EDIT);
   }
 
   // 5. Check access to the element (entity, container, etc.)

@@ -63,7 +63,7 @@ export const organizationEditionOverviewFragment = graphql`
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: [EditInput]!
+    $input: [EditInput!]!
     $commitMessage: String
     $references: [String]
   ) {
@@ -272,6 +272,7 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={organization.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

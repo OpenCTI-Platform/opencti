@@ -23,6 +23,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -106,6 +107,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
     undefined,
     { successMessage: `${t_i18n('entity_Intrusion-Set')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -134,6 +136,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: IntrusionSetCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -141,7 +144,6 @@ export const IntrusionSetCreationForm: FunctionComponent<
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 
@@ -235,6 +237,9 @@ export const IntrusionSetCreationForm: FunctionComponent<
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

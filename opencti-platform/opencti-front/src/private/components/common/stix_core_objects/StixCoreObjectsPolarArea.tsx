@@ -1,15 +1,19 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { CSSProperties, ReactNode, useState } from 'react';
+import React, { CSSProperties, ReactNode, Suspense, useState } from 'react';
 import ApexCharts from 'apexcharts';
 import { StixCoreObjectsPolarAreaDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsPolarAreaDistributionQuery.graphql';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -103,87 +107,116 @@ const StixCoreObjectsPolarAreaComponent = ({
     stixCoreObjectsPolarAreaDistributionQuery,
     queryRef,
   );
+  const data = stixCoreObjectsDistribution ?? [];
+  const groupBy = dataSelection?.[0]?.attribute ?? 'entity_type';
 
-  if (
-    stixCoreObjectsDistribution
-    && stixCoreObjectsDistribution.length > 0
-  ) {
-    const attributeField = dataSelection[0].attribute || 'entity_type';
-    return (
-      <WidgetPolarArea
-        data={[...stixCoreObjectsDistribution]}
-        groupBy={attributeField}
-        onMounted={onMounted}
-      />
-    );
+  if (data.length === 0) {
+    return <WidgetNoData />;
   }
-  return <WidgetNoData />;
+  return (
+    <WidgetPolarArea
+      data={data}
+      groupBy={groupBy}
+      onMounted={onMounted}
+    />
+  );
+};
+
+const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): StixCoreObjectsPolarAreaDistributionQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const { startDate, endDate } = computeStartEndDates(config);
+  const dateAttribute
+    = selection.date_attribute
+      && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute },
+  );
+
+  return {
+    types: DATA_SELECTION_TYPES,
+    field: selection.attribute ?? 'entity_type',
+    operation: 'count',
+    startDate,
+    endDate,
+    dateAttribute,
+    filters: normalizeFilterGroupForBackend(filters),
+    limit: selection.number ?? 10,
+  };
 };
 
 interface StixCoreObjectsPolarAreaProps {
-  startDate?: string | null;
-  endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters | null;
   variant?: string;
   height?: CSSProperties['height'];
   popover?: ReactNode;
+  host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
 }
 
 const StixCoreObjectsPolarArea = ({
-  startDate,
-  endDate,
   dataSelection,
   parameters,
   height,
   variant,
   popover,
+  host,
+  config,
+  refreshRate = null,
 }: StixCoreObjectsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsPolarAreaDistributionQuery>({
+    perspective: 'entities',
+    dataSelection,
+    host,
+    refreshRate,
+    query: stixCoreObjectsPolarAreaDistributionQuery,
+    config,
+    buildQueryVariables,
+  });
+  const title = parameters?.title ?? t_i18n('Distribution of entities');
 
-  const selection = dataSelection[0];
-  const dataSelectionTypes = ['Stix-Core-Object'];
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
 
-  const queryRef = useQueryLoading<StixCoreObjectsPolarAreaDistributionQuery>(
-    stixCoreObjectsPolarAreaDistributionQuery,
-    {
-      types: dataSelectionTypes,
-      field: selection.attribute || 'entity_type',
-      operation: 'count',
-      startDate,
-      endDate,
-      dateAttribute:
-        selection.date_attribute && selection.date_attribute.length > 0
-          ? selection.date_attribute
-          : 'created_at',
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore Excepts readonly array as variables but have simple array.
-      filters: selection.filters,
-      limit: selection.number ?? 10,
-    },
-  );
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixCoreObjectsPolarAreaComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          onMounted={setChart}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters?.title ?? t_i18n('Distribution of entities')}
+      title={title}
       variant={variant}
       chart={chart}
       action={popover}
+      showPreviewTag={isPreviewMode}
     >
-      {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixCoreObjectsPolarAreaComponent
-            queryRef={queryRef}
-            dataSelection={dataSelection}
-            onMounted={setChart}
-          />
-        </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

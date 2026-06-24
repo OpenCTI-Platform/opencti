@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
@@ -26,6 +26,7 @@ import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
 import useHelper from '../../../utils/hooks/useHelper';
+import { MarkdownImagesController } from '../../../components/fields/markdownField/MarkdownField';
 
 export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -47,6 +48,14 @@ export const draftCreationMutation = graphql`
             ...Drafts_node
         }
     }
+`;
+
+const draftDescriptionPatchMutation = graphql`
+  mutation DraftCreationDescriptionPatchMutation($id: ID!, $input: [EditInput!]!) {
+    draftWorkspaceFieldPatch(id: $id, input: $input) {
+      id
+    }
+  }
 `;
 
 export const DRAFTWORKSPACE_TYPE = 'DraftWorkspace';
@@ -91,6 +100,21 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
   );
 
   const [commitCreationMutation] = useApiMutation<DraftCreationMutation>(draftCreationMutation);
+  const [commitDescriptionPatchMutation] = useApiMutation(draftDescriptionPatchMutation);
+  const markdownControllerRef = useRef<MarkdownImagesController | null>(null);
+
+  const patchDraftDescription = (draftId: string, description: string) => {
+    return new Promise<void>((resolve, reject) => {
+      commitDescriptionPatchMutation({
+        variables: {
+          id: draftId,
+          input: [{ key: 'description', value: description ?? '' }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
 
   const onSubmit: FormikConfig<DraftAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: DraftCreationMutation$variables['input'] = {
@@ -124,12 +148,26 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
+      onCompleted: (response) => {
+        (async () => {
+          try {
+            const draftId = response?.draftWorkspaceAdd?.id;
+            const hasPendingMarkdownImages = (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
+
+            if (draftId && hasPendingMarkdownImages) {
+              const finalizedDescription = await markdownControllerRef.current?.persistTempImages(draftId);
+              if (typeof finalizedDescription === 'string' && finalizedDescription !== values.description) {
+                await patchDraftDescription(draftId, finalizedDescription);
+              }
+            }
+          } finally {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          }
+        })();
       },
     });
   };
@@ -176,6 +214,9 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
                   rows="4"
                   style={fieldSpacingContainerStyle}
                   askAi={true}
+                  registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                    markdownControllerRef.current = controller;
+                  }}
                 />
                 <ObjectAssigneeField
                   name="objectAssignee"

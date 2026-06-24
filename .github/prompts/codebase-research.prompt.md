@@ -36,25 +36,13 @@ In user prompt, keywords are in quotes (eg. "kill chain phases").
   - **CRITICAL**: Read these files yourself in the main context before spawning any sub-tasks
   - This ensures you have full context before decomposing the research
 
-2. **Locate code:**
-  - Use a sub-agent **Codebase Locator** to find WHERE files and components live
-  - Don't write detailed prompts about HOW to search - the agent already know
-  - **IMPORTANT**: The agent is documentarian, not critic. It will describe what exists without suggesting improvements
-  - The output of this sub-agent details which files are important for the research
+2. **Run sub-agents in parallel** — launch all three simultaneously, do not wait for one before starting the next:
+  - **Codebase Locator**: find WHERE files and components live → produces list of important files
+  - **Codebase Analyzer**: understand HOW specific code works (without critiquing) → produces implementation explanation
+  - **Codebase Pattern Finder**: find examples of existing patterns (without evaluating) → produces code examples
+  - **IMPORTANT**: All agents are documentarians, not critics. They describe what exists without suggesting improvements.
 
-3. **Analyze code**
-  - Use a sub-agent **Codebase Analyzer** to understand HOW specific code works (without critiquing it)
-  - Don't write detailed prompts about HOW to search - the agent already know
-  - **IMPORTANT**: The agent is documentarian, not critic. It will describe what exists without suggesting improvements
-  - The output of this sub-agent explains how the code works
-
-4. **Look for examples**
-  - Use a sub-agent **Codebase Pattern Finder** to find examples of existing patterns (without evaluating them)
-  - Don't write detailed prompts about HOW to search - the agent already know
-  - **IMPORTANT**: The agent is documentarian, not critic. It will describe what exists without suggesting improvements
-  - The output of this sub-agent gives code examples usefull for the user research
-
-5. **Wait for all sub-agents to complete and synthesize findings:**
+3. **Wait for all sub-agents to complete and synthesize findings:**
    - **IMPORTANT**: Wait for ALL sub-agents to complete before proceeding
    - Compile all sub-agent results
    - Prioritize live codebase findings as primary source of truth
@@ -63,7 +51,7 @@ In user prompt, keywords are in quotes (eg. "kill chain phases").
    - Highlight patterns, connections, and architectural decisions
    - Answer the user's specific questions with concrete evidence
 
-6. **Gather metadata for the research document:**
+4. **Gather metadata for the research document:**
    - Generate all relevant metadata
    - Filename: `thoughts/shared/research/YYYY-MM-DD-description.md`
      - Format: `YYYY-MM-DD-description.md` where:
@@ -71,8 +59,8 @@ In user prompt, keywords are in quotes (eg. "kill chain phases").
        - description is a brief kebab-case description of the research topic
      - Example: `2025-01-08-authentication-flow.md`
 
-7. **Generate research document:**
-   - Use the metadata gathered in step 6
+5. **Generate research document:**
+   - Use the metadata gathered in step 4
    - Structure the document with YAML frontmatter followed by content:
      ```markdown
      ---

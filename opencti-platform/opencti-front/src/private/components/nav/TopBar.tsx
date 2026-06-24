@@ -1,7 +1,7 @@
 import IconButton from '@common/button/IconButton';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
-import { alpha, Badge, Stack } from '@mui/material';
+import { alpha, Badge, Divider, Stack } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,7 +9,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { usePage } from 'use-analytics';
@@ -18,7 +18,7 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import SearchInput from '../../../components/SearchInput';
 import type { Theme } from '../../../components/Theme';
 import UploadImport from '../../../components/UploadImport';
-import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$, requestSubscription } from '../../../relay/environment';
 import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
@@ -29,9 +29,12 @@ import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
+import CtemCommandCenterButton from '../chatbox/CtemCommandCenterButton';
 import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useTopBanner from '../../../utils/hooks/useTopBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import { TopBarNewsFeedNumberSubscription$data } from './__generated__/TopBarNewsFeedNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import { useAINLQ } from '../common/ai/AINLQ';
@@ -59,6 +62,14 @@ const topBarNotificationNumberSubscription = graphql`
   }
 `;
 
+const topBarNewsFeedNumberSubscription = graphql`
+  subscription TopBarNewsFeedNumberSubscription {
+    newsFeedsNumber {
+      count
+    }
+  }
+`;
+
 interface TopBarProps {
   queryRef: PreloadedQuery<TopBarQuery>;
 }
@@ -66,6 +77,7 @@ interface TopBarProps {
 const topBarQuery = graphql`
   query TopBarQuery {
     myUnreadNotificationsCount
+    myUnreadNewsFeedsCount
   }
 `;
 
@@ -83,34 +95,61 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       platform_enterprise_edition: ee,
       filigran_chatbot_ai_cgu_status,
     },
+    isXTMHubAccessible,
+    me,
   } = useAuth();
+  const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
+  const [newsFeedsNumberFromSub, setNewsFeedsNumberFromSub] = useState<null | number>(null);
 
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
-  const handleNewNotificationsNumber = (
+  const handleNewNotificationsNumber = useCallback((
     response: TopBarNotificationNumberSubscription$data | null | undefined | unknown,
   ) => {
     const notificationNumber = response ? (response as TopBarNotificationNumberSubscription$data).notificationsNumber?.count : null;
     return setNotificationsNumber(notificationNumber ?? null);
-  };
+  }, [setNotificationsNumber]);
+  const handleNewNewsFeedNumber = useCallback((
+    response: TopBarNewsFeedNumberSubscription$data | null | undefined | unknown,
+  ) => {
+    const newsFeedNumber = response ? (response as TopBarNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
+    return setNewsFeedsNumberFromSub(newsFeedNumber ?? null);
+  }, [setNewsFeedsNumberFromSub]);
   const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
+  const newsFeedCount = isXTMHubAccessible && !isAllNewsFeedUnsubscribed
+    ? (newsFeedsNumberFromSub !== null ? newsFeedsNumberFromSub : (data.myUnreadNewsFeedsCount ?? 0))
+    : 0;
+  const isNewNewsFeed = newsFeedCount > 0;
+  const hasUnread = isNewNotification || isNewNewsFeed;
   const subConfig = useMemo(
     () => ({
       subscription: topBarNotificationNumberSubscription,
       variables: {},
       onNext: handleNewNotificationsNumber,
     }),
-    [topBarNotificationNumberSubscription],
+    [topBarNotificationNumberSubscription, handleNewNotificationsNumber],
   );
   useSubscription(subConfig);
+
+  const shouldSubscribeToNewsFeed = isXTMHubAccessible && !isAllNewsFeedUnsubscribed;
+  useEffect(() => {
+    if (!shouldSubscribeToNewsFeed) return undefined;
+    const sub = requestSubscription({
+      subscription: topBarNewsFeedNumberSubscription,
+      variables: {},
+      onNext: handleNewNewsFeedNumber,
+    });
+    return () => sub.dispose();
+  }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -206,7 +245,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       <Toolbar
         style={{
           alignItems: 'center',
-          marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
+          marginTop: bannerHeightNumber + settingsMessagesBannerHeight + topBannerHeight,
           height: '100%',
           minHeight: 68,
           paddingLeft: theme.spacing(3),
@@ -227,15 +266,24 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         )}
         <div>
           <Stack direction="row" gap={1} alignItems="center">
+            <Security needs={[KNOWLEDGE]}>
+              <>
+                {
+                  filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
+                    <>
+                      <AskArianeButton />
+                      <CtemCommandCenterButton />
+                      {/* Discrete full-height separator between the AI (XTM One)
+                          actions and the standard platform actions. */}
+                      <Divider orientation="vertical" flexItem sx={{ mx: 1.5 }} />
+                    </>
+                  )
+                }
+              </>
+            </Security>
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
-                  {
-                    filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
-                      <AskArianeButton />
-                    )
-                  }
-
                   {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
                   <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport
@@ -260,13 +308,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       aria-haspopup="true"
                       size="default"
                       component={Link}
-                      to="/dashboard/profile/notifications"
-                      selected={location.pathname === '/dashboard/profile/notifications'}
+                      to="/dashboard/profile/notifications/alerts"
+                      selected={location.pathname.startsWith('/dashboard/profile/notifications')}
                     >
                       <Badge
                         color="secondary"
                         variant="dot"
-                        invisible={!isNewNotification}
+                        invisible={!hasUnread}
                       >
                         <NotificationsOutlined fontSize="medium" />
                       </Badge>

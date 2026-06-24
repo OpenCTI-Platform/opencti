@@ -3,11 +3,12 @@ import { and, ControlProps, isPrimitiveArrayControl, RankedTester, rankWith, sch
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
-import { isNotEmptyField } from '../../../../../utils/utils';
+import { splitAndTrimArray } from '../../../../../utils/String';
 
 export const JsonFormArrayRenderer = (props: ControlProps) => {
   const {
     data,
+    description,
     handleChange,
     path,
     label,
@@ -18,18 +19,22 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
   const { t_i18n } = useFormatter();
 
   // Convert null to empty array for component state
-  const currentValues = data || [];
+  const currentValues = Array.isArray(data) ? data : [];
   const [inputValue, setInputValue] = useState('');
 
+  const normalizeValues = useCallback((values: string[]) => {
+    const splitAndTrimmedValues = splitAndTrimArray(values);
+
+    return Array.from(new Set(splitAndTrimmedValues));
+  }, []);
+
   const handleValuesChange = useCallback((event: React.SyntheticEvent, newValues: string[]) => {
-    const cleanValues = newValues
-      .filter((value) => isNotEmptyField(value))
-      .filter((value, index, arr) => arr.indexOf(value) === index);
+    const cleanValues = normalizeValues(newValues);
 
     const finalValue = cleanValues.length === 0 && schema.default === null ? null : cleanValues;
 
     handleChange(path, finalValue);
-  }, [handleChange, path, schema.default]);
+  }, [handleChange, normalizeValues, path, schema.default]);
 
   const handleInputChange = useCallback((event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue);
@@ -38,21 +43,21 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && inputValue.trim()) {
       event.preventDefault();
-      const newValue = inputValue.trim();
+      const parsedValues = normalizeValues([inputValue]);
+      const newValues = normalizeValues([...currentValues, ...parsedValues]);
 
-      if (!currentValues.includes(newValue)) {
-        const newValues = [...currentValues, newValue];
+      if (newValues.length !== currentValues.length) {
         handleValuesChange(event, newValues);
       }
 
       setInputValue('');
     }
-  }, [inputValue, currentValues, handleValuesChange]);
+  }, [inputValue, normalizeValues, currentValues, handleValuesChange]);
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography component="label" variant="subtitle2" sx={{ fontSize: '10px' }}>{label}</Typography>
-
+      <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>{label}</Typography>
+      <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>{description}</Typography>
       <Autocomplete
         multiple
         freeSolo
@@ -90,6 +95,12 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
           },
           '& .MuiAutocomplete-input': {
             minWidth: '200px',
+          },
+          '& .MuiChip-root, & .MuiChip-root::first-letter': {
+            textTransform: 'none !important',
+          },
+          '& .MuiChip-label, & .MuiChip-label::first-letter': {
+            textTransform: 'none !important',
           },
         }}
       />

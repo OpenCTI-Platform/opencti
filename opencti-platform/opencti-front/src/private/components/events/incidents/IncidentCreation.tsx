@@ -30,6 +30,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
@@ -86,11 +87,12 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation(
+  const [commit] = useApiMutation<IncidentCreationMutation>(
     IncidentMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -112,6 +114,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       ? R.dissoc('severity', values)
       : values;
     const input = {
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
       createdBy: cleanedValues.createdBy?.value,
@@ -124,7 +127,6 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       externalReferences: cleanedValues.externalReferences.map(
         ({ value }) => value,
       ),
-      file: values.file,
     };
     commit({
       variables: {
@@ -215,6 +217,9 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
           />
           <Field
             component={TextField}

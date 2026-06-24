@@ -3,7 +3,6 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
-import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
@@ -16,14 +15,15 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
 import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
-import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
+import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
 import useActiveTheme from '../utils/hooks/useActiveTheme';
 import { AppDataProvider } from '../utils/hooks/useAppData';
-import { TOP_BANNER_HEIGHT } from '../components/TopBanner';
+import { ExportThemeProvider } from '../utils/ExportThemeContext';
 import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
+import { CustomViewsPreloadedDataContextProvider } from './components/custom_views/CustomViewsPreloadedDataContext';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -31,6 +31,7 @@ const rootSettingsFragment = graphql`
     platform_title
     platform_demo
     platform_banner_text
+    platform_no_access_message
     request_access_enabled
     platform_url
     platform_user_statuses {
@@ -55,6 +56,7 @@ const rootSettingsFragment = graphql`
     platform_opengrc_url
     platform_xtmhub_url
     xtm_hub_registration_status
+    xtm_hub_backend_is_reachable
     platform_whitemark
     platform_organization {
       id
@@ -261,6 +263,7 @@ const meUserFragment = graphql`
       name
     }
     can_manage_sensitive_config
+    unsubscribed_news_feed_types
   }
 `;
 
@@ -291,6 +294,7 @@ const rootPrivateQuery = graphql`
         }
       }
     }
+    ...useCustomViews_data @alias(as: "customViews")
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {
         node {
@@ -377,18 +381,6 @@ const rootPrivateQuery = graphql`
   }
 `;
 
-const displayTopBanner = (settings: RootSettings$data) => {
-  const displayTrialBanner = isNotEmptyField(settings?.platform_xtmhub_url) && settings.platform_demo;
-
-  const eeSettings = settings?.platform_enterprise_edition;
-  const displayLicenseBanner = (eeSettings?.license_enterprise && (
-    !eeSettings.license_validated || eeSettings.license_extra_expiration || eeSettings.license_type === LICENSE_OPTION_TRIAL
-  )
-  );
-
-  return (displayTrialBanner || displayLicenseBanner);
-};
-
 const computeBannerSettings = (settings: RootSettings$data) => {
   const bannerLevel = settings.platform_banner_level;
   const bannerText = settings.platform_banner_text;
@@ -399,7 +391,7 @@ const computeBannerSettings = (settings: RootSettings$data) => {
   const sessionLimit = sessionTimeout
     ? Math.floor(sessionTimeout / ONE_SECOND)
     : 0;
-  const bannerHeightNumber = (displayTopBanner(settings) ? TOP_BANNER_HEIGHT : 0) + (isBannerActivated ? SYSTEM_BANNER_HEIGHT : 0);
+  const bannerHeightNumber = isBannerActivated ? SYSTEM_BANNER_HEIGHT : 0;
   const bannerHeight = bannerHeightNumber !== 0 ? `${bannerHeightNumber}px` : '0';
   return {
     bannerText,
@@ -411,11 +403,10 @@ const computeBannerSettings = (settings: RootSettings$data) => {
   };
 };
 interface RootComponentProps {
-  queryRef: PreloadedQuery<RootPrivateQuery>;
+  queryData: RootPrivateQuery$data;
 }
 
-const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
-  const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
+const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => {
   const {
     me: meFragment,
     settings: settingsFragment,
@@ -448,7 +439,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   );
   useSubscription(subConfig);
 
-  const schema = {
+  const schema = useMemo(() => ({
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
     smos: schemaSMOs.edges.map((smo) => smo.node),
@@ -459,13 +450,14 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       const filtersSchema = new Map(n.filters_schema.map((o) => [o.filterKey, o.filterDefinition as FilterDefinition]));
       return [n.entity_type, filtersSchema];
     })),
-  };
+  }), [schemaSCOs, schemaSDOs, schemaSMOs, schemaSCRs, schemaRelationsTypesMapping,
+    schemaRelationsRefTypesMapping, filterKeysSchema]);
 
   // TODO : Use the hook useHelper when all project is pure function //
-  const bannerSettings = computeBannerSettings(settings);
-  const platformModuleHelpers = platformModuleHelper(settings);
-  const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
-  const metricsDefinition = Array.from(settings.metrics_definition || []);
+  const bannerSettings = useMemo(() => computeBannerSettings(settings), [settings]);
+  const platformModuleHelpers = useMemo(() => platformModuleHelper(settings), [settings]);
+  const platformAnalyticsConfiguration = useMemo(() => generateAnalyticsConfig(settings), [settings]);
+  const metricsDefinition = useMemo(() => Array.from(settings.metrics_definition || []), [settings.metrics_definition]);
 
   const { isReachable } = useNetworkCheck(`${settings?.platform_xtmhub_url}/health`);
   useBaseHrefAbsolute();
@@ -480,42 +472,60 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   if (unitSystem === 'auto' || unitSystem === '%future added value') {
     unitSystem = selectedLocale === LANGUAGES.ENGLISH ? 'Imperial' : 'Metric';
   }
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const contextValue = useMemo(() => ({
+    queryData,
+    me,
+    settings,
+    bannerSettings,
+    entitySettings,
+    platformModuleHelpers,
+    schema,
+    isXTMHubAccessible: isReachable,
+    about,
+    themes,
+    unitSystem,
+    locale: selectedLocale,
+    tz,
+  }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
+    schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
 
   return (
-    <UserContext.Provider
-      value={{
-        me,
-        settings,
-        bannerSettings,
-        entitySettings,
-        platformModuleHelpers,
-        schema,
-        isXTMHubAccessible: isReachable,
-        about,
-        themes,
-        unitSystem,
-        locale: selectedLocale,
-        tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      }}
-    >
-      <StyledEngineProvider injectFirst={true}>
-        <ConnectedThemeProvider
-          settings={settings}
-          activeTheme={activeTheme}
-        >
-          <ConnectedIntlProvider settings={settings}>
-            <AppDataProvider
-              isPublicRoute={false}
-              metricsDefinition={metricsDefinition}
-            >
-              <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
-                <Index settings={settings} />
-              </AnalyticsProvider>
-            </AppDataProvider>
-          </ConnectedIntlProvider>
-        </ConnectedThemeProvider>
-      </StyledEngineProvider>
+    <UserContext.Provider value={contextValue}>
+      <ExportThemeProvider>
+        <StyledEngineProvider injectFirst={true}>
+          <ConnectedThemeProvider
+            settings={settings}
+            activeTheme={activeTheme}
+          >
+            <ConnectedIntlProvider settings={settings}>
+              <AppDataProvider
+                isPublicRoute={false}
+                metricsDefinition={metricsDefinition}
+              >
+                <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
+                  <Index settings={settings} />
+                </AnalyticsProvider>
+              </AppDataProvider>
+            </ConnectedIntlProvider>
+          </ConnectedThemeProvider>
+        </StyledEngineProvider>
+      </ExportThemeProvider>
     </UserContext.Provider>
+  );
+};
+
+interface PrivateRootPreloadedQueryDataProps {
+  queryRef: PreloadedQuery<RootPrivateQuery>;
+};
+
+const PrivateRootPreloadedQueryData = ({ queryRef }: PrivateRootPreloadedQueryDataProps) => {
+  const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
+  return (
+    <CustomViewsPreloadedDataContextProvider customViews={queryData.customViews}>
+      <RootComponent queryData={queryData} />
+    </CustomViewsPreloadedDataContextProvider>
   );
 };
 
@@ -525,7 +535,7 @@ const Root = () => {
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader />}>
-          <RootComponent queryRef={queryRef} />
+          <PrivateRootPreloadedQueryData queryRef={queryRef} />
         </React.Suspense>
       )}
     </>

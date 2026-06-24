@@ -5,6 +5,7 @@ import type { EditInput, IngestionTaxiiCollectionAddInput, TaxiiCollectionAddInp
 import { getGroupEntityByName } from '../utils/domainQueryHelper';
 import { getBaseUrl } from '../../src/config/conf';
 import { createTaxiiCollection, taxiiCollectionDelete } from '../../src/modules/dataSharing/taxiiCollection-domain';
+import { httpGet, httpPost } from '../utils/httpUtils';
 
 describe('Taxii push Feed coverage', () => {
   let taxiiPushIngestionId: string;
@@ -70,41 +71,41 @@ describe('Taxii push Feed coverage', () => {
     { contentType: 'application/vnd.oasis.stix+json; version=2.1', name: 'STIX content type including space and authentication header' },
   ])('should taxii post standard behavior works correctly with $name', async ({ contentType }) => {
     // Testing the content type with no space inside
-    const postResponse = await fetch(`${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`, {
-      method: 'POST',
-      headers: {
+    const { statusCode, body } = await httpPost(
+      `${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`,
+      bundleObject as Record<string, unknown>,
+      {
         'Content-Type': contentType,
         Authorization: `Bearer ${ADMIN_API_TOKEN}`,
       },
-      body: JSON.stringify(bundleObject),
-    });
-    const data: any = await postResponse.json();
-    expect(postResponse.status).toBe(200);
+    );
+    const data: any = JSON.parse(body);
+    expect(statusCode).toBe(200);
     expect(data.status).toBe('pending');
     // We do not check entity from bundleObject in database since it requires the worker to process it.
   });
 
   it('should taxii post be refused without authenticated user', async () => {
-    const result = await fetch(`${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`, {
-      method: 'POST',
-      headers: {
+    const { statusCode } = await httpPost(
+      `${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`,
+      bundleObject as Record<string, unknown>,
+      {
         'Content-Type': 'application/taxii+json;version=2.1',
       },
-      body: JSON.stringify(bundleObject),
-    });
-    expect(result.status).toBe(401);
+    );
+    expect(statusCode).toBe(401);
   });
 
   it('should taxii post be refused with wrong content type', async () => {
-    const result = await fetch(`${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`, {
-      method: 'POST',
-      headers: {
+    const { statusCode } = await httpPost(
+      `${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`,
+      bundleObject as Record<string, unknown>,
+      {
         'Content-Type': 'application/taxiiiii+json;version=2.1',
         Authorization: `Bearer ${ADMIN_API_TOKEN}`,
       },
-      body: JSON.stringify(bundleObject),
-    });
-    expect(result.status).toBe(400);
+    );
+    expect(statusCode).toBe(400);
   });
 });
 
@@ -157,61 +158,51 @@ describe('Should taxii collection coverage', () => {
   });
 
   it('should taxii root works', async () => {
-    const headers = {
+    const { statusCode, body } = await httpGet(`${getBaseUrl()}/taxii2/root/`, {
       Authorization: `Bearer ${ADMIN_API_TOKEN}`,
-    };
-    const taxiiRootResponse = await fetch(`${getBaseUrl()}/taxii2/root/`, { headers });
-    const data: any = await taxiiRootResponse.json();
-    expect(taxiiRootResponse.status, 'With correct authentication should works fine').toBe(200);
+    });
+    const data: any = JSON.parse(body);
+    expect(statusCode, 'With correct authentication should works fine').toBe(200);
     expect(data.versions).toStrictEqual(['application/taxii+json;version=2.1']);
   });
 
   it('should public taxii collection without user works', async () => {
-    const taxiiCollectionResponse = await fetch(
+    const { statusCode, body } = await httpGet(
       `${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionPublicId}/objects/`,
       {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/taxii+json;version=2.1',
-          Accept: 'application/taxii+json;version=2.1',
-        },
+        'Content-Type': 'application/taxii+json;version=2.1',
+        Accept: 'application/taxii+json;version=2.1',
       },
     );
-    expect(taxiiCollectionResponse.status).toBe(200);
-    const content = await taxiiCollectionResponse.json() as { more: boolean; next: string; objects: { id: string }[] };
+    expect(statusCode).toBe(200);
+    const content = JSON.parse(body) as { more: boolean; next: string; objects: { id: string }[] };
     expect(content.more).toBeFalsy();
     expect(content.next.length).toBeGreaterThan(0);
     const firstItem = content.objects[0];
     expect(firstItem).toBeDefined();
     expect(firstItem.id).toBeDefined();
 
-    const taxiiCollectionResponseWithMatch = await fetch(
+    const { statusCode: statusCode2, body: body2 } = await httpGet(
       `${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionPublicId}/objects?match[id]=${firstItem.id}`,
       {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/taxii+json;version=2.1',
-          Accept: 'application/taxii+json;version=2.1',
-        },
+        'Content-Type': 'application/taxii+json;version=2.1',
+        Accept: 'application/taxii+json;version=2.1',
       },
     );
-    expect(taxiiCollectionResponseWithMatch.status).toBe(200);
-    const contentWithMatch = await taxiiCollectionResponseWithMatch.json() as { more: boolean; next: string; objects: { id: string }[] };
+    expect(statusCode2).toBe(200);
+    const contentWithMatch = JSON.parse(body2) as { more: boolean; next: string; objects: { id: string }[] };
     expect(contentWithMatch.more).toBeFalsy();
     expect(contentWithMatch.objects.length).toBe(1);
   });
 
   it('should restricted taxii collection without user be forbidden', async () => {
-    const taxiiCollectionResponse = await fetch(
+    const { statusCode } = await httpGet(
       `${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionWithAuthId}/objects/`,
       {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/taxii+json;version=2.1',
-          Accept: 'application/taxii+json;version=2.1',
-        },
+        'Content-Type': 'application/taxii+json;version=2.1',
+        Accept: 'application/taxii+json;version=2.1',
       },
     );
-    expect(taxiiCollectionResponse.status).toBe(401);
+    expect(statusCode).toBe(401);
   });
 });

@@ -26,7 +26,9 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   filterLabel,
   filterValue,
 }) => {
-  const [dateState, setDateState] = useState<Date | null>(filterValue ? new Date(dateFiltersValueForDisplay(filterValue, operator)) : null);
+  const [dateState, setDateState] = useState<Date | null>(filterValue
+    ? new Date(dateFiltersValueForDisplay(filterValue, operator))
+    : null);
 
   const findFilterFromKey = (filters: {
     key: string;

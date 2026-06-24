@@ -7,7 +7,7 @@ import ChangesTable, { Change } from '../../../../components/common/table/Change
 import Loader from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { HistoryDrawerQuery } from './__generated__/HistoryDrawerQuery.graphql';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 
 interface HistoryDrawerProps {
   open: boolean;

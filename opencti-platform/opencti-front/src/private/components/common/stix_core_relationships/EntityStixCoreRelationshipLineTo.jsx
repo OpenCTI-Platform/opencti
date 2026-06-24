@@ -23,7 +23,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
-import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
@@ -31,13 +31,23 @@ const styles = (theme) => ({
     paddingLeft: 10,
     height: 50,
   },
+  listItemText: {
+    margin: 0,
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 25,
+    height: '100%',
     fontSize: 13,
-    float: 'left',
+    display: 'flex',
+    alignItems: 'center',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -121,8 +131,9 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
             <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null} />
           </ListItemIcon>
           <ListItemText
+            classes={{ root: classes.listItemText }}
             primary={(
-              <div>
+              <div className={classes.row}>
                 {dataColumns.relationship_type && (
                   <div
                     className={classes.bodyItem}
@@ -176,7 +187,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                       overflow: 'visible',
                     }}
                   >
-                    <SecurityCoverageInformation
+                    <SecurityCoverageScores
                       coverage_information={node.coverage_information || null}
                       variant="header"
                     />
@@ -651,8 +662,9 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
+          classes={{ root: classes.listItemText }}
           primary={(
-            <div>
+            <div className={classes.row}>
               {dataColumns.relationship_type && (
                 <div
                   className={classes.bodyItem}

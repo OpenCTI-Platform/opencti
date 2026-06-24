@@ -8,7 +8,7 @@ import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData
 
 interface WidgetDonutProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: readonly any[];
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
@@ -25,7 +25,7 @@ const WidgetDonut = ({
 
   const options: ApexOptions = useMemo(() => {
     const labels = buildWidgetLabelsOption(data, groupBy);
-    let chartColors = [];
+    let chartColors: (string | undefined)[] = [];
     if (data.at(0)?.entity?.color) {
       chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
         ? '#000000'
@@ -47,9 +47,9 @@ const WidgetDonut = ({
       labels,
       'bottom',
       false,
-      chartColors,
+      chartColors.filter((o): o is string => !!o),
     ) as ApexOptions;
-  }, [data, groupBy]);
+  }, [data, groupBy, theme]);
 
   return (
     <Chart

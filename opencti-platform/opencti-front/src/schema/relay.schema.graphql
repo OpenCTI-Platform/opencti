@@ -8,7 +8,7 @@ directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
 
 directive @constraint(minLength: Int, maxLength: Int, startsWith: String, endsWith: String, notContains: String, pattern: String, format: String, min: Int, max: Int, exclusiveMin: Int, exclusiveMax: Int, multipleOf: Int) on INPUT_FIELD_DEFINITION
 
-directive @ff(flags: [String!]!, softFail: Boolean = false) on FIELD_DEFINITION
+directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
 
 """Controls the rate of traffic."""
 directive @rateLimit(
@@ -66,6 +66,7 @@ enum Capabilities {
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
   KNOWLEDGE_KNDISSEMINATION
+  KNOWLEDGE_KNSHAREFILTERS
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
@@ -157,6 +158,8 @@ enum FilterOperator {
   within
   only_eq_to
   not_only_eq_to
+  has_changed
+  not_has_changed
 }
 
 enum XTMHubRegistrationStatus {
@@ -387,6 +390,8 @@ input AuditsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
+  countField: String
+  unique: Boolean
 }
 
 input StixCoreObjectsTimeSeriesParameters {
@@ -1016,6 +1021,7 @@ enum BackgroundTaskActionType {
   ADD_GROUPS
   REMOVE_GROUPS
   SEND_EMAIL
+  ENROLL_PLAYBOOK
 }
 
 enum BackgroundTaskContextType {
@@ -1307,6 +1313,13 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_enterprise_edition_license_validated: Boolean!
   playground_enabled: Boolean!
   metrics_definition: [MetricDefinition!]
+  password_policy_min_length: Int
+  password_policy_max_length: Int
+  password_policy_min_symbols: Int
+  password_policy_min_numbers: Int
+  password_policy_min_words: Int
+  password_policy_min_lowercase: Int
+  password_policy_min_uppercase: Int
 }
 
 type MetricAttributes {
@@ -1410,6 +1423,10 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_consent_confirm_text: String
   platform_banner_text: String
   platform_banner_level: String
+  platform_no_access_message: String
+  platform_ip_whitelist: [String!]
+  platform_ip_whitelist_enabled: Boolean
+  platform_ip_whitelist_exclusions: [Member!]
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
   platform_whitemark: Boolean
@@ -1437,6 +1454,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   cert_auth: CertAuthConfig
   headers_auth: HeadersAuthConfig
   platform_https_enabled: Boolean!
+  caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!]
@@ -1454,6 +1472,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
+  platform_notifier_auto_trigger_assignee: Boolean!
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
@@ -2034,6 +2053,7 @@ input RegisterConnectorInput {
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
+  xtm_one_intent: String
 }
 
 input EditManagedConnectorInput {
@@ -2041,6 +2061,9 @@ input EditManagedConnectorInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  title: String!
   connector_user_id: ID!
   manager_contract_configuration: [ContractConfigInput!]!
 }
@@ -2290,6 +2313,7 @@ type Connector implements BasicObject & InternalObject {
   manager_connector_uptime: Int
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
+  xtm_one_intent: String
   jwks: String!
 }
 
@@ -2394,6 +2418,7 @@ enum DraftOperation {
 type DraftVersion {
   draft_id: String!
   draft_operation: DraftOperation!
+  draft_updates_patch: String
 }
 
 interface StixObject {
@@ -8939,9 +8964,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | CustomView | IMEI | ICCID | IMSI
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | CustomView | IMEI | ICCID | IMSI
 
@@ -9380,7 +9405,7 @@ type Query {
   log(id: ID!): Log
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   audit(id: ID!): Log
-  auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
+  auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String, field: String, unique: Boolean): Number
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   auditsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [AuditsTimeSeriesParameters]): [MultiTimeSeries]
@@ -9591,6 +9616,9 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
+  workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
+  workflowInstance(entityId: String!): WorkflowInstance
+  allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
@@ -9668,6 +9696,9 @@ type Query {
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
   playbooksForEntity(id: String!): [Playbook]
+  playbooksForEnrollment(ids: [String!]!): [Playbook]
+  playbooksForEnrollmentByFilters(filters: FilterGroup, search: String, excludedIds: [String!]): [Playbook!]!
+  playbookManagerInfo: PlaybookManager
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionRssAddInputFromImport(file: Upload!): IngestionRssAddInputFromImport!
@@ -9725,9 +9756,14 @@ type Query {
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspacesRestricted(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
-  draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
+  draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, draftOperation: DraftOperation): StixCoreObjectConnection
+  draftWorkspaceContainerObjects(draftId: String!, containerId: String!): [DraftContainerObjectChange!]!
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
   draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
+  draftWorkspaceResolveIds(draftId: String!, ids: [String!]!): [DraftResolvedId!]!
+  draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]!
+  draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]!
+  draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]!
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
@@ -9748,6 +9784,8 @@ type Query {
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
+  myNewsFeeds(first: Int, after: ID, orderBy: NewsFeedItemsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NewsFeedItemConnection
+  myUnreadNewsFeedsCount: Int
   availableSecrets: [AvailableSecretInfo!]!
   authenticationProvider(id: String!): AuthenticationProvider
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
@@ -9756,6 +9794,9 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
+  customViews(entityType: String, first: Int, after: ID, orderBy: CustomViewsOrdering, search: String, orderMode: OrderingMode, filters: FilterGroup): CustomViewsConnection!
+  customViewsSettings(entityType: String!): CustomViewsSettings!
+  customView(id: ID!): CustomView
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
   feed(id: String!): Feed
@@ -9792,6 +9833,10 @@ type Subscription {
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
   securityCoverage(id: ID!): SecurityCoverage
+  newsFeedItemAdded: NewsFeedItem
+  newsFeedItem: NewsFeedItem
+  newsFeedItemDeleted: ID
+  newsFeedsNumber: NewsFeedCount
 }
 
 type WorkEditMutations {
@@ -9930,6 +9975,11 @@ type MappedEntity {
   isEntityInContainer: Boolean!
 }
 
+enum InconsistencyCleaningType {
+  ALL
+  REF_DUPLICATE_CLEAN
+}
+
 type StixCoreObjectEditMutations {
   delete: ID
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -9948,6 +9998,7 @@ type StixCoreObjectEditMutations {
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
   removeFromDraft: ID
+  cleanInconsistency(cleaningTypes: [InconsistencyCleaningType!]!): Boolean
 }
 
 input StixDomainObjectFileEditInput {
@@ -10403,6 +10454,12 @@ type Mutation {
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
+  workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionDelete(entityType: String!): EntitySetting
+  triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
+  clearWorkflowPendingState(entityId: String!): WorkflowInstance!
+  reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
@@ -10581,7 +10638,7 @@ type Mutation {
   decayExclusionRuleDelete(id: ID!): ID
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
-  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization
+  organizationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Organization
   organizationContextPatch(id: ID!, input: EditContext!): Organization
   organizationContextClean(id: ID!): Organization
   organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -10645,6 +10702,7 @@ type Mutation {
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
   savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
+  savedFilterEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
@@ -10687,6 +10745,7 @@ type Mutation {
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub(message: String!): Success!
+  markAllNewsFeedItemsAsRead: Boolean
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
   oidcProviderAdd(input: OidcInput!): AuthenticationProvider
   oidcProviderEdit(id: ID!, input: OidcInput!): AuthenticationProvider
@@ -10697,6 +10756,12 @@ type Mutation {
   ldapProviderAdd(input: LdapInput!): AuthenticationProvider
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
   ldapProviderDelete(id: ID!): ID
+  customViewAdd(input: CustomViewAddInput!): CustomView!
+  customViewEdit(id: ID!, input: [EditInput!]!): CustomView
+  customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView
+  customViewDuplicate(input: CustomViewDuplicateInput!): CustomView
+  customViewDelete(id: ID!): ID!
+  customViewConfigurationImport(targetEntityType: String!, file: Upload!): CustomView!
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed
@@ -10707,6 +10772,178 @@ type Mutation {
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
+}
+
+enum WorkflowExecutionStatus {
+  pending
+  completed
+  error
+}
+
+type WorkflowActionConfig {
+  type: String!
+  params: JSON
+}
+
+type WorkflowSerializedState {
+  statusId: String!
+  onEnter: [WorkflowActionConfig!]
+  onExit: [WorkflowActionConfig!]
+}
+
+type WorkflowSerializedTransition {
+  from: [String!]!
+  to: String!
+  event: String!
+  asyncActions: [WorkflowActionConfig!]
+  syncActions: [WorkflowActionConfig!]
+  conditions: JSON
+  comment: String
+}
+
+type WorkflowSchema {
+  id: ID!
+  name: String!
+  published: Boolean!
+  errors: [WorkflowValidationError!]
+  initialState: String!
+  states: [WorkflowSerializedState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowValidationError {
+  type: String!
+  message: String!
+  path: [WorkflowEntityRef!]
+}
+
+type WorkflowEntityRef {
+  id: String!
+  entity_type: String!
+}
+
+type EntitySetting implements InternalObject & BasicObject {
+  workflow_configuration: Boolean
+  workflow_id: String
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  target_type: String!
+  platform_entity_files_ref: Boolean
+  platform_hidden_type: Boolean
+  enforce_reference: Boolean
+  attributes_configuration: String
+  attributesDefinitions: [TypeAttribute!]!
+  mandatoryAttributes: [String!]!
+  scaleAttributes: [ScaleAttribute!]!
+  defaultValuesAttributes: [DefaultValueAttribute!]!
+  availableSettings: [String!]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  overview_layout_customization: [OverviewWidgetCustomization!]
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
+  requestAccessConfiguration: RequestAccessConfiguration
+}
+
+type WorkflowDefinitionMutationResult {
+  id: ID!
+  workflow_id: String
+  target_type: String
+  published: Boolean!
+  errors: [WorkflowValidationError!]!
+}
+
+type WorkflowActionError {
+  timestamp: DateTime
+  message: String!
+  source: String
+}
+
+type WorkflowPendingAsyncAction {
+  id: ID!
+  workId: String!
+  type: String!
+  status: String!
+  processedCount: Int
+  expectedCount: Int
+  startedAt: DateTime
+  lastActivityAt: DateTime
+  errors: [WorkflowActionError!]
+}
+
+type WorkflowPendingTransition {
+  event: String!
+  toState: String!
+  triggeredAt: DateTime!
+  asyncActions: [WorkflowPendingAsyncAction!]!
+  syncActions: [WorkflowActionConfig!]
+}
+
+type WorkflowTriggerResult {
+  success: Boolean!
+  newState: String
+  reason: String
+  status: Status
+  instance: WorkflowInstance
+  entity: BasicObject
+  executionStatus: WorkflowExecutionStatus
+  pendingTransition: WorkflowPendingTransition
+}
+
+type WorkflowTransition {
+  event: String!
+  toState: String!
+  toStatus: Status
+  comment: String
+  actions: [String!]
+  requiresShareOrganizationInput: Boolean
+  requiresUnshareOrganizationInput: Boolean
+}
+
+type WorkflowLastHistoryEntry {
+  state: String!
+  event: String!
+  user_id: String!
+  timestamp: String!
+  comment: String
+}
+
+type WorkflowInstance {
+  id: ID!
+  currentState: String!
+  currentStatus: Status
+  allowedTransitions: [WorkflowTransition!]!
+  lastHistoryEntry: WorkflowLastHistoryEntry
+  pendingStatus: WorkflowExecutionStatus
+  pendingError: String
+  pendingTransition: WorkflowPendingTransition
+}
+
+type DraftWorkspace implements InternalObject & BasicObject {
+  workflowInstance: WorkflowInstance
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  name: String!
+  createdBy: Identity
+  description: String
+  created_at: DateTime!
+  creators: [Creator!]
+  entity_id: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  objectsCount: DraftObjectsCount!
+  draft_status: DraftStatus!
+  processingCount: Int!
+  works(first: Int): [Work!]
+  validationWork: Work
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12881,30 +13118,6 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type EntitySetting implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  target_type: String!
-  platform_entity_files_ref: Boolean
-  platform_hidden_type: Boolean
-  enforce_reference: Boolean
-  attributes_configuration: String
-  attributesDefinitions: [TypeAttribute!]!
-  mandatoryAttributes: [String!]!
-  scaleAttributes: [ScaleAttribute!]!
-  defaultValuesAttributes: [DefaultValueAttribute!]!
-  availableSettings: [String!]!
-  created_at: DateTime!
-  updated_at: DateTime!
-  refreshed_at: DateTime
-  overview_layout_customization: [OverviewWidgetCustomization!]
-  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
-  requestAccessConfiguration: RequestAccessConfiguration
-}
-
 enum EntitySettingsOrdering {
   target_type
   _score
@@ -12935,6 +13148,7 @@ type Workspace implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   refreshed_at: DateTime
+  refresh_interval: Int
   editContext: [EditUserContext!]
   investigated_entities_ids: [String]
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -12974,6 +13188,7 @@ input WorkspaceAddInput {
   tags: [String!]
   authorized_members: [MemberAccessInput!]
   investigated_entities_ids: [String]
+  refresh_interval: Int
 }
 
 input WorkspaceDuplicateInput {
@@ -13425,6 +13640,13 @@ type Playbook implements InternalObject & BasicObject {
   toConfigurationExport: String!
 }
 
+enum PlaybookCategory {
+  start_playbook
+  transform_and_enrich
+  share_and_access
+  end_playbook
+}
+
 type PlaybookComponentPort {
   id: ID!
   type: String!
@@ -13435,6 +13657,7 @@ type PlaybookComponent {
   name: String!
   description: String!
   icon: String!
+  category: PlaybookCategory!
   is_entry_point: Boolean
   is_internal: Boolean
   configuration_schema: String
@@ -13464,6 +13687,17 @@ type PlaybookEdge {
   node: Playbook!
 }
 
+type PlaybookManager {
+  activated: Boolean!
+  lastProcessedEventId: String
+  lastProcessedEventDate: DateTime
+  lastStreamEventId: String
+  lastStreamEventDate: DateTime
+  firstStreamEventId: String
+  firstStreamEventDate: DateTime
+  managerInGoodHealth: Boolean
+}
+
 input PlaybookAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -13481,6 +13715,7 @@ input PlaybookAddNodeInput {
   component_id: String!
   position: PositionInput!
   configuration: String
+  description: String
 }
 
 input PlaybookAddLinkInput {
@@ -13509,6 +13744,7 @@ type IngestionRss implements InternalObject & BasicObject {
   current_state_date: DateTime
   last_execution_date: DateTime
   ingestion_running: Boolean
+  ssl_verify: Boolean
   toConfigurationExport: String!
 }
 
@@ -13561,6 +13797,7 @@ input IngestionRssAddInput {
   created_by_ref: String
   object_marking_refs: [String]
   report_types: [String!]
+  ssl_verify: Boolean
 }
 
 input IngestionRssAddAutoUserInput {
@@ -13605,6 +13842,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   confidence_to_score: Boolean
+  ssl_verify: Boolean
   toConfigurationExport: String!
 }
 
@@ -13656,6 +13894,7 @@ input IngestionTaxiiAddInput {
   added_after_start: DateTime
   ingestion_running: Boolean
   confidence_to_score: Boolean
+  ssl_verify: Boolean
   user_id: String!
   automatic_user: Boolean
   confidence_level: Int
@@ -13730,6 +13969,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   user_id: String!
   user: Creator
   ingestion_running: Boolean
+  ssl_verify: Boolean
   current_state_hash: String
   current_state_date: DateTime
   last_execution_date: DateTime
@@ -13793,6 +14033,7 @@ input IngestionCsvAddInput {
   automatic_user: Boolean
   confidence_level: Int
   markings: [String!]
+  ssl_verify: Boolean
 }
 
 input IngestionCsvAddAutoUserInput {
@@ -13844,6 +14085,7 @@ type IngestionJson implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   markings: [String!]
+  ssl_verify: Boolean
 }
 
 enum IngestionJsonOrdering {
@@ -13902,6 +14144,7 @@ input IngestionJsonAddInput {
   ingestion_running: Boolean
   user_id: String!
   markings: [String!]
+  ssl_verify: Boolean
 }
 
 enum IndicatorsOrdering {
@@ -14120,7 +14363,7 @@ type DecayRule implements InternalObject & BasicObject {
   decay_points: [Int!]
   decay_revoke_score: Int!
   decaySettingsChartData: DecayData
-  decay_filters: String!
+  decay_filters: String
 }
 
 type DecayData {
@@ -14153,7 +14396,7 @@ input DecayRuleAddInput {
   decay_pound: Float!
   decay_points: [Int!]
   decay_revoke_score: Int!
-  decay_filters: String!
+  decay_filters: String
 }
 
 type DecayExclusionRule implements InternalObject & BasicObject {
@@ -14945,27 +15188,18 @@ enum DraftStatus {
   validated
 }
 
-type DraftWorkspace implements InternalObject & BasicObject {
-  id: ID!
+enum DraftChangeType {
+  create
+  delete
+  add
+  remove
+}
+
+type DraftContainerObjectChange {
+  entity_id: String!
   entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  name: String!
-  createdBy: Identity
-  description: String
-  created_at: DateTime!
-  creators: [Creator!]
-  entity_id: String
-  objectAssignee: [Assignee!]
-  objectParticipant: [Participant!]
-  objectsCount: DraftObjectsCount!
-  draft_status: DraftStatus!
-  processingCount: Int!
-  works(first: Int): [Work!]
-  validationWork: Work
-  authorizedMembers: [MemberAccess!]!
-  currentUserAccessRight: String
+  representative_main: String
+  draft_operation: DraftChangeType!
 }
 
 type DraftObjectsCount {
@@ -14975,6 +15209,7 @@ type DraftObjectsCount {
   relationshipsCount: Int!
   sightingsCount: Int!
   containersCount: Int!
+  reviewsCount: Int!
 }
 
 enum DraftWorkspacesOrdering {
@@ -14982,6 +15217,9 @@ enum DraftWorkspacesOrdering {
   created_at
   creator
   draft_status
+  createdBy
+  objectAssignee
+  objectParticipant
   _score
 }
 
@@ -14993,6 +15231,35 @@ type DraftWorkspaceConnection {
 type DraftWorkspaceEdge {
   cursor: String!
   node: DraftWorkspace!
+}
+
+type DraftEntityField {
+  field: String!
+  values: [String!]!
+}
+
+type DraftEntityRelation {
+  relation_id: String!
+  relationship_type: String!
+  from_id: String!
+  from_type: String!
+  from_name: String!
+  to_id: String!
+  to_type: String!
+  to_name: String!
+  draft_operation: DraftChangeType!
+}
+
+type DraftEntityContainerRef {
+  container_id: String!
+  container_type: String!
+  container_name: String!
+  draft_operation: DraftChangeType!
+}
+
+type DraftResolvedId {
+  id: String!
+  representative_main: String
 }
 
 input DraftWorkspaceAddInput {
@@ -15117,6 +15384,9 @@ type SavedFilter implements InternalObject & BasicObject {
   name: String!
   filters: String!
   scope: String!
+  creator_id: String
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type SavedFilterEdge {
@@ -15138,6 +15408,7 @@ input SavedFilterAddInput {
   name: String!
   filters: String!
   scope: String!
+  authorized_members: [MemberAccessInput!]
 }
 
 enum RequestAccessType {
@@ -15770,6 +16041,47 @@ type Success {
   success: Boolean!
 }
 
+enum NewsFeedItemsOrdering {
+  title
+  news_feed_type
+  creation_date
+}
+
+type NewsFeedItemMetadata {
+  key: String!
+  value: String
+}
+
+type NewsFeedItem implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  title: String!
+  news_feed_type: String!
+  tags: [String!]!
+  metadata: [NewsFeedItemMetadata!]!
+  creation_date: DateTime!
+  is_read: Boolean!
+  user_id: String!
+}
+
+type NewsFeedItemConnection {
+  pageInfo: PageInfo!
+  edges: [NewsFeedItemEdge!]!
+}
+
+type NewsFeedItemEdge {
+  cursor: String!
+  node: NewsFeedItem!
+}
+
+type NewsFeedCount {
+  user_id: String
+  count: Int
+}
+
 type Metric {
   name: ID!
   value: Float!
@@ -16128,8 +16440,58 @@ type CustomView implements InternalObject & BasicObject {
   updated_at: DateTime!
   name: String!
   description: String
+  slug: String!
   manifest: String
-  authorizedMembers: [MemberAccess!]!
+  path: String!
+  targetEntityType: String!
+  enabled: Boolean!
+  default: Boolean!
+  toWidgetExport(widgetId: ID!): String!
+  toConfigurationExport: String!
+}
+
+type CustomViewsEdge {
+  cursor: String!
+  node: CustomView!
+}
+
+type CustomViewsConnection {
+  pageInfo: PageInfo!
+  edges: [CustomViewsEdge!]!
+}
+
+enum CustomViewsOrdering {
+  name
+  enabled
+}
+
+type CustomViewsSettings {
+  canEntityTypeHaveCustomViews: Boolean!
+}
+
+input CustomViewAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  manifest: String
+  targetEntityType: String!
+  enabled: Boolean
+  default: Boolean
+}
+
+input CustomViewImportWidgetInput {
+  file: Upload!
+  manifest: String
+}
+
+input CustomViewDuplicateInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  manifest: String
+  targetEntityType: String!
+  enabled: Boolean
+  default: Boolean
 }
 
 type TaxiiCollection {
@@ -16284,6 +16646,7 @@ type StreamCollection {
   name: String
   description: String
   filters: String
+  origin_filters: String
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String
@@ -16307,6 +16670,7 @@ input StreamCollectionAddInput {
   name: String!
   description: String
   filters: String
+  origin_filters: String
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String
@@ -16345,6 +16709,7 @@ input RetentionRuleAddInput {
   max_retention: Int!
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
+  active: Boolean
 }
 
 enum RetentionRuleOrdering {
@@ -16353,6 +16718,7 @@ enum RetentionRuleOrdering {
   remaining_count
   last_execution_date
   max_retention
+  active
   _score
 }
 
@@ -16361,6 +16727,7 @@ enum RetentionRuleScope {
   file
   workbench
   history
+  activity
 }
 
 enum RetentionUnit {
@@ -16380,6 +16747,7 @@ type RetentionRule {
   last_deleted_count: Int
   remaining_count: Int
   scope: RetentionRuleScope!
+  active: Boolean
 }
 
 type RetentionRuleConnection {

@@ -29,6 +29,7 @@ import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import useAttributes from '../../utils/hooks/useAttributes';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
+import type { WidgetHost } from '../../utils/widget/widget';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import BasicFilterInput from './BasicFilterInput';
@@ -50,7 +51,7 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  fintelTemplatesContext?: boolean;
+  host?: WidgetHost;
 }
 
 export interface FilterChipsParameter {
@@ -88,6 +89,8 @@ const OperatorKeyValues: {
   within: 'Within',
   only_eq_to: 'Only equal to',
   not_only_eq_to: 'Not only equal to',
+  has_changed: 'Has changed',
+  not_has_changed: 'Has not changed',
 };
 
 export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
@@ -102,7 +105,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
-  fintelTemplatesContext,
+  host,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -232,7 +235,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const noValueOperator = !['not_nil', 'nil'].includes(filterOperator);
+  const noValueOperator = !['not_nil', 'nil', 'has_changed', 'not_has_changed'].includes(filterOperator);
   const renderSearchScopeSelection = (key: string) => (
     <SearchScopeElement
       name={key}
@@ -247,9 +250,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
 
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
-    const shouldAddSelfId = fintelTemplatesContext
+    const shouldAddSelfIdInFintelTemplates = host?.kind === 'fintelTemplate'
       && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'))
       && (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) => completedTypesWithFintelTemplates.includes(type));
+    const shouldAddSelfIdInCustomViews = host?.kind === 'custom-view'
+      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'));
+    const shouldAddSelfId = shouldAddSelfIdInFintelTemplates || shouldAddSelfIdInCustomViews;
 
     const getOptions = shouldAddSelfId
       ? [

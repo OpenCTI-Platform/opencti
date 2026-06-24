@@ -3,11 +3,12 @@ import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import React, { useEffect, useReducer, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../components/i18n';
-import { APP_BASE_PATH } from '../../relay/environment';
+import { APP_BASE_PATH, fetchQuery } from '../../relay/environment';
 import { formatSeconds, ONE_SECOND, secondsBetweenDates } from '../../utils/Time';
 import useAuth from '../../utils/hooks/useAuth';
+import useTopBanner from '../../utils/hooks/useTopBanner';
 
 /**
  * Gets timeout and banner settings from react relay and return those values.
@@ -21,6 +22,14 @@ interface TimeoutState {
 }
 
 type Action = { type: 'count down' } | { type: 'reset timeout' };
+
+const timeoutLockRefreshQuery = graphql`
+  query TimeoutLockRefreshQuery {
+    me {
+      id
+    }
+  }
+`;
 
 /**
  * Handles various state changes for the timeout counting functionality.
@@ -69,6 +78,7 @@ const TimeoutLock: React.FunctionComponent = () => {
   const {
     bannerSettings: { bannerHeightNumber, idleLimit, sessionLimit },
   } = useAuth();
+  const { height: topBannerHeight } = useTopBanner();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [state, dispatch] = useReducer(timeoutReducer, {
     idleLimit,
@@ -79,8 +89,6 @@ const TimeoutLock: React.FunctionComponent = () => {
   });
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timeout | null>(null);
-
-  const navigate = useNavigate();
 
   /**
    * Decrements the idle timeout counter by one until it is zero.
@@ -126,7 +134,8 @@ const TimeoutLock: React.FunctionComponent = () => {
    * Referrer is kept so user will be redirected there on next login.
    */
   const handleLogout = () => {
-    navigate(`${APP_BASE_PATH}/logout`);
+    // better than using navigate because it makes a HTTP request to /logout on the backend
+    window.location.assign(`${APP_BASE_PATH}/logout`);
   };
 
   /**
@@ -139,8 +148,12 @@ const TimeoutLock: React.FunctionComponent = () => {
    */
   const unlockScreen = () => {
     setDialogOpen(false);
-    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
-    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
+    dispatch({ type: 'reset timeout' });
+    // make a simple call to the backend to refresh the session
+    // and prevent immediate lockout after unlocking
+    fetchQuery(timeoutLockRefreshQuery, {})
+      .toPromise()
+      .catch(() => undefined);
   };
 
   /**
@@ -211,7 +224,7 @@ const TimeoutLock: React.FunctionComponent = () => {
       handleLogout();
     }
     // Lock the screen for the remaining session time
-    if (secondsBetween >= state.idleLimit && secondsBetween < state.sessionLimit) {
+    if (state.idleLimit > 0 && secondsBetween >= state.idleLimit && secondsBetween < state.sessionLimit) {
       lockScreen();
     } else { // To handle close on different tab
       setDialogOpen(false);
@@ -224,8 +237,8 @@ const TimeoutLock: React.FunctionComponent = () => {
       disableEscapeKeyDown={true}
       sx={{
         backdropFilter: 'blur(15px)',
-        marginTop: `${bannerHeightNumber}px`,
-        height: `calc(100% - ${bannerHeightNumber * 2}px)`,
+        marginTop: `${topBannerHeight + bannerHeightNumber}px`,
+        height: `calc(100% - ${topBannerHeight + bannerHeightNumber * 2}px)`,
       }}
       title={(
         <>

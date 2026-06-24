@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { UnsupportedError, ValidationError } from '../../config/errors';
 import type { BasicStoreEntityEntitySetting, Scale } from './entitySetting-types';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -118,7 +118,11 @@ export const validateEntitySettingCreation = async (context: AuthContext, user: 
   };
 
   return telemetry(context, user, 'ENTITY SETTING CREATION VALIDATION', {
+    [ATTR_DB_NAMESPACE]: 'entity-setting',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'entity-setting',
+    [ATTR_DB_OPERATION_NAME]: 'validation_update',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'validation_update',
   }, validateEntitySettingUpdateFn);
 };
@@ -135,7 +139,11 @@ export const validateEntitySettingUpdate = async (context: AuthContext, user: Au
   };
 
   return telemetry(context, user, 'ENTITY SETTING UPDATE VALIDATION', {
+    [ATTR_DB_NAMESPACE]: 'entity-setting',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_NAME]: 'entity-setting',
+    [ATTR_DB_OPERATION_NAME]: 'validation_update',
+    // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'validation_update',
   }, validateEntitySettingUpdateFn);
 };

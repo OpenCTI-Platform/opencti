@@ -6,6 +6,7 @@ import type { PluginOption } from 'vite';
 export const buildTestConfig = (include: string[]) => defineConfig({
   plugins: [graphql() as PluginOption],
   test: {
+    dir: './tests',
     include,
     testTimeout: 300000,
     teardownTimeout: 5000,
@@ -23,4 +24,4 @@ export const buildTestConfig = (include: string[]) => defineConfig({
   },
 });
 
-export default buildTestConfig(['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
+export default buildTestConfig(['**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);

@@ -1,9 +1,7 @@
-import { Resource } from '@opentelemetry/resources';
-import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
-import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
-import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
+import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
 import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
@@ -28,6 +26,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/secur
 import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
+import { listRules } from '../modules/retentionRules/retentionRules-domain';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -69,6 +68,8 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
+export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
+export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -149,11 +150,22 @@ export const addUserLoginCount = () => {
   redisSetTelemetryAdd(TELEMETRY_USER_LOGIN, 1).catch((reason) => logApp.info('Error add user login in telemetry', { reason }));
 };
 
+export const addCustomViewCreatedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED, 1)
+    .catch((reason) => logApp.warn('Error adding custom view created count to telemetry', { reason }));
+};
+
+export const addCustomViewEnabledCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
+    .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
+};
+
 // End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
+  const startTime = Date.now();
   const context = executionContext('telemetry_manager');
-  const filigranMetricReaders = [];
+  const filigranMetricReaders: IMetricReader[] = [];
   const collectorCallback = async () => {
     logApp.debug('[TELEMETRY] Clearing all telemetry data in Redis');
     await redisClearTelemetry();
@@ -209,20 +221,22 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   // Meter Provider creation
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const platformId = settings.id;
-  const filigranResource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-    [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
+  const filigranResource = resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
+    [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
+    [ATTR_SERVICE_INSTANCE_ID]: platformId,
     'service.instance.creation': settings.created_at as unknown as string,
   });
-  const resource = Resource.default().merge(filigranResource);
+  const resource = defaultResource().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
   filigranTelemetryMeterManager.registerFiligranTelemetry();
+  logApp.info(`[TELEMETRY] Initialized in ${new Date().getTime() - startTime} ms`);
   return filigranTelemetryMeterManager;
 };
 
 export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
+  const startTime = Date.now();
   try {
     const context = executionContext('telemetry_manager');
     // region Settings information
@@ -270,6 +284,19 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region PIR information
     const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
     manager.setPirCount(pirs.length);
+    // endregion
+
+    // region History retention rule status
+    const retentionRules = await listRules(context, TELEMETRY_MANAGER_USER);
+    const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history' && rule.active);
+    manager.setIsHistoryRetentionRuleActive(hasActiveHistoryRetentionRule ? 1 : 0);
+    const hasActiveActivityRetentionRule = retentionRules.some((rule) => rule.scope === 'activity' && rule.active);
+    manager.setIsActivityRetentionRuleActive(hasActiveActivityRetentionRule ? 1 : 0);
+    // endregion
+
+    // region Activity status
+    const hasActivityListeners = (settings.activity_listeners_ids ?? []).length > 0;
+    manager.setIsActivityEnabled(hasActivityListeners ? 1 : 0);
     // endregion
 
     manager.setSsoLocalStrategyEnabled(settings.local_auth?.enabled ? 1 : 0);
@@ -337,9 +364,13 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
+    const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
+    manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
+    const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+    manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
     // end region Telemetry user events
 
-    logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
+    logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }

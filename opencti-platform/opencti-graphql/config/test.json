@@ -1,6 +1,7 @@
 {
   "app": {
     "port": 4010,
+    "liveness_port": 4001,
     "base_url": "http://127.0.0.1:4010/",
     "performance_logger": false,
     "enabled_dev_features": ["*"],
@@ -90,7 +91,8 @@
     "bulk_creation_size": 5
   },
   "task_scheduler": {
-    "enabled": true
+    "enabled": true,
+    "interval": 1000
   },
   "expiration_scheduler": {
     "enabled": true
@@ -114,6 +116,10 @@
     }
   },
   "smtp": {
-    "enabled": false
+    "enabled": true,
+    "hostname": "smtp",
+    "use_ssl": false,
+    "rejectUnauthorized": false,
+    "port": 1025
   }
 }

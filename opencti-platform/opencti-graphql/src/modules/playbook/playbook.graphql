@@ -35,6 +35,13 @@ type Playbook implements InternalObject & BasicObject {
     toConfigurationExport: String!
 }
 
+enum PlaybookCategory {
+    start_playbook
+    transform_and_enrich
+    share_and_access
+    end_playbook
+}
+
 type PlaybookComponentPort {
     id: ID!
     type: String!
@@ -44,6 +51,7 @@ type PlaybookComponent {
     name: String!
     description: String!
     icon: String!
+    category: PlaybookCategory!
     is_entry_point: Boolean
     is_internal: Boolean
     configuration_schema: String
@@ -73,6 +81,17 @@ type PlaybookEdge {
     node: Playbook!
 }
 
+type PlaybookManager {
+    activated: Boolean!
+    lastProcessedEventId: String
+    lastProcessedEventDate: DateTime
+    lastStreamEventId: String
+    lastStreamEventDate: DateTime
+    firstStreamEventId: String
+    firstStreamEventDate: DateTime
+    managerInGoodHealth: Boolean
+}
+
 # Queries
 type Query {
     playbook(id: String!): Playbook @auth(for: [AUTOMATION])
@@ -86,6 +105,13 @@ type Query {
     ): PlaybookConnection @auth(for: [AUTOMATION])
     playbookComponents: [PlaybookComponent]! @auth(for: [AUTOMATION])
     playbooksForEntity(id: String!): [Playbook] @auth(for: [AUTOMATION])
+    playbooksForEnrollment(ids: [String!]!): [Playbook] @auth(for: [AUTOMATION])
+    playbooksForEnrollmentByFilters(
+        filters: FilterGroup
+        search: String
+        excludedIds: [String!]
+    ): [Playbook!]! @auth(for: [AUTOMATION])
+    playbookManagerInfo: PlaybookManager @auth(for: [AUTOMATION])
 }
 
 input PlaybookAddInput {
@@ -103,6 +129,7 @@ input PlaybookAddNodeInput {
     component_id: String!
     position: PositionInput!
     configuration: String
+    description: String
 }
 
 input PlaybookAddLinkInput {

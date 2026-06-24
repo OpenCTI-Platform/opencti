@@ -3,7 +3,6 @@ import { type ModuleDefinition, registerDefinition } from '../../../../schema/mo
 import { ENTITY_TYPE_NEWS_FEED_ITEM, type StixNewsFeedItem, type StoreEntityNewsFeedItem } from './news-feed-types';
 import { convertNewsFeedItemToStix } from './news-feed-converter';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../../schema/general';
-import { booleanConf } from '../../../../config/conf';
 
 const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFeedItem> = {
   type: {
@@ -17,6 +16,7 @@ const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFe
     },
   },
   attributes: [
+    { name: 'news_feed_item_id', label: 'News feed item id', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'title', label: 'Title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'news_feed_type', label: 'News feed type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'tags', label: 'Tags', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
@@ -33,7 +33,4 @@ const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFe
   converter_2_1: convertNewsFeedItemToStix,
 };
 
-const isEnabled = booleanConf('XTMHUB_NEWS_FEED_ENABLED', true);
-if (isEnabled) {
-  registerDefinition(NEWS_FEED_DEFINITION);
-}
+registerDefinition(NEWS_FEED_DEFINITION);

@@ -238,13 +238,13 @@ const XtmOneActivity = ({ id, loading, setLoading, selectedAgent }: XtmOneActivi
     setLoading(streamLoading);
   }, [streamLoading, setLoading]);
 
-  const executeCall = useCallback(() => {
+  const executeCall = useCallback((forceRefresh = false) => {
     if (!selectedAgent) return;
     const prompt = `Analyse the activity of the OpenCTI entity with ID: ${id}. `
       + 'Get time-series statistics about entity related indicators, relationships and sightings and analyze the trend for each. '
       + 'Finally evaluate whether the overall activity trend is increasing, stable, or decreasing. '
       + `Answer using ${language} language.`;
-    execute(selectedAgent.slug, prompt);
+    execute(selectedAgent.slug, prompt, forceRefresh);
   }, [selectedAgent, id, language, execute]);
 
   useEffect(() => {
@@ -263,7 +263,7 @@ const XtmOneActivity = ({ id, loading, setLoading, selectedAgent }: XtmOneActivi
       loading={loading}
       content={content}
       generatedAt={generatedAt}
-      onRetry={executeCall}
+      onRetry={() => executeCall(true)}
     />
   );
 };

@@ -96,6 +96,14 @@ export const operatorDescription = {
     description:
       'Filters for all values that do not exactly match the given criterion.',
   },
+  [FilterOperator.HasChanged]: {
+    description:
+      'Filters for attributes that have been modified in the update event (stream filtering only).',
+  },
+  [FilterOperator.NotHasChanged]: {
+    description:
+      'Filters for attributes that have NOT been modified in the update event (stream filtering only).',
+  },
 };
 
 export const operatorKeys = Object.values(FilterOperator);

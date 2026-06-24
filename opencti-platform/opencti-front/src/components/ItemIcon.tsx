@@ -5,6 +5,7 @@ import {
   ArchitectureOutlined,
   AssignmentOutlined,
   AutoAwesomeMotion,
+  AutoAwesomeOutlined,
   BackupTableOutlined,
   BiotechOutlined,
   BugReportOutlined,
@@ -26,6 +27,7 @@ import {
   FilterAltOutlined,
   FlagOutlined,
   HelpOutlined,
+  Insights,
   LayersClearOutlined,
   LinkOutlined,
   LocalOfferOutlined,
@@ -92,6 +94,7 @@ import {
   DatabaseExportOutline,
   FileDelimitedOutline,
   FileOutline,
+  FilterOutline,
   FilterVariant,
   Fire,
   FlaskOutline,
@@ -243,6 +246,8 @@ const iconSelector = (
       );
     case 'all-users':
     case 'dynamic options':
+    case 'dynamic from context':
+    case 'dynamic from draft':
       return (
         <AccountGroupOutline style={style} fontSize={fontSize} role="img" />
       );
@@ -466,6 +471,8 @@ const iconSelector = (
       );
     case 'console':
       return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'ai-agent':
+      return <AutoAwesomeOutlined style={style} fontSize={fontSize} role="img" />;
     case 'storage':
       return (
         <DriveFolderUploadOutlined
@@ -520,6 +527,7 @@ const iconSelector = (
     case 'beacons-to':
     case 'characterizes':
     case 'consists-of':
+    case 'interpreted-by':
     case 'technology-from':
     case 'technology-to':
     case 'technology':
@@ -605,6 +613,10 @@ const iconSelector = (
       return <LockOutline style={style} fontSize={fontSize} role="img" />;
     case 'lock-remove':
       return <LockMinusOutline style={style} fontSize={fontSize} role="img" />;
+    case 'customview':
+      return <Insights style={style} fontSize={fontSize} role="img" />;
+    case 'savedfilter':
+      return <FilterOutline style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:

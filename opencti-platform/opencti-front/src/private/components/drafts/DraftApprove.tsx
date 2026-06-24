@@ -75,6 +75,12 @@ export const DraftApprove = ({ data }: DraftApproveProps) => {
             },
           });
         },
+        onError: (error: Error) => {
+          setDisplayApprove(false);
+          MESSAGING$.notifyError(
+            error.message ?? t_i18n('An error occurred while approving the draft. Please try again or contact your administrator.'),
+          );
+        },
       });
     }
   };

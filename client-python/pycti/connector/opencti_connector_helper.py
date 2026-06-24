@@ -723,6 +723,9 @@ class ListenQueue(threading.Thread):
                 self.helper.api.work.to_received(
                     work_id, "Connector ready to process the operation"
                 )
+            # Inject configuration into event_data if present
+            if "configuration" in json_data:
+                event_data["configuration"] = json_data["configuration"]
             # Send the enriched to the callback
             message = self.callback(event_data)
             if work_id:
@@ -1701,7 +1704,22 @@ class ListenStream(threading.Thread):
                         q.put(msg.event, block=False)
                     except queue.Full:
                         pass
-                    if (
+                    if msg.event == "no-recover":
+                        # Server signaled that recovery from history is disabled for this stream
+                        # (typically because origin_filters is set on the live stream collection).
+                        # Acknowledge once and persist `recover_until = False` so subsequent
+                        # restarts don't bother sending the recover query parameter.
+                        self.helper.connector_logger.warning(
+                            "Live stream recovery skipped by the platform; switching to live-only mode",
+                            {"data": msg.data},
+                        )
+                        state = self.helper.get_state()
+                        if state is None:
+                            self.exit_event.set()
+                        else:
+                            state["recover_until"] = False
+                            self.helper.set_state(state)
+                    elif (
                         msg.event == "heartbeat"
                         or msg.event == "consumer_metrics"
                         or msg.event == "connected"
@@ -2201,6 +2219,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=False,
         )
+        self.connect_xtm_one_intent = get_config_variable(
+            "CONNECTOR_XTM_ONE_INTENT",
+            ["connector", "xtm_one_intent"],
+            config,
+            default=None,
+        )
         self.log_level = get_config_variable(
             "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config, default="ERROR"
         ).upper()
@@ -2372,6 +2396,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 if self.listen_protocol == "API"
                 else None
             ),
+            xtm_one_intent=self.connect_xtm_one_intent,
         )
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_logger.info(
@@ -3254,7 +3279,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         ):
             recover_iso_date = self.connect_live_stream_recover_iso_date
         # Generate the stream URL
-        url = url + "/stream"
+        url = url.rstrip("/") + "/stream"
         if live_stream_id is not None:
             url = url + "/" + live_stream_id
         self.listen_stream = ListenStream(
@@ -3603,6 +3628,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     entity_id=entity_id,
                     file_markings=file_markings,
                 )
+                # Signal work completion through the expectation system
+                if work_id:
+                    self.api.work.add_expectations(work_id, 1)
+                    self.api.work.report_expectation(work_id, None)
                 return []
             elif validation_mode == "draft" and not draft_id:
                 draft_id = self.api.create_draft(

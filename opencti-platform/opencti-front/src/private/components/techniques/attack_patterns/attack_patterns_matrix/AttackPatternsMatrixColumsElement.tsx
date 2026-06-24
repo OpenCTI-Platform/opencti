@@ -10,7 +10,7 @@ import {
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import type { Theme } from '../../../../../components/Theme';
 import { hexToRGB } from '../../../../../utils/Colors';
-import SecurityCoverageInformation from '../../../analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
@@ -104,7 +104,7 @@ const AttackPatternsMatrixColumnsElement = ({
       {isCoverage && attackPattern.isCovered && (
         <>
           <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <SecurityCoverageInformation
+            <SecurityCoverageScores
               coverage_information={coverage || null}
               variant="matrix"
             />

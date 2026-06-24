@@ -6,24 +6,26 @@ import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import RatingField from '../../../../components/fields/RatingField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import SimpleMarkdownField from '../../../../components/SimpleMarkdownField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Drawer from '../../common/drawer/Drawer';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
-import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
+import { FeedbackCreationMutation, FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 
 const feedbackMutation = graphql`
   mutation FeedbackCreationMutation($input: FeedbackAddInput!) {
     feedbackAdd(input: $input) {
+      id
       ...FeedbacksLine_node
     }
   }
@@ -48,11 +50,12 @@ const FeedbackCreation: FunctionComponent<{
 }> = ({ openDrawer, handleCloseDrawer, initialValue }) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const [commit] = useApiMutation(
+  const [commit] = useApiMutation<FeedbackCreationMutation>(
     feedbackMutation,
     undefined,
     { successMessage: 'Thank you for your feedback!' },
   );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -70,13 +73,13 @@ const FeedbackCreation: FunctionComponent<{
     { setSubmitting, resetForm },
   ) => {
     const input: FeedbackCreationMutation$variables['input'] = {
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
       rating: parseInt(String(values.rating), 6),
       objects: values.objects.map((o) => o.value),
       objectLabel: values.objectLabel.map((v) => v.value),
-      file: values.file,
     };
     commit({
       variables: {
@@ -128,14 +131,17 @@ const FeedbackCreation: FunctionComponent<{
         }) => (
           <Form>
             <Field
-              component={SimpleMarkdownField}
-              askAI={false}
+              component={MarkdownField}
+              askAi={false}
               name="description"
               label={t_i18n('Description')}
               required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
+              style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
             />
             <ConfidenceField
               entityType="Feedback"

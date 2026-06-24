@@ -1,15 +1,13 @@
-import moment from 'moment/moment';
 import React, { useContext, useState } from 'react';
 import { graphql } from 'react-relay';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { SxProps } from '@mui/material';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { SxProps } from '@mui/material';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../components/i18n';
 import TopBanner, { TopBannerColor } from '../../components/TopBanner';
 import useApiMutation from '../../utils/hooks/useApiMutation';
@@ -62,7 +60,11 @@ const getButtonSx = (remainingDays: number): SxProps => {
   };
 };
 
-const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_edition'], onButtonClick?: () => void): BannerInfo | undefined => {
+const computeBannerInfo = (
+  eeSettings: RootSettings$data['platform_enterprise_edition'],
+  canContactHub: boolean,
+  onButtonClick: () => void,
+): BannerInfo | undefined => {
   const { t_i18n } = useFormatter();
   if (!eeSettings.license_validated) {
     return {
@@ -79,12 +81,17 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
     };
   }
   if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
-    const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
-    const buttonSx = getButtonSx(remainingDays);
+    const remainingDays = daysBetweenDates(now(), eeSettings.license_expiration_date);
     const bannerColor = getBannerColor(remainingDays);
+    // The "Contact us" button only makes sense when the platform is actively
+    // registered to XTM Hub, since contactUsXtmHub short-circuits server-side
+    // without a valid Hub token. We rely on the registration status rather than
+    // the token alone, because a stale token can linger after a failed
+    // unregistration handshake.
+    const showContactButton = canContactHub;
     return {
-      buttonText: t_i18n('Contact us'),
-      buttonSx,
+      buttonText: showContactButton ? t_i18n('Contact us') : undefined,
+      buttonSx: showContactButton ? getButtonSx(remainingDays) : undefined,
       bannerColor,
       message: (
         <>
@@ -92,7 +99,7 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
           <strong> {remainingDays} {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}</strong>
         </>
       ),
-      onButtonClick,
+      onButtonClick: showContactButton ? onButtonClick : undefined,
     };
   }
   return undefined;
@@ -108,19 +115,24 @@ const LicenseBanner = () => {
   const isEE = eeSettings?.license_enterprise;
   if (!isEE) return <></>;
 
-  const onSubmit: FormikConfig<ContactUsInput>['onSubmit'] = (values) => {
+  const onSubmit: FormikConfig<ContactUsInput>['onSubmit'] = (values, { setSubmitting }) => {
     commitContactUs({
       variables: {
         message: values.message,
       },
       onCompleted: () => {
+        setSubmitting(false);
         setShowFormDialog(false);
         setShowThankYouDialog(true);
+      },
+      onError: () => {
+        setSubmitting(false);
       },
     });
   };
 
-  const bannerInfo = computeBannerInfo(eeSettings, () => {
+  const canContactHub = settings?.xtm_hub_registration_status === 'registered';
+  const bannerInfo = computeBannerInfo(eeSettings, canContactHub, () => {
     setShowFormDialog(true);
   });
   if (!bannerInfo) return <></>;
@@ -143,11 +155,11 @@ const LicenseBanner = () => {
         onButtonClick={bannerInfo.onButtonClick}
       />
       <Dialog
-        fullWidth={true}
         open={showFormDialog}
         onClose={() => setShowFormDialog(false)}
+        title={t_i18n('Contact us')}
+        size="small"
       >
-        <DialogTitle>{t_i18n('Thank you!')}</DialogTitle>
         <Formik<ContactUsInput>
           initialValues={initialValues}
           validationSchema={contactUsValidation}
@@ -155,19 +167,18 @@ const LicenseBanner = () => {
         >
           {({ submitForm, isSubmitting, resetForm }) => (
             <Form>
-              <DialogContent>
-                <Field
-                  component={TextField}
-                  name="message"
-                  variant="standard"
-                  multiline={true}
-                  label={t_i18n('Your message')}
-                  fullWidth={true}
-                  minRows={5}
-                />
-              </DialogContent>
+              <Field
+                component={TextField}
+                name="message"
+                variant="standard"
+                multiline={true}
+                label={t_i18n('Your message')}
+                fullWidth={true}
+                minRows={5}
+              />
               <DialogActions>
                 <Button
+                  variant="secondary"
                   disabled={isSubmitting}
                   onClick={() => {
                     resetForm();
@@ -176,7 +187,10 @@ const LicenseBanner = () => {
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button onClick={submitForm} disabled={isSubmitting} color="secondary">
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
                   {t_i18n('Validate')}
                 </Button>
               </DialogActions>
@@ -188,10 +202,13 @@ const LicenseBanner = () => {
         open={showThankYouDialog}
         onClose={() => setShowThankYouDialog(false)}
         title={t_i18n('Thank you!')}
+        size="small"
       >
-        <span>{t_i18n("Thank you for reaching out, we'll get back to you shortly.")}</span>
+        <Typography>
+          {t_i18n("Thank you for reaching out, we'll get back to you shortly.")}
+        </Typography>
         <DialogActions>
-          <Button onClick={() => setShowThankYouDialog(false)} variant="contained">
+          <Button onClick={() => setShowThankYouDialog(false)}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>

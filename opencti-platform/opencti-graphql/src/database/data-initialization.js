@@ -1,6 +1,6 @@
 import validator from 'validator';
 import { addSettings } from '../domain/settings';
-import { BYPASS, AUTOMATION, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
+import { AUTOMATION, BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
@@ -13,7 +13,7 @@ import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
-import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_UPDATE } from '../schema/general';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -38,6 +38,7 @@ export const TAXII_CAPABILITIES = {
     { name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 },
   ],
 };
+export const SHARE_FILTERS_CAPABILITY = { name: KNOWLEDGE_SHARE_FILTERS, description: 'Share filters', attribute_order: 950 };
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
   description: 'Access knowledge',
@@ -68,6 +69,7 @@ const KNOWLEDGE_CAPABILITIES = {
     },
     { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
     { name: 'KNDISSEMINATION', description: 'Disseminate files by email', attribute_order: 900 },
+    SHARE_FILTERS_CAPABILITY,
   ],
 };
 export const SETTINGS_CAPABILITIES = {
@@ -328,20 +330,38 @@ export const createCapabilities = async (context, capabilities, parentName = '')
   }
 };
 
-const createDefaultRetentionRules = async (context) => {
-  // Create default retention rule for global files (30 days)
+export const createDefaultRetentionRules = async (context) => {
+  // Create default disabled retention rule for global files (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
     name: 'Global files retention',
     max_retention: 30,
     retention_unit: 'days',
     scope: 'file',
+    active: false,
   });
-  // Create default retention rule for all workbenches (30 days)
+  // Create default disabled retention rule for all workbenches (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
     name: 'All workbenches retention',
     max_retention: 30,
     retention_unit: 'days',
     scope: 'workbench',
+    active: false,
+  });
+  // Create default disabled retention rule for history (30 days, inactive)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'History retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'history',
+    active: false,
+  });
+  // Create default disabled retention rule for activity (30 days, inactive)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'Activity retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'activity',
+    active: false,
   });
 };
 

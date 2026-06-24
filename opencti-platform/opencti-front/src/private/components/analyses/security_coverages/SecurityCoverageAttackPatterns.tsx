@@ -15,7 +15,7 @@ import { Box, ListItemButton, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
 import { useTheme } from '@mui/styles';
 import { SecurityCoverageAttackPatternsKillChainPhasesFragment$key } from './__generated__/SecurityCoverageAttackPatternsKillChainPhasesFragment.graphql';
 import { SecurityCoverageAttackPatternsFragment$key } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
@@ -25,7 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { capitalizeFirstLetter } from 'src/utils/String';
+import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
 
 const securityCoverageAttackPatternsFragment = graphql`
@@ -250,7 +250,7 @@ const SecurityCoverageAttackPatterns = ({
                           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                             <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
                             <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
-                              <SecurityCoverageInformation
+                              <SecurityCoverageScores
                                 coverage_information={coverage}
                                 variant="header"
                               />

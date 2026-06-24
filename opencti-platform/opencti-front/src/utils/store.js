@@ -1,12 +1,10 @@
-import * as R from 'ramda';
-import { filter } from 'ramda';
 import { ConnectionHandler } from 'relay-runtime';
 
 export const isNodeInConnection = (payload, conn) => {
   const records = conn.getLinkedRecords('edges');
   const recordsIds = records.map((n) => n.getLinkedRecord('node').getValue('id'));
   const payloadId = payload.getValue('id');
-  return R.includes(payloadId, recordsIds);
+  return recordsIds.includes(payloadId);
 };
 
 export const insertNode = (
@@ -117,11 +115,8 @@ export const deleteNodeFromContainer = (store, containerId, key, filters, id) =>
 export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   const node = store.get(rootId);
   const records = node.getLinkedRecord(path, params);
-  const edges = records.getLinkedRecords('edges');
-  const newEdges = filter(
-    (n) => n.getLinkedRecord('node').getValue('id') !== deleteId,
-    edges,
-  );
+  const edges = records.getLinkedRecords('edges') || [];
+  const newEdges = edges.filter((n) => n.getLinkedRecord('node').getValue('id') !== deleteId);
   records.setLinkedRecords(newEdges, 'edges');
 };
 

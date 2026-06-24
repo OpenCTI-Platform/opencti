@@ -2,6 +2,7 @@ import Card from '@common/card/Card';
 import { ListItem, ListItemText, Switch } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
 import Box from '@mui/material/Box';
+import { isKnownNewsFeedType } from '../../../utils/NewsFeed';
 
 interface Props {
   availableNewsFeedTypes?: string[];
@@ -34,12 +35,12 @@ const ProfileOverviewNewsFeed = ({
   };
 
   return (
-    <Card title={t_i18n('XTM Hub Newsfeeds')}>
+    <Card title={t_i18n('XTM Hub News Feed')}>
       <ListItem
         divider={!allUnsubscribed}
         sx={allUnsubscribed ? { padding: '0' } : { padding: '0 0 10px 0' }}
       >
-        <ListItemText primary={t_i18n('Enable news feed notifications')} />
+        <ListItemText primary={t_i18n('Enable News Feed notifications')} />
         <Switch
           checked={!allUnsubscribed}
           onChange={handleGlobalToggle}
@@ -48,7 +49,7 @@ const ProfileOverviewNewsFeed = ({
       {!allUnsubscribed && availableNewsFeedTypes.map((feedType) => (
         <ListItem key={feedType} sx={{ padding: '10px 0 0 0', opacity: 0.8 }}>
           <Box component="span" sx={{ mr: 1, ml: 1 }}>•</Box>
-          <ListItemText secondary={t_i18n(feedType)} />
+          <ListItemText secondary={isKnownNewsFeedType(feedType) ? t_i18n(feedType) : t_i18n('Unsupported type')} />
           <Switch
             checked={!unsubscribedNewsFeedTypes?.includes(feedType)}
             onChange={handleFeedTypeToggle(feedType)}

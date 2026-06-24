@@ -5,12 +5,17 @@ import SDOOverview from './SDOOverview.pageModel';
 import CardPage from './card.pageModel';
 
 export default class ReportDetailsPage {
-  labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
-  tabs = new SDOTabs(this.page);
-  overview = new SDOOverview(this.page);
-  card = new CardPage(this.page);
+  labelsSelect: AutocompleteFieldPageModel;
+  tabs: SDOTabs;
+  overview: SDOOverview;
+  card: CardPage;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
+    this.tabs = new SDOTabs(this.page);
+    this.overview = new SDOOverview(this.page);
+    this.card = new CardPage(this.page);
+  }
 
   getPage() {
     return this.page.getByTestId('report-details-page');
@@ -25,7 +30,7 @@ export default class ReportDetailsPage {
   }
 
   getAiInsightsButton() {
-    return this.page.getByLabel('AI Insights', { exact: true });
+    return this.page.getByRole('button', { name: 'AI Insights', exact: true });
   }
 
   getContentFile(fileName: string) {

@@ -1,14 +1,24 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags, checkSystemDependencies } from './initialization';
+import platformInit, { checkFeatureFlags } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
+import { checkSystemDependencies } from './boot-utils';
+import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 
 // region platform start and stop
 export const platformStart = async () => {
+  const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
   try {
+    // Start the liveness probe first so orchestrators can detect the process is alive
+    try {
+      await startLivenessServer();
+    } catch (livenessError) {
+      logApp.error('[OPENCTI] Liveness server startup failed', { cause: livenessError });
+      throw livenessError;
+    }
     checkFeatureFlags();
     // Check all dependencies access
     try {
@@ -45,6 +55,7 @@ export const platformStart = async () => {
       logApp.error('[OPENCTI] Modules startup failed', { cause: modulesError });
       throw modulesError;
     }
+    logApp.info(`[OPENCTI] Platform started ${Date.now() - startTime} ms`);
   } catch (_mainError) {
     process.exit(1);
   }
@@ -52,6 +63,8 @@ export const platformStart = async () => {
 
 export const platformStop = async () => {
   const stopTime = new Date().getTime();
+  // Shutdown the liveness probe
+  await stopLivenessServer();
   // Shutdown the cache manager
   await cacheManager.shutdown();
   // Destroy the modules

@@ -29,7 +29,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size, isNotEmptyField } from '../../../../utils/utils';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { EMPTY_VALUE } from '../../../../utils/String';
 

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import type { StoreCommon } from '../../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../../schema/identifier';
 import { now } from '../../../utils/format';
@@ -13,45 +13,67 @@ import { RELATION_BASED_ON } from '../../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../../types/stix-2-1-sro';
 import { extractValidObservablesFromIndicatorPattern } from '../../../utils/syntax';
 import { type StixIndicator } from '../../indicator/indicator-types';
-import { extractBundleBaseElement } from '../playbook-utils';
+import { extractBundleBaseElement, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import { pushAll } from '../../../utils/arrayUtil';
+import { executionContext } from '../../../utils/access';
 
 interface CreateObservableConfiguration {
-  all: boolean;
+  applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
   wrap_in_container: boolean;
 }
+
 const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA: JSONSchemaType<CreateObservableConfiguration> = {
   type: 'object',
   properties: {
-    all: { type: 'boolean', $ref: 'Create observables from all indicators in the bundle', default: false },
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: 'All indicators in the bundle' },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
+    },
     wrap_in_container: { type: 'boolean', $ref: 'If main entity is a container, wrap observables in container', default: false },
   },
-  required: [],
+  required: ['applyToElements'],
 };
+
 export const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableConfiguration> = {
   id: 'PLAYBOOK_CREATE_OBSERVABLE_COMPONENT',
   name: 'Extract observables from indicator',
   description: 'Create observables based on an indicator',
   icon: 'observable',
+  category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
-    const { all, wrap_in_container } = playbookNode.configuration;
+    const context = executionContext('playbook_components');
+    const { applyToElements, applyWithFilters, wrap_in_container } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const indicators = [baseData];
-    if (all) {
-      pushAll(indicators, bundle.objects);
-    }
+
     const { type: baseDataType } = baseData.extensions[STIX_EXT_OCTI];
     const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
     const objectsToPush: StixObject[] = [];
-    for (let indexIndicator = 0; indexIndicator < indicators.length; indexIndicator += 1) {
-      const indicator = indicators[indexIndicator] as StixIndicator;
-      if (indicator.type === 'indicator') {
+
+    for (let indexIndicator = 0; indexIndicator < bundle.objects.length; indexIndicator += 1) {
+      const element = bundle.objects[indexIndicator];
+      const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
+      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters);
+
+      if (isElementInScope && isFilteredElement && element.type === 'indicator') {
+        const indicator = element as StixIndicator;
         const observables = extractValidObservablesFromIndicatorPattern(indicator.pattern);
         for (let indexObservable = 0; indexObservable < observables.length; indexObservable += 1) {
           const observable = observables[indexObservable];

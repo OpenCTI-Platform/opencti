@@ -100,8 +100,8 @@ markdown_extensions:
       pygments_lang_class: false
       auto_title: false
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.snippets:
@@ -115,7 +115,7 @@ nav:
       - Overview: deployment/overview.md
       - Installation: deployment/installation.md
       - Configuration: deployment/configuration.md
-      - Authentication: 
+      - Authentication:
         - Authentication via environment variables: deployment/authentication.md
       - Telemetry: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
@@ -126,27 +126,33 @@ nav:
         - Overview: deployment/integration-manager.md
         - Quick start: deployment/integration-manager/quick-start.md
         - Architecture: deployment/integration-manager/architecture.md
+        - Private registry authentication: deployment/integration-manager/registry-authentication.md
+        - Proxy support: deployment/integration-manager/proxy-configuration.md
         - Installation guide: deployment/integration-manager/installation.md
         - Configuration: deployment/integration-manager/configuration.md
         - Migration guide: deployment/integration-manager/migration.md
         - Troubleshooting guide: deployment/integration-manager/troubleshooting.md
       - Other resources: deployment/resources.md
     - Advanced:
-      - Platform managers: deployment/managers.md
-      - Clustering: deployment/clustering.md
-      - Indices and rollover: deployment/rollover.md
-      - On-premise map server: deployment/map.md
-      - On-premise AI extraction: deployment/ai-import-document.md
-      - Troubleshooting: deployment/troubleshooting.md
+      - Platform managers: deployment/advanced/managers.md
+      - Security configuration: deployment/advanced/security-configuration.md
+      - Liveness probe: deployment/advanced/liveness-probe.md
+      - Clustering: deployment/advanced/clustering.md
+      - Indices and rollover: deployment/advanced/rollover.md
+      - On-premise map server: deployment/advanced/map.md
+      - On-premise AI extraction: deployment/advanced/ai-import-document.md
+      - Rate limiting: deployment/advanced/rate-limiting.md
+      - Troubleshooting: deployment/advanced/troubleshooting.md
     - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
+            - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
+            - Metrics renamed in Client Python: deployment/breaking-changes/6.8-client-python-metrics.md
             - OpenBAS scenario generation: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
             - Stream connectors data import: deployment/breaking-changes/6.3-removing-some-connectors.md
             - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
             - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
             - New filter API: deployment/breaking-changes/5.12-filters.md
-            - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
   - User Guide:
     - Getting started: usage/getting-started.md
     - Foundations:
@@ -161,6 +167,7 @@ nav:
       - Overview: usage/overview.md
       - Search for knowledge: usage/search.md
       - Insights and summaries ✨: usage/insights.md
+      - Priority Intelligence Requirements: usage/pir.md
       - Explore by entity types:
         - Analysis: usage/exploring-analysis.md
         - Cases: usage/exploring-cases.md
@@ -183,6 +190,7 @@ nav:
           - RSS Feed: usage/import/rss-feed.md
           - CSV Feed: usage/import/csv-feed.md
           - JSON Feed: usage/import/json-feed.md
+          - Advanced feed configuration: usage/import/advanced-feed-configuration.md
       - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
       - Create via form: usage/form-intake.md
@@ -202,14 +210,19 @@ nav:
         - Share custom dashboards: usage/dashboards-share.md
         - Widget creation: usage/widgets.md
         - Tips for widget creation: usage/tips-widget-creation.md
+      - Custom views: usage/custom-views.md
       - Workflows and assignation: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
-      - Automation: usage/automation.md
+      - Playbook automation:
+        - Introduction: usage/playbook-automation.md
+        - Playbook creation: usage/playbook-creation.md
+        - Playbook components: usage/playbook-components.md
       - Security Coverage: usage/security-coverage.md
     - Delete and restore knowledge: usage/delete-restore.md
     - Sharing and exports:
       - Native feeds: usage/feeds.md
       - Manual export: usage/export.md
+    - XTM Hub news feed: usage/xtm-hub-news-feed.md
   - Administration:
     - Introduction: administration/introduction.md
     - Enterprise edition: administration/enterprise.md
@@ -222,6 +235,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - Cookies: administration/cookies.md
         - Policies: administration/policies.md
         - Users and RBAC:
           - Users and RBAC: administration/users.md
@@ -244,6 +258,7 @@ nav:
         - Decay rules & Decay Exclusion rules: 
           - Decay rules: administration/decay-rules.md
           - Decay exclusion rules: administration/decay-exclusion-rules.md
+        - Fintel designs: administration/fintel-designs.md
         - Exclusion lists: administration/exclusion-lists.md
       - Taxonomies: administration/ontologies.md
       - Activity:
