@@ -3317,6 +3317,7 @@
   "Participants": "Participantes",
   "Partner": "Asociado",
   "Password": "Contraseña",
+  "Password expired": "La contraseña ha caducado",
   "Password field": "Campo de contraseña",
   "Password security policies": "Políticas de seguridad de contraseñas",
   "Password valid until": "Contraseña válida hasta el",
