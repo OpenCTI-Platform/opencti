@@ -35,7 +35,6 @@ import Button from '../../../components/common/button/Button';
 
 const interval$ = interval(TEN_SECONDS);
 
-
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
     draftWorkspace(id: $id) {
