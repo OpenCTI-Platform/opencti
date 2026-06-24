@@ -47,7 +47,8 @@ const LoginForm = () => {
         const errorCode = (firstError as { extensions?: { code?: string } } | undefined)?.extensions?.code;
         if (errorCode === 'PASSWORD_CHANGE_REQUIRED') {
           setValue('email', input.email);
-          setValue('resetPwdStep', ResetPwdStep.ASK_RESET);
+          setValue('forcePasswordChange', true);
+          setValue('resetPwdStep', undefined);
           setSubmitting(false);
           return;
         }
@@ -60,6 +61,7 @@ const LoginForm = () => {
   };
 
   const goToResetPwd = () => {
+    setValue('forcePasswordChange', false);
     setValue('resetPwdStep', ResetPwdStep.ASK_RESET);
   };
 
