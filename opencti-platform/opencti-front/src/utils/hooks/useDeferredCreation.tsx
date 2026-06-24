@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 
 /**
  * Context for deferred entity creation within Form Intake.
