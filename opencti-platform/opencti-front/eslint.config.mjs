@@ -7,6 +7,7 @@ import importPlugin from 'eslint-plugin-import'
 import importNewlines from 'eslint-plugin-import-newlines'
 import customRules from 'eslint-plugin-custom-rules'
 import stylistic from '@stylistic/eslint-plugin'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 
 export default defineConfig([
   {
@@ -32,6 +33,35 @@ export default defineConfig([
 
   // Typescript rules
   tseslint.configs.recommended,
+  // a11y rules
+  {
+    plugins: {
+      'jsx-a11y': jsxA11y,
+    },
+    files: ['**/*.{ts,tsx,js,jsx}'],
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    rules: {
+      ...jsxA11y.configs.recommended.rules,
+    },
+    settings: {
+      'jsx-a11y': {
+        // Maps MUI components to semantic HTML tags
+        components: {
+          Button: 'button',
+          IconButton: 'button',
+          TextField: 'input',
+          Select: 'select',
+          Switch: 'input',
+        },
+      },
+    },
+  },
 
   // React rules
   {
