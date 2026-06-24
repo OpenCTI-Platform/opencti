@@ -194,6 +194,9 @@ describe('buildMainStixEntities', () => {
               objectLabel: ['label-id-1'],
               externalReferences: ['ref-1'],
               file: null,
+              // injected by useMarkdownCreationFilesInput(): not real entity attributes
+              files: [{ name: 'img.png' }],
+              embedded: [true, false],
             },
           },
         ],
@@ -209,6 +212,9 @@ describe('buildMainStixEntities', () => {
       expect(entityPassedToComplete.objectLabel).toBeUndefined();
       expect(entityPassedToComplete.externalReferences).toBeUndefined();
       expect(entityPassedToComplete.file).toBeUndefined();
+      // markdown file-upload helper fields must not pollute the bundle
+      expect(entityPassedToComplete.files).toBeUndefined();
+      expect(entityPassedToComplete.embedded).toBeUndefined();
     });
 
     it('should combine existing lookup entities with pending creations', async () => {
@@ -244,7 +250,9 @@ describe('buildMainStixEntities', () => {
       expect(mainStixEntities).toHaveLength(1);
       expect(mainStixEntities[0].value).toBe('1.2.3.4');
       expect(mainStixEntities[0].name).toBe('1.2.3.4');
-      expect(mainStixEntities[0].description).toBe('malicious ip');
+      // observables use x_opencti_description, not description
+      expect(mainStixEntities[0].x_opencti_description).toBe('malicious ip');
+      expect(mainStixEntities[0].description).toBeUndefined();
       expect(mainStixEntities[0].x_opencti_score).toBe(50);
     });
   });

@@ -30,8 +30,10 @@ import { loadFormEntity } from './form-utils';
 const PENDING_NON_SCALAR_INPUT_FIELDS = new Set<string>([
   'createdBy', 'objectMarking', 'objectLabel', 'objectOrganization',
   'objectAssignee', 'objectParticipant', 'externalReferences', 'killChainPhases',
-  'objects', 'caseTemplates', 'content_mapping', 'file', 'x_opencti_files',
-  'update', 'clientMutationId', 'type',
+  'objects', 'caseTemplates', 'content_mapping', 'file', 'files', 'x_opencti_files',
+  // `files` / `embedded` are injected by useMarkdownCreationFilesInput() for markdown
+  // image uploads; `embedded` is a boolean[] and would otherwise pass the scalar filter.
+  'embedded', 'update', 'clientMutationId', 'type',
 ]);
 
 const isScalarOrScalarArray = (value: unknown): boolean => {
@@ -72,19 +74,30 @@ const buildPendingEntities = (
     // e.g. { type: 'IPv4-Addr', IPv4Addr: { value: '1.2.3.4' }, x_opencti_description: '…' }
     const isObservableInput = typeof input.type === 'string' && !('name' in input);
     if (isObservableInput) {
-      if (input.x_opencti_description) entity.description = input.x_opencti_description;
+      // Observables use x_opencti_description (not description) in the store / STIX model.
+      if (input.x_opencti_description) entity.x_opencti_description = input.x_opencti_description;
       if (input.x_opencti_score !== undefined && input.x_opencti_score !== null) {
         entity.x_opencti_score = input.x_opencti_score;
       }
-      // Observable value: look for the camelCase type key (e.g. 'IPv4Addr', 'DomainName')
+      // The observable-specific attributes are nested under the type key (the only nested
+      // object, e.g. 'IPv4Addr', 'DomainName', 'EmailMessage'). Copy all of its scalar
+      // attributes (value, but also subject, body, dst_port, ...), still skipping refs/files.
       const obsTypeKey = Object.keys(input).find((key) => key !== 'type'
+        && !PENDING_NON_SCALAR_INPUT_FIELDS.has(key)
         && typeof input[key] === 'object'
         && input[key] !== null
-        && 'value' in input[key]);
+        && !Array.isArray(input[key]));
       if (obsTypeKey) {
-        entity.value = input[obsTypeKey].value;
-        // Use value as name as well so the STIX converter / standard id generation can work
-        entity.name = input[obsTypeKey].value;
+        const observableData = input[obsTypeKey] as Record<string, any>;
+        for (const [key, value] of Object.entries(observableData)) {
+          if (isScalarOrScalarArray(value)) {
+            entity[key] = value;
+          }
+        }
+        // Use the observable value as a display name so standard id generation / STIX conversion can work.
+        if (entity.value !== undefined && entity.name === undefined) {
+          entity.name = entity.value;
+        }
       }
     } else {
       // SDO/generic: copy every scalar (or scalar-array) attribute except references/meta
