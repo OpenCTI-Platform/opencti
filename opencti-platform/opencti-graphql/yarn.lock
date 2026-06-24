@@ -5108,15 +5108,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-cookiejar-support@npm:6.0.5":
-  version: 6.0.5
-  resolution: "axios-cookiejar-support@npm:6.0.5"
+"axios-cookiejar-support@npm:7.0.0":
+  version: 7.0.0
+  resolution: "axios-cookiejar-support@npm:7.0.0"
   dependencies:
-    http-cookie-agent: "npm:^7.0.3"
+    http-cookie-agent: "npm:^8.0.0"
   peerDependencies:
     axios: ">=0.20.0"
     tough-cookie: ">=4.0.0"
-  checksum: 10c0/e493c5423de79fd7cf5d8ad97e1506b06fcc9f36a6bf6e0060663015cb2a7e6458440b6300106d79ab2a6cc4845f5c0948957ea0e76057a3b9aeb1e9758ce7e0
+  checksum: 10c0/67c2ecd417adf0979dc0921a7199a9623810951bba007eb769dcb2ded54e9d95da92c979fba2d543b33089a3d9e96ea7070647497185b75001659891bc19675b
   languageName: node
   linkType: hard
 
@@ -7899,18 +7899,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-cookie-agent@npm:^7.0.3":
-  version: 7.0.4
-  resolution: "http-cookie-agent@npm:7.0.4"
+"http-cookie-agent@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "http-cookie-agent@npm:8.0.0"
   dependencies:
     agent-base: "npm:^9.0.0"
   peerDependencies:
     tough-cookie: ^4.0.0 || ^5.0.0 || ^6.0.0
-    undici: ^7.0.0
+    undici: ^7.0.0 || ^8.0.0
   peerDependenciesMeta:
     undici:
       optional: true
-  checksum: 10c0/8f0048f84f4422ba47b645704253dd5bf8a12aa0bee5925bd8d79f25465e6f61e42b5a6eb04ffc33a91207063fa5b2ad630e21bcdddc2505e0eda664dd2cb08b
+  checksum: 10c0/6af0d7e41cccf173e9399844956e3491676d9803bbb3a47a7fe5bd6c4ed29d1ae4aa24609a2c819d3928c86a28e774ec8aeac604bf928ef6af9c36ba21582b97
   languageName: node
   linkType: hard
 
@@ -10219,7 +10219,7 @@ __metadata:
     async-lock: "npm:1.4.1"
     aws-sdk-v3-proxy: "npm:2.2.0"
     axios: "npm:1.18.0"
-    axios-cookiejar-support: "npm:6.0.5"
+    axios-cookiejar-support: "npm:7.0.0"
     bcryptjs: "npm:3.0.3"
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.3.0"

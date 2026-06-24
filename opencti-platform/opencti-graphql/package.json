@@ -96,7 +96,7 @@
     "async-lock": "1.4.1",
     "aws-sdk-v3-proxy": "2.2.0",
     "axios": "1.18.0",
-    "axios-cookiejar-support": "6.0.5",
+    "axios-cookiejar-support": "7.0.0",
     "bcryptjs": "3.0.3",
     "bluebird": "3.7.2",
     "body-parser": "2.3.0",
