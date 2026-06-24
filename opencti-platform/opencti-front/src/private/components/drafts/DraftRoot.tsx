@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -26,6 +26,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import useSwitchDraft from './useSwitchDraft';
+import useDraftCommentPopup from './useDraftCommentPopup';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
 import useHelper from '../../../utils/hooks/useHelper';
@@ -34,7 +35,6 @@ import Button from '../../../components/common/button/Button';
 
 const interval$ = interval(TEN_SECONDS);
 
-const DRAFT_COMMENT_SEEN_PREFIX = 'opencti-draft-comment-seen-';
 
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
@@ -127,7 +127,6 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const [showCommentPopup, setShowCommentPopup] = useState(false);
 
   const { draftWorkspace: draftWorkspaceFragment } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   if (!draftWorkspaceFragment) {
@@ -142,6 +141,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
     validationWork,
   } = draft;
   const isDraftReadOnly = draft_status !== 'open';
+
+  const { showCommentPopup, handleClose } = useDraftCommentPopup(draftId, draft.workflowInstance?.lastHistoryEntry);
 
   // switch to draft
   const { enterDraft } = useSwitchDraft();
@@ -159,18 +160,6 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
       });
     }
   }, [draftContext, draftId, enterDraft, isDraftReadOnly, t_i18n]);
-
-  // Show a popup once per history entry if the last transition has a comment
-  useEffect(() => {
-    const lastEntry = draft.workflowInstance?.lastHistoryEntry;
-    if (!lastEntry?.comment || !lastEntry?.timestamp) return;
-    const storageKey = `${DRAFT_COMMENT_SEEN_PREFIX}${draftId}`;
-    const seenTimestamp = window.localStorage.getItem(storageKey);
-    if (seenTimestamp !== lastEntry.timestamp) {
-      setShowCommentPopup(true);
-      window.localStorage.setItem(storageKey, lastEntry.timestamp);
-    }
-  }, [draftId, draft.workflowInstance?.lastHistoryEntry?.timestamp]);
 
   useEffect(() => {
     // Refresh
@@ -192,7 +181,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
     <>
       <Dialog
         open={showCommentPopup}
-        onClose={() => setShowCommentPopup(false)}
+        onClose={handleClose}
         title={t_i18n('Last workflow comment')}
         size="large"
       >
@@ -200,7 +189,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           {draft.workflowInstance?.lastHistoryEntry?.comment}
         </DialogContentText>
         <DialogActions>
-          <Button onClick={() => setShowCommentPopup(false)}>
+          <Button onClick={handleClose}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>
