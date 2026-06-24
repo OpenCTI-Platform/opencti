@@ -1,9 +1,9 @@
-import { describe, it, vi, expect, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import FormView from './FormView';
-import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import { MockPayloadGenerator } from 'relay-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as useGrantedModule from '../../../../../utils/hooks/useGranted';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
+import FormView from './FormView';
 
 vi.mock('../../../common/form/AuthorizedMembersField', () => ({
   __esModule: true,

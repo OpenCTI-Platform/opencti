@@ -1,5 +1,6 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, { useState, FunctionComponent, useCallback, useRef, useMemo } from 'react';
 import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import { Field, useFormikContext } from 'formik';
 import { graphql } from 'react-relay';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -22,6 +23,7 @@ import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCre
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
+import { DeferredCreationContext } from '../../../../utils/hooks/useDeferredCreation';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
@@ -222,11 +224,18 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const CREATE_OPTION_VALUE = '__create_new_entity__';
 
+/** Marker prefix used to identify pending-creation entities in the field value. */
+export const PENDING_ENTITY_PREFIX = '__pending__:';
+
 interface StixCoreObjectOption {
   label: string;
   value: string;
   type: string;
   isCreateOption?: boolean;
+  /** True when the entity has not yet been created – will be built in the draft bundle. */
+  isPendingCreation?: boolean;
+  /** Raw mutation input captured during deferred creation. Present only when isPendingCreation=true. */
+  pendingInputData?: { entityType: string; input: Record<string, unknown> };
 }
 
 interface StixCoreObjectsFieldProps {
@@ -239,6 +248,13 @@ interface StixCoreObjectsFieldProps {
   disabled?: boolean;
   types?: string[] | null;
   disableCreation?: boolean;
+  /**
+   * When true (and the user has draft-only permissions), entity creation on the fly
+   * is deferred: the creation form is shown but the mutation is intercepted and the
+   * entity data is stored locally. The entity is only created when the form intake is
+   * submitted (as part of the draft STIX bundle).
+   */
+  deferCreation?: boolean;
 }
 
 interface CreatedEntity {
@@ -261,6 +277,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   disabled = false,
   types = null,
   disableCreation = false,
+  deferCreation = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -279,6 +296,46 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   const [valueBeforeCreate, setValueBeforeCreate] = useState<StixCoreObjectOption | StixCoreObjectOption[] | null>(null);
   // Ref to track if entity was successfully created (prevents handleClose from restoring old value)
   const entityCreatedSuccessfully = React.useRef(false);
+
+  /**
+   * In deferred mode, holds the raw mutation `input` captured by useApiMutation so that
+   * handleClose / handleSCOEntityCreated can build a pending-creation option from it.
+   */
+  const deferredCapturedRef = useRef<Record<string, unknown> | null>(null);
+
+  /**
+   * Context value provided to the SDO / SCO creation dialogs when deferCreation=true.
+   * useApiMutation will call captureInput() instead of dispatching the real mutation.
+   */
+  const deferredContextValue = useMemo(() => ({
+    isDeferredMode: deferCreation,
+    captureInput: (input: Record<string, unknown>) => {
+      deferredCapturedRef.current = input;
+    },
+  }), [deferCreation]);
+
+  /**
+   * Build a pending-creation option from captured deferred input data.
+   * Falls back to currentSearchTerm when the input does not carry a `name`.
+   *
+   * For SDO mutations, capturedInput.name is the entity name.
+   * For SCO mutations, capturedInput has no `name`; we use currentSearchTerm
+   * (the value typed by the user, e.g. an IP address) as the display label.
+   */
+  const buildPendingOption = useCallback((capturedInput: Record<string, unknown>): StixCoreObjectOption => {
+    const entityName = (capturedInput.name as string | undefined) || currentSearchTerm || 'New Entity';
+    const pendingId = `${PENDING_ENTITY_PREFIX}${uuidv4()}`;
+    return {
+      label: entityName,
+      value: pendingId,
+      type: createEntityType || '',
+      isPendingCreation: true,
+      pendingInputData: {
+        entityType: createEntityType || '',
+        input: capturedInput,
+      },
+    };
+  }, [createEntityType, currentSearchTerm]);
 
   const handleOpenSearchScope = (event: React.MouseEvent<HTMLElement>) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(null);
@@ -417,6 +474,26 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   }, [currentSearchTerm, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
 
   const handleSCOEntityCreated = useCallback((createdObservable?: CreatedEntity | null) => {
+    // --- Deferred creation path ---
+    const capturedInput = deferredCapturedRef.current;
+    if (deferCreation && capturedInput) {
+      const newOption = buildPendingOption(capturedInput);
+      setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
+      const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+      if (multiple) {
+        setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
+      } else {
+        setFieldValue(name, newOption);
+      }
+      deferredCapturedRef.current = null;
+      entityCreatedSuccessfully.current = true;
+      setOpenSCOCreation(false);
+      setCreateEntityType(null);
+      setValueBeforeCreate(null);
+      return;
+    }
+
+    // --- Normal creation path ---
     entityCreatedSuccessfully.current = true;
     setOpenSCOCreation(false);
     setCreateEntityType(null);
@@ -477,7 +554,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           setStixCoreObjects(finalResults);
         });
     }
-  }, [currentSearchTerm, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
+  }, [buildPendingOption, currentSearchTerm, deferCreation, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
 
   const searchStixCoreObjects = useCallback((event: React.SyntheticEvent | null, newInputValue?: string, reason?: string) => {
     const searchValue = newInputValue ?? '';
@@ -652,64 +729,83 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
 
-      <StixDomainObjectCreation
-        display={true}
-        open={openSDOCreation}
-        handleClose={() => {
-          if (entityCreatedSuccessfully.current) {
-            setOpenSDOCreation(false);
-            setCreateEntityType(null);
-            setValueBeforeCreate(null);
-            return;
-          }
-          setOpenSDOCreation(false);
-          setCreateEntityType(null);
-          if (valueBeforeCreate !== null) {
-            setFieldValue(name, valueBeforeCreate);
-          }
-          setValueBeforeCreate(null);
-        }}
-        speeddial={true}
-        stixDomainObjectTypes={createEntityType ? [createEntityType] : (types ?? undefined)}
-        inputValue={currentSearchTerm}
-        creationCallback={handleSDOEntityCreated}
-        confidence={undefined}
-        defaultCreatedBy={undefined}
-        defaultMarkingDefinitions={undefined}
-        paginationKey={undefined}
-        paginationOptions={undefined}
-        onCompleted={undefined}
-        isFromBulkRelation={false}
-      />
-
-      {openSCOCreation && (
-        <StixCyberObservableCreation
+      <DeferredCreationContext.Provider value={deferredContextValue}>
+        <StixDomainObjectCreation
           display={true}
-          open={openSCOCreation}
+          open={openSDOCreation}
           handleClose={() => {
-            if (entityCreatedSuccessfully.current) {
-              setOpenSCOCreation(false);
+            // Deferred path: mutation was intercepted, input was captured
+            const capturedInput = deferredCapturedRef.current;
+            if (deferCreation && capturedInput) {
+              const newOption = buildPendingOption(capturedInput);
+              setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
+              const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+              if (multiple) {
+                setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
+              } else {
+                setFieldValue(name, newOption);
+              }
+              deferredCapturedRef.current = null;
+              setOpenSDOCreation(false);
               setCreateEntityType(null);
               setValueBeforeCreate(null);
               return;
             }
-            setOpenSCOCreation(false);
+            if (entityCreatedSuccessfully.current) {
+              setOpenSDOCreation(false);
+              setCreateEntityType(null);
+              setValueBeforeCreate(null);
+              return;
+            }
+            setOpenSDOCreation(false);
             setCreateEntityType(null);
             if (valueBeforeCreate !== null) {
               setFieldValue(name, valueBeforeCreate);
             }
             setValueBeforeCreate(null);
           }}
-          contextual={true}
           speeddial={true}
-          type={createEntityType ?? undefined}
+          stixDomainObjectTypes={createEntityType ? [createEntityType] : (types ?? undefined)}
           inputValue={currentSearchTerm}
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore JSX component without proper TypeScript types
-          stixCyberObservableTypes={types || undefined}
-          onCompleted={handleSCOEntityCreated}
+          creationCallback={handleSDOEntityCreated}
+          confidence={undefined}
+          defaultCreatedBy={undefined}
+          defaultMarkingDefinitions={undefined}
+          paginationKey={undefined}
+          paginationOptions={undefined}
+          onCompleted={undefined}
+          isFromBulkRelation={false}
         />
-      )}
+
+        {openSCOCreation && (
+          <StixCyberObservableCreation
+            display={true}
+            open={openSCOCreation}
+            handleClose={() => {
+              if (entityCreatedSuccessfully.current) {
+                setOpenSCOCreation(false);
+                setCreateEntityType(null);
+                setValueBeforeCreate(null);
+                return;
+              }
+              setOpenSCOCreation(false);
+              setCreateEntityType(null);
+              if (valueBeforeCreate !== null) {
+                setFieldValue(name, valueBeforeCreate);
+              }
+              setValueBeforeCreate(null);
+            }}
+            contextual={true}
+            speeddial={true}
+            type={createEntityType ?? undefined}
+            inputValue={currentSearchTerm}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore JSX component without proper TypeScript types
+            stixCyberObservableTypes={types || undefined}
+            onCompleted={handleSCOEntityCreated}
+          />
+        )}
+      </DeferredCreationContext.Provider>
     </>
   );
 };

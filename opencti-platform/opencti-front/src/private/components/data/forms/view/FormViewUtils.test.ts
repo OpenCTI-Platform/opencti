@@ -178,3 +178,180 @@ describe('formatFormDataForSubmission', () => {
     expect(formatted).not.toHaveProperty('draftAuthor');
   });
 });
+
+// ---------------------------------------------------------------------------
+// mainEntityLookup – deferred (pending) creation
+// ---------------------------------------------------------------------------
+
+const lookupSchema: FormSchemaDefinition = {
+  ...baseSchema,
+  mainEntityLookup: true,
+  mainEntityMultiple: false,
+};
+
+const lookupMultiSchema: FormSchemaDefinition = {
+  ...baseSchema,
+  mainEntityLookup: true,
+  mainEntityMultiple: true,
+};
+
+describe('formatFormDataForSubmission – mainEntityLookup', () => {
+  it('should map a single existing entity to mainEntityLookup', () => {
+    const values = {
+      name: 'My report',
+      mainEntityLookup: { value: 'entity-id-1', label: 'Existing Entity', type: 'Report' },
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupSchema);
+
+    expect(formatted.mainEntityLookup).toBe('entity-id-1');
+    expect(formatted).not.toHaveProperty('mainEntityLookupPending');
+  });
+
+  it('should map a single pending entity to mainEntityLookupPending', () => {
+    const pendingInputData = { entityType: 'Report', input: { name: 'New Report', confidence: 50 } };
+    const values = {
+      name: 'My report',
+      mainEntityLookup: {
+        value: '__pending__:some-uuid',
+        label: 'New Report',
+        type: 'Report',
+        isPendingCreation: true,
+        pendingInputData,
+      },
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupSchema);
+
+    expect(formatted).not.toHaveProperty('mainEntityLookup');
+    expect(formatted.mainEntityLookupPending).toEqual([pendingInputData]);
+  });
+
+  it('should split multiple existing entities from pending entities', () => {
+    const pendingInputData = { entityType: 'Report', input: { name: 'Pending Report' } };
+    const values = {
+      name: 'My report',
+      mainEntityLookup: [
+        { value: 'existing-id-1', label: 'Existing 1', type: 'Report' },
+        { value: '__pending__:uuid-1', label: 'Pending 1', type: 'Report', isPendingCreation: true, pendingInputData },
+        { value: 'existing-id-2', label: 'Existing 2', type: 'Report' },
+      ],
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupMultiSchema);
+
+    expect(formatted.mainEntityLookup).toEqual(['existing-id-1', 'existing-id-2']);
+    expect(formatted.mainEntityLookupPending).toEqual([pendingInputData]);
+  });
+
+  it('should not produce mainEntityLookupPending when all entities are existing (multiple)', () => {
+    const values = {
+      name: 'My report',
+      mainEntityLookup: [
+        { value: 'existing-id-1', label: 'Existing 1', type: 'Report' },
+        { value: 'existing-id-2', label: 'Existing 2', type: 'Report' },
+      ],
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupMultiSchema);
+
+    expect(formatted.mainEntityLookup).toEqual(['existing-id-1', 'existing-id-2']);
+    expect(formatted).not.toHaveProperty('mainEntityLookupPending');
+  });
+
+  it('should not produce mainEntityLookup when all entities are pending (multiple)', () => {
+    const pendingInputData1 = { entityType: 'Report', input: { name: 'Pending 1' } };
+    const pendingInputData2 = { entityType: 'Report', input: { name: 'Pending 2' } };
+    const values = {
+      name: 'My report',
+      mainEntityLookup: [
+        { value: '__pending__:uuid-1', label: 'Pending 1', type: 'Report', isPendingCreation: true, pendingInputData: pendingInputData1 },
+        { value: '__pending__:uuid-2', label: 'Pending 2', type: 'Report', isPendingCreation: true, pendingInputData: pendingInputData2 },
+      ],
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupMultiSchema);
+
+    expect(formatted).not.toHaveProperty('mainEntityLookup');
+    expect(formatted.mainEntityLookupPending).toEqual([pendingInputData1, pendingInputData2]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// additional_${id}_lookup – deferred (pending) creation
+// ---------------------------------------------------------------------------
+
+const additionalLookupSchema: FormSchemaDefinition = {
+  ...baseSchema,
+  additionalEntities: [
+    {
+      id: 'threat',
+      entityType: 'Malware',
+      label: 'Threat',
+      multiple: false,
+      lookup: true,
+    } as unknown as FormSchemaDefinition['additionalEntities'][0],
+  ],
+};
+
+const additionalLookupMultiSchema: FormSchemaDefinition = {
+  ...baseSchema,
+  additionalEntities: [
+    {
+      id: 'threat',
+      entityType: 'Malware',
+      label: 'Threat',
+      multiple: true,
+      lookup: true,
+    } as unknown as FormSchemaDefinition['additionalEntities'][0],
+  ],
+};
+
+describe('formatFormDataForSubmission – additional_${id}_lookup', () => {
+  it('should map a single existing entity to additional_threat_lookup', () => {
+    const values = {
+      name: 'My report',
+      additional_threat_lookup: { value: 'malware-id-1', label: 'Evil', type: 'Malware' },
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupSchema);
+
+    expect(formatted['additional_threat_lookup']).toBe('malware-id-1');
+    expect(formatted).not.toHaveProperty('additional_threat_lookup_pending');
+  });
+
+  it('should map a single pending entity to additional_threat_lookup_pending', () => {
+    const pendingInputData = { entityType: 'Malware', input: { name: 'New Malware' } };
+    const values = {
+      name: 'My report',
+      additional_threat_lookup: {
+        value: '__pending__:uuid-m',
+        label: 'New Malware',
+        type: 'Malware',
+        isPendingCreation: true,
+        pendingInputData,
+      },
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupSchema);
+
+    expect(formatted).not.toHaveProperty('additional_threat_lookup');
+    expect(formatted['additional_threat_lookup_pending']).toEqual([pendingInputData]);
+  });
+
+  it('should split existing and pending entities for multiple lookup', () => {
+    const pendingInputData = { entityType: 'Malware', input: { name: 'Pending Malware' } };
+    const values = {
+      name: 'My report',
+      additional_threat_lookup: [
+        { value: 'malware-id-1', label: 'Existing', type: 'Malware' },
+        { value: '__pending__:uuid-m', label: 'Pending', type: 'Malware', isPendingCreation: true, pendingInputData },
+      ],
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupMultiSchema);
+
+    expect(formatted['additional_threat_lookup']).toEqual(['malware-id-1']);
+    expect(formatted['additional_threat_lookup_pending']).toEqual([pendingInputData]);
+  });
+});
