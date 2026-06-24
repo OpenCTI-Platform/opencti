@@ -162,6 +162,93 @@ describe('buildMainStixEntities', () => {
     });
   });
 
+  describe('mainEntityLookup - pending (deferred) creation', () => {
+    it('should materialise a pending entity without calling loadFormEntity when no existing id is selected', async () => {
+      const schema = makeSchema({ mainEntityLookup: true });
+      const values = {
+        mainEntityLookupPending: [
+          { entityType: 'Intrusion-Set', input: { name: 'APT-Pending', description: 'desc', aliases: ['a1', 'a2'] } },
+        ],
+      };
+
+      const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, 'Intrusion-Set');
+
+      expect(loadFormEntity).not.toHaveBeenCalled();
+      expect(mainStixEntities).toHaveLength(1);
+      expect(mainStixEntities[0].name).toBe('APT-Pending');
+      expect(mainStixEntities[0].aliases).toEqual(['a1', 'a2']);
+      expect(mainEntityStixId).toBe('intrusion-set--completed-id');
+    });
+
+    it('should copy scalar attributes but drop reference fields (createdBy, objectMarking, objectLabel)', async () => {
+      const schema = makeSchema({ mainEntityLookup: true });
+      const values = {
+        mainEntityLookupPending: [
+          {
+            entityType: 'Intrusion-Set',
+            input: {
+              name: 'APT-Pending',
+              confidence: 80,
+              createdBy: 'identity-id-1',
+              objectMarking: ['marking-id-1'],
+              objectLabel: ['label-id-1'],
+              externalReferences: ['ref-1'],
+              file: null,
+            },
+          },
+        ],
+      };
+
+      await buildMainStixEntities(context, user, schema, values, 'Intrusion-Set');
+
+      const entityPassedToComplete = vi.mocked(completeEntity).mock.calls[0][1] as any;
+      expect(entityPassedToComplete.name).toBe('APT-Pending');
+      expect(entityPassedToComplete.confidence).toBe(80);
+      expect(entityPassedToComplete.createdBy).toBeUndefined();
+      expect(entityPassedToComplete.objectMarking).toBeUndefined();
+      expect(entityPassedToComplete.objectLabel).toBeUndefined();
+      expect(entityPassedToComplete.externalReferences).toBeUndefined();
+      expect(entityPassedToComplete.file).toBeUndefined();
+    });
+
+    it('should combine existing lookup entities with pending creations', async () => {
+      vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'intrusion-set--existing' } as any);
+
+      const schema = makeSchema({ mainEntityLookup: true });
+      const values = {
+        mainEntityLookup: ['existing-id-1'],
+        mainEntityLookupPending: [
+          { entityType: 'Intrusion-Set', input: { name: 'APT-Pending' } },
+        ],
+      };
+
+      const { mainStixEntities } = await buildMainStixEntities(context, user, schema, values, 'Intrusion-Set');
+
+      expect(loadFormEntity).toHaveBeenCalledTimes(1);
+      expect(mainStixEntities).toHaveLength(2);
+    });
+
+    it('should map an observable pending creation from its flat variable format', async () => {
+      const schema = makeSchema({ mainEntityLookup: true });
+      const values = {
+        mainEntityLookupPending: [
+          {
+            entityType: 'IPv4-Addr',
+            input: { type: 'IPv4-Addr', IPv4Addr: { value: '1.2.3.4' }, x_opencti_description: 'malicious ip', x_opencti_score: 50 },
+          },
+        ],
+      };
+
+      const { mainStixEntities } = await buildMainStixEntities(context, user, schema, values, 'IPv4-Addr');
+
+      expect(mainStixEntities).toHaveLength(1);
+      expect(mainStixEntities[0].value).toBe('1.2.3.4');
+      expect(mainStixEntities[0].name).toBe('1.2.3.4');
+      expect(mainStixEntities[0].description).toBe('malicious ip');
+      expect(mainStixEntities[0].x_opencti_score).toBe(50);
+    });
+  });
+
   describe('fieldMode: multiple', () => {
     it('should build one entity per group', async () => {
       const schema = makeSchema({
@@ -481,6 +568,52 @@ describe('buildAdditionalEntities', () => {
 
       expect(bundle.objects).toHaveLength(0);
       expect(result.victim).toBeUndefined();
+    });
+
+    it('should materialise a pending (deferred) creation and add it to the bundle and map', async () => {
+      const schema = makeSchema({
+        additionalEntities: [{ id: 'threat', lookup: true, entityType: 'Malware' }],
+      });
+      const bundle = makeBundle();
+      const values = {
+        additional_threat_lookup_pending: [
+          { entityType: 'Malware', input: { name: 'EvilBot', is_family: true, objectMarking: ['marking-1'] } },
+        ],
+      };
+
+      const result = await buildAdditionalEntities(context, user, schema, values, bundle);
+
+      expect(loadFormEntity).not.toHaveBeenCalled();
+      expect(bundle.objects).toHaveLength(1);
+      expect(result.threat).toHaveLength(1);
+      const entityPassedToComplete = vi.mocked(completeEntity).mock.calls[0][1] as any;
+      expect(entityPassedToComplete.entity_type).toBe('Malware');
+      expect(entityPassedToComplete.name).toBe('EvilBot');
+      expect(entityPassedToComplete.is_family).toBe(true);
+      // reference fields are dropped from the pending payload
+      expect(entityPassedToComplete.objectMarking).toBeUndefined();
+    });
+
+    it('should combine existing lookup entities with pending creations in the same field', async () => {
+      vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'malware--existing' } as any);
+      vi.mocked(convertStoreToStix_2_1).mockReturnValueOnce({ id: 'malware--existing' } as any);
+
+      const schema = makeSchema({
+        additionalEntities: [{ id: 'threat', lookup: true, entityType: 'Malware' }],
+      });
+      const bundle = makeBundle();
+      const values = {
+        additional_threat_lookup: 'malware-id-1',
+        additional_threat_lookup_pending: [
+          { entityType: 'Malware', input: { name: 'NewBot' } },
+        ],
+      };
+
+      const result = await buildAdditionalEntities(context, user, schema, values, bundle);
+
+      expect(loadFormEntity).toHaveBeenCalledTimes(1);
+      expect(bundle.objects).toHaveLength(2);
+      expect(result.threat).toHaveLength(2);
     });
   });
 
