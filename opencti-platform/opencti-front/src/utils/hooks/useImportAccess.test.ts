@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import useImportAccess from './useImportAccess';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from './useGranted';
+import { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from './useGranted';
 
 const cap = (name: string) => ({ name });
 
@@ -60,6 +60,23 @@ describe('Hook: useImportAccess', () => {
       const { hook } = testRenderHook(
         () => useImportAccess(),
         { userContext: buildUserContext([], [KNOWLEDGE_KNGETEXPORT]) },
+      );
+      expect(hook.result.current.hasOnlyAccessToImportDraftTab).toBe(false);
+    });
+
+    it('should be false when user has only the base KNOWLEDGE capability (read-only access)', () => {
+      // Regression: old code matched any capability containing 'KNOWLEDGE', granting incorrect access
+      const { hook } = testRenderHook(
+        () => useImportAccess(),
+        { userContext: buildUserContext([KNOWLEDGE]) },
+      );
+      expect(hook.result.current.hasOnlyAccessToImportDraftTab).toBe(false);
+    });
+
+    it('should be false when user has only the base KNOWLEDGE capability in draft', () => {
+      const { hook } = testRenderHook(
+        () => useImportAccess(),
+        { userContext: buildUserContext([], [KNOWLEDGE]) },
       );
       expect(hook.result.current.hasOnlyAccessToImportDraftTab).toBe(false);
     });
