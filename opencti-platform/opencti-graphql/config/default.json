@@ -155,6 +155,7 @@
   "no_proxy": "",
   "https_proxy_ca": [],
   "https_proxy_reject_unauthorized": false,
+  "trust_proxy_addresses": [],
   "relations_deduplication": {
     "past_days": 30,
     "next_days": 30,

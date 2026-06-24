@@ -247,7 +247,7 @@ export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_
 
 // Gather all request header that are configured to be added to audit or activity logs.
 export const getRequestAuditHeaders = (req) => {
-  const sourceIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const sourceIp = req.ip;
   const allHeadersRequested = R.mergeAll((auditRequestHeaderToKeep).map((header) => ({ [header]: req.header(header) })));
   return { ...allHeadersRequested, ip: sourceIp };
 };
