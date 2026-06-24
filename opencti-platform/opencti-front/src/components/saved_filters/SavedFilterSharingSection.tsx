@@ -34,6 +34,7 @@ const SavedFilterSharingSection = ({
             addMeUserWithAdminRights={!isEditMode}
             hideInfo
             customAccessRights={['view', 'admin']}
+            disableOwnerAccessRightsEdition
           />
         </AccordionDetails>
       </Accordion>
