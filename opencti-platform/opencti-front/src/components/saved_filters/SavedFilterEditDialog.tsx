@@ -76,7 +76,14 @@ const SavedFilterEditDialog = ({
   const { me } = useAuth();
   const hasShareFilterCapability = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
 
-  const owner = { id: me.id, name: me.name, entity_type: 'User' };
+  const ownerMember = savedFilter.authorizedMembers?.find((a) => a.member_id === savedFilter.creator_id);
+  const owner = ownerMember
+    ? {
+        id: ownerMember.member_id,
+        name: ownerMember.name,
+        entity_type: ownerMember.entity_type,
+      }
+    : { id: me.id, name: me.name, entity_type: 'User' };
 
   const [commitFieldPatch] = useApiMutation(
     savedFilterFieldPatchMutation,
