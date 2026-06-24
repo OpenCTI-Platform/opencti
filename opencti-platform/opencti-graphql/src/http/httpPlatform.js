@@ -115,7 +115,7 @@ const createApp = async (app, schema) => {
   // Init the http server
   const defaultTrustedProxies = ['loopback', 'linklocal', 'uniquelocal'];
   const extraProxies = nconf.get('trust_proxy_addresses') || [];
-  const trustedProxies = [...defaultTrustedProxies, ...extraProxies.filter(Boolean)];
+  const trustedProxies = [...defaultTrustedProxies, ...extraProxies];
   app.set('trust proxy', trustedProxies);
   if (DEV_MODE) {
     app.set('json spaces', 2);
