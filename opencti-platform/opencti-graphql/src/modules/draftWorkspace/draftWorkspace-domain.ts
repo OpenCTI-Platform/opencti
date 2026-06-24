@@ -262,8 +262,9 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
     });
   }
   const draftWorkspaceInput = { ...inputWithBypassedMandatoryAttributes, authorized_members: authorizedMembers, ...defaultOps };
+  const executionContext = bypassDraftContext(context);
   const createdDraftWorkspace = await createEntity(
-    context,
+    executionContext,
     user,
     draftWorkspaceInput,
     ENTITY_TYPE_DRAFT_WORKSPACE,
