@@ -11,6 +11,7 @@ import {
   elBulk,
   elDeleteElements,
   elFindByIds,
+  elLoadById,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
   ES_MAX_CONCURRENCY,
@@ -61,9 +62,14 @@ const lowLevelMergeGroup = async (
   sources: DynEntity[],
   newId: string,
 ) => {
-  const targetId = target.internal_id;
-  const targetName = target.name;
-  const targetIndex = target._index;
+  // `target` was loaded by fullEntitiesList, which paginates with the default withoutRels=true and therefore
+  // strips the denormalized rel_<type>.internal_id fields from _source. Reload it with the rels present so the
+  // dedup map below reflects the edges the target already holds; otherwise existing edges go undetected and the
+  // merge creates duplicate relations (and breaks the single-ref dedup, e.g. created-by).
+  const fullTarget = (await elLoadById<DynEntity>(context, SYSTEM_USER, target.internal_id, { type: entityType })) ?? target;
+  const targetId = fullTarget.internal_id;
+  const targetName = fullTarget.name;
+  const targetIndex = fullTarget._index;
   const sourceIds = sources.map((s) => s.internal_id);
   const sourceIdSet = new Set(sourceIds);
   const internalIds = new Set([targetId, ...sourceIds]);
@@ -72,7 +78,7 @@ const lowLevelMergeGroup = async (
   // In-memory dedup state: neighbors already connected to the target per relationship type. It is seeded
   // from the target denormalization and grown as source relations get redirected, so that two sources
   // pointing to the same neighbor do not create a duplicate edge.
-  const targetConnected = buildTargetConnected(target);
+  const targetConnected = buildTargetConnected(fullTarget);
   // Neighbors to add to the target denormalization, applied once at the end (grouped to avoid self conflicts).
   const targetAddByRelType: Record<string, Set<string>> = {};
 
@@ -174,19 +180,19 @@ const lowLevelMergeGroup = async (
   // Merge identity-bearing attributes onto the target and move its standard_id to the new value. The
   // previous standard_id and all source ids are archived in x_opencti_stix_ids so older references resolve.
   const stixIds = R.uniq([
-    ...(target[IDS_STIX] ?? []),
-    ...(target.standard_id !== newId ? [target.standard_id] : []),
+    ...(fullTarget[IDS_STIX] ?? []),
+    ...(fullTarget.standard_id !== newId ? [fullTarget.standard_id] : []),
     ...sources.flatMap((s) => [s.standard_id, ...(s[IDS_STIX] ?? [])]),
   ]).filter((id) => isNotEmptyField(id) && id !== newId);
   const aliasValues = R.uniq([
-    ...(target[aliasField] ?? []),
+    ...(fullTarget[aliasField] ?? []),
     ...sources.flatMap((s) => [...(s[aliasField] ?? []), s.name]),
   ]).filter((value) => isNotEmptyField(value));
   await elBulk(context, {
     refresh: true,
     timeout: BULK_TIMEOUT,
     body: [
-      { update: { _index: targetIndex, _id: target._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      { update: { _index: targetIndex, _id: fullTarget._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       { doc: { standard_id: newId, [IDS_STIX]: stixIds, [aliasField]: aliasValues } },
     ],
   });
