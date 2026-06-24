@@ -31,8 +31,27 @@ const message = '[MIGRATION] Attack Pattern / Course of Action case-insensitive 
 
 const REL_PREFIX = 'rel_';
 const REL_SUFFIX = '.internal_id';
+// A failing group is retried once: most failures are transient (engine timeout, version conflict on a
+// heavily connected neighbor) and succeed on a second attempt.
+const MAX_MERGE_ATTEMPTS = 2;
+const RETRY_DELAY_MS = 3000;
 
 type DynEntity = BasicStoreEntity & Record<string, any>;
+
+const wait = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
+// Extract a loggable, accurate view of an error. The platform logger only unwraps message/stack for
+// values that pass `instanceof Error` / `instanceof GraphQLError`; in the bundled build that check can
+// miss (duplicate graphql copies, engine client errors...), which is why a bare `{ cause: err }` ends up
+// serialized as `{}`. Reading the properties defensively guarantees we always log the real reason.
+const describeError = (err: any) => ({
+  errorName: err?.name,
+  errorMessage: err?.message ?? String(err),
+  errorCode: err?.extensions?.code,
+  errorStack: err?.stack,
+});
 
 // Build the "already connected" map from the target's own denormalized rel_<type>.internal_id fields.
 // It is the cheap source of truth to deduplicate source relations against the target without ever
@@ -55,6 +74,11 @@ const buildTargetConnected = (target: DynEntity): Record<string, Set<string>> =>
 // onto the target and merges identity attributes, using only engine primitives and painless scripts.
 // It deliberately skips the high-level overhead of mergeEntities (locks, full ref resolution of the
 // canonical entity, stream merge events, bus notifications, redis deletions, trash).
+//
+// Retry safety: per page, the denormalizations (neighbor rel_*, target rel_*) are written FIRST and the
+// connections redirect is written LAST. The redirect is the "commit": only once it lands does the
+// relation stop matching the source stream. Every write is idempotent, so re-running the group after a
+// partial failure converges - already-redirected relations are skipped, the rest are reprocessed.
 const lowLevelMergeGroup = async (
   context: AuthContext,
   entityType: string,
@@ -65,7 +89,8 @@ const lowLevelMergeGroup = async (
   // `target` was loaded by fullEntitiesList, which paginates with the default withoutRels=true and therefore
   // strips the denormalized rel_<type>.internal_id fields from _source. Reload it with the rels present so the
   // dedup map below reflects the edges the target already holds; otherwise existing edges go undetected and the
-  // merge creates duplicate relations (and breaks the single-ref dedup, e.g. created-by).
+  // merge creates duplicate relations (and breaks the single-ref dedup, e.g. created-by). Reloading also makes
+  // a retried group dedup against reality (edges already redirected by a previous attempt are accounted for).
   const fullTarget = (await elLoadById<DynEntity>(context, SYSTEM_USER, target.internal_id, { type: entityType })) ?? target;
   const targetId = fullTarget.internal_id;
   const targetName = fullTarget.name;
@@ -79,8 +104,7 @@ const lowLevelMergeGroup = async (
   // from the target denormalization and grown as source relations get redirected, so that two sources
   // pointing to the same neighbor do not create a duplicate edge.
   const targetConnected = buildTargetConnected(fullTarget);
-  // Neighbors to add to the target denormalization, applied once at the end (grouped to avoid self conflicts).
-  const targetAddByRelType: Record<string, Set<string>> = {};
+  let redirected = 0;
 
   // Streamed, page-by-page processing of every relation attached to the sources (both directions),
   // keeping memory flat and parallelizing the elastic writes.
@@ -99,6 +123,7 @@ const lowLevelMergeGroup = async (
     }
     const relConnectionUpdates: any[] = [];
     const neighborUpdates: any[] = [];
+    const pageTargetAddByRelType: Record<string, Set<string>> = {};
     for (let i = 0; i < relations.length; i += 1) {
       const rel = relations[i];
       const relType = rel.entity_type;
@@ -137,45 +162,47 @@ const lowLevelMergeGroup = async (
           data: { internal_id: targetId },
         });
       }
-      // The neighbor must be added to the target denormalization (applied once at the end).
+      // The neighbor must be added to the target denormalization (applied below, before the redirect).
       const targetRole = fromIsSource ? ROLE_FROM : ROLE_TO;
       if (isImpactedTypeAndSide(relType, rel.fromType, rel.toType, targetRole)) {
-        if (!targetAddByRelType[relType]) targetAddByRelType[relType] = new Set();
-        targetAddByRelType[relType].add(neighborId);
+        if (!pageTargetAddByRelType[relType]) pageTargetAddByRelType[relType] = new Set();
+        pageTargetAddByRelType[relType].add(neighborId);
       }
       // Mark the neighbor as connected so the next source relation to it (same type) is deduplicated.
       if (!targetConnected[relType]) targetConnected[relType] = new Set();
       targetConnected[relType].add(neighborId);
     }
-    // Apply this page in parallel bulks.
-    await BluePromise.map(
-      R.splitEvery(MAX_BULK_OPERATIONS, relConnectionUpdates),
-      (batch) => elUpdateRelationConnections(context, batch),
-      { concurrency: ES_MAX_CONCURRENCY },
-    );
+    // 1. Denormalize the neighbors (replace the source id by the target id), idempotent on retry.
     await BluePromise.map(
       R.splitEvery(MAX_BULK_OPERATIONS, neighborUpdates),
       (batch) => elUpdateEntityConnections(context, batch),
       { concurrency: ES_MAX_CONCURRENCY },
     );
+    // 2. Denormalize the target (add the neighbors of this page), one update per type to avoid conflicts
+    // on the target document. Done before the redirect so a retried group never loses these edges.
+    const pageTargetEntries = Object.entries(pageTargetAddByRelType);
+    for (let i = 0; i < pageTargetEntries.length; i += 1) {
+      const [relType, neighbors] = pageTargetEntries[i];
+      await elUpdateEntityConnections(context, [{
+        _index: targetIndex,
+        id: targetId,
+        toReplace: null,
+        relationType: relType,
+        data: { internal_id: Array.from(neighbors) },
+      }]);
+    }
+    // 3. Commit: redirect the relation connections (this is what makes the relation leave the source stream).
+    await BluePromise.map(
+      R.splitEvery(MAX_BULK_OPERATIONS, relConnectionUpdates),
+      (batch) => elUpdateRelationConnections(context, batch),
+      { concurrency: ES_MAX_CONCURRENCY },
+    );
+    redirected += relConnectionUpdates.length;
     return true;
   };
 
   await fullRelationsList(context, SYSTEM_USER, ABSTRACT_STIX_RELATIONSHIP, { fromId: sourceIds, callback: processRelations });
   await fullRelationsList(context, SYSTEM_USER, ABSTRACT_STIX_RELATIONSHIP, { toId: sourceIds, callback: processRelations });
-
-  // Add all redirected neighbors to the target denormalization, one update per type to avoid conflicts on the target doc.
-  const targetAddEntries = Object.entries(targetAddByRelType);
-  for (let i = 0; i < targetAddEntries.length; i += 1) {
-    const [relType, neighbors] = targetAddEntries[i];
-    await elUpdateEntityConnections(context, [{
-      _index: targetIndex,
-      id: targetId,
-      toReplace: null,
-      relationType: relType,
-      data: { internal_id: Array.from(neighbors) },
-    }]);
-  }
 
   // Merge identity-bearing attributes onto the target and move its standard_id to the new value. The
   // previous standard_id and all source ids are archived in x_opencti_stix_ids so older references resolve.
@@ -201,6 +228,46 @@ const lowLevelMergeGroup = async (
   // still attached to the sources - found through a live connections query, not the stale denormalization -
   // and cleans the corresponding rel_<type>.internal_id on their neighbors. forceDelete skips the trash.
   await elDeleteElements(context, SYSTEM_USER, sources as unknown as BasicStoreObject[], { forceDelete: true });
+  return { redirected };
+};
+
+// Merge a single collision group, retrying once on failure (each attempt fully reloads the target and is
+// idempotent). Returns true when the group was merged, false when it failed after every attempt.
+const mergeGroupWithRetry = async (
+  context: AuthContext,
+  entityType: string,
+  target: DynEntity,
+  sources: DynEntity[],
+  newId: string,
+  progress: string,
+) => {
+  const targetId = target.internal_id;
+  const sourceIds = sources.map((s) => s.internal_id);
+  for (let attempt = 1; attempt <= MAX_MERGE_ATTEMPTS; attempt += 1) {
+    const attemptStart = new Date().getTime();
+    try {
+      const { redirected } = await lowLevelMergeGroup(context, entityType, target, sources, newId);
+      logMigration.info(
+        `${message} > merged ${sources.length} ${entityType} into ${targetId}`
+        + ` (${redirected} relation(s) redirected, attempt ${attempt}/${MAX_MERGE_ATTEMPTS}, ${new Date().getTime() - attemptStart} ms) ${progress}`,
+      );
+      return true;
+    } catch (err) {
+      if (attempt < MAX_MERGE_ATTEMPTS) {
+        logApp.warn(
+          `${message} > merge attempt ${attempt}/${MAX_MERGE_ATTEMPTS} failed for group ${newId}, retrying in ${RETRY_DELAY_MS} ms ${progress}`,
+          { ...describeError(err), targetId, sourceIds },
+        );
+        await wait(RETRY_DELAY_MS);
+      } else {
+        logApp.error(
+          `${message} > failed to merge group for ${newId} after ${MAX_MERGE_ATTEMPTS} attempts ${progress}`,
+          { ...describeError(err), targetId, sourceIds },
+        );
+      }
+    }
+  }
+  return false;
 };
 
 const migrateEntityType = async (context: AuthContext, entityType: string) => {
@@ -212,7 +279,7 @@ const migrateEntityType = async (context: AuthContext, entityType: string) => {
   ) as DynEntity[];
   if (allEntities.length === 0) {
     logMigration.info(`${message} > no ${entityType} found, skipping`);
-    return { merged: 0, collisions: 0 };
+    return { merged: 0, collisions: 0, failed: 0 };
   }
   logMigration.info(`${message} > ${allEntities.length} ${entityType}(s) to evaluate`);
 
@@ -223,7 +290,7 @@ const migrateEntityType = async (context: AuthContext, entityType: string) => {
   const collisionGroups = Object.values(groupedByNewId).filter((g) => (g?.length ?? 0) > 1) as { entity: DynEntity; newId: string }[][];
   logMigration.info(`${message} > ${collisionGroups.length} ${entityType} collision group(s) to merge`);
   if (collisionGroups.length === 0) {
-    return { merged: 0, collisions: 0 };
+    return { merged: 0, collisions: 0, failed: 0 };
   }
 
   // Batch-resolve the relation count of every colliding entity in a single request. The most-connected
@@ -242,6 +309,7 @@ const migrateEntityType = async (context: AuthContext, entityType: string) => {
   // relations between two distinct duplicates consistent (each group fully completes, with refresh,
   // before the next one). The heavy per-group elastic work is parallelized inside lowLevelMergeGroup.
   let mergedEntities = 0;
+  let failedGroups = 0;
   for (let index = 0; index < collisionGroups.length; index += 1) {
     const group = collisionGroups[index];
     const { newId } = group[0];
@@ -255,21 +323,20 @@ const migrateEntityType = async (context: AuthContext, entityType: string) => {
     );
     const target = sorted[0].entity;
     const sources = sorted.slice(1).map((e) => e.entity);
-    try {
-      await lowLevelMergeGroup(context, entityType, target, sources, newId);
+    const progress = `(${index + 1}/${collisionGroups.length})`;
+    logMigration.info(
+      `${message} > merging group ${progress}: ${sources.length} source(s) into ${target.internal_id}`
+      + ` (target rel_count=${relCountByInternalId.get(target.internal_id) ?? 0})`,
+    );
+    const success = await mergeGroupWithRetry(context, entityType, target, sources, newId, progress);
+    if (success) {
       mergedEntities += sources.length;
-      logMigration.info(
-        `${message} > merged ${sources.length} ${entityType} into ${target.internal_id}`
-        + ` (target rel_count=${relCountByInternalId.get(target.internal_id) ?? 0})`
-        + ` (${index + 1}/${collisionGroups.length})`,
-      );
-    } catch (err) {
-      // Do not abort the whole migration if one group fails: log and keep going.
-      logApp.error(`${message} > failed to merge group for ${newId}`, { cause: err, targetId: target.internal_id, sourceIds: sources.map((s) => s.internal_id) });
+    } else {
+      failedGroups += 1;
     }
   }
 
-  return { merged: mergedEntities, collisions: collisionGroups.length };
+  return { merged: mergedEntities, collisions: collisionGroups.length, failed: failedGroups };
 };
 
 export const up = async (next: (error?: Error) => void) => {
@@ -277,16 +344,17 @@ export const up = async (next: (error?: Error) => void) => {
   const start = new Date().getTime();
   logMigration.info(`${message} > started`);
 
-  const stats = { merged: 0, collisions: 0 };
+  const stats = { merged: 0, collisions: 0, failed: 0 };
   for (const entityType of [ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION]) {
     const typeStats = await migrateEntityType(context, entityType);
     stats.merged += typeStats.merged;
     stats.collisions += typeStats.collisions;
+    stats.failed += typeStats.failed;
   }
 
   logMigration.info(
     `${message} > done in ${new Date().getTime() - start} ms`
-    + ` (${stats.merged} duplicate(s) merged across ${stats.collisions} group(s))`,
+    + ` (${stats.merged} duplicate(s) merged across ${stats.collisions} group(s), ${stats.failed} group(s) failed)`,
   );
   next();
 };
