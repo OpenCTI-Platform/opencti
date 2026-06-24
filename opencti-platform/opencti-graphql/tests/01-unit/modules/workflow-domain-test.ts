@@ -12,6 +12,7 @@ import {
   deleteWorkflowDefinition,
   triggerWorkflowEvent,
   clearWorkflowPendingState,
+  getWorkflowPublishedVersionId,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -1352,5 +1353,67 @@ describe('clearWorkflowPendingState', () => {
     expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
     const history = JSON.parse(patches.find((p: any) => p.key === 'history')?.value[0] ?? '[]');
     expect(history[history.length - 1].event).toBe('admin_clear_pending_state');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getWorkflowPublishedVersionId
+// ---------------------------------------------------------------------------
+
+describe('getWorkflowPublishedVersionId', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  it('returns null when entitySetting has no workflow_id', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace' } as any;
+
+    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+
+    expect(result).toBeNull();
+    expect(storeLoadById).not.toHaveBeenCalled();
+  });
+
+  it('returns null when the WorkflowDefinitionEntity is not found', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' } as any;
+    (storeLoadById as any).mockResolvedValue(undefined);
+
+    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+
+    expect(result).toBeNull();
+    expect(storeLoadById).toHaveBeenCalledWith(mockContext, mockContext.user, 'wf-id', expect.any(String));
+  });
+
+  it('returns null when the WorkflowDefinitionEntity has no published_version', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' } as any;
+    (storeLoadById as any).mockResolvedValue({ id: 'wf-id', draft_version: { id: 'draft-v1' } });
+
+    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+
+    expect(result).toBeNull();
+  });
+
+  it('returns the published_version id when the workflow has been published', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' } as any;
+    (storeLoadById as any).mockResolvedValue({
+      id: 'wf-id',
+      published_version: { id: 'pub-v1', timestamp: '2024-01-01T00:00:00Z' },
+      draft_version: { id: 'draft-v2', timestamp: '2024-02-01T00:00:00Z' },
+    });
+
+    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+
+    expect(result).toBe('pub-v1');
+  });
+
+  it('returns the published_version id even when no draft exists (published and clean)', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' } as any;
+    (storeLoadById as any).mockResolvedValue({
+      id: 'wf-id',
+      published_version: { id: 'pub-v1', timestamp: '2024-01-01T00:00:00Z' },
+    });
+
+    const result = await getWorkflowPublishedVersionId(mockContext, entitySetting);
+
+    expect(result).toBe('pub-v1');
   });
 });

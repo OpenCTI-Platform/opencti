@@ -7,6 +7,7 @@ import {
   triggerWorkflowEvent,
   clearWorkflowPendingState,
   getWorkflowInstance,
+  getWorkflowPublishedVersionId,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
 
@@ -20,6 +21,7 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   deleteWorkflowDefinition: vi.fn(),
   triggerWorkflowEvent: vi.fn(),
   clearWorkflowPendingState: vi.fn(),
+  getWorkflowPublishedVersionId: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-async-completion', () => ({
@@ -844,5 +846,52 @@ describe('DraftWorkspace.workflowInstance resolver', () => {
     );
 
     expect(getWorkflowInstance).toHaveBeenCalledWith(mockContext, mockContext.user, 'draft-internal-id');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EntitySetting.workflow_published_version_id
+// ---------------------------------------------------------------------------
+
+describe('EntitySetting.workflow_published_version_id resolver', () => {
+  it('calls getWorkflowPublishedVersionId with context and entitySetting, and returns the result', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' };
+    (getWorkflowPublishedVersionId as any).mockResolvedValue('pub-v1');
+
+    const result = await workflowResolvers.EntitySetting.workflow_published_version_id(
+      entitySetting,
+      {},
+      mockContext,
+    );
+
+    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, entitySetting);
+    expect(result).toBe('pub-v1');
+  });
+
+  it('returns null when the workflow has never been published', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' };
+    (getWorkflowPublishedVersionId as any).mockResolvedValue(null);
+
+    const result = await workflowResolvers.EntitySetting.workflow_published_version_id(
+      entitySetting,
+      {},
+      mockContext,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('returns null when entitySetting has no workflow_id', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace' };
+    (getWorkflowPublishedVersionId as any).mockResolvedValue(null);
+
+    const result = await workflowResolvers.EntitySetting.workflow_published_version_id(
+      entitySetting,
+      {},
+      mockContext,
+    );
+
+    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, entitySetting);
+    expect(result).toBeNull();
   });
 });
