@@ -169,7 +169,7 @@
     "source-map": "0.7.6",
     "tough-cookie": "6.0.1",
     "turndown": "7.2.4",
-    "unzipper": "0.12.3",
+    "unzipper": "0.12.5",
     "uuid": "14.0.0",
     "uuid-time": "1.0.0",
     "validator": "13.15.35",
