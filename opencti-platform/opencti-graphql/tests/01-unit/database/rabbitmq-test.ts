@@ -66,7 +66,7 @@ vi.mock('lru-cache', () => {
   return { LRUCache: FakeLRUCache };
 });
 
-import { getConnectorQueueSize, metrics } from '../../../src/database/rabbitmq';
+import { filterLeastUsedQueues, getBestBackgroundConnectorId, getConnectorQueueSize, metrics } from '../../../src/database/rabbitmq';
 
 describe('rabbitmq: metrics', () => {
   const context = {};
@@ -257,5 +257,88 @@ describe('rabbitmq: getConnectorQueueSize', () => {
 
     const result = await getConnectorQueueSize(context, user, 'connector-abc');
     expect(result).toBe(15);
+  });
+});
+
+describe('rabbitmq: filterLeastUsedQueues', () => {
+  it('should return the single queue with the fewest messages', () => {
+    const queues = [
+      { name: 'opencti_push_background-task-0', messages: 5 },
+      { name: 'opencti_push_background-task-1', messages: 2 },
+      { name: 'opencti_push_background-task-2', messages: 9 },
+    ];
+    expect(filterLeastUsedQueues(queues).map((q) => q.name)).toEqual(['opencti_push_background-task-1']);
+  });
+
+  it('should return all queues tied at the minimum message count', () => {
+    const queues = [
+      { name: 'opencti_push_background-task-0', messages: 0 },
+      { name: 'opencti_push_background-task-1', messages: 0 },
+      { name: 'opencti_push_background-task-2', messages: 3 },
+      { name: 'opencti_push_background-task-3', messages: 0 },
+    ];
+    expect(filterLeastUsedQueues(queues).map((q) => q.name)).toEqual([
+      'opencti_push_background-task-0',
+      'opencti_push_background-task-1',
+      'opencti_push_background-task-3',
+    ]);
+  });
+
+  it('should treat a missing messages count as 0', () => {
+    const queues = [
+      { name: 'opencti_push_background-task-0' },
+      { name: 'opencti_push_background-task-1', messages: 4 },
+    ];
+    expect(filterLeastUsedQueues(queues).map((q) => q.name)).toEqual(['opencti_push_background-task-0']);
+  });
+});
+
+describe('rabbitmq: getBestBackgroundConnectorId', () => {
+  const context = {};
+  const user = {};
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const mockQueues = (queues: { name: string; messages?: number }[]) => {
+    mockHttpClient.get.mockImplementation((url: string) => {
+      if (url === '/api/overview') {
+        return Promise.resolve({ data: { rabbitmq_version: '3.12.0' } });
+      }
+      if (url.includes('/api/queues')) {
+        return Promise.resolve({ data: queues.map((q) => ({ consumers: 1, ...q })) });
+      }
+      return Promise.resolve({ data: {} });
+    });
+  };
+
+  it('should select the least used background-task queue', async () => {
+    mockQueues([
+      { name: 'opencti_push_background-task-0', messages: 5 },
+      { name: 'opencti_push_background-task-1', messages: 1 },
+      { name: 'opencti_push_background-task-2', messages: 8 },
+    ]);
+    const result = await getBestBackgroundConnectorId(context, user);
+    expect(result).toBe('background-task-1');
+  });
+
+  it('should only ever return one of the least used queues when several are tied', async () => {
+    mockQueues([
+      { name: 'opencti_push_background-task-0', messages: 0 },
+      { name: 'opencti_push_background-task-1', messages: 0 },
+      { name: 'opencti_push_background-task-2', messages: 7 },
+      { name: 'opencti_push_background-task-3', messages: 0 },
+    ]);
+    const tiedAtMinimum = new Set(['background-task-0', 'background-task-1', 'background-task-3']);
+    // Random selection: run many times, every result must be among the tied-minimum queues.
+    for (let i = 0; i < 50; i += 1) {
+      const result = await getBestBackgroundConnectorId(context, user);
+      expect(tiedAtMinimum.has(result)).toBe(true);
+    }
   });
 });
