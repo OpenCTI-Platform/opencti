@@ -369,26 +369,27 @@ These components end the playbook or branch.
 
 ### Send email from template
 
-This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use.
+This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organisation, see below for more details.
 
 ***Component details***
-***Dynamic variables***
 
-This component supports dynamic variables:
+***Dynamic targets***
 
-- ***Dynamic from the triggering entity (as target)***: Sends the email to the corresponding user of the field you choose, based on the triggering entity only. You can choose from:
+This component supports dynamic targets on the field selected and then based on the entities set in the 'Resolve dynamic targets from'. 
 
-- ****Creator****: Sends an email using the selected template to the corresponding user.
+***Dynamic from context***
+Sends the email to the corresponding user of the field you choose, based on the entity specified in the bundle scope. You can choose the email targets from:
 
-- ****Assignee****: Sends an email using the selected template to the corresponding user.
+- ****Creator****: Sends an email using the selected template to the user(s) listed as creator(s) on the entity.
 
-- ****Participant****: Sends an email using the selected template to the corresponding user.
+- ****Assignee****: Sends an email using the selected template to the user(s) listed as assignee(s) on the entity.
 
-- ***Dynamic from the bundle (as target)***: Sends the email to the corresponding users of all entities in the bundle, not only the triggering entity.
+- ****Participant****: Sends an email using the selected template to the user(s) listed as participant(s) on the entity.
 
-- ****Organization****: All users of all organizations in the bundle receive an email.
+***Dynamic from organisations present in the bundle***
+Sends the email to the corresponding users of the organisation entities in the bundle. 
 
-- ***Static fields***
+***Static fields***
 
 This component also supports static fields for recipients: users, groups, and organizations.
 
@@ -402,6 +403,25 @@ This component passes the STIX 2.1 bundle to the AI agent, by default this will 
 
 ### Send to notifier
 
-This component generates a notification each time it receives a STIX 2.1 bundle. The Send to notifier component ends a branch but does not save any changes.
+This component generates a notification each time it receives a STIX 2.1 bundle. The Send to notifier component ends a branch but does not save any changes. You can select the notifier to be used and set the notification targets either dynamically, based on the data processed or set to a static user, group or organisation, see below for more details.
+
+***Component details***
+***Dynamic variables***
+This component supports dynamic targets on the field selected and then based on the entities set in the 'Resolve dynamic targets from'. 
+
+***Dynamic from context***
+Sends the email to the corresponding user of the field you choose, based on the entity specified in the bundle scope. You can choose the notifier targets from:
+
+- ****Creator****: Sends a notifier using the selected template to the user(s) listed as creator(s) on the entity.
+
+- ****Assignee****: Sends a notifier using the selected template to the user(s) listed as assignee(s) on the entity.
+
+- ****Participant****: Sends a notifier using the selected template to the user(s) listed as participant(s) on the entity.
+
+***Dynamic from Organisations present in the bundle***: Sends the notification to the corresponding users of all organisation entities in the bundle. 
+
+***Static fields***
+
+This component also supports static fields for recipients: users, groups, and organizations.
 
 To save changes, create a branch next to the notifier by clicking the ****arrow**** icon in the bottom-right corner of the component, and add a ****Send for ingestion**** component in that branch.
