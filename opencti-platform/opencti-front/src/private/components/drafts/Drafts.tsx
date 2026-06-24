@@ -1,19 +1,14 @@
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import DraftStatusChip from '@components/common/draft/DraftStatusChip';
 import DraftWorkspaceDialogCreation from '@components/common/files/draftWorkspace/DraftWorkspaceDialogCreation';
 import ImportMenu from '@components/data/ImportMenu';
 import DraftCreation from '@components/drafts/DraftCreation';
-import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/styles';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import ItemStatus from '../../../components/ItemStatus';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../components/i18n';
-import type { Theme } from '../../../components/Theme';
-import { hexToRGB } from '../../../utils/Colors';
 import { computeValidationProgress } from '../../../utils/draft/draftUtils';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -162,9 +157,6 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
-  const draftColor = getDraftModeColor(theme);
-  const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const { setTitle } = useConnectedDocumentModifier();
@@ -230,26 +222,10 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       percentWidth: 10,
       isSortable: true,
       render: (node) => (
-        node.workflowInstance?.currentStatus ? (
-          <ItemStatus status={node.workflowInstance.currentStatus} />
-        ) : (
-          <Chip
-            variant="outlined"
-            label={node.draft_status}
-            style={{
-              fontSize: 12,
-              lineHeight: '12px',
-              height: 20,
-              float: 'left',
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              width: 90,
-              color: node.draft_status === 'open' ? draftColor : validatedDraftColor,
-              borderColor: node.draft_status === 'open' ? draftColor : validatedDraftColor,
-              backgroundColor: hexToRGB(node.draft_status === 'open' ? draftColor : validatedDraftColor),
-            }}
-          />
-        )
+        <DraftStatusChip
+          draftStatus={node.draft_status}
+          workflowCurrentStatus={node.workflowInstance?.currentStatus}
+        />
       ),
     },
     draft_validation_progress: {
@@ -292,26 +268,10 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       percentWidth: 10,
       isSortable: true,
       render: (node) => (
-        node.workflowInstance?.currentStatus ? (
-          <ItemStatus status={node.workflowInstance.currentStatus} />
-        ) : (
-          <Chip
-            variant="outlined"
-            label={node.draft_status}
-            style={{
-              fontSize: 12,
-              lineHeight: '12px',
-              height: 20,
-              float: 'left',
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              width: 90,
-              color: node.draft_status === 'open' ? draftColor : validatedDraftColor,
-              borderColor: node.draft_status === 'open' ? draftColor : validatedDraftColor,
-              backgroundColor: hexToRGB(node.draft_status === 'open' ? draftColor : validatedDraftColor),
-            }}
-          />
-        )
+        <DraftStatusChip
+          draftStatus={node.draft_status}
+          workflowCurrentStatus={node.workflowInstance?.currentStatus}
+        />
       ),
     },
     draft_validation_progress: {

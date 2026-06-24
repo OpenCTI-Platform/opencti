@@ -1,7 +1,4 @@
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
-import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/styles';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
 import Alert from '../../../../components/Alert';
@@ -10,9 +7,6 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
-import ItemStatus from '../../../../components/ItemStatus';
-import type { Theme } from '../../../../components/Theme';
-import { hexToRGB } from '../../../../utils/Colors';
 import { computeValidationProgress } from '../../../../utils/draft/draftUtils';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -22,6 +16,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useRuntimeSortGuard from '../../../../utils/hooks/useRuntimeSortGuard';
+import DraftStatusChip from '@components/common/draft/DraftStatusChip';
 import { RestrictedDrafts_node$data } from './__generated__/RestrictedDrafts_node.graphql';
 import { RestrictedDraftsLines_data$data } from './__generated__/RestrictedDraftsLines_data.graphql';
 
@@ -30,7 +25,6 @@ export const RestrictedDraftLineFragment = graphql`
         id
         entity_type
         name
-        description
         createdBy {
           ... on Identity {
             id
@@ -151,9 +145,6 @@ const RestrictedDrafts = () => {
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
-  const draftColor = getDraftModeColor(theme);
-  const validatedDraftColor = theme.palette.success.main;
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Restricted Drafts | Restriction | Data'));
@@ -214,22 +205,7 @@ const RestrictedDrafts = () => {
       percentWidth: 10,
       isSortable: true,
       render: ({ draft_status }: RestrictedDrafts_node$data) => (
-        <Chip
-          variant="outlined"
-          label={draft_status}
-          style={{
-            fontSize: 12,
-            lineHeight: '12px',
-            height: 20,
-            float: 'left',
-            textTransform: 'uppercase',
-            borderRadius: 4,
-            width: 90,
-            color: draft_status === 'open' ? draftColor : validatedDraftColor,
-            borderColor: draft_status === 'open' ? draftColor : validatedDraftColor,
-            backgroundColor: hexToRGB(draft_status === 'open' ? draftColor : validatedDraftColor),
-          }}
-        />
+        <DraftStatusChip draftStatus={draft_status} />
       ),
     },
     draft_validation_progress: {
@@ -272,26 +248,10 @@ const RestrictedDrafts = () => {
       percentWidth: 10,
       isSortable: true,
       render: (node: RestrictedDrafts_node$data) => (
-        node.workflowInstance?.currentStatus ? (
-          <ItemStatus status={node.workflowInstance.currentStatus} />
-        ) : (
-          <Chip
-            variant="outlined"
-            label={node.draft_status}
-            style={{
-              fontSize: 12,
-              lineHeight: '12px',
-              height: 20,
-              float: 'left',
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              width: 90,
-              color: node.draft_status === 'open' ? draftColor : validatedDraftColor,
-              borderColor: node.draft_status === 'open' ? draftColor : validatedDraftColor,
-              backgroundColor: hexToRGB(node.draft_status === 'open' ? draftColor : validatedDraftColor),
-            }}
-          />
-        )
+        <DraftStatusChip
+          draftStatus={node.draft_status}
+          workflowCurrentStatus={node.workflowInstance?.currentStatus}
+        />
       ),
     },
     draft_validation_progress: {
