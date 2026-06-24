@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { generateStandardId } from '../schema/identifier';
+import { generateAliasesId, generateStandardId } from '../schema/identifier';
 import { ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
 import { isNotEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
@@ -21,11 +21,11 @@ import {
   ROLE_FROM,
   ROLE_TO,
 } from '../database/engine';
-import { ABSTRACT_STIX_RELATIONSHIP, IDS_STIX } from '../schema/general';
+import { ABSTRACT_STIX_RELATIONSHIP, IDS_STIX, INTERNAL_IDS_ALIASES } from '../schema/general';
 import { isSingleRelationsRef } from '../schema/stixEmbeddedRelationship';
 import { logApp, logMigration } from '../config/conf';
 import type { AuthContext } from '../types/user';
-import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, BasicStoreRelation } from '../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreRelation } from '../types/store';
 
 const message = '[MIGRATION] Attack Pattern / Course of Action case-insensitive duplicate low-level merge';
 
@@ -215,19 +215,23 @@ const lowLevelMergeGroup = async (
     ...(fullTarget[aliasField] ?? []),
     ...sources.flatMap((s) => [...(s[aliasField] ?? []), s.name]),
   ]).filter((value) => isNotEmptyField(value));
+  // Recompute the derived alias internal ids (i_aliases_ids) from the merged aliases, exactly as mergeEntities
+  // does on every alias change. Without it the engine's alias-based id resolution would ignore the source
+  // names/aliases now carried by the target, so an upsert referencing one of them could recreate a duplicate.
+  const aliasesIds = generateAliasesId(aliasValues, fullTarget);
   await elBulk(context, {
     refresh: true,
     timeout: BULK_TIMEOUT,
     body: [
       { update: { _index: targetIndex, _id: fullTarget._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      { doc: { standard_id: newId, [IDS_STIX]: stixIds, [aliasField]: aliasValues } },
+      { doc: { standard_id: newId, [IDS_STIX]: stixIds, [aliasField]: aliasValues, [INTERNAL_IDS_ALIASES]: aliasesIds } },
     ],
   });
 
   // Remove the source entities. elDeleteElements also deletes the leftover (duplicate / internal) relations
   // still attached to the sources - found through a live connections query, not the stale denormalization -
   // and cleans the corresponding rel_<type>.internal_id on their neighbors. forceDelete skips the trash.
-  await elDeleteElements(context, SYSTEM_USER, sources as unknown as BasicStoreObject[], { forceDelete: true });
+  await elDeleteElements(context, SYSTEM_USER, sources, { forceDelete: true });
   return { redirected };
 };
 
