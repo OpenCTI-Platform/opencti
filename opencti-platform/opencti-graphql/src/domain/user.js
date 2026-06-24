@@ -1115,6 +1115,9 @@ export const meEditField = async (context, user, userId, inputs, password = null
     }
     // Check password confirmation in case of password change
     if (key === 'password') {
+      if (typeof password !== 'string' || password.length === 0) {
+        throw FunctionalError('The current password you have provided is not valid');
+      }
       const dbPassword = user.password;
       const match = bcrypt.compareSync(password, dbPassword);
       if (!match) {
@@ -2004,7 +2007,8 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
     logged = platformUsers.get(user.internal_id);
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  validateUser(logged, settings);
+  // Password expiration is enforced after login by the frontend guard on /force-password-change.
+  validateUser(logged, settings, { skipForcePasswordCheck: true });
   const withOrigin = userWithOrigin(req, logged);
   const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session

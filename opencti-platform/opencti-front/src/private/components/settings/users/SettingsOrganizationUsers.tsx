@@ -192,7 +192,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     password_valid_until: {
       label: 'Password valid until',
       percentWidth: 10,
-      render: (v) => (v ? fd(v) : '-'),
+      render: (valid) => (valid ? fd(valid) : '-'),
     },
     created_at: {
       percentWidth: 10,
