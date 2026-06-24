@@ -214,7 +214,61 @@ export const draftWorkspacesTimeSeries = async (context: AuthContext, user: Auth
   return timeSeriesEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
+// Helper: application-level distribution by workflow instance current status name.
+// Required because workflowInstance.currentState is stored on a separate WorkflowInstance
+// document, not on the DraftWorkspace document itself, making native ES aggregation impossible.
+const resolveWorkflowInstanceDistribution = async (context: AuthContext, user: AuthUser, args: any): Promise<{ label: string; value: number; entity: null }[]> => {
+  const executionCtx = bypassDraftContext(context);
+  const order: string = args.order ?? 'desc';
+  const limit: number = args.limit ?? 10;
+
+  // 1. Load all WorkflowInstances → map entity_id → StatusTemplate ID (currentState)
+  const allWorkflowInstances: any[] = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], { first: 5000 });
+  const draftToStatusTemplateId = new Map<string, string>();
+  for (const wi of allWorkflowInstances) {
+    if (wi.entity_id && wi.currentState) {
+      draftToStatusTemplateId.set(wi.entity_id as string, wi.currentState as string);
+    }
+  }
+
+  // 2. Load StatusTemplates → map id → name
+  const statusTemplateIds = [...new Set(draftToStatusTemplateId.values())];
+  const statusNameMap = new Map<string, string>();
+  if (statusTemplateIds.length > 0) {
+    const statusTemplates = await elFindByIds(executionCtx, executionCtx.user!, statusTemplateIds, { type: ENTITY_TYPE_STATUS_TEMPLATE }) as any[];
+    for (const st of statusTemplates) {
+      statusNameMap.set(st.id as string, st.name as string);
+    }
+  }
+
+  // 3. Load all DraftWorkspaces matching the filters (only pass list-relevant args)
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    filters: resolvedArgs.filters,
+    search: resolvedArgs.search,
+    first: 5000,
+  });
+
+  // 4. Group by status name → count
+  const counts = new Map<string, number>();
+  for (const draft of allDrafts) {
+    const statusTemplateId = draftToStatusTemplateId.get(draft.id);
+    const statusName = statusTemplateId ? (statusNameMap.get(statusTemplateId) ?? statusTemplateId) : 'Unknown';
+    counts.set(statusName, (counts.get(statusName) ?? 0) + 1);
+  }
+
+  // 5. Sort by count and limit
+  const entries = [...counts.entries()]
+    .sort((a, b) => (order === 'asc' ? a[1] - b[1] : b[1] - a[1]))
+    .slice(0, limit);
+
+  return entries.map(([label, value]) => ({ label, value, entity: null }));
+};
+
 export const draftWorkspacesDistribution = async (context: AuthContext, user: AuthUser, args: any) => {
+  if (args.field === 'workflowInstance') {
+    return resolveWorkflowInstanceDistribution(context, user, args);
+  }
   const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
   return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
