@@ -30,6 +30,7 @@ import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
+import { buildFilterEventContext } from './playbookManager/playbookManagerUtils';
 import { DigestPeriod, type FilterGroup, TriggerEventType, TriggerType } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import type { Representative } from '../types/store';
@@ -175,11 +176,15 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
   // nativeTriggers
   for (let index = 0; index < platformUsers.length; index += 1) {
     const user = platformUsers[index];
-    notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    if (isAssigneeAutoTriggerEnabled) {
+      notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    }
     notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
     if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
       notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
@@ -483,6 +488,8 @@ export const buildTargetEvents = async (
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
+    // Build event context for has_changed/not_has_changed filter evaluation
+    const eventContext = buildFilterEventContext(streamEvent.data as UpdateEvent);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
@@ -494,8 +501,8 @@ export const buildTargetEvents = async (
       const userHasAccessToUpdateEvent = await isUserCanAccessStreamUpdateEvent(user, streamEvent.data);
       if (userHasAccessToUpdateEvent) {
         // Check if the event matched/matches the trigger filters and the user rights
-        const isPreviousMatch = await isStixMatchFilterGroup(userContext, user, previous, finalFilters);
-        const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters);
+        const isPreviousMatch = await isStixMatchFilterGroup(userContext, user, previous, finalFilters, eventContext);
+        const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters, eventContext);
         // Depending on the previous visibility, the displayed event type will be different
         if (!useSideEventMatching) { // Case classic live trigger & instance trigger direct events: user should be notified of the direct event
           const translatedType = eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, eventType);
@@ -532,7 +539,10 @@ export const buildTargetEvents = async (
       const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
       const userContext = { ...context, user_inside_platform_organization };
       const notificationUser = convertToNotificationUser(user, notifiers);
-      const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters);
+      // For creation events, pass isCreation context so has_changed evaluates to true when field is non-null
+      // For delete events, no eventContext: has_changed evaluates to false, not_has_changed to true
+      const eventContext = eventType === EVENT_TYPE_CREATE ? { changedAttributes: [], isCreation: true } : undefined;
+      const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters, eventContext);
       if (isCurrentlyMatch) {
         if (!useSideEventMatching) { // classic live trigger or instance trigger with direct event
           const message = await generateNotificationMessageForInstance(userContext, user, data);

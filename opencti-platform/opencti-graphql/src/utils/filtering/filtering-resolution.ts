@@ -230,7 +230,8 @@ export const convertFiltersToQueryOptions = async (filters: FilterGroup | null, 
   const { before, before_exclude = false } = opts;
   const { defaultTypes = [], extraFilters = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
-  let finalFilters = filters;
+  // Strip has_changed/not_has_changed filters (they are event-context operators, not database query operators)
+  let finalFilters = filters ? stripEventContextFilters(filters) : null;
   if (after || before || extraFilters.length > 0) {
     const filtersContent = [...extraFilters];
     if (after) {
@@ -246,4 +247,21 @@ export const convertFiltersToQueryOptions = async (filters: FilterGroup | null, 
     };
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
+};
+
+/**
+ * Strip has_changed / not_has_changed filters from a filter group.
+ * These operators are only meaningful in event-context (stream) filtering, not database queries.
+ */
+export const stripEventContextFilters = (filterGroup: FilterGroup): FilterGroup | null => {
+  const strippedFilters = filterGroup.filters.filter(
+    (f) => (f.operator as string) !== 'has_changed' && (f.operator as string) !== 'not_has_changed',
+  );
+  const strippedFilterGroups = filterGroup.filterGroups
+    .map((fg) => stripEventContextFilters(fg))
+    .filter((fg): fg is FilterGroup => fg !== null);
+  if (strippedFilters.length === 0 && strippedFilterGroups.length === 0) {
+    return null;
+  }
+  return { ...filterGroup, filters: strippedFilters, filterGroups: strippedFilterGroups };
 };

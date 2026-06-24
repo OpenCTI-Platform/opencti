@@ -460,13 +460,18 @@ const ProfileOverviewComponent = (props) => {
                 variant="outlined"
                 style={{ margin: '10px 0 0 0' }}
               >
-                {t_i18n('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}
+                {settings.platform_notifier_auto_trigger_assignee
+                  ? t_i18n('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')
+                  : t_i18n('Automatic notifications for assignees and participants have been disabled by your platform administrator')
+                }
               </Alert>
-              <NotifierField
-                label={t('Personal notifiers')}
-                name="personal_notifiers"
-                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
-              />
+              {settings.platform_notifier_auto_trigger_assignee && (
+                <NotifierField
+                  label={t('Personal notifiers')}
+                  name="personal_notifiers"
+                  onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+                />
+              )}
             </Form>
           )}
         </Formik>
@@ -651,6 +656,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   settings: graphql`
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
+      platform_notifier_auto_trigger_assignee
       xtm_hub_registration_status
       xtm_hub_available_news_feed_types
     }

@@ -145,6 +145,8 @@ enum FilterOperator {
   within
   only_eq_to
   not_only_eq_to
+  has_changed
+  not_has_changed
 }
 
 enum XTMHubRegistrationStatus {
@@ -1400,6 +1402,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
+  # Notifiers
+  platform_notifier_auto_trigger_assignee: Boolean!
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String
@@ -15977,7 +15981,7 @@ type WorkEditMutations {
 ######## INTERNAL OBJECT ENTITIES
 
 type SettingsEditMutations {
-  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY])
+  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION])
   contextPatch(input: EditContext): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   contextClean: Settings @auth(for: [SETTINGS_SETPARAMETERS])
   editMessage(input: SettingsMessageInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS])

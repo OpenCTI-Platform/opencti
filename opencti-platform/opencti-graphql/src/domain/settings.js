@@ -7,7 +7,7 @@ import { delEditContext, getRedisVersion, notify, setEditContext } from '../data
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -188,6 +188,30 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
 const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'filigran_chatbot_ai_cgu_status',
   'platform_ai_enabled',
+  'platform_title',
+  'platform_favicon',
+  'platform_email',
+  'platform_language',
+  'platform_whitemark',
+  'platform_login_message',
+  'platform_banner_text',
+  'platform_banner_level',
+  'platform_consent_message',
+  'platform_consent_confirm_text',
+  'platform_no_access_message',
+  'platform_map_tile_server_dark',
+  'platform_map_tile_server_light',
+  'platform_session_idle_timeout',
+  'platform_session_timeout',
+  'platform_session_max_concurrent',
+  'analytics_google_analytics_v4',
+  'enterprise_license',
+  'platform_trash_enabled',
+  'platform_reference_attachment',
+];
+
+const CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS = [
+  'platform_notifier_auto_trigger_assignee',
 ];
 
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
@@ -205,10 +229,12 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const hasSetParameterCapability = isUserHasCapability(user, SETTINGS_SETPARAMETERS);
+  const hasSetCustomizationCapability = isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
   const keysUserCannotModify = [
     ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetParameterCapability ? [] : PARAMETERS_SETTINGS_RESTRICTED_KEYS),
+    ...(hasSetCustomizationCapability ? [] : CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
   ];
 
