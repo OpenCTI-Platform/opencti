@@ -8122,6 +8122,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dompurify@npm:3.2.7":
+  version: 3.2.7
+  resolution: "dompurify@npm:3.2.7"
+  dependencies:
+    "@types/trusted-types": "npm:^2.0.7"
+  dependenciesMeta:
+    "@types/trusted-types":
+      optional: true
+  checksum: 10c0/d41bb31a72f1acdf9b84c56723c549924b05d92a39a15bd8c40bec9007ff80d5fccf844bc53ee12af5b69044f9a7ce24a1e71c267a4f49cf38711379ed8c1363
+  languageName: node
+  linkType: hard
+
 "dompurify@npm:3.4.11":
   version: 3.4.11
   resolution: "dompurify@npm:3.4.11"
@@ -11910,6 +11922,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"marked@npm:14.0.0":
+  version: 14.0.0
+  resolution: "marked@npm:14.0.0"
+  bin:
+    marked: bin/marked.js
+  checksum: 10c0/57a47cb110f7b1a10f398b0a7236f9183aad2dcd5345ee73f2732b6387e585d04cef472bc655d2f84c542296be9728e179aebe3ed7f2f8666b8a0a9dae592876
+  languageName: node
+  linkType: hard
+
 "marked@npm:18.0.5":
   version: 18.0.5
   resolution: "marked@npm:18.0.5"
@@ -12742,6 +12763,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"monaco-editor@npm:0.55.1":
+  version: 0.55.1
+  resolution: "monaco-editor@npm:0.55.1"
+  dependencies:
+    dompurify: "npm:3.2.7"
+    marked: "npm:14.0.0"
+  checksum: 10c0/c1a0cf887657b42c8996518bc5ee96bbd39c977f862d2a2b2018427c45f14b0dd25d1452278202056f6b1ead97981282ccacd7d7ad918d8f0ef084159f974a25
+  languageName: node
+  linkType: hard
+
 "monaco-graphql@npm:1.8.0, monaco-graphql@npm:^1.8.0":
   version: 1.8.0
   resolution: "monaco-graphql@npm:1.8.0"
@@ -13368,7 +13399,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.6.2"
-    monaco-editor: "npm:0.52.2"
+    monaco-editor: "npm:0.55.1"
     monaco-graphql: "npm:1.8.0"
     monocart-reporter: "npm:2.11.2"
     pdfmake: "npm:0.3.11"
