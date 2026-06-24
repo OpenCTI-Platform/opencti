@@ -83,7 +83,9 @@ const Index = ({ settings }: IndexProps) => {
     flexGrow: 1,
     overflowY: 'hidden',
     height: '100vh',
-    paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
+    paddingTop: isForcePasswordChangeRoute
+      ? `calc(16px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`
+      : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
 
@@ -92,6 +94,9 @@ const Index = ({ settings }: IndexProps) => {
     flex: 1,
     overflowY: 'auto',
     minHeight: 0,
+    display: isForcePasswordChangeRoute ? 'flex' : 'block',
+    alignItems: isForcePasswordChangeRoute ? 'center' : 'stretch',
+    justifyContent: isForcePasswordChangeRoute ? 'center' : 'flex-start',
   };
 
   return (
@@ -110,7 +115,7 @@ const Index = ({ settings }: IndexProps) => {
         }}
       >
         <CssBaseline />
-        <TopBar />
+        {!isForcePasswordChangeRoute && <TopBar />}
         {!isForcePasswordChangeRoute && <LeftBar />}
         <Message />
         <NewsFeedToastManager />
@@ -154,7 +159,7 @@ const Index = ({ settings }: IndexProps) => {
               </Routes>
             </Suspense>
           </Box>
-          <DraftToolbar />
+          {!isForcePasswordChangeRoute && <DraftToolbar />}
         </Stack>
       </Box>
     </ChatbotProvider>
