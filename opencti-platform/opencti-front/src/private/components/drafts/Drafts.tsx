@@ -24,6 +24,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useRuntimeSortGuard from '../../../utils/hooks/useRuntimeSortGuard';
+import ItemStatus from 'src/components/ItemStatus';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
