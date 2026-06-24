@@ -153,6 +153,7 @@ interface DraftsProps {
 
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
   const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE], false, { capabilitiesInDraft: [KNOWLEDGE_KNUPDATE] });
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -181,13 +182,15 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     filters,
   } = viewStorage;
 
-  // Reset sortBy to a safe default if runtime sort is disabled and a runtime-only field is persisted in localStorage/URL
-  useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
+  // Compute safeSortBy synchronously to prevent the initial Relay query from using an
+  // unsupported orderBy (runtime-only field on OpenSearch) before the effect repairs state.
+  const safeSortBy = useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
 
   const filtersForDataTable = addFilter(filters, 'entity_id', [entityId || ''], entityId ? 'eq' : 'nil', 'and');
   const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filtersForDataTable);
   const queryPaginationOptions = {
     ...paginationOptions,
+    orderBy: safeSortBy,
     filters: contextFilters,
   } as unknown as DraftsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<DraftsLinesPaginationQuery>(
@@ -296,7 +299,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       {queryRef && (
         <>
           <DataTable
-            dataColumns={isFeatureEnable('DRAFT_WORKFLOW') ? dataColumns : dataColumnsWithoutMetadata}
+            dataColumns={isDraftWorkflowEnabled ? dataColumns : dataColumnsWithoutMetadata}
             resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}

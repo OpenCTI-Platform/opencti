@@ -17,7 +17,6 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useRuntimeSortGuard from '../../../../utils/hooks/useRuntimeSortGuard';
 import DraftStatusChip from '@components/common/draft/DraftStatusChip';
-import { RestrictedDrafts_node$data } from './__generated__/RestrictedDrafts_node.graphql';
 import { RestrictedDraftsLines_data$data } from './__generated__/RestrictedDraftsLines_data.graphql';
 
 export const RestrictedDraftLineFragment = graphql`
@@ -142,6 +141,7 @@ const LOCAL_STORAGE_KEY = 'draftWorkspacesRestricted';
 const RestrictedDrafts = () => {
   const [ref, setRef] = useState<HTMLDivElement | undefined>(undefined);
   const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
@@ -166,11 +166,14 @@ const RestrictedDrafts = () => {
     filters,
   } = viewStorage;
 
-  useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
+  // Compute safeSortBy synchronously to prevent the initial Relay query from using an
+  // unsupported orderBy (runtime-only field on OpenSearch) before the effect repairs state.
+  const safeSortBy = useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
+    orderBy: safeSortBy,
     filters: contextFilters,
   } as unknown as DraftsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<DraftsLinesPaginationQuery>(
@@ -204,8 +207,11 @@ const RestrictedDrafts = () => {
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
-      render: ({ draft_status }: RestrictedDrafts_node$data) => (
-        <DraftStatusChip draftStatus={draft_status} />
+      render: (node) => (
+        <DraftStatusChip
+          draftStatus={node.draft_status}
+          workflowCurrentStatus={node.workflowInstance?.currentStatus}
+        />
       ),
     },
     draft_validation_progress: {
@@ -213,7 +219,7 @@ const RestrictedDrafts = () => {
       label: 'Validation progress',
       percentWidth: 10,
       isSortable: false,
-      render: ({ validationWork }: RestrictedDrafts_node$data) => defaultRender(computeValidationProgress<RestrictedDrafts_node$data['validationWork']>(validationWork)),
+      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
     },
   };
 
@@ -247,7 +253,7 @@ const RestrictedDrafts = () => {
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
-      render: (node: RestrictedDrafts_node$data) => (
+      render: (node) => (
         <DraftStatusChip
           draftStatus={node.draft_status}
           workflowCurrentStatus={node.workflowInstance?.currentStatus}
@@ -259,7 +265,7 @@ const RestrictedDrafts = () => {
       label: 'Validation progress',
       percentWidth: 10,
       isSortable: false,
-      render: ({ validationWork }: RestrictedDrafts_node$data) => defaultRender(computeValidationProgress<RestrictedDrafts_node$data['validationWork']>(validationWork)),
+      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
     },
   };
 
@@ -280,7 +286,7 @@ const RestrictedDrafts = () => {
         <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
           <DataTable
             rootRef={ref}
-            dataColumns={isFeatureEnable('DRAFT_WORKFLOW') ? dataColumns : dataColumnsWithoutMetadata}
+            dataColumns={isDraftWorkflowEnabled ? dataColumns : dataColumnsWithoutMetadata}
             resolvePath={(data: RestrictedDraftsLines_data$data) => (data.draftWorkspacesRestricted?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
