@@ -7,6 +7,7 @@ import * as draftContextUtils from '../../../src/utils/draftContext';
 import * as accessModule from '../../../src/utils/authorizedMembers';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import * as redis from '../../../src/database/redis';
+import * as cacheModule from '../../../src/database/cache';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 
@@ -15,6 +16,7 @@ vi.mock('../../../src/database/middleware-loader');
 vi.mock('../../../src/database/engine');
 vi.mock('../../../src/manager/telemetryManager');
 vi.mock('../../../src/database/redis');
+vi.mock('../../../src/database/cache');
 
 // Mock context and user
 const mockUser: any = {
@@ -401,5 +403,92 @@ describe('resolveWorkflowInstanceDistribution (via draftWorkspacesDistribution)'
     const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 2 });
 
     expect(result).toHaveLength(2);
+  });
+});
+
+describe('resolveSortByRefUsers (via findDraftWorkspacePaginated with objectAssignee/objectParticipant)', () => {
+  const mockUsers = [
+    { internal_id: 'user-florian', name: 'Florian' },
+    { internal_id: 'user-vi', name: 'Vi' },
+  ];
+
+  const mockDraftWithFlorian: any = { id: 'draft-florian', name: 'Draft Florian', 'object-assignee': ['user-florian'] };
+  const mockDraftWithVi: any = { id: 'draft-vi', name: 'Draft Vi', 'object-assignee': ['user-vi'] };
+  const mockDraftNoAssignee: any = { id: 'draft-empty', name: 'Draft No Assignee', 'object-assignee': [] };
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue(mockUsers as any);
+  });
+
+  it('should sort by objectAssignee ASC: Florian first, empty last', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([mockDraftWithVi, mockDraftWithFlorian, mockDraftNoAssignee] as any);
+
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
+      orderBy: 'objectAssignee' as any,
+      orderMode: 'asc',
+      first: 10,
+    });
+
+    const ids = result.edges.map((e: any) => e.node.id);
+    expect(ids).toEqual(['draft-florian', 'draft-vi', 'draft-empty']);
+  });
+
+  it('should sort by objectAssignee DESC: empty first, then Vi (reverse alpha)', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([mockDraftWithFlorian, mockDraftNoAssignee, mockDraftWithVi] as any);
+
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
+      orderBy: 'objectAssignee' as any,
+      orderMode: 'desc',
+      first: 10,
+    });
+
+    const ids = result.edges.map((e: any) => e.node.id);
+    expect(ids).toEqual(['draft-empty', 'draft-vi', 'draft-florian']);
+  });
+
+  it('should sort by objectParticipant ASC using object-participant relation field', async () => {
+    const draftWithParticipant: any = { id: 'draft-p', name: 'Draft P', 'object-participant': ['user-florian'] };
+    const draftNoParticipant: any = { id: 'draft-np', name: 'Draft NP', 'object-participant': [] };
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([draftNoParticipant, draftWithParticipant] as any);
+
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
+      orderBy: 'objectParticipant' as any,
+      orderMode: 'asc',
+      first: 10,
+    });
+
+    const ids = result.edges.map((e: any) => e.node.id);
+    expect(ids).toEqual(['draft-p', 'draft-np']);
+  });
+
+  it('should return empty pagination when there are no drafts', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([] as any);
+
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
+      orderBy: 'objectAssignee' as any,
+      orderMode: 'asc',
+      first: 10,
+    });
+
+    expect(result.edges).toHaveLength(0);
+    expect(result.pageInfo.globalCount).toBe(0);
+  });
+
+  it('should handle drafts where assignee id is not in the user cache (treats as no assignee)', async () => {
+    const draftUnknownUser: any = { id: 'draft-unknown', name: 'Draft Unknown', 'object-assignee': ['user-unknown-id'] };
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([mockDraftWithFlorian, draftUnknownUser] as any);
+
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, {
+      orderBy: 'objectAssignee' as any,
+      orderMode: 'asc',
+      first: 10,
+    });
+
+    const ids = result.edges.map((e: any) => e.node.id);
+    // Florian (known user) sorts first ASC; unknown user id treated as no-assignee, sorts last
+    expect(ids[0]).toBe('draft-florian');
+    expect(ids[1]).toBe('draft-unknown');
   });
 });

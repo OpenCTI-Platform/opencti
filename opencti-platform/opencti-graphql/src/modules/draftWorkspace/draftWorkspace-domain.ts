@@ -38,6 +38,8 @@ import { addDraftCreationCount, addDraftValidationCount } from '../../manager/te
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
+import { getEntitiesListFromCache } from '../../database/cache';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixRefRelationship, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -189,9 +191,88 @@ const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUse
   return buildPagination<BasicStoreEntityDraftWorkspace>(first, args.after ?? null, instances, sorted.length);
 };
 
+// Helper: application-level sort by objectAssignee or objectParticipant user name.
+// Required because DraftWorkspace lives in the internal objects ES index, which doesn't
+// reliably index rel_object-assignee.internal_id.keyword (a STIX-objects-only mapping).
+// The 'creator' sort works via creator_id (a flat field present in all indices).
+const resolveSortByRefUsers = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryDraftWorkspacesArgs,
+  relationName: string, // 'object-assignee' or 'object-participant'
+) => {
+  const first = args.first ?? 10;
+  const asc = (args.orderMode ?? 'asc') === 'asc';
+  const executionCtx = bypassDraftContext(context);
+
+  // 1. Load all users from cache → map internal_id → name
+  const allUsers: AuthUser[] = await getEntitiesListFromCache<AuthUser>(executionCtx, executionCtx.user!, ENTITY_TYPE_USER);
+  const userNameById = new Map<string, string>();
+  for (const u of allUsers) {
+    userNameById.set(u.internal_id, u.name);
+  }
+
+  // 2. Load all DraftWorkspaces with filters applied
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    ...resolvedArgs,
+    first: 5000,
+    orderBy: 'created_at',
+  });
+
+  // 3. For each draft, get the first user name from the denormalized relation field.
+  //    The data-converter stores all rel_<relationName>.* sub-fields merged into draft[relationName].
+  //    We iterate over the merged array and find the first value that is a known user internal_id.
+  const getDraftUserName = (draft: any): string => {
+    const relValues: string[] = draft[relationName] ?? [];
+    for (const val of relValues) {
+      const name = userNameById.get(val);
+      if (name) return name.toLowerCase();
+    }
+    return '';
+  };
+
+  // 4. Sort in memory: empty values first in DESC, last in ASC
+  const sorted = [...allDrafts].sort((a, b) => {
+    const aName = getDraftUserName(a);
+    const bName = getDraftUserName(b);
+    if (!aName && !bName) return 0;
+    // Empty values: last in ASC, first in DESC
+    if (!aName) return asc ? 1 : -1;
+    if (!bName) return asc ? -1 : 1;
+    const cmp = aName.localeCompare(bName);
+    return asc ? cmp : -cmp;
+  });
+
+  // 5. Cursor-based pagination
+  let startIndex = 0;
+  if (args.after) {
+    const sortResults = cursorToOffset(args.after);
+    const lastIndex = Array.isArray(sortResults) ? (sortResults[0] as number) : 0;
+    startIndex = lastIndex + 1;
+  }
+  const page = sorted.slice(startIndex, startIndex + first);
+
+  const instances = page.map((node, idx) => ({
+    node,
+    sort: [startIndex + idx] as [number],
+  }));
+
+  return buildPagination<BasicStoreEntityDraftWorkspace>(first, args.after ?? null, instances, sorted.length);
+};
+
 export const findDraftWorkspacePaginated = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
-  const sortedConnection = await resolveSortByWorkflowInstance(context, user, args);
-  if (sortedConnection) return sortedConnection;
+  const orderBy = args.orderBy as string;
+  if (orderBy === 'workflowInstance') {
+    const sortedConnection = await resolveSortByWorkflowInstance(context, user, args);
+    if (sortedConnection) return sortedConnection;
+  }
+  if (orderBy === 'objectAssignee') {
+    return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_ASSIGNEE);
+  }
+  if (orderBy === 'objectParticipant') {
+    return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_PARTICIPANT);
+  }
   const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
