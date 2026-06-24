@@ -5,6 +5,7 @@ import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
 import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../data-changes';
 import {
+  ACTIVITY_STREAM_NAME,
   buildCreateEvent,
   buildDeleteEvent,
   buildMergeEvent,
@@ -12,6 +13,7 @@ import {
   type FetchEventRangeOption,
   isStreamPublishable,
   LIVE_STREAM_NAME,
+  NOTIFICATION_STREAM_NAME,
   type RawStreamClient,
   STREAM_FULL_DEBUG_ACTIVATED,
   type StreamProcessor,
@@ -21,9 +23,13 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
+import { rawJoinedRedisRabbitStreamClient } from './joined-redis-rabbit-stream';
+import { isFeatureEnabled } from '../../config/conf';
 import { logApp } from '../../config/conf';
 
-const streamClient: RawStreamClient = rawRedisStreamClient;
+const isRabbitStreamEnabled = isFeatureEnabled('RABBIT_STREAM_ENABLED');
+const streamClient: RawStreamClient = isRabbitStreamEnabled ? rawJoinedRedisRabbitStreamClient : rawRedisStreamClient;
+
 export const initializeStreamStack = async () => {
   if (streamClient.initializeStreams) {
     await streamClient.initializeStreams();
@@ -38,7 +44,7 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
       logApp.info('Pushing event to stream', { event: eventToPush });
     }
     const pushToStreamFn = async () => {
-      await streamClient.rawPushToStream(eventToPush);
+      await streamClient.rawPushToStream(eventToPush, LIVE_STREAM_NAME);
     };
     await telemetry(context, user, 'INSERT STREAM', {
       [ATTR_DB_NAMESPACE]: 'stream_engine',
@@ -154,7 +160,7 @@ export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
 
 // region opencti notification stream
 export const storeNotificationEvent = async <T extends StreamNotifEvent>(_context: AuthContext, event: T) => {
-  await streamClient.rawStoreNotificationEvent(event);
+  await streamClient.rawPushToStream(event, NOTIFICATION_STREAM_NAME);
 };
 export const fetchRangeNotifications = async <T extends StreamNotifEvent>(start: Date, end: Date): Promise<Array<T>> => {
   return streamClient.rawFetchRangeNotifications<T>(start, end);
@@ -162,6 +168,6 @@ export const fetchRangeNotifications = async <T extends StreamNotifEvent>(start:
 // endregion
 // region opencti audit stream
 export const storeActivityEvent = async (event: ActivityStreamEvent) => {
-  await streamClient.rawStoreActivityEvent(event);
+  await streamClient.rawPushToStream(event, ACTIVITY_STREAM_NAME);
 };
 // endregion
