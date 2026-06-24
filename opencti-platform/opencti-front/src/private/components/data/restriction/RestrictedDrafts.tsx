@@ -1,7 +1,4 @@
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
-import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/styles';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
 import Alert from '../../../../components/Alert';
@@ -10,15 +7,16 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import { hexToRGB } from '../../../../utils/Colors';
 import { computeValidationProgress } from '../../../../utils/draft/draftUtils';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import useAuth from '../../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { RestrictedDrafts_node$data } from './__generated__/RestrictedDrafts_node.graphql';
+import useRuntimeSortGuard from '../../../../utils/hooks/useRuntimeSortGuard';
+import DraftStatusChip from '@components/common/draft/DraftStatusChip';
 import { RestrictedDraftsLines_data$data } from './__generated__/RestrictedDraftsLines_data.graphql';
 
 export const RestrictedDraftLineFragment = graphql`
@@ -26,12 +24,39 @@ export const RestrictedDraftLineFragment = graphql`
         id
         entity_type
         name
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
         creators {
           id
           name
         }
         created_at
+        objectAssignee {
+          id
+          name
+          entity_type
+        }
+        objectParticipant {
+          id
+          name
+          entity_type
+        }
         draft_status
+        workflowInstance {
+          id
+          currentStatus {
+            id
+            template {
+              name
+              color
+            }
+          }
+        }
         validationWork {
             received_time
             processed_time
@@ -115,10 +140,11 @@ const LOCAL_STORAGE_KEY = 'draftWorkspacesRestricted';
 
 const RestrictedDrafts = () => {
   const [ref, setRef] = useState<HTMLDivElement | undefined>(undefined);
+  const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
-  const draftColor = getDraftModeColor(theme);
-  const validatedDraftColor = theme.palette.success.main;
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Restricted Drafts | Restriction | Data'));
@@ -140,9 +166,14 @@ const RestrictedDrafts = () => {
     filters,
   } = viewStorage;
 
+  // Compute safeSortBy synchronously to prevent the initial Relay query from using an
+  // unsupported orderBy (runtime-only field on OpenSearch) before the effect repairs state.
+  const safeSortBy = useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
+
   const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
+    orderBy: safeSortBy,
     filters: contextFilters,
   } as unknown as DraftsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<DraftsLinesPaginationQuery>(
@@ -158,17 +189,17 @@ const RestrictedDrafts = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftsLinesPaginationQuery>;
 
-  const dataColumns: DataTableProps['dataColumns'] = {
+  const dataColumnsWithoutMetadata: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 30,
+      percentWidth: 50,
       isSortable: true,
     },
     creator: {
-      percentWidth: 20,
+      percentWidth: 15,
       isSortable: true,
     },
     created_at: {
-      percentWidth: 20,
+      percentWidth: 15,
       isSortable: true,
     },
     draft_status: {
@@ -176,31 +207,65 @@ const RestrictedDrafts = () => {
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
-      render: ({ draft_status }: RestrictedDrafts_node$data) => (
-        <Chip
-          variant="outlined"
-          label={draft_status}
-          style={{
-            fontSize: 12,
-            lineHeight: '12px',
-            height: 20,
-            float: 'left',
-            textTransform: 'uppercase',
-            borderRadius: 4,
-            width: 90,
-            color: draft_status === 'open' ? draftColor : validatedDraftColor,
-            borderColor: draft_status === 'open' ? draftColor : validatedDraftColor,
-            backgroundColor: hexToRGB(draft_status === 'open' ? draftColor : validatedDraftColor),
-          }}
+      render: (node) => (
+        <DraftStatusChip
+          draftStatus={node.draft_status}
+          workflowCurrentStatus={node.workflowInstance?.currentStatus}
         />
       ),
     },
     draft_validation_progress: {
       id: 'draft_validation_progress',
       label: 'Validation progress',
-      percentWidth: 20,
+      percentWidth: 10,
       isSortable: false,
-      render: ({ validationWork }: RestrictedDrafts_node$data) => defaultRender(computeValidationProgress<RestrictedDrafts_node$data['validationWork']>(validationWork)),
+      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
+    },
+  };
+
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {
+      percentWidth: 28,
+      isSortable: true,
+    },
+    creator: {
+      percentWidth: 10,
+      isSortable: true,
+    },
+    created_at: {
+      percentWidth: 12,
+      isSortable: true,
+    },
+    createdBy: {
+      percentWidth: 10,
+      isSortable: isRuntimeSort,
+    },
+    objectAssignee: {
+      percentWidth: 10,
+      isSortable: isRuntimeSort,
+    },
+    objectParticipant: {
+      percentWidth: 10,
+      isSortable: isRuntimeSort,
+    },
+    draft_status: {
+      id: 'draft_status',
+      label: 'Status',
+      percentWidth: 10,
+      isSortable: true,
+      render: (node) => (
+        <DraftStatusChip
+          draftStatus={node.draft_status}
+          workflowCurrentStatus={node.workflowInstance?.currentStatus}
+        />
+      ),
+    },
+    draft_validation_progress: {
+      id: 'draft_validation_progress',
+      label: 'Validation progress',
+      percentWidth: 10,
+      isSortable: false,
+      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
     },
   };
 
@@ -221,7 +286,7 @@ const RestrictedDrafts = () => {
         <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
           <DataTable
             rootRef={ref}
-            dataColumns={dataColumns}
+            dataColumns={isDraftWorkflowEnabled ? dataColumns : dataColumnsWithoutMetadata}
             resolvePath={(data: RestrictedDraftsLines_data$data) => (data.draftWorkspacesRestricted?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}

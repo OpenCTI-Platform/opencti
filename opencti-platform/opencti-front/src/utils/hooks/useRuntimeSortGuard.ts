@@ -21,20 +21,31 @@ export const FALLBACK_SORT_FIELD = 'created_at';
  * This guards against stale sort values that would trigger an UnsupportedError
  * on OpenSearch, which does not support Elasticsearch runtime mappings.
  *
+ * Returns the safe sort field synchronously (computed during render) so callers can
+ * use it immediately in query variables — preventing the initial Relay query from
+ * being fired with an unsupported orderBy before the effect has a chance to run.
+ * The useEffect still runs to repair the persisted localStorage/URL value.
+ *
  * @param isRuntimeSort - Whether runtime sorting is supported by the current search engine.
  * @param sortBy - The currently active sort field (may come from localStorage/URL).
  * @param handleSort - Callback to update the sort field.
+ * @returns The safe sort field to use for the current query.
  */
 const useRuntimeSortGuard = (
   isRuntimeSort: boolean,
   sortBy: string | undefined,
   handleSort: (field: string, orderAsc: boolean) => void,
-): void => {
+): string => {
+  const isUnsafe = !isRuntimeSort && RUNTIME_ONLY_SORT_FIELDS.includes(sortBy ?? '');
+  const safeSortBy = isUnsafe ? FALLBACK_SORT_FIELD : (sortBy ?? FALLBACK_SORT_FIELD);
+
   useEffect(() => {
-    if (!isRuntimeSort && RUNTIME_ONLY_SORT_FIELDS.includes(sortBy ?? '')) {
+    if (isUnsafe) {
       handleSort(FALLBACK_SORT_FIELD, false);
     }
   }, [isRuntimeSort, sortBy]);
+
+  return safeSortBy;
 };
 
 export default useRuntimeSortGuard;
