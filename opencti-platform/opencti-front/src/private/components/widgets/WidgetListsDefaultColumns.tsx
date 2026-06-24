@@ -156,6 +156,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'workflowInstance', label: 'Workflow status' },
     { attribute: 'created_at', label: 'Platform creation date' },
     { attribute: 'creators', label: 'Creators' },
+    { attribute: 'createdBy' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
   ],

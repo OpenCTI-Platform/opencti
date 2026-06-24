@@ -21,6 +21,7 @@ const defaultDraftColumns: WidgetColumn[] = [
   { attribute: 'draft_status', label: 'Processing status' },
   { attribute: 'workflowInstance', label: 'Workflow status' },
   { attribute: 'creators', label: 'Creators' },
+  { attribute: 'createdBy' },
   { attribute: 'objectAssignee' },
   { attribute: 'objectParticipant' },
   { attribute: 'created_at', label: 'Creation date' },
@@ -49,6 +50,13 @@ export const draftsListQuery = graphql`
           creators {
             id
             name
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
           }
           objectAssignee {
             entity_type
