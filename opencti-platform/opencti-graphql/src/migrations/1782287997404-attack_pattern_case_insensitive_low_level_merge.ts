@@ -94,6 +94,13 @@ const buildTargetConnected = (target: DynEntity): Record<string, Set<string>> =>
 // connections redirect is written LAST. The redirect is the "commit": only once it lands does the
 // relation stop matching the source stream. Every write is idempotent, so re-running the group after a
 // partial failure converges - already-redirected relations are skipped, the rest are reprocessed.
+//
+// This denorm-first ordering is deliberate so a retried group never loses an edge it already redirected.
+// The two writes (relation doc + denorm doc) are inherently non-atomic, so a crash in the narrow window
+// between them can leave a stale rel_* entry on the target/neighbor that no relation backs. We accept that
+// bounded, cache-only drift rather than the only complete alternative - recomputing the denormalization
+// from the target's live relations, which would require loading the (huge) canonical neighborhood this
+// migration exists to avoid. The relation `connections` (the authoritative graph) stay consistent regardless.
 const lowLevelMergeGroup = async (
   context: AuthContext,
   entityType: string,
