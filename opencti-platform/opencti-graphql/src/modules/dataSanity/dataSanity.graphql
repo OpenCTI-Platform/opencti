@@ -1,0 +1,12 @@
+type DataSanityFix {
+    name: String!
+    execution_type: String!
+}
+
+extend type Query {
+    dataSanityFixes: [DataSanityFix!]! @auth(for: [BYPASS])
+}
+
+extend type Mutation {
+    dataSanityFixForceRun(fix_name: String!): ID @auth(for: [BYPASS])
+}

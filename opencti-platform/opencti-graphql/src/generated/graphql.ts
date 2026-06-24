@@ -6788,6 +6788,12 @@ export enum DataComponentsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type DataSanityFix = {
+  __typename?: 'DataSanityFix';
+  execution_type: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
 export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'DataSource';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -17048,6 +17054,7 @@ export type Mutation = {
   dataComponentFieldPatch?: Maybe<DataComponent>;
   dataComponentRelationAdd?: Maybe<StixRefRelationship>;
   dataComponentRelationDelete?: Maybe<DataComponent>;
+  dataSanityFixForceRun?: Maybe<Scalars['ID']['output']>;
   dataSourceAdd?: Maybe<DataSource>;
   dataSourceContextClean?: Maybe<DataSource>;
   dataSourceContextPatch?: Maybe<DataSource>;
@@ -17939,6 +17946,11 @@ export type MutationDataComponentRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationDataSanityFixForceRunArgs = {
+  fix_name: Scalars['String']['input'];
 };
 
 
@@ -24378,6 +24390,7 @@ export type Query = {
   customViewsSettings: CustomViewsSettings;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
+  dataSanityFixes: Array<DataSanityFix>;
   dataSource?: Maybe<DataSource>;
   dataSources?: Maybe<DataSourceConnection>;
   decayExclusionRule?: Maybe<DecayExclusionRule>;
@@ -39577,6 +39590,7 @@ export type ResolversTypes = ResolversObject<{
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
   DataComponentEdge: ResolverTypeWrapper<Omit<DataComponentEdge, 'node'> & { node: ResolversTypes['DataComponent'] }>;
   DataComponentsOrdering: DataComponentsOrdering;
+  DataSanityFix: ResolverTypeWrapper<DataSanityFix>;
   DataSource: ResolverTypeWrapper<BasicStoreEntityDataSource>;
   DataSourceAddInput: DataSourceAddInput;
   DataSourceConnection: ResolverTypeWrapper<Omit<DataSourceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataSourceEdge']>>> }>;
@@ -40688,6 +40702,7 @@ export type ResolversParentTypes = ResolversObject<{
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
   DataComponentEdge: Omit<DataComponentEdge, 'node'> & { node: ResolversParentTypes['DataComponent'] };
+  DataSanityFix: DataSanityFix;
   DataSource: BasicStoreEntityDataSource;
   DataSourceAddInput: DataSourceAddInput;
   DataSourceConnection: Omit<DataSourceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataSourceEdge']>>> };
@@ -43665,6 +43680,11 @@ export type DataComponentConnectionResolvers<ContextType = any, ParentType exten
 export type DataComponentEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponentEdge'] = ResolversParentTypes['DataComponentEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DataComponent'], ParentType, ContextType>;
+}>;
+
+export type DataSanityFixResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityFix'] = ResolversParentTypes['DataSanityFix']> = ResolversObject<{
+  execution_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type DataSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSource'] = ResolversParentTypes['DataSource']> = ResolversObject<{
@@ -47311,6 +47331,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataComponentFieldPatch?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentFieldPatchArgs, 'id' | 'input'>>;
   dataComponentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationAddArgs, 'id' | 'input'>>;
   dataComponentRelationDelete?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  dataSanityFixForceRun?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataSanityFixForceRunArgs, 'fix_name'>>;
   dataSourceAdd?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceAddArgs, 'input'>>;
   dataSourceContextClean?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextCleanArgs, 'id'>>;
   dataSourceContextPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextPatchArgs, 'id' | 'input'>>;
@@ -49175,6 +49196,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
+  dataSanityFixes?: Resolver<Array<ResolversTypes['DataSanityFix']>, ParentType, ContextType>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
   dataSources?: Resolver<Maybe<ResolversTypes['DataSourceConnection']>, ParentType, ContextType, Partial<QueryDataSourcesArgs>>;
   decayExclusionRule?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<QueryDecayExclusionRuleArgs, 'id'>>;
@@ -53222,6 +53244,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;
+  DataSanityFix?: DataSanityFixResolvers<ContextType>;
   DataSource?: DataSourceResolvers<ContextType>;
   DataSourceConnection?: DataSourceConnectionResolvers<ContextType>;
   DataSourceEdge?: DataSourceEdgeResolvers<ContextType>;

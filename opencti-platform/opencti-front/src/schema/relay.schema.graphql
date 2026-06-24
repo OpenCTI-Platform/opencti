@@ -9809,6 +9809,7 @@ type Query {
   redisStreamInfo: RedisStreamInfo
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
+  dataSanityFixes: [DataSanityFix!]!
 }
 
 type Subscription {
@@ -10775,6 +10776,7 @@ type Mutation {
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
+  dataSanityFixForceRun(fix_name: String!): ID
 }
 
 enum WorkflowExecutionStatus {
@@ -16769,4 +16771,9 @@ type RetentionRuleEdge {
 type RetentionRuleEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): RetentionRule
+}
+
+type DataSanityFix {
+  name: String!
+  execution_type: String!
 }
