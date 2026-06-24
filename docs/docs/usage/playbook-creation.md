@@ -55,10 +55,11 @@ To insert a component between two existing components, click the **+** button on
 ## Step 3: End your playbook
 
 Playbooks finishing processing the bundle with at least one of the following components:
-- **send for ingestion** is required to update your OpenCTI knowledge with the modifications the playbook has made to the data
-- **notify users** of the data will trigger a notification to users, can be ran in parrallel to other actions in your playbook. 
+- **Send for ingestion** is required to update your OpenCTI knowledge with the modifications the playbook has made to the data
+- **Send to notifier / Send email from template** of the data will trigger a notification to users, can be ran in parrallel to other actions in your playbook.
+- **Send to AI agent** This sends the STIX bundle to an XTM One AI agent as the final step of the playbook, please note this requires access to XTM One.
 
-These two components will complete a branch of your playbook. See the [Playbook components](playbook-components.md) page for full details of the available components. If you want to both send for ingestion and send a notification then you can use the option to “add a new branch at the same level from the parent output”. 
+These components will complete a branch of your playbook. See the [Playbook components](playbook-components.md) page for full details of the available components. If you want to both send for ingestion and send a notification then you can use the option to “add a new branch at the same level from the parent output”. 
 
 ![Add new branch at the same level](assets/playbook_add_new_branch_at_same_level.png)
 
