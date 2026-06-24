@@ -1,5 +1,9 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  baseBranchPatterns: [
+    'main',
+    '/^lts\\/.*/'
+  ],
   extends: [
     ':semanticCommits',
     'config:recommended',
