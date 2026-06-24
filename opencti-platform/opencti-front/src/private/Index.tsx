@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
@@ -53,6 +53,8 @@ interface IndexProps {
 }
 
 const Index = ({ settings }: IndexProps) => {
+  const location = useLocation();
+  const isForcePasswordChangeRoute = location.pathname.startsWith('/dashboard/force-password-change');
   const theme = useTheme<Theme>();
   const { isTrashEnable } = useHelper();
   const {
@@ -86,7 +88,7 @@ const Index = ({ settings }: IndexProps) => {
   };
 
   const boxSx: SxProps = {
-    px: 3,
+    px: isForcePasswordChangeRoute ? 0 : 3,
     flex: 1,
     overflowY: 'auto',
     minHeight: 0,
@@ -102,14 +104,14 @@ const Index = ({ settings }: IndexProps) => {
       <Box
         sx={{
           display: 'flex',
-          minWidth: 1400,
+          minWidth: isForcePasswordChangeRoute ? 0 : 1400,
           marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
           marginBottom: bannerHeight,
         }}
       >
         <CssBaseline />
         <TopBar />
-        <LeftBar />
+        {!isForcePasswordChangeRoute && <LeftBar />}
         <Message />
         <NewsFeedToastManager />
         <Stack component="main" sx={mainSx}>

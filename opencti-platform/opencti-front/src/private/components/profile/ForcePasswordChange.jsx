@@ -2,8 +2,7 @@ import React from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { Box, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
@@ -11,6 +10,7 @@ import TextField from '../../../components/TextField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { useFormatter } from '../../../components/i18n';
 import { commitMutation, handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
+import LoginAlert from '../../../public/components/login/LoginAlert';
 
 const forcePasswordChangeMutation = graphql`
   mutation ForcePasswordChangeMutation(
@@ -33,7 +33,6 @@ const passwordValidation = (t) => Yup.object().shape({
 });
 
 const ForcePasswordChange = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
 
@@ -58,57 +57,79 @@ const ForcePasswordChange = () => {
   };
 
   return (
-    <Stack gap={2} sx={{ width: 700, margin: '0 auto' }}>
-      <Card title={t_i18n('Password expired')}>
-        <Formik
-          initialValues={{
-            current_password: '',
-            password: '',
-            confirmation: '',
-          }}
-          validationSchema={passwordValidation(t_i18n)}
-          onSubmit={onSubmit}
-        >
-          {({ submitForm, isSubmitting }) => (
-            <Form>
-              <Stack sx={{ gap: 2.5 }}>
-                <PasswordPolicies />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="current_password"
-                  label={t_i18n('Current password')}
-                  type="password"
-                  fullWidth={true}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="password"
-                  label={t_i18n('New password')}
-                  type="password"
-                  fullWidth={true}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="confirmation"
-                  label={t_i18n('Confirmation')}
-                  type="password"
-                  fullWidth={true}
-                />
-              </Stack>
-              <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
+    <Stack gap={1} sx={{ width: 500, margin: '0 auto' }}>
+      <LoginAlert severity="info">
+        {t_i18n('You can now set a new password for your account.')}
+      </LoginAlert>
+      <Card sx={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: 170 }}>
+          <Formik
+            enableReinitialize={true}
+            validateOnMount={true}
+            initialValues={{
+              current_password: '',
+              password: '',
+              confirmation: '',
+            }}
+            validationSchema={passwordValidation(t_i18n)}
+            onSubmit={onSubmit}
+          >
+            {({ isSubmitting, isValid, values }) => (
+              <Form
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%',
+                  height: '100%',
+                }}
+              >
+                <Box flex={1}>
+                  <Field
+                    component={TextField}
+                    name="current_password"
+                    label={t_i18n('Current password')}
+                    type="password"
+                    fullWidth={true}
+                  />
+                  <div style={{ marginTop: 16 }}>
+                    <PasswordPolicies value={values.password} />
+                  </div>
+                  <Field
+                    component={TextField}
+                    name="password"
+                    label={t_i18n('New password')}
+                    type="password"
+                    fullWidth={true}
+                    style={{ marginTop: 16 }}
+                  />
+                  <Field
+                    component={TextField}
+                    name="confirmation"
+                    label={t_i18n('Confirmation')}
+                    type="password"
+                    fullWidth={true}
+                    style={{ marginTop: 16 }}
+                  />
+                </Box>
+                <Stack
+                  mt={3}
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
                 >
-                  {t_i18n('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
+                  <div />
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !isValid}
+                  >
+                    {t_i18n('Update')}
+                  </Button>
+                </Stack>
+              </Form>
+            )}
+          </Formik>
+        </div>
       </Card>
     </Stack>
   );
