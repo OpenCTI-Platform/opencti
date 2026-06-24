@@ -3,6 +3,7 @@ import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } 
 import { type EntityOptions, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
+import { bypassDraftContext } from '../utils/draftContext';
 import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { pageEntitiesOrRelationsConnection, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
@@ -35,7 +36,11 @@ const patchElementWithRefRelationships = async (
   operation: 'add' | 'remove',
   opts = {},
 ) => {
-  const initial = await storeLoadByIdWithRefs(context, user, stixObjectOrRelationshipId, { type });
+  let initial = await storeLoadByIdWithRefs(context, user, stixObjectOrRelationshipId, { type });
+  if (!initial) {
+    const bypassedContext = bypassDraftContext(context);
+    initial = await storeLoadByIdWithRefs(bypassedContext, user, stixObjectOrRelationshipId, { type });
+  }
   if (!initial) {
     throw FunctionalError('Element can not be loaded', { stixObjectOrRelationshipId });
   }
