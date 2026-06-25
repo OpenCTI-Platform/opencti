@@ -412,13 +412,13 @@ This component generates a notification each time it receives a STIX 2.1 bundle.
 This component supports dynamic targets on the field selected and then based on the entities set in the 'Resolve dynamic targets from'. 
 
 ***Dynamic from context***
-Sends the email to the corresponding user of the field you choose, based on the entity specified in the bundle scope. You can choose the notifier targets from:
+Sends the notification to the corresponding user of the field you choose, based on the entity specified in the bundle scope. You can choose the notifier targets from:
 
-- ****Creator****: Sends a notifier using the selected template to the user(s) listed as creator(s) on the entity.
+- ****Creator****: Sends a notification using the selected notifier to the user(s) listed as creator(s) on the entity.
 
-- ****Assignee****: Sends a notifier using the selected template to the user(s) listed as assignee(s) on the entity.
+- ****Assignee****: Sends a notification using the selected notifier to the user(s) listed as assignee(s) on the entity.
 
-- ****Participant****: Sends a notifier using the selected template to the user(s) listed as participant(s) on the entity.
+- ****Participant****: Sends a notification using the selected notifier to the user(s) listed as participant(s) on the entity.
 
 ***Dynamic from Organisations present in the bundle***: Sends the notification to the corresponding users of all organisation entities in the bundle. 
 
