@@ -49,6 +49,7 @@ type WorkflowEntityRef {
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
+    workflow_published_version_id: String
 }
 
 type WorkflowDefinitionMutationResult {
