@@ -50,7 +50,7 @@ This event source listens to Priority Intelligence Requirement (PIR) events. You
 
 ***Component details***
 
-The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score. Additionally as this component listens to the stream of events from knowledge it can be triggered with two specific conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for specific properrty changes for an entity that is part of the PIR. 
+The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score. Additionally as this component listens to the stream of events from knowledge it can be triggered with two specific conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for specific property changes for an entity that is part of the PIR. 
 
 ![Playbook configuration panel for listening to PIR events](assets/listen-pir-events-in-playbook.png)
 
