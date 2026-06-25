@@ -388,8 +388,8 @@ Sends the email to the corresponding user of the field you choose, based on the 
 
 - ****Participant****: Sends an email using the selected template to the user(s) listed as participant(s) on the entity.
 
-***Dynamic from organisations present in the bundle***
-Sends the email to the corresponding users of the organisation entities in the bundle. 
+***Dynamic from organizations present in the bundle***
+Sends the email to the corresponding users of the organization entities in the bundle.
 
 ***Static fields***
 
