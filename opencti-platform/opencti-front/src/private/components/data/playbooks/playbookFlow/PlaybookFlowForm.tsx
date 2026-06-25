@@ -43,7 +43,8 @@ import PlaybookFlowFieldString from './playbookFlowFields/PlaybookFlowFieldStrin
 import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
-import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { computeInitialComponentConfigValues } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -148,55 +149,7 @@ const PlaybookFlowForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
 
-  // region initial values
-
-  const initialValues: PlaybookFlowFormData = {
-    name: '',
-    description: '',
-  };
-
-  if (!currentConfig) {
-    // Get default values from schema.
-    initialValues.name = selectedComponent?.name ?? '';
-    initialValues.description = '';
-    Object.entries(configurationSchema?.properties ?? {})
-      .forEach(([propName, property]) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-        initialValues[propName] = property.default;
-        if (propName === 'actions') initialValues.actionsFormValues = [];
-      });
-  } else {
-    // Get values from saved config.
-    initialValues.name = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.name ?? ''
-      : selectedComponent?.name ?? '';
-    initialValues.description = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.description ?? ''
-      : '';
-    const actionsFormValues: PlaybookUpdateAction['value'][] = [];
-    Object.entries(currentConfig)
-      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-      .forEach(([key, value]) => {
-        if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
-        else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-          initialValues[key] = value;
-        }
-        initialValues.actionsFormValues = actionsFormValues;
-      });
-    // Ensure applyToElements defaults to 'only-main' for existing configs missing it
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      initialValues.applyToElements = 'only-main';
-    }
-  }
-
-  // endregion
+  const initialValues = computeInitialComponentConfigValues({ action, currentConfig, configurationSchema, nodeData, selectedComponent });
 
   return (
     <div style={{ padding: '0px 0px 20px 0px' }}>
