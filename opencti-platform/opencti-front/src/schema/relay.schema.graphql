@@ -1311,6 +1311,7 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
 }
 
 type MetricAttributes {
@@ -1362,6 +1363,7 @@ input LocalAuthConfigInput {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
 }
 
 input CertAuthConfigInput {
@@ -1442,6 +1444,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
   local_auth: LocalAuthConfig
   cert_auth: CertAuthConfig
   headers_auth: HeadersAuthConfig
