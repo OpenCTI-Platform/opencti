@@ -420,7 +420,7 @@ Sends the notification to the corresponding user of the field you choose, based 
 
 - ****Participant****: Sends a notification using the selected notifier to the user(s) listed as participant(s) on the entity.
 
-***Dynamic from Organisations present in the bundle***: Sends the notification to the corresponding users of all organisation entities in the bundle. 
+***Dynamic from organizations present in the bundle***: Sends the notification to the corresponding users of all organization entities in the bundle.
 
 ***Static fields***
 
