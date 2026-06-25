@@ -10,6 +10,7 @@ export interface PlaybookConfig {
   applyWithFilters?: string;
   actions?: PlaybookUpdateAction[];
   triggerTime?: string;
+  applyToElements?: string;
 }
 
 export interface PlaybookDefinitionNode {
