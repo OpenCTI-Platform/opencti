@@ -371,7 +371,7 @@ These components end the playbook or branch.
 
 ### Send email from template
 
-This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organisation, see below for more details.
+This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
 
 ***Component details***
 
