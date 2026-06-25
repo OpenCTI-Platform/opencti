@@ -405,7 +405,7 @@ This component passes the STIX 2.1 bundle to the AI agent, by default this will 
 
 ### Send to notifier
 
-This component generates a notification each time it receives a STIX 2.1 bundle. The Send to notifier component ends a branch but does not save any changes. You can select the notifier to be used and set the notification targets either dynamically, based on the data processed or set to a static user, group or organisation, see below for more details.
+This component generates a notification each time it receives a STIX 2.1 bundle. The Send to notifier component ends a branch but does not save any changes. You can select the notifier to be used and set the notification targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
 
 ***Component details***
 ***Dynamic variables***
