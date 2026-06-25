@@ -340,7 +340,9 @@ For more details, see [Organization segregation](https://docs.opencti.io/latest/
 
 ### Transform with AI
 
-This component sends the bundle to the configured AI agent. By default this will be set to the "CTI STIX transformer" agent this agent is configured to only use the STIX 2.1 data schema and will send back a stix bundle that can then be further processed by the playbook. Use the 'Additional user instructions' to provide the agent with a user prompt to follow and choose the user the agent should run as so that the agent can only run with access to the data it needs.    
+This component sends the bundle to the configured AI agent. By default, it uses the "CTI STIX transformer" agent, which is configured to only use the STIX 2.1 data schema and returns a STIX bundle that can then be further processed by the playbook.
+
+Use **Additional user instructions** to provide the agent with a prompt to follow, and choose the user the agent should run as so that it only has access to the data it needs.
 
 !!! warning "This component requires access to the XTM One platform and will consume usage of your XTM One quota."
 
