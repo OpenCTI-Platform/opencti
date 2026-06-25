@@ -1115,13 +1115,24 @@ export const meEditField = async (context, user, userId, inputs, password = null
     }
     // Check password confirmation in case of password change
     if (key === 'password') {
-      if (typeof password !== 'string' || password.length === 0) {
-        throw FunctionalError('The current password you have provided is not valid');
-      }
-      const dbPassword = user.password;
-      const match = bcrypt.compareSync(password, dbPassword);
-      if (!match) {
-        throw FunctionalError('The current password you have provided is not valid');
+      const isForcedPasswordChange = isPasswordExpired(user);
+      if (!isForcedPasswordChange) {
+        if (typeof password !== 'string' || password.length === 0) {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
+        const dbPassword = user.password;
+        if (typeof dbPassword !== 'string' || dbPassword.length === 0) {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
+        let isCurrentPasswordValid;
+        try {
+          isCurrentPasswordValid = bcrypt.compareSync(password, dbPassword);
+        } catch {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
+        if (!isCurrentPasswordValid) {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
       }
     }
   });
