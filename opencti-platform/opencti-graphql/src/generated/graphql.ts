@@ -15100,6 +15100,7 @@ export type LocalAuthConfigInput = {
   password_policy_min_symbols?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_uppercase?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_words?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_validity_days?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type Location = {
@@ -24277,6 +24278,7 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   password_policy_min_symbols?: Maybe<Scalars['Int']['output']>;
   password_policy_min_uppercase?: Maybe<Scalars['Int']['output']>;
   password_policy_min_words?: Maybe<Scalars['Int']['output']>;
+  password_policy_validity_days?: Maybe<Scalars['Int']['output']>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
@@ -30238,6 +30240,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   password_policy_min_symbols?: Maybe<Scalars['Int']['output']>;
   password_policy_min_uppercase?: Maybe<Scalars['Int']['output']>;
   password_policy_min_words?: Maybe<Scalars['Int']['output']>;
+  password_policy_validity_days?: Maybe<Scalars['Int']['output']>;
   platform_ai_enabled: Scalars['Boolean']['output'];
   platform_ai_has_token: Scalars['Boolean']['output'];
   platform_ai_model?: Maybe<Scalars['String']['output']>;
@@ -49078,6 +49081,7 @@ export type PublicSettingsResolvers<ContextType = any, ParentType extends Resolv
   password_policy_min_symbols?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_validity_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -50344,6 +50348,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   password_policy_min_symbols?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_policy_validity_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_ai_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_ai_has_token?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_ai_model?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

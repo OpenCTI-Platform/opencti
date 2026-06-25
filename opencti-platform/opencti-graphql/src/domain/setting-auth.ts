@@ -62,6 +62,7 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     ...(input.password_policy_min_words !== undefined && { password_policy_min_words: input.password_policy_min_words }),
     ...(input.password_policy_min_lowercase !== undefined && { password_policy_min_lowercase: input.password_policy_min_lowercase }),
     ...(input.password_policy_min_uppercase !== undefined && { password_policy_min_uppercase: input.password_policy_min_uppercase }),
+    ...(input.password_policy_validity_days !== undefined && { password_policy_validity_days: input.password_policy_validity_days }),
   };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   await publishUserAction({

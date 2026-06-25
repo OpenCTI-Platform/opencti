@@ -29,6 +29,7 @@ const localStrategyFormQuery = graphql`
       password_policy_min_words
       password_policy_min_lowercase
       password_policy_min_uppercase
+      password_policy_validity_days
       platform_enterprise_edition {
         license_validated
       }
@@ -62,6 +63,7 @@ const localStrategyFormMutation = graphql`
         password_policy_min_words
         password_policy_min_lowercase
         password_policy_min_uppercase
+        password_policy_validity_days
       }
     }
   }
@@ -76,6 +78,7 @@ const validationSchema = Yup.object().shape({
   password_policy_min_words: Yup.number(),
   password_policy_min_lowercase: Yup.number(),
   password_policy_min_uppercase: Yup.number(),
+  password_policy_validity_days: Yup.number(),
 });
 
 interface LocalStrategyFormProps {
@@ -114,6 +117,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     password_policy_min_words: settings.password_policy_min_words ?? 0,
     password_policy_min_lowercase: settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: settings.password_policy_min_uppercase ?? 0,
+    password_policy_validity_days: settings.password_policy_validity_days ?? 0,
   };
 
   const handleSubmit = (
@@ -133,6 +137,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           password_policy_min_words: Number(values.password_policy_min_words) || 0,
           password_policy_min_lowercase: Number(values.password_policy_min_lowercase) || 0,
           password_policy_min_uppercase: Number(values.password_policy_min_uppercase) || 0,
+          password_policy_validity_days: Number(values.password_policy_validity_days) || 0,
         },
       },
       onCompleted: () => {
@@ -237,6 +242,15 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             style={{ marginTop: 20 }}
             name="password_policy_min_uppercase"
             label={t_i18n('Number of uppercase chars must be greater or equals to')}
+            fullWidth
+          />
+          <Field
+            component={TextField}
+            type="number"
+            variant="standard"
+            style={{ marginTop: 20 }}
+            name="password_policy_validity_days"
+            label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
             fullWidth
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>

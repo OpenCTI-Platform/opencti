@@ -653,6 +653,15 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
+export const computePasswordValidUntilFromPolicy = async (context) => {
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const validityDays = Number(settings.password_policy_validity_days ?? 0);
+  if (!Number.isFinite(validityDays) || validityDays <= 0) {
+    return null;
+  }
+  return DateTime.now().plus({ days: validityDays }).toUTC().toString();
+};
+
 export const sendEmailToUser = async (context, user, input) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
@@ -767,6 +776,7 @@ export const addUser = async (context, user, newUser) => {
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
+  const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
   let userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('password', bcrypt.hashSync(userPassword)),
@@ -775,6 +785,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('external', newUser.external ? newUser.external : false),
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
+    R.assoc('password_valid_until', userServiceAccount ? null : passwordValidUntil),
     R.assoc('unit_system', newUser.unit_system),
     R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
     R.assoc('personal_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
@@ -1013,8 +1024,9 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   }
   // Reset the password validity window whenever the password changes.
   if (hasPasswordUpdate) {
+    const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
     inputs = inputs.filter((input) => input.key !== 'password_valid_until');
-    inputs.push({ key: 'password_valid_until', value: [null] });
+    inputs.push({ key: 'password_valid_until', value: [passwordValidUntil] });
   }
   // Editing the draft context (entering/exiting a draft) is a navigation action performed on the
   // user's own entity, which is never part of the draft data. It must run outside of any draft
@@ -1115,24 +1127,13 @@ export const meEditField = async (context, user, userId, inputs, password = null
     }
     // Check password confirmation in case of password change
     if (key === 'password') {
-      const isForcedPasswordChange = isPasswordExpired(user);
-      if (!isForcedPasswordChange) {
-        if (typeof password !== 'string' || password.length === 0) {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
-        const dbPassword = user.password;
-        if (typeof dbPassword !== 'string' || dbPassword.length === 0) {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
-        let isCurrentPasswordValid;
-        try {
-          isCurrentPasswordValid = bcrypt.compareSync(password, dbPassword);
-        } catch {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
-        if (!isCurrentPasswordValid) {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
+      if (typeof password !== 'string' || password.length === 0) {
+        throw FunctionalError('The current password you have provided is not valid');
+      }
+      const dbPassword = user.password;
+      const match = bcrypt.compareSync(password, dbPassword);
+      if (!match) {
+        throw FunctionalError('The current password you have provided is not valid');
       }
     }
   });
