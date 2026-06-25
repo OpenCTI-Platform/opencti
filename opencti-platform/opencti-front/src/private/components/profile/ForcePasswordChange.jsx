@@ -2,22 +2,25 @@ import React from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Button from '@common/button/Button';
-import Card from '@common/card/Card';
 import TextField from '../../../components/TextField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { useFormatter } from '../../../components/i18n';
 import { commitMutation, handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
-import LoginAlert from '../../../public/components/login/LoginAlert';
+import logoDark from '../../../static/images/logo_text_dark.png';
+import logoLight from '../../../static/images/logo_text_light.png';
+import logoFiligranBaselineDark from '../../../static/images/logo_filigran_baseline_dark.svg';
+import logoFiligranGradientDark from '../../../static/images/logo_filigran_gradient_dark.svg';
+import logoFiligranBaselineLight from '../../../static/images/logo_filigran_baseline_light.svg';
+import logoFiligranGradientLight from '../../../static/images/logo_filigran_gradient_light.svg';
 
 const forcePasswordChangeMutation = graphql`
   mutation ForcePasswordChangeMutation(
     $input: [EditInput]!
-    $password: String
   ) {
-    meEdit(input: $input, password: $password) {
+    meEdit(input: $input) {
       id
       password_valid_until
     }
@@ -25,7 +28,6 @@ const forcePasswordChangeMutation = graphql`
 `;
 
 const passwordValidation = (t) => Yup.object().shape({
-  current_password: Yup.string().required(t('This field is required')),
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -33,6 +35,7 @@ const passwordValidation = (t) => Yup.object().shape({
 });
 
 const ForcePasswordChange = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
 
@@ -40,8 +43,7 @@ const ForcePasswordChange = () => {
     commitMutation({
       mutation: forcePasswordChangeMutation,
       variables: {
-        input: { key: 'password', value: values.password },
-        password: values.current_password,
+        input: [{ key: 'password', value: [values.password] }],
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -57,20 +59,31 @@ const ForcePasswordChange = () => {
   };
 
   return (
-    <Stack gap={1} sx={{ width: 500, margin: '0 auto' }}>
-      <LoginAlert severity="info">
-        {t_i18n('You can now set a new password for your account.')}
-      </LoginAlert>
-      <Card sx={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ minHeight: 170 }}>
+    <Stack direction="row" height="100vh">
+      {/* Left panel — identical to LoginLayout content column */}
+      <Stack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        gap={4}
+        sx={{
+          minWidth: 500,
+          overflow: 'hidden',
+          background: theme.palette.designSystem?.background?.main ?? theme.palette.background.default,
+          boxShadow: '8px 0px 9px 0px #0000002F',
+          zIndex: 2,
+        }}
+      >
+        <img
+          src={theme.palette.mode === 'dark' ? logoDark : logoLight}
+          alt="OpenCTI Logo"
+          width={180}
+        />
+        <Stack gap={1} sx={{ width: 500 }}>
           <Formik
             enableReinitialize={true}
             validateOnMount={true}
-            initialValues={{
-              current_password: '',
-              password: '',
-              confirmation: '',
-            }}
+            initialValues={{ password: '', confirmation: '' }}
             validationSchema={passwordValidation(t_i18n)}
             onSubmit={onSubmit}
           >
@@ -84,24 +97,23 @@ const ForcePasswordChange = () => {
                   height: '100%',
                 }}
               >
-                <Box flex={1}>
-                  <Field
-                    component={TextField}
-                    name="current_password"
-                    label={t_i18n('Current password')}
-                    type="password"
-                    fullWidth={true}
-                  />
-                  <div style={{ marginTop: 16 }}>
+                <Box
+                  sx={{
+                    background: theme.palette.background.paper,
+                    borderRadius: 1,
+                    padding: theme.spacing(3),
+                  }}
+                >
+                  <Box sx={{ width: '100%', mt: 2 }}>
                     <PasswordPolicies value={values.password} />
-                  </div>
+                  </Box>
                   <Field
                     component={TextField}
                     name="password"
                     label={t_i18n('New password')}
                     type="password"
                     fullWidth={true}
-                    style={{ marginTop: 16 }}
+                    style={{ marginTop: theme.spacing(2) }}
                   />
                   <Field
                     component={TextField}
@@ -109,28 +121,64 @@ const ForcePasswordChange = () => {
                     label={t_i18n('Confirmation')}
                     type="password"
                     fullWidth={true}
-                    style={{ marginTop: 16 }}
+                    style={{ marginTop: theme.spacing(2) }}
                   />
-                </Box>
-                <Stack
-                  mt={3}
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <div />
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !isValid}
+                  <Stack
+                    mt={3}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="flex-end"
                   >
-                    {t_i18n('Update')}
-                  </Button>
-                </Stack>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || !isValid}
+                    >
+                      {t_i18n('Change your password')}
+                    </Button>
+                  </Stack>
+                </Box>
               </Form>
             )}
           </Formik>
-        </div>
-      </Card>
+        </Stack>
+      </Stack>
+      {/* Right aside — identical to LoginLayout aside column */}
+      <Box
+        flex={1}
+        sx={{
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%)'
+            : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <img
+          src={theme.palette.mode === 'dark' ? logoFiligranGradientDark : logoFiligranGradientLight}
+          alt="Filigran Logo"
+          style={{
+            userSelect: 'none',
+            pointerEvents: 'none',
+            height: `calc(100% + ${theme.spacing(10)})`,
+            position: 'absolute',
+            top: theme.spacing(-5),
+            right: theme.spacing(-5),
+          }}
+        />
+        <img
+          src={theme.palette.mode === 'dark' ? logoFiligranBaselineDark : logoFiligranBaselineLight}
+          alt="Made by Filigran logo"
+          width={130}
+          style={{
+            userSelect: 'none',
+            pointerEvents: 'none',
+            position: 'absolute',
+            bottom: theme.spacing(3),
+            left: theme.spacing(3),
+            zIndex: 2,
+          }}
+        />
+      </Box>
     </Stack>
   );
 };

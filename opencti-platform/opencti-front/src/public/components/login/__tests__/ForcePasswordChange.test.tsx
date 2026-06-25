@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen } from '@testing-library/react';
 import { render } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { createTheme, ThemeProvider, ThemeOptions } from '@mui/material/styles';
@@ -47,14 +48,8 @@ describe('ForcePasswordChange (public login)', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the informational alert message', () => {
+  it('renders new password and confirmation fields', () => {
     renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
-    expect(screen.getByText('You can now set a new password for your account.')).toBeDefined();
-  });
-
-  it('renders all three password fields', () => {
-    renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
-    expect(screen.getByLabelText('Current password')).toBeDefined();
     expect(screen.getByLabelText('New password')).toBeDefined();
     expect(screen.getByLabelText('Confirmation')).toBeDefined();
   });
@@ -65,24 +60,26 @@ describe('ForcePasswordChange (public login)', () => {
     expect(screen.getByRole('button', { name: 'Update' })).toBeDefined();
   });
 
-  it('Update button is disabled when form is empty', () => {
+  it('Update button is disabled when form is empty', async () => {
     renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
     const submitBtn = screen.getByRole('button', { name: 'Update' });
-    expect((submitBtn as HTMLButtonElement).disabled).toBe(true);
+
+    // Initial form validation can be async with Formik/Yup.
+    await waitFor(() => {
+      expect((submitBtn as HTMLButtonElement).disabled).toBeTruthy();
+    });
   });
 
   it('submits mutation with correct variables on valid form', async () => {
     const { user } = renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
 
-    await user.type(screen.getByLabelText('Current password'), 'Current1!');
     await user.type(screen.getByLabelText('New password'), 'NewPass1!');
     await user.type(screen.getByLabelText('Confirmation'), 'NewPass1!');
     await user.click(screen.getByRole('button', { name: 'Update' }));
 
     expect(commitFnMock).toHaveBeenCalledWith(expect.objectContaining({
       variables: {
-        input: { key: 'password', value: 'NewPass1!' },
-        password: 'Current1!',
+        input: [{ key: 'password', value: ['NewPass1!'] }],
       },
     }));
   });
@@ -95,7 +92,6 @@ describe('ForcePasswordChange (public login)', () => {
     });
 
     const { user } = renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
-    await user.type(screen.getByLabelText('Current password'), 'Current1!');
     await user.type(screen.getByLabelText('New password'), 'NewPass1!');
     await user.type(screen.getByLabelText('Confirmation'), 'NewPass1!');
     await user.click(screen.getByRole('button', { name: 'Update' }));
@@ -108,7 +104,6 @@ describe('ForcePasswordChange (public login)', () => {
   it('handles mutation errors', async () => {
     const { handleErrorInForm } = await import('../../../../relay/environment');
     const { user } = renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
-    await user.type(screen.getByLabelText('Current password'), 'Current1!');
     await user.type(screen.getByLabelText('New password'), 'NewPass1!');
     await user.type(screen.getByLabelText('Confirmation'), 'NewPass1!');
     await user.click(screen.getByRole('button', { name: 'Update' }));

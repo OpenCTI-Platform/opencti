@@ -84,7 +84,7 @@ const Index = ({ settings }: IndexProps) => {
     overflowY: 'hidden',
     height: '100vh',
     paddingTop: isForcePasswordChangeRoute
-      ? `calc(16px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`
+      ? 0
       : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
@@ -92,11 +92,8 @@ const Index = ({ settings }: IndexProps) => {
   const boxSx: SxProps = {
     px: isForcePasswordChangeRoute ? 0 : 3,
     flex: 1,
-    overflowY: 'auto',
+    overflowY: isForcePasswordChangeRoute ? 'hidden' : 'auto',
     minHeight: 0,
-    display: isForcePasswordChangeRoute ? 'flex' : 'block',
-    alignItems: isForcePasswordChangeRoute ? 'center' : 'stretch',
-    justifyContent: isForcePasswordChangeRoute ? 'center' : 'flex-start',
   };
 
   return (
