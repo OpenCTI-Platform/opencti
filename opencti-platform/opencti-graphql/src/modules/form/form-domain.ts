@@ -4,7 +4,7 @@ import type { FileHandle } from 'fs/promises';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
-import { ENTITY_TYPE_FORM, FormSchemaDefinitionSchema } from './form-types';
+import { ENTITY_TYPE_FORM, FormFieldType, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
@@ -220,6 +220,18 @@ const normalizeOptionId = (option: unknown): string | undefined => {
     return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
   }
   return typeof option === 'string' && option.length > 0 ? option : undefined;
+};
+
+export const resolveMainEntityAuthorFromValues = (
+  schema: FormSchemaDefinition,
+  values: Record<string, any>,
+): string | null => {
+  const createdByField = schema.fields.find((f) => f.type === FormFieldType.CreatedBy);
+  const createdByKey = createdByField?.name ?? 'createdBy';
+  const possibleAuthor = values[createdByKey]
+    || values.mainEntityFields?.[createdByKey]
+    || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0][createdByKey] : undefined);
+  return normalizeOptionId(possibleAuthor) || null;
 };
 
 export const resolveDraftFieldDefaults = (
@@ -473,10 +485,7 @@ export const formSubmit = async (
         if (schema.draftDefaults.author.type === 'static') {
           createdBy = schema.draftDefaults.author.defaultValue || null;
         } else if (schema.draftDefaults.author.type === 'main_entity_author') {
-          const possibleAuthor = values.createdBy
-            || values.mainEntityFields?.createdBy
-            || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
-          createdBy = normalizeOptionId(possibleAuthor) || null;
+          createdBy = resolveMainEntityAuthorFromValues(schema, values);
         } else if (schema.draftDefaults.author.type === 'none') {
           createdBy = null;
         }
