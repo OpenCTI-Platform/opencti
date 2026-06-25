@@ -37,24 +37,24 @@ describe('ForcePasswordChange', () => {
     vi.clearAllMocks();
   });
 
-  it('renders force password change informational message', () => {
+  it('renders force password change form fields', () => {
     testRender(<ForcePasswordChange />);
-    expect(screen.getByText('You can now set a new password for your account.')).toBeDefined();
+    expect(screen.getByText('PasswordPolicies')).toBeDefined();
+    expect(screen.getByLabelText('New password')).toBeDefined();
+    expect(screen.getByLabelText('Confirmation')).toBeDefined();
   });
 
   it('submits mutation and navigates to dashboard on success', async () => {
     const { user } = testRender(<ForcePasswordChange />);
 
-    await user.type(screen.getByLabelText('Current password'), 'CurrentPassword1!');
     await user.type(screen.getByLabelText('New password'), 'NewPassword1!');
     await user.type(screen.getByLabelText('Confirmation'), 'NewPassword1!');
-    await user.click(screen.getByRole('button', { name: 'Update' }));
+    await user.click(screen.getByRole('button', { name: 'Change your password' }));
 
     const commitMutationMock = commitMutation as Mock;
     expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
       variables: {
-        input: { key: 'password', value: 'NewPassword1!' },
-        password: 'CurrentPassword1!',
+        input: [{ key: 'password', value: ['NewPassword1!'] }],
       },
     }));
 
@@ -68,10 +68,9 @@ describe('ForcePasswordChange', () => {
   it('handles mutation errors through handleErrorInForm', async () => {
     const { user } = testRender(<ForcePasswordChange />);
 
-    await user.type(screen.getByLabelText('Current password'), 'CurrentPassword1!');
     await user.type(screen.getByLabelText('New password'), 'NewPassword1!');
     await user.type(screen.getByLabelText('Confirmation'), 'NewPassword1!');
-    await user.click(screen.getByRole('button', { name: 'Update' }));
+    await user.click(screen.getByRole('button', { name: 'Change your password' }));
 
     const commitMutationMock = commitMutation as Mock;
     const config = commitMutationMock.mock.calls[0][0];
