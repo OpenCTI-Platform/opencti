@@ -17,9 +17,8 @@ import type { HelmetOptions } from 'helmet';
 import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 
-export const setCookieError = (res: Response, _message?: string) => {
-  // Never persist raw backend error messages in client-side cookies.
-  res.cookie('opencti_flash', 'An unexpected error occurred. Please try again.', {
+export const setCookieError = (res: Response, message: string) => {
+  res.cookie('opencti_flash', message || 'Unknown error', {
     maxAge: 10000,
     httpOnly: false,
     secure: booleanConf('app:https_cert:cookie_secure', false),
