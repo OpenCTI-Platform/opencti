@@ -33,7 +33,7 @@ To make this playbook available for manual enrollment, activate the ****Availabl
 
 ***Component details***
 
-As this component listens to the stream of events from knowledge it is able to be triggered with two additional conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for temporal event changes on an entity such as when the status or score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue. These trigger conditions are particularly useful in combination with dynamic notifications or emails that can notify users when a case they are participating in has the status changed or similar actions. 
+As this component listens to the stream of events from knowledge it is able to be triggered with two additional conditions, 'has changed' and 'has not changed'. This operator can be applied when adding any property filter and will match if the property has been changed (or has not changed). This allows you to listen for temporal event changes on an entity such as when the status or score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue. These trigger conditions are particularly useful in combination with dynamic notifications or emails that can notify users when a case they are participating in has the status changed or similar actions. 
 
 ![Playbook listening for creation events on TLP:GREEN IP addresses and domain names](assets/playbook_listen.png)
 
@@ -50,7 +50,7 @@ This event source listens to Priority Intelligence Requirement (PIR) events. You
 
 ***Component details***
 
-The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score. Additionally as this component listens to the stream of events from knowledge it can be triggered with two specific conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for specific property changes for an entity that is part of the PIR. 
+The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score. Additionally as this component listens to the stream of events from knowledge it can be triggered with two specific conditions, 'has changed' and 'has not changed'. This operator can be applied when adding any property filter and will match if the property has been changed (or has not changed). This allows you to listen for specific property changes for an entity that is part of the PIR. 
 
 ![Playbook configuration panel for listening to PIR events](assets/listen-pir-events-in-playbook.png)
 
@@ -288,19 +288,19 @@ This component supports dynamic variables:
 
 - ***Dynamic from the triggering entity***: Applies authorized members based on a field of the triggering entity only. You can choose from:
 
-- ****Author (organization)****: If the author is an organization, applies authorized members to that organization.
+  - ****Author (organization)****: If the author is an organization, applies authorized members to that organization.
 
-- ****Creator****: Applies authorized members to all users in the Creator field.
+  - ****Creator****: Applies authorized members to all users in the Creator field.
 
-- ****Assignee****: Applies authorized members to all users in the Assignee field.
+  - ****Assignee****: Applies authorized members to all users in the Assignee field.
 
-- ****Participant****: Applies authorized members to all users in the Participant field.
+  - ****Participant****: Applies authorized members to all users in the Participant field.
 
 - ***Dynamic from the bundle***: Applies authorized members based on all entities in the bundle, not only the triggering entity.
 
-- ****Organization****: All users belonging to the organizations in the bundle are added as authorized members.
+  - ****Organization****: All users belonging to the organization entities in the bundle are added as authorized members.
 
-- ***Static fields***
+  - ***Static fields***
 
 This component also supports static fields for authorized members: users, groups, and organizations.
 
