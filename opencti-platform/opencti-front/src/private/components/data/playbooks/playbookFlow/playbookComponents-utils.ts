@@ -67,14 +67,16 @@ interface computeInitialComponentConfigValuesParams {
   selectedComponent?: PlaybookComponent | null;
 }
 
+export type PlaybookFlowFormValues = PlaybookFlowFormData & Record<string, unknown>;
+
 export const computeInitialComponentConfigValues = ({
   action,
   currentConfig,
   nodeData,
   configurationSchema,
   selectedComponent,
-}: computeInitialComponentConfigValuesParams): PlaybookFlowFormData & Record<string, unknown> => {
-  const initialValues: PlaybookFlowFormData & Record<string, unknown> = {
+}: computeInitialComponentConfigValuesParams): PlaybookFlowFormValues => {
+  const initialValues: PlaybookFlowFormValues = {
     name: '',
     description: '',
   };
@@ -87,8 +89,6 @@ export const computeInitialComponentConfigValues = ({
     initialValues.description = '';
     Object.entries(configurationSchema?.properties ?? {})
       .forEach(([propName, property]) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         initialValues[propName] = property.default;
         if (propName === 'actions') initialValues.actionsFormValues = [];
       });
@@ -111,8 +111,6 @@ export const computeInitialComponentConfigValues = ({
         initialValues.actionsFormValues = actionsFormValues;
       });
     // Ensure applyToElements defaults to 'only-main' for existing configs missing it
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
       initialValues.applyToElements = 'only-main';
     }

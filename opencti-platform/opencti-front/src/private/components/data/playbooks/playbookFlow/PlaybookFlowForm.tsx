@@ -44,7 +44,7 @@ import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTarg
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
-import { computeInitialComponentConfigValues } from './playbookComponents-utils';
+import { computeInitialComponentConfigValues, PlaybookFlowFormValues } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -100,7 +100,7 @@ const PlaybookFlowForm = ({
     : null;
 
   // Submit function that formats correctly the data for the backend.
-  const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
+  const onSubmit: FormikConfig<PlaybookFlowFormValues>['onSubmit'] = (values, { resetForm }) => {
     const { name, description, actionsFormValues, ...config } = values;
     let finalConfig: PlaybookConfig = config;
 
