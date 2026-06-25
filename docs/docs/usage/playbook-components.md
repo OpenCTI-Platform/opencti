@@ -33,7 +33,7 @@ To make this playbook available for manual enrollment, activate the ****Availabl
 
 ***Component details***
 
-As this component listens to the stream of events from knowledge it is able to be triggered with two additonal conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for temporal event changes on an entity such as when the status or score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue. These trigger conditions are particularly useful in combination with dynamic notifications or emails that can notify users when a case they are participating in has the status changed or similar actions. 
+As this component listens to the stream of events from knowledge it is able to be triggered with two additional conditions, 'has changed' and 'has not changed'. These will be available for any property that has been changed or if required has not changed. This allows you to listen for temporal event changes on an entity such as when the status or score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue. These trigger conditions are particularly useful in combination with dynamic notifications or emails that can notify users when a case they are participating in has the status changed or similar actions. 
 
 ![Playbook listening for creation events on TLP:GREEN IP addresses and domain names](assets/playbook_listen.png)
 
