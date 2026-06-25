@@ -739,6 +739,7 @@ const WidgetCreationParameters = () => {
                                 { value: 'object-assignee.internal_id', label: 'Assignee' },
                                 { value: 'object-participant.internal_id', label: 'Participant' },
                                 { value: 'creator_id', label: 'Creator' },
+                                { value: 'created-by.internal_id', label: 'Author' },
                                 ...(isDraftWorkflowEnabled ? [{ value: 'workflowInstance', label: 'Workflow status' }] : []),
                               ].map(({ value, label }) => (
                                 <MenuItem key={value} value={value}>

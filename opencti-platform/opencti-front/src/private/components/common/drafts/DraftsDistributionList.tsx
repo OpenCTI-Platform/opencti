@@ -46,6 +46,11 @@ const draftsDistributionListQuery = graphql`
           id
           entity_type
         }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
         ... on Creator {
           name
         }
