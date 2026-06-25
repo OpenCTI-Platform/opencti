@@ -15,7 +15,7 @@ export const resolveDataSelection = ({
   perspective: WidgetPerspective;
   host?: WidgetHost;
 }) => {
-  let mainEntityTypes = ['Stix-Core-Object'];
+  let mainEntityTypes = ['Stix-Core-Object', 'DraftWorkspace'];
   if (perspective === 'relationships') {
     mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
   } else if (perspective === 'audits') {

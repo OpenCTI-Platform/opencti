@@ -3,12 +3,21 @@ import { FunctionalError, UnsupportedError, ForbiddenAccess } from '../../config
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
 import { elAggregationCount, elCount, elFindByIds, elList, elLoadById, loadDraftElement } from '../../database/engine';
-import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, stixLoadByIds, updateAttribute } from '../../database/middleware';
+import {
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  distributionEntities,
+  stixLoadByIds,
+  timeSeriesEntities,
+  updateAttribute,
+} from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
-import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { buildPagination, computeSumOfList, cursorToOffset, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
   DraftChangeType,
@@ -28,7 +37,9 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
+import { getEntitiesListFromCache } from '../../database/cache';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixRefRelationship, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -53,6 +64,8 @@ import {
 import { editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../utils/filtering/filtering-constants';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
@@ -60,6 +73,46 @@ import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
+
+// Helper: translates workflowInstanceCurrentState filter into an entity id filter
+// by performing a two-step lookup on WorkflowInstance entities.
+// WorkflowInstance.currentState stores the StatusTemplate internal ID directly
+// (per workflow-schema.ts: statusId refers to StatusTemplate internal ID).
+const resolveWorkflowInstanceStatusFilter = async (context: AuthContext, user: AuthUser, args: any): Promise<any> => {
+  const filters = args.filters;
+  if (!filters) return args;
+
+  const workflowStatusFilters = filters.filters?.filter((f: any) => f.key?.includes(WORKFLOW_INSTANCE_STATUS_FILTER)) ?? [];
+  if (workflowStatusFilters.length === 0) return args;
+
+  // Filter values are StatusTemplate IDs — WorkflowInstance.currentState stores them directly.
+  const statusTemplateIds: string[] = workflowStatusFilters.flatMap((f: any) => f.values as string[]);
+  const executionCtx = bypassDraftContext(context);
+
+  const workflowInstances = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+    first: 5000,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['currentState'], values: statusTemplateIds, operator: FilterOperator.Eq, mode: FilterMode.Or }],
+      filterGroups: [],
+    },
+  });
+
+  const entityIds = workflowInstances
+    .map((wi: any) => wi.entity_id as string)
+    .filter(Boolean);
+
+  const remainingFilters = filters.filters.filter((f: any) => !f.key?.includes(WORKFLOW_INSTANCE_STATUS_FILTER));
+  const idFilter = { key: ['id'], values: entityIds.length > 0 ? entityIds : ['<no-match>'], operator: FilterOperator.Eq, mode: FilterMode.Or };
+
+  return {
+    ...args,
+    filters: {
+      ...filters,
+      filters: [...remainingFilters, idFilter],
+    },
+  };
+};
 
 export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const draft = await findById(context, user, draftId);
@@ -73,8 +126,232 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 };
 
-export const findDraftWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+// Helper: application-level sort by workflow instance current status name.
+// Required because workflowInstance.currentState is stored on a separate WorkflowInstance
+// document, not on the DraftWorkspace document itself, making native ES sorting impossible.
+const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  if ((args.orderBy as string) !== 'workflowInstance') return null;
+
+  const first = args.first ?? 10;
+  const asc = (args.orderMode ?? 'asc') === 'asc';
+  const executionCtx = bypassDraftContext(context);
+
+  // 1. Load all WorkflowInstances → map entity_id → StatusTemplate ID (currentState)
+  const allWorkflowInstances: any[] = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], { first: 5000 });
+  const draftToStatusTemplateId = new Map<string, string>();
+  for (const wi of allWorkflowInstances) {
+    if (wi.entity_id && wi.currentState) {
+      draftToStatusTemplateId.set(wi.entity_id as string, wi.currentState as string);
+    }
+  }
+
+  // 2. Load StatusTemplates → map id → name
+  const statusTemplateIds = [...new Set(draftToStatusTemplateId.values())];
+  const statusNameMap = new Map<string, string>();
+  if (statusTemplateIds.length > 0) {
+    const statusTemplates = await elFindByIds(executionCtx, executionCtx.user!, statusTemplateIds, { type: ENTITY_TYPE_STATUS_TEMPLATE }) as any[];
+    for (const st of statusTemplates) {
+      statusNameMap.set(st.id, st.name as string);
+    }
+  }
+
+  // 3. Load all DraftWorkspaces with filters applied (no sort, no pagination limit)
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    ...resolvedArgs,
+    first: 5000,
+    orderBy: 'created_at',
+  });
+
+  // 4. Sort in memory by status name (nulls last)
+  const sorted = [...allDrafts].sort((a, b) => {
+    const aName = statusNameMap.get(draftToStatusTemplateId.get(a.id) ?? '') ?? '';
+    const bName = statusNameMap.get(draftToStatusTemplateId.get(b.id) ?? '') ?? '';
+    if (!aName && !bName) return 0;
+    if (!aName) return 1;
+    if (!bName) return -1;
+    const cmp = aName.localeCompare(bName);
+    return asc ? cmp : -cmp;
+  });
+
+  // 5. Cursor-based pagination: cursor encodes the last-seen array index
+  let startIndex = 0;
+  if (args.after) {
+    const sortResults = cursorToOffset(args.after);
+    const lastIndex = Array.isArray(sortResults) ? (sortResults[0] as number) : 0;
+    startIndex = lastIndex + 1;
+  }
+  const page = sorted.slice(startIndex, startIndex + first);
+
+  const instances = page.map((node, idx) => ({
+    node,
+    sort: [startIndex + idx] as [number],
+  }));
+
+  return buildPagination<BasicStoreEntityDraftWorkspace>(first, args.after ?? null, instances, sorted.length);
+};
+
+// Helper: application-level sort by objectAssignee or objectParticipant user name.
+// Required because DraftWorkspace lives in the internal objects ES index, which doesn't
+// reliably index rel_object-assignee.internal_id.keyword (a STIX-objects-only mapping).
+// The 'creator' sort works via creator_id (a flat field present in all indices).
+const resolveSortByRefUsers = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryDraftWorkspacesArgs,
+  relationName: string, // 'object-assignee' or 'object-participant'
+) => {
+  const first = args.first ?? 10;
+  const asc = (args.orderMode ?? 'asc') === 'asc';
+  const executionCtx = bypassDraftContext(context);
+
+  // 1. Load all users from cache → map internal_id → name
+  const allUsers: AuthUser[] = await getEntitiesListFromCache<AuthUser>(executionCtx, executionCtx.user!, ENTITY_TYPE_USER);
+  const userNameById = new Map<string, string>();
+  for (const u of allUsers) {
+    userNameById.set(u.internal_id, u.name);
+  }
+
+  // 2. Load all DraftWorkspaces with filters applied
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    ...resolvedArgs,
+    first: 5000,
+    orderBy: 'created_at',
+  });
+
+  // 3. For each draft, get the first user name from the denormalized relation field.
+  //    The data-converter stores all rel_<relationName>.* sub-fields merged into draft[relationName].
+  //    We iterate over the merged array and find the first value that is a known user internal_id.
+  const getDraftUserName = (draft: any): string => {
+    const relValues: string[] = draft[relationName] ?? [];
+    for (const val of relValues) {
+      const name = userNameById.get(val);
+      if (name) return name.toLowerCase();
+    }
+    return '';
+  };
+
+  // 4. Sort in memory: empty values first in DESC, last in ASC
+  const sorted = [...allDrafts].sort((a, b) => {
+    const aName = getDraftUserName(a);
+    const bName = getDraftUserName(b);
+    if (!aName && !bName) return 0;
+    // Empty values: last in ASC, first in DESC
+    if (!aName) return asc ? 1 : -1;
+    if (!bName) return asc ? -1 : 1;
+    const cmp = aName.localeCompare(bName);
+    return asc ? cmp : -cmp;
+  });
+
+  // 5. Cursor-based pagination
+  let startIndex = 0;
+  if (args.after) {
+    const sortResults = cursorToOffset(args.after);
+    const lastIndex = Array.isArray(sortResults) ? (sortResults[0] as number) : 0;
+    startIndex = lastIndex + 1;
+  }
+  const page = sorted.slice(startIndex, startIndex + first);
+
+  const instances = page.map((node, idx) => ({
+    node,
+    sort: [startIndex + idx] as [number],
+  }));
+
+  return buildPagination<BasicStoreEntityDraftWorkspace>(first, args.after ?? null, instances, sorted.length);
+};
+
+export const findDraftWorkspacePaginated = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  const orderBy = args.orderBy as string;
+  if (orderBy === 'workflowInstance') {
+    const sortedConnection = await resolveSortByWorkflowInstance(context, user, args);
+    if (sortedConnection) return sortedConnection;
+  }
+  if (orderBy === 'objectAssignee') {
+    return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_ASSIGNEE);
+  }
+  if (orderBy === 'objectParticipant') {
+    return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_PARTICIPANT);
+  }
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
+};
+
+export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser, args: any) => {
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const [count, total] = await Promise.all([
+    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+  ]);
+
+  return {
+    count,
+    total,
+  };
+};
+
+export const draftWorkspacesTimeSeries = async (context: AuthContext, user: AuthUser, args: any) => {
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
+};
+
+// Helper: application-level distribution by workflow instance current status name.
+// Required because workflowInstance.currentState is stored on a separate WorkflowInstance
+// document, not on the DraftWorkspace document itself, making native ES aggregation impossible.
+const resolveWorkflowInstanceDistribution = async (context: AuthContext, user: AuthUser, args: any): Promise<{ label: string; value: number; entity: null }[]> => {
+  const executionCtx = bypassDraftContext(context);
+  const order: string = args.order ?? 'desc';
+  const limit: number = args.limit ?? 10;
+
+  // 1. Load all WorkflowInstances → map entity_id → StatusTemplate ID (currentState)
+  const allWorkflowInstances: any[] = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], { first: 5000 });
+  const draftToStatusTemplateId = new Map<string, string>();
+  for (const wi of allWorkflowInstances) {
+    if (wi.entity_id && wi.currentState) {
+      draftToStatusTemplateId.set(wi.entity_id as string, wi.currentState as string);
+    }
+  }
+
+  // 2. Load StatusTemplates → map id → name
+  const statusTemplateIds = [...new Set(draftToStatusTemplateId.values())];
+  const statusNameMap = new Map<string, string>();
+  if (statusTemplateIds.length > 0) {
+    const statusTemplates = await elFindByIds(executionCtx, executionCtx.user!, statusTemplateIds, { type: ENTITY_TYPE_STATUS_TEMPLATE }) as any[];
+    for (const st of statusTemplates) {
+      statusNameMap.set(st.id as string, st.name as string);
+    }
+  }
+
+  // 3. Load all DraftWorkspaces matching the filters (only pass list-relevant args)
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    filters: resolvedArgs.filters,
+    search: resolvedArgs.search,
+    first: 5000,
+  });
+
+  // 4. Group by status name → count
+  const counts = new Map<string, number>();
+  for (const draft of allDrafts) {
+    const statusTemplateId = draftToStatusTemplateId.get(draft.id);
+    const statusName = statusTemplateId ? (statusNameMap.get(statusTemplateId) ?? statusTemplateId) : 'Unknown';
+    counts.set(statusName, (counts.get(statusName) ?? 0) + 1);
+  }
+
+  // 5. Sort by count and limit
+  const entries = [...counts.entries()]
+    .sort((a, b) => (order === 'asc' ? a[1] - b[1] : b[1] - a[1]))
+    .slice(0, limit);
+
+  return entries.map(([label, value]) => ({ label, value, entity: null }));
+};
+
+export const draftWorkspacesDistribution = async (context: AuthContext, user: AuthUser, args: any) => {
+  if (args.field === 'workflowInstance') {
+    return resolveWorkflowInstanceDistribution(context, user, args);
+  }
+  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
 export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {

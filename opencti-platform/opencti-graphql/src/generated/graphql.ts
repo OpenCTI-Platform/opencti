@@ -7956,7 +7956,8 @@ export enum DraftWorkspacesOrdering {
   DraftStatus = 'draft_status',
   Name = 'name',
   ObjectAssignee = 'objectAssignee',
-  ObjectParticipant = 'objectParticipant'
+  ObjectParticipant = 'objectParticipant',
+  WorkflowInstance = 'workflowInstance'
 }
 
 export type EditContext = {
@@ -24396,7 +24397,10 @@ export type Query = {
   draftWorkspaceResolveIds: Array<DraftResolvedId>;
   draftWorkspaceSightingRelationships?: Maybe<StixSightingRelationshipConnection>;
   draftWorkspaces?: Maybe<DraftWorkspaceConnection>;
+  draftWorkspacesDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  draftWorkspacesNumber?: Maybe<Number>;
   draftWorkspacesRestricted?: Maybe<DraftWorkspaceConnection>;
+  draftWorkspacesTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   elasticSearchMetrics?: Maybe<ElasticSearchMetrics>;
   emailTemplate?: Maybe<EmailTemplate>;
   emailTemplates?: Maybe<EmailTemplateConnection>;
@@ -25373,6 +25377,28 @@ export type QueryDraftWorkspacesArgs = {
 };
 
 
+export type QueryDraftWorkspacesDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryDraftWorkspacesNumberArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
 export type QueryDraftWorkspacesRestrictedArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
@@ -25380,6 +25406,17 @@ export type QueryDraftWorkspacesRestrictedArgs = {
   orderBy?: InputMaybe<DraftWorkspacesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDraftWorkspacesTimeSeriesArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  interval: Scalars['String']['input'];
+  operation: StatsOperation;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate: Scalars['DateTime']['input'];
 };
 
 
@@ -49155,7 +49192,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   draftWorkspaceResolveIds?: Resolver<Array<ResolversTypes['DraftResolvedId']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceResolveIdsArgs, 'draftId' | 'ids'>>;
   draftWorkspaceSightingRelationships?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceSightingRelationshipsArgs, 'draftId'>>;
   draftWorkspaces?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesArgs>>;
+  draftWorkspacesDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryDraftWorkspacesDistributionArgs, 'field' | 'operation'>>;
+  draftWorkspacesNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryDraftWorkspacesNumberArgs>>;
   draftWorkspacesRestricted?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesRestrictedArgs>>;
+  draftWorkspacesTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryDraftWorkspacesTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   emailTemplate?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<QueryEmailTemplateArgs, 'id'>>;
   emailTemplates?: Resolver<Maybe<ResolversTypes['EmailTemplateConnection']>, ParentType, ContextType, Partial<QueryEmailTemplatesArgs>>;

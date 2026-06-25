@@ -6,6 +6,7 @@ import {
   findFiltersFromKeys,
   formatFiltersInPirContext,
   getEntityTypeThreeFirstLevelsFilterValues,
+  isDraftWorkspaceFilterGroup,
   isFilterGroupFormatCorrect,
   isRegardingOfFilterWarning,
   normalizeFilterGroupForBackend,
@@ -1366,5 +1367,50 @@ describe('Function normalizeFilterGroupForFrontend', () => {
     expect(result.filters[0].operator).toEqual('not_eq');
     expect(result.filters[0].mode).toEqual('and');
     expect(result.filters[0].values).toEqual(['val1', 'val2']);
+  });
+});
+
+describe('isDraftWorkspaceFilterGroup', () => {
+  it('should return false for null', () => {
+    expect(isDraftWorkspaceFilterGroup(null)).toBe(false);
+  });
+
+  it('should return false for undefined', () => {
+    expect(isDraftWorkspaceFilterGroup(undefined)).toBe(false);
+  });
+
+  it('should return false when there is no entity_type filter', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'name', values: ['test'] }], filterGroups: [] };
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(false);
+  });
+
+  it('should return false when entity_type filter has no values', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [] }], filterGroups: [] };
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(false);
+  });
+
+  it('should return false when entity_type is not DraftWorkspace', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: ['Report'] }], filterGroups: [] };
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(false);
+  });
+
+  it('should return false when entity_type has mixed values including DraftWorkspace', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: ['DraftWorkspace', 'Report'] }], filterGroups: [] };
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(false);
+  });
+
+  it('should return true when all entity_type values are DraftWorkspace (string)', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: ['DraftWorkspace'] }], filterGroups: [] };
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+
+  it('should return true when entity_type value is an object with value property', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ value: 'DraftWorkspace', label: 'Draft Workspace' }] }], filterGroups: [] };
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+
+  it('should return true when entity_type value is an object with id property', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
   });
 });

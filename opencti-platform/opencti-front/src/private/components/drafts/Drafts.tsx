@@ -24,6 +24,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useRuntimeSortGuard from '../../../utils/hooks/useRuntimeSortGuard';
+import ItemStatus from 'src/components/ItemStatus';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -225,10 +226,11 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       percentWidth: 10,
       isSortable: true,
       render: (node) => (
-        <DraftStatusChip
-          draftStatus={node.draft_status}
-          workflowCurrentStatus={node.workflowInstance?.currentStatus}
-        />
+        node.workflowInstance?.currentStatus ? (
+          <ItemStatus status={node.workflowInstance.currentStatus} />
+        ) : (
+          <DraftStatusChip draftStatus={node.draft_status} />
+        )
       ),
     },
     draft_validation_progress: {
@@ -271,10 +273,11 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       percentWidth: 10,
       isSortable: true,
       render: (node) => (
-        <DraftStatusChip
-          draftStatus={node.draft_status}
-          workflowCurrentStatus={node.workflowInstance?.currentStatus}
-        />
+        node.workflowInstance?.currentStatus ? (
+          <ItemStatus status={node.workflowInstance.currentStatus} />
+        ) : (
+          <DraftStatusChip draftStatus={node.draft_status} />
+        )
       ),
     },
     draft_validation_progress: {
