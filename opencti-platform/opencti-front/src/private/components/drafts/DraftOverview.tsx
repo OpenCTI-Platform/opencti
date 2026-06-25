@@ -6,7 +6,7 @@ import DraftBasicInformation from './DraftBasicInformation';
 import DraftDetails from '@components/drafts/DraftDetails';
 import DraftEdition from '@components/drafts/DraftEdition';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
-import useUserCanEditDraft from '../../../utils/hooks/useUserCanEditDraft';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 interface DraftOverviewProps {
   draft: DraftRootFragment$data;
@@ -15,7 +15,7 @@ interface DraftOverviewProps {
 const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
   const draftOverviewLayoutCustomization = useOverviewLayoutCustomization(draft.entity_type);
   const currentAccessRight = useGetCurrentUserAccessRight(draft.currentUserAccessRight);
-  const canEdit = useUserCanEditDraft() && currentAccessRight.canEdit;
+  const canEdit = useGranted([KNOWLEDGE_KNUPDATE]) && currentAccessRight.canEdit;
 
   return (
     <>
