@@ -227,11 +227,24 @@ export const resolveMainEntityAuthorFromValues = (
   values: Record<string, any>,
 ): string | null => {
   const createdByField = schema.fields.find((f) => f.type === FormFieldType.CreatedBy);
-  const createdByKey = createdByField?.name ?? 'createdBy';
-  const possibleAuthor = values[createdByKey]
-    || values.mainEntityFields?.[createdByKey]
-    || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0][createdByKey] : undefined);
-  return normalizeOptionId(possibleAuthor) || null;
+  const createdByKeys = Array.from(new Set([
+    createdByField?.name,
+    createdByField?.attributeMapping?.attributeName,
+    'createdBy',
+  ].filter((k): k is string => typeof k === 'string' && k.length > 0)));
+  const resolveIn = (container: any): string | undefined => {
+    for (let i = 0; i < createdByKeys.length; i += 1) {
+      const id = normalizeOptionId(container?.[createdByKeys[i]]);
+      if (id) return id;
+    }
+    return undefined;
+  };
+  return (
+    resolveIn(values)
+    || resolveIn(values.mainEntityFields)
+    || resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined)
+    || null
+  );
 };
 
 export const resolveDraftFieldDefaults = (

@@ -4,13 +4,13 @@ import { FormFieldType, type FormSchemaDefinition } from '../../../../src/module
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-const makeCreatedByField = (name: string) => ({
+const makeCreatedByField = (name: string, attributeName = 'createdBy') => ({
   id: name,
   name,
   label: name,
   type: FormFieldType.CreatedBy,
   required: false,
-  attributeMapping: { entity: 'main_entity', attributeName: 'createdBy' },
+  attributeMapping: { entity: 'main_entity', attributeName },
 });
 
 const baseSchema = (overrides: Partial<FormSchemaDefinition> = {}): FormSchemaDefinition => ({
@@ -92,6 +92,28 @@ describe('resolveMainEntityAuthorFromValues', () => {
     it('returns null when no createdBy field in schema and value is absent', () => {
       const schema = baseSchema({ fields: [] });
       expect(resolveMainEntityAuthorFromValues(schema, {})).toBeNull();
+    });
+  });
+
+  describe('attributeMapping.attributeName fallback', () => {
+    it('resolves author via attributeMapping.attributeName when value is stored under the canonical attribute key', () => {
+      // Simulates a programmatic API submission that uses the attribute name ('createdBy')
+      // even though field.name is customized ('author')
+      const schema = baseSchema({ fields: [makeCreatedByField('author', 'createdBy')] });
+      const values = { createdBy: 'identity--org-6' };
+      expect(resolveMainEntityAuthorFromValues(schema, values)).toBe('identity--org-6');
+    });
+
+    it('resolves via attributeMapping.attributeName in mainEntityFields when field.name key is absent', () => {
+      const schema = baseSchema({ fields: [makeCreatedByField('author', 'createdBy')] });
+      const values = { mainEntityFields: { createdBy: 'identity--org-7' } };
+      expect(resolveMainEntityAuthorFromValues(schema, values)).toBe('identity--org-7');
+    });
+
+    it('prefers field.name key over attributeMapping.attributeName when both are present', () => {
+      const schema = baseSchema({ fields: [makeCreatedByField('author', 'createdBy')] });
+      const values = { author: 'identity--primary', createdBy: 'identity--secondary' };
+      expect(resolveMainEntityAuthorFromValues(schema, values)).toBe('identity--primary');
     });
   });
 });
