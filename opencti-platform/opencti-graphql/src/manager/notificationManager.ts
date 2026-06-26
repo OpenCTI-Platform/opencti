@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import { type StreamProcessor } from '../database/stream/stream-utils';
+import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/stream-utils';
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
@@ -620,6 +620,29 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
   }
 };
 
+interface DigestContentAccumulator { content: Array<KnowledgeNotificationEvent>; byteSize: number; truncated: boolean }
+// Accumulate the digest-matching events of a notification batch into `acc`, bounded by the byte budget.
+// Returns false to stop the range iteration once the cumulative byte budget is reached.
+const collectDigestBatch = (
+  acc: DigestContentAccumulator,
+  events: Array<SizedNotifEvent<KnowledgeNotificationEvent>>,
+  triggerIds: Set<string>,
+  maxContentByteSize: number,
+): boolean => {
+  for (let i = 0; i < events.length; i += 1) {
+    const { event: notification, byteSize: notificationSize } = events[i];
+    if (triggerIds.has(notification.notification_id)) {
+      acc.content.push(notification);
+      acc.byteSize += notificationSize;
+      if (acc.byteSize >= maxContentByteSize) {
+        acc.truncated = true;
+        return false; // memory threshold reached, stop reading the range
+      }
+    }
+  }
+  return true;
+};
+
 // Read the notification events of the [fromDate, toDate] range that belong to the given digest triggers.
 // The range is consumed in batches and "only" the matching events are kept in memory (instead of loading the
 // whole range). The retained content is bounded by its cumulative byte size (events may vary a lot in size) to
@@ -629,25 +652,15 @@ export const collectDigestContent = async (
   toDate: Date,
   triggerIds: Array<string>,
   maxContentByteSize: number = MAX_DIGEST_CONTENT_SIZE,
-): Promise<{ content: Array<KnowledgeNotificationEvent>; truncated: boolean; byteSize: number }> => {
-  const content: Array<KnowledgeNotificationEvent> = [];
-  let byteSize = 0;
-  let truncated = false;
-  await fetchRangeNotifications<KnowledgeNotificationEvent>(fromDate, toDate, (events) => {
-    for (let i = 0; i < events.length; i += 1) {
-      const { event: notification, byteSize: notificationSize } = events[i];
-      if (triggerIds.includes(notification.notification_id)) {
-        content.push(notification);
-        byteSize += notificationSize;
-        if (byteSize >= maxContentByteSize) {
-          truncated = true;
-          return false; // memory threshold reached, stop reading the range
-        }
-      }
-    }
-    return true;
-  });
-  return { content, truncated, byteSize };
+): Promise<DigestContentAccumulator> => {
+  const acc: DigestContentAccumulator = { content: [], byteSize: 0, truncated: false };
+  const triggerIdsSet = new Set(triggerIds);
+  await fetchRangeNotifications<KnowledgeNotificationEvent>(
+    fromDate,
+    toDate,
+    (events) => collectDigestBatch(acc, events, triggerIdsSet, maxContentByteSize),
+  );
+  return acc;
 };
 
 export const handleDigestNotifications = async (context: AuthContext) => {

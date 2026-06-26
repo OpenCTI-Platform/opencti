@@ -43,6 +43,7 @@ const driveBatches = (batches: KnowledgeNotificationEvent[][]) => {
 describe('collectDigestContent', () => {
   afterEach(() => {
     vi.clearAllMocks();
+    objSeq = 0; // keep tests isolated: the generated obj ids restart from 1 for each test
   });
 
   it('keeps only the events whose notification_id belongs to the digest triggers', async () => {
