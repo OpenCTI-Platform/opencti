@@ -85,8 +85,13 @@ export const reportWorkflowAsyncActionResult = async (
   }
 
   // All async tasks succeeded — run syncActions (phase 2)
-  // Load the full target entity so dynamic resolvers (AUTHOR, CREATORS, etc.) have the data they need
-  const fullEntity = await storeLoadById<any>(executionContext, executionUser, instanceEntity.entity_id, 'Basic-Object');
+  // Load the full target entity so dynamic resolvers (AUTHOR, CREATORS, etc.) have the data they need.
+  // Fall back to a minimal stub if the load fails (e.g. entity deleted during the async window or transient DB error).
+  const fullEntity = await storeLoadById<any>(executionContext, executionUser, instanceEntity.entity_id, 'Basic-Object')
+    .catch((err) => {
+      logApp.warn('[workflow-async-completion] Failed to load full entity, falling back to stub', { entityId: instanceEntity.entity_id, error: err });
+      return null;
+    });
   const workflowContext = {
     user: executionUser,
     entity: fullEntity ?? { id: instanceEntity.entity_id },

@@ -498,5 +498,97 @@ describe('reportWorkflowAsyncActionResult', () => {
       // Should fall back to minimal stub so the rest of the pipeline can still proceed
       expect(capturedEntity).toEqual({ id: 'entity-id' });
     });
+
+    it('falls back to { id } and logs a warning when storeLoadById throws (e.g. transient DB error)', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [],
+        onEnterActions: [{ type: 'captureErrorFallbackEntity', params: {} }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockRejectedValueOnce(new Error('DB connection lost'));
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureErrorFallbackEntity = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      const { logApp } = await import('../../../src/config/conf');
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // Should still proceed with the minimal stub
+      expect(capturedEntity).toEqual({ id: 'entity-id' });
+      // And the error should be logged
+      expect((logApp.warn as any)).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load full entity'),
+        expect.objectContaining({ entityId: 'entity-id' }),
+      );
+    });
+
+    // Regression test for #16843: the second storeLoadById call must happen and its result
+    // must reach the action so that dynamic members (AUTHOR/CREATORS/ASSIGNEES/PARTICIPANTS)
+    // can be resolved correctly.
+    it('calls storeLoadById a second time with the entity_id to load the full entity', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [],
+        onEnterActions: [],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+      const fullEntity = { id: 'entity-id', entity_type: 'DraftWorkspace' };
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // Must have been called exactly twice: once for instance, once for the full target entity
+      expect(storeLoadById).toHaveBeenCalledTimes(2);
+      const secondCall = (storeLoadById as any).mock.calls[1];
+      expect(secondCall[2]).toBe('entity-id'); // id argument
+      expect(secondCall[3]).toBe('Basic-Object'); // type argument
+    });
+
+    // Regression test for #16843: updateAuthorizedMembers running as an onEnterAction must
+    // receive an entity that carries RELATION_CREATED_BY so the AUTHOR dynamic member resolves.
+    it('passes RELATION_CREATED_BY on the entity to updateAuthorizedMembers in onEnterActions (AUTHOR resolution)', async () => {
+      const RELATION_CREATED_BY = 'createdBy';
+      const fullEntity = {
+        id: 'entity-id',
+        entity_type: 'DraftWorkspace',
+        [RELATION_CREATED_BY]: 'org-author-id',
+      };
+      const pt = makePendingTransition({
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [],
+        onEnterActions: [{ type: 'updateAuthorizedMembers', params: { members: [{ id: 'AUTHOR', access_right: 'edit' }] } }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+
+      let entitySeenByAction: any;
+      (ActionRegistry as any).updateAuthorizedMembers = vi.fn().mockImplementation((ctx: any) => {
+        entitySeenByAction = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // The action must see the full entity with RELATION_CREATED_BY so AUTHOR can resolve
+      expect(entitySeenByAction).toEqual(fullEntity);
+      expect(entitySeenByAction[RELATION_CREATED_BY]).toBe('org-author-id');
+    });
   });
 });
