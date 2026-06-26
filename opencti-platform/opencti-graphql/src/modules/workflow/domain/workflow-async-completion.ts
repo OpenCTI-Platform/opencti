@@ -85,9 +85,11 @@ export const reportWorkflowAsyncActionResult = async (
   }
 
   // All async tasks succeeded — run syncActions (phase 2)
+  // Load the full target entity so dynamic resolvers (AUTHOR, CREATORS, etc.) have the data they need
+  const fullEntity = await storeLoadById<any>(executionContext, executionUser, instanceEntity.entity_id, 'Basic-Object');
   const workflowContext = {
     user: executionUser,
-    entity: { id: instanceEntity.entity_id },
+    entity: fullEntity ?? { id: instanceEntity.entity_id },
     context: executionContext,
     runtimeParams: pendingTransition.runtimeParams ?? {},
   };
