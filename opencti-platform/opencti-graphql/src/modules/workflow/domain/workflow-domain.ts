@@ -14,6 +14,7 @@ import { bypassDraftContext } from '../../../utils/draftContext';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
+import { now } from '../../../utils/format';
 import { addNotification } from '../../notification/notification-domain';
 import type { NotificationAddInput } from '../../notification/notification-types';
 import { WorkflowFactory } from '../engine/workflow-factory';
@@ -136,6 +137,9 @@ const notifyWorkflowTransitionComment = async (
           name: entityName,
           notification_type: 'live',
           user_id: recipientId,
+          created: now(),
+          created_at: now(),
+          updated_at: now(),
           notification_content: [{
             title: entityName,
             events: [{

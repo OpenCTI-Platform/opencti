@@ -76,6 +76,9 @@ export interface NotificationAddInput {
   }>;
   trigger_id?: string | string[];
   user_id: string;
+  created?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // region Database types
