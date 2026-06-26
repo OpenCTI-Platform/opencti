@@ -39,9 +39,10 @@ jobs:
           # git ls-tree lists the objects at that tree; basename extracts the filename,
           # then we pick out the leading numeric timestamp and take the highest one.
           MAX_EXISTING=$(
-            git ls-tree --name-only "origin/${BASE_REF}" "${MIGRATION_DIR}/" \
-              | xargs -I{} basename {} \
-              | grep -oE '^[0-9]+' \
+            git ls-tree -r --name-only "origin/${BASE_REF}" "${MIGRATION_DIR}/" \
+              | awk -F'/' '{print $NF}' \
+              | grep -E '^[0-9]+-.*\.(js|ts)$' \
+              | cut -d- -f1 \
               | sort -n \
               | tail -1 \
             || true
