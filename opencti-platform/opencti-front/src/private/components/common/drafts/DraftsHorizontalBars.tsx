@@ -46,6 +46,11 @@ const draftsHorizontalBarsDistributionQuery = graphql`
           id
           entity_type
         }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
         ... on Creator {
           id
           name
