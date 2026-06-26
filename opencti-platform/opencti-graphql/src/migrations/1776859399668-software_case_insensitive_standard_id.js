@@ -5,7 +5,7 @@ import { generateStandardId } from '../schema/identifier';
 import { ENTITY_SOFTWARE } from '../schema/stixCyberObservable';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { fullEntitiesList } from '../database/middleware-loader';
-import { mergeEntities, patchAttribute } from '../database/middleware';
+import { mergeEntities } from '../database/middleware';
 import { BULK_TIMEOUT, elBulk, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import { logApp, logMigration } from '../config/conf';
 
@@ -15,6 +15,15 @@ export const up = async (next) => {
   const context = executionContext('migration');
   const start = new Date().getTime();
   logMigration.info(`${message} > started`);
+
+  const buildStandardIdUpdateOps = (entity, newId) => {
+    const existingStixIds = entity.x_opencti_stix_ids ?? [];
+    const updatedStixIds = R.uniq([...existingStixIds, entity.standard_id]);
+    return [
+      { update: { _index: entity._index, _id: entity._id } },
+      { doc: { standard_id: newId, x_opencti_stix_ids: updatedStixIds } },
+    ];
+  };
 
   // 1. Load every existing Software observable (minimal but sufficient field set to
   // recompute a standard_id and to build the bulk update / merge operations).
@@ -59,10 +68,11 @@ export const up = async (next) => {
     const target = sorted[0].sw;
     const sources = sorted.slice(1).map((e) => e.sw);
     try {
-      if (target.standard_id !== newId) {
-        await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, { standard_id: newId });
-      }
       await mergeEntities(context, SYSTEM_USER, target.internal_id, sources.map((s) => s.internal_id));
+      if (target.standard_id !== newId) {
+        const bulk = buildStandardIdUpdateOps(target, newId);
+        await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
+      }
       mergedEntities += sources.length;
       logApp.info(`${message} > merged ${sources.length} Software into ${target.internal_id} (${index + 1}/${collisionGroups.length})`);
     } catch (err) {
@@ -80,12 +90,7 @@ export const up = async (next) => {
   for (let index = 0; index < singletonGroups.length; index += 1) {
     const { sw, newId } = singletonGroups[index][0];
     if (sw.standard_id === newId) continue;
-    const existingStixIds = sw.x_opencti_stix_ids ?? [];
-    const updatedStixIds = R.uniq([...existingStixIds, sw.standard_id]);
-    bulkOperations.push(
-      { update: { _index: sw._index, _id: sw._id } },
-      { doc: { standard_id: newId, x_opencti_stix_ids: updatedStixIds } },
-    );
+    bulkOperations.push(...buildStandardIdUpdateOps(sw, newId));
   }
 
   if (bulkOperations.length > 0) {
