@@ -26,6 +26,7 @@ import { OPENCTI_ADMIN_UUID } from '../../../schema/general';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { StixBundle } from '../../../types/stix-2-1-common';
+import type { ComponentDefinition } from '../playbook-types';
 
 // 5 minutes — agent runs may take a while when the LLM has to materialise
 // a large STIX bundle or call multiple tools. Keep well above the default
@@ -113,6 +114,11 @@ export const isAgentBoundToIntent = async (
   }
 };
 
+// A ``run_as`` configuration as stored on a playbook node: the member
+// picker saves a ``{ label, value }`` option object, while hand-written or
+// imported configs may carry a raw id string (or nothing at all).
+export type RunAsConfiguration = string | { label?: string; value?: string } | null;
+
 /**
  * Normalize the component ``run_as`` configuration into a plain user id.
  * The playbook form stores the member-picker selection as a
@@ -121,7 +127,7 @@ export const isAgentBoundToIntent = async (
  * user is configured.
  */
 export const resolveRunAsUserId = (
-  runAs?: string | { label?: string; value?: string } | null,
+  runAs?: RunAsConfiguration,
 ): string | undefined => {
   if (!runAs) return undefined;
   if (typeof runAs === 'string') return runAs.trim() || undefined;
@@ -129,31 +135,32 @@ export const resolveRunAsUserId = (
 };
 
 /**
- * Guardrail for the AI-agent ``run_as`` configuration. The agent runs on
- * behalf of the configured user (its email is embedded in the XTM One
+ * Core predicate behind the AI-agent ``run_as`` guardrail. The agent runs
+ * on behalf of the configured user (its email is embedded in the XTM One
  * JWT and any write-back to OpenCTI is attributed to that account), so a
  * playbook author must not be able to impersonate an arbitrary user.
  *
- * Only two kinds of ``run_as`` targets are accepted:
+ * Returns ``true`` only for identities the author is allowed to act as:
+ *  - an unset ``run_as`` (at runtime it falls back to the seeded platform
+ *    admin, see ``resolveAgentJwtUser``),
  *  - the author themselves (the currently authenticated user), and
  *  - a service account (``user_service_account = true``), which exists
  *    precisely to carry automated, non-human activity.
  *
- * An unset ``run_as`` is allowed: at runtime it falls back to the seeded
- * platform admin (see ``resolveAgentJwtUser``). The target user is loaded
- * with SYSTEM_USER so the decision depends only on the nature of the
- * account, not on the author's own visibility over it. Anything else is
- * refused with a ForbiddenAccess so the generic ``members`` query (used
- * by the picker and many other places) can stay untouched.
+ * The target user is loaded with SYSTEM_USER so the decision depends only
+ * on the nature of the account, not on the author's own visibility over
+ * it, and the check fails closed (returns ``false``) when the target
+ * cannot be loaded. The generic ``members`` query (used by the picker and
+ * many other places) is left untouched.
  */
-export const assertRunAsUserAllowed = async (
+export const isRunAsUserAllowed = async (
   context: AuthContext,
   user: AuthUser,
-  runAs?: string | { label?: string; value?: string } | null,
-): Promise<void> => {
+  runAs?: RunAsConfiguration,
+): Promise<boolean> => {
   const runAsUserId = resolveRunAsUserId(runAs);
   if (!runAsUserId || runAsUserId === user.id) {
-    return;
+    return true;
   }
   const target = await internalLoadById<BasicStoreEntity & { user_service_account?: boolean }>(
     context,
@@ -161,10 +168,109 @@ export const assertRunAsUserAllowed = async (
     runAsUserId,
     { type: ENTITY_TYPE_USER },
   );
-  if (target?.user_service_account === true) {
+  return target?.user_service_account === true;
+};
+
+/**
+ * Throwing variant of {@link isRunAsUserAllowed}, used by the playbook
+ * node save paths (add / replace / insert) where the value comes from the
+ * constrained picker: anything else is a crafted call and is refused with
+ * a ForbiddenAccess.
+ */
+export const assertRunAsUserAllowed = async (
+  context: AuthContext,
+  user: AuthUser,
+  runAs?: RunAsConfiguration,
+): Promise<void> => {
+  if (await isRunAsUserAllowed(context, user, runAs)) {
     return;
   }
-  throw ForbiddenAccess('The "run as" user must be yourself or a service account', { runAsUserId });
+  throw ForbiddenAccess('The "run as" user must be yourself or a service account', { runAsUserId: resolveRunAsUserId(runAs) });
+};
+
+/**
+ * Collect the ``run_as`` value carried by every node of a serialized
+ * playbook definition. Nodes without a configuration, with an unparseable
+ * configuration, or without a ``run_as`` are skipped. Used to apply the
+ * guardrail to the paths that persist a whole definition at once (import,
+ * duplicate, raw field patch) rather than a single node.
+ */
+const extractDefinitionRunAsValues = (playbookDefinition?: string | null): RunAsConfiguration[] => {
+  if (!playbookDefinition) return [];
+  let definition: ComponentDefinition;
+  try {
+    definition = JSON.parse(playbookDefinition) as ComponentDefinition;
+  } catch {
+    return [];
+  }
+  return (definition.nodes ?? [])
+    .map((node) => {
+      if (!node?.configuration) return null;
+      try {
+        const config = JSON.parse(node.configuration) as { run_as?: RunAsConfiguration };
+        return config.run_as ?? null;
+      } catch {
+        return null;
+      }
+    })
+    .filter((runAs) => runAs !== null);
+};
+
+/**
+ * Reject (throw) when any node of a whole serialized playbook definition
+ * carries a disallowed ``run_as``. Used by the raw ``playbookFieldPatch``
+ * path which the editor never uses to set the definition but which is
+ * exposed on the GraphQL API and could be abused by a crafted call.
+ */
+export const assertDefinitionRunAsAllowed = async (
+  context: AuthContext,
+  user: AuthUser,
+  playbookDefinition?: string | null,
+): Promise<void> => {
+  await Promise.all(
+    extractDefinitionRunAsValues(playbookDefinition)
+      .map((runAs) => assertRunAsUserAllowed(context, user, runAs)),
+  );
+};
+
+/**
+ * Sanitize a whole serialized playbook definition so that none of its
+ * nodes runs as a disallowed user: disallowed ``run_as`` values are reset
+ * to the acting user (always an allowed target). Used by the paths that
+ * persist a definition coming from outside the constrained editor - import
+ * (foreign user ids) and duplicate (another author's run_as) - where a
+ * hard failure would needlessly break a legitimate operation while reset
+ * still guarantees no impersonation. Returns the original string when
+ * nothing had to change (or when it cannot be parsed).
+ */
+export const sanitizeDefinitionRunAs = async (
+  context: AuthContext,
+  user: AuthUser,
+  playbookDefinition?: string | null,
+): Promise<string | null | undefined> => {
+  if (!playbookDefinition) return playbookDefinition;
+  let definition: ComponentDefinition;
+  try {
+    definition = JSON.parse(playbookDefinition) as ComponentDefinition;
+  } catch {
+    return playbookDefinition;
+  }
+  const selfOption = { label: user.name, value: user.id };
+  const mutations = await Promise.all((definition.nodes ?? []).map(async (node) => {
+    if (!node?.configuration) return false;
+    let config: { run_as?: RunAsConfiguration };
+    try {
+      config = JSON.parse(node.configuration) as { run_as?: RunAsConfiguration };
+    } catch {
+      return false;
+    }
+    if (config.run_as === undefined || config.run_as === null) return false;
+    if (await isRunAsUserAllowed(context, user, config.run_as)) return false;
+    config.run_as = selfOption;
+    node.configuration = JSON.stringify(config);
+    return true;
+  }));
+  return mutations.some((changed) => changed) ? JSON.stringify(definition) : playbookDefinition;
 };
 
 /**

@@ -1,8 +1,7 @@
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
-import type { Theme } from '../../../../../../components/Theme';
 import { fetchQuery } from '../../../../../../relay/environment';
 import { useFormatter } from '../../../../../../components/i18n';
 import useAuth from '../../../../../../utils/hooks/useAuth';
@@ -10,21 +9,6 @@ import AutocompleteField from '../../../../../../components/AutocompleteField';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { FieldOption } from '../../../../../../utils/field';
 import { PlaybookFlowFieldRunAsQuery$data } from './__generated__/PlaybookFlowFieldRunAsQuery.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
 
 // The agent runs on behalf of the configured user, so the picker is
 // deliberately restricted to identities the author is allowed to act as:
@@ -67,7 +51,6 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
   label,
   style,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const currentUserOption: OptionRunAs = {
@@ -86,13 +69,16 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
     })
       .toPromise()
       .then((data) => {
-        const serviceAccounts = (
+        // Drop any incomplete edge (relay can return a null node when an
+        // item is no longer accessible) so options always carry a defined
+        // value/type and `groupBy` never receives undefined.
+        const serviceAccounts: OptionRunAs[] = (
           (data as PlaybookFlowFieldRunAsQuery$data)?.members?.edges ?? []
-        ).map((edge) => ({
-          label: edge?.node.name,
-          value: edge?.node.id,
-          type: edge?.node.entity_type,
-        })) as OptionRunAs[];
+        ).flatMap((edge) => {
+          const node = edge?.node;
+          if (!node) return [];
+          return [{ label: node.name, value: node.id, type: node.entity_type }];
+        });
         // Always offer the current user, only hiding it when it does not
         // match the current search input.
         const lowerSearch = search.toLowerCase();
@@ -131,10 +117,12 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
           option: OptionRunAs,
         ) => (
           <li {...props}>
-            <div className={classes.icon}>
+            <Box sx={{ paddingTop: '4px', display: 'inline-block', color: 'primary.main' }}>
               <ItemIcon type={option.type} />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </Box>
+            <Box sx={{ display: 'inline-block', flexGrow: 1, marginLeft: '10px' }}>
+              {option.label}
+            </Box>
           </li>
         )}
       />
