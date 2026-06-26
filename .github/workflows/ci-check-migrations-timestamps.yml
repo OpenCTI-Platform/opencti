@@ -1,4 +1,4 @@
-name: PR check migration files
+name: Migration check
 
 on:
   pull_request:
