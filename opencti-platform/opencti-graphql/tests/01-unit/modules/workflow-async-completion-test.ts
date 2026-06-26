@@ -398,4 +398,105 @@ describe('reportWorkflowAsyncActionResult', () => {
     const [, , , , patches] = (updateAttribute as any).mock.calls[0];
     expect(patches.find((p: any) => p.key === 'currentState')?.value[0]).toBe('reviewing');
   });
+
+  // ---------------------------------------------------------------------------
+  // Full entity loading (fix for "Draft author org" not resolved in onEnterActions)
+  // ---------------------------------------------------------------------------
+
+  describe('full entity loading for workflowContext', () => {
+    it('passes the full entity (with all relations) to onEnterActions', async () => {
+      const fullEntity = {
+        id: 'entity-id',
+        internal_id: 'entity-id',
+        entity_type: 'DraftWorkspace',
+        'createdBy': 'org-author-id',
+        creator_id: 'creator-id',
+      };
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [],
+        onEnterActions: [{ type: 'captureEntityAction', params: {} }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      // First call: load workflow instance; second call: load full target entity
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureEntityAction = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // The action must receive the full entity, not just { id }
+      expect(capturedEntity).toEqual(fullEntity);
+      expect(capturedEntity['createdBy']).toBe('org-author-id');
+      expect(capturedEntity.creator_id).toBe('creator-id');
+    });
+
+    it('passes the full entity (with all relations) to syncActions', async () => {
+      const fullEntity = {
+        id: 'entity-id',
+        internal_id: 'entity-id',
+        entity_type: 'DraftWorkspace',
+        'createdBy': 'org-author-id',
+      };
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [{ type: 'captureSyncEntity', params: {} }],
+        onEnterActions: [],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureSyncEntity = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(capturedEntity).toEqual(fullEntity);
+      expect(capturedEntity['createdBy']).toBe('org-author-id');
+    });
+
+    it('falls back to { id } when the full target entity cannot be found (e.g. deleted during async window)', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [],
+        onEnterActions: [{ type: 'captureFallbackEntity', params: {} }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      // First call: load workflow instance; second call: entity not found
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(null);
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureFallbackEntity = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // Should fall back to minimal stub so the rest of the pipeline can still proceed
+      expect(capturedEntity).toEqual({ id: 'entity-id' });
+    });
+  });
 });
