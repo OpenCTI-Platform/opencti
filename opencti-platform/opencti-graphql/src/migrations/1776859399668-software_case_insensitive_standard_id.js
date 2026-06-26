@@ -68,8 +68,9 @@ export const up = async (next) => {
   // We pick the oldest entity (by created_at, falling back to internal_id) as the merge target
   // to preserve provenance; all the other entities are merged into it so that their relations,
   // markings, labels, stix ids... are kept. The merge target's standard_id is moved to the new
-  // value with patchAttribute so the middleware automatically archives the previous standard_id
-  // inside x_opencti_stix_ids.
+  // value with an Elasticsearch scripted update, so the previous standard_id is preserved in
+  // x_opencti_stix_ids and we don't overwrite any x_opencti_stix_ids updates performed by
+  // mergeEntities.
   const collisionGroups = groups.filter((g) => g.length > 1);
   logMigration.info(`${message} > ${collisionGroups.length} collision group(s) to merge`);
   let mergedEntities = 0;
@@ -89,7 +90,7 @@ export const up = async (next) => {
       await mergeEntities(context, SYSTEM_USER, target.internal_id, sources.map((s) => s.internal_id));
       if (target.standard_id !== newId) {
         const bulk = buildStandardIdUpdateOps(target, newId);
-        await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
+        await elBulk(context, { refresh: false, timeout: BULK_TIMEOUT, body: bulk });
       }
       mergedEntities += sources.length;
       logApp.info(`${message} > merged ${sources.length} Software into ${target.internal_id} (${index + 1}/${collisionGroups.length})`);
