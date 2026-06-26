@@ -93,7 +93,7 @@ export const up = async (next) => {
         await elBulk(context, { refresh: false, timeout: BULK_TIMEOUT, body: bulk });
       }
       mergedEntities += sources.length;
-      logApp.info(`${message} > merged ${sources.length} Software into ${target.internal_id} (${index + 1}/${collisionGroups.length})`);
+      logMigration.info(`${message} > merged ${sources.length} Software into ${target.internal_id} (${index + 1}/${collisionGroups.length})`);
     } catch (err) {
       // Do not abort the whole migration if one group fails: log and keep going,
       // the remaining Software observables can still have their standard_id rewritten.
