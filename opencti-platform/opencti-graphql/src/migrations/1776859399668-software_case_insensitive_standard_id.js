@@ -21,7 +21,7 @@ export const up = async (next) => {
     // mergeEntities can mutate the stored x_opencti_stix_ids for the target entity (by adding
     // the merged entities' identifiers). Using an in-memory doc update here would clobber those.
     return [
-      { update: { _index: entity._index, _id: entity._id } },
+      { update: { _index: entity._index, _id: entity._id, retry_on_conflict: 5 } },
       {
         script: {
           lang: 'painless',
