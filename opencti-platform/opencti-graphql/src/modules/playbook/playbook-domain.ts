@@ -180,13 +180,21 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
-// Enforce the AI-agent `run_as` guardrail on a freshly built node
-// configuration: the agent runs on behalf of the configured user, so only
-// the author themselves or a service account may be selected. Components
-// without a `run_as` value are a no-op (see assertRunAsUserAllowed).
-const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configuration: string) => {
-  const { run_as: runAs } = JSON.parse(configuration) as { run_as?: string | { label?: string; value?: string } | null };
-  await assertRunAsUserAllowed(context, user, runAs);
+// Enforce the AI-agent `run_as` guardrail on a node configuration: the
+// agent runs on behalf of the configured user, so only the author
+// themselves or a service account may be selected. Components without a
+// `run_as` value are a no-op (see assertRunAsUserAllowed). The
+// configuration can be a raw client-provided JSON string (insert path),
+// so a parse failure is treated as "no run_as" rather than throwing here.
+const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configuration?: string | null) => {
+  if (!configuration) return;
+  let parsed: { run_as?: string | { label?: string; value?: string } | null };
+  try {
+    parsed = JSON.parse(configuration);
+  } catch {
+    return;
+  }
+  await assertRunAsUserAllowed(context, user, parsed.run_as);
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
@@ -304,6 +312,7 @@ export const playbookInsertNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
+  await validateNodeRunAs(context, user, input.configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
