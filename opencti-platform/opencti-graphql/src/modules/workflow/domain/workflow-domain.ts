@@ -156,7 +156,7 @@ const notifyWorkflowTransitionComment = async (
     results
       .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
       .forEach(({ reason }) => {
-        logApp.error('[OPENCTI-MODULE] Failed to send notification to recipient', { cause: reason });
+        logApp.error('[OPENCTI-MODULE] Failed to send workflow notification to recipient', { cause: reason });
       });
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Failed to send workflow transition comment notifications', { cause: error });
