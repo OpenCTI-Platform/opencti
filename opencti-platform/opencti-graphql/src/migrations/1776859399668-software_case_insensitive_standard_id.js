@@ -88,11 +88,11 @@ export const up = async (next) => {
     const sources = sorted.slice(1).map((e) => e.sw);
     try {
       await mergeEntities(context, SYSTEM_USER, target.internal_id, sources.map((s) => s.internal_id));
+      mergedEntities += sources.length;
       if (target.standard_id !== newId) {
         const bulk = buildStandardIdUpdateOps(target, newId);
         await elBulk(context, { refresh: false, timeout: BULK_TIMEOUT, body: bulk });
       }
-      mergedEntities += sources.length;
       logMigration.info(`${message} > merged ${sources.length} Software into ${target.internal_id} (${index + 1}/${collisionGroups.length})`);
     } catch (err) {
       // Do not abort the whole migration if one group fails: log and keep going,
