@@ -4,6 +4,97 @@ import { head } from 'ramda';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { AI_DISABLED_ERROR_MESSAGE } from '../../../src/utils/ai/aiConstants';
+
+const PLATFORM_AI_ENABLED_QUERY = gql`
+  query settingsPlatformAiEnabled {
+    settings {
+      platform_ai_enabled
+    }
+  }
+`;
+
+const STIX_CORE_OBJECTS_QUERY = gql`
+  query stixCoreObjects($first: Int!) {
+    stixCoreObjects(first: $first) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+`;
+
+const getAnyStixCoreObjectId = async () => {
+  const result = await queryAsAdmin({ query: STIX_CORE_OBJECTS_QUERY, variables: { first: 1 } });
+  return result?.data?.stixCoreObjects?.edges?.at(0)?.node?.id;
+};
+
+const waitForPlatformAiEnabled = async (expectedEnabled) => {
+  const WAIT_FOR_SETTINGS_TIMEOUT_MS = Number(process.env.WAIT_FOR_SETTINGS_TIMEOUT_MS) || 10000;
+  const WAIT_FOR_SETTINGS_INTERVAL_MS = Number(process.env.WAIT_FOR_SETTINGS_INTERVAL_MS) || 250;
+  const deadline = Date.now() + WAIT_FOR_SETTINGS_TIMEOUT_MS;
+  let lastValue;
+
+  // Poll directly so we fully control timeout detection. Genuine query errors
+  // (GraphQL/network) propagate as-is and are never masked as a timeout, while
+  // an actual timeout throws a dedicated message that includes lastValue.
+  do {
+    const settingsResult = await queryAsAdmin({ query: PLATFORM_AI_ENABLED_QUERY, variables: {} });
+    lastValue = settingsResult?.data?.settings?.platform_ai_enabled;
+    if (lastValue === expectedEnabled) {
+      return;
+    }
+    await new Promise((resolve) => { setTimeout(resolve, WAIT_FOR_SETTINGS_INTERVAL_MS); });
+  } while (Date.now() < deadline);
+
+  throw new Error(
+    `Timed out waiting for settings.platform_ai_enabled to become ${expectedEnabled} (last observed: ${lastValue})`,
+  );
+};
+
+const UPDATE_SETTINGS_QUERY = gql`
+  mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        platform_ai_enabled
+      }
+    }
+  }
+`;
+
+const AI_FIX_SPELLING_MUTATION = gql`
+  mutation AiFixSpelling($id: ID!, $content: String!) {
+    aiFixSpelling(id: $id, content: $content)
+  }
+`;
+
+const AI_ACTIVITY_QUERY = gql`
+  query StixCoreObjectAskAiActivity($id: ID!) {
+    stixCoreObjectAskAiActivity(id: $id) {
+      result
+      trend
+      updated_at
+    }
+  }
+`;
+
+const ENTERPRISE_EDITION_QUERY = gql`
+  query settingsEnterpriseEdition {
+    settings {
+      platform_enterprise_edition {
+        license_validated
+      }
+    }
+  }
+`;
+
+const isEnterpriseEditionEnabled = async () => {
+  const result = await queryAsAdmin({ query: ENTERPRISE_EDITION_QUERY, variables: {} });
+  return result?.data?.settings?.platform_enterprise_edition?.license_validated === true;
+};
 
 const ABOUT_QUERY = gql`
   query about {
@@ -21,6 +112,7 @@ const READ_QUERY = gql`
   query settings {
     settings {
       id
+      platform_ai_enabled
       platform_title
       platform_email
       platform_language
@@ -162,6 +254,78 @@ describe('Settings resolver standard behavior', () => {
     const readResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const { editContext } = readResult.data.settings;
     expect(editContext.length).toEqual(0);
+  });
+
+  it('should block AI operations when platform AI is disabled', async function () {
+    const settingsInternalId = await settingsId();
+    const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+    const platformAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled;
+    const initialAiEnabled = platformAiEnabled;
+
+    // If Enterprise edition is not enabled, AI mutations are not available.
+    // Detect EE via a stable settings field instead of probing an AI resolver
+    // (which could trigger a real AI call and make the test slow/flaky), and
+    // skip the test cleanly before mutating settings in that case.
+    if (!(await isEnterpriseEditionEnabled())) {
+      this.skip();
+    }
+
+    if (!initialAiEnabled) {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      await waitForPlatformAiEnabled(true);
+    }
+
+    try {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [false] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+      await waitForPlatformAiEnabled(false);
+
+      const stixCoreObjectId = await getAnyStixCoreObjectId();
+      expect(stixCoreObjectId).toBeDefined();
+
+      const aiResult = await queryAsAdmin({
+        query: AI_FIX_SPELLING_MUTATION,
+        variables: { id: 'ai-test', content: 'Some content to check.' },
+      });
+      expect(aiResult).not.toBeNull();
+      expect(aiResult.errors).toBeDefined();
+      expect(aiResult.errors.length).toEqual(1);
+      const errorMessage = aiResult.errors.at(0).message;
+      expect(errorMessage).toBe(AI_DISABLED_ERROR_MESSAGE);
+
+      const aiActivityResult = await queryAsAdmin({
+        query: AI_ACTIVITY_QUERY,
+        variables: { id: stixCoreObjectId },
+      });
+      expect(aiActivityResult).not.toBeNull();
+      expect(aiActivityResult.errors).toBeDefined();
+      expect(aiActivityResult.errors.length).toEqual(1);
+      const activityErrorMessage = aiActivityResult.errors.at(0).message;
+      expect(activityErrorMessage).toBe(AI_DISABLED_ERROR_MESSAGE);
+    } finally {
+      try {
+        await queryAsAdmin({
+          query: UPDATE_SETTINGS_QUERY,
+          variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [initialAiEnabled] }] },
+        });
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+        await waitForPlatformAiEnabled(initialAiEnabled);
+      } catch (cleanupError) {
+        // Best-effort cleanup: do not mask the original test failure
+        // but log the cleanup error to aid debugging.
+        // eslint-disable-next-line no-console
+        console.error('Failed to restore initial platform_ai_enabled setting after test:', cleanupError);
+      }
+    }
   });
 });
 
