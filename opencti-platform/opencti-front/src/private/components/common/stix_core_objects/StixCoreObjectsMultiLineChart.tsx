@@ -9,7 +9,7 @@ import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { StixCoreObjectsMultiLineChartTimeSeriesQuery } from './__generated__/StixCoreObjectsMultiLineChartTimeSeriesQuery.graphql';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
@@ -96,6 +96,7 @@ const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixCoreObjectsMultiLineChartTimeSeriesQuery['variables'] => {
   const computed = computeStartEndDates(config);
   const startDate = computed.startDate ?? monthsAgo(12);
@@ -118,7 +119,7 @@ const buildQueryVariables = (
   return {
     startDate,
     endDate,
-    interval: 'day',
+    interval: parameters?.interval ?? 'day',
     timeSeriesParameters,
   };
 };
@@ -142,6 +143,7 @@ const StixCoreObjectsMultiLineChart = ({
     query: stixCoreObjectsMultiLineChartTimeSeriesQuery,
     config,
     buildQueryVariables,
+    parameters,
   });
 
   const renderContent = () => {
