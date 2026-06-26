@@ -2494,17 +2494,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mistralai/mistralai@npm:1.15.1":
-  version: 1.15.1
-  resolution: "@mistralai/mistralai@npm:1.15.1"
-  dependencies:
-    ws: "npm:^8.18.0"
-    zod: "npm:^3.25.0 || ^4.0.0"
-    zod-to-json-schema: "npm:^3.24.1"
-  checksum: 10c0/9e8197b918c1d47c00a4a708a613945baf495637c0c2ab2038cd542545e445a730789266c576b2972612041959717aa270b173b517378466c543a4640b110ba2
-  languageName: node
-  linkType: hard
-
 "@mistralai/mistralai@npm:2.2.1":
   version: 2.2.1
   resolution: "@mistralai/mistralai@npm:2.2.1"
@@ -2513,6 +2502,23 @@ __metadata:
     zod: "npm:^3.25.0 || ^4.0.0"
     zod-to-json-schema: "npm:^3.25.0"
   checksum: 10c0/131d218192dde76c38739d498d0b9a5944eb0bacf0c832ed812961e7f366f527de33942bb3274d2be15132a4834a7f57ef2a315e4ee95ad9a050b79d76300535
+  languageName: node
+  linkType: hard
+
+"@mistralai/mistralai@npm:2.3.0":
+  version: 2.3.0
+  resolution: "@mistralai/mistralai@npm:2.3.0"
+  dependencies:
+    "@opentelemetry/semantic-conventions": "npm:^1.40.0"
+    ws: "npm:^8.18.0"
+    zod: "npm:^3.25.0 || ^4.0.0"
+    zod-to-json-schema: "npm:^3.25.0"
+  peerDependencies:
+    "@opentelemetry/api": ^1.9.0
+  peerDependenciesMeta:
+    "@opentelemetry/api":
+      optional: true
+  checksum: 10c0/9daf0dac691a026b2e24283c24e7f8ed1596214f9dd8a2830543aa393b9a7ab322f3006632e75f741083cfb25aeac952e1d4b4f48b6fff6ffecc67de82483342
   languageName: node
   linkType: hard
 
@@ -3003,7 +3009,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/semantic-conventions@npm:1.41.1, @opentelemetry/semantic-conventions@npm:^1.29.0":
+"@opentelemetry/semantic-conventions@npm:1.41.1, @opentelemetry/semantic-conventions@npm:^1.29.0, @opentelemetry/semantic-conventions@npm:^1.40.0":
   version: 1.41.1
   resolution: "@opentelemetry/semantic-conventions@npm:1.41.1"
   checksum: 10c0/c54b1edf845766e93026d30fd95e15da9dba8d7a5b58f8c320c5d36ab542c77b37868f3e8e3d78ec162da8ee2afd24781f0a65934c9bdbc1aea86b47b12f074c
@@ -10171,7 +10177,7 @@ __metadata:
     "@langchain/openai": "npm:1.5.1"
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
-    "@mistralai/mistralai": "npm:1.15.1"
+    "@mistralai/mistralai": "npm:2.3.0"
     "@noble/ed25519": "npm:3.1.0"
     "@node-saml/passport-saml": "npm:5.1.0"
     "@opensearch-project/opensearch": "npm:3.6.0"
@@ -13367,7 +13373,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod-to-json-schema@npm:^3.24.1, zod-to-json-schema@npm:^3.25.0":
+"zod-to-json-schema@npm:^3.25.0":
   version: 3.25.2
   resolution: "zod-to-json-schema@npm:3.25.2"
   peerDependencies:
