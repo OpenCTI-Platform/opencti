@@ -55,14 +55,14 @@ jobs:
           while IFS= read -r file; do
             FILENAME=$(basename "$file")
 
-            # Filename must start with a numeric timestamp followed by a dash
-            TS=$(echo "$FILENAME" | grep -oE '^[0-9]+' || true)
-
-            if [ -z "$TS" ]; then
-              echo "::error file=${file}::Migration file '${FILENAME}' does not start with a numeric timestamp (expected format: <timestamp>-<description>.js)."
+            # Filename must match <timestamp>-<description>.{js,ts}
+            if [[ ! "$FILENAME" =~ ^([0-9]+)-.+\.(js|ts)$ ]]; then
+              echo "::error file=${file}::Migration file '${FILENAME}' does not match expected format: <timestamp>-<description>.{js,ts}."
               FAILED=1
               continue
             fi
+
+            TS="${BASH_REMATCH[1]}"
 
             if [ "$TS" -le "$MAX_EXISTING" ]; then
               echo "::error file=${file}::Migration file '${FILENAME}' has timestamp ${TS} which is not greater than the current maximum ${MAX_EXISTING}. Please use a timestamp greater than ${MAX_EXISTING}."
