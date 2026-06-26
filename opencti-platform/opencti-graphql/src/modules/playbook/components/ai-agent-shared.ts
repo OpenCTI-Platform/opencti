@@ -18,11 +18,12 @@ import xtmOneClient from '../../xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../../../domain/xtm-auth';
 import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import { logApp, PLATFORM_VERSION } from '../../../config/conf';
+import { ForbiddenAccess } from '../../../config/errors';
 import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../../utils/access';
 import { internalLoadById } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_USER } from '../../../schema/internalObject';
 import { OPENCTI_ADMIN_UUID } from '../../../schema/general';
-import type { AuthContext } from '../../../types/user';
+import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { StixBundle } from '../../../types/stix-2-1-common';
 
@@ -125,6 +126,45 @@ export const resolveRunAsUserId = (
   if (!runAs) return undefined;
   if (typeof runAs === 'string') return runAs.trim() || undefined;
   return runAs.value?.trim() || undefined;
+};
+
+/**
+ * Guardrail for the AI-agent ``run_as`` configuration. The agent runs on
+ * behalf of the configured user (its email is embedded in the XTM One
+ * JWT and any write-back to OpenCTI is attributed to that account), so a
+ * playbook author must not be able to impersonate an arbitrary user.
+ *
+ * Only two kinds of ``run_as`` targets are accepted:
+ *  - the author themselves (the currently authenticated user), and
+ *  - a service account (``user_service_account = true``), which exists
+ *    precisely to carry automated, non-human activity.
+ *
+ * An unset ``run_as`` is allowed: at runtime it falls back to the seeded
+ * platform admin (see ``resolveAgentJwtUser``). The target user is loaded
+ * with SYSTEM_USER so the decision depends only on the nature of the
+ * account, not on the author's own visibility over it. Anything else is
+ * refused with a ForbiddenAccess so the generic ``members`` query (used
+ * by the picker and many other places) can stay untouched.
+ */
+export const assertRunAsUserAllowed = async (
+  context: AuthContext,
+  user: AuthUser,
+  runAs?: string | { label?: string; value?: string } | null,
+): Promise<void> => {
+  const runAsUserId = resolveRunAsUserId(runAs);
+  if (!runAsUserId || runAsUserId === user.id) {
+    return;
+  }
+  const target = await internalLoadById<BasicStoreEntity & { user_service_account?: boolean }>(
+    context,
+    SYSTEM_USER,
+    runAsUserId,
+    { type: ENTITY_TYPE_USER },
+  );
+  if (target?.user_service_account === true) {
+    return;
+  }
+  throw ForbiddenAccess('The "run as" user must be yourself or a service account', { runAsUserId });
 };
 
 /**

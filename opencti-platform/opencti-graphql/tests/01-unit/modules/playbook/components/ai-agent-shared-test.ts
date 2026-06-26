@@ -57,6 +57,7 @@ import { ENTITY_TYPE_USER } from '../../../../../src/schema/internalObject';
 import { OPENCTI_ADMIN_UUID } from '../../../../../src/schema/general';
 import {
   AGENT_CALL_TIMEOUT_MS,
+  assertRunAsUserAllowed,
   buildAgentMessageContent,
   buildAgentSlugOneOf,
   buildPlaybookAutomationContext,
@@ -214,6 +215,49 @@ describe('ai-agent-shared', () => {
 
     it('should return the trimmed value from a member-picker option object', () => {
       expect(resolveRunAsUserId({ label: 'Alice', value: '  user-2 ' })).toBe('user-2');
+    });
+  });
+
+  describe('assertRunAsUserAllowed', () => {
+    const context = { source: 'test' } as any;
+    const author = { id: 'author-1' } as any;
+
+    it('should allow (without a DB lookup) when no run-as user is configured', async () => {
+      await expect(assertRunAsUserAllowed(context, author, null)).resolves.toBeUndefined();
+      await expect(assertRunAsUserAllowed(context, author, undefined)).resolves.toBeUndefined();
+      await expect(assertRunAsUserAllowed(context, author, { label: '', value: '' })).resolves.toBeUndefined();
+      expect(internalLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should allow the current (authenticated) author without a DB lookup', async () => {
+      await expect(assertRunAsUserAllowed(context, author, { label: 'Me', value: 'author-1' })).resolves.toBeUndefined();
+      expect(internalLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should allow a service account target', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'svc-1', user_service_account: true } as any);
+
+      await expect(assertRunAsUserAllowed(context, author, { label: 'Service', value: 'svc-1' })).resolves.toBeUndefined();
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        'svc-1',
+        { type: ENTITY_TYPE_USER },
+      );
+    });
+
+    it('should refuse a regular (non-service-account) user', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-2', user_service_account: false } as any);
+
+      await expect(assertRunAsUserAllowed(context, author, { label: 'Bob', value: 'user-2' }))
+        .rejects.toThrow(/service account/);
+    });
+
+    it('should refuse (fail closed) when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+
+      await expect(assertRunAsUserAllowed(context, author, 'ghost-user'))
+        .rejects.toThrow(/service account/);
     });
   });
 

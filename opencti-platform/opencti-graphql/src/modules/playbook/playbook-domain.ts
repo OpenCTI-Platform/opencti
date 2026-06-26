@@ -42,6 +42,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
 import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
 import { type SharingConfiguration } from './components/sharing-component';
+import { assertRunAsUserAllowed } from './components/ai-agent-shared';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -179,9 +180,19 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
+// Enforce the AI-agent `run_as` guardrail on a freshly built node
+// configuration: the agent runs on behalf of the configured user, so only
+// the author themselves or a service account may be selected. Components
+// without a `run_as` value are a no-op (see assertRunAsUserAllowed).
+const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configuration: string) => {
+  const { run_as: runAs } = JSON.parse(configuration) as { run_as?: string | { label?: string; value?: string } | null };
+  await assertRunAsUserAllowed(context, user, runAs);
+};
+
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
+  await validateNodeRunAs(context, user, configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -237,6 +248,7 @@ export const playbookReplaceNode = async (
 ) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
+  await validateNodeRunAs(context, user, configuration);
 
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
