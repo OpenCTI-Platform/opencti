@@ -1,12 +1,22 @@
-type DataSanityFix {
+type DataSanityOperation {
     name: String!
     execution_type: String!
 }
 
+type DataSanityExecution {
+    id: ID!
+    operation_name: String!
+    last_run_date: DateTime!
+    last_execution_time: Int!
+    last_failure_message: String
+    force_run: Boolean!
+}
+
 extend type Query {
-    dataSanityFixes: [DataSanityFix!]! @auth(for: [BYPASS])
+    dataSanityOperations: [DataSanityOperation!]! @auth(for: [BYPASS])
+    dataSanityExecutions: [DataSanityExecution!]! @auth(for: [BYPASS])
 }
 
 extend type Mutation {
-    dataSanityFixForceRun(fix_name: String!): ID @auth(for: [BYPASS])
+    dataSanityOperationRequestRun(operation_name: String!): ID @auth(for: [BYPASS])
 }

@@ -7,7 +7,7 @@ const convertDataSanityToStix = (instance: StoreEntityDataSanity): StixDataSanit
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,
-    fix_name: instance.fix_name,
+    operation_name: instance.operation_name,
     last_run_date: instance.last_run_date,
     last_execution_time: instance.last_execution_time,
     last_failure_message: instance.last_failure_message,

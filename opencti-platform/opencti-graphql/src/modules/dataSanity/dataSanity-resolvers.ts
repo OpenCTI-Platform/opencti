@@ -1,12 +1,12 @@
-import type { Resolvers } from '../../generated/graphql';
-import { listAllSanityFixes, setForceRun } from './dataSanity-domain';
+import { findAllDataSanityExecutions, listAllSanityOperations, setForceRun } from './dataSanity-domain';
 
-const dataSanityResolvers: Resolvers = {
+const dataSanityResolvers = {
   Query: {
-    dataSanityFixes: (_, __, context) => listAllSanityFixes(context),
+    dataSanityOperations: (_: any, __: any, context: any) => listAllSanityOperations(context),
+    dataSanityExecutions: (_: any, __: any, context: any) => findAllDataSanityExecutions(context, context.user),
   },
   Mutation: {
-    dataSanityFixForceRun: (_, { fix_name }, context) => setForceRun(context, context.user, fix_name),
+    dataSanityOperationRequestRun: (_: any, { operation_name }: { operation_name: string }, context: any) => setForceRun(context, context.user, operation_name),
   },
 };
 
