@@ -17,11 +17,29 @@ export const up = async (next) => {
   logMigration.info(`${message} > started`);
 
   const buildStandardIdUpdateOps = (entity, newId) => {
-    const existingStixIds = entity.x_opencti_stix_ids ?? [];
-    const updatedStixIds = R.uniq([...existingStixIds, entity.standard_id]);
+    // Use a scripted update to avoid overwriting x_opencti_stix_ids computed by mergeEntities.
+    // mergeEntities can mutate the stored x_opencti_stix_ids for the target entity (by adding
+    // the merged entities' identifiers). Using an in-memory doc update here would clobber those.
     return [
       { update: { _index: entity._index, _id: entity._id } },
-      { doc: { standard_id: newId, x_opencti_stix_ids: updatedStixIds } },
+      {
+        script: {
+          lang: 'painless',
+          source: `
+            if (ctx._source.x_opencti_stix_ids == null) {
+              ctx._source.x_opencti_stix_ids = new ArrayList();
+            }
+            if (params.previous_standard_id != null && !ctx._source.x_opencti_stix_ids.contains(params.previous_standard_id)) {
+              ctx._source.x_opencti_stix_ids.add(params.previous_standard_id);
+            }
+            ctx._source.standard_id = params.new_standard_id;
+          `,
+          params: {
+            previous_standard_id: entity.standard_id,
+            new_standard_id: newId,
+          },
+        },
+      },
     ];
   };
 
