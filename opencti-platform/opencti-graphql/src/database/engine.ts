@@ -2056,7 +2056,6 @@ const BASE_SEARCH_ATTRIBUTES = [
   'event_scope',
   'context_data.message',
   'context_data.search',
-
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
