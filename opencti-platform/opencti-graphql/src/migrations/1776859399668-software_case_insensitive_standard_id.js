@@ -27,7 +27,7 @@ export const up = async (next) => {
           lang: 'painless',
           source: `
             if (ctx._source.x_opencti_stix_ids == null) {
-              ctx._source.x_opencti_stix_ids = new ArrayList();
+              ctx._source.x_opencti_stix_ids = [];
             }
             if (params.previous_standard_id != null && !ctx._source.x_opencti_stix_ids.contains(params.previous_standard_id)) {
               ctx._source.x_opencti_stix_ids.add(params.previous_standard_id);
