@@ -139,7 +139,7 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
       && getRelationshipMainRepresentative(n.from, n.to))
     || n.main_entity_name
     || fallback;
-  return n.x_mitre_id ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
+  return mainValue;
 };
 
 // equivalent to querying representative.secondary
