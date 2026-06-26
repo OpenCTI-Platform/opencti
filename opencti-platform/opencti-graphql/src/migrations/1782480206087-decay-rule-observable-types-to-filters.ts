@@ -8,13 +8,13 @@ import { pushAll } from '../utils/arrayUtil';
 
 const message = '[MIGRATION] Migration of decay_observable_types to decay_filters';
 
-export const up = async (next) => {
+export const up = async (next: (error?: Error) => void) => {
   const context = executionContext('migration');
   const start = new Date().getTime();
   logMigration.info(`${message} > started`);
 
-  const bulkOperations = [];
-  const callback = (rules) => {
+  const bulkOperations: any[] = [];
+  const callback = async (rules: Record<string, any>[]) => {
     const op = rules
       .filter((rule) => rule.decay_observable_types !== undefined)
       .map((rule) => {
@@ -46,6 +46,7 @@ export const up = async (next) => {
       })
       .flat();
     pushAll(bulkOperations, op);
+    return true;
   };
 
   const opts = { types: ['DecayRule'], callback };
@@ -53,7 +54,7 @@ export const up = async (next) => {
 
   let currentProcessing = 0;
   const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
-  const concurrentUpdate = async (bulk) => {
+  const concurrentUpdate = async (bulk: any[]) => {
     if (bulk.length > 0) {
       await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
       currentProcessing += bulk.length / 2;
@@ -67,6 +68,6 @@ export const up = async (next) => {
   next();
 };
 
-export const down = async (next) => {
+export const down = async (next: (error?: Error) => void) => {
   next();
 };
