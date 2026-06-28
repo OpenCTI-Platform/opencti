@@ -194,7 +194,7 @@
     "@filigran/chatbot/uuid": "14.0.0",
     "@types/pdfmake": "0.3.3",
     "axios": "1.18.0",
-    "cookie": "1.1.1",
+    "cookie": "2.0.0",
     "d3-color": "3.1.0",
     "glob-parent": "6.0.2",
     "json5": "2.2.3",
