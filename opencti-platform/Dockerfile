@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     cargo \
     postfix \
+    wget \
  && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
