@@ -85,7 +85,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
       label: 'Password valid until',
       width: '10%',
       isSortable: true,
-      render: (v: unknown) => fd(v as string),
+      render: (v) => fd(v),
     },
     created_at: {
       label: 'Platform creation date',
