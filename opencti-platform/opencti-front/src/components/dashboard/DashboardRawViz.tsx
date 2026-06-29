@@ -1,16 +1,35 @@
 import { memo, ReactNode } from 'react';
 import WidgetText from './WidgetText';
-import type { Widget } from '../../utils/widget/widget';
+import type { Widget, WidgetHost } from '../../utils/widget/widget';
+import StixCoreObjectsCustomAttributes from '@components/common/stix_core_objects/StixCoreObjectsCustomAttributes';
+import type { DashboardConfig } from './dashboard-types';
+import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import useHelper from '../../utils/hooks/useHelper';
 
 interface DashboardRawVizProps {
   widget: Widget;
   popover?: ReactNode;
+  config?: DashboardConfig;
+  host?: WidgetHost;
 }
 
 const DashboardRawViz = ({
   widget,
   popover,
+  config,
+  host,
 }: DashboardRawVizProps) => {
+  const { isFeatureEnable } = useHelper();
+  const isCustomAttributesWidgetEnable = isFeatureEnable('CUSTOM_ATTRIBUTES_WIDGET');
+
+  const startDate = config?.relativeDate
+    ? computeRelativeDate(config.relativeDate)
+    : config?.startDate;
+
+  const endDate = config?.relativeDate
+    ? formatDate(dayStartDate(null, false))
+    : config?.endDate;
+
   switch (widget.type) {
     case 'text':
       return (
@@ -19,6 +38,24 @@ const DashboardRawViz = ({
           popover={popover}
         />
       );
+    case 'custom-attributes':
+      if (isCustomAttributesWidgetEnable) {
+        return (
+          <StixCoreObjectsCustomAttributes
+            variant={undefined}
+            height={undefined}
+            endDate={endDate ?? undefined}
+            startDate={startDate ?? undefined}
+            widgetId={widget.id}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as Record<string, unknown>}
+            title={undefined}
+            popover={popover}
+            host={host}
+          />
+        );
+      }
+      return null;
     default:
       return 'Not implemented yet';
   }

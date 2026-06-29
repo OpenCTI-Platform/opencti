@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import { Checklist, FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -203,8 +203,20 @@ const widgetVisualizationTypes = [
   },
 ] as const;
 
+const customAttributesVisualizationType = {
+  key: 'custom-attributes',
+  name: 'Attributes',
+  dataSelectionLimit: undefined,
+  category: 'custom-attributes',
+  availableParameters: [],
+  isRelationships: false,
+  isEntities: false,
+  isAudits: false,
+} as const;
+
 export type WidgetVisualizationTypes
-  = (typeof widgetVisualizationTypes)[number]['key'];
+  = (typeof widgetVisualizationTypes)[number]['key']
+    | typeof customAttributesVisualizationType['key'];
 
 export const RELATIONSHIP_WIDGETS_TYPES = ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'];
 
@@ -212,9 +224,17 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
-export const customViewsWidgetVisualizationTypes = workspacesWidgetVisualizationTypes;
+export const customViewsWidgetVisualizationTypes = (isCustomAttributesEnabled: boolean) => [
+  ...(isCustomAttributesEnabled ? [customAttributesVisualizationType] : []),
+  ...workspacesWidgetVisualizationTypes,
+];
 
-export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
+const allVisualizationTypes = [
+  ...widgetVisualizationTypes,
+  customAttributesVisualizationType,
+];
+
+export const indexedVisualizationTypes = R.indexBy(R.prop('key'), allVisualizationTypes);
 
 export const getCurrentCategory = (type: string | null) => {
   if (!type) return 'none';
@@ -240,6 +260,8 @@ export const isWidgetListOrTimeline = (type: string) => {
 
 export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {
   switch (key) {
+    case 'custom-attributes':
+      return <Checklist fontSize={fontSize} color="primary" />;
     case 'attribute':
       return <TagTextOutline fontSize={fontSize} color="primary" />;
     case 'map':
