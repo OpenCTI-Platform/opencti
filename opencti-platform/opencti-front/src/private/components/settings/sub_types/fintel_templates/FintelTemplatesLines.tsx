@@ -6,6 +6,8 @@ import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTy
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 import { useFormatter } from '../../../../../components/i18n';
 import { FintelTemplatesManager_templates$data } from './__generated__/FintelTemplatesManager_templates.graphql';
+import Tag from '@common/tag/Tag';
+import { useTheme } from '@mui/material';
 
 export type TemplateType = NonNullable<FintelTemplatesManager_templates$data['fintelTemplates']>['edges'][0]['node'];
 type TemplateEdges = FintelTemplatesManager_templates$data['fintelTemplates'];
@@ -25,12 +27,26 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
   entitySettingId,
   targetType,
 }) => {
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const dataColumns = {
-    name: { percentWidth: 41, isSortable: false },
-    description: { percentWidth: 41, isSortable: false },
+    name: { percentWidth: 35, isSortable: false },
+    description: { percentWidth: 35, isSortable: false },
+    default: {
+      id: 'default',
+      label: 'Default',
+      percentWidth: 15,
+      isSortable: false,
+      render: ({ default: isDefault }) => isDefault ? (
+        <Tag
+          color={theme.palette.success.main}
+          labelTextTransform="uppercase"
+          label={isDefault ? 'default' : ''}
+        />
+      ) : '-',
+    },
     start_date: {
-      percentWidth: 18,
+      percentWidth: 15,
       isSortable: false,
       label: t_i18n('Published'),
       render: ({ start_date }: { start_date?: string }) => (
