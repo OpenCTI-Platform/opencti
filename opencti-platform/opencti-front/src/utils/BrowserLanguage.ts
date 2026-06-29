@@ -1,6 +1,4 @@
-import * as R from 'ramda';
-
-export const LANGUAGES = {
+export const LANGUAGES: Record<string, string> = {
   AUTO: 'auto',
   CHINESE: 'zh-cn',
   ENGLISH: 'en-us',
@@ -12,7 +10,7 @@ export const LANGUAGES = {
   SPANISH: 'es-es',
 };
 
-export const DEFAULT_LANG = LANGUAGES.ENGLISH;
+export const DEFAULT_LANG: string = LANGUAGES.ENGLISH;
 // These window.navigator contain language information
 // 1. languages -> [] of preferred languages (eg ["en-US", "zh-CN", "ja-JP"]) Firefox^32, Chrome^32
 // 2. language  -> Preferred language as String (eg "en-US") Firefox^5, IE^11, Safari,
@@ -28,7 +26,7 @@ const browserLanguagePropertyKeys = [
   'systemLanguage',
 ];
 
-const availableLanguages = [
+const availableLanguages: string[] = [
   LANGUAGES.CHINESE,
   LANGUAGES.ENGLISH,
   LANGUAGES.FRENCH,
@@ -39,13 +37,21 @@ const availableLanguages = [
   LANGUAGES.SPANISH,
 ];
 
-const detectedLocale = R.pipe(
-  R.pick(browserLanguagePropertyKeys), // Get only language properties
-  R.values(), // Get values of the properties
-  R.flatten(), // flatten all arrays
-  R.reject(R.isNil), // Remove undefined values
-  R.map((x) => x.toLowerCase()),
-  R.find((x) => R.includes(x, availableLanguages)), // Returns first language matched in languages
-);
+interface NonStandardNavigator {
+  browserLanguage?: string;
+  userLanguage?: string;
+  systemLanguage?: string;
+}
+
+export const detectedLocale = (navigatorInstance: (Partial<Navigator> & NonStandardNavigator) | null | undefined): string | undefined => {
+  if (!navigatorInstance) return undefined;
+
+  const nav = navigatorInstance as Record<string, string | string[] | undefined>;
+  const languages = browserLanguagePropertyKeys
+    .flatMap((key) => nav[key] ?? [])
+    .map((x) => x.toLowerCase());
+
+  return languages.find((x) => availableLanguages.includes(x));
+};
 
 export default detectedLocale(window.navigator) || DEFAULT_LANG; // If no locale is detected, fallback to 'en'
