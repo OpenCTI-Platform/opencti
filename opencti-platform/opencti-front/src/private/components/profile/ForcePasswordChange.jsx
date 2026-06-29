@@ -60,7 +60,6 @@ const ForcePasswordChange = () => {
 
   return (
     <Stack direction="row" height="100vh">
-      {/* Left panel — identical to LoginLayout content column */}
       <Stack
         flex={1}
         justifyContent="center"
@@ -142,7 +141,6 @@ const ForcePasswordChange = () => {
           </Formik>
         </Stack>
       </Stack>
-      {/* Right aside — identical to LoginLayout aside column */}
       <Box
         flex={1}
         sx={{

@@ -1127,13 +1127,17 @@ export const meEditField = async (context, user, userId, inputs, password = null
     }
     // Check password confirmation in case of password change
     if (key === 'password') {
-      if (typeof password !== 'string' || password.length === 0) {
-        throw FunctionalError('The current password you have provided is not valid');
-      }
-      const dbPassword = user.password;
-      const match = bcrypt.compareSync(password, dbPassword);
-      if (!match) {
-        throw FunctionalError('The current password you have provided is not valid');
+      // Skip current password check if the password is expired (force change scenario)
+      const passwordExpired = isPasswordExpired(user);
+      if (!passwordExpired) {
+        if (typeof password !== 'string' || password.length === 0) {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
+        const dbPassword = user.password;
+        const match = bcrypt.compareSync(password, dbPassword);
+        if (!match) {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
       }
     }
   });
