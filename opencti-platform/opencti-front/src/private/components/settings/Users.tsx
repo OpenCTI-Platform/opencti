@@ -201,7 +201,7 @@ const Users = () => {
     password_valid_until: {
       label: 'Password valid until',
       percentWidth: 15,
-      render: (v) => fd(v as string),
+      render: ({ password_valid_until }) => fd(password_valid_until),
     },
     created_at: {
       percentWidth: 15,
