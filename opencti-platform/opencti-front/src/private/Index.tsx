@@ -54,7 +54,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const location = useLocation();
-  const isForcePasswordChangeRoute = location.pathname.startsWith('/dashboard/force-password-change');
+  const isForcePasswordChangeRoute = location.pathname.startsWith('/dashboard/change-password');
   const theme = useTheme<Theme>();
   const { isTrashEnable } = useHelper();
   const {
@@ -149,7 +149,7 @@ const Index = ({ settings }: IndexProps) => {
                 <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
                 <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
                 <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
-                <Route path="/force-password-change" element={boundaryWrapper(ForcePasswordChange)} />
+                <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
                 <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
                 <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
                 <Route path="/*" element={<NoMatch />} />
