@@ -4,7 +4,7 @@ import { patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntitySmtpConfiguration, ENTITY_TYPE_SMTP_CONFIGURATION, type StoreEntitySmtpConfiguration } from './smtpConfiguration-types';
-import type { SmtpConfigurationAddInput } from '../../generated/graphql';
+import type { SmtpConfigurationAddInput, SmtpConfigurationEditInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -57,7 +57,7 @@ export const smtpConfigurationUpdate = async (
   context: AuthContext,
   user: AuthUser,
   id: string,
-  input: SmtpConfigurationAddInput,
+  input: SmtpConfigurationEditInput,
 ): Promise<BasicStoreEntitySmtpConfiguration> => {
   if (input.port === 25) {
     throw FunctionalError('Port 25 is not allowed for SMTP configuration');

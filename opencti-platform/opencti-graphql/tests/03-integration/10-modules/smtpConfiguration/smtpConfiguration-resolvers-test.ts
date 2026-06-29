@@ -51,7 +51,7 @@ const SMTP_CONFIGURATION_ADD_MUTATION = gql`
 `;
 
 const SMTP_CONFIGURATION_UPDATE_MUTATION = gql`
-  mutation SmtpConfigurationUpdateTest($id: ID!, $input: SmtpConfigurationAddInput!) {
+  mutation SmtpConfigurationUpdateTest($id: ID!, $input: SmtpConfigurationEditInput!) {
     smtpConfigurationUpdate(id: $id, input: $input) {
       id
       smtp_enabled
