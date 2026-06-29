@@ -10,7 +10,9 @@ const convertDataSanityToStix = (instance: StoreEntityDataSanity): StixDataSanit
     operation_name: instance.operation_name,
     last_run_date: instance.last_run_date,
     last_execution_time: instance.last_execution_time,
-    last_failure_message: instance.last_failure_message,
+    last_run_success: instance.last_run_success,
+    last_run_message: instance.last_run_message,
+    last_run_output: instance.last_run_output,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

@@ -722,6 +722,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
                   { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
+                  { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/health', label: t_i18n('Health') },
                 ]}
               />
             </Security>

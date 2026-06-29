@@ -8,11 +8,11 @@ import { elBatchIdsWithRelCount, elUpdate } from '../../../database/engine';
 import type { BasicStoreEntity } from '../../../types/store';
 import { mergeEntities } from '../../../database/middleware';
 import * as R from 'ramda';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../../../schema/stixDomainObject';
-import type { SanityOperationDryRunOutput, SanityOperationRunOutput } from '../dataSanity-types';
-const message = 'attackPatternCaseSensitiveDuplicatedId';
+import type { SanityOperationRunOutput } from '../dataSanity-operations';
 
-const computeCollisionGroup = async (context: AuthContext, entityType: string) => {
+const message = 'caseSensitiveDuplicatedId';
+
+export const computeCollisionGroup = async (context: AuthContext, entityType: string) => {
   const allEntities = await fullEntitiesList(
     context,
     DATA_SANITY_MANAGER_USER,
@@ -25,7 +25,7 @@ const computeCollisionGroup = async (context: AuthContext, entityType: string) =
   }
   logApp.info(`${message} > ${allEntities.length} ${entityType}(s) to evaluate`);
 
-  // Compute the new standard_id (with the now case-insensitive x_mitre_id resolver) for each
+  // Compute the new standard_id (with the now case-insensitive resolver) for each
   // entity and group by it. Groups with more than one element are duplicates that collide
   // under the new rule and must be merged.
   const entitiesWithNewId = allEntities.map((entity) => ({ entity, newId: generateStandardId(entityType, entity) }));
@@ -44,7 +44,7 @@ const computeCollisionGroup = async (context: AuthContext, entityType: string) =
   return collisionGroups;
 };
 
-const migrateEntityType = async (context: AuthContext, entityType: string) => {
+export const migrateEntityType = async (context: AuthContext, entityType: string) => {
   const collisionGroups = await computeCollisionGroup(context, entityType);
   logApp.info(`${message} > ${collisionGroups.length} ${entityType} collision group(s) to merge`);
 
@@ -103,30 +103,24 @@ const migrateEntityType = async (context: AuthContext, entityType: string) => {
   };
 };
 
-export const attackPatternCaseSensitiveDuplicatedIdDryRun = async (context: AuthContext): Promise<SanityOperationDryRunOutput> => {
-  const collisionGroupsAttackPattern = await computeCollisionGroup(context, ENTITY_TYPE_ATTACK_PATTERN);
-  const collisionGroupsCourseOfAction = await computeCollisionGroup(context, ENTITY_TYPE_COURSE_OF_ACTION);
-
-  return {
-    message: 'Dry run of attackPatternCaseSensitiveDuplicatedId done.',
-    estimated_impact: {
-      ENTITY_TYPE_ATTACK_PATTERN: collisionGroupsAttackPattern.length,
-      ENTITY_TYPE_COURSE_OF_ACTION: collisionGroupsCourseOfAction.length,
-    },
-  };
+export const caseSensitiveDuplicatedIdDryRun = (entityTypes: string[]) => async (context: AuthContext): Promise<SanityOperationRunOutput> => {
+  let total = 0;
+  const detail: Record<string, number> = {};
+  for (const entityType of entityTypes) {
+    const collisionGroups = await computeCollisionGroup(context, entityType);
+    detail[entityType] = collisionGroups.length;
+    total += collisionGroups.length;
+  }
+  return { impact: { total, detail } };
 };
 
-export const attackPatternCaseSensitiveDuplicatedId = async (context: AuthContext): Promise<SanityOperationRunOutput> => {
-  const attackPatternStat = await migrateEntityType(context, ENTITY_TYPE_ATTACK_PATTERN);
-  const courseOfActionStat = await migrateEntityType(context, ENTITY_TYPE_COURSE_OF_ACTION);
-
-  return {
-    message: 'Actual run of attackPatternCaseSensitiveDuplicatedId done.',
-    impact: {
-      AttackPatternCollisions: attackPatternStat.collisions,
-      AttackPatternMerged: attackPatternStat.merged,
-      CourseOfActionCollisions: courseOfActionStat.collisions,
-      CourseOfActionMerged: courseOfActionStat.merged,
-    },
-  };
+export const caseSensitiveDuplicatedId = (entityTypes: string[]) => async (context: AuthContext): Promise<SanityOperationRunOutput> => {
+  let total = 0;
+  const detail: Record<string, number> = {};
+  for (const entityType of entityTypes) {
+    const stat = await migrateEntityType(context, entityType);
+    detail[entityType] = stat.merged;
+    total += stat.merged;
+  }
+  return { impact: { total, detail } };
 };

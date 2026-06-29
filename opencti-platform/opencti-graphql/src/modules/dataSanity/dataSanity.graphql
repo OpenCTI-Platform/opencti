@@ -1,6 +1,16 @@
 type DataSanityOperation {
-    name: String!
+    identifier: String!
+    display_name: String!
     execution_type: String!
+    description: String!
+    eligible_entity_types: [String!]!
+    is_running: Boolean!
+    force_run: Boolean!
+    last_run_date: DateTime
+    last_execution_time: Int
+    last_run_success: Boolean
+    last_run_message: String
+    last_run_output: String
 }
 
 type DataSanityExecution {
@@ -8,15 +18,49 @@ type DataSanityExecution {
     operation_name: String!
     last_run_date: DateTime!
     last_execution_time: Int!
-    last_failure_message: String
+    last_run_success: Boolean
+    last_run_message: String
+    last_run_output: String
     force_run: Boolean!
+}
+
+type DataSanityImpactedElement {
+    key: String!
+    count: Int!
+}
+
+type DataSanityDryRunOutput {
+    estimated_impact: [DataSanityImpactedElement!]!
 }
 
 extend type Query {
     dataSanityOperations: [DataSanityOperation!]! @auth(for: [BYPASS])
     dataSanityExecutions: [DataSanityExecution!]! @auth(for: [BYPASS])
+    dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput! @auth(for: [BYPASS])
+}
+
+type DataSanityMaintenanceWindow {
+    day: String!
+    start_time: String!
+    end_time: String!
+}
+
+type DataSanityConfiguration {
+    id: ID!
+    maintenance_planning: [DataSanityMaintenanceWindow!]!
+}
+
+input DataSanityMaintenanceWindowInput {
+    day: String!
+    start_time: String!
+    end_time: String!
+}
+
+extend type Query {
+    dataSanityConfiguration: DataSanityConfiguration @auth(for: [BYPASS])
 }
 
 extend type Mutation {
     dataSanityOperationRequestRun(operation_name: String!): ID @auth(for: [BYPASS])
+    dataSanityUpdateMaintenancePlanning(planning: [DataSanityMaintenanceWindowInput!]!): DataSanityConfiguration @auth(for: [BYPASS])
 }

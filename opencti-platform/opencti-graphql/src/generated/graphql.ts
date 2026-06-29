@@ -6788,20 +6788,62 @@ export enum DataComponentsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type DataSanityConfiguration = {
+  __typename?: 'DataSanityConfiguration';
+  id: Scalars['ID']['output'];
+  maintenance_planning: Array<DataSanityMaintenanceWindow>;
+};
+
+export type DataSanityDryRunOutput = {
+  __typename?: 'DataSanityDryRunOutput';
+  estimated_impact: Array<DataSanityImpactedElement>;
+};
+
 export type DataSanityExecution = {
   __typename?: 'DataSanityExecution';
   force_run: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   last_execution_time: Scalars['Int']['output'];
-  last_failure_message?: Maybe<Scalars['String']['output']>;
   last_run_date: Scalars['DateTime']['output'];
+  last_run_message?: Maybe<Scalars['String']['output']>;
+  last_run_output?: Maybe<Scalars['String']['output']>;
+  last_run_success?: Maybe<Scalars['Boolean']['output']>;
   operation_name: Scalars['String']['output'];
+};
+
+export type DataSanityImpactedElement = {
+  __typename?: 'DataSanityImpactedElement';
+  count: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
+};
+
+export type DataSanityMaintenanceWindow = {
+  __typename?: 'DataSanityMaintenanceWindow';
+  day: Scalars['String']['output'];
+  end_time: Scalars['String']['output'];
+  start_time: Scalars['String']['output'];
+};
+
+export type DataSanityMaintenanceWindowInput = {
+  day: Scalars['String']['input'];
+  end_time: Scalars['String']['input'];
+  start_time: Scalars['String']['input'];
 };
 
 export type DataSanityOperation = {
   __typename?: 'DataSanityOperation';
+  description: Scalars['String']['output'];
+  display_name: Scalars['String']['output'];
+  eligible_entity_types: Array<Scalars['String']['output']>;
   execution_type: Scalars['String']['output'];
-  name: Scalars['String']['output'];
+  force_run: Scalars['Boolean']['output'];
+  identifier: Scalars['String']['output'];
+  is_running: Scalars['Boolean']['output'];
+  last_execution_time?: Maybe<Scalars['Int']['output']>;
+  last_run_date?: Maybe<Scalars['DateTime']['output']>;
+  last_run_message?: Maybe<Scalars['String']['output']>;
+  last_run_output?: Maybe<Scalars['String']['output']>;
+  last_run_success?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -17065,6 +17107,7 @@ export type Mutation = {
   dataComponentRelationAdd?: Maybe<StixRefRelationship>;
   dataComponentRelationDelete?: Maybe<DataComponent>;
   dataSanityOperationRequestRun?: Maybe<Scalars['ID']['output']>;
+  dataSanityUpdateMaintenancePlanning?: Maybe<DataSanityConfiguration>;
   dataSourceAdd?: Maybe<DataSource>;
   dataSourceContextClean?: Maybe<DataSource>;
   dataSourceContextPatch?: Maybe<DataSource>;
@@ -17961,6 +18004,11 @@ export type MutationDataComponentRelationDeleteArgs = {
 
 export type MutationDataSanityOperationRequestRunArgs = {
   operation_name: Scalars['String']['input'];
+};
+
+
+export type MutationDataSanityUpdateMaintenancePlanningArgs = {
+  planning: Array<DataSanityMaintenanceWindowInput>;
 };
 
 
@@ -24400,7 +24448,9 @@ export type Query = {
   customViewsSettings: CustomViewsSettings;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
+  dataSanityConfiguration?: Maybe<DataSanityConfiguration>;
   dataSanityExecutions: Array<DataSanityExecution>;
+  dataSanityOperationDryRun: DataSanityDryRunOutput;
   dataSanityOperations: Array<DataSanityOperation>;
   dataSource?: Maybe<DataSource>;
   dataSources?: Maybe<DataSourceConnection>;
@@ -25243,6 +25293,11 @@ export type QueryDataComponentsArgs = {
   orderBy?: InputMaybe<DataComponentsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDataSanityOperationDryRunArgs = {
+  operation_name: Scalars['String']['input'];
 };
 
 
@@ -39601,7 +39656,12 @@ export type ResolversTypes = ResolversObject<{
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
   DataComponentEdge: ResolverTypeWrapper<Omit<DataComponentEdge, 'node'> & { node: ResolversTypes['DataComponent'] }>;
   DataComponentsOrdering: DataComponentsOrdering;
+  DataSanityConfiguration: ResolverTypeWrapper<DataSanityConfiguration>;
+  DataSanityDryRunOutput: ResolverTypeWrapper<DataSanityDryRunOutput>;
   DataSanityExecution: ResolverTypeWrapper<DataSanityExecution>;
+  DataSanityImpactedElement: ResolverTypeWrapper<DataSanityImpactedElement>;
+  DataSanityMaintenanceWindow: ResolverTypeWrapper<DataSanityMaintenanceWindow>;
+  DataSanityMaintenanceWindowInput: DataSanityMaintenanceWindowInput;
   DataSanityOperation: ResolverTypeWrapper<DataSanityOperation>;
   DataSource: ResolverTypeWrapper<BasicStoreEntityDataSource>;
   DataSourceAddInput: DataSourceAddInput;
@@ -40714,7 +40774,12 @@ export type ResolversParentTypes = ResolversObject<{
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
   DataComponentEdge: Omit<DataComponentEdge, 'node'> & { node: ResolversParentTypes['DataComponent'] };
+  DataSanityConfiguration: DataSanityConfiguration;
+  DataSanityDryRunOutput: DataSanityDryRunOutput;
   DataSanityExecution: DataSanityExecution;
+  DataSanityImpactedElement: DataSanityImpactedElement;
+  DataSanityMaintenanceWindow: DataSanityMaintenanceWindow;
+  DataSanityMaintenanceWindowInput: DataSanityMaintenanceWindowInput;
   DataSanityOperation: DataSanityOperation;
   DataSource: BasicStoreEntityDataSource;
   DataSourceAddInput: DataSourceAddInput;
@@ -43695,18 +43760,50 @@ export type DataComponentEdgeResolvers<ContextType = any, ParentType extends Res
   node?: Resolver<ResolversTypes['DataComponent'], ParentType, ContextType>;
 }>;
 
+export type DataSanityConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityConfiguration'] = ResolversParentTypes['DataSanityConfiguration']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  maintenance_planning?: Resolver<Array<ResolversTypes['DataSanityMaintenanceWindow']>, ParentType, ContextType>;
+}>;
+
+export type DataSanityDryRunOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityDryRunOutput'] = ResolversParentTypes['DataSanityDryRunOutput']> = ResolversObject<{
+  estimated_impact?: Resolver<Array<ResolversTypes['DataSanityImpactedElement']>, ParentType, ContextType>;
+}>;
+
 export type DataSanityExecutionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityExecution'] = ResolversParentTypes['DataSanityExecution']> = ResolversObject<{
   force_run?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_execution_time?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  last_failure_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_run_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  last_run_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_run_output?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_run_success?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   operation_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type DataSanityImpactedElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityImpactedElement'] = ResolversParentTypes['DataSanityImpactedElement']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type DataSanityMaintenanceWindowResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityMaintenanceWindow'] = ResolversParentTypes['DataSanityMaintenanceWindow']> = ResolversObject<{
+  day?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  end_time?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  start_time?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type DataSanityOperationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityOperation'] = ResolversParentTypes['DataSanityOperation']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  display_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  eligible_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   execution_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  force_run?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  is_running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  last_execution_time?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  last_run_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_run_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_run_output?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_run_success?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type DataSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSource'] = ResolversParentTypes['DataSource']> = ResolversObject<{
@@ -47354,6 +47451,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataComponentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationAddArgs, 'id' | 'input'>>;
   dataComponentRelationDelete?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   dataSanityOperationRequestRun?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataSanityOperationRequestRunArgs, 'operation_name'>>;
+  dataSanityUpdateMaintenancePlanning?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType, RequireFields<MutationDataSanityUpdateMaintenancePlanningArgs, 'planning'>>;
   dataSourceAdd?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceAddArgs, 'input'>>;
   dataSourceContextClean?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextCleanArgs, 'id'>>;
   dataSourceContextPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextPatchArgs, 'id' | 'input'>>;
@@ -49218,7 +49316,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
+  dataSanityConfiguration?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType>;
   dataSanityExecutions?: Resolver<Array<ResolversTypes['DataSanityExecution']>, ParentType, ContextType>;
+  dataSanityOperationDryRun?: Resolver<ResolversTypes['DataSanityDryRunOutput'], ParentType, ContextType, RequireFields<QueryDataSanityOperationDryRunArgs, 'operation_name'>>;
   dataSanityOperations?: Resolver<Array<ResolversTypes['DataSanityOperation']>, ParentType, ContextType>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
   dataSources?: Resolver<Maybe<ResolversTypes['DataSourceConnection']>, ParentType, ContextType, Partial<QueryDataSourcesArgs>>;
@@ -53267,7 +53367,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;
+  DataSanityConfiguration?: DataSanityConfigurationResolvers<ContextType>;
+  DataSanityDryRunOutput?: DataSanityDryRunOutputResolvers<ContextType>;
   DataSanityExecution?: DataSanityExecutionResolvers<ContextType>;
+  DataSanityImpactedElement?: DataSanityImpactedElementResolvers<ContextType>;
+  DataSanityMaintenanceWindow?: DataSanityMaintenanceWindowResolvers<ContextType>;
   DataSanityOperation?: DataSanityOperationResolvers<ContextType>;
   DataSource?: DataSourceResolvers<ContextType>;
   DataSourceConnection?: DataSourceConnectionResolvers<ContextType>;

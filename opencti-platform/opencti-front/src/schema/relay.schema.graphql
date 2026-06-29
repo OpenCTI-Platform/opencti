@@ -9811,6 +9811,8 @@ type Query {
   retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
+  dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+  dataSanityConfiguration: DataSanityConfiguration
 }
 
 type Subscription {
@@ -10778,6 +10780,7 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
+  dataSanityUpdateMaintenancePlanning(planning: [DataSanityMaintenanceWindowInput!]!): DataSanityConfiguration
 }
 
 enum WorkflowExecutionStatus {
@@ -16775,8 +16778,18 @@ type RetentionRuleEditMutations {
 }
 
 type DataSanityOperation {
-  name: String!
+  identifier: String!
+  display_name: String!
   execution_type: String!
+  description: String!
+  eligible_entity_types: [String!]!
+  is_running: Boolean!
+  force_run: Boolean!
+  last_run_date: DateTime
+  last_execution_time: Int
+  last_run_success: Boolean
+  last_run_message: String
+  last_run_output: String
 }
 
 type DataSanityExecution {
@@ -16784,6 +16797,34 @@ type DataSanityExecution {
   operation_name: String!
   last_run_date: DateTime!
   last_execution_time: Int!
-  last_failure_message: String
+  last_run_success: Boolean
+  last_run_message: String
+  last_run_output: String
   force_run: Boolean!
+}
+
+type DataSanityImpactedElement {
+  key: String!
+  count: Int!
+}
+
+type DataSanityDryRunOutput {
+  estimated_impact: [DataSanityImpactedElement!]!
+}
+
+type DataSanityMaintenanceWindow {
+  day: String!
+  start_time: String!
+  end_time: String!
+}
+
+type DataSanityConfiguration {
+  id: ID!
+  maintenance_planning: [DataSanityMaintenanceWindow!]!
+}
+
+input DataSanityMaintenanceWindowInput {
+  day: String!
+  start_time: String!
+  end_time: String!
 }

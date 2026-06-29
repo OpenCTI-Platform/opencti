@@ -1,12 +1,12 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { createEntity, updateAttribute } from '../../database/middleware';
-import { ENTITY_TYPE_DATA_SANITY_EXECUTION, type SanityOperation } from './dataSanity-types';
+import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from './dataSanity-types';
 import type { BasicStoreEntityDataSanity } from './dataSanity-types';
 import { SYSTEM_USER } from '../../utils/access';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';
-import { sanityOperationList } from './dataSanity-configuration';
+import { type SanityOperation, sanityOperationList, type SanityOperationRunOutput } from './dataSanity-operations';
 
 /**
  * Find a DataSanity entity by operation_name.
@@ -36,32 +36,67 @@ export const hasOperationBeenExecuted = async (context: AuthContext, operationNa
 };
 
 /**
+ * Mark a sanity operation as currently running.
+ * Creates the entity if it doesn't exist yet.
+ */
+export const markOperationAsRunning = async (context: AuthContext, user: AuthUser, operationName: string): Promise<void> => {
+  const existing = await findDataSanityByOperationName(context, operationName);
+  if (existing) {
+    await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
+      { key: 'is_running', value: [true] },
+    ]);
+  } else {
+    await createEntity(context, user, {
+      operation_name: operationName,
+      last_run_date: utcDate().toISOString(),
+      last_execution_time: 0,
+      last_run_success: false,
+      last_run_message: '',
+      force_run: false,
+      is_running: true,
+    }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
+  }
+};
+
+/**
  * Mark a sanity operation as executed by creating or updating a DataSanity entity.
- * Resets force_run to false after execution.
+ * Resets force_run and is_running to false after execution.
  * @param context
  * @param user
  * @param operationName
  * @param executionTimeMs - duration of the operation execution in milliseconds
- * @param failureMessage - error message if the operation failed, empty string if success
+ * @param success - whether the operation succeeded
+ * @param runMessage - human-readable message (error on failure, empty or brief on success)
+ * @param output - the SanityOperationRunOutput to store (only on success)
  */
-export const markOperationAsExecuted = async (context: AuthContext, user: AuthUser, operationName: string, executionTimeMs: number, failureMessage = ''): Promise<void> => {
+export const markOperationAsExecuted = async (
+  context: AuthContext, user: AuthUser, operationName: string,
+  executionTimeMs: number, success: boolean, runMessage: string,
+  output?: SanityOperationRunOutput,
+): Promise<void> => {
   const existing = await findDataSanityByOperationName(context, operationName);
+  const lastRunOutput = success && output ? JSON.stringify(output) : '';
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
       { key: 'last_run_date', value: [utcDate().toISOString()] },
       { key: 'last_execution_time', value: [executionTimeMs] },
-      { key: 'last_failure_message', value: [failureMessage] },
+      { key: 'last_run_success', value: [success] },
+      { key: 'last_run_message', value: [runMessage] },
+      { key: 'last_run_output', value: [lastRunOutput] },
       { key: 'force_run', value: [false] },
+      { key: 'is_running', value: [false] },
     ]);
   } else {
-    const input = {
+    await createEntity(context, user, {
       operation_name: operationName,
       last_run_date: utcDate().toISOString(),
       last_execution_time: executionTimeMs,
-      last_failure_message: failureMessage,
+      last_run_success: success,
+      last_run_message: runMessage,
+      last_run_output: lastRunOutput,
       force_run: false,
-    };
-    await createEntity(context, user, input, ENTITY_TYPE_DATA_SANITY_EXECUTION);
+      is_running: false,
+    }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   }
 };
 
@@ -99,7 +134,8 @@ export const setForceRun = async (context: AuthContext, user: AuthUser, operatio
     operation_name: operationName,
     last_run_date: utcDate().toISOString(),
     last_execution_time: 0,
-    last_failure_message: '',
+    last_run_success: false,
+    last_run_message: '',
     force_run: true,
   }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   return created.id;
@@ -117,29 +153,40 @@ export const findAllDataSanityExecutions = async (context: AuthContext, user: Au
   );
 };
 
-export const listAllSanityOperations = async (_context: AuthContext) => {
-  return sanityOperationList().map((operation: SanityOperation) => ({
-    name: operation.name,
-    execution_type: operation.execution_type,
-  }));
+export const listAllSanityOperations = async (context: AuthContext) => {
+  const executions = await findAllDataSanityExecutions(context, SYSTEM_USER);
+  return sanityOperationList().map((operation: SanityOperation) => {
+    const execution = executions.find((e) => e.operation_name === operation.identifier);
+    return {
+      identifier: operation.identifier,
+      display_name: operation.display_name,
+      execution_type: operation.execution_type,
+      description: operation.description,
+      eligible_entity_types: operation.eligibleEntityTypes,
+      is_running: execution?.is_running ?? false,
+      force_run: execution?.force_run ?? false,
+      last_run_date: execution?.last_run_date ?? null,
+      last_execution_time: execution?.last_execution_time ?? null,
+      last_run_success: execution?.last_run_success ?? null,
+      last_run_message: execution?.last_run_message ?? null,
+      last_run_output: execution?.last_run_output ?? null,
+    };
+  });
 };
 
 /**
- * Ensure all on_demand operations have a corresponding DataSanity entity in ElasticSearch.
- * This allows users to later set force_run=true on them via the mutation.
+ * Execute the dry run of a sanity operation synchronously and return the output
+ * formatted for GraphQL response.
+ * @param context
+ * @param operationName - the name of the sanity operation to dry run
  */
-export const registerOnDemandOperations = async (context: AuthContext, user: AuthUser): Promise<void> => {
-  const onDemandOperations = sanityOperationList().filter((op: SanityOperation) => op.execution_type === 'on_demand');
-  for (const operation of onDemandOperations) {
-    const existing = await findDataSanityByOperationName(context, operation.name);
-    if (!existing) {
-      await createEntity(context, user, {
-        operation_name: operation.name,
-        last_run_date: utcDate().toISOString(),
-        last_execution_time: 0,
-        last_failure_message: '',
-        force_run: false,
-      }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
-    }
+export const executeDryRun = async (context: AuthContext, operationName: string) => {
+  const operation = sanityOperationList().find((op: SanityOperation) => op.identifier === operationName);
+  if (!operation) {
+    throw new Error(`Unknown sanity operation: ${operationName}`);
   }
+  const output = await operation.dryRun(context);
+  return {
+    estimated_impact: Object.entries(output.impact.detail).map(([key, count]) => ({ key, count })),
+  };
 };
