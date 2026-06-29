@@ -15,6 +15,7 @@ export interface FintelTemplateFormInputs {
   name: string;
   description: string | null;
   published: boolean;
+  default: boolean | null | undefined;
 }
 
 export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
@@ -46,6 +47,7 @@ const FintelTemplateForm = ({
     name: '',
     description: null,
     published: false,
+    default: false,
   };
 
   const updateField = async (field: FintelTemplateFormInputKeys, value: unknown) => {
@@ -63,7 +65,7 @@ const FintelTemplateForm = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting }) => {
+      {({ submitForm, handleReset, isSubmitting, values }) => {
         return (
           <Form>
             <Field
@@ -94,6 +96,7 @@ const FintelTemplateForm = ({
               containerstyle={{ marginTop: 20 }}
               onChange={onUpdate}
             />
+
             <Field
               component={MarkdownField}
               name="description"
@@ -102,6 +105,15 @@ const FintelTemplateForm = ({
               multiline={true}
               rows="4"
               onSubmit={onUpdate}
+            />
+
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="default"
+              label={t_i18n('Set as default')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={onUpdate}
             />
 
             {!isEdition && (
