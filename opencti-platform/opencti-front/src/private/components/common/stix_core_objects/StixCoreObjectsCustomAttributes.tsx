@@ -569,9 +569,8 @@ const StixCoreObjectsCustomAttributes = ({
 }: StixCoreObjectsCustomAttributesProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef(null);
-  const isPreviewMode = host?.kind === 'custom-view'
-    && Boolean(host.customViewTargetEntityId)
-    && host.previewMode;
+  const isCustomViewContext = host?.kind === 'custom-view' && Boolean(host.customViewTargetEntityId);
+  const isPreviewMode = isCustomViewContext && host.previewMode;
 
   const selection: WidgetDataSelection = (dataSelection)[0];
   const layout: WidgetColumnsLayout = (selection.layout) ?? '1';

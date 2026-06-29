@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
-import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import { Box, Checkbox, FormControlLabel, IconButton, List, ListItem, ListItemIcon, ListItemText, Radio, RadioGroup, Typography } from '@mui/material';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
-import type { Theme } from '../../../components/Theme';
-import { useFormatter } from '../../../components/i18n';
-import type { WidgetColumn } from '../../../utils/widget/widget';
-import { Accordion, AccordionSummary } from '../../../components/Accordion';
+import type { Theme } from 'src/components/Theme';
+import { useFormatter } from 'src/components/i18n';
+import type { WidgetColumn } from 'src/utils/widget/widget';
+import { Accordion, AccordionSummary } from 'src/components/Accordion';
 import useWidgetColumnsCustomization from './useWidgetColumnsCustomization';
 
 export type WidgetColumnsLayout = '1' | '2';
@@ -30,6 +30,16 @@ type DraggableColumnItemProps = {
   onRemove: (attribute?: string | null) => void;
 };
 
+type ColumnLayoutProps = {
+  value: WidgetColumn[];
+  handleDragEnd: (result: DropResult) => void;
+  handleToggleColumn: (attribute?: string | null) => void;
+  formatColumnName: (column: WidgetColumn) => string;
+  t_i18n: (key: string) => string;
+  theme: Theme;
+  listSx: object;
+};
+
 const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
   column,
   index,
@@ -37,7 +47,7 @@ const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
   label,
   onRemove,
 }) => (
-  <Draggable key={column.attribute} draggableId={column.attribute ?? ''} index={index}>
+  <Draggable draggableId={column.attribute ?? ''} index={index}>
     {(providedDrag, snapshotDrag) => (
       <ListItem
         ref={providedDrag.innerRef}
@@ -63,6 +73,105 @@ const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
   </Draggable>
 );
 
+const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
+  value,
+  handleDragEnd,
+  handleToggleColumn,
+  formatColumnName,
+  t_i18n,
+  listSx,
+}) => (
+  <Box sx={{ flex: 2 }}>
+    <Typography variant="h4">
+      {`${t_i18n('Selected attributes')} (${value.length})`}
+    </Typography>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="col_1">
+        {(providedDrop) => (
+          <List
+            ref={providedDrop.innerRef}
+            {...providedDrop.droppableProps}
+            sx={listSx}
+          >
+            {value.map((column, index) => (
+              <DraggableColumnItem
+                key={column.attribute}
+                column={column}
+                index={index}
+                isLast={index === value.length - 1}
+                label={t_i18n(formatColumnName(column))}
+                onRemove={handleToggleColumn}
+              />
+            ))}
+            {providedDrop.placeholder}
+          </List>
+        )}
+      </Droppable>
+    </DragDropContext>
+  </Box>
+);
+
+const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
+  value,
+  handleDragEnd,
+  handleToggleColumn,
+  formatColumnName,
+  t_i18n,
+  theme,
+}) => {
+  const col1Items = value.filter((_, i) => i % 2 === 0);
+  const col2Items = value.filter((_, i) => i % 2 === 1);
+
+  return (
+    <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
+      <Typography variant="h4">
+        {`${t_i18n('Selected attributes')} (${value.length})`}
+      </Typography>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Box sx={{
+          display: 'flex',
+          flex: 1,
+          border: `1px solid ${theme.palette.common.white}`,
+          borderRadius: `${theme.borderRadius}px`,
+          overflow: 'hidden',
+        }}
+        >
+          {(['col_1', 'col_2'] as const).map((colId, colIndex) => {
+            const colItems = colIndex === 0 ? col1Items : col2Items;
+            return (
+              <Droppable key={colId} droppableId={colId}>
+                {(providedDrop) => (
+                  <Box
+                    ref={providedDrop.innerRef}
+                    {...providedDrop.droppableProps}
+                    sx={{
+                      flex: 1,
+                      paddingTop: theme.spacing(1),
+                      minHeight: 100,
+                    }}
+                  >
+                    {colItems.map((column, index) => (
+                      <DraggableColumnItem
+                        key={column.attribute}
+                        column={column}
+                        index={index}
+                        isLast={index === colItems.length - 1}
+                        label={t_i18n(formatColumnName(column))}
+                        onRemove={handleToggleColumn}
+                      />
+                    ))}
+                    {providedDrop.placeholder}
+                  </Box>
+                )}
+              </Droppable>
+            );
+          })}
+        </Box>
+      </DragDropContext>
+    </Box>
+  );
+};
+
 const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttributesColumnsInputProps> = ({
   availableColumns,
   defaultColumns,
@@ -79,9 +188,6 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
     value,
     onChange,
   );
-
-  const col1Items = value.filter((_, i) => i % 2 === 0);
-  const col2Items = value.filter((_, i) => i % 2 === 1);
 
   const listSx = {
     border: `1px solid ${theme.palette.common.white}`,
@@ -129,87 +235,27 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
             </List>
           </Box>
 
-          {/* Selected — 2/3, layout 1 or 2 columns */}
-          <DragDropContext onDragEnd={layout === '2' ? handleDragEndDoubleColumns : handleDragEndSingleColumn}>
-            {layout === '2' ? (
-              <Box sx={{
-                flex: 2,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-              >
-                <Typography variant="h4">
-                  {`${t_i18n('Selected attributes')} (${value.length})`}
-                </Typography>
-                <Box sx={{
-                  display: 'flex',
-                  flex: 1,
-                  border: `1px solid ${theme.palette.common.white}`,
-                  borderRadius: `${theme.borderRadius}px`,
-                  overflow: 'hidden',
-                }}
-                >
-                  {(['col_1', 'col_2'] as const).map((colId, colIndex) => {
-                    const colItems = colIndex === 0 ? col1Items : col2Items;
-                    return (
-                      <Droppable key={colId} droppableId={colId}>
-                        {(providedDrop) => (
-                          <Box
-                            ref={providedDrop.innerRef}
-                            {...providedDrop.droppableProps}
-                            sx={{
-                              flex: 1,
-                              paddingTop: theme.spacing(1),
-                              minHeight: 100,
-                            }}
-                          >
-                            {colItems.map((column, index) => (
-                              <DraggableColumnItem
-                                key={column.attribute}
-                                column={column}
-                                index={index}
-                                isLast={index === colItems.length - 1}
-                                label={t_i18n(formatColumnName(column))}
-                                onRemove={handleToggleColumn}
-                              />
-                            ))}
-                            {providedDrop.placeholder}
-                          </Box>
-                        )}
-                      </Droppable>
-                    );
-                  })}
-                </Box>
-              </Box>
-            ) : (
-              <Box sx={{ flex: 2 }}>
-                <Typography variant="h4">
-                  {`${t_i18n('Selected attributes')} (${value.length})`}
-                </Typography>
-                <Droppable droppableId="col_1">
-                  {(providedDrop) => (
-                    <List
-                      ref={providedDrop.innerRef}
-                      {...providedDrop.droppableProps}
-                      sx={listSx}
-                    >
-                      {value.map((column, index) => (
-                        <DraggableColumnItem
-                          key={column.attribute}
-                          column={column}
-                          index={index}
-                          isLast={index === value.length - 1}
-                          label={t_i18n(formatColumnName(column))}
-                          onRemove={handleToggleColumn}
-                        />
-                      ))}
-                      {providedDrop.placeholder}
-                    </List>
-                  )}
-                </Droppable>
-              </Box>
-            )}
-          </DragDropContext>
+          {layout === '2' ? (
+            <DoubleColumnLayout
+              value={value}
+              handleDragEnd={handleDragEndDoubleColumns}
+              handleToggleColumn={handleToggleColumn}
+              formatColumnName={formatColumnName}
+              t_i18n={t_i18n}
+              theme={theme}
+              listSx={listSx}
+            />
+          ) : (
+            <SingleColumnLayout
+              value={value}
+              handleDragEnd={handleDragEndSingleColumn}
+              handleToggleColumn={handleToggleColumn}
+              formatColumnName={formatColumnName}
+              t_i18n={t_i18n}
+              theme={theme}
+              listSx={listSx}
+            />
+          )}
         </Box>
 
         <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }}>

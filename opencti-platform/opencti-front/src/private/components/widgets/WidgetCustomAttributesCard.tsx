@@ -31,8 +31,23 @@ interface WidgetCustomAttributesCardProps {
   isCustomViewReadOnly?: boolean;
 }
 
-const getField = <T,>(data: unknown, key: string): T | undefined =>
-  (data as Record<string, unknown>)[key] as T | undefined;
+const isString = (v: unknown): v is string => typeof v === 'string';
+const isNumber = (v: unknown): v is number => typeof v === 'number' && !Number.isNaN(v);
+const isBoolean = (v: unknown): v is boolean => typeof v === 'boolean';
+const isStringArray = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.every(isString);
+const isObjectArray = (v: unknown): v is Record<string, unknown>[] =>
+  Array.isArray(v) && v.every((item) => typeof item === 'object' && item !== null);
+
+const getField = <T,>(
+  data: unknown,
+  key: string,
+  guard?: (v: unknown) => v is T,
+): T | undefined => {
+  const value = (data as Record<string, unknown>)[key];
+  if (guard) return guard(value) ? value : undefined;
+  return value as T | undefined;
+};
 
 const empty = (italic = false) => (
   <Typography variant="body2" sx={{ color: 'text.disabled', ...(italic && { fontStyle: 'italic' }) }}>
@@ -53,15 +68,15 @@ const renderByAttributeType = (
   const { attribute, attributeType } = column;
   if (!attribute || !attributeType) return null;
 
-  const value = getField(data, attribute);
-
   switch (attributeType) {
     case 'date': {
+      const value = getField(data, attribute, isString);
       if (!value) return empty();
       return <Typography variant="body2">{fldt(value)}</Typography>;
     }
+
     case 'boolean': {
-      const bool = value as boolean | undefined;
+      const bool = getField(data, attribute, isBoolean);
       if (bool === undefined || bool === null) return empty();
       return (
         <ItemBoolean
@@ -71,12 +86,15 @@ const renderByAttributeType = (
         />
       );
     }
+
     case 'tag': {
+      const value = getField(data, attribute, isString);
       if (!value) return empty();
-      return <Tag label={String(value)} />;
+      return <Tag label={value} />;
     }
+
     case 'tag_list': {
-      const list = value as string[] | undefined;
+      const list = getField(data, attribute, isStringArray);
       if (!list?.length) return empty();
       return (
         <FieldOrEmpty source={list}>
@@ -86,26 +104,36 @@ const renderByAttributeType = (
         </FieldOrEmpty>
       );
     }
+
     case 'text_list': {
-      return <TextList list={value as string[] | undefined} />;
+      const list = getField(data, attribute, isStringArray);
+      if (!list) return empty();
+      return <TextList list={list} />;
     }
+
     case 'markdown': {
+      const value = getField(data, attribute, isString);
       if (!value) return empty();
-      return <ExpandableMarkdown source={value as string} limit={400} />;
+      return <ExpandableMarkdown source={value} limit={400} />;
     }
+
     case 'score': {
-      return <ItemScore score={value as number ?? null} />;
+      const score = getField(data, attribute, isNumber);
+      return <ItemScore score={score ?? null} />;
     }
+
     case 'open_vocab': {
       return openVocabSingleRenderers[attribute]?.(data as Record<string, unknown>)
         ?? empty();
     }
+
     case 'open_vocab_list': {
       return openVocabListRenderers[attribute]?.(data as Record<string, unknown>)
         ?? empty();
     }
+
     case 'copy': {
-      const list = Array.isArray(value) ? value as string[] : undefined;
+      const list = getField(data, attribute, isStringArray);
       if (list) {
         return (
           <FieldOrEmpty source={list}>
@@ -113,11 +141,14 @@ const renderByAttributeType = (
           </FieldOrEmpty>
         );
       }
+      const value = getField(data, attribute, isString);
       if (!value) return empty();
-      return <ValueCopy value={value as string} />;
+      return <ValueCopy value={value} />;
     }
+
     case 'cvss_score':
       return null;
+
     default:
       return null;
   }
@@ -131,7 +162,7 @@ const renderAttributeValue = (
 ) => {
   const { attribute } = column;
   if (!attribute) return null;
-  const entityType = data?.entity_type ?? '';
+
   if (!data) {
     return (
       <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
@@ -140,10 +171,12 @@ const renderAttributeValue = (
     );
   }
 
+  const entityType = data.entity_type ?? '';
   const isSCO = 'observable_value' in data;
   const specificRenderer
     = entityTypeRenderers[entityType]?.[attribute]
       ?? (isSCO ? entityTypeRenderers['Stix-Cyber-Observable']?.[attribute] : undefined);
+
   if (specificRenderer) {
     return specificRenderer(data, t_i18n, fldt);
   }
@@ -167,7 +200,7 @@ const renderAttributeValue = (
       );
 
     case 'objectLabel': {
-      const labels = data.objectLabel as { id: string; value: string; color: string }[] | undefined;
+      const labels = getField<{ id: string; value: string; color: string }[]>(data, 'objectLabel');
       return (
         <FieldOrEmpty source={labels}>
           <Stack direction="row" flexWrap="wrap" gap={1}>
@@ -213,32 +246,38 @@ const renderAttributeValue = (
 
     case 'x_opencti_workflow_id': {
       const status = getField<unknown>(data, 'status') ?? null;
-      const workflowEnabled = getField<boolean>(data, 'workflowEnabled') ?? false;
+      const workflowEnabled = getField(data, 'workflowEnabled', isBoolean) ?? false;
       return <ItemStatus status={status as object} disabled={!workflowEnabled} />;
     }
 
     default: {
       const value = getField(data, attribute);
       if (value === undefined || value === null || value === '') return empty();
-      if (Array.isArray(value)) {
-        if (value.length === 0) return empty();
-        if (typeof value[0] === 'object') {
-          return (
-            <Stack direction="row" flexWrap="wrap" gap={1}>
-              {(value as { name?: string; value?: string }[]).map((item, i) => (
-                <Tag key={i} label={item.name ?? item.value ?? String(item)} />
-              ))}
-            </Stack>
-          );
-        }
+
+      const objectArr = getField(data, attribute, isObjectArray);
+      if (objectArr) {
+        if (objectArr.length === 0) return empty();
         return (
-          <FieldOrEmpty source={value}>
+          <Stack direction="row" flexWrap="wrap" gap={1}>
+            {objectArr.map((item, i) => (
+              <Tag key={i} label={String(item.name ?? item.value ?? item)} />
+            ))}
+          </Stack>
+        );
+      }
+
+      const stringArr = getField(data, attribute, isStringArray);
+      if (stringArr) {
+        if (stringArr.length === 0) return empty();
+        return (
+          <FieldOrEmpty source={stringArr}>
             <Stack direction="row" flexWrap="wrap" gap={1}>
-              {(value as string[]).map((item) => <Tag key={item} label={item} />)}
+              {stringArr.map((item) => <Tag key={item} label={item} />)}
             </Stack>
           </FieldOrEmpty>
         );
       }
+
       return (
         <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
           {String(value)}
