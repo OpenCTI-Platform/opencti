@@ -52,25 +52,27 @@ const DeployCustomView = () => {
     });
   });
 
-  const sendImportToBack = (importedFile: File) => {
+  const sendImportToBack = async (importedFile: File) => {
     const entityTypes = targetEntityTypes.length > 0 ? targetEntityTypes : [null];
-    Promise.all(
+    const results = await Promise.allSettled(
       entityTypes.map((entityType: string | null) => importForEntityType(importedFile, entityType)),
-    )
-      .then((createdEntityTypes) => {
-        MESSAGING$.notifySuccess(t_i18n('Custom view successfully imported'));
-        if (createdEntityTypes.length === 1) {
-          navigate(
-            `/dashboard/settings/customization/entity_types/${createdEntityTypes[0]}/custom-views`,
-          );
-        } else {
-          navigate('/dashboard/settings/customization');
-        }
-      })
-      .catch(() => {
+    );
+    const createdEntityTypes = results
+      .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')
+      .map((r) => r.value);
+
+    if (createdEntityTypes.length === entityTypes.length) {
+      MESSAGING$.notifySuccess(t_i18n('Custom view successfully imported'));
+      if (createdEntityTypes.length === 1) {
+        navigate(
+          `/dashboard/settings/customization/entity_types/${createdEntityTypes[0]}/custom-views`,
+        );
+      } else {
         navigate('/dashboard/settings/customization');
-        MESSAGING$.notifyError(t_i18n('An error occurred while importing custom view'));
-      });
+      }
+    } else {
+      navigate('/dashboard/settings/customization');
+    }
   };
 
   const onDownloadError = () => {

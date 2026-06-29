@@ -411,7 +411,8 @@ export const importCustomViewConfiguration = async (
 ) => {
   const parsedData: CustomViewExport = await extractContentFrom(file);
   const { manifest } = parsedData.configuration;
-  const resolvedTargetEntityType = targetEntityType ?? parsedData.configuration.target_entity_type;
+  const inputTargetEntityType = typeof targetEntityType === 'string' ? targetEntityType.trim() : undefined;
+  const resolvedTargetEntityType = inputTargetEntityType || parsedData.configuration.target_entity_type;
   if (!resolvedTargetEntityType) {
     throw FunctionalError('Missing target entity type for custom view import');
   }
