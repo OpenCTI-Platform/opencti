@@ -132,7 +132,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       disabled={disabled}
       controlledDial={UpdateGroupControlledDial}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
             <Tab label={t_i18n('Overview')} />
