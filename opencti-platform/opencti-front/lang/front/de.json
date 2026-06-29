@@ -3188,6 +3188,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "Nur Kleinbuchstaben, Zahlen und Bindestriche sind erlaubt",
   "Only successful tests allow the ingestion creation.": "Nur erfolgreiche Tests ermöglichen die Erstellung der Aufnahme.",
   "Only successful tests allow the ingestion edition.": "Nur erfolgreiche Tests erlauben die Ingestion-Edition.",
+  "Only yourself and service accounts can be selected": "Es können nur Sie selbst und Dienstkonten ausgewählt werden",
   "only_eq_to": "Entspricht nur",
   "Open chatbot": "Chatbot öffnen",
   "Open correlation details": "Details der offenen Korrelation",
