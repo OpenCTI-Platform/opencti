@@ -40,11 +40,14 @@ const DeployCustomView = () => {
   const importForEntityType = (
     importedFile: File,
     targetEntityType: string | null,
-  ) => new Promise<string>((resolve, reject) => {
+  ) => new Promise<{ id: string; targetEntityType: string }>((resolve, reject) => {
     commitImportMutation({
       variables: { targetEntityType, file: importedFile },
       onCompleted: (data) => {
-        resolve(data.customViewConfigurationImport.targetEntityType);
+        resolve({
+          id: data.customViewConfigurationImport.id,
+          targetEntityType: data.customViewConfigurationImport.targetEntityType,
+        });
       },
       onError: (error) => {
         reject(error);
@@ -57,15 +60,16 @@ const DeployCustomView = () => {
     const results = await Promise.allSettled(
       entityTypes.map((entityType: string | null) => importForEntityType(importedFile, entityType)),
     );
-    const createdEntityTypes = results
-      .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')
+    const createdCustomViews = results
+      .filter((r): r is PromiseFulfilledResult<{ id: string; targetEntityType: string }> => r.status === 'fulfilled')
       .map((r) => r.value);
 
-    if (createdEntityTypes.length === entityTypes.length) {
+    if (createdCustomViews.length === entityTypes.length) {
       MESSAGING$.notifySuccess(t_i18n('Custom view successfully imported'));
-      if (createdEntityTypes.length === 1) {
+      if (createdCustomViews.length === 1) {
+        const [created] = createdCustomViews;
         navigate(
-          `/dashboard/settings/customization/entity_types/${createdEntityTypes[0]}/custom-views`,
+          `/dashboard/settings/customization/entity_types/${created.targetEntityType}/custom-views/${created.id}`,
         );
       } else {
         navigate('/dashboard/settings/customization');
