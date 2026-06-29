@@ -61,7 +61,6 @@ input SmtpConfigurationEditInput {
 
 extend type Query {
   smtpConfiguration: SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
-  smtpConfigurationById(id: ID!): SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
 }
 
 extend type Mutation {

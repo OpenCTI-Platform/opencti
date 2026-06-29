@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { patchAttribute } from '../../database/middleware';
-import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList } from '../../database/middleware-loader';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntitySmtpConfiguration, ENTITY_TYPE_SMTP_CONFIGURATION, type StoreEntitySmtpConfiguration } from './smtpConfiguration-types';
 import { SmtpAuthType, type SmtpConfigurationAddInput, type SmtpConfigurationEditInput } from '../../generated/graphql';
@@ -53,14 +53,6 @@ export const getSmtpConfiguration = async (
     throw FunctionalError('Multiple SMTP configurations found in database, only one is allowed');
   }
   return configurations[0] ?? null;
-};
-
-export const getSmtpConfigurationById = async (
-  context: AuthContext,
-  user: AuthUser,
-  id: string,
-): Promise<BasicStoreEntitySmtpConfiguration | null> => {
-  return storeLoadById<BasicStoreEntitySmtpConfiguration>(context, user, id, ENTITY_TYPE_SMTP_CONFIGURATION);
 };
 
 export const smtpConfigurationUpdate = async (

@@ -4,7 +4,6 @@ import * as Middleware from '../../../../src/database/middleware';
 import * as MiddlewareLoader from '../../../../src/database/middleware-loader';
 import {
   getSmtpConfiguration,
-  getSmtpConfigurationById,
   smtpConfigurationAdd,
   smtpConfigurationDelete,
   smtpConfigurationTest,
@@ -18,7 +17,6 @@ vi.mock('../../../../src/database/middleware', () => ({
 
 vi.mock('../../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(),
-  storeLoadById: vi.fn(),
 }));
 
 vi.mock('../../../../src/domain/internalObject', () => ({
@@ -83,23 +81,6 @@ describe('getSmtpConfiguration', () => {
     vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([MOCK_CONFIG, { ...MOCK_CONFIG, id: 'bbbb' }]);
     await expect(getSmtpConfiguration(mockContext, mockUser))
       .rejects.toThrow('Multiple SMTP configurations found in database');
-  });
-});
-
-// ---------- getSmtpConfigurationById ----------
-
-describe('getSmtpConfigurationById', () => {
-  it('should return the configuration for a known id', async () => {
-    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(MOCK_CONFIG);
-    const result = await getSmtpConfigurationById(mockContext, mockUser, MOCK_CONFIG.id);
-    expect(result).toEqual(MOCK_CONFIG);
-    expect(MiddlewareLoader.storeLoadById).toHaveBeenCalledWith(mockContext, mockUser, MOCK_CONFIG.id, 'SmtpConfiguration');
-  });
-
-  it('should return null for an unknown id', async () => {
-    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(null as any);
-    const result = await getSmtpConfigurationById(mockContext, mockUser, 'unknown-id');
-    expect(result).toBeNull();
   });
 });
 
