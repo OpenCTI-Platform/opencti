@@ -124,7 +124,7 @@ function scheduleBuild(eventName, filePath) {
 
   debounceTimeout = setTimeout(() => {
     runSchemaBuild(`${eventName}: ${filePath}`, filePath);
-  }, 200);
+  }, 300);
 }
 
 function startWatcher() {

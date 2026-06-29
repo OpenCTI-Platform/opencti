@@ -295,35 +295,45 @@ export default defineConfig({
         
         let relayTimeout: NodeJS.Timeout | null = null;
         let isRelayRunning = false;
-        
+        let pendingRerun = false;
+
+        const runRelay = async () => {
+          isRelayRunning = true;
+          try {
+            console.log('\n🔄 GraphQL schema changed, running relay compiler...');
+            await runRelayCompiler();
+            console.log('✅ Relay compiler finished successfully');
+
+            // Only trigger reload after successful completion
+            console.log('🔄 Triggering full reload');
+            server.ws.send({ type: 'full-reload', path: '*' });
+            console.log('✅ Frontend is up to date with GraphQL schema changes\n');
+          } catch (error) {
+            console.error('❌ Relay compiler error:', error);
+            console.log('⚠️  Skipping reload due to error\n');
+          } finally {
+            isRelayRunning = false;
+            if (pendingRerun) {
+              pendingRerun = false;
+              runRelay();
+            }
+          }
+        };
+
         server.watcher.on('change', async (file) => {
           if (path.resolve(file) === schemaPath) {
-            // Skip if relay is already running
+            // If relay is already running, queue one more run for when it finishes
             if (isRelayRunning) {
-              console.log('⏳ Relay compiler already running, skipping...');
+              console.log('⏳ Relay compiler already running, queuing rerun...');
+              pendingRerun = true;
               return;
             }
-            
+
             // Debounce to avoid multiple rapid runs
             if (relayTimeout) clearTimeout(relayTimeout);
-            
-            relayTimeout = setTimeout(async () => {
-              console.log('\n🔄 GraphQL schema changed, running relay compiler...');
-              isRelayRunning = true;
-              try {
-                await runRelayCompiler();
-                console.log('✅ Relay compiler finished successfully');
-                
-                // Only trigger reload after successful completion
-                console.log('🔄 Triggering full reload');
-                server.ws.send({ type: 'full-reload', path: '*' });
-                console.log('✅ Frontend is up to date with GraphQL schema changes\n');
-              } catch (error) {
-                console.error('❌ Relay compiler error:', error);
-                console.log('⚠️  Skipping reload due to error\n');
-              } finally {
-                isRelayRunning = false;
-              }
+
+            relayTimeout = setTimeout(() => {
+              runRelay();
             }, 300);
           }
         });

@@ -19,7 +19,7 @@ function tryStartAfterInitialBuild(line) {
     return;
   }
 
-  if (line.includes('✅ Initial build complete')) {
+  if (line.includes('Initial build complete')) {
     initialBuildDone = true;
     startAppWatch();
     startGraphQLSchemaWatch();

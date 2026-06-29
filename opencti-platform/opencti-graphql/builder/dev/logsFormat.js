@@ -13,7 +13,7 @@ const CATEGORY_COLORS = {
   TECHNICAL: chalk.green,
   MIGRATION: chalk.yellowBright,
   SUPPORT: chalk.blueBright,
-  TELEMETRY: chalk.grayBright,
+  TELEMETRY: chalk.blackBright,
   UNKNOWN: chalk.hex('#EE82EE'),
 };
 
