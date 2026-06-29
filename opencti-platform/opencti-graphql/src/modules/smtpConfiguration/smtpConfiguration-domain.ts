@@ -4,10 +4,22 @@ import { patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntitySmtpConfiguration, ENTITY_TYPE_SMTP_CONFIGURATION, type StoreEntitySmtpConfiguration } from './smtpConfiguration-types';
-import type { SmtpConfigurationAddInput, SmtpConfigurationEditInput } from '../../generated/graphql';
+import { SmtpAuthType, type SmtpConfigurationAddInput, type SmtpConfigurationEditInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+
+const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput | SmtpConfigurationEditInput) => {
+  if (input.port === 25) {
+    throw FunctionalError('Port 25 is not allowed for SMTP configuration');
+  }
+  if (input.auth_type === SmtpAuthType.Basic && (!input.username || !input.password)) {
+    throw FunctionalError('username and password are required for basic authentication');
+  }
+  if (input.auth_type === SmtpAuthType.Oauth2 && (!input.oauth_client_id || !input.oauth_client_secret || !input.oauth_issuer)) {
+    throw FunctionalError('oauth_client_id, oauth_client_secret and oauth_issuer are required for OAuth2 authentication');
+  }
+};
 
 export const smtpConfigurationAdd = async (
   context: AuthContext,
@@ -18,9 +30,7 @@ export const smtpConfigurationAdd = async (
   if (existing) {
     throw FunctionalError('An SMTP configuration already exists');
   }
-  if (input.port === 25) {
-    throw FunctionalError('Port 25 is not allowed for SMTP configuration');
-  }
+  validateSmtpConfigurationInput(input);
   // TODO(Chunk 2): secrets will be encrypted before storage.
   return createInternalObject<StoreEntitySmtpConfiguration>(
     context,
@@ -59,9 +69,7 @@ export const smtpConfigurationUpdate = async (
   id: string,
   input: SmtpConfigurationEditInput,
 ): Promise<BasicStoreEntitySmtpConfiguration> => {
-  if (input.port === 25) {
-    throw FunctionalError('Port 25 is not allowed for SMTP configuration');
-  }
+  validateSmtpConfigurationInput(input);
   const { element } = await patchAttribute<StoreEntitySmtpConfiguration>(
     context,
     user,

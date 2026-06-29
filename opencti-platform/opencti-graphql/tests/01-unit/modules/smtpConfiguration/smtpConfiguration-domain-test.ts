@@ -127,6 +127,20 @@ describe('smtpConfigurationAdd', () => {
       .rejects.toThrow('Port 25 is not allowed for SMTP configuration');
     expect(InternalObject.createInternalObject).not.toHaveBeenCalled();
   });
+
+  it('should reject basic auth without username or password', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
+    await expect(smtpConfigurationAdd(mockContext, mockUser, { auth_type: 'basic' as any }))
+      .rejects.toThrow('username and password are required for basic authentication');
+    expect(InternalObject.createInternalObject).not.toHaveBeenCalled();
+  });
+
+  it('should reject oauth2 without required fields', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
+    await expect(smtpConfigurationAdd(mockContext, mockUser, { auth_type: 'oauth2' as any, oauth_client_id: 'id' }))
+      .rejects.toThrow('oauth_client_id, oauth_client_secret and oauth_issuer are required for OAuth2 authentication');
+    expect(InternalObject.createInternalObject).not.toHaveBeenCalled();
+  });
 });
 
 // ---------- smtpConfigurationUpdate ----------
@@ -143,6 +157,18 @@ describe('smtpConfigurationUpdate', () => {
   it('should throw FunctionalError when port is 25', async () => {
     await expect(smtpConfigurationUpdate(mockContext, mockUser, MOCK_CONFIG.id, { port: 25 }))
       .rejects.toThrow('Port 25 is not allowed');
+    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should reject basic auth without username or password', async () => {
+    await expect(smtpConfigurationUpdate(mockContext, mockUser, MOCK_CONFIG.id, { auth_type: 'basic' as any, username: 'user' }))
+      .rejects.toThrow('username and password are required for basic authentication');
+    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should reject oauth2 without required fields', async () => {
+    await expect(smtpConfigurationUpdate(mockContext, mockUser, MOCK_CONFIG.id, { auth_type: 'oauth2' as any }))
+      .rejects.toThrow('oauth_client_id, oauth_client_secret and oauth_issuer are required for OAuth2 authentication');
     expect(Middleware.patchAttribute).not.toHaveBeenCalled();
   });
 
