@@ -11,6 +11,7 @@ from .connector.opencti_connector_helper import (
 )
 from .connector.opencti_metric_handler import OpenCTIMetricHandler
 from .entities.opencti_attack_pattern import AttackPattern
+from .entities.opencti_audit import Audit
 from .entities.opencti_campaign import Campaign
 from .entities.opencti_capability import Capability
 from .entities.opencti_case_incident import CaseIncident
@@ -34,6 +35,7 @@ from .entities.opencti_kill_chain_phase import KillChainPhase
 from .entities.opencti_label import Label
 from .entities.opencti_language import Language
 from .entities.opencti_location import Location
+from .entities.opencti_log import Log
 from .entities.opencti_malware import Malware
 from .entities.opencti_malware_analysis import MalwareAnalysis
 from .entities.opencti_marking_definition import MarkingDefinition
@@ -106,6 +108,7 @@ from .utils.opencti_stix2_utils import (
 __all__ = [
     "ALIASES_FIELD",
     "AttackPattern",
+    "Audit",
     "Campaign",
     "CaseIncident",
     "CaseRfi",
@@ -129,6 +132,7 @@ __all__ = [
     "Label",
     "Language",
     "Location",
+    "Log",
     "Malware",
     "MalwareAnalysis",
     "MarkingDefinition",
