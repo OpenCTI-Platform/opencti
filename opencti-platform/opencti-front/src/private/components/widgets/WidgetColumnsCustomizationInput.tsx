@@ -91,7 +91,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                               height: 42,
                             }}
                             secondaryAction={(
-                              <IconButton onClick={() => handleToggleColumn(column.attribute)}>
+                              <IconButton aria-label={t_i18n('Close')} onClick={() => handleToggleColumn(column.attribute)}>
                                 <Close />
                               </IconButton>
                             )}

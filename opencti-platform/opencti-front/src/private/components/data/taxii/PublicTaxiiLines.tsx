@@ -126,18 +126,14 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
       secondaryAction={(
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your Taxii client')}>
-            <span>
-              <IconButton onClick={copyClick} color="primary">
-                <ContentCopy />
-              </IconButton>
-            </span>
+            <IconButton onClick={copyClick} color="primary">
+              <ContentCopy />
+            </IconButton>
           </Tooltip>
           <Tooltip title={t_i18n('Access stream directly in your browser')}>
-            <span>
-              <IconButton onClick={browseClick} color="primary">
-                <OpenInNew />
-              </IconButton>
-            </span>
+            <IconButton onClick={browseClick} color="primary">
+              <OpenInNew />
+            </IconButton>
           </Tooltip>
         </>
       )}

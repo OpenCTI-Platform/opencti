@@ -155,6 +155,8 @@ const EntitiesDetailsRightsBar = () => {
           <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
             <div className={classes.external}>
               <IconButton
+                aria-label={t_i18n('Open the entity overview in a separated tab')}
+                id="open-entity-in-tab-icon-button"
                 component={Link}
                 target="_blank"
                 to={entityUrl}

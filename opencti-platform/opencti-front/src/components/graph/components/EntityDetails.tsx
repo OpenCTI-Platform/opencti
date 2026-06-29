@@ -530,6 +530,7 @@ const EntityDetailsComponent: FunctionComponent<
       </div>
       {expandable && (
         <IconButton
+          aria-label={t_i18n(expanded ? 'collapse' : 'expand')}
           size="small"
           onClick={handleToggleExpand}
           className={classes.buttonExpand}

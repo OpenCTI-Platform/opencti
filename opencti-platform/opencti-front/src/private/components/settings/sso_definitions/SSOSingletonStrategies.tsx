@@ -103,19 +103,17 @@ const SSOSingletonStrategiesContent = () => {
             {showEE && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
             {showCertHttpsInfo && (
               <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
-                <span>
-                  <IconButton
-                    size="small"
-                    disabled
-                    sx={{
-                      padding: 0.25,
-                      color: 'warning.main',
-                      '&.Mui-disabled': { color: 'warning.main', opacity: 1 },
-                    }}
-                  >
-                    <WarningAmberOutlined fontSize="small" />
-                  </IconButton>
-                </span>
+                <IconButton
+                  size="small"
+                  disabled
+                  sx={{
+                    padding: 0.25,
+                    color: 'warning.main',
+                    '&.Mui-disabled': { color: 'warning.main', opacity: 1 },
+                  }}
+                >
+                  <WarningAmberOutlined fontSize="small" />
+                </IconButton>
               </Tooltip>
             )}
           </Box>
