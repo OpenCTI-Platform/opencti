@@ -627,7 +627,6 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       language
       theme
       otp_activated
-      otp_qr
       description
       unit_system
       submenu_show_icons

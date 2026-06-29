@@ -1474,8 +1474,7 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
   }
   const { valid } = await totp.verify({ secret, token: code });
   if (valid) {
-    const uri = totp.generateURI({ label: user.user_email, issuer: 'OpenCTI', secret });
-    const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
+    const patch = { otp_activated: true, otp_secret: secret };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
     context.req.session.user.otp_validated = valid;
     return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -1487,7 +1486,7 @@ export const otpUserDeactivation = async (context, user, id) => {
   if (!context.user_with_session) {
     throw UnsupportedError('You need to deactivate your current 2FA in a valid user session');
   }
-  const patch = { otp_activated: false, otp_secret: '', otp_qr: '' };
+  const patch = { otp_activated: false, otp_secret: '' };
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
