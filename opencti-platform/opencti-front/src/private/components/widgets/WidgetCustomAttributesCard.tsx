@@ -117,7 +117,6 @@ const renderByAttributeType = (
       return <ValueCopy value={value as string} />;
     }
     case 'cvss_score':
-      // Géré exclusivement dans entityTypeRenderers (nécessite 2 champs)
       return null;
     default:
       return null;

@@ -44,6 +44,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         content
         modified
         updated_at
+        published
         objectAssignee {
           id
           name
@@ -399,6 +400,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         event_types
         modified
         updated_at
+        start_time
+        stop_time
       }
       ... on Organization {
         name
@@ -429,6 +432,7 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         contact_information
         modified
         updated_at
+        x_opencti_reliability
       }
       ... on Region {
         name
@@ -455,6 +459,8 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         description
         modified
         updated_at
+        longitude
+        latitude
       }
       ... on Position {
         name

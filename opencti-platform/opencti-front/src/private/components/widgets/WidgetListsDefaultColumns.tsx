@@ -53,13 +53,12 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   Report: [
     { attribute: 'report_types', label: 'Report type', attributeType: 'tag_list' },
+    { attribute: 'published', label: 'Publication date', attributeType: 'date' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
-    { attribute: 'container_content', label: 'Content' },
   ],
   Grouping: [
     { attribute: 'context', label: 'Context', attributeType: 'open_vocab' },
-    { attribute: 'container_content', label: 'Content' },
   ],
   Campaign: [
     { attribute: 'objective', label: 'Objective', attributeType: 'markdown' },
@@ -68,7 +67,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   'Malware-Analysis': [
     { attribute: 'product', label: 'Product', attributeType: 'markdown' },
-    { attribute: 'result_name', label: 'Result name', attributeType: 'markdown' },
+    { attribute: 'result_name', label: 'Report name', attributeType: 'markdown' },
     { attribute: 'result', label: 'Maliciousness', attributeType: 'tag' },
     { attribute: 'version', label: 'Version of the product', attributeType: 'tag' },
     { attribute: 'configuration_version', label: 'Configuration version', attributeType: 'markdown' },
@@ -116,6 +115,8 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'objective', label: 'Objective', attributeType: 'markdown' },
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
+    { attribute: 'objectAssignee' },
+    { attribute: 'objectParticipant' },
   ],
   Indicator: [
     { attribute: 'pattern', label: 'Indicator pattern' },
@@ -261,6 +262,8 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   Event: [
     { attribute: 'event_types', label: 'Event type', attributeType: 'open_vocab_list' },
+    { attribute: 'start_time', label: 'Start time', attributeType: 'date' },
+    { attribute: 'stop_time', label: 'Stop time', attributeType: 'date' },
   ],
   Organization: [
     { attribute: 'x_opencti_organization_type', label: 'Organization type', attributeType: 'open_vocab' },
@@ -272,9 +275,11 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   System: [
     { attribute: 'contact_information', label: 'Contact information', attributeType: 'markdown' },
+    { attribute: 'x_opencti_reliability', label: 'Reliability', attributeType: 'open_vocab' },
   ],
   Individual: [
     { attribute: 'contact_information', label: 'Contact information', attributeType: 'markdown' },
+    { attribute: 'x_opencti_reliability', label: 'Reliability', attributeType: 'open_vocab' },
   ],
   Position: [
     { attribute: 'latitude', label: 'Latitude' },
@@ -305,6 +310,10 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'latitude', label: 'Latitude' },
     { attribute: 'longitude', label: 'Longitude' },
   ],
+  City: [
+    { attribute: 'latitude', label: 'Latitude' },
+    { attribute: 'longitude', label: 'Longitude' },
+  ],
   DraftWorkspace: [
     { attribute: 'name', label: 'Name' },
     { attribute: 'draft_status', label: 'Processing status' },
@@ -324,13 +333,40 @@ const customAttributesExtraColumns: WidgetColumn[] = [
 ];
 
 const EXCLUDED_COMMON_COLUMNS: Partial<Record<string, string[]>> = {
-  'Malware-Analysis': ['name', 'description', 'modified'],
-  Indicator: ['name'],
+  'Malware-Analysis': ['name', 'description', 'modified', 'entity_type'],
+  Indicator: ['name', 'entity_type'],
   'Stix-Cyber-Observable': ['entity_type', 'name', 'description', 'revoked', 'x_opencti_workflow_id', 'confidence'],
   Artifact: ['name', 'entity_type', 'revoked', 'x_opencti_workflow_id', 'confidence'],
   Campaign: ['entity_type'],
   'Attack-Pattern': ['entity_type'],
   Channel: ['entity_type'],
+  City: ['entity_type'],
+  Country: ['entity_type'],
+  Event: ['entity_type'],
+  Grouping: ['entity_type'],
+  Incident: ['entity_type'],
+  'Case-Incident': ['entity_type'],
+  Individual: ['entity_type'],
+  Infrastructure: ['entity_type'],
+  'Intrusion-Set': ['entity_type'],
+  Malware: ['entity_type'],
+  Note: ['entity_type'],
+  Narrative: ['entity_type'],
+  Organization: ['entity_type'],
+  Position: ['entity_type'],
+  Region: ['entity_type'],
+  Report: ['entity_type'],
+  'Case-Rfi': ['entity_type'],
+  'Case-Rft': ['entity_type'],
+  Sector: ['entity_type'],
+  'Security-Coverage': ['entity_type'],
+  'Security-Platform': ['entity_type'],
+  System: ['entity_type'],
+  Tool: ['entity_type'],
+  'Threat-Actor-Group': ['entity_type'],
+  'Threat-Actor-Individual': ['entity_type'],
+  'Threat-Actor': ['entity_type'],
+  Vulnerability: ['entity_type'],
 };
 
 type WidgetEntityType = 'relationships' | 'entities';
