@@ -50,6 +50,7 @@ const alertsLineFragment = graphql`
         message
         operation
         instance_id
+        entity_type
       }
     }
   }
@@ -231,7 +232,11 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
-      navigate(`/dashboard/id/${firstEvent.instance_id}`);
+      if (firstEvent.entity_type === 'DraftWorkspace') {
+        navigate(`/dashboard/data/import/draft/${firstEvent.instance_id}`);
+      } else {
+        navigate(`/dashboard/id/${firstEvent.instance_id}`);
+      }
     }
   };
 

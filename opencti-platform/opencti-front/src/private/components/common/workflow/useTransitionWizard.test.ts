@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useTransitionWizard } from './useTransitionWizard';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 
@@ -70,8 +70,8 @@ vi.mock('../../../../relay/environment', () => ({
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const renderWizard = (entityNavigationId: string | null = null) =>
-  renderHook(() => useTransitionWizard({ entityId: 'entity-1', entityNavigationId }));
+const renderWizard = (entityNavigationId: string | null = null, draftId?: string) =>
+  renderHook(() => useTransitionWizard({ entityId: 'entity-1', entityNavigationId, draftId }));
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -346,5 +346,83 @@ describe('useTransitionWizard – notifyBackgroundTransitionComplete', () => {
 
     expect(mockNotifySuccess).toHaveBeenCalledWith('Draft validated successfully');
     expect(mockExitDraft).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useTransitionWizard – localStorage draft comment seen', () => {
+  const DRAFT_ID = 'draft-abc';
+  const STORAGE_KEY = `opencti-draft-comment-seen-${DRAFT_ID}`;
+  const NEW_TIMESTAMP = '2024-06-01T12:00:00.000Z';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('writes the new timestamp to localStorage when the mutation returns lastHistoryEntry', () => {
+    const { result } = renderWizard(null, DRAFT_ID);
+
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false);
+    });
+
+    const [{ onCompleted }] = mockCommit.mock.calls[0];
+    act(() => {
+      onCompleted({
+        triggerWorkflowEvent: {
+          success: true,
+          executionStatus: 'completed',
+          instance: { lastHistoryEntry: { timestamp: NEW_TIMESTAMP } },
+        },
+      });
+    });
+
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe(NEW_TIMESTAMP);
+  });
+
+  it('does not write localStorage when no draftId is provided', () => {
+    const { result } = renderWizard(null, undefined);
+
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false);
+    });
+
+    const [{ onCompleted }] = mockCommit.mock.calls[0];
+    act(() => {
+      onCompleted({
+        triggerWorkflowEvent: {
+          success: true,
+          executionStatus: 'completed',
+          instance: { lastHistoryEntry: { timestamp: NEW_TIMESTAMP } },
+        },
+      });
+    });
+
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it('does not write localStorage when instance has no lastHistoryEntry', () => {
+    const { result } = renderWizard(null, DRAFT_ID);
+
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false);
+    });
+
+    const [{ onCompleted }] = mockCommit.mock.calls[0];
+    act(() => {
+      onCompleted({
+        triggerWorkflowEvent: {
+          success: true,
+          executionStatus: 'completed',
+          instance: { lastHistoryEntry: null },
+        },
+      });
+    });
+
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 });

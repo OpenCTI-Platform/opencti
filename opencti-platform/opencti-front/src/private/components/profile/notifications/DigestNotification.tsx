@@ -82,7 +82,10 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       globalCount={events ? events.length : 0}
       variant={DataTableVariant.inline}
       icon={({ operation }) => (iconSelector(operation))}
-      getComputeLink={({ instance_id }: { instance_id: string | undefined }) => {
+      getComputeLink={({ instance_id, entity_type }: { instance_id: string | undefined; entity_type: string | null | undefined }) => {
+        if (entity_type === 'DraftWorkspace') {
+          return `/dashboard/data/import/draft/${instance_id}`;
+        }
         return `/dashboard/id/${instance_id}`;
       }}
     />

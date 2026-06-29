@@ -68,6 +68,7 @@ export async function processNotificationData(
         operation: type,
         message,
         instance_id: instance.id,
+        entity_type: instance.entity_type,
       };
 
       const notificationUser = usersMap.get(user.user_id);
