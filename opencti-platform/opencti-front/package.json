@@ -166,6 +166,7 @@
     "eslint-plugin-custom-rules": "workspace:*",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "2.0.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react": "7.37.5",
     "express": "5.2.1",
     "globals": "17.6.0",
