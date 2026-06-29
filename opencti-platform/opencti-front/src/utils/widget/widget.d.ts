@@ -2,6 +2,7 @@ import type { GqlFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
 import { ReactNode } from 'react';
+import { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 
 export type WidgetHost = {
   kind: 'workspace';
@@ -69,7 +70,7 @@ export interface WidgetDataSelection {
   sort_mode?: string | null;
   field?: string;
   relationship_type?: string;
-  layout?: '1' | '2' | null;
+  layout?: WidgetColumnsLayout | null;
   unique?: boolean;
 }
 
