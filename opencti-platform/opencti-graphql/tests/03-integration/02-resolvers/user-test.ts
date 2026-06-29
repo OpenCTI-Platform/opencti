@@ -1087,7 +1087,6 @@ describe('meUser specific resolvers', async () => {
         language
         theme
         otp_activated
-        otp_qr
         description
       }
     }
