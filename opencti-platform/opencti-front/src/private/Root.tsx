@@ -405,7 +405,7 @@ const computeBannerSettings = (settings: RootSettings$data) => {
   };
 };
 
-const FORCE_PASSWORD_CHANGE_PATH = '/dashboard/force-password-change';
+const FORCE_PASSWORD_CHANGE_PATH = '/dashboard/change-password';
 
 const isPasswordExpiredFront = (user: { password_valid_until?: string | null }) => {
   if (!user.password_valid_until) {
