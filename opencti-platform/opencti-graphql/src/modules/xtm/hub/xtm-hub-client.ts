@@ -20,14 +20,21 @@ interface ConsumeProvisionedNewsFeedItemsResponse {
   available_news_feed_types: NewsFeedItemType[];
 }
 
-const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
 const HUB_OPENCTI_IDENTIFIER = 'opencti';
+
+export const getHubBackendUrl = (): string | undefined => {
+  const overrideUrl = conf.get('xtm:xtmhub_api_override_url');
+  const hubUrl = conf.get('xtm:xtmhub_url');
+  const normalizedOverride = typeof overrideUrl === 'string' ? overrideUrl.trim() : '';
+  const normalizedHub = typeof hubUrl === 'string' ? hubUrl.trim() : '';
+  return normalizedOverride || normalizedHub || undefined;
+};
 
 export const xtmHubClient = {
   isBackendReachable: async (): Promise<{ isReachable: boolean }> => {
     try {
       const httpClient = getHttpClient({
-        baseURL: HUB_BACKEND_URL,
+        baseURL: getHubBackendUrl(),
         responseType: 'json',
       });
 
@@ -59,7 +66,7 @@ export const xtmHubClient = {
       },
     };
     const httpClient = getHttpClient({
-      baseURL: HUB_BACKEND_URL,
+      baseURL: getHubBackendUrl(),
       responseType: 'json',
     });
 
@@ -95,7 +102,7 @@ export const xtmHubClient = {
       },
     };
     const httpClient = getHttpClient({
-      baseURL: HUB_BACKEND_URL,
+      baseURL: getHubBackendUrl(),
       responseType: 'json',
       headers: {
         'Content-Type': 'application/json',
@@ -139,7 +146,7 @@ export const xtmHubClient = {
     `;
 
     const httpClient = getHttpClient({
-      baseURL: HUB_BACKEND_URL,
+      baseURL: getHubBackendUrl(),
       responseType: 'json',
       headers: {
         'Content-Type': 'application/json',
@@ -177,7 +184,7 @@ export const xtmHubClient = {
     };
 
     const httpClient = getHttpClient({
-      baseURL: HUB_BACKEND_URL,
+      baseURL: getHubBackendUrl(),
       responseType: 'json',
       headers: {
         'Content-Type': 'application/json',
