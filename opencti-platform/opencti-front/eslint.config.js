@@ -20,7 +20,7 @@ export default defineConfig([
       '**/__generated__/**',
       '**/fds-tokens.generated.ts',
       '**/fds-tokens.generated.meta.json',
-      'extract-i18n-keyword.js',
+      '**/extract-i18n-keyword.js',
       'playwright.config.ts',
       'vite.config.ts',
       'vitest.config.ts',
