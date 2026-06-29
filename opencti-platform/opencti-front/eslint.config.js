@@ -17,7 +17,7 @@ export default defineConfig([
       '**/packages/**',
       '**/src/generated/**',
       '**/__generated__/**',
-      'extract-i18n-keyword.js',
+      '**/extract-i18n-keyword.js',
       'playwright.config.ts',
       'vite.config.ts',
       'vitest.config.ts',
