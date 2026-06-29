@@ -15302,6 +15302,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
+  default: Boolean
 }
 
 input FintelTemplateWidgetAddInput {
@@ -15319,6 +15320,7 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+  default: Boolean!
 }
 
 type FintelTemplateEdge {
