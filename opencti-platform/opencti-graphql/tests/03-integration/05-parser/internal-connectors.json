@@ -65,12 +65,12 @@
     "auto": false,
     "only_contextual": false,
     "playbook_compatible": false,
-    "connector_user_id": "7ee54fee-1e97-4eaf-9263-24881760f00c",
+    "connector_user_id": "88ec0c6a-13ce-5e39-b486-354fe4a7084f",
     "confidence": 100,
     "entity_type": "Connector",
     "standard_id": "connector--533f96fc-e8b1-5aba-8e28-ea23386c3920",
     "creator_id": [
-      "7ee54fee-1e97-4eaf-9263-24881760f00c"
+      "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
     ],
     "created_at": "2024-05-13T13:53:26.366Z",
     "updated_at": "2024-06-07T09:36:35.952Z",
