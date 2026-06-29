@@ -3,6 +3,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_SMTP_CONFIGURATION, type StixSmtpConfiguration, type StoreEntitySmtpConfiguration } from './smtpConfiguration-types';
 import convertSmtpConfigurationToStix from './smtpConfiguration-converter';
+import { SmtpAuthType } from '../../generated/graphql';
 
 const SMTP_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntitySmtpConfiguration, StixSmtpConfiguration> = {
   type: {
@@ -24,7 +25,7 @@ const SMTP_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntitySmtpConfigurati
     { name: 'port', label: 'Port', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'use_ssl', label: 'Use SSL', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'reject_unauthorized', label: 'Reject unauthorized', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'auth_type', label: 'Auth type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'auth_type', label: 'Auth type', type: 'string', format: 'enum', values: Object.values(SmtpAuthType), mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'username', label: 'Username', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'oauth_user', label: 'OAuth user', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
