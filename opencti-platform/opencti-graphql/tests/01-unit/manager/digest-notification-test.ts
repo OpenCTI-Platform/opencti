@@ -1,5 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { KnowledgeNotificationEvent } from '../../../src/manager/notificationManager';
+import type { AuthContext, AuthUser } from '../../../src/types/user';
+import type { BasicStoreEntityTrigger } from '../../../src/modules/notification/notification-types';
 
 // Mock the stream layer so collectDigestContent is driven with canned batches (no Redis needed).
 const fetchRangeNotificationsMock = vi.fn();
@@ -9,7 +11,22 @@ vi.mock('../../../src/database/stream/stream-handler', () => ({
   createStreamProcessor: vi.fn(),
 }));
 
-import { collectDigestContent, DEFAULT_MAX_DIGEST_CONTENT_SIZE } from '../../../src/manager/notificationManager';
+// Mock the cache so getDigestNotifications is fed with canned triggers/users (no ElasticSearch needed).
+vi.mock('../../../src/database/cache', () => ({
+  getEntitiesListFromCache: vi.fn().mockResolvedValue([]),
+  getEntityFromCache: vi.fn(),
+}));
+
+// Mock the representative resolution so the digest message generation does not hit the database.
+vi.mock('../../../src/database/stix-representative', () => ({
+  extractStixRepresentative: vi.fn().mockResolvedValue('repr'),
+  extractStixRepresentativeForUser: vi.fn().mockResolvedValue('repr'),
+}));
+
+import { collectDigestContent, DEFAULT_MAX_DIGEST_CONTENT_SIZE, handleDigestNotifications } from '../../../src/manager/notificationManager';
+import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
+import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
+import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 
 let objSeq = 0;
 const liveEvent = (notificationId: string, userId = 'user-1'): KnowledgeNotificationEvent => {
@@ -19,7 +36,7 @@ const liveEvent = (notificationId: string, userId = 'user-1'): KnowledgeNotifica
     type: 'live',
     notification_id: notificationId,
     targets: [{ user: { user_id: userId, user_email: '', notifiers: [], user_service_account: false }, type: 'live', message: 'm' }],
-    data: { id: `obj-${objSeq}` } as KnowledgeNotificationEvent['data'],
+    data: { id: `obj-${objSeq}`, type: 'Report' } as KnowledgeNotificationEvent['data'],
     origin: {},
   };
 };
@@ -103,5 +120,73 @@ describe('collectDigestContent', () => {
 
   it('exposes a strictly positive default cap', () => {
     expect(DEFAULT_MAX_DIGEST_CONTENT_SIZE).toBeGreaterThan(0);
+  });
+});
+
+describe('handleDigestNotifications', () => {
+  // Freeze time so the digest trigger_time matches the computed run minute deterministically.
+  const FROZEN = new Date('2026-01-15T10:30:00.000Z');
+  const DIGEST_USER_ID = 'digest-user-1';
+
+  // A daily digest watching trigger-A, restricted to the digest user.
+  const digestTrigger = {
+    internal_id: 'digest-1',
+    id: 'digest-1',
+    trigger_type: 'digest',
+    period: 'day',
+    trigger_time: '10:30:00.000Z', // aligned with FROZEN (HH:mm:ss.SSS)
+    trigger_ids: ['trigger-A'],
+    notifiers: ['notifier-1'],
+    restricted_members: [{ id: DIGEST_USER_ID }],
+  } as unknown as BasicStoreEntityTrigger;
+
+  const digestUser = {
+    id: DIGEST_USER_ID,
+    internal_id: DIGEST_USER_ID,
+    user_email: 'digest-user@local',
+    user_service_account: false,
+    groups: [],
+    organizations: [],
+    personal_notifiers: [],
+  } as unknown as AuthUser;
+
+  // Feed getDigestNotifications: triggers list resolves the digest, users list resolves its member.
+  const primeCache = () => {
+    const resolveFromCache = (_ctx: AuthContext, _user: AuthUser, type: string) => {
+      return Promise.resolve(type === ENTITY_TYPE_TRIGGER ? [digestTrigger] : [digestUser]);
+    };
+    vi.mocked(getEntitiesListFromCache).mockImplementation(resolveFromCache as unknown as typeof getEntitiesListFromCache);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_notifier_auto_trigger_assignee: true } as unknown as Awaited<ReturnType<typeof getEntityFromCache>>);
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FROZEN);
+    primeCache();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+    objSeq = 0;
+  });
+
+  it('stores a digest event built from the events collected for the digest triggers', async () => {
+    driveBatches([[
+      liveEvent('trigger-A', DIGEST_USER_ID),
+      liveEvent('trigger-B', DIGEST_USER_ID), // not part of the digest triggers, must be ignored
+      liveEvent('trigger-A', DIGEST_USER_ID),
+    ]]);
+    await handleDigestNotifications({} as AuthContext);
+    expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(1);
+    const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { notification_id: string; data: unknown[] };
+    expect(digestEvent.notification_id).toBe('digest-1');
+    expect(digestEvent.data).toHaveLength(2); // only the two trigger-A events
+  });
+
+  it('does not emit a digest event when no collected event matches the digest', async () => {
+    driveBatches([[liveEvent('trigger-other', DIGEST_USER_ID)]]);
+    await handleDigestNotifications({} as AuthContext);
+    expect(vi.mocked(storeNotificationEvent)).not.toHaveBeenCalled();
   });
 });
