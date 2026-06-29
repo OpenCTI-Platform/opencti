@@ -573,14 +573,14 @@ const StixCoreObjectsCustomAttributes = ({
     && Boolean(host.customViewTargetEntityId)
     && host.previewMode;
 
-  const selection = (dataSelection as WidgetDataSelection[])[0];
-  const layout: WidgetColumnsLayout = (selection.layout as WidgetColumnsLayout) ?? '1';
+  const selection: WidgetDataSelection = (dataSelection)[0];
+  const layout: WidgetColumnsLayout = (selection.layout) ?? '1';
 
   const resolvedEntityId = host?.kind === 'custom-view' ? host.customViewTargetEntityId : undefined;
   const entityType = host?.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
 
-  const columns = (selection.columns && selection.columns.length > 0)
-    ? selection.columns as readonly WidgetColumn[]
+  const columns: readonly WidgetColumn[] = (selection.columns && selection.columns.length > 0)
+    ? selection.columns
     : getCustomAttributesColumns(entityType);
 
   const queryRef = useQueryLoading<StixCoreObjectsCustomAttributesQuery>(
