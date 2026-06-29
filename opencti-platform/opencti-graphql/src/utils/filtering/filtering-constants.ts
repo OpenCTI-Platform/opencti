@@ -109,6 +109,9 @@ export const PIR_SCORE_SUBFILTER = 'score';
 export const LAST_PIR_SCORE_DATE_SUBFILTER = 'date';
 export const PIR_IDS_SUBFILTER = 'pir_ids';
 
+// for Custom Fields (flat storage — x_opencti_cf_<name> per field)
+export const CUSTOM_FIELD_VALUE_FILTER = 'customFieldValue';
+
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 
@@ -147,6 +150,7 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   BULK_SEARCH_KEYWORDS_FILTER, // set of keywords used in bulk search
   PIR_SCORE_FILTER, // should be associated to Pir Ids
   LAST_PIR_SCORE_DATE_FILTER, // should be associated to Pir Ids
+  CUSTOM_FIELD_VALUE_FILTER, // nested filter on custom_field_values array
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {

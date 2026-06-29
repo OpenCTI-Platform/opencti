@@ -17,6 +17,7 @@ import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
 import { getAttributesConfiguration, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
+import { type BasicStoreEntityCustomFieldDefinition, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../../customField/custom-field-types';
 import { isNotEmptyField } from '../../../database/utils';
 import { extractRepresentative } from '../../../database/entity-representative';
 import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
@@ -269,6 +270,30 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
           }
         }
       });
+    }
+  }
+
+  // Add custom field definitions from CustomFieldDefinition entities
+  const allCustomFieldDefs = await fullEntitiesList<BasicStoreEntityCustomFieldDefinition>(context, user, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]);
+  for (const cfDef of allCustomFieldDefs) {
+    const cfEntityTypes = cfDef.entity_types ?? [];
+    for (const cfEntityType of cfEntityTypes) {
+      const schemaAttribute = schemaAttributes.find((a) => a.name === cfEntityType);
+      if (schemaAttribute) {
+        const cfAttrName = `x_opencti_cf_${cfDef.name}`;
+        // Avoid duplicates (field might already be registered dynamically in schema)
+        if (!schemaAttribute.attributes.some((a) => a.name === cfAttrName)) {
+          schemaAttribute.attributes.push({
+            name: cfAttrName,
+            label: cfDef.label,
+            type: cfDef.field_type === 'integer' ? 'numeric' : 'string',
+            mandatoryType: cfDef.mandatory ? 'external' : 'no',
+            mandatory: cfDef.mandatory,
+            editDefault: false,
+            multiple: false,
+          });
+        }
+      }
     }
   }
 

@@ -63,3 +63,14 @@ export const checkInstanceCompletion = (instance: StoreRelation) => {
     throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
   }
 };
+
+export const extractCustomFields = (instance: Record<string, any>): Record<string, any> => {
+  const result: Record<string, any> = {};
+  for (const key of Object.keys(instance)) {
+    if (key.startsWith('x_opencti_cf_') && instance[key] !== null && instance[key] !== undefined) {
+      result[key] = instance[key];
+    }
+  }
+  return result;
+};
+

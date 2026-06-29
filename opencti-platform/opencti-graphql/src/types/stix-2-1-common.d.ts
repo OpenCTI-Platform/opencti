@@ -76,6 +76,7 @@ interface StixOpenctiExtension {
   opencti_operation?: string;
   opencti_field_patch?: EditInput[];
   opencti_upsert_operations?: EditInput[];
+  [key: string]: any; // Dynamic custom field values (x_opencti_cf_*)
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

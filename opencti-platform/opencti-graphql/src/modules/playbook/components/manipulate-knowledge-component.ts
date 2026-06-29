@@ -191,13 +191,35 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     };
 
     const patchOperations: jsonpatch.Operation[] = [];
+    let customFieldsModified = false;
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
       const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
       if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
-        const elementOperations = actions
+
+        // --- Custom fields (x_opencti_cf_*): bypass STIX path resolution ---
+        // These are stored flat in ES and applied via opencti_upsert_operations.
+        // Values MUST be stored as strings: EditInput.value is [String] in GraphQL.
+        // The middleware handles type coercion when applying the attribute to ES.
+        const customFieldActions = actions.filter((a) => a.attribute.startsWith('x_opencti_cf_'));
+        if (customFieldActions.length > 0 && id) {
+          const cfPatchObject = customFieldActions.map((action) => {
+            const rawValue = String(R.head(action.value)?.patch_value ?? '');
+            return {
+              key: action.attribute,
+              value: [rawValue],
+              operation: action.op as 'add' | 'replace' | 'remove',
+            };
+          });
+          applyOperationFieldPatch(element, cfPatchObject);
+          customFieldsModified = true;
+        }
+
+        // --- Standard attributes: use STIX path resolution ---
+        const standardActions = actions.filter((a) => !a.attribute.startsWith('x_opencti_cf_'));
+        const elementOperations = standardActions
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
             const multiple = isAttributeMultiple(type, action.attribute);
@@ -272,11 +294,18 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     }
     // Apply operations if needed
     if (patchOperations.length > 0) {
+      // bundle may already contain opencti_upsert_operations added in-place above,
+      // so structuredClone captures them before applying standard JSON-patch operations.
       const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
       const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
+      if (isNotEmptyField(diff) || customFieldsModified) {
         return { output_port: 'out', bundle: patchedBundle };
       }
+    }
+    // Custom-field-only modifications: patchOperations is empty but bundle was mutated
+    // in-place (opencti_upsert_operations), so we must still send it for ingestion.
+    if (customFieldsModified) {
+      return { output_port: 'out', bundle };
     }
     return { output_port: 'unmodified', bundle };
   },

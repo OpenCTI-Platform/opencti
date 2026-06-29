@@ -44,6 +44,27 @@ import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '..
 import { displayEntityTypeForTranslation } from '../String';
 import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
 
+// ---------------------------------------------------------------------------
+// GraphQL query for custom field definitions (select-type options for filter dropdown)
+// ---------------------------------------------------------------------------
+const customFieldDefinitionsSearchQuery = graphql`
+  query useSearchEntitiesCustomFieldDefinitionsQuery {
+    customFieldDefinitions(first: 100) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          select_options
+        }
+      }
+    }
+  }
+`;
+
+// ---------------------------------------------------------------------------
+
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
     $search: String
@@ -284,7 +305,7 @@ const useSearchEntities = ({
     value: { key: string; values: string[]; operator?: string }[],
   ) => void;
 }) => {
-  const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
+  const [entities, setEntities] = useState<Record<string, EntityValue>>({});
   const { t_i18n } = useFormatter();
   const { schema, me } = useAuth();
   const { stixCoreObjectTypes } = useAttributes();
@@ -341,6 +362,7 @@ const useSearchEntities = ({
         === index,
     ),
   }));
+
 
   const searchEntities = (
     filterKey: string,
@@ -651,10 +673,32 @@ const useSearchEntities = ({
       'connectedToId', // id of the listened entities in an instance trigger
       'sightedBy', // sighting relationship TODO remove because already in regardingOf, and migrate the key)
       'computed_reliability', // special key for the entity reliability, or the reliability of its author if no reliability is set
+      'customFieldValue', // nested filter for custom fields — options returned as encoded strings "fieldName|subKey|value"
     ].concat(entityTypesFilters)
       .concat(contextFilters);
     // case 1 : filter keys with specific behavior
-    if (keysWithSpecificSearch.includes(filterKey)) {
+    if (filterKey.startsWith('x_opencti_cf_')) {
+      // Dynamic custom field: fetch definitions to build options
+      const searchText: string = event?.target?.value ?? '';
+      fetchQuery(customFieldDefinitionsSearchQuery, {})
+        .toPromise()
+        .then((data: unknown) => {
+          const edges = (data as any)?.customFieldDefinitions?.edges ?? [];
+          const def = edges.map((e: any) => e?.node).find((d: any) => d && `x_opencti_cf_${d.name}` === filterKey);
+          if (!def) return;
+          const options: EntityValue[] = [];
+          if (def.field_type === 'select' && def.select_options?.length) {
+            def.select_options.forEach((opt: string) => {
+              if (!searchText || opt.toLowerCase().includes(searchText.toLowerCase())) {
+                options.push({ label: opt, value: opt, type: 'CustomFieldValue' });
+              }
+            });
+          } else if (searchText) {
+            options.push({ label: searchText, value: searchText, type: 'CustomFieldValue' });
+          }
+          unionSetEntities(filterKey, options);
+        });
+    } else if (keysWithSpecificSearch.includes(filterKey)) {
       switch (filterKey) {
         case 'objectAssignee':
           if (!cacheEntities[filterKey]) {
@@ -767,6 +811,54 @@ const useSearchEntities = ({
         case 'computed_reliability':
           buildOptionsFromVocabularySearchQuery(filterKey, ['reliability_ov']);
           break;
+        case 'customFieldValue': {
+          // Fetch all custom field definitions and build options:
+          // - select fields: one option per select_option value
+          // - integer/string fields: one option per field (user types the value in the search box)
+          const searchText: string = event?.target?.value ?? '';
+          fetchQuery(customFieldDefinitionsSearchQuery, {})
+            .toPromise()
+            .then((data: unknown) => {
+              const edges = (data as any)?.customFieldDefinitions?.edges ?? [];
+              const options: EntityValue[] = [];
+              edges.forEach((edge: any) => {
+                const def = edge?.node;
+                if (!def) return;
+                const fieldLabel: string = def.label ?? def.name;
+                const flatKey = `x_opencti_cf_${def.name}`;
+
+                if (def.field_type === 'select' && def.select_options?.length) {
+                  // Enumerate all select options
+                  def.select_options.forEach((opt: string) => {
+                    if (!searchText || opt.toLowerCase().includes(searchText.toLowerCase()) || fieldLabel.toLowerCase().includes(searchText.toLowerCase())) {
+                      options.push({
+                        label: `${fieldLabel} = ${opt}`,
+                        value: `${flatKey}|select_value|${opt}`,
+                        type: 'CustomFieldValue',
+                      });
+                    }
+                  });
+                } else if ((def.field_type === 'integer' || def.field_type === 'string') && searchText) {
+                  // Dynamic option built from what the user typed
+                  const subKey = def.field_type === 'integer' ? 'int_value' : 'string_value';
+                  options.push({
+                    label: `${fieldLabel} = ${searchText}`,
+                    value: `${flatKey}|${subKey}|${searchText}`,
+                    type: 'CustomFieldValue',
+                  });
+                } else if ((def.field_type === 'integer' || def.field_type === 'string') && !searchText) {
+                  // Show a placeholder so the field is visible — user needs to type a value
+                  options.push({
+                    label: `${fieldLabel} (type a value…)`,
+                    value: `${flatKey}|${def.field_type === 'integer' ? 'int_value' : 'string_value'}|`,
+                    type: 'CustomFieldValue',
+                  });
+                }
+              });
+              unionSetEntities(filterKey, options);
+            });
+          break;
+        }
         case 'contextObjectLabel':
           buildOptionsFromLabelsSearchQuery(filterKey);
           break;

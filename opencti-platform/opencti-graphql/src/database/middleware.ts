@@ -1963,6 +1963,10 @@ const checkAttributeConsistency = (entityType: string, key: string) => {
   if (key.startsWith(RULE_PREFIX)) {
     return;
   }
+  // Dynamic custom field attributes bypass schema consistency check
+  if (key.startsWith('x_opencti_cf_')) {
+    return;
+  }
   // Always ok for creator_id, need a stronger schema definition
   // Waiting for merge of https://github.com/OpenCTI-Platform/opencti/issues/1850
   if (key === 'creator_id') {
@@ -1993,7 +1997,21 @@ const prepareAttributesForUpdate = async (
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return elements.map((input) => {
     // Dynamic cases, attributes not defined in the schema
-    if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX)) {
+    if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX) || input.key.startsWith('x_opencti_cf_')) {
+      // Coerce string values to number for numeric custom fields (x_opencti_cf_*)
+      // Values from upsert_operations arrive as strings ([String] GraphQL type) but ES expects a number.
+      // This avoids false-positive ES updates on each playbook run when the value is already set.
+      const dynamicDef = schemaAttributesDefinition.getAttributeByName(input.key);
+      if (dynamicDef?.type === 'numeric' && Array.isArray(input.value)) {
+        return {
+          ...input,
+          value: input.value.map((v) => {
+            if (v === null || v === undefined || v === '') return null;
+            const n = Number(v);
+            return Number.isNaN(n) ? v : n;
+          }),
+        };
+      }
       return input;
     }
     // Fixed cases in schema definition

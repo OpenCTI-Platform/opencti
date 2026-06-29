@@ -330,6 +330,12 @@ export const stixCoreObjectsListQuery = graphql`
             priority
             severity
             response_types
+            customFieldValues {
+              field_name
+              int_value
+              string_value
+              select_value
+            }
             objectAssignee {
               id
               name
@@ -436,7 +442,24 @@ const StixCoreObjectsListComponent = ({
   const data = usePreloadedQuery(stixCoreObjectsListQuery, queryRef);
   const selection = dataSelection[0];
   const columns = selection.columns ?? getDefaultWidgetColumns('entities');
-  const edges = data?.stixCoreObjects?.edges ?? [];
+  let edges = data?.stixCoreObjects?.edges ?? [];
+
+  // Flatten customFieldValues (x_opencti_cf_*) onto each node so
+  // dynamic custom field columns can access them by attribute key.
+  edges = edges.map(({ node, cursor }) => ({
+    cursor,
+    node: {
+      ...node,
+      ...((node.customFieldValues ?? []).reduce((acc, cv) => {
+        if (cv?.field_name) {
+          // int_value takes priority, then select_value, then string_value
+          acc[cv.field_name] = cv.int_value ?? cv.select_value ?? cv.string_value ?? null;
+        }
+        return acc;
+      }, {})),
+    },
+  }));
+
   return edges.length === 0 ? (
     <WidgetNoData />
   ) : (

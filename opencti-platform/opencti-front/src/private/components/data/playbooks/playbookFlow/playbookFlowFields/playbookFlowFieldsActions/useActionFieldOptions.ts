@@ -17,7 +17,12 @@ import { useFormatter } from '../../../../../../../components/i18n';
 import { FieldOption } from '../../../../../../../utils/field';
 import { PlaybookUpdateAction } from './playbookAction-types';
 
-const useActionFieldOptions = () => {
+export interface CustomFieldOption extends FieldOption {
+  field_type: 'string' | 'integer' | 'select';
+  select_options?: string[];
+}
+
+const useActionFieldOptions = (customFieldOptions: CustomFieldOption[] = []) => {
   const { t_i18n } = useFormatter();
 
   return (action: PlaybookUpdateAction) => {
@@ -48,6 +53,7 @@ const useActionFieldOptions = () => {
         { label: t_i18n('Platforms'), value: 'x_mitre_platforms' },
         { label: t_i18n('Detection'), value: 'x_opencti_detection' },
         { label: t_i18n('Status'), value: 'x_opencti_workflow_id' },
+        ...customFieldOptions,
       ];
     } else if (action.op === 'remove') {
       fieldOptions = [

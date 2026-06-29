@@ -13,9 +13,11 @@ import Tooltip from '@mui/material/Tooltip';
 import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { useState } from 'react';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import WidgetColumnsCustomizationInput from '@components/widgets/WidgetColumnsCustomizationInput';
 import { getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import { WidgetCreationParametersCustomFieldDefinitionsQuery } from '@components/widgets/__generated__/WidgetCreationParametersCustomFieldDefinitionsQuery.graphql';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
@@ -37,8 +39,32 @@ import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 
+const widgetCreationParametersCustomFieldDefinitionsQuery = graphql`
+  query WidgetCreationParametersCustomFieldDefinitionsQuery {
+    customFieldDefinitions(first: 200) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          entity_types
+        }
+      }
+    }
+  }
+`;
+
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
+
+  // Load all custom field definitions to inject them into the available widget columns
+  const customFieldDefsData = useLazyLoadQuery<WidgetCreationParametersCustomFieldDefinitionsQuery>(
+    widgetCreationParametersCustomFieldDefinitionsQuery,
+    {},
+    { fetchPolicy: 'store-or-network' },
+  );
+  const allCustomFieldDefs = customFieldDefsData?.customFieldDefinitions?.edges?.map((e) => e.node) ?? [];
 
   const { t_i18n } = useFormatter();
   const {
@@ -946,10 +972,23 @@ const WidgetCreationParameters = () => {
 
               const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
 
+              // Build custom field columns for this entity type
+              const customFieldColumns: WidgetColumn[] = entityType
+                ? allCustomFieldDefs
+                  .filter((def) => def.entity_types?.includes(entityType))
+                  .map((def) => ({
+                    attribute: `x_opencti_cf_${def.name}`,
+                    label: def.label,
+                  }))
+                : [];
+
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}
-                  availableColumns={getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined)}
+                  availableColumns={[
+                    ...getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined),
+                    ...customFieldColumns,
+                  ]}
                   defaultColumns={defaultWidgetColumnsByType}
                   value={[...(columns ?? defaultWidgetColumnsByType)]}
                   onChange={(newColumns) => setColumns(index, newColumns)}

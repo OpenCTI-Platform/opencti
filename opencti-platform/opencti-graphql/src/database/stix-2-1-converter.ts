@@ -124,7 +124,7 @@ import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
+import { assertType, cleanObject, convertObjectReferences, convertToStixDate, extractCustomFields, isValidStix } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 
@@ -207,7 +207,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     pir_information: instance.pir_information ?? [],
     metrics: instance.metrics ?? [],
   };
-  return cleanObject(octiExtensions);
+  return cleanObject({ ...octiExtensions, ...extractCustomFields(instance as unknown as Record<string, any>) } as S.StixOpenctiExtension);
 };
 export const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
   const mitreExtensions: S.StixMitreExtension = {

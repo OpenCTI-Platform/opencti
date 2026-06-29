@@ -13,6 +13,9 @@ import type {
 } from '../schema/attribute-definition';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixCoreObject } from '../schema/stixCoreObject';
+import { fullEntitiesList } from '../database/middleware-loader';
+import type { BasicStoreEntityCustomFieldDefinition } from '../modules/customField/custom-field-types';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
 import {
   ALIAS_FILTER,
   COMPUTED_RELIABILITY_FILTER,
@@ -23,6 +26,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  CUSTOM_FIELD_VALUE_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -340,6 +344,17 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       subEntityTypes,
       elementsForFilterValuesSearch: [],
     });
+    // custom field values filter — type 'id' restricts operators to eq/not_eq/nil/not_nil
+    // Text operators (starts_with, contains…) are not supported because values must be
+    // encoded strings in the format "x_opencti_cf_<name>|subKey|value"
+    filterDefinitionsMap.set(CUSTOM_FIELD_VALUE_FILTER, {
+      filterKey: CUSTOM_FIELD_VALUE_FILTER,
+      type: 'id',
+      label: 'Custom field value',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+    });
   }
   if (type === ENTITY_TYPE_HISTORY || type === ENTITY_TYPE_ACTIVITY) {
     // add context filters
@@ -534,7 +549,50 @@ export const generateFilterKeysSchema = async () => {
     handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
     filterKeysSchema.set(type, filterDefinitionsMap);
   });
-  // B. add special types
+  // B. Inject custom field definitions as direct filter keys for their applicable entity types
+  try {
+    const customFieldDefs = await fullEntitiesList<BasicStoreEntityCustomFieldDefinition>(
+      context,
+      SYSTEM_USER,
+      [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION],
+    );
+    customFieldDefs.forEach((def) => {
+      const flatKey = `x_opencti_cf_${def.name}`;
+      const filterType = def.field_type === 'integer' ? 'integer' : def.field_type === 'select' ? 'enum' : 'string';
+      const filterDefinition: FilterDefinition = {
+        filterKey: flatKey,
+        type: filterType,
+        label: def.label ?? def.name,
+        multiple: false,
+        subEntityTypes: def.entity_types ?? [],
+        elementsForFilterValuesSearch: def.field_type === 'select' ? (def.select_options ?? []) : [],
+      };
+      // Add to every applicable entity type (and their parents)
+      const applicableTypes = def.entity_types ?? [];
+      applicableTypes.forEach((entityType) => {
+        const typeMap = filterKeysSchema.get(entityType);
+        if (typeMap) {
+          typeMap.set(flatKey, filterDefinition);
+        }
+        // Also add to parent abstract types so the filter appears for all subtypes
+        const parentTypes = ['Stix-Domain-Object', 'Stix-Core-Object', 'Basic-Object'];
+        parentTypes.forEach((parent) => {
+          const parentMap = filterKeysSchema.get(parent);
+          if (parentMap) {
+            const existing = parentMap.get(flatKey);
+            if (!existing) {
+              parentMap.set(flatKey, { ...filterDefinition, subEntityTypes: [entityType] });
+            } else {
+              parentMap.set(flatKey, { ...existing, subEntityTypes: uniq([...existing.subEntityTypes, entityType]) });
+            }
+          }
+        });
+      });
+    });
+  } catch {
+    // If custom field definitions are not available (e.g. cold boot), skip silently
+  }
+  // C. add special types
   // connectedToId special key (for instance triggers)
   filterKeysSchema.set('Instance', new Map([[CONNECTED_TO_INSTANCE_FILTER, {
     filterKey: CONNECTED_TO_INSTANCE_FILTER,

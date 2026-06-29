@@ -150,7 +150,9 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     ? {
         ...filters,
         filters:
-          filters.filters.filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey)),
+          filters.filters.filter((currentFilter) => !availableFilterKeys
+            || currentFilter.key.startsWith('x_opencti_cf_') // always show dynamic custom field chips
+            || availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey)),
       }
     : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty

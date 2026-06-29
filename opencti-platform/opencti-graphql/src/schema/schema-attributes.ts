@@ -185,6 +185,22 @@ export const schemaAttributesDefinition = {
     });
   },
 
+  /**
+   * Register a dynamic attribute (e.g. x_opencti_cf_<name>) bypassing the usageProtection lock.
+   * Used at runtime when a CustomFieldDefinition is created so the platform accepts the flat key.
+   */
+  registerDynamicAttribute(entityType: string, attribute: AttributeDefinition) {
+    const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
+    if (!directAttributes.has(attribute.name)) {
+      directAttributes.set(attribute.name, attribute);
+      this.allAttributes.set(attribute.name, attribute);
+      this.attributes[entityType] = directAttributes;
+      if (attribute.upsert) {
+        this.upsertByEntity.set(entityType, [...(this.upsertByEntity.get(entityType) ?? []), attribute.name]);
+      }
+    }
+  },
+
   selectEntityType(entityType: string) {
     usageProtection = true;
     if (this.attributes[entityType]) {

@@ -18,6 +18,7 @@ import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { Grid2 as Grid, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Field, FieldArray, useFormikContext } from 'formik';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import type { Theme } from '../../../../../../../components/Theme';
 import AutocompleteField from '../../../../../../../components/AutocompleteField';
 import Button from '../../../../../../../components/common/button/Button';
@@ -27,7 +28,24 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../../../../ut
 import { isEmptyField } from '../../../../../../../utils/utils';
 import PlaybookActionValueField from './PlaybookActionValueField';
 import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
-import useActionFieldOptions from './useActionFieldOptions';
+import useActionFieldOptions, { CustomFieldOption } from './useActionFieldOptions';
+import type { PlaybookFlowFieldActionsCustomFieldDefinitionsQuery } from './__generated__/PlaybookFlowFieldActionsCustomFieldDefinitionsQuery.graphql';
+
+const customFieldDefinitionsQuery = graphql`
+  query PlaybookFlowFieldActionsCustomFieldDefinitionsQuery {
+    customFieldDefinitions(first: 200) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          select_options
+        }
+      }
+    }
+  }
+`;
 
 interface PlaybookFlowFieldActionsProps {
   operations?: string[];
@@ -43,7 +61,22 @@ const PlaybookFlowFieldActions = ({
     value: op,
   }));
 
-  const getActionFieldOptions = useActionFieldOptions();
+  // Load all custom field definitions to inject them into the Field dropdown
+  const customFieldData = useLazyLoadQuery<PlaybookFlowFieldActionsCustomFieldDefinitionsQuery>(
+    customFieldDefinitionsQuery,
+    {},
+    { fetchPolicy: 'store-or-network' },
+  );
+  const customFieldOptions: CustomFieldOption[] = (
+    customFieldData?.customFieldDefinitions?.edges ?? []
+  ).map(({ node }) => ({
+    label: node.label,
+    value: `x_opencti_cf_${node.name}`,
+    field_type: node.field_type as CustomFieldOption['field_type'],
+    select_options: (node.select_options ?? []) as string[],
+  }));
+
+  const getActionFieldOptions = useActionFieldOptions(customFieldOptions);
   const { values, setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
   const actions = values.actions ?? [];
   const formActionsValues = values.actionsFormValues ?? [];
@@ -159,6 +192,7 @@ const PlaybookFlowFieldActions = ({
                       <PlaybookActionValueField
                         action={action}
                         index={i}
+                        customFieldOptions={customFieldOptions}
                       />
                     </Grid>
 
