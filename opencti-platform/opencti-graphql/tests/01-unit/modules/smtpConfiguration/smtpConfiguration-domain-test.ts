@@ -120,6 +120,13 @@ describe('smtpConfigurationAdd', () => {
       .rejects.toThrow('An SMTP configuration already exists');
     expect(InternalObject.createInternalObject).not.toHaveBeenCalled();
   });
+
+  it('should reject port 25', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
+    await expect(smtpConfigurationAdd(mockContext, mockUser, { port: 25 }))
+      .rejects.toThrow('Port 25 is not allowed for SMTP configuration');
+    expect(InternalObject.createInternalObject).not.toHaveBeenCalled();
+  });
 });
 
 // ---------- smtpConfigurationUpdate ----------

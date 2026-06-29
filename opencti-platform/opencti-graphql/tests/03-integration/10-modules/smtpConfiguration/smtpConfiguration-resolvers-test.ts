@@ -118,6 +118,13 @@ describe('SmtpConfiguration resolvers', () => {
         'An SMTP configuration already exists',
       );
     });
+
+    it('should reject port 25 on create', async () => {
+      await queryAsAdminWithError(
+        { query: SMTP_CONFIGURATION_ADD_MUTATION, variables: { input: { smtp_enabled: false, use_db_config: false, port: 25 } } },
+        'Port 25 is not allowed for SMTP configuration',
+      );
+    });
   });
 
   describe('Query smtpConfigurationById', () => {

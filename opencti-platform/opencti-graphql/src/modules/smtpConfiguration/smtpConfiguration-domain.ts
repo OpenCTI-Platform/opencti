@@ -18,6 +18,9 @@ export const smtpConfigurationAdd = async (
   if (existing) {
     throw FunctionalError('An SMTP configuration already exists');
   }
+  if (input.port === 25) {
+    throw FunctionalError('Port 25 is not allowed for SMTP configuration');
+  }
   // TODO(Chunk 2): secrets will be encrypted before storage.
   return createInternalObject<StoreEntitySmtpConfiguration>(
     context,
