@@ -20,8 +20,8 @@ const useStyles = makeStyles(() => ({
 interface EntityStixCoreRelationshipsIndicatorsProps {
   entityId: string;
   entityLink: string;
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   relationshipTypes?: string[];
 }
 
