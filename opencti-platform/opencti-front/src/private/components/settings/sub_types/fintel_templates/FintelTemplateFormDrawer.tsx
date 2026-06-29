@@ -45,6 +45,7 @@ const FintelTemplateFormDrawer = ({
           description: values.description,
           start_date: values.published ? new Date() : null,
           settings_types: [entityType],
+          default: values.default,
         },
       },
       onCompleted: (response) => {
