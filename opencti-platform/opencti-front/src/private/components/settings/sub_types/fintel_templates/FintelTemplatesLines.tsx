@@ -29,6 +29,19 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
 }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+
+  const { defaultTemplates, otherTemplates } = (fintelTemplates?.edges ?? []).reduce(
+    (acc, { node }) => {
+      if (node.default) {
+        acc.defaultTemplates.push(node);
+      } else {
+        acc.otherTemplates.push(node);
+      }
+      return acc;
+    },
+    { defaultTemplates: [] as TemplateType[], otherTemplates: [] as TemplateType[] },
+  );
+
   const dataColumns = {
     name: { percentWidth: 35, isSortable: false },
     description: { percentWidth: 35, isSortable: false },
@@ -66,7 +79,7 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
         return `${resolveLink(t.entity_type)}/${targetType}/templates/${t.id}`;
       }}
       globalCount={fintelTemplates?.edges.length ?? 0}
-      data={(fintelTemplates?.edges ?? []).map((e) => e.node)}
+      data={[...defaultTemplates, ...otherTemplates]}
       rootRef={dataTableRef ?? undefined}
       variant={DataTableVariant.inline}
       actions={(template: TemplateType) => (
