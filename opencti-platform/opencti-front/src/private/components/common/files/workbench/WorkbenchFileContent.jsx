@@ -3235,6 +3235,7 @@ const WorkbenchFileContentComponent = ({
                 }
                 secondaryAction={(
                   <IconButton
+                    aria-label={t_i18n('Delete')}
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
@@ -3415,6 +3416,7 @@ const WorkbenchFileContentComponent = ({
                 }
                 secondaryAction={(
                   <IconButton
+                    aria-label={t_i18n('Delete')}
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
@@ -3648,6 +3650,7 @@ const WorkbenchFileContentComponent = ({
               disablePadding
               secondaryAction={(
                 <IconButton
+                  aria-label={t_i18n('Delete')}
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
@@ -3809,6 +3812,7 @@ const WorkbenchFileContentComponent = ({
               disablePadding
               secondaryAction={(
                 <IconButton
+                  aria-label={t_i18n('Delete')}
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
@@ -3978,6 +3982,7 @@ const WorkbenchFileContentComponent = ({
                 onClick={() => handleOpenContainer(object.type, object.id)}
                 secondaryAction={(
                   <IconButton
+                    aria-label={t_i18n('Delete')}
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >

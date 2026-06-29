@@ -88,6 +88,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
   return (
     <>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         onClick={(event) => setAnchor(event.currentTarget)}
         color="primary"
       >

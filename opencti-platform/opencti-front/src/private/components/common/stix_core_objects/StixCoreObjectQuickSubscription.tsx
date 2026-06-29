@@ -524,6 +524,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                 disablePadding
                 secondaryAction={(
                   <IconButton
+                    aria-label={expandedLines ? t_i18n('collapse') : t_i18n('expand')}
                     onClick={handleToggleLine}
                     aria-haspopup="true"
                   >

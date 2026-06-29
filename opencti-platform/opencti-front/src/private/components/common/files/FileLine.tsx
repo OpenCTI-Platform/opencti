@@ -288,47 +288,43 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             )}
             {!disableImport && (
               <Tooltip title={t_i18n('Launch an import of this file')}>
-                <span>
+                <IconButton
+                  disabled={isProgress || !isImportActive()}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (handleOpenImport && file) {
+                      handleOpenImport(file);
+                    }
+                  }}
+                  aria-haspopup="true"
+                  // color={nested ? 'inherit' : 'primary'}
+                  size="small"
+                >
+                  <ProgressUpload fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!directDownload && !isFail && (
+              <>
+                <Tooltip title={t_i18n('Download this file')}>
                   <IconButton
-                    disabled={isProgress || !isImportActive()}
+                    disabled={isProgress}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      if (handleOpenImport && file) {
-                        handleOpenImport(file);
+                      if (isWarning) {
+                        handleOpen(event);
+                      } else {
+                        handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`, true);
                       }
                     }}
                     aria-haspopup="true"
                     // color={nested ? 'inherit' : 'primary'}
                     size="small"
                   >
-                    <ProgressUpload fontSize="small" />
+                    <GetAppOutlined fontSize="small" />
                   </IconButton>
-                </span>
-              </Tooltip>
-            )}
-            {!directDownload && !isFail && (
-              <>
-                <Tooltip title={t_i18n('Download this file')}>
-                  <span>
-                    <IconButton
-                      disabled={isProgress}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        if (isWarning) {
-                          handleOpen(event);
-                        } else {
-                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`, true);
-                        }
-                      }}
-                      aria-haspopup="true"
-                      // color={nested ? 'inherit' : 'primary'}
-                      size="small"
-                    >
-                      <GetAppOutlined fontSize="small" />
-                    </IconButton>
-                  </span>
                 </Tooltip>
                 <Menu
                   anchorEl={anchorEl}
@@ -361,41 +357,37 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 <>
                   {isFail || isOutdated ? (
                     <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
-                      <span>
-                        <IconButton
-                          disabled={isProgress}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            if (fileDeleteDraftDisabled) {
-                              return;
-                            }
-                            handleOpenRemove();
-                          }}
-                          size="small"
-                        >
-                          <DeleteOutlined fontSize="small" color={deleteFileColor} />
-                        </IconButton>
-                      </span>
+                      <IconButton
+                        disabled={isProgress}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          if (fileDeleteDraftDisabled) {
+                            return;
+                          }
+                          handleOpenRemove();
+                        }}
+                        size="small"
+                      >
+                        <DeleteOutlined fontSize="small" color={deleteFileColor} />
+                      </IconButton>
                     </Tooltip>
                   ) : (
                     <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
-                      <span>
-                        <IconButton
-                          disabled={isProgress}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            if (fileDeleteDraftDisabled) {
-                              return;
-                            }
-                            handleOpenDelete();
-                          }}
-                          size="small"
-                        >
-                          <DeleteOutlined fontSize="small" color={deleteFileColor} />
-                        </IconButton>
-                      </span>
+                      <IconButton
+                        disabled={isProgress}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          if (fileDeleteDraftDisabled) {
+                            return;
+                          }
+                          handleOpenDelete();
+                        }}
+                        size="small"
+                      >
+                        <DeleteOutlined fontSize="small" color={deleteFileColor} />
+                      </IconButton>
                     </Tooltip>
                   )}
                 </>

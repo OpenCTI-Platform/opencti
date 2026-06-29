@@ -80,6 +80,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
           <span>
             {textToShow}
             <IconButton
+              aria-label={t_i18n('Go to user')}
               component={Link}
               to={`/dashboard/settings/accesses/users/${node.id}`}
               sx={{ marginLeft: 1 }}

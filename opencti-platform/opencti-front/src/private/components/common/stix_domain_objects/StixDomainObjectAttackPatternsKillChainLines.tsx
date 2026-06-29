@@ -134,6 +134,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                 disablePadding
                 secondaryAction={(
                   <IconButton
+                    aria-label={expandedLines[element.id] ? t_i18n('collapse') : t_i18n('expand')}
                     onClick={() => handleToggleLine(element.id)}
                     aria-haspopup="true"
                   >
@@ -177,6 +178,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                               >
                                 {coursesOfAction && (
                                   <IconButton
+                                    aria-label={expandedLines[attackPattern.id] ? t_i18n('collapse') : t_i18n('expand')}
                                     onClick={() => handleToggleLine(attackPattern.id)}
                                     aria-haspopup="true"
                                   >
