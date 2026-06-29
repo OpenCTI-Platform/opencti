@@ -130,7 +130,7 @@ const buildErrorMessages = (error) => R.map(
   error.res.errors,
 );
 
-const FORCE_PASSWORD_CHANGE_ROUTE = '/dashboard/force-password-change';
+const FORCE_PASSWORD_CHANGE_ROUTE = '/dashboard/change-password';
 
 export const defaultCommitMutation = {
   updater: undefined,

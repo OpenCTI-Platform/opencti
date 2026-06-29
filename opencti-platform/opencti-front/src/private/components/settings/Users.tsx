@@ -98,21 +98,6 @@ const usersLineFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'users';
 
-const safeFormatDate = (value: unknown, formatter: (v: string) => string) => {
-  if (typeof value !== 'string' || !value) {
-    return '-';
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '-';
-  }
-  try {
-    return formatter(value);
-  } catch {
-    return '-';
-  }
-};
-
 const Users = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n, fd } = useFormatter();
@@ -216,7 +201,7 @@ const Users = () => {
     password_valid_until: {
       label: 'Password valid until',
       percentWidth: 15,
-      render: (v) => safeFormatDate(v, fd),
+      render: (v) => fd(v as string),
     },
     created_at: {
       percentWidth: 15,
