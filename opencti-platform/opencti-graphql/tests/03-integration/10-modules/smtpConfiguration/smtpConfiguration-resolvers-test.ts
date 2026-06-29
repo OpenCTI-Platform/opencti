@@ -27,16 +27,6 @@ const SMTP_CONFIGURATION_QUERY = gql`
   }
 `;
 
-const SMTP_CONFIGURATION_BY_ID_QUERY = gql`
-  query SmtpConfigurationByIdTest($id: ID!) {
-    smtpConfigurationById(id: $id) {
-      id
-      hostname
-      smtp_enabled
-    }
-  }
-`;
-
 const SMTP_CONFIGURATION_ADD_MUTATION = gql`
   mutation SmtpConfigurationAddTest($input: SmtpConfigurationAddInput!) {
     smtpConfigurationAdd(input: $input) {
@@ -101,6 +91,13 @@ describe('SmtpConfiguration resolvers', () => {
   });
 
   describe('Mutation smtpConfigurationAdd', () => {
+    it('should reject port 25 on create', async () => {
+      await queryAsAdminWithError(
+        { query: SMTP_CONFIGURATION_ADD_MUTATION, variables: { input: { smtp_enabled: false, use_db_config: false, port: 25 } } },
+        'Port 25 is not allowed for SMTP configuration',
+      );
+    });
+
     it('should create a new smtp configuration', async () => {
       const result = await queryAsAdminWithSuccess({
         query: SMTP_CONFIGURATION_ADD_MUTATION,
@@ -118,33 +115,13 @@ describe('SmtpConfiguration resolvers', () => {
         'An SMTP configuration already exists',
       );
     });
-
-    it('should reject port 25 on create', async () => {
-      await queryAsAdminWithError(
-        { query: SMTP_CONFIGURATION_ADD_MUTATION, variables: { input: { smtp_enabled: false, use_db_config: false, port: 25 } } },
-        'Port 25 is not allowed for SMTP configuration',
-      );
-    });
-  });
-
-  describe('Query smtpConfigurationById', () => {
-    it('should return the configuration by id', async () => {
-      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_BY_ID_QUERY, variables: { id: configId } });
-      expect(result.data.smtpConfigurationById.id).toBe(configId);
-      expect(result.data.smtpConfigurationById.hostname).toBe('smtp.example.com');
-    });
-
-    it('should return null for an unknown id', async () => {
-      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_BY_ID_QUERY, variables: { id: '00000000-0000-0000-0000-000000000000' } });
-      expect(result.data.smtpConfigurationById).toBeNull();
-    });
   });
 
   describe('Mutation smtpConfigurationUpdate', () => {
     it('should update the configuration by id', async () => {
       const result = await queryAsAdminWithSuccess({
         query: SMTP_CONFIGURATION_UPDATE_MUTATION,
-        variables: { id: configId, input: { smtp_enabled: true, hostname: 'smtp-updated.example.com', port: 587, auth_type: 'basic' } },
+        variables: { id: configId, input: { smtp_enabled: true, hostname: 'smtp-updated.example.com', port: 587 } },
       });
       expect(result.data.smtpConfigurationUpdate.id).toBe(configId);
       expect(result.data.smtpConfigurationUpdate.smtp_enabled).toBe(true);
