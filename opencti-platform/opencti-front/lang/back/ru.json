@@ -716,6 +716,8 @@
   "Parent-child propagation": "Распространение по родителям и детям",
   "Participants": "Участники",
   "Password": "Пароль",
+  "Password valid until": "Пароль действителен до",
+  "Password validity in days": "Срок действия пароля в днях",
   "Path": "Путь",
   "Path encoding": "Кодирование пути",
   "Pattern": "Шаблон",
