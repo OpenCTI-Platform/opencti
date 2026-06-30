@@ -49,6 +49,7 @@ import {
 import {
   type AggregationRelationsCount,
   elAggregationCount,
+  elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elConnection,
   elDeleteElements,
@@ -864,46 +865,77 @@ export const distributionEntities = async (
   types: string | string[] | undefined | null,
   args: EntityFilters<BasicStoreEntity> & { limit?: number | null; order?: string | null; field: string } & { onlyInferred?: boolean },
 ): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
-  const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
-  const aggregationNotSupported = field.includes('.')
-    && !field.endsWith('internal_id')
-    && !field.includes('opinions_metrics');
-  if (aggregationNotSupported) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
+  const distributionArgs = buildEntityFilters(types, args);
+  const targetIndices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
+
+  let distributionData;
+
+  // Handle custom fields (x_opencti_cf_*) via nested aggregation
+  if (field.startsWith('x_opencti_cf_')) {
+    const { getCustomFieldDefinitionByName: lookupCfDef, getCustomFieldValueField: getCfValueField } = await import('../modules/customField/custom-field-domain');
+    const customFieldDef = lookupCfDef(field);
+    let valueField = 'custom_field_values.string_value';
+    if (customFieldDef) {
+      valueField = `custom_field_values.${getCfValueField(customFieldDef.field_type)}`;
+    }
+
+    distributionData = await elAggregationNestedTermsWithFilter(
+      context,
+      user,
+      targetIndices,
+      {
+        path: 'custom_field_values',
+        field: valueField,
+        filter: { term: { 'custom_field_values.field_name': field } },
+      },
+      {
+        ...distributionArgs,
+        size: limit ?? undefined,
+      },
+    );
+  } else {
+    const aggregationNotSupported = field.includes('.')
+      && !field.endsWith('internal_id')
+      && !field.includes('opinions_metrics');
+    if (aggregationNotSupported) {
+      throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
+    }
+    let finalField = field;
+    if (field.includes('.') && !field.includes('opinions_metrics')) {
+      finalField = REL_INDEX_PREFIX + field;
+    }
+    if (field === 'name') {
+      finalField = 'internal_id';
+    }
+    distributionData = await elAggregationCount(context, user, targetIndices, {
+      ...distributionArgs,
+      field: finalField,
+    });
   }
-  let finalField = field;
-  if (field.includes('.') && !field.includes('opinions_metrics')) {
-    finalField = REL_INDEX_PREFIX + field;
-  }
-  if (field === 'name') {
-    finalField = 'internal_id';
-  }
-  const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
-    ...distributionArgs,
-    field: finalField,
-  });
+
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
-    return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
+  if (!field.startsWith('x_opencti_cf_')) {
+    if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
+      return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
+    }
+    if (field === 'name') {
+      let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
+      await convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData)
+        .then((hits) => {
+          result = hits.map((hit) => ({
+            label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
+            value: hit.value,
+            entity: hit.entity,
+          }));
+        });
+      return result;
+    }
   }
-  if (field === 'name') {
-    let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
-    await convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData)
-      .then((hits) => {
-        result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
-          value: hit.value,
-          entity: hit.entity,
-        }));
-      });
-    return result;
-  }
-  // TODO this return problably doesn't work when it happens: API always expects an entity in returned data, but there is none with this return
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData)); // label not good
+  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (
   context: AuthContext,
