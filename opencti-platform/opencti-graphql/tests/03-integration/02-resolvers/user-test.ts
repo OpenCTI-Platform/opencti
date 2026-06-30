@@ -1679,11 +1679,11 @@ describe('Password policy propagation to all users', () => {
     // Act
     await clearAllUsersPasswordValidUntil(testContext, ADMIN_USER);
 
-    // Assert: both should now have null
+    // Assert: both should now have no expiry (undefined after ES clear)
     const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
     const participateAfter: any = await storeLoadById(testContext, ADMIN_USER, participateId, ENTITY_TYPE_USER);
-    expect(editorAfter.password_valid_until).toBeNull();
-    expect(participateAfter.password_valid_until).toBeNull();
+    expect(editorAfter.password_valid_until == null).toBe(true);
+    expect(participateAfter.password_valid_until == null).toBe(true);
   });
 
   it('updateLocalAuth with validity 0 should clear all users dates (600 → 0)', async () => {
@@ -1725,11 +1725,11 @@ describe('Password policy propagation to all users', () => {
       password_policy_validity_days: 0,
     });
 
-    // Assert: all users should have password_valid_until cleared
+    // Assert: all users should have password_valid_until cleared (undefined after ES clear)
     const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
     const participateAfter: any = await storeLoadById(testContext, ADMIN_USER, participateId, ENTITY_TYPE_USER);
-    expect(editorAfter.password_valid_until).toBeNull();
-    expect(participateAfter.password_valid_until).toBeNull();
+    expect(editorAfter.password_valid_until == null).toBe(true);
+    expect(participateAfter.password_valid_until == null).toBe(true);
   });
 
   it('updateLocalAuth with changed validity should shift dates (10 → 600)', async () => {
