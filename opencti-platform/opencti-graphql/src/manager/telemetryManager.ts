@@ -16,6 +16,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_SAVED_FILTER, type BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
 import { elCount } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
@@ -27,12 +28,14 @@ import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
+import { fullEntitiesList } from '../database/middleware-loader';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
-  ? 'https://telemetry.staging.filigran.io/v1/metrics' : 'https://telemetry.filigran.io/v1/metrics';
+  ? 'https://telemetry.staging.filigran.io/v1/metrics'
+  : 'https://telemetry.filigran.io/v1/metrics';
 
 const ONE_MINUTE = 60 * 1000;
 const TWO_MINUTE = 2 * ONE_MINUTE;
@@ -317,6 +320,15 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       types: [ENTITY_TYPE_SECURITY_COVERAGE],
     });
     manager.setSecurityCoveragesCount(securityCoveragesCount);
+    // endregion
+
+    // region Shared saved filters
+    const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(context, TELEMETRY_MANAGER_USER, [ENTITY_TYPE_SAVED_FILTER], { includeAuthorities: true });
+    // saved filters with other members than the creator in restricted_members are considered shared
+    const sharedSavedFilters = savedFilters.filter((f) => (f.restricted_members ?? [])
+      .filter((m) => m.id != f.creator_id)
+      .length > 0);
+    manager.setSharedSavedFiltersCount(sharedSavedFilters.length);
     // endregion
 
     // region Telemetry user events
