@@ -280,7 +280,7 @@ export const isImpactedRole = (type: string, fromType: string, toType: string, r
   return !UNIMPACTED_ENTITIES_ROLE.includes(role);
 };
 
-let engine: ElkClient | OpenClient;
+export let engine: ElkClient | OpenClient;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
 
@@ -291,7 +291,7 @@ export const isAttachmentProcessorEnabled = () => {
 // The OpenSearch/ELK Body Parser (oebp)
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
-const oebp = (queryResult: any): any => {
+export const oebp = (queryResult: any): any => {
   if (engine instanceof ElkClient) {
     return queryResult;
   }
