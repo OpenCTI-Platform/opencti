@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { PlaybookCategory } from './__generated__/PlaybookFlow_playbookComponents.graphql';
-import type { PlaybookComponent, PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig } from '../types/playbook-types';
+import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookComponents, type PlaybookConfig } from '../types/playbook-types';
 import type { PlaybookFlowFormData } from './PlaybookFlowForm';
 import type { PlaybookUpdateAction } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
@@ -108,7 +108,7 @@ export const computeInitialComponentConfigValues = ({
       });
     // Ensure applyToElements defaults to 'only-main' for existing configs missing it
     if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
-      initialValues.applyToElements = 'only-main';
+      initialValues.applyToElements = PlaybookBundleElementsToApply.ONLY_MAIN;
     }
   }
 
