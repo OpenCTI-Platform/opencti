@@ -2811,6 +2811,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -3062,6 +3063,7 @@ export type CaseIncidentAddInput = {
   content_mapping?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -6438,6 +6440,84 @@ export type CsvMapperTestResult = {
 export type CurrentConnectorStatusInput = {
   id: Scalars['ID']['input'];
   status: ConnectorCurrentStatus;
+};
+
+export type CustomFieldDefinition = BasicObject & InternalObject & {
+  __typename?: 'CustomFieldDefinition';
+  created?: Maybe<Scalars['DateTime']['output']>;
+  default_value?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  entity_types?: Maybe<Array<Scalars['String']['output']>>;
+  field_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  label: Scalars['String']['output'];
+  mandatory: Scalars['Boolean']['output'];
+  max_value?: Maybe<Scalars['Int']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  min_value?: Maybe<Scalars['Int']['output']>;
+  modified?: Maybe<Scalars['DateTime']['output']>;
+  multiple: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  parent_types: Array<Scalars['String']['output']>;
+  select_options?: Maybe<Array<Scalars['String']['output']>>;
+  standard_id: Scalars['String']['output'];
+};
+
+export type CustomFieldDefinitionAddInput = {
+  created?: InputMaybe<Scalars['DateTime']['input']>;
+  default_value?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  field_type: Scalars['String']['input'];
+  label: Scalars['String']['input'];
+  mandatory: Scalars['Boolean']['input'];
+  max_value?: InputMaybe<Scalars['Int']['input']>;
+  min_value?: InputMaybe<Scalars['Int']['input']>;
+  multiple?: InputMaybe<Scalars['Boolean']['input']>;
+  name: Scalars['String']['input'];
+  select_options?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export type CustomFieldDefinitionConnection = {
+  __typename?: 'CustomFieldDefinitionConnection';
+  edges: Array<CustomFieldDefinitionEdge>;
+  pageInfo: PageInfo;
+};
+
+export type CustomFieldDefinitionEdge = {
+  __typename?: 'CustomFieldDefinitionEdge';
+  cursor: Scalars['String']['output'];
+  node: CustomFieldDefinition;
+};
+
+export enum CustomFieldDefinitionsOrdering {
+  Score = '_score',
+  Created = 'created',
+  FieldType = 'field_type',
+  Label = 'label',
+  Name = 'name'
+}
+
+export type CustomFieldValue = {
+  __typename?: 'CustomFieldValue';
+  boolean_value?: Maybe<Scalars['Boolean']['output']>;
+  date_value?: Maybe<Scalars['DateTime']['output']>;
+  field_id: Scalars['ID']['output'];
+  field_name: Scalars['String']['output'];
+  int_value?: Maybe<Scalars['Int']['output']>;
+  select_value?: Maybe<Scalars['String']['output']>;
+  string_value?: Maybe<Scalars['String']['output']>;
+};
+
+export type CustomFieldValueAddInput = {
+  boolean_value?: InputMaybe<Scalars['Boolean']['input']>;
+  date_value?: InputMaybe<Scalars['DateTime']['input']>;
+  field_id: Scalars['ID']['input'];
+  field_name: Scalars['String']['input'];
+  int_value?: InputMaybe<Scalars['Int']['input']>;
+  select_value?: InputMaybe<Scalars['String']['input']>;
+  string_value?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CustomView = BasicObject & InternalObject & {
@@ -17113,6 +17193,11 @@ export type Mutation = {
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
   csvMapperTest?: Maybe<CsvMapperTestResult>;
+  customFieldDefinitionAdd?: Maybe<CustomFieldDefinition>;
+  customFieldDefinitionAddEntityType?: Maybe<CustomFieldDefinition>;
+  customFieldDefinitionDelete?: Maybe<Scalars['ID']['output']>;
+  customFieldDefinitionFieldPatch?: Maybe<CustomFieldDefinition>;
+  customFieldDefinitionRemoveEntityType?: Maybe<CustomFieldDefinition>;
   customViewAdd: CustomView;
   customViewConfigurationImport: CustomView;
   customViewDelete: Scalars['ID']['output'];
@@ -17947,6 +18032,34 @@ export type MutationCsvMapperFieldPatchArgs = {
 export type MutationCsvMapperTestArgs = {
   configuration: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+};
+
+
+export type MutationCustomFieldDefinitionAddArgs = {
+  input: CustomFieldDefinitionAddInput;
+};
+
+
+export type MutationCustomFieldDefinitionAddEntityTypeArgs = {
+  entityType: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCustomFieldDefinitionDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCustomFieldDefinitionFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationCustomFieldDefinitionRemoveEntityTypeArgs = {
+  entityType: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
 };
 
 
@@ -24483,6 +24596,8 @@ export type Query = {
   /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
+  customFieldDefinition?: Maybe<CustomFieldDefinition>;
+  customFieldDefinitions?: Maybe<CustomFieldDefinitionConnection>;
   customView?: Maybe<CustomView>;
   customViews: CustomViewsConnection;
   customViewsSettings: CustomViewsSettings;
@@ -25298,6 +25413,21 @@ export type QueryCsvMappersArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<CsvMapperOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCustomFieldDefinitionArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryCustomFieldDefinitionsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<CustomFieldDefinitionsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -39072,6 +39202,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<CryptocurrencyWallet, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<CryptographicKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityCsvMapper )
+    | ( CustomFieldDefinition )
     | ( BasicStoreEntityCustomView )
     | ( BasicStoreEntityDataComponent )
     | ( BasicStoreEntityDataSource )
@@ -39220,6 +39351,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
     | ( ConnectorManager )
     | ( BasicStoreEntityCsvMapper )
+    | ( CustomFieldDefinition )
     | ( BasicStoreEntityCustomView )
     | ( BasicStoreEntityDecayExclusionRule )
     | ( BasicStoreEntityDecayRule )
@@ -39756,6 +39888,13 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperSchemaAttributes: ResolverTypeWrapper<CsvMapperSchemaAttributes>;
   CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
+  CustomFieldDefinition: ResolverTypeWrapper<CustomFieldDefinition>;
+  CustomFieldDefinitionAddInput: CustomFieldDefinitionAddInput;
+  CustomFieldDefinitionConnection: ResolverTypeWrapper<CustomFieldDefinitionConnection>;
+  CustomFieldDefinitionEdge: ResolverTypeWrapper<CustomFieldDefinitionEdge>;
+  CustomFieldDefinitionsOrdering: CustomFieldDefinitionsOrdering;
+  CustomFieldValue: ResolverTypeWrapper<CustomFieldValue>;
+  CustomFieldValueAddInput: CustomFieldValueAddInput;
   CustomView: ResolverTypeWrapper<BasicStoreEntityCustomView>;
   CustomViewAddInput: CustomViewAddInput;
   CustomViewDuplicateInput: CustomViewDuplicateInput;
@@ -40877,6 +41016,12 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperSchemaAttributes: CsvMapperSchemaAttributes;
   CsvMapperTestResult: CsvMapperTestResult;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
+  CustomFieldDefinition: CustomFieldDefinition;
+  CustomFieldDefinitionAddInput: CustomFieldDefinitionAddInput;
+  CustomFieldDefinitionConnection: CustomFieldDefinitionConnection;
+  CustomFieldDefinitionEdge: CustomFieldDefinitionEdge;
+  CustomFieldValue: CustomFieldValue;
+  CustomFieldValueAddInput: CustomFieldValueAddInput;
   CustomView: BasicStoreEntityCustomView;
   CustomViewAddInput: CustomViewAddInput;
   CustomViewDuplicateInput: CustomViewDuplicateInput;
@@ -42394,7 +42539,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -42637,6 +42782,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -43768,6 +43914,48 @@ export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends R
   nbEntities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   nbRelationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objects?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CustomFieldDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomFieldDefinition'] = ResolversParentTypes['CustomFieldDefinition']> = ResolversObject<{
+  created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  default_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  field_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  max_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  min_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  select_options?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CustomFieldDefinitionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomFieldDefinitionConnection'] = ResolversParentTypes['CustomFieldDefinitionConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['CustomFieldDefinitionEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type CustomFieldDefinitionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomFieldDefinitionEdge'] = ResolversParentTypes['CustomFieldDefinitionEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['CustomFieldDefinition'], ParentType, ContextType>;
+}>;
+
+export type CustomFieldValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomFieldValue'] = ResolversParentTypes['CustomFieldValue']> = ResolversObject<{
+  boolean_value?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  date_value?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  field_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  field_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  int_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  select_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  string_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type CustomViewResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomView'] = ResolversParentTypes['CustomView']> = ResolversObject<{
@@ -46372,7 +46560,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -47572,6 +47760,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
+  customFieldDefinitionAdd?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionAddArgs, 'input'>>;
+  customFieldDefinitionAddEntityType?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionAddEntityTypeArgs, 'entityType' | 'id'>>;
+  customFieldDefinitionDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionDeleteArgs, 'id'>>;
+  customFieldDefinitionFieldPatch?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionFieldPatchArgs, 'id' | 'input'>>;
+  customFieldDefinitionRemoveEntityType?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionRemoveEntityTypeArgs, 'entityType' | 'id'>>;
   customViewAdd?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewAddArgs, 'input'>>;
   customViewConfigurationImport?: Resolver<ResolversTypes['CustomView'], ParentType, ContextType, RequireFields<MutationCustomViewConfigurationImportArgs, 'file'>>;
   customViewDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationCustomViewDeleteArgs, 'id'>>;
@@ -49456,6 +49649,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
+  customFieldDefinition?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<QueryCustomFieldDefinitionArgs, 'id'>>;
+  customFieldDefinitions?: Resolver<Maybe<ResolversTypes['CustomFieldDefinitionConnection']>, ParentType, ContextType, Partial<QueryCustomFieldDefinitionsArgs>>;
   customView?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<QueryCustomViewArgs, 'id'>>;
   customViews?: Resolver<ResolversTypes['CustomViewsConnection'], ParentType, ContextType, Partial<QueryCustomViewsArgs>>;
   customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
@@ -53538,6 +53733,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CsvMapperSchemaAttribute?: CsvMapperSchemaAttributeResolvers<ContextType>;
   CsvMapperSchemaAttributes?: CsvMapperSchemaAttributesResolvers<ContextType>;
   CsvMapperTestResult?: CsvMapperTestResultResolvers<ContextType>;
+  CustomFieldDefinition?: CustomFieldDefinitionResolvers<ContextType>;
+  CustomFieldDefinitionConnection?: CustomFieldDefinitionConnectionResolvers<ContextType>;
+  CustomFieldDefinitionEdge?: CustomFieldDefinitionEdgeResolvers<ContextType>;
+  CustomFieldValue?: CustomFieldValueResolvers<ContextType>;
   CustomView?: CustomViewResolvers<ContextType>;
   CustomViewsConnection?: CustomViewsConnectionResolvers<ContextType>;
   CustomViewsEdge?: CustomViewsEdgeResolvers<ContextType>;
