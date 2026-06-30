@@ -800,7 +800,7 @@ describe('PublicDashboard resolver', () => {
           expect(attacksData[0].value).toEqual(4); // same result as for '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7' widget
         });
 
-        it('should return the data for API: SCR Time series when filters is undefined', async () => {
+        it('should return the data for API: SCR Time series when filters are undefined', async () => {
           const API_SCR_LIST_QUERY = gql`
             query PublicStixRelationshipsMultiTimeSeries(
               $startDate: DateTime
