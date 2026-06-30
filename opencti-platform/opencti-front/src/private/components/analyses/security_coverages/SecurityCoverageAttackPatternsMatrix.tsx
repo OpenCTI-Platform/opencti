@@ -3,6 +3,7 @@ import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__generated__/SecurityCoverageAttackPatternsMatrix_securityCoverage.graphql';
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import SecurityCoverageAggregatedScores from './SecurityCoverageAggregatedScores';
 
 interface SecurityCoverageAttackPatternsMatrixProps {
   securityCoverage: SecurityCoverageAttackPatternsMatrix_securityCoverage$data;
@@ -19,13 +20,15 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
 }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
 
-  const attackPatterns = ((securityCoverage.attackPatterns?.edges ?? [])
+  const edges = securityCoverage.attackPatterns?.edges ?? [];
+
+  const attackPatterns = (edges
     .map((edge) => edge.node)
     .filter((node) => node?.to !== null && node?.to !== undefined)
     .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
 
   const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>();
-  (securityCoverage.attackPatterns?.edges ?? []).forEach((edge) => {
+  edges.forEach((edge) => {
     const { node } = edge;
     if (node && node.to?.id) {
       attackPatternsCoverageMap.set(node.to.id, node.coverage_information || []);
@@ -55,6 +58,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
 
   return (
     <>
+      <SecurityCoverageAggregatedScores edges={edges} />
       <AttackPatternsMatrix
         attackPatterns={attackPatterns}
         searchTerm={searchTerm}
@@ -90,7 +94,7 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
       fragment SecurityCoverageAttackPatternsMatrix_securityCoverage on SecurityCoverage 
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 200 }
+        count: { type: "Int", defaultValue: 5000 }
         cursor: { type: "ID" }
       ) {
         id
