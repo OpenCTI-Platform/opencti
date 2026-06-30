@@ -231,6 +231,8 @@ export class TelemetryMeterManager {
 
   customViewEnabledCount = 0;
 
+  sharedSavedFiltersCount = 0;
+
   workflowPublishCount = 0;
 
   // endregion providers usage
@@ -517,6 +519,10 @@ export class TelemetryMeterManager {
     this.customViewEnabledCount = n;
   }
 
+  setSharedSavedFiltersCount(n: number) {
+    this.sharedSavedFiltersCount = n;
+  }
+
   setWorkflowPublishCount(n: number) {
     this.workflowPublishCount = n;
   }
@@ -716,6 +722,7 @@ export class TelemetryMeterManager {
     this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
     this.registerGauge('custom_view_enabled_count', 'Number of custom views enabled', 'customViewEnabledCount');
+    this.registerGauge('shared_saved_filters_count', 'Number of saved filters with access restriction', 'sharedSavedFiltersCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');

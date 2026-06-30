@@ -462,7 +462,12 @@ export const pageEntitiesConnection = async <T extends BasicStoreEntity>(
   return connection as BasicConnection<T>;
 };
 
-export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: string[], args: EntityOptions<T> = {}) => {
+export const topEntitiesList = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  entityTypes: string[],
+  args: EntityOptions<T> = {},
+) => {
   const data = await pageEntitiesConnection(context, user, entityTypes, args);
   return asyncMap(data.edges, (edge) => edge.node);
 };
