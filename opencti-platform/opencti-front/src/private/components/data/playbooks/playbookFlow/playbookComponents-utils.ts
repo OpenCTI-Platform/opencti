@@ -50,9 +50,9 @@ export function groupAndSortPlaybookComponents(
 }
 
 export interface NodeData {
-  name?: string | undefined;
-  description?: string | undefined;
-  configuration?: PlaybookConfig | undefined;
+  name?: string;
+  description?: string;
+  configuration?: PlaybookConfig;
   component?: PlaybookComponent;
 }
 interface computeInitialComponentConfigValuesParams {
