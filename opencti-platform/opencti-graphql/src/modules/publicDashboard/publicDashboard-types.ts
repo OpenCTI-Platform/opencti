@@ -89,7 +89,6 @@ export interface PublicDashboardCached extends BasicStoreIdentifier {
       startDate?: string;
       endDate?: string;
       relativeDate?: string;
-      refreshInterval?: number | null;
       refresh_interval?: number | null;
     };
   };

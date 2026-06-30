@@ -6,6 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../components/i18n';
 import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
+import { DASHBOARD_RELATIVE_DATE_OPTIONS } from '../../../components/dashboard/dashboard-time-filter-options';
 import { buildDate } from '../../../utils/Time';
 import type { ReactNode } from 'react';
 
@@ -65,13 +66,11 @@ const PublicDashboardHeader = ({
             variant="outlined"
             disabled
           >
-            <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
-            <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
-            <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
-            <MenuItem value="months-3">{t_i18n('Last 3 months')}</MenuItem>
-            <MenuItem value="months-6">{t_i18n('Last 6 months')}</MenuItem>
-            <MenuItem value="years-1">{t_i18n('Last year')}</MenuItem>
+            {DASHBOARD_RELATIVE_DATE_OPTIONS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {t_i18n(option.label)}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <DatePicker

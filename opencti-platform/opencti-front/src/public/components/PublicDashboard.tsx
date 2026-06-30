@@ -43,9 +43,7 @@ const PublicDashboardComponent = ({
   const manifest = publicDashboardByUriKey?.public_manifest;
   const parsedManifest: DashboardManifest = JSON.parse(manifest ? fromB64(manifest) : '{}');
   const { widgets, config } = parsedManifest;
-  const initialRefreshRateSeconds = typeof config?.refreshInterval === 'number'
-    ? config.refreshInterval
-    : (config as DashboardManifest['config'] & { refresh_interval?: number | null })?.refresh_interval ?? 0;
+  const initialRefreshRateSeconds = config?.refresh_interval ?? 0;
 
   const {
     localRefreshRateSeconds,
