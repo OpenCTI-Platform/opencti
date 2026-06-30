@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { Typography } from '@mui/material';
 import InvestigationAddStixCoreObjectsLines, { investigationAddStixCoreObjectsLinesQuery } from './InvestigationAddStixCoreObjectsLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -11,6 +12,8 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const InvestigationAddStixCoreObjects = (props) => {
   const {
@@ -27,6 +30,13 @@ const InvestigationAddStixCoreObjects = (props) => {
   const { t_i18n } = useFormatter();
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
   const [open, setOpen] = useState(false);
+  const [openCreateEntity, setOpenCreateEntity] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
+  const handleCloseCreateEntity = () => {
+    setOpenCreateEntity(false);
+  };
 
   const isTypeDomainObject = (types) => {
     return !types
@@ -164,7 +174,37 @@ const InvestigationAddStixCoreObjects = (props) => {
             setOpen(false);
           }
         }}
-        title={t_i18n('Add entities')}
+        title="" // Handled in custom header
+        header={(
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+          >
+            <Typography variant="subtitle2" style={{ textWrap: 'nowrap', paddingTop: '5px', paddingRight: '10px' }}>
+              {t_i18n('Add entities')}
+            </Typography>
+            <StixDomainObjectCreation
+              display={!isFABReplaced}
+              inputValue={searchTerm}
+              paginationKey="Pagination_stixCoreObjects"
+              paginationOptions={searchPaginationOptions}
+              speeddial={false}
+              fabReplaced={isFABReplaced}
+              controlledDialStyles={{ marginRight: '24px' }}
+              open={openCreateEntity}
+              handleClose={handleCloseCreateEntity}
+              onCompleted={() => setOpenCreateEntity(false)}
+              stixDomainObjectTypes={['Stix-Domain-Object']}
+              creationCallback={undefined}
+              confidence={undefined}
+              defaultCreatedBy={undefined}
+              isFromBulkRelation={undefined}
+              defaultMarkingDefinitions={undefined}
+            />
+          </div>
+        )}
         containerRef={containerRef}
       >
         <ListLines
