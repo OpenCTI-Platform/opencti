@@ -233,6 +233,8 @@ export class TelemetryMeterManager {
 
   sharedSavedFiltersCount = 0;
 
+  sharedSavedFiltersPermissionChangesCount = 0;
+
   workflowPublishCount = 0;
 
   // endregion providers usage
@@ -523,6 +525,10 @@ export class TelemetryMeterManager {
     this.sharedSavedFiltersCount = n;
   }
 
+  setSharedSavedFiltersPermissionChangesCount(n: number) {
+    this.sharedSavedFiltersPermissionChangesCount = n;
+  }
+
   setWorkflowPublishCount(n: number) {
     this.workflowPublishCount = n;
   }
@@ -722,6 +728,8 @@ export class TelemetryMeterManager {
     this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
     this.registerGauge('custom_view_enabled_count', 'Number of custom views enabled', 'customViewEnabledCount');
+    this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
+    this.registerGauge('shared_saved_filters_permission_changes', 'Number of times saved filter permissions were changed', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters with access restriction', 'sharedSavedFiltersCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
