@@ -71,7 +71,7 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser) 
       if (cfDef.field_type === 'integer') attributeType = 'numeric';
       else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
       else if (cfDef.field_type === 'date') attributeType = 'date';
-      // mandatory / default_value are resolved per entity type (US.2)
+
       const entitySetting = cfDef.entity_type_settings?.find((setting) => setting.entity_type === entityType);
       const isMandatory = entitySetting?.mandatory ?? false;
       typeAttributes.push({
