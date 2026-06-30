@@ -662,6 +662,51 @@ export const computePasswordValidUntilFromPolicy = async (context) => {
   return DateTime.now().plus({ days: validityDays }).toUTC().toString();
 };
 
+/**
+ * Clears `password_valid_until` on all internal users.
+ * Called when the admin disables the password validity policy (sets validity days to 0).
+ */
+export const clearAllUsersPasswordValidUntil = async (context, user) => {
+  const allUsers = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const usersWithExpiry = allUsers.filter((u) => u.password_valid_until != null && !u.external);
+  for (let i = 0; i < usersWithExpiry.length; i += 1) {
+    const inputs = [{ key: 'password_valid_until', value: [null] }];
+    await updateAttribute(context, user, usersWithExpiry[i].id, ENTITY_TYPE_USER, inputs);
+  }
+};
+
+/**
+ * Adjusts `password_valid_until` on all internal users when the validity policy duration changes.
+ * Shifts existing dates by the difference between new and old duration.
+ * Example: old=600 days, new=30 days → diff=-570 days → all dates shifted back by 570 days.
+ *
+ * @param {number} oldDays - Previous validity duration in days
+ * @param {number} newDays - New validity duration in days
+ */
+export const adjustAllUsersPasswordValidUntil = async (context, user, oldDays, newDays) => {
+  const diffDays = newDays - oldDays;
+  if (diffDays === 0) return;
+  const allUsers = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const internalUsers = allUsers.filter((u) => !u.external);
+  for (let i = 0; i < internalUsers.length; i += 1) {
+    const currentUser = internalUsers[i];
+    if (currentUser.password_valid_until != null) {
+      // User has an existing expiry: shift it by the diff
+      const currentExpiry = DateTime.fromISO(currentUser.password_valid_until);
+      if (currentExpiry.isValid) {
+        const newExpiry = currentExpiry.plus({ days: diffDays }).toUTC().toString();
+        const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
+        await updateAttribute(context, user, currentUser.id, ENTITY_TYPE_USER, inputs);
+      }
+    } else {
+      // User has no expiry date: set it to now + newDays
+      const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
+      await updateAttribute(context, user, currentUser.id, ENTITY_TYPE_USER, inputs);
+    }
+  }
+};
+
 export const sendEmailToUser = async (context, user, input) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
