@@ -5,6 +5,7 @@ import { createEntity, createRelation, loadEntity, updateAttribute } from '../..
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
+import { resolveUserById } from '../../../domain/user';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { type EditInput, FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
@@ -128,9 +129,29 @@ const notifyWorkflowTransitionComment = async (
 
     if (uniqueRecipients.length === 0) return;
 
+    const recipientIdsWithAccess = new Set<string>();
+    await Promise.all(
+      uniqueRecipients.map(async (recipient) => {
+        const recipientId = recipient.id;
+        try {
+          const recipientUser = await resolveUserById(context, recipientId);
+          if (!recipientUser) return;
+          const hasAccess = await storeLoadById(context, recipientUser, entity.internal_id ?? entity.id, entity.entity_type);
+          if (hasAccess) {
+            recipientIdsWithAccess.add(recipientId);
+          }
+        } catch {
+          // Recipient is ignored when user resolution or access check fails.
+        }
+      }),
+    );
+
+    const recipientsWithAccess = uniqueRecipients.filter((recipient) => recipientIdsWithAccess.has(recipient.id));
+    if (recipientsWithAccess.length === 0) return;
+
     const entityName = extractEntityRepresentativeName(entity) || entity.entity_type;
     const results = await Promise.allSettled(
-      uniqueRecipients.map((recipient) => {
+      recipientsWithAccess.map((recipient) => {
         const recipientId = recipient.id;
         const notificationPayload: NotificationAddInput = {
           is_read: false,
