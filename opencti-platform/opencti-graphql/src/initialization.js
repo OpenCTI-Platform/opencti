@@ -19,6 +19,7 @@ import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
+import { loadCustomFieldDefinitions } from './modules/customField/custom-field-domain';
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './domain/user';
@@ -111,6 +112,9 @@ const platformInit = async (withMarkings = true) => {
 
     // parse schema metrics conf to throw error on start if bad configured
     loadEntityMetricsConfiguration();
+
+    // Load custom field definitions into memory cache
+    await loadCustomFieldDefinitions(context);
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
