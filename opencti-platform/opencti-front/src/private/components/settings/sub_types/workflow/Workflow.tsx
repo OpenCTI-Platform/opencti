@@ -122,8 +122,8 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
   // 1. Get initial edges and nodes from workflow definition
   const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members);
 
-  const [nodes, _dispatchNodes, onNodesChange] = useNodesState<Node>(initialNodes);
-  const [edges, _dispatchEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
@@ -205,6 +205,44 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
     });
   }, [nodes, edges]);
 
+  // Handle reset action — clears the draft to an empty schema without touching the published version
+  const handleReset = () => {
+    const emptySchema = JSON.stringify({
+      id: workflowDefinition?.id,
+      name: workflowDefinition?.name,
+      initialState: '',
+      states: [],
+      transitions: [],
+    });
+    // Keep local state and autosave guard aligned with the empty graph state.
+    previousSchemaRef.current = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
+    saveWorkflowDefinition({
+      variables: { entityType: 'DraftWorkspace', definition: emptySchema },
+      onCompleted: (response) => {
+        if (response.workflowDefinitionSet) {
+          const { errors } = response.workflowDefinitionSet;
+          if (errors && errors.length > 0) {
+            const validationErrors = errors
+              .filter((e) => e !== null && e !== undefined)
+              .map((e) => ({
+                type: e!.type,
+                message: e!.message,
+                path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
+              }));
+            setWorkflowDefinitionStatus({
+              published: false,
+              validationErrors,
+            });
+          } else {
+            setWorkflowDefinitionStatus({ published: false, validationErrors: [] });
+          }
+        }
+        setNodes([]);
+        setEdges([]);
+      },
+    });
+  };
+
   // Handle publish action
   const handlePublish = () => {
     if (workflowDefinitionStatus.validationErrors.length > 0) {
@@ -282,7 +320,11 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
       >
         {nodes.length ? (
           <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <PublishButton validationStatus={workflowDefinitionStatus} onPublish={handlePublish} />
+            <PublishButton
+              validationStatus={workflowDefinitionStatus}
+              onPublish={handlePublish}
+              onReset={handleReset}
+            />
             <Button
               onClick={() => {
                 setSelectedElement({
