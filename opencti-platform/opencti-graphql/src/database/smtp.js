@@ -6,6 +6,7 @@ import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { isEmptyField } from './utils';
+import { getSmtpConfiguration } from '../modules/smtpConfiguration/smtpConfiguration-domain';
 
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
 export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
@@ -104,7 +105,7 @@ export const buildSmtpAuth = async (authType, {
 
 const authType = conf.get('smtp:auth_type') || 'basic';
 
-const getSmtpAuthParams = () => ({
+const getConfAuthParams = () => ({
   username: conf.get('smtp:username'),
   password: conf.get('smtp:password'),
   oauthUser: conf.get('smtp:oauth_user'),
@@ -114,38 +115,58 @@ const getSmtpAuthParams = () => ({
   oauthRefreshToken: conf.get('smtp:oauth_refresh_token'),
 });
 
-/**
- * Build a nodemailer transporter.
- *
- * For OAuth2 a fresh transporter is created on every call, but the underlying
- * access token is cached (see {@link refreshSmtpAccessToken}) so the IdP is
- * only contacted when the cached token is close to expiration.
- *
- * For non-OAuth2 auth types (basic / anonymous) the transporter has no
- * time-bound credential, so it is built once and cached for the lifetime of
- * the process — matching the historical singleton behaviour.
- */
-let cachedNonOauthTransporter;
+// --- DB config helpers ---
+
+const getEffectiveDbConfig = async () => {
+  const context = executionContext('smtp');
+  const dbConfig = await getSmtpConfiguration(context, SYSTEM_USER);
+  return dbConfig?.use_db_config ? dbConfig : null;
+};
+
+const buildSmtpOptionsFromDb = (dbConfig) => ({
+  host: dbConfig.hostname || 'localhost',
+  port: dbConfig.port || 587,
+  secure: dbConfig.use_ssl ?? false,
+  tls: {
+    rejectUnauthorized: dbConfig.reject_unauthorized ?? false,
+  },
+});
+
+const getDbAuthParams = (dbConfig) => ({
+  username: dbConfig.username,
+  password: dbConfig.password, // TODO(Chunk 2.4): decrypt before use
+  oauthUser: dbConfig.oauth_user,
+  oauthClientId: dbConfig.oauth_client_id,
+  oauthClientSecret: dbConfig.oauth_client_secret, // TODO(Chunk 2.4): decrypt
+  oauthIssuer: dbConfig.oauth_issuer,
+  oauthRefreshToken: dbConfig.oauth_refresh_token, // TODO(Chunk 2.4): decrypt
+});
+
+// Build a nodemailer transporter from the effective SMTP configuration.
+// TODO: should we cache the transporter here? Without connection pooling
+
 const createSmtpTransporter = async () => {
-  if (authType !== 'oauth2' && cachedNonOauthTransporter) {
-    return cachedNonOauthTransporter;
-  }
-  const options = { ...baseSmtpOptions, tls: { ...baseSmtpOptions.tls } };
-  const smtpAuth = await buildSmtpAuth(authType, getSmtpAuthParams());
+  const dbConfig = await getEffectiveDbConfig();
+  const useDb = dbConfig !== null;
+
+  const smtpOptions = useDb
+    ? buildSmtpOptionsFromDb(dbConfig)
+    : { ...baseSmtpOptions, tls: { ...baseSmtpOptions.tls } };
+
+  const effectiveAuthType = useDb ? (dbConfig.auth_type ?? 'basic') : authType;
+  const authParams = useDb ? getDbAuthParams(dbConfig) : getConfAuthParams();
+
+  const smtpAuth = await buildSmtpAuth(effectiveAuthType, authParams);
   if (smtpAuth) {
-    options.auth = smtpAuth;
+    smtpOptions.auth = smtpAuth;
   }
-  const transporter = nodemailer.createTransport(options);
-  if (authType !== 'oauth2') {
-    cachedNonOauthTransporter = transporter;
-  }
-  return transporter;
+  return nodemailer.createTransport(smtpOptions);
 };
 
 /**
  * Test-only helper. Resets all module-level caches (OIDC discovery, OAuth2
- * access token, in-flight refresh, basic-auth transporter) so unit tests can
- * run independently of each other. Not meant to be called from production code.
+ * access token, in-flight refresh) so unit tests can run independently of
+ * each other. Not meant to be called from production code.
  * @internal
  */
 export const __resetSmtpCachesForTests = () => {
@@ -153,10 +174,36 @@ export const __resetSmtpCachesForTests = () => {
   cachedAccessToken = undefined;
   cachedAccessTokenExpiresAt = 0;
   inFlightRefresh = null;
-  cachedNonOauthTransporter = undefined;
 };
 
-export const smtpConfiguredEmail = (settings) => {
+/**
+ * Returns whether the sender email address can be rewritten per-notification.
+ *
+ * When DB config is active and a `sender_email_address` is set, the sender is
+ * fixed and cannot be overridden. Otherwise falls back to the JSON/env-var
+ * `ALLOW_EMAIL_REWRITE` flag.
+ */
+export const isEmailRewriteAllowed = async () => {
+  const dbConfig = await getEffectiveDbConfig();
+  if (dbConfig) {
+    return !dbConfig.sender_email_address;
+  }
+  return ALLOW_EMAIL_REWRITE;
+};
+
+/**
+ * Returns the effective sender email for the given settings entity.
+ *
+ * Priority:
+ *   1. DB forced sender (`sender_email_address` when `use_db_config` is true)
+ *   2. JSON/env-var forced sender (`smtp:forced_sender_email`)
+ *   3. Platform email from Settings (when rewrite is allowed)
+ */
+export const smtpConfiguredEmail = async (settings) => {
+  const dbConfig = await getEffectiveDbConfig();
+  if (dbConfig?.sender_email_address) {
+    return dbConfig.sender_email_address;
+  }
   return ALLOW_EMAIL_REWRITE ? settings.platform_email : SMTP_FORCED_EMAIL;
 };
 
@@ -164,13 +211,22 @@ export const smtpComputeFrom = async (from) => {
   const context = executionContext('smtp');
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const smtp_from = from ?? settings.platform_title;
-  const stmp_email = smtpConfiguredEmail(settings);
+  const stmp_email = await smtpConfiguredEmail(settings);
   return `${smtp_from} <${stmp_email}>`;
+};
+
+const isSmtpEnabled = async () => {
+  const dbConfig = await getEffectiveDbConfig();
+  if (dbConfig !== null) {
+    return dbConfig.smtp_enabled ?? true;
+  }
+  return SMTP_ENABLE;
 };
 
 export const smtpIsAlive = async () => {
   logApp.info('[CHECK] Checking if SMTP is available');
-  if (SMTP_ENABLE) {
+  const smtpEnabled = await isSmtpEnabled();
+  if (smtpEnabled) {
     try {
       const transporter = await createSmtpTransporter();
       await transporter.verify();
@@ -185,7 +241,8 @@ export const smtpIsAlive = async () => {
 };
 
 export const sendMail = async (args, meterMetadata) => {
-  if (SMTP_ENABLE) {
+  const smtpEnabled = await isSmtpEnabled();
+  if (smtpEnabled) {
     const { from, to, bcc, subject, html, attachments } = args;
     // For OAuth2 the transporter is recreated so that the access token is
     // refreshed before each send (avoids failures once the token has expired).
@@ -193,4 +250,20 @@ export const sendMail = async (args, meterMetadata) => {
     await transporter.sendMail({ from, to, bcc, subject, html, attachments });
     meterManager.emailSent(meterMetadata);
   }
+};
+
+/**
+ * Sends a test email using the current effective SMTP configuration.
+ * Used by the `smtpConfigurationTest` GraphQL mutation.
+ */
+export const smtpTest = async (to) => {
+  const transporter = await createSmtpTransporter();
+  const from = await smtpComputeFrom();
+  await transporter.sendMail({
+    from,
+    to,
+    subject: 'OpenCTI SMTP Test',
+    html: '<p>This is a test email from OpenCTI. If you received it, your SMTP configuration is working correctly.</p>',
+  });
+  return true;
 };

@@ -72,12 +72,22 @@ vi.mock('../../../src/config/tracing', async (importOriginal) => {
   };
 });
 
-import { __resetSmtpCachesForTests, buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
+// Stub the DB config lookup so smtp.js never hits Elasticsearch in unit tests.
+// Default: no DB config (use_db_config: false / no row) → fall back to JSON config.
+const smtpConfigurationDomainMocks = vi.hoisted(() => ({
+  getSmtpConfiguration: vi.fn(async () => null),
+}));
+vi.mock('../../../src/modules/smtpConfiguration/smtpConfiguration-domain', () => smtpConfigurationDomainMocks);
+
 import {
+  __resetSmtpCachesForTests,
+  buildSmtpAuth as buildSmtpAuthImpl,
+  isEmailRewriteAllowed,
   sendMail,
   smtpComputeFrom,
   smtpConfiguredEmail,
   smtpIsAlive,
+  smtpTest,
 } from '../../../src/database/smtp';
 
 type SmtpCredentials = {
@@ -342,10 +352,29 @@ describe('buildSmtpAuth — security', () => {
 // ==========================================================================
 
 describe('smtpConfiguredEmail', () => {
-  it('should return the platform email when no forced sender email is configured', () => {
-    // Default config (default.json) sets forced_sender_email to "" → ALLOW_EMAIL_REWRITE is true.
+  beforeEach(() => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue(null);
+  });
+
+  it('should return the platform email when no DB config and no forced sender', async () => {
     const settings = { platform_email: 'platform@example.com' } as unknown as { platform_email: string };
-    expect(smtpConfiguredEmail(settings)).toBe('platform@example.com');
+    expect(await smtpConfiguredEmail(settings)).toBe('platform@example.com');
+  });
+
+  it('should return sender_email_address from DB when use_db_config is true and address is set', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValueOnce({
+      use_db_config: true,
+      sender_email_address: 'smtp-db@example.com',
+    } as any);
+    expect(await smtpConfiguredEmail({ platform_email: 'platform@example.com' })).toBe('smtp-db@example.com');
+  });
+
+  it('should fall back to platform_email when DB config is active but sender_email_address is not set', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValueOnce({
+      use_db_config: true,
+      sender_email_address: undefined,
+    } as any);
+    expect(await smtpConfiguredEmail({ platform_email: 'platform@example.com' })).toBe('platform@example.com');
   });
 });
 
@@ -354,6 +383,10 @@ describe('smtpConfiguredEmail', () => {
 // ==========================================================================
 
 describe('smtpComputeFrom', () => {
+  beforeEach(() => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue(null);
+  });
+
   it('should format the From header with the provided sender name and platform email', async () => {
     const result = await smtpComputeFrom('Acme Notifications');
     expect(result).toBe('Acme Notifications <platform@example.com>');
@@ -369,11 +402,12 @@ describe('smtpComputeFrom', () => {
 // createSmtpTransporter (covered indirectly via smtpIsAlive / sendMail)
 // ==========================================================================
 
-describe('createSmtpTransporter — non-OAuth2 caching & sendMail / smtpIsAlive', () => {
+describe('createSmtpTransporter — DB vs JSON config, sendMail, smtpIsAlive', () => {
   const { createTransport: nodemailerCreateTransport, verify: nodemailerVerify, sendMail: nodemailerSendMail } = nodemailerMocks;
 
   beforeEach(() => {
     __resetSmtpCachesForTests();
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue(null);
     nodemailerCreateTransport.mockClear();
     nodemailerVerify.mockClear();
     nodemailerSendMail.mockClear();
@@ -417,21 +451,116 @@ describe('createSmtpTransporter — non-OAuth2 caching & sendMail / smtpIsAlive'
     });
   });
 
-  it('should reuse the cached non-OAuth2 transporter across calls (no fresh createTransport)', async () => {
-    // First call populates the cache.
+  it('should create a new transporter on every call (no caching)', async () => {
     await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
-    // Subsequent calls must reuse it.
     await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
     await smtpIsAlive();
-    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(1);
+    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(3);
   });
 
-  it('should rebuild the transporter on the next call after the cache is reset', async () => {
+  it('should use JSON config options when use_db_config is false', async () => {
+    await smtpIsAlive();
+    // The conf mock sets hostname to 'localhost', port to 25 — verify those are passed.
+    const callOptions = (nodemailerCreateTransport.mock.calls[0] as any[])[0];
+    expect(callOptions).toMatchObject({ host: 'localhost', port: 25, secure: false });
+  });
+
+  it('should use DB hostname and port when use_db_config is true', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue({
+      use_db_config: true,
+      smtp_enabled: true,
+      hostname: 'smtp.company.com',
+      port: 587,
+      use_ssl: true,
+      reject_unauthorized: true,
+      auth_type: 'basic',
+      username: 'user',
+      password: 'pass',
+    } as any);
+    await smtpIsAlive();
+    const callOptions = (nodemailerCreateTransport.mock.calls[0] as any[])[0];
+    expect(callOptions).toMatchObject({ host: 'smtp.company.com', port: 587, secure: true });
+    expect(callOptions.tls).toMatchObject({ rejectUnauthorized: true });
+  });
+
+  it('should not send and not call createTransport when smtp_enabled is false in DB', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue({
+      use_db_config: true,
+      smtp_enabled: false,
+    } as any);
     await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
-    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(1);
-    __resetSmtpCachesForTests();
-    await sendMail({ from: 'f', to: 't', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
-    expect(nodemailerCreateTransport).toHaveBeenCalledTimes(2);
+    expect(nodemailerCreateTransport).not.toHaveBeenCalled();
+    expect(nodemailerSendMail).not.toHaveBeenCalled();
+  });
+
+  it('should not verify and skip SMTP check when smtp_enabled is false in DB', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue({
+      use_db_config: true,
+      smtp_enabled: false,
+    } as any);
+    const result = await smtpIsAlive();
+    expect(result).toBe(true);
+    expect(nodemailerVerify).not.toHaveBeenCalled();
   });
 });
 
+// ==========================================================================
+// smtpTest
+// ==========================================================================
+
+describe('smtpTest', () => {
+  const { createTransport: nodemailerCreateTransport, sendMail: nodemailerSendMail } = nodemailerMocks;
+
+  beforeEach(() => {
+    __resetSmtpCachesForTests();
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue(null);
+    nodemailerCreateTransport.mockClear();
+    nodemailerSendMail.mockClear();
+  });
+
+  it('should send an email to the provided address and return true', async () => {
+    const result = await smtpTest('admin@example.com');
+    expect(result).toBe(true);
+    expect(nodemailerSendMail).toHaveBeenCalledTimes(1);
+    const call = (nodemailerSendMail.mock.calls[0] as any[])[0];
+    expect(call.to).toBe('admin@example.com');
+    expect(call.subject).toBe('OpenCTI SMTP Test');
+    expect(call).toHaveProperty('from');
+    expect(call).toHaveProperty('html');
+  });
+
+  it('should propagate errors thrown by nodemailer.sendMail', async () => {
+    nodemailerSendMail.mockRejectedValueOnce(new Error('connection refused'));
+    await expect(smtpTest('admin@example.com')).rejects.toThrow('connection refused');
+  });
+});
+
+// ==========================================================================
+// isEmailRewriteAllowed
+// ==========================================================================
+
+describe('isEmailRewriteAllowed', () => {
+  beforeEach(() => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue(null);
+  });
+
+  it('should return true when no DB config is active (JSON config with no forced sender email)', async () => {
+    expect(await isEmailRewriteAllowed()).toBe(true);
+  });
+
+  it('should return false when DB config is active and sender_email_address is set', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValueOnce({
+      use_db_config: true,
+      sender_email_address: 'fixed@company.com',
+    } as any);
+    expect(await isEmailRewriteAllowed()).toBe(false);
+  });
+
+  it('should return true when DB config is active but sender_email_address is not set', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValueOnce({
+      use_db_config: true,
+      sender_email_address: undefined,
+    } as any);
+    expect(await isEmailRewriteAllowed()).toBe(true);
+  });
+});

@@ -11,6 +11,10 @@ import {
 } from '../../../../src/modules/smtpConfiguration/smtpConfiguration-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
+vi.mock('../../../../src/database/smtp', () => ({
+  smtpTest: vi.fn(async () => true),
+}));
+
 vi.mock('../../../../src/database/middleware', () => ({
   patchAttribute: vi.fn(),
 }));
@@ -181,8 +185,18 @@ describe('smtpConfigurationDelete', () => {
 // ---------- smtpConfigurationTest ----------
 
 describe('smtpConfigurationTest', () => {
-  it('should throw UnsupportedError (stub)', async () => {
+  it('should delegate to smtpTest and return true on success', async () => {
+    const { smtpTest } = await import('../../../../src/database/smtp');
+    vi.mocked(smtpTest).mockResolvedValueOnce(true);
+    const result = await smtpConfigurationTest(mockContext, mockUser, 'test@example.com');
+    expect(result).toBe(true);
+    expect(smtpTest).toHaveBeenCalledWith('test@example.com');
+  });
+
+  it('should propagate errors thrown by smtpTest', async () => {
+    const { smtpTest } = await import('../../../../src/database/smtp');
+    vi.mocked(smtpTest).mockRejectedValueOnce(new Error('connection refused'));
     await expect(smtpConfigurationTest(mockContext, mockUser, 'test@example.com'))
-      .rejects.toThrow('smtpConfigurationTest is not yet implemented');
+      .rejects.toThrow('connection refused');
   });
 });
