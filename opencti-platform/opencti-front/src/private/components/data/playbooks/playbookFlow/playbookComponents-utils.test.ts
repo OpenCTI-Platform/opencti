@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeInitialComponentConfigValues, groupAndSortPlaybookComponents, NodeData } from './playbookComponents-utils';
-import type { PlaybookComponent, PlaybookComponentConfigSchema, PlaybookConfig } from '../types/playbook-types';
+import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookConfig } from '../types/playbook-types';
 
 describe('playbookComponents-utils', () => {
   describe('groupAndSortPlaybookComponents', () => {
@@ -160,7 +160,7 @@ describe('playbookComponents-utils', () => {
         filters: '{"mode":"and","filters":[]}',
         newContainer: false,
         actions: [],
-        applyToElements: 'all-elements',
+        applyToElements: PlaybookBundleElementsToApply.ALL,
         wrap_in_container: false,
       } as unknown as PlaybookConfig;
 
