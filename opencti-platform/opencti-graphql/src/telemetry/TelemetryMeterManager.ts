@@ -130,7 +130,7 @@ export class TelemetryMeterManager {
 
   customViewEnabledCount = 0;
 
-  // Number of shared saved filters = saved filters with access restriction
+  // Number of saved filters shared with at least one other member (non-creator)
   sharedSavedFiltersCount = 0;
 
   // Number of times saved filter permissions were changed
