@@ -16,6 +16,7 @@ import type { CaseIncidentAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
+import { validateCustomFieldValues } from '../../customField/custom-field-validator';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
@@ -31,7 +32,13 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
     const individualId = await resolveUserIndividual(context, user);
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
+  // Validate custom field values if provided
+  if (caseIncidentAdd.customFieldValues && caseIncidentAdd.customFieldValues.length > 0) {
+    validateCustomFieldValues(caseIncidentAdd.customFieldValues, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+    (caseToCreate as any).custom_field_values = caseIncidentAdd.customFieldValues;
+  }
   const { caseTemplates } = caseToCreate;
+  delete caseToCreate.caseTemplates;
   delete caseToCreate.caseTemplates;
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
   if (caseTemplates) {

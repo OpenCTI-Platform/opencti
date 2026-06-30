@@ -172,6 +172,8 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  # Custom fields
+  customFieldValues: [CustomFieldValue!]
 }
 
 # Ordering
@@ -255,6 +257,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {
