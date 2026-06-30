@@ -5,6 +5,11 @@ import {
   BULK_SEARCH_KEYWORDS_FILTER,
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
+  CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER,
+  CUSTOM_FIELD_DATE_VALUE_SUBFILTER,
+  CUSTOM_FIELD_INT_VALUE_SUBFILTER,
+  CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
+  CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -13,6 +18,7 @@ import {
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
   isComplexConversionFilterKey,
+  isCustomFieldFilterKey,
   LAST_PIR_SCORE_DATE_FILTER,
   LAST_PIR_SCORE_DATE_SUBFILTER,
   PIR_IDS_SUBFILTER,
@@ -48,6 +54,7 @@ import { getPirWithAccessCheck } from '../../modules/pir/pir-checkPirAccess';
 import { authorizedMembers, type ComplexAttribute } from '../../schema/attribute-definition';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../../modules/customField/custom-field-domain';
 import { computeQueryIndices, elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
@@ -607,6 +614,78 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
+/**
+ * Adapts a filter on a custom field key (x_opencti_cf_*) into a nested filter
+ * on the custom_field_values array stored in Elasticsearch.
+ */
+const adaptFilterToCustomFieldFilterKey = (filter: Filter) => {
+  const { key, values, operator } = filter;
+  const op: string = operator ?? FilterOperator.Eq;
+  const filterKey = Array.isArray(key) ? key[0] : key;
+
+  const definition = getCustomFieldDefinitionByName(filterKey);
+  if (!definition) {
+    throw FunctionalError('Custom field definition not found for filter key', { filterKey });
+  }
+
+  const valueField = getCustomFieldValueField(definition.field_type);
+
+  // Map the value field to the correct subfilter constant
+  let subfilterKey: string;
+  switch (valueField) {
+    case 'int_value':
+      subfilterKey = CUSTOM_FIELD_INT_VALUE_SUBFILTER;
+      break;
+    case 'string_value':
+      subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;
+      break;
+    case 'boolean_value':
+      subfilterKey = CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER;
+      break;
+    case 'date_value':
+      subfilterKey = CUSTOM_FIELD_DATE_VALUE_SUBFILTER;
+      break;
+    case 'select_value':
+      subfilterKey = CUSTOM_FIELD_SELECT_VALUE_SUBFILTER;
+      break;
+    default:
+      subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;
+  }
+
+  // For integer fields with 'eq' operator, translate to range (gte + lte) for exact match
+  let valueClauses;
+  if (definition.field_type === 'integer' && op === FilterOperator.Eq) {
+    const parsedValues = values.map((v: any) => {
+      const num = Number(v);
+      return Number.isFinite(num) ? num : v;
+    });
+    valueClauses = [
+      { key: subfilterKey, values: parsedValues, operator: FilterOperator.Gte },
+      { key: subfilterKey, values: parsedValues, operator: FilterOperator.Lte },
+    ];
+  } else {
+    // Parse numeric values for integer type
+    const parsedValues = definition.field_type === 'integer'
+      ? values.map((v: any) => {
+          const num = Number(v);
+          return Number.isFinite(num) ? num : v;
+        })
+      : values;
+    valueClauses = [{ key: subfilterKey, values: parsedValues, operator: op }];
+  }
+
+  const newFilter = {
+    key: ['custom_field_values'],
+    values: [],
+    nested: [
+      { key: 'field_name', values: [filterKey], operator: FilterOperator.Eq },
+      ...valueClauses,
+    ],
+  };
+
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
   const { key, operator = FilterOperator.Eq } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -849,9 +928,17 @@ export const completeSpecialFilterKeys = async (
         const { newFilter } = await adaptFilterForMetricsFilterKeys(filter);
         finalFilters.push(newFilter);
       }
-    } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey))
-      && !arrayKeys.some((filterKey) => filterKey === 'connections')
-    ) {
+
+      if (isCustomFieldFilterKey(filterKey)) {
+        const { newFilter, newFilterGroup } = adaptFilterToCustomFieldFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
+      }
+    } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }
