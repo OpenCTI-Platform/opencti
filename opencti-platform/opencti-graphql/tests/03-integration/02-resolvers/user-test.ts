@@ -1129,6 +1129,111 @@ describe('meUser specific resolvers', async () => {
       variables,
     });
   });
+
+  it('User should change password WITHOUT current password when password is expired', async () => {
+    // Set password_valid_until to a past date (expire the password)
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    const pastDate = new Date(Date.now() - 86400000).toISOString();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [pastDate] } },
+    });
+
+    // Change password without providing current password (force-change scenario)
+    const ME_EDIT_WITH_VALIDITY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) {
+          id
+          password_valid_until
+        }
+      }
+    `;
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_WITH_VALIDITY,
+      variables: {
+        input: [{ key: 'password', value: [USER_EDITOR.password] }],
+      },
+    });
+    // password_valid_until should be reset (null if no policy, or future date if policy set)
+    const newValidity = queryResult.data?.meEdit.password_valid_until;
+    if (newValidity !== null) {
+      expect(new Date(newValidity).getTime()).toBeGreaterThan(Date.now());
+    }
+  });
+
+  it('User should NOT change password without current password when password is NOT expired', async () => {
+    // Ensure password_valid_until is null (not expired)
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
+    });
+
+    // Try to change password without providing current password
+    const variables = {
+      input: [{ key: 'password', value: ['new_password_attempt'] }],
+    };
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT,
+      variables,
+    }, 'The current password you have provided is not valid');
+  });
+});
+
+describe('Password expiration - userEdit', async () => {
+  it('Admin should NOT set password_valid_until on external user', async () => {
+    // Create an external user
+    const CREATE_EXTERNAL_USER = gql`
+      mutation UserAdd($input: UserAddInput!) {
+        userAdd(input: $input) { id }
+      }
+    `;
+    const createResult = await queryAsAdminWithSuccess({
+      query: CREATE_EXTERNAL_USER,
+      variables: {
+        input: {
+          name: 'External Test User',
+          user_email: 'external-test-pwd@opencti.io',
+          password: 'external123',
+        },
+      },
+    });
+    const externalUserId = createResult.data?.userAdd.id;
+
+    // Mark the user as external
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: externalUserId, input: { key: 'external', value: [true] } },
+    });
+
+    // Try to set password_valid_until
+    const result = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: externalUserId, input: { key: 'password_valid_until', value: [new Date().toISOString()] } },
+    });
+    expect(result.errors).toBeDefined();
+    expect(result.errors?.[0].message).toContain('Cannot force password change for external user');
+
+    // Cleanup
+    const DELETE_USER = gql`mutation { userEdit(id: "${externalUserId}") { delete } }`;
+    await queryAsAdmin({ query: DELETE_USER, variables: {} });
+  });
+
+  it('Admin should set password_valid_until on internal user', async () => {
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    const futureDate = new Date(Date.now() + 30 * 86400000).toISOString();
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [futureDate] } },
+    });
+    expect(queryResult.errors).toBeUndefined();
+
+    // Cleanup
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
+    });
+  });
 });
 
 describe('User is impersonated', async () => {
