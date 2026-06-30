@@ -360,13 +360,14 @@ const EXCLUDED_COMMON_COLUMNS: Partial<Record<string, string[]>> = {
   'Case-Rft': ['entity_type'],
   Sector: ['entity_type'],
   'Security-Coverage': ['entity_type'],
-  'Security-Platform': ['entity_type'],
+  SecurityPlatform: ['entity_type'],
   System: ['entity_type'],
   Tool: ['entity_type'],
   'Threat-Actor-Group': ['entity_type'],
   'Threat-Actor-Individual': ['entity_type'],
   'Threat-Actor': ['entity_type'],
   Vulnerability: ['entity_type'],
+  'Administrative-Area': ['entity_type'],
 };
 
 type WidgetEntityType = 'relationships' | 'entities';
