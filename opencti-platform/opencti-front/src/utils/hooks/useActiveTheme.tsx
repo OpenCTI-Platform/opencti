@@ -15,6 +15,7 @@ interface UseActiveThemeParams {
     theme_logo?: string | null;
     theme_logo_collapsed?: string | null;
     theme_logo_login?: string | null;
+    theme_advanced_override?: string;
   } | null;
   allThemes: RootPrivateQuery$data['themes'];
 }

@@ -43,6 +43,7 @@ const themeValidationSchema = (t_i18n: (key: string) => string) => {
     theme_logo: Yup.string().nullable(),
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
+    theme_advanced_override: Yup.string().nullable(),
 
     // the theme login aside validation is based on the type of aside selected,
     // because depeding on the type, the required fields are different

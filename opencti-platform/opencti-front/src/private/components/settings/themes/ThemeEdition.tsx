@@ -8,6 +8,7 @@ import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ThemeType from './ThemeType';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { formatJsonStringContent } from '../../../../utils/String';
 
 const editThemeMutation = graphql`
   mutation ThemeEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -28,6 +29,7 @@ const editThemeMutation = graphql`
       theme_login_aside_gradient_start
       theme_login_aside_gradient_end
       theme_login_aside_image
+      theme_advanced_override
     }
   }
 `;
@@ -77,6 +79,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             { key: 'theme_login_aside_gradient_start', value: values.theme_login_aside_gradient_start ?? '' },
             { key: 'theme_login_aside_gradient_end', value: values.theme_login_aside_gradient_end ?? '' },
             { key: 'theme_login_aside_image', value: values.theme_login_aside_image ?? '' },
+            { key: 'theme_advanced_override', value: formatJsonStringContent(values.theme_advanced_override ?? '') },
           ],
         },
         onCompleted: () => resolve(),

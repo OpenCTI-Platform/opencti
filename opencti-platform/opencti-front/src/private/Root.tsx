@@ -102,10 +102,10 @@ const rootSettingsFragment = graphql`
       theme_nav
       theme_primary
       theme_secondary
-      theme_text_color
       theme_accent
       theme_background
       theme_paper
+      theme_advanced_override
     }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
@@ -375,6 +375,7 @@ const rootPrivateQuery = graphql`
           theme_logo
           theme_logo_collapsed
           theme_logo_login
+          theme_advanced_override
         }
       }
     }

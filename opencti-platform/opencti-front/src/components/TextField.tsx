@@ -1,5 +1,5 @@
 import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback, useRef } from 'react';
-import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps } from '@mui/material';
+import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps, TextArea as MuiTextArea, TextAreaProps as MuiTextAreaProps } from '@mui/material';
 import { fieldToTextField } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
@@ -11,24 +11,30 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   detectDuplicate?: string[];
   askAi?: boolean;
   startAdornment?: ReactNode;
+  rows?: number;
   onFocus?: (name: string) => void;
+  onBlur?: (name: string, value: string) => void;
   onChange?: (name: string, value: string) => void;
   onSubmit?: (name: string, value: string) => void;
   onKeyDown?: (key: string) => void;
   onBeforePaste?: (value: string) => string;
+
 };
 
 const TextField = (props: TextFieldProps) => {
-  const { detectDuplicate, onBeforePaste, startAdornment, askAi, ...htmlProps } = props;
+  const { detectDuplicate, onBeforePaste, startAdornment, askAi, rows, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
     onChange,
     onFocus,
+    onBlur,
     onSubmit,
     onKeyDown,
   } = props;
   const { enabled, configured } = useAI();
+
+  const multiline = rows !== undefined && rows > 1;
 
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -50,10 +56,12 @@ const TextField = (props: TextFieldProps) => {
   const internalOnBlur = useCallback((event: FocusEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setFieldTouched(name, true);
-    if (typeof onSubmit === 'function' && value !== initialValueOnFocus.current) {
+    if (typeof onBlur === 'function' && value !== initialValueOnFocus.current) {
+      onBlur(name, value || '');
+    } else if (typeof onSubmit === 'function' && value !== initialValueOnFocus.current) {
       onSubmit(name, value || '');
     }
-  }, [onSubmit, setFieldTouched, name]);
+  }, [onBlur, setFieldTouched, name]);
 
   const internalOnPaste = useCallback((event: ClipboardEvent<HTMLInputElement>) => {
     // onBeforePaste can be used to alter the pasted content
@@ -103,6 +111,8 @@ const TextField = (props: TextFieldProps) => {
   return (
     <MuiTextField
       {...otherProps}
+      multiline={multiline}
+      rows={rows}
       value={value ?? ''}
       error={showError}
       helperText={

@@ -31,6 +31,7 @@ interface ThemeFormProps {
     theme_login_aside_gradient_start?: string | null;
     theme_login_aside_gradient_end?: string | null;
     theme_login_aside_image?: string | null;
+    theme_advanced_override?: string | null;
   };
   errors?: Record<string, string>;
   isSubmitting: boolean;
@@ -146,7 +147,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Background color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -156,7 +156,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Paper color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -166,7 +165,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Navigation color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -176,7 +174,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Primary color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -186,7 +183,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Secondary color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -196,7 +192,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Accent color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -206,7 +201,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Text color')}
           fullWidth
           variant="standard"
-          required
           onSubmit={handleFieldSubmit}
         />
 
@@ -332,6 +326,30 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
               />
             )}
           </div>
+        </Stack>
+        {/* LOGIN ASIDE TYPE */}
+        <Stack gap={1}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 400 }}>
+            {t_i18n('Advanced Override')}
+          </Typography>
+
+          <Label>
+            {t_i18n('Provide custom JSON override of styles')}
+          </Label>
+
+          <Stack gap={2.5}>
+            <div ref={fieldRef}>
+              <Field
+                component={TextField}
+                rows={16}
+                name="theme_advanced_override"
+                label={t_i18n('Advanced theme override')}
+                fullWidth
+                variant="standard"
+                onBlur={handleFieldSubmit}
+              />
+            </div>
+          </Stack>
         </Stack>
       </Stack>
 
