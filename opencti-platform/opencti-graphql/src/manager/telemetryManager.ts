@@ -17,6 +17,7 @@ import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_SAVED_FILTER, type BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
+import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { elCount } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
@@ -73,6 +74,7 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
+export const TELEMETRY_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -161,6 +163,11 @@ export const addCustomViewCreatedCount = () => {
 export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
+};
+
+export const addSharedSavedFiltersPermissionChangesCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_SAVED_FILTER_PERMISSION_CHANGES, 1)
+    .catch((reason) => logApp.warn('Error adding shared saved filters permission changes count to telemetry', { reason }));
 };
 
 // End Region user event counters
@@ -323,11 +330,13 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Shared saved filters
-    const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(context, TELEMETRY_MANAGER_USER, [ENTITY_TYPE_SAVED_FILTER], { includeAuthorities: true });
-    // saved filters with other members than the creator in restricted_members are considered shared
-    const sharedSavedFilters = savedFilters.filter((f) => (f.restricted_members ?? [])
-      .filter((m) => m.id != f.creator_id)
-      .length > 0);
+    const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(
+      context,
+      TELEMETRY_MANAGER_USER,
+      [ENTITY_TYPE_SAVED_FILTER],
+      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members'] },
+    );
+    const sharedSavedFilters = savedFilters.filter((f) => isSavedFilterShared(f));
     manager.setSharedSavedFiltersCount(sharedSavedFilters.length);
     // endregion
 
@@ -380,6 +389,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
+    const sharedSavedFiltersPermissionChangesCountInRedis = await redisGetTelemetry(TELEMETRY_SAVED_FILTER_PERMISSION_CHANGES);
+    manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     // end region Telemetry user events
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);

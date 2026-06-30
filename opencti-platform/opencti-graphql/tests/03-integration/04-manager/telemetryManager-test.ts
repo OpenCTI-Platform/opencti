@@ -118,10 +118,10 @@ describe('Telemetry manager test coverage', () => {
         filters: savedFilter,
         scope: 'Incident',
       });
+      shareWithCreatorFilterId = shareWithCreatorSavedFilter.id;
       await savedFilterEditAuthorizedMembers(testContext, ADMIN_USER, shareWithCreatorFilterId, [
         { id: ADMIN_USER.id, access_right: 'admin' },
       ]);
-      shareWithCreatorFilterId = shareWithCreatorSavedFilter.id;
 
       // Wait for cache refresh
       await waitInSec(2);
