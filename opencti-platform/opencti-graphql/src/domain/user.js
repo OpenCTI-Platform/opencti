@@ -1141,6 +1141,18 @@ export const meEditField = async (context, user, userId, inputs, password = null
       }
     }
   });
+  // If password was expired, kill all other sessions of this user (force change scenario)
+  const hasPasswordInput = inputs.some((i) => i.key === 'password');
+  if (hasPasswordInput && isPasswordExpired(user)) {
+    const currentSessionId = context.req?.session?.id;
+    const userSessions = await findUserSessions(userId);
+    const otherSessionIds = userSessions
+      .filter((s) => currentSessionId && !s.id.endsWith(currentSessionId))
+      .map((s) => s.id);
+    if (otherSessionIds.length > 0) {
+      await killSessions(otherSessionIds);
+    }
+  }
   return userEditField(context, user, userId, inputs);
 };
 
