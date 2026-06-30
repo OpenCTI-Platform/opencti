@@ -12,6 +12,13 @@ const lockProcess = {
   callbacks: new Map(), // [op, { lock: fn, unlock: fn }]
 };
 
+// Node.js --watch mode sends internal IPC messages (e.g. { 'watch:require': ... })
+// to child processes. These are not application messages and should be silently ignored.
+const isNodeInternalMessage = (msg) => {
+  if (!msg || typeof msg !== 'object') return false;
+  return Object.keys(msg).some((key) => key.startsWith('watch:'));
+};
+
 const extractMessageKey = (msg) => {
   if (!msg || typeof msg !== 'object') {
     return undefined;
@@ -35,6 +42,8 @@ export const initLockFork = () => {
     lockProcess.forked.on('message', (msg) => {
       const messageKey = extractMessageKey(msg);
       if (!messageKey) {
+        // Silently ignore Node.js --watch internal IPC messages
+        if (isNodeInternalMessage(msg)) return;
         const shape = (msg && typeof msg === 'object')
           ? { keys: Object.keys(msg) }
           : { receivedType: typeof msg };
