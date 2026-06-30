@@ -10764,7 +10764,7 @@ type Mutation {
   customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView
   customViewDuplicate(input: CustomViewDuplicateInput!): CustomView
   customViewDelete(id: ID!): ID!
-  customViewConfigurationImport(targetEntityType: String!, file: Upload!): CustomView!
+  customViewConfigurationImport(targetEntityType: String, file: Upload!): CustomView!
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed

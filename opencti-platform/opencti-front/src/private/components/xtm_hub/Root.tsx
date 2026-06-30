@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
 
 const DeployCustomDashboards = lazy(() => import('./DeployCustomDashboard'));
+const DeployCustomView = lazy(() => import('./DeployCustomView'));
 const DeployPlaybook = lazy(() => import('./DeployPlaybook'));
 const IngestionCsv = lazy(() => import('../data/IngestionCsv'));
 const IngestionTaxii = lazy(() => import('../data/IngestionTaxiis'));
@@ -17,6 +18,10 @@ const Root = () => {
         <Route
           path="/deploy-custom-dashboard/:serviceInstanceId/:fileId"
           element={boundaryWrapper(DeployCustomDashboards)}
+        />
+        <Route
+          path="/deploy-custom-view/:serviceInstanceId/:fileId"
+          element={boundaryWrapper(DeployCustomView)}
         />
         <Route
           path="/deploy-playbook/:serviceInstanceId/:fileId"
