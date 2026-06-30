@@ -70,6 +70,7 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
+export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -158,6 +159,11 @@ export const addCustomViewCreatedCount = () => {
 export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
+};
+
+export const addWorkflowPublishCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_PUBLISH, 1)
+    .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
 };
 
 // End Region user event counters
@@ -368,6 +374,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
+    const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
+    manager.setWorkflowPublishCount(workflowPublishCountInRedis);
     // end region Telemetry user events
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);
