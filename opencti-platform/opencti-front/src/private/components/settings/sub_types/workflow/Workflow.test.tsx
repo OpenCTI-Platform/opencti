@@ -168,14 +168,21 @@ vi.mock('./WorkflowEditionDrawer', () => ({
 }));
 
 vi.mock('./PublishButton', () => ({
-  default: ({ validationStatus, onPublish }: { validationStatus?: { published?: boolean; validationErrors?: unknown[] }; onPublish?: () => void }) => (
-    <button
-      data-testid="publish-button"
-      onClick={onPublish}
-      disabled={(validationStatus?.validationErrors?.length ?? 0) > 0}
-    >
-      {validationStatus?.published ? 'Published' : 'Publish'}
-    </button>
+  default: ({ validationStatus, onPublish, onReset }: {
+    validationStatus?: { published?: boolean; validationErrors?: unknown[] };
+    onPublish?: () => void;
+    onReset?: () => void;
+  }) => (
+    <div>
+      <button
+        data-testid="publish-button"
+        onClick={onPublish}
+        disabled={(validationStatus?.validationErrors?.length ?? 0) > 0}
+      >
+        {validationStatus?.published ? 'Published' : 'Publish'}
+      </button>
+      <button data-testid="reset-button" onClick={onReset}>Reset</button>
+    </div>
   ),
 }));
 
@@ -293,6 +300,28 @@ describe('Workflow Component', () => {
           expect(typeof calls[0][0].onCompleted).toBe('function');
         }
       }, { timeout: 2000 });
+    });
+
+    it('should clear nodes and edges when reset is confirmed', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} />);
+
+      await user.click(screen.getByTestId('reset-button'));
+
+      const resetCall = mockSaveWorkflowDefinition.mock.calls.find(
+        ([arg]) => arg?.variables?.definition?.includes('"states":[]')
+          && arg?.variables?.definition?.includes('"transitions":[]'),
+      );
+
+      expect(resetCall).toBeDefined();
+      resetCall?.[0]?.onCompleted?.({
+        workflowDefinitionSet: {
+          errors: [],
+        },
+      });
+
+      expect(mockSetNodes).toHaveBeenCalledWith([]);
+      expect(mockSetEdges).toHaveBeenCalledWith([]);
     });
   });
 
