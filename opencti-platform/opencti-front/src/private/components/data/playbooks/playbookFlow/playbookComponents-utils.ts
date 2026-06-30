@@ -15,8 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type { PlaybookCategory } from './__generated__/PlaybookFlow_playbookComponents.graphql';
 import type { PlaybookComponent, PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig } from '../types/playbook-types';
-import { PlaybookFlowFormData } from './PlaybookFlowForm';
-import { PlaybookUpdateAction } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import type { PlaybookFlowFormData } from './PlaybookFlowForm';
+import type { PlaybookUpdateAction } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
 export const PLAYBOOK_CATEGORY_ORDER = [
   'start_playbook',
@@ -54,10 +54,6 @@ export interface NodeData {
   description?: string | undefined;
   configuration?: PlaybookConfig | undefined;
   component?: PlaybookComponent;
-  openConfig: (nodeId: string) => void;
-  openReplace: (nodeId: string) => void;
-  openAddSibling: (nodeId: string) => void;
-  openDelete: (nodeId: string) => void;
 }
 interface computeInitialComponentConfigValuesParams {
   action: string | null;

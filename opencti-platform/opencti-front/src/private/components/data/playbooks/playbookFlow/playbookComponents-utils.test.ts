@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeInitialComponentConfigValues, groupAndSortPlaybookComponents, NodeData } from './playbookComponents-utils';
-import type { PlaybookComponent, PlaybookComponentConfigSchema } from '../types/playbook-types';
+import type { PlaybookComponent, PlaybookComponentConfigSchema, PlaybookConfig } from '../types/playbook-types';
 
 describe('playbookComponents-utils', () => {
   describe('groupAndSortPlaybookComponents', () => {
@@ -93,7 +93,7 @@ describe('playbookComponents-utils', () => {
       required: [],
       properties: {
         filters: { type: 'string', $ref: 'Filters', default: '' },
-        excludeMainElement: { type: 'boolean', $ref: 'Exclude main', default: false },
+        triggerTime: { type: 'string', $ref: 'Trigger time', default: '08:00:00.000Z' },
       },
     } as unknown as PlaybookComponentConfigSchema;
 
@@ -120,7 +120,7 @@ describe('playbookComponents-utils', () => {
     });
 
     it('uses schema defaults when action is replace', () => {
-      const oldConfig = { filters: '{"mode":"and","filters":[]}', excludeMainElement: true };
+      const oldConfig = { filters: '{"mode":"and","filters":[]}', triggerTime: '10:30:00.000Z' };
 
       const result = computeInitialComponentConfigValues({
         action: 'replace',
@@ -136,7 +136,7 @@ describe('playbookComponents-utils', () => {
       expect((result).wrap_in_container).toBe(true);
       // Should not contain props of component A
       expect((result).filters).toBeUndefined();
-      expect((result).excludeMainElement).toBeUndefined();
+      expect((result).triggerTime).toBeUndefined();
     });
 
     it('keeps existing config when action is config (editing same component)', () => {
@@ -158,12 +158,11 @@ describe('playbookComponents-utils', () => {
     it('does not leak old config properties into new component on replace', () => {
       const oldConfig = {
         filters: '{"mode":"and","filters":[]}',
-        excludeMainElement: true,
         newContainer: false,
         actions: [],
-        applyToElements: 'all',
+        applyToElements: 'all-elements',
         wrap_in_container: false,
-      };
+      } as unknown as PlaybookConfig;
 
       const result = computeInitialComponentConfigValues({
         action: 'replace',
@@ -173,9 +172,9 @@ describe('playbookComponents-utils', () => {
         configurationSchema: schemaB,
       });
 
-      // Only props from new schame should be there
+      // Only props from new schema should be there
       expect((result).wrap_in_container).toBe(true); // default from schema B
-      expect((result).excludeMainElement).toBeUndefined();
+      expect((result).triggerTime).toBeUndefined();
       expect((result).newContainer).toBeUndefined();
       expect((result).actions).toBeUndefined();
       expect((result).applyToElements).toBeUndefined();

@@ -4,13 +4,14 @@ import { PlaybookUpdateAction } from '../playbookFlow/playbookFlowFields/playboo
 
 export type PlaybookComponents = NonNullable<PlaybookFlow_playbookComponents$data['playbookComponents']>;
 export type PlaybookComponent = NonNullable<PlaybookComponents[number]>;
+type PlaybookBundleElementsToApply = 'all-elements' | 'only-main' | 'all-except-main';
 
 export interface PlaybookConfig {
   filters?: string;
   applyWithFilters?: string;
   actions?: PlaybookUpdateAction[];
   triggerTime?: string;
-  applyToElements?: string;
+  applyToElements?: PlaybookBundleElementsToApply;
 }
 
 export interface PlaybookDefinitionNode {
