@@ -11,6 +11,56 @@ import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { addSavedFilter, deleteSavedFilter, savedFilterEditAuthorizedMembers } from '../../../src/modules/savedFilter/savedFilter-domain';
 
 describe('Telemetry manager test coverage', () => {
+  let sharedFilterId: string;
+  let unsharedFilterId: string;
+  let shareWithCreatorFilterId: string;
+
+  // create shared saved filters
+  beforeAll(async () => {
+    const savedFilter = JSON.stringify({ mode: 'and', filters: [{ key: 'objectLabel', value: [], operator: 'nil' }], filterGroups: [] });
+
+    // Create a saved filter and share it (restricted_members > 1)
+    const sharedSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+      name: 'telemetry-shared-filter',
+      filters: savedFilter,
+      scope: 'Incident',
+    });
+    sharedFilterId = sharedSavedFilter.id;
+    await savedFilterEditAuthorizedMembers(testContext, ADMIN_USER, sharedFilterId, [
+      { id: ADMIN_USER.id, access_right: 'admin' },
+      { id: USER_EDITOR.id, access_right: 'view' },
+    ]);
+
+    // Create a saved filter that is NOT shared
+    const unshareSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+      name: 'telemetry-unshared-filter',
+      filters: savedFilter,
+      scope: 'Incident',
+    });
+    unsharedFilterId = unshareSavedFilter.id;
+
+    // Create a saved filter that is artificially shared with the creator at creation
+    const shareWithCreatorSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+      name: 'telemetry-unshared-filter',
+      filters: savedFilter,
+      scope: 'Incident',
+    });
+    shareWithCreatorFilterId = shareWithCreatorSavedFilter.id;
+    await savedFilterEditAuthorizedMembers(testContext, ADMIN_USER, shareWithCreatorFilterId, [
+      { id: ADMIN_USER.id, access_right: 'admin' },
+    ]);
+
+    // Wait for cache refresh
+    await waitInSec(2);
+  });
+
+  // delete the shared saved filters
+  afterAll(async () => {
+    await deleteSavedFilter(testContext, ADMIN_USER, sharedFilterId);
+    await deleteSavedFilter(testContext, ADMIN_USER, unsharedFilterId);
+    await deleteSavedFilter(testContext, ADMIN_USER, shareWithCreatorFilterId);
+  });
+
   test('Verify that metrics get collected from both elastic and redis', async () => {
     // GIVEN a configured telemetry
     const filigranResource = resourceFromAttributes({
@@ -68,77 +118,8 @@ describe('Telemetry manager test coverage', () => {
     // filigranTelemetryMeterManager.activeConnectorsCount : count cannot be verified since there are many ways to create internal connectors.
     // expect(filigranTelemetryMeterManager.draftCount).toBe(getCounterTotal(ENTITY_TYPE_DRAFT_WORKSPACE));
     // expect(filigranTelemetryMeterManager.workbenchCount).toBe(getCounterTotal(ENTITY_TYPE_WORKSPACE));
-  });
 
-  describe('shared_saved_filters_count telemetry', () => {
-    let sharedFilterId: string;
-    let unsharedFilterId: string;
-    let shareWithCreatorFilterId: string;
-
-    const buildMeterManager = () => {
-      const filigranResource = resourceFromAttributes({
-        [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-        [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
-        [ATTR_SERVICE_INSTANCE_ID]: 'api-test-telemetry-shared-filters',
-        'service.instance.creation': new Date().toUTCString(),
-      });
-      const resource = defaultResource().merge(filigranResource);
-      const meterProvider = new MeterProvider(({ resource, readers: [] }));
-      const meterManager = new TelemetryMeterManager(meterProvider);
-      meterManager.registerFiligranTelemetry();
-      return meterManager;
-    };
-
-    beforeAll(async () => {
-      const savedFilter = JSON.stringify({ mode: 'and', filters: [{ key: 'objectLabel', value: [], operator: 'nil' }], filterGroups: [] });
-
-      // Create a saved filter and share it (restricted_members > 1)
-      const sharedSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
-        name: 'telemetry-shared-filter',
-        filters: savedFilter,
-        scope: 'Incident',
-      });
-      sharedFilterId = sharedSavedFilter.id;
-      await savedFilterEditAuthorizedMembers(testContext, ADMIN_USER, sharedFilterId, [
-        { id: ADMIN_USER.id, access_right: 'admin' },
-        { id: USER_EDITOR.id, access_right: 'view' },
-      ]);
-
-      // Create a saved filter that is NOT shared
-      const unshareSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
-        name: 'telemetry-unshared-filter',
-        filters: savedFilter,
-        scope: 'Incident',
-      });
-      unsharedFilterId = unshareSavedFilter.id;
-
-      // Create a saved filter that is artificially shared with the creator at creation
-      const shareWithCreatorSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
-        name: 'telemetry-unshared-filter',
-        filters: savedFilter,
-        scope: 'Incident',
-      });
-      shareWithCreatorFilterId = shareWithCreatorSavedFilter.id;
-      await savedFilterEditAuthorizedMembers(testContext, ADMIN_USER, shareWithCreatorFilterId, [
-        { id: ADMIN_USER.id, access_right: 'admin' },
-      ]);
-
-      // Wait for cache refresh
-      await waitInSec(2);
-    });
-
-    afterAll(async () => {
-      await deleteSavedFilter(testContext, ADMIN_USER, sharedFilterId);
-      await deleteSavedFilter(testContext, ADMIN_USER, unsharedFilterId);
-      await deleteSavedFilter(testContext, ADMIN_USER, shareWithCreatorFilterId);
-    });
-
-    test('sharedSavedFiltersCount counts only filters with restricted_members > 1', async () => {
-      const meterManager = buildMeterManager();
-      await fetchTelemetryData(meterManager);
-
-      // 1 shared saved filter should be counted: sharedSavedFilter, because it is shared with others than just the creator
-      expect(meterManager.sharedSavedFiltersCount).toEqual(1);
-    });
+    // 1 shared saved filter should be counted: sharedSavedFilter, because it is shared with others than just the creator
+    expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
   });
 });
