@@ -88,6 +88,7 @@ const StixRelationshipsMultiLineChartComponent = ({
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixRelationshipsMultiLineChartTimeSeriesQuery['variables'] => {
   const fallbackStart = monthsAgo(12);
   const fallbackEnd = now();
@@ -113,7 +114,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate,
     endDate,
-    interval: 'day',
+    interval: parameters?.interval ?? 'day',
     timeSeriesParameters,
   };
 };
@@ -149,6 +150,7 @@ const StixRelationshipsMultiLineChart = ({
     query: stixRelationshipsMultiLineChartTimeSeriesQuery,
     config,
     buildQueryVariables,
+    parameters,
   });
 
   const renderContent = () => {
