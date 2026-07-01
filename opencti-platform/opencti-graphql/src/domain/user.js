@@ -1669,7 +1669,7 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
   }
   const { valid } = await totp.verify({ secret, token: code });
   if (valid) {
-    const patch = { otp_activated: true, otp_secret: secret };
+    const patch = { otp_activated: true, otp_secret: secret, otp_qr: '' };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
     context.req.session.user.otp_validated = valid;
     return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
