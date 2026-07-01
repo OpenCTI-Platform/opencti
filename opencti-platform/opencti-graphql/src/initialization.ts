@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
+import { CUSTOM_FIELDS_FEATURE_FLAG, ENABLED_FEATURE_FLAGS, isFeatureEnabled, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
 import { initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
@@ -115,8 +115,10 @@ const platformInit = async (withMarkings = true) => {
     // parse schema metrics conf to throw error on start if bad configured
     loadEntityMetricsConfiguration();
 
-    // Load custom field definitions into memory cache
-    await loadCustomFieldDefinitions(context);
+    // Load custom field definitions into memory cache (only if the feature is enabled)
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      await loadCustomFieldDefinitions(context);
+    }
   } catch (e) {
     if ((e as Error).name === TYPE_LOCK_ERROR) {
       const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';

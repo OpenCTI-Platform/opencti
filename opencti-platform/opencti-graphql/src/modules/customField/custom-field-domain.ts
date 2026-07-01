@@ -10,8 +10,8 @@ import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { FunctionalError } from '../../config/errors';
-import { SYSTEM_USER } from '../../utils/access';
-import { logApp } from '../../config/conf';
+import { enforceEnableFeatureFlag, SYSTEM_USER } from '../../utils/access';
+import { CUSTOM_FIELDS_FEATURE_FLAG, logApp } from '../../config/conf';
 
 // ----- In-memory cache of all custom field definitions (loaded at boot) -----
 let customFieldDefinitionsCache: BasicStoreEntityCustomFieldDefinition[] = [];
@@ -116,6 +116,7 @@ export const findCustomFieldDefinitionByName = async (
 };
 
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
+  enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   // Validate name starts with the required prefix
   if (!input.name.startsWith(CUSTOM_FIELD_PREFIX)) {
     throw FunctionalError('Custom field name must start with the prefix "x_opencti_cf_"', { name: input.name });
@@ -149,6 +150,7 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
 };
 
 export const customFieldDefinitionDelete = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
+  enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   const element = await deleteElementById<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
@@ -166,6 +168,7 @@ export const customFieldDefinitionDelete = async (context: AuthContext, user: Au
 };
 
 export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
+  enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   // Prevent changing field_type (immutable after creation)
   const forbiddenKeys = ['field_type', 'name'];
   const attemptedForbidden = input.filter((i) => forbiddenKeys.includes(i.key));

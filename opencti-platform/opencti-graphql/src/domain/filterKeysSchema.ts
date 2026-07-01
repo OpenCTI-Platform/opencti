@@ -58,6 +58,7 @@ import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils'
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-domain';
 import { isStixDomainObject } from '../schema/stixDomainObject';
+import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
 export type FilterDefinition = {
   filterKey: string;
@@ -238,7 +239,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   }
 
   // Add custom field filters dynamically from loaded definitions
-  if (isStixDomainObject(type)) {
+  if (isStixDomainObject(type) && isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const customFieldDefs = getCustomFieldDefinitionsForEntityType(type);
     for (const cfDef of customFieldDefs) {
       // Map custom field type to filter type

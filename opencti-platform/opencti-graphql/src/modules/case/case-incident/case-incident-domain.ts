@@ -17,6 +17,8 @@ import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
 import { validateCustomFieldValues } from '../../customField/custom-field-validator';
+import { enforceEnableFeatureFlag } from '../../../utils/access';
+import { CUSTOM_FIELDS_FEATURE_FLAG } from '../../../config/conf';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
@@ -34,6 +36,7 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
   }
   // Validate custom field values if provided
   if (caseIncidentAdd.customFieldValues && caseIncidentAdd.customFieldValues.length > 0) {
+    enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
     validateCustomFieldValues(caseIncidentAdd.customFieldValues, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     (caseToCreate as any).custom_field_values = caseIncidentAdd.customFieldValues;
   }
