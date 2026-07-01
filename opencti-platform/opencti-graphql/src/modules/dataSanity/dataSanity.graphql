@@ -33,12 +33,6 @@ type DataSanityDryRunOutput {
     estimated_impact: [DataSanityImpactedElement!]!
 }
 
-extend type Query {
-    dataSanityOperations: [DataSanityOperation!]! @auth(for: [BYPASS])
-    dataSanityExecutions: [DataSanityExecution!]! @auth(for: [BYPASS])
-    dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput! @auth(for: [BYPASS])
-}
-
 type DataSanityMaintenanceWindow {
     day: String!
     start_time: String!
@@ -46,7 +40,6 @@ type DataSanityMaintenanceWindow {
 }
 
 type DataSanityConfiguration {
-    id: ID!
     maintenance_planning: [DataSanityMaintenanceWindow!]!
     timezone_offset: Int!
 }
@@ -57,8 +50,14 @@ input DataSanityMaintenanceWindowInput {
     end_time: String!
 }
 
+extend type Settings {
+    data_sanity_configuration: DataSanityConfiguration @auth(for: [BYPASS])
+}
+
 extend type Query {
-    dataSanityConfiguration: DataSanityConfiguration @auth(for: [BYPASS])
+    dataSanityOperations: [DataSanityOperation!]! @auth(for: [BYPASS])
+    dataSanityExecutions: [DataSanityExecution!]! @auth(for: [BYPASS])
+    dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput! @auth(for: [BYPASS])
 }
 
 extend type Mutation {

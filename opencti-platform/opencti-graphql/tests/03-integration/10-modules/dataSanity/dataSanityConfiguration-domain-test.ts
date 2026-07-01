@@ -1,15 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
   getDataSanityConfiguration,
-  getDataSanityConfigurationFromDatabase,
   getMaintenancePlanning,
   isWithinMaintenanceWindow,
   parseTimeToMinutes,
   updateMaintenancePlanning,
 } from '../../../../src/modules/dataSanity/dataSanityConfiguration-domain';
-import convertDataSanityConfigurationToStix from '../../../../src/modules/dataSanity/dataSanityConfiguration-converter';
-import type { MaintenancePlanning, StoreEntityDataSanityConfiguration } from '../../../../src/modules/dataSanity/dataSanityConfiguration-types';
+import type { MaintenancePlanning } from '../../../../src/modules/dataSanity/dataSanityConfiguration-types';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import cacheManager from '../../../../src/manager/cacheManager';
 
 describe('Data sanity configuration test coverage', () => {
   describe('Data sanity configuration test coverage', () => {
@@ -45,16 +44,10 @@ describe('Data sanity configuration test coverage', () => {
     it('should update planning configured be ok', async () => {
       const planning: MaintenancePlanning = [{ day: 'monday', start_time: '08:00', end_time: '10:00' }, { day: 'tuesday', start_time: '09:00', end_time: '10:30' }];
       await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
+      // Need to force reset cache for Settings
+      cacheManager.init();
       const newPlanning = await getMaintenancePlanning(testContext, ADMIN_USER);
       expect(newPlanning).toStrictEqual([{ day: 'monday', start_time: '08:00', end_time: '10:00' }, { day: 'tuesday', start_time: '09:00', end_time: '10:30' }]);
-    });
-
-    it('should stix converter', async () => {
-      const newPlanning = await getDataSanityConfigurationFromDatabase(testContext, ADMIN_USER);
-      if (newPlanning) {
-        const result = convertDataSanityConfigurationToStix(newPlanning as StoreEntityDataSanityConfiguration);
-        expect(result.maintenance_planning).toStrictEqual('[{"day":"monday","start_time":"08:00","end_time":"10:00"},{"day":"tuesday","start_time":"09:00","end_time":"10:30"}]');
-      }
     });
 
     it('should be within planning be ok when planning is filled', async () => {
@@ -72,7 +65,8 @@ describe('Data sanity configuration test coverage', () => {
 
       const planning: MaintenancePlanning = [{ day: currentDay, start_time: startTime, end_time: endTime }];
       await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
-
+      // Need to force reset cache for Settings
+      cacheManager.init();
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeTruthy();
     });
@@ -86,7 +80,8 @@ describe('Data sanity configuration test coverage', () => {
 
       const planning: MaintenancePlanning = [{ day: differentDay, start_time: '00:00', end_time: '23:59' }];
       await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
-
+      // Need to force reset cache for Settings
+      cacheManager.init();
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeFalsy();
     });
@@ -107,7 +102,8 @@ describe('Data sanity configuration test coverage', () => {
 
       const planning: MaintenancePlanning = [{ day: currentDay, start_time: startTime, end_time: endTime }];
       await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
-
+      // Need to force reset cache for Settings
+      cacheManager.init();
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeFalsy();
     });
@@ -138,7 +134,8 @@ describe('Data sanity configuration test coverage', () => {
 
       const planning: MaintenancePlanning = [{ day: currentDay, start_time: startTime, end_time: endTime }];
       await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
-
+      // Need to force reset cache for Settings
+      cacheManager.init();
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeTruthy();
     });
@@ -174,7 +171,8 @@ describe('Data sanity configuration test coverage', () => {
 
       const planning: MaintenancePlanning = [{ day: offsetDay, start_time: startTime, end_time: endTime }];
       await updateMaintenancePlanning(testContext, ADMIN_USER, planning, offsetMinutes);
-
+      // Need to force reset cache for Settings
+      cacheManager.init();
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeTruthy();
     });

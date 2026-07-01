@@ -1479,6 +1479,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_ai_has_token: Boolean!
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  data_sanity_configuration: DataSanityConfiguration
 }
 
 enum GroupsOrdering {
@@ -9812,7 +9813,6 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
-  dataSanityConfiguration: DataSanityConfiguration
 }
 
 type Subscription {
@@ -16819,7 +16819,6 @@ type DataSanityMaintenanceWindow {
 }
 
 type DataSanityConfiguration {
-  id: ID!
   maintenance_planning: [DataSanityMaintenanceWindow!]!
   timezone_offset: Int!
 }

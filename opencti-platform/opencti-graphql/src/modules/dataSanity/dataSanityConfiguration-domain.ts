@@ -1,23 +1,22 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { fullEntitiesList } from '../../database/middleware-loader';
-import { createEntity, updateAttribute } from '../../database/middleware';
-import { ENTITY_TYPE_DATA_SANITY_CONFIGURATION } from './dataSanityConfiguration-types';
-import type { BasicStoreEntityDataSanityConfiguration, DayOfWeek, MaintenancePlanning, MaintenanceWindow } from './dataSanityConfiguration-types';
+import { patchAttribute } from '../../database/middleware';
+import type { DataSanityConfigurationObject, DayOfWeek, MaintenancePlanning, MaintenanceWindow } from './dataSanityConfiguration-types';
 import { utcDate } from '../../utils/format';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { getEntityFromCache } from '../../database/cache';
+import type { BasicStoreSettings } from '../../types/settings';
 
 const DAYS_OF_WEEK: DayOfWeek[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 /**
- * Retrieve the single DataSanityConfiguration entity (singleton pattern).
+ * Retrieve the data_sanity_configuration object from the Settings entity.
  */
-export const getDataSanityConfigurationFromDatabase = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntityDataSanityConfiguration | undefined> => {
-  const results = await fullEntitiesList<BasicStoreEntityDataSanityConfiguration>(
-    context,
-    user,
-    [ENTITY_TYPE_DATA_SANITY_CONFIGURATION],
-    {},
-  );
-  return results.length > 0 ? results[0] : undefined;
+export const getDataSanityConfigurationFromSettings = async (context: AuthContext, user: AuthUser): Promise<DataSanityConfigurationObject | undefined> => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  if (!settings) {
+    return undefined;
+  }
+  return (settings as any).data_sanity_configuration as DataSanityConfigurationObject | undefined;
 };
 
 /**
@@ -25,7 +24,7 @@ export const getDataSanityConfigurationFromDatabase = async (context: AuthContex
  * Returns an empty array if no configuration exists.
  */
 export const getMaintenancePlanning = async (context: AuthContext, user: AuthUser): Promise<MaintenancePlanning> => {
-  const config = await getDataSanityConfigurationFromDatabase(context, user);
+  const config = await getDataSanityConfigurationFromSettings(context, user);
   if (!config?.maintenance_planning) {
     return [];
   }
@@ -37,23 +36,22 @@ export const getMaintenancePlanning = async (context: AuthContext, user: AuthUse
 };
 
 /**
- * Update or create the DataSanityConfiguration with a new maintenance planning.
+ * Update the data_sanity_configuration object in Settings with a new maintenance planning.
  */
 export const updateMaintenancePlanning = async (context: AuthContext, user: AuthUser, planning: MaintenancePlanning, timezoneOffset: number) => {
-  const existing = await getDataSanityConfigurationFromDatabase(context, user);
-  const planningJson = JSON.stringify(planning);
-  if (existing) {
-    await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_CONFIGURATION, [
-      { key: 'maintenance_planning', value: [planningJson] },
-      { key: 'timezone_offset', value: [timezoneOffset] },
-    ]);
-    return { id: existing.internal_id, maintenance_planning: planning, timezone_offset: timezoneOffset };
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  if (!settings) {
+    throw new Error('Settings entity not found');
   }
-  const created = await createEntity(context, user, {
-    maintenance_planning: planningJson,
-    timezone_offset: timezoneOffset,
-  }, ENTITY_TYPE_DATA_SANITY_CONFIGURATION);
-  return { id: created.internal_id, maintenance_planning: planning, timezone_offset: timezoneOffset };
+  const planningJson = JSON.stringify(planning);
+  const patch = {
+    data_sanity_configuration: {
+      maintenance_planning: planningJson,
+      timezone_offset: timezoneOffset,
+    } as DataSanityConfigurationObject,
+  };
+  await patchAttribute(context, user, settings.internal_id, ENTITY_TYPE_SETTINGS, patch);
+  return { maintenance_planning: planning, timezone_offset: timezoneOffset };
 };
 
 /**
@@ -61,12 +59,19 @@ export const updateMaintenancePlanning = async (context: AuthContext, user: Auth
  * Returns null if no configuration exists.
  */
 export const getDataSanityConfiguration = async (context: AuthContext, user: AuthUser) => {
-  const config = await getDataSanityConfigurationFromDatabase(context, user);
+  const config = await getDataSanityConfigurationFromSettings(context, user);
   if (!config) {
     return null;
   }
-  const planning = await getMaintenancePlanning(context, user);
-  return { id: config.internal_id, maintenance_planning: planning, timezone_offset: config.timezone_offset ?? 0 };
+  let planning: MaintenancePlanning = [];
+  if (config.maintenance_planning) {
+    try {
+      planning = JSON.parse(config.maintenance_planning) as MaintenancePlanning;
+    } catch {
+      planning = [];
+    }
+  }
+  return { maintenance_planning: planning, timezone_offset: config.timezone_offset ?? 0 };
 };
 
 /**
@@ -87,7 +92,7 @@ export const parseTimeToMinutes = (time: string): number => {
  * If no maintenance planning is configured, operations are always allowed.
  */
 export const isWithinMaintenanceWindow = async (context: AuthContext, user: AuthUser): Promise<boolean> => {
-  const config = await getDataSanityConfigurationFromDatabase(context, user);
+  const config = await getDataSanityConfigurationFromSettings(context, user);
   if (!config?.maintenance_planning) {
     return true;
   }

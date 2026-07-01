@@ -15,14 +15,15 @@ import { MaintenancePlanningEditionQuery } from './__generated__/MaintenancePlan
 
 const maintenancePlanningQuery = graphql`
   query MaintenancePlanningEditionQuery {
-    dataSanityConfiguration {
-      id
-      maintenance_planning {
-        day
-        start_time
-        end_time
+    settings {
+      data_sanity_configuration {
+        maintenance_planning {
+          day
+          start_time
+          end_time
+        }
+        timezone_offset
       }
-      timezone_offset
     }
   }
 `;
@@ -30,7 +31,6 @@ const maintenancePlanningQuery = graphql`
 const maintenancePlanningMutation = graphql`
   mutation MaintenancePlanningEditionMutation($planning: [DataSanityMaintenanceWindowInput!]!, $timezone_offset: Int!) {
     dataSanityUpdateMaintenancePlanning(planning: $planning, timezone_offset: $timezone_offset) {
-      id
       maintenance_planning {
         day
         start_time
@@ -55,8 +55,8 @@ const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 const maintenancePlanningValidation = (t: (arg: string) => string) => Yup.object().shape(
   Object.fromEntries(DAYS_OF_WEEK.flatMap((d) => [
-    [`${d.value}_start_time`, Yup.string().matches(TIME_REGEX, t('Invalid time format (HH:mm)'))],
-    [`${d.value}_end_time`, Yup.string().matches(TIME_REGEX, t('Invalid time format (HH:mm)'))],
+    [`${d.value}_start_time`, Yup.string().matches(TIME_REGEX, { message: t('Invalid time format (HH:mm)'), excludeEmptyString: true })],
+    [`${d.value}_end_time`, Yup.string().matches(TIME_REGEX, { message: t('Invalid time format (HH:mm)'), excludeEmptyString: true })],
   ])),
 );
 
@@ -104,7 +104,7 @@ const MaintenancePlanningForm: FunctionComponent<MaintenancePlanningFormProps> =
     { fetchPolicy: 'network-only' },
   );
 
-  const currentPlanning = data.dataSanityConfiguration?.maintenance_planning ?? [];
+  const currentPlanning = data.settings?.data_sanity_configuration?.maintenance_planning ?? [];
   const initialValues = buildInitialValues(currentPlanning);
 
   const [commitMutation] = useApiMutation(maintenancePlanningMutation);

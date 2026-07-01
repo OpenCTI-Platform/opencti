@@ -73,7 +73,6 @@ export const markOperationAsExecuted = async (
   executionTimeMs: number, success: boolean, runMessage: string,
   output?: SanityOperationRunOutput,
 ): Promise<void> => {
-  console.log(`*** Mark op ${operationName} as executed`);
   const existing = await findDataSanityByOperationName(context, user, operationName);
   const lastRunOutput = success && output ? JSON.stringify(output) : '';
   if (existing) {
@@ -138,8 +137,7 @@ export const setForceRun = async (context: AuthContext, user: AuthUser, operatio
     last_run_message: '',
     force_run: true,
   }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
-  return created.id;
-};
+  return created.internal_id;
 
 /**
  * List all DataSanityExecution entities (operations that have been executed).

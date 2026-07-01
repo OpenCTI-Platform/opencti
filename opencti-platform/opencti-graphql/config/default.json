@@ -356,7 +356,7 @@
   "data_sanity_manager": {
     "enabled": true,
     "lock_key": "data_sanity_manager_lock",
-    "interval": 1800000
+    "interval": 600000
   },
   "exclusion_list_cache_build_manager": {
     "enabled": true,

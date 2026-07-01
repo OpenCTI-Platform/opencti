@@ -1,9 +1,3 @@
-import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-
-export const ENTITY_TYPE_DATA_SANITY_CONFIGURATION = 'DataSanityConfiguration';
-
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
 export interface MaintenanceWindow {
@@ -14,20 +8,7 @@ export interface MaintenanceWindow {
 
 export type MaintenancePlanning = MaintenanceWindow[];
 
-export interface BasicStoreEntityDataSanityConfiguration extends BasicStoreEntity {
+export interface DataSanityConfigurationObject {
   maintenance_planning: string; // JSON-serialized MaintenancePlanning
   timezone_offset: number; // UTC offset in minutes (e.g., 120 for UTC+2, -300 for UTC-5)
-}
-
-export interface StoreEntityDataSanityConfiguration extends StoreEntity {
-  maintenance_planning: string; // JSON-serialized MaintenancePlanning
-  timezone_offset: number;
-}
-
-export interface StixDataSanityConfiguration extends StixObject {
-  maintenance_planning: string;
-  timezone_offset: number;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }

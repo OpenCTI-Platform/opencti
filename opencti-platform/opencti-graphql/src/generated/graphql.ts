@@ -6790,7 +6790,6 @@ export enum DataComponentsOrdering {
 
 export type DataSanityConfiguration = {
   __typename?: 'DataSanityConfiguration';
-  id: Scalars['ID']['output'];
   maintenance_planning: Array<DataSanityMaintenanceWindow>;
   timezone_offset: Scalars['Int']['output'];
 };
@@ -24450,7 +24449,6 @@ export type Query = {
   customViewsSettings: CustomViewsSettings;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
-  dataSanityConfiguration?: Maybe<DataSanityConfiguration>;
   dataSanityExecutions: Array<DataSanityExecution>;
   dataSanityOperationDryRun: DataSanityDryRunOutput;
   dataSanityOperations: Array<DataSanityOperation>;
@@ -30298,6 +30296,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   caller_ip?: Maybe<Scalars['String']['output']>;
   cert_auth?: Maybe<CertAuthConfig>;
   created_at: Scalars['DateTime']['output'];
+  data_sanity_configuration?: Maybe<DataSanityConfiguration>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   filigran_chatbot_ai_cgu_status: CguStatus;
@@ -43763,7 +43762,6 @@ export type DataComponentEdgeResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type DataSanityConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityConfiguration'] = ResolversParentTypes['DataSanityConfiguration']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   maintenance_planning?: Resolver<Array<ResolversTypes['DataSanityMaintenanceWindow']>, ParentType, ContextType>;
   timezone_offset?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
@@ -49319,7 +49317,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
-  dataSanityConfiguration?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType>;
   dataSanityExecutions?: Resolver<Array<ResolversTypes['DataSanityExecution']>, ParentType, ContextType>;
   dataSanityOperationDryRun?: Resolver<ResolversTypes['DataSanityDryRunOutput'], ParentType, ContextType, RequireFields<QueryDataSanityOperationDryRunArgs, 'operation_name'>>;
   dataSanityOperations?: Resolver<Array<ResolversTypes['DataSanityOperation']>, ParentType, ContextType>;
@@ -50469,6 +50466,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   caller_ip?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cert_auth?: Resolver<Maybe<ResolversTypes['CertAuthConfig']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  data_sanity_configuration?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filigran_chatbot_ai_cgu_status?: Resolver<ResolversTypes['CGUStatus'], ParentType, ContextType>;

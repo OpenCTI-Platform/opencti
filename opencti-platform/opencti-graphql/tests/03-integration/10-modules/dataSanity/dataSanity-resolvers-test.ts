@@ -49,14 +49,15 @@ const DATA_SANITY_DRY_RUN_QUERY = gql`
 
 const DATA_SANITY_CONFIGURATION_QUERY = gql`
   query DataSanityConfiguration {
-    dataSanityConfiguration {
-      id
-      maintenance_planning {
-        day
-        start_time
-        end_time
+    settings {
+      data_sanity_configuration {
+        maintenance_planning {
+          day
+          start_time
+          end_time
+        }
+        timezone_offset
       }
-      timezone_offset
     }
   }
 `;
@@ -70,7 +71,6 @@ const DATA_SANITY_REQUEST_RUN_MUTATION = gql`
 const DATA_SANITY_UPDATE_PLANNING_MUTATION = gql`
   mutation DataSanityUpdateMaintenancePlanning($planning: [DataSanityMaintenanceWindowInput!]!, $timezone_offset: Int!) {
     dataSanityUpdateMaintenancePlanning(planning: $planning, timezone_offset: $timezone_offset) {
-      id
       maintenance_planning {
         day
         start_time
@@ -120,9 +120,8 @@ describe('Data sanity resolvers test coverage', () => {
       const result = await queryAsAdminWithSuccess({ query: DATA_SANITY_CONFIGURATION_QUERY });
       // Configuration may or may not exist depending on test order
       // Just verify the query resolves without error
-      const config = result.data.dataSanityConfiguration;
+      const config = result.data.settings.data_sanity_configuration;
       if (config) {
-        expect(config.id).toBeDefined();
         expect(Array.isArray(config.maintenance_planning)).toBeTruthy();
         expect(typeof config.timezone_offset).toBe('number');
       }
@@ -151,7 +150,6 @@ describe('Data sanity resolvers test coverage', () => {
       });
       const config = result.data.dataSanityUpdateMaintenancePlanning;
       expect(config).toBeDefined();
-      expect(config.id).toBeDefined();
       expect(config.timezone_offset).toBe(120);
       expect(config.maintenance_planning).toHaveLength(2);
       expect(config.maintenance_planning[0]).toMatchObject({ day: 'monday', start_time: '08:00', end_time: '12:00' });
@@ -195,10 +193,6 @@ describe('Data sanity resolvers test coverage', () => {
         query: DATA_SANITY_DRY_RUN_QUERY,
         variables: { operation_name: 'caseSensitiveDuplicatedId' },
       });
-    });
-
-    it('should forbid dataSanityConfiguration query for non-bypass user', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: DATA_SANITY_CONFIGURATION_QUERY });
     });
 
     it('should forbid dataSanityOperationRequestRun mutation for non-bypass user', async () => {
