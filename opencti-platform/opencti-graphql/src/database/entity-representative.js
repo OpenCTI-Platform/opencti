@@ -1,10 +1,14 @@
 import moment from 'moment';
 import { isEmptyField, isNotEmptyField, REDACTED_INFORMATION } from './utils';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { observableValue } from '../utils/format';
 import { ENABLED_DEMO_MODE } from '../config/conf';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
+import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../modules/xtm/hub/news-feed/news-feed-types';
 
 export const extractRepresentativeDescription = (entityData) => {
   let secondValue;
@@ -43,6 +47,20 @@ export const extractEntityRepresentativeName = (entityData) => {
   let mainValue;
   if (entityData.entity_type === ENTITY_TYPE_USER) {
     mainValue = ENABLED_DEMO_MODE ? REDACTED_INFORMATION : entityData.name;
+  } else if (isInternalObject(entityData.entity_type)) {
+    if (entityData.entity_type === ENTITY_TYPE_NEWS_FEED_ITEM) {
+      mainValue = entityData.title;
+    } else if (entityData.entity_type === ENTITY_TYPE_DELETE_OPERATION) {
+      mainValue = entityData.main_entity_name;
+    } else if (entityData.entity_type === ENTITY_TYPE_SETTINGS) {
+      mainValue = entityData.platform_title;
+    } else if (entityData.entity_type === ENTITY_TYPE_ENTITY_SETTING) {
+      mainValue = entityData.target_type;
+    } else if (entityData.entity_type === ENTITY_TYPE_MANAGER_CONFIGURATION) {
+      mainValue = entityData.manager_id;
+    } else {
+      mainValue = entityData.name;
+    }
   } else if (isStixCyberObservable(entityData.entity_type)) {
     mainValue = observableValue(entityData);
   } else if (entityData.entity_type === ENTITY_TYPE_STATUS && entityData.name && entityData.type) {
