@@ -107,34 +107,36 @@ const FintelTemplateForm = ({
               onSubmit={onUpdate}
             />
 
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="default"
-              label={t_i18n('Set as default')}
-              containerstyle={{ marginTop: 20 }}
-              onChange={onUpdate}
-            />
-
             {!isEdition && (
-              <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    handleReset();
-                    onClose();
-                  }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
-                  {t_i18n('Create')}
-                </Button>
-              </FormButtonContainer>
+              <>
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="default"
+                  label={t_i18n('Set as default')}
+                  containerstyle={{ marginTop: 20 }}
+                  onChange={onUpdate}
+                />
+
+                <FormButtonContainer>
+                  <Button
+                    variant="secondary"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      handleReset();
+                      onClose();
+                    }}
+                  >
+                    {t_i18n('Cancel')}
+                  </Button>
+                  <Button
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                  >
+                    {t_i18n('Create')}
+                  </Button>
+                </FormButtonContainer>
+              </>
             )}
           </Form>
         );

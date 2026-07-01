@@ -4,17 +4,23 @@ import { Menu, MenuItem, PopoverProps } from '@mui/material';
 import IconButton from '@common/button/IconButton';
 import useFintelTemplateExport from './useFintelTemplateExport';
 import useFintelTemplateDelete from './useFintelTemplateDelete';
+import useFintelTemplateSetDefault from './useFintelTemplateSetDefault';
+import useFintelTemplateEdit from './useFintelTemplateEdit';
 import stopEvent from '../../../../../utils/domEvent';
 import { useFormatter } from '../../../../../components/i18n';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
+import { graphql } from 'relay-runtime';
+import { fetchQuery, handleError } from 'src/relay/environment';
 
 interface FintelTemplatePopoverProps {
   onUpdate: () => void;
   onDeleteComplete?: () => void;
   entitySettingId: string;
   templateId: string;
+  settingsType: string;
   inline?: boolean;
+  isDefault: boolean;
 }
 
 const FintelTemplatePopover = ({
@@ -22,12 +28,32 @@ const FintelTemplatePopover = ({
   onDeleteComplete,
   entitySettingId,
   templateId,
+  settingsType,
   inline = true,
+  isDefault,
 }: FintelTemplatePopoverProps) => {
   const { t_i18n } = useFormatter();
   const exportFintel = useFintelTemplateExport();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [commitDeleteMutation] = useFintelTemplateDelete(entitySettingId);
+  const [commitSetDefault] = useFintelTemplateSetDefault();
+  const [commitEditMutation] = useFintelTemplateEdit();
+
+  const fintelTemplatesRefetchQuery = graphql`
+  query FintelTemplatePopoverRefetchQuery($id: String!) {
+    entitySetting(id: $id) {
+      id
+      fintelTemplates(orderBy: name, orderMode: asc) {
+        edges {
+          node {
+            id
+            default
+          }
+        }
+      }
+    }
+  }
+`;
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(undefined) });
   const {
@@ -73,6 +99,35 @@ const FintelTemplatePopover = ({
     await exportFintel(templateId);
   };
 
+  const onSetAsDefault = (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    commitSetDefault({
+      variables: { id: templateId, settingsType },
+      onCompleted: () => {
+        fetchQuery(fintelTemplatesRefetchQuery, { id: entitySettingId }).toPromise().catch((err) => {
+          handleError(err);
+        });
+      },
+    });
+  };
+
+  const onSetRemoveDefault = (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    commitEditMutation({
+      variables: {
+        id: templateId,
+        input: [{ key: 'default', value: ['false'] }],
+      },
+      onCompleted: () => {
+        fetchQuery(fintelTemplatesRefetchQuery, { id: entitySettingId }).toPromise().catch((err) => {
+          handleError(err);
+        });
+      },
+    });
+  };
+
   return (
     <>
       {inline ? (
@@ -94,8 +149,12 @@ const FintelTemplatePopover = ({
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
+        {isDefault
+          ? <MenuItem onClick={onSetRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
+          : <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>
+        }
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
 
       <DeleteDialog

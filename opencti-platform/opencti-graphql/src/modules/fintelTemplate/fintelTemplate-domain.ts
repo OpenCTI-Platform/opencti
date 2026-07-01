@@ -3,6 +3,8 @@ import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type EditInput,
+  FilterMode,
+  FilterOperator,
   type FilterGroup,
   type FintelTemplateAddInput,
   type FintelTemplateWidget,
@@ -11,12 +13,12 @@ import {
   type WidgetDataSelection,
 } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE, type StoreEntityFintelTemplate } from './fintelTemplate-types';
+import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE, type StoreEntityFintelTemplate, type FintelTemplate } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -80,6 +82,80 @@ export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: Fintel
   if (invalidVariableNames.length > 0) {
     throw FunctionalError('Variable names should not contain spaces or special chars (except - and _)', { invalidVariableNames });
   }
+};
+
+const applyUniqueDefaultTemplateConstraint = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsType: string,
+  newDefaultTemplateId: string,
+): Promise<StoreEntityFintelTemplate[]> => {
+  const previousDefaultTemplates = await fullEntitiesList<BasicStoreEntityFintelTemplate>(
+    context,
+    user,
+    [ENTITY_TYPE_FINTEL_TEMPLATE],
+    {
+      baseData: true,
+      filters: {
+        filters: [{
+          key: ['settings_types'],
+          values: [settingsType],
+        }, {
+          key: ['default'],
+          values: ['true'],
+        }, {
+          key: ['id'],
+          values: [newDefaultTemplateId],
+          operator: FilterOperator.NotEq,
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+  if (previousDefaultTemplates.length === 0) {
+    return [];
+  }
+  // There should be only one but we never know as the constraint is not
+  // enforced at the DB level.
+  const results = await Promise.all(
+    previousDefaultTemplates.map((entity: BasicStoreEntityFintelTemplate) => updateAttribute<StoreEntityFintelTemplate>(
+      context,
+      user,
+      entity.id,
+      ENTITY_TYPE_FINTEL_TEMPLATE,
+      [{
+        key: 'default',
+        value: ['false'],
+      }],
+    )),
+  );
+  return results.map(({ element }) => element);
+};
+
+export const setTemplateAsDefault = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsType: string,
+  templateId: string,
+) => {
+  await canCustomizeTemplate(context);
+  const template = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, templateId, ENTITY_TYPE_FINTEL_TEMPLATE);
+  if (!(template.settings_types ?? []).includes(settingsType)) {
+    throw FunctionalError('Invalid settingsType for fintel template', { templateId, settingsType });
+  }
+  const { element } = await updateAttribute<StoreEntityFintelTemplate>(
+    context,
+    user,
+    templateId,
+    ENTITY_TYPE_FINTEL_TEMPLATE,
+    [{
+      key: 'default',
+      value: ['true'],
+    }],
+  );
+  const deDefaulted = await applyUniqueDefaultTemplateConstraint(context, user, settingsType, templateId);
+  return [element, ...deDefaulted];
 };
 
 export const addFintelTemplate = async (
@@ -152,6 +228,10 @@ export const addFintelTemplate = async (
     finalInput,
     ENTITY_TYPE_FINTEL_TEMPLATE,
   );
+  if (input.default) {
+    await setTemplateAsDefault(context, user, settings_type, created.id);
+  }
+
   await publishUserAction({
     user,
     event_type: 'mutation',
