@@ -4,7 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsMultiAreaChartQuery } from './__generated__/PublicStixCoreObjectsMultiAreaChartQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
@@ -77,7 +77,7 @@ const PublicStixCoreObjectsMultiAreaChart = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsMultiAreaChartQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsMultiAreaChartQuery>(
     publicStixCoreObjectsMultiAreaChartQuery,
     {
       uriKey,

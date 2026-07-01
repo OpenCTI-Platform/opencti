@@ -16,6 +16,8 @@ const REFRESH_INTERVALS: ReadonlyArray<RefreshIntervalOption> = [
   { value: 900 },
   { value: 1800 },
   { value: 3600 },
+  { value: 43200 },
+  { value: 86400 },
 ];
 
 type DashboardRefreshControlProps = {
@@ -61,6 +63,10 @@ const DashboardRefreshControl = ({
         return t_i18n('30m');
       case 3600:
         return t_i18n('1h');
+      case 43200:
+        return t_i18n('12h');
+      case 86400:
+        return t_i18n('1d');
       default:
         return '';
     }

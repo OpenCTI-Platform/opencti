@@ -12,6 +12,9 @@ import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
 import { useFormatter } from '../../components/i18n';
 import type { DashboardManifest } from '../../components/dashboard/dashboard-types';
+import useDashboardRefresh from '../../components/dashboard/useDashboardRefresh';
+import DashboardRefreshControl from '../../components/dashboard/DashboardRefreshControl';
+import DashboardRefreshContext from '../../components/dashboard/DashboardRefreshContext';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -40,6 +43,17 @@ const PublicDashboardComponent = ({
   const manifest = publicDashboardByUriKey?.public_manifest;
   const parsedManifest: DashboardManifest = JSON.parse(manifest ? fromB64(manifest) : '{}');
   const { widgets, config } = parsedManifest;
+  const initialRefreshRateSeconds = config?.refresh_interval ?? 0;
+
+  const {
+    localRefreshRateSeconds,
+    refreshToken,
+    isAutoRefreshing,
+    handleManualRefresh,
+    handleRefreshRateChange,
+  } = useDashboardRefresh({
+    initialRefreshRateSeconds,
+  });
 
   useEffect(() => {
     if (publicDashboardByUriKey === null || !publicDashboardByUriKey?.enabled) {
@@ -74,31 +88,41 @@ const PublicDashboardComponent = ({
         onChangeRelativeDate={onChangeRelativeDate}
         onChangeStartDate={onChangeStartDate}
         onChangeEndDate={onChangeEndDate}
+        actions={(
+          <DashboardRefreshControl
+            onRefresh={handleManualRefresh}
+            interval={localRefreshRateSeconds}
+            onIntervalChange={handleRefreshRateChange}
+            isRefreshing={isAutoRefreshing}
+          />
+        )}
       />
 
-      <div ref={containerRef}>
-        <ReactGridLayout
-          className="layout"
-          width={width}
-          layout={widgetsWithLayout.map((w) => w.layout!)}
-          gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
-          dragConfig={{ enabled: false }}
-          resizeConfig={{ enabled: false }}
-        >
-          {widgetsWithLayout.map((widget) => (
-            <div
-              key={widget.id}
-            >
-              <ErrorBoundary>
-                {widget.perspective === 'entities' && entityWidget(widget)}
-                {widget.perspective === 'relationships' && relationshipWidget(widget)}
-                {widget.perspective === 'audits' && auditWidget(widget)}
-                {widget.perspective === null && rawWidget(widget)}
-              </ErrorBoundary>
-            </div>
-          ))}
-        </ReactGridLayout>
-      </div>
+      <DashboardRefreshContext.Provider value={refreshToken}>
+        <div ref={containerRef}>
+          <ReactGridLayout
+            className="layout"
+            width={width}
+            layout={widgetsWithLayout.map((w) => w.layout!)}
+            gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
+            dragConfig={{ enabled: false }}
+            resizeConfig={{ enabled: false }}
+          >
+            {widgetsWithLayout.map((widget) => (
+              <div
+                key={widget.id}
+              >
+                <ErrorBoundary>
+                  {widget.perspective === 'entities' && entityWidget(widget)}
+                  {widget.perspective === 'relationships' && relationshipWidget(widget)}
+                  {widget.perspective === 'audits' && auditWidget(widget)}
+                  {widget.perspective === null && rawWidget(widget)}
+                </ErrorBoundary>
+              </div>
+            ))}
+          </ReactGridLayout>
+        </div>
+      </DashboardRefreshContext.Provider>
 
     </>
   );

@@ -3,7 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsMultiHeatMapQuery } from './__generated__/PublicStixCoreObjectsMultiHeatMapQuery.graphql';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
@@ -83,7 +83,7 @@ const PublicStixCoreObjectsMultiHeatMap = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsMultiHeatMapQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsMultiHeatMapQuery>(
     publicStixCoreObjectsMultiHeatMapQuery,
     {
       uriKey,
