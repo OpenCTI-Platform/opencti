@@ -1663,6 +1663,7 @@ type User implements BasicObject & InternalObject {
   firstname: String
   otp_activated: Boolean
   otp_mandatory: Boolean
+  otp_qr: String
   user_service_account: Boolean
   lastname: String
   theme: String
@@ -1722,6 +1723,7 @@ type MeUser implements BasicObject & InternalObject {
   description: String
   firstname: String
   otp_activated: Boolean
+  otp_qr: String
   lastname: String
   theme: String
   language: String
