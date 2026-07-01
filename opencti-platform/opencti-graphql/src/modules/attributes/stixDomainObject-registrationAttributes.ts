@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
 import {
   aliases,
   type AttributeDefinition,
@@ -365,6 +366,7 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, [
     multiple: true,
     upsert: false,
     isFilterable: false,
+    featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
     mappings: [
       { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
       { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
