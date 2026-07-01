@@ -1784,4 +1784,67 @@ describe('Password policy propagation to all users', () => {
     const expectedParticipateDate = Date.now() + 600 * 86400000;
     expect(Math.abs(participateNewDate - expectedParticipateDate)).toBeLessThan(60000);
   });
+
+  it('updateLocalAuth 500→0→1 should give now+1', async () => {
+    // Setup: set policy to 500, set dates on users
+    const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 500,
+    });
+    // Set a date in the future (simulating password changed recently with 500 day policy)
+    const oldDate = new Date(Date.now() + 490 * 86400000).toISOString();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [oldDate] } },
+    });
+
+    // Step 1: set policy to 0 (should clear dates)
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+    });
+
+    // Verify dates are cleared
+    const editorMid: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    expect(editorMid.password_valid_until == null).toBe(true);
+
+    // Step 2: set policy to 1 (should give now+1 day)
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 1,
+    });
+
+    // Assert: editor should have now+1 day
+    const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    expect(editorAfter.password_valid_until).not.toBeNull();
+    const editorNewDate = new Date(editorAfter.password_valid_until).getTime();
+    const expectedDate = Date.now() + 1 * 86400000; // now + 1 day
+    // Should be within 1 minute of now+1day
+    expect(Math.abs(editorNewDate - expectedDate)).toBeLessThan(60000);
+    // Should NOT be close to old_date+1
+    const oldDatePlus1 = new Date(oldDate).getTime() + 1 * 86400000;
+    expect(Math.abs(editorNewDate - oldDatePlus1)).toBeGreaterThan(86400000); // at least 1 day away from old_date+1
+  });
 });
