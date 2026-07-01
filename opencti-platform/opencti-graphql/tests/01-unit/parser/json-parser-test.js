@@ -69,7 +69,7 @@ describe('JSON mapper testing', () => {
     expect(organization.identity_class).toBe('organization');
   });
   it('should misp correctly parsed', async () => {
-    const objects = await jsonMappingExecution(testContext, ADMIN_USER, misp_data, misp_mapper, { externalUri: 'http://localhost' });
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, misp_data, misp_mapper, 0, { externalUri: 'http://localhost' });
     const { mapById, mapByType } = buildMaps(objects);
     expect(mapByType.get('marking-definition').length).toBe(1);
     expect(mapByType.get('location').length).toBe(1);

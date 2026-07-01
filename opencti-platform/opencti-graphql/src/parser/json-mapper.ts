@@ -346,7 +346,7 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
   return [baseEntities, basedOnEntities, relationships];
 };
 
-const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed, variables: Record<string, unknown> = {}) => {
+const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed, maxRecords = 0, variables: Record<string, unknown> = {}) => {
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
   const chosenMarkings = mapper.user_chosen_markings ?? [];
   const results = new Map<string, Map<string, Record<string, InputType>>>();
@@ -356,6 +356,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
 
   const processInput = (representation: JsonMapperRepresentation, input: any) => {
     let stixObject: StixObject | undefined;
+    let continueProcessing = true;
     try {
       stixObject = convertStoreToStix_2_1(input as unknown as StoreCommon);
     } catch (e) {
@@ -365,6 +366,9 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
     if (stixObject && !seenIds.has(stixObject.id)) {
       seenIds.add(stixObject.id);
       finalObjects.push(stixObject);
+      if (maxRecords !== 0 && finalObjects.length >= maxRecords) {
+        continueProcessing = false;
+      }
     }
 
     if (representation.type === JsonMapperRepresentationType.Relationship) {
@@ -385,6 +389,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
     } else {
       results.set(representation.id, new Map([[input.__identifier, input]]));
     }
+    return continueProcessing;
   };
 
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
@@ -464,7 +469,10 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
                 inputNew.to = to;
                 inputNew.toType = toType;
                 inputNew.standard_id = generateStandardId(inputNew.entity_type, inputNew);
-                processInput(representation, inputNew);
+                const continueProcessing = processInput(representation, inputNew);
+                if (!continueProcessing) {
+                  return finalObjects;
+                }
               }
             }
           } else {
@@ -475,7 +483,10 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
             } else {
               input.__identifier = uuidv4();
             }
-            processInput(representation, input);
+            const continueProcessing = processInput(representation, input);
+            if (!continueProcessing) {
+              return finalObjects;
+            }
           }
         }
       }
