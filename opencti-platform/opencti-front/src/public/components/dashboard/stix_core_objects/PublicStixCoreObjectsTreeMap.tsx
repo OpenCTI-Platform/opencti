@@ -78,6 +78,7 @@ const PublicStixCoreObjectsTreeMapComponent = ({
         data={[...publicStixCoreObjectsDistribution]}
         groupBy={dataSelection[0].attribute ?? 'entity_type'}
         isDistributed={!!parameters?.distributed}
+        mainColor={parameters?.mainColor}
       />
     );
   }

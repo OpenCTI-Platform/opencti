@@ -27,6 +27,17 @@ export const colors = (temp) => [
   C.grey[temp],
 ];
 
+export const widgetMainColorPalette = [
+  'blue', 'cyan', 'green', 'teal',
+  'amber', 'orange', 'red', 'purple',
+];
+
+export const resolveWidgetMainColor = (theme, key) => {
+  if (!key) return theme.palette.primary.main;
+  const shade = theme.palette.mode === 'dark' ? 400 : 600;
+  return C[key]?.[shade] ?? theme.palette.primary.main;
+};
+
 const toolbarOptions = {
   show: false,
   export: {
@@ -905,13 +916,16 @@ export const donutChartOptions = (
  * @param {function} formatter
  * @param {string} legendPosition
  * @param {boolean} distributed
+ * @param {string|null} mainColorHex resolved hex color (not a palette key); see resolveWidgetMainColor
  */
 export const treeMapOptions = (
   theme,
   formatter = null,
   legendPosition = 'bottom',
   distributed = false,
+  mainColorHex = null,
 ) => {
+  const resolvedMainColor = mainColorHex || theme.palette.primary.main;
   return {
     chart: {
       type: 'treemap',
@@ -926,7 +940,7 @@ export const treeMapOptions = (
     },
     colors: distributed
       ? colors(theme.palette.mode === 'dark' ? 400 : 600).filter((c) => !isColorCloseToWhite(c))
-      : [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
+      : [resolvedMainColor, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
     fill: {
       opacity: 1,
     },
