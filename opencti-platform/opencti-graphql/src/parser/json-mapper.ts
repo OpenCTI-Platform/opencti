@@ -346,7 +346,14 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
   return [baseEntities, basedOnEntities, relationships];
 };
 
-const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed, maxRecords = 0, variables: Record<string, unknown> = {}) => {
+const jsonMappingExecution = async (
+  context: AuthContext,
+  user: AuthUser,
+  data: string | object,
+  mapper: JsonMapperParsed,
+  maxRecords = 0,
+  variables: Record<string, unknown> = {},
+) => {
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
   const chosenMarkings = mapper.user_chosen_markings ?? [];
   const results = new Map<string, Map<string, Record<string, InputType>>>();
