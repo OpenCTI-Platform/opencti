@@ -18,7 +18,10 @@ import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 
 export const setCookieError = (res: Response, message: string) => {
-  res.cookie('opencti_flash', message || 'Unknown error', {
+  // Sanitize: only store a short, single-line user-facing message in the cookie.
+  // This prevents leaking sensitive error details (stack traces, internal data) in clear text.
+  const sanitized = (message || 'Unknown error').split('\n')[0].substring(0, 200);
+  res.cookie('opencti_flash', sanitized, {
     maxAge: 10000,
     httpOnly: false,
     secure: booleanConf('app:https_cert:cookie_secure', false),
