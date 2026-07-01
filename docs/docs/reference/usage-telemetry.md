@@ -78,6 +78,8 @@ Here is an exhaustive list of the collected metrics:
 - The number of request access creations (RFI of request access type)
 - The number of custom views created
 - The number of custom views enabled
+- The number of shared saved filters (i.e. saved filters shared with others members than just the creator)
+- The number of access restriction updates on saved filters
 
 ### Email and notifications
 
