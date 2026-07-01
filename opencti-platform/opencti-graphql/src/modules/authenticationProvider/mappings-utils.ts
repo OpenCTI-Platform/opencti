@@ -156,8 +156,10 @@ export const createMapper = (
       userMapping,
       groupsMapping: {
         groups,
+        groupMappingEntries: conf.groups_mapping.groups_mapping,
         autoCreateGroup: conf.groups_mapping.auto_create_groups,
         preventDefaultGroups: conf.groups_mapping.prevent_default_groups,
+        extendPlatformGroups: conf.groups_mapping.extend_platform_groups,
       },
       organizationsMapping: {
         organizations,
