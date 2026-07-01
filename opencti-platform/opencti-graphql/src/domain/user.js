@@ -667,7 +667,7 @@ export const computePasswordValidUntilFromPolicy = async (context) => {
  * Called when the admin disables the password validity policy (sets validity days to 0).
  */
 export const clearAllUsersPasswordValidUntil = async (context, user) => {
-  const allUsers = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
   const usersWithExpiry = allUsers.filter((u) => u.password_valid_until != null && !u.external);
   for (let i = 0; i < usersWithExpiry.length; i += 1) {
     const inputs = [{ key: 'password_valid_until', value: [null] }];
@@ -686,7 +686,7 @@ export const clearAllUsersPasswordValidUntil = async (context, user) => {
 export const adjustAllUsersPasswordValidUntil = async (context, user, oldDays, newDays) => {
   const diffDays = newDays - oldDays;
   if (diffDays === 0) return;
-  const allUsers = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
   const internalUsers = allUsers.filter((u) => !u.external);
   for (let i = 0; i < internalUsers.length; i += 1) {
     const currentUser = internalUsers[i];
