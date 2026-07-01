@@ -1769,6 +1769,7 @@
   "entity_Role": "Rolle",
   "entity_Sector": "Sektor",
   "entity_Security-Coverage": "Deckung der Sicherheit",
+  "entity_Security-Coverage-Result": "Ergebnisse der Sicherheitsabdeckung",
   "entity_Securityplatform": "Plattform für Sicherheit",
   "entity_SecurityPlatform": "Sicherheitsplattform",
   "entity_Sighting": "Sichtung",
