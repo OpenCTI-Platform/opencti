@@ -1016,6 +1016,7 @@
   "Threat actor types": "威胁行为者类型",
   "Threat hunting": "威胁狩猎",
   "Timestamp": "时间戳",
+  "Timezone offset (minutes)": "时区偏移量（分钟）",
   "Title": "标题",
   "TLSH": "TLSH",
   "To": "收件人",

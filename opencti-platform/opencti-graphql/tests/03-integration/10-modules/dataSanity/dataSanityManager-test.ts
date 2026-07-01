@@ -1,14 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as sanityManagerConfigMock from '../../../../src/modules/dataSanity/dataSanity-operations';
+import * as maintenanceConfigMock from '../../../../src/modules/dataSanity/dataSanityConfiguration-domain';
 import { dataSanityHandler } from '../../../../src/manager/dataSanityManager';
 import { findDataSanityByOperationName, setForceRun } from '../../../../src/modules/dataSanity/dataSanity-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
-import { getDataSanityConfigurationFromDatabase } from '../../../../src/modules/dataSanity/dataSanityConfiguration-domain';
-import convertDataSanityConfigurationToStix from '../../../../src/modules/dataSanity/dataSanityConfiguration-converter';
-import type { StoreEntityDataSanityConfiguration } from '../../../../src/modules/dataSanity/dataSanityConfiguration-types';
 import convertDataSanityToStix from '../../../../src/modules/dataSanity/dataSanity-converter';
 import type { StoreEntityDataSanity } from '../../../../src/modules/dataSanity/dataSanity-types';
+import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 
 describe('Data sanity manager handler test coverage', () => {
   afterEach(() => {
@@ -17,6 +16,8 @@ describe('Data sanity manager handler test coverage', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    // Always allow operations to run regardless of maintenance window configuration
+    vi.spyOn(maintenanceConfigMock, 'isWithinMaintenanceWindow').mockResolvedValue(true);
     vi.spyOn(sanityManagerConfigMock, 'sanityOperationList').mockReturnValue([
       {
         identifier: 'mockRunOnceOperation',
@@ -52,7 +53,7 @@ describe('Data sanity manager handler test coverage', () => {
     await dataSanityHandler();
 
     // Check run_once operation has been executed
-    const runOnceOp = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
+    const runOnceOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockRunOnceOperation');
     expect(runOnceOp).toBeDefined();
     expect(runOnceOp?.operation_name).toBe('mockRunOnceOperation');
     expect(runOnceOp?.last_execution_time).toBeGreaterThanOrEqual(0);
@@ -67,24 +68,25 @@ describe('Data sanity manager handler test coverage', () => {
     await dataSanityHandler();
 
     // Check run_once operation has NOT been re-executed
-    const runOnceOp = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
+    const runOnceOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockRunOnceOperation');
     expect(runOnceOp).toBeDefined();
     expect(runOnceOp?.last_run_date).toBe(runOnceFirstRunDate);
   });
 
   it('should force run of a run once script work', async () => {
     await setForceRun(testContext, ADMIN_USER, 'mockRunOnceOperation');
-    const runOnceOpBefore = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
+    const runOnceOpBefore = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockRunOnceOperation');
     expect(runOnceOpBefore).toBeDefined();
     expect(runOnceOpBefore?.force_run).toBeTruthy();
 
     await dataSanityHandler();
 
-    // Check run_once operation has NOT been re-executed
-    const runOnceOp = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
+    // Check run_once operation has been re-executed on demand
+    const runOnceOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockRunOnceOperation');
     expect(runOnceOp).toBeDefined();
-    expect(runOnceOpBefore?.force_run).toBeFalsy();
-    expect(runOnceOp?.last_run_date.getTime()).toBeGreaterThan(runOnceFirstRunDate.getTime());
+    expect(runOnceOp?.force_run).toBeFalsy();
+    expect(runOnceOp?.last_run_date).toBeDefined();
+    expect(new Date(runOnceOp!.last_run_date).getTime()).toBeGreaterThan(new Date(runOnceFirstRunDate).getTime());
   });
 
   it('should operation with error be managed', async () => {
@@ -94,7 +96,7 @@ describe('Data sanity manager handler test coverage', () => {
     await dataSanityHandler();
 
     // THEN
-    const onDemandOpAfterRun = await findDataSanityByOperationName(testContext, 'mockRunOnceOperationThatFails');
+    const onDemandOpAfterRun = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockRunOnceOperationThatFails');
     expect(onDemandOpAfterRun).toBeDefined();
     expect(onDemandOpAfterRun?.operation_name).toBe('mockRunOnceOperationThatFails');
     expect(onDemandOpAfterRun?.last_execution_time).toBeGreaterThanOrEqual(0);
@@ -102,12 +104,27 @@ describe('Data sanity manager handler test coverage', () => {
     expect(onDemandOpAfterRun?.force_run).toBe(false); // should be back to false
   });
 
-  it('should stix conversion works', async () => {
-    const runOnceOp = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
-    if (runOnceOp) {
-      const result = convertDataSanityToStix(runOnceOp as StoreEntityDataSanity);
-      expect(result.operation_name).toBe('mockRunOnceOperation');
-      expect(result.type).toBe('run_once');
-    }
+  it('should convert a DataSanity entity to STIX format', async () => {
+    const runOnceOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockRunOnceOperation');
+    expect(runOnceOp).toBeDefined();
+
+    const result = convertDataSanityToStix(runOnceOp as StoreEntityDataSanity);
+
+    // Core STIX properties
+    expect(result.type).toBe('datasanityexecution');
+    expect(result.id).toBeDefined();
+
+    // All domain-specific fields are mapped correctly
+    expect(result.operation_name).toBe('mockRunOnceOperation');
+    expect(result.last_run_date).toBe(runOnceOp!.last_run_date);
+    expect(result.last_execution_time).toBe(runOnceOp!.last_execution_time);
+    expect(result.last_run_success).toBe(true);
+    expect(result.last_run_message).toBeDefined();
+    expect(result.last_run_output).toBeDefined();
+
+    // STIX extension structure
+    expect(result.extensions).toBeDefined();
+    expect(result.extensions[STIX_EXT_OCTI]).toBeDefined();
+    expect(result.extensions[STIX_EXT_OCTI].extension_type).toBe('new-sdo');
   });
 });

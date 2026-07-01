@@ -3,7 +3,6 @@ import { fullEntitiesList } from '../../database/middleware-loader';
 import { createEntity, updateAttribute } from '../../database/middleware';
 import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from './dataSanity-types';
 import type { BasicStoreEntityDataSanity } from './dataSanity-types';
-import { SYSTEM_USER } from '../../utils/access';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';
 import { type SanityOperation, sanityOperationList, type SanityOperationRunOutput } from './dataSanity-operations';
@@ -11,10 +10,10 @@ import { type SanityOperation, sanityOperationList, type SanityOperationRunOutpu
 /**
  * Find a DataSanity entity by operation_name.
  */
-export const findDataSanityByOperationName = async (context: AuthContext, operationName: string): Promise<BasicStoreEntityDataSanity | undefined> => {
+export const findDataSanityByOperationName = async (context: AuthContext, user: AuthUser, operationName: string): Promise<BasicStoreEntityDataSanity | undefined> => {
   const results = await fullEntitiesList<BasicStoreEntityDataSanity>(
     context,
-    SYSTEM_USER,
+    user,
     [ENTITY_TYPE_DATA_SANITY_EXECUTION],
     {
       filters: {
@@ -30,8 +29,8 @@ export const findDataSanityByOperationName = async (context: AuthContext, operat
 /**
  * Check if a sanity operation has already been executed (stored in ElasticSearch).
  */
-export const hasOperationBeenExecuted = async (context: AuthContext, operationName: string): Promise<boolean> => {
-  const entity = await findDataSanityByOperationName(context, operationName);
+export const hasOperationBeenExecuted = async (context: AuthContext, user: AuthUser, operationName: string): Promise<boolean> => {
+  const entity = await findDataSanityByOperationName(context, user, operationName);
   return entity !== undefined && !entity.force_run;
 };
 
@@ -40,7 +39,7 @@ export const hasOperationBeenExecuted = async (context: AuthContext, operationNa
  * Creates the entity if it doesn't exist yet.
  */
 export const markOperationAsRunning = async (context: AuthContext, user: AuthUser, operationName: string): Promise<void> => {
-  const existing = await findDataSanityByOperationName(context, operationName);
+  const existing = await findDataSanityByOperationName(context, user, operationName);
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
       { key: 'is_running', value: [true] },
@@ -74,7 +73,8 @@ export const markOperationAsExecuted = async (
   executionTimeMs: number, success: boolean, runMessage: string,
   output?: SanityOperationRunOutput,
 ): Promise<void> => {
-  const existing = await findDataSanityByOperationName(context, operationName);
+  console.log(`*** Mark op ${operationName} as executed`);
+  const existing = await findDataSanityByOperationName(context, user, operationName);
   const lastRunOutput = success && output ? JSON.stringify(output) : '';
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
@@ -123,7 +123,7 @@ export const findForceRunOperations = async (context: AuthContext, user: AuthUse
  * Creates the entity if it doesn't exist yet.
  */
 export const setForceRun = async (context: AuthContext, user: AuthUser, operationName: string): Promise<string> => {
-  const existing = await findDataSanityByOperationName(context, operationName);
+  const existing = await findDataSanityByOperationName(context, user, operationName);
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
       { key: 'force_run', value: [true] },
@@ -153,8 +153,8 @@ export const findAllDataSanityExecutions = async (context: AuthContext, user: Au
   );
 };
 
-export const listAllSanityOperations = async (context: AuthContext) => {
-  const executions = await findAllDataSanityExecutions(context, SYSTEM_USER);
+export const listAllSanityOperations = async (context: AuthContext, user: AuthUser) => {
+  const executions = await findAllDataSanityExecutions(context, user);
   return sanityOperationList().map((operation: SanityOperation) => {
     const execution = executions.find((e) => e.operation_name === operation.identifier);
     return {

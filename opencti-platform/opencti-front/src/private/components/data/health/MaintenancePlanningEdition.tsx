@@ -82,6 +82,15 @@ const formValuesToPlanning = (values: FormValues) => {
     }));
 };
 
+const formatUtcOffset = (): string => {
+  const offsetMinutes = -(new Date().getTimezoneOffset());
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absMinutes = Math.abs(offsetMinutes);
+  const hours = String(Math.floor(absMinutes / 60)).padStart(2, '0');
+  const minutes = String(absMinutes % 60).padStart(2, '0');
+  return `UTC${sign}${hours}:${minutes}`;
+};
+
 interface MaintenancePlanningFormProps {
   onClose: () => void;
 }
@@ -135,7 +144,7 @@ const MaintenancePlanningForm: FunctionComponent<MaintenancePlanningFormProps> =
           <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
             {t_i18n('Leave both start and end empty to disable the window for a given day.')}
             {' '}
-            {`(${t_i18n('Timezone')}: UTC${(() => { const off = -(new Date().getTimezoneOffset()); return off >= 0 ? `+${String(Math.floor(off / 60)).padStart(2, '0')}:${String(off % 60).padStart(2, '0')}` : `-${String(Math.floor(-off / 60)).padStart(2, '0')}:${String((-off) % 60).padStart(2, '0')}`; })()})`}
+            {`(${t_i18n('Timezone')}: ${formatUtcOffset()})`}
           </Typography>
           {DAYS_OF_WEEK.map((day) => (
             <div key={day.value} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 15 }}>
