@@ -66,9 +66,13 @@ export const getSchemaAttributes = () => {
     // Inject custom field attributes dynamically
     const customFieldDefs = getCustomFieldDefinitionsForEntityType(entityType);
     for (const cfDef of customFieldDefs) {
+      let attributeType: Attribute['type'] = 'string';
+      if (cfDef.field_type === 'integer') attributeType = 'numeric';
+      else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
+      else if (cfDef.field_type === 'date') attributeType = 'date';
       typeAttributes.push({
         name: cfDef.name,
-        type: cfDef.field_type === 'integer' ? 'numeric' : cfDef.field_type,
+        type: attributeType,
         label: cfDef.label,
         mandatory: cfDef.mandatory,
         mandatoryType: cfDef.mandatory ? 'external' : 'no',
