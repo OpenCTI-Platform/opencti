@@ -72,8 +72,17 @@ if (shouldWatch) {
                 } else {
                     if (buildCount === 1) {
                         console.log('✅ Initial build complete');
+                        // Signal the parent (watch.js) via IPC that the initial
+                        // build is done so it can start the app process.
+                        if (process.send) {
+                            process.send({ type: 'initial-build-complete' });
+                        }
                     } else {
                         console.log(`✅ Rebuild complete in ${duration}ms`);
+                        // Signal the parent to restart the app process.
+                        if (process.send) {
+                            process.send({ type: 'rebuild-complete' });
+                        }
                     }
                 }
             });

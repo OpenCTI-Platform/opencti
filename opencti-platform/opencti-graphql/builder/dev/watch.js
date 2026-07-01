@@ -1,4 +1,4 @@
-const { spawn } = require('child_process');
+const { spawn, fork } = require('child_process');
 const path = require('path');
 const { formatOutput } = require('./logsFormat');
 
@@ -12,19 +12,6 @@ let shuttingDown = false;
 let appProcess = null;
 let esbuildProcess = null;
 let graphQLWatchProcess = null;
-let esbuildStdoutBuffer = '';
-
-function tryStartAfterInitialBuild(line) {
-  if (initialBuildDone) {
-    return;
-  }
-
-  if (line.includes('Initial build complete')) {
-    initialBuildDone = true;
-    startAppWatch();
-    startGraphQLSchemaWatch();
-  }
-}
 
 function pipeFormattedOutput(stream, outputStream) {
   if (!stream) {
@@ -55,17 +42,9 @@ function pipeFormattedOutput(stream, outputStream) {
   });
 }
 
-function startAppWatch() {
-  if (appProcess) {
-    return;
-  }
-
-  console.log('[WATCH] Starting backend with node --watch...');
+function startApp() {
+  console.log('[WATCH] Starting backend...');
   appProcess = spawn('node', [
-    '--watch',
-    '--watch-path=build/back.js',
-    '--watch-kill-signal=SIGTERM',
-    '--watch-preserve-output',
     '--enable-source-maps',
     'build/back.js',
   ], {
@@ -76,7 +55,8 @@ function startAppWatch() {
   });
 
   pipeFormattedOutput(appProcess.stdout, process.stdout);
-  pipeFormattedOutput(appProcess.stderr, process.stderr);
+  // Pipe stderr directly so node internal messages are never suppressed
+  appProcess.stderr.on('data', (data) => process.stderr.write(data));
 
   appProcess.on('exit', (code) => {
     appProcess = null;
@@ -92,26 +72,23 @@ function startAppWatch() {
   });
 }
 
-function handleEsbuildOutput(data) {
-  const output = data.toString();
-  process.stdout.write(output);
+function startAppWatch() {
+  startApp();
+}
 
-  const text = `${esbuildStdoutBuffer}${output}`;
-  const lines = text.split('\n');
-  esbuildStdoutBuffer = lines.pop() || '';
-
-  for (const line of lines) {
-    tryStartAfterInitialBuild(line);
+function restartApp() {
+  console.log('[WATCH] Restarting backend...');
+  if (appProcess) {
+    appProcess.once('exit', () => startApp());
+    appProcess.kill('SIGTERM');
+  } else {
+    startApp();
   }
 }
 
-function flushEsbuildOutputBuffer() {
-  if (esbuildStdoutBuffer.length === 0) {
-    return;
-  }
-
-  tryStartAfterInitialBuild(esbuildStdoutBuffer);
-  esbuildStdoutBuffer = '';
+function handleEsbuildOutput(data) {
+  const output = data.toString();
+  process.stdout.write(output);
 }
 
 function startGraphQLSchemaWatch() {
@@ -143,15 +120,27 @@ function startGraphQLSchemaWatch() {
 }
 
 function startEsbuildWatch() {
-  esbuildProcess = spawn('node', ['builder/dev/dev.js', '--watch'], {
+  esbuildProcess = fork(require.resolve('./dev.js'), ['--watch'], {
     cwd: CONFIG.projectRoot,
-    stdio: ['pipe', 'pipe', 'pipe'],
-    shell: false,
+    silent: true, // captures stdio so we can pipe/format it
+    execArgv: [],
     env: { ...process.env, NODE_ENV: 'development' },
   });
 
+  // Receive IPC messages from dev.js
+  esbuildProcess.on('message', (msg) => {
+    if (!msg) return;
+    if (msg.type === 'initial-build-complete' && !initialBuildDone) {
+      console.log('[WATCH] Received initial-build-complete IPC, starting app...');
+      initialBuildDone = true;
+      startAppWatch();
+      startGraphQLSchemaWatch();
+    } else if (msg.type === 'rebuild-complete') {
+      restartApp();
+    }
+  });
+
   esbuildProcess.stdout.on('data', handleEsbuildOutput);
-  esbuildProcess.stdout.on('end', flushEsbuildOutputBuffer);
   esbuildProcess.stderr.on('data', (data) => process.stderr.write(data));
 
   esbuildProcess.on('exit', (code) => {
