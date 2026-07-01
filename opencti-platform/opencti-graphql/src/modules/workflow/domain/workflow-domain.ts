@@ -669,6 +669,61 @@ export const publishWorkflowDefinition = async (
 };
 
 /**
+ * Restore the workflow draft to match the currently published version.
+ * Clears draft_version so getWorkflowDefinition(allowDraft: true) falls back to published_version.
+ */
+export const restorePublishedWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<EntitySettingWithWorkflowResponse> => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  if (!entitySetting) {
+    throw FunctionalError('Entity setting not found for type', { entityType });
+  }
+
+  if (!entitySetting.workflow_id) {
+    throw FunctionalError('No workflow definition found', { entityType });
+  }
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+
+  const workflowDefinitionEntity = await storeLoadById(
+    executionContext,
+    executionUser,
+    entitySetting.workflow_id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ) as WorkflowDefinitionEntity | undefined;
+  if (!workflowDefinitionEntity) {
+    throw FunctionalError('Workflow definition not found', { workflowId: entitySetting.workflow_id });
+  }
+
+  if (!workflowDefinitionEntity.published_version) {
+    throw FunctionalError('No published version to restore', { entityType });
+  }
+
+  // Clearing draft_version causes getWorkflowDefinition(allowDraft: true) to fall back to
+  // published_version, effectively restoring the graph to the last published state.
+  await updateAttribute(
+    executionContext,
+    executionUser,
+    workflowDefinitionEntity.id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+    [{ key: 'draft_version', value: [] }],
+  );
+
+  const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
+  return {
+    id: entitySettingWithWorkflow.id,
+    workflow_id: entitySettingWithWorkflow.workflow_id,
+    target_type: entitySettingWithWorkflow.target_type,
+    errors: [],
+    published: true,
+  } as EntitySettingWithWorkflowResponse;
+};
+
+/**
  * Get workflow instance for an entity, with live pending transition data.
  */
 export const getWorkflowInstance = async (
