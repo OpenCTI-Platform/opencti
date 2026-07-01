@@ -6792,6 +6792,7 @@ export type DataSanityConfiguration = {
   __typename?: 'DataSanityConfiguration';
   id: Scalars['ID']['output'];
   maintenance_planning: Array<DataSanityMaintenanceWindow>;
+  timezone_offset: Scalars['Int']['output'];
 };
 
 export type DataSanityDryRunOutput = {
@@ -18009,6 +18010,7 @@ export type MutationDataSanityOperationRequestRunArgs = {
 
 export type MutationDataSanityUpdateMaintenancePlanningArgs = {
   planning: Array<DataSanityMaintenanceWindowInput>;
+  timezone_offset: Scalars['Int']['input'];
 };
 
 
@@ -43763,6 +43765,7 @@ export type DataComponentEdgeResolvers<ContextType = any, ParentType extends Res
 export type DataSanityConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityConfiguration'] = ResolversParentTypes['DataSanityConfiguration']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   maintenance_planning?: Resolver<Array<ResolversTypes['DataSanityMaintenanceWindow']>, ParentType, ContextType>;
+  timezone_offset?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type DataSanityDryRunOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityDryRunOutput'] = ResolversParentTypes['DataSanityDryRunOutput']> = ResolversObject<{
@@ -47451,7 +47454,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataComponentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationAddArgs, 'id' | 'input'>>;
   dataComponentRelationDelete?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   dataSanityOperationRequestRun?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataSanityOperationRequestRunArgs, 'operation_name'>>;
-  dataSanityUpdateMaintenancePlanning?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType, RequireFields<MutationDataSanityUpdateMaintenancePlanningArgs, 'planning'>>;
+  dataSanityUpdateMaintenancePlanning?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType, RequireFields<MutationDataSanityUpdateMaintenancePlanningArgs, 'planning' | 'timezone_offset'>>;
   dataSourceAdd?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceAddArgs, 'input'>>;
   dataSourceContextClean?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextCleanArgs, 'id'>>;
   dataSourceContextPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextPatchArgs, 'id' | 'input'>>;

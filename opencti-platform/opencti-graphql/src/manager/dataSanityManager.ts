@@ -89,7 +89,7 @@ export const dataSanityHandler = async () => {
   // Check if we are within a maintenance window before running operations
   const withinMaintenance = await isWithinMaintenanceWindow(context, DATA_SANITY_MANAGER_USER);
   if (!withinMaintenance) {
-    logApp.info('[OPENCTI-MODULE] Data sanity manager skipped: not within maintenance window');
+    logApp.debug('[OPENCTI-MODULE] Data sanity manager skipped: not within maintenance window');
     return;
   }
   await dataSanityListHandler(context);

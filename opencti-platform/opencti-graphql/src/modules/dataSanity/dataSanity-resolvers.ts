@@ -11,7 +11,7 @@ const dataSanityResolvers = {
   },
   Mutation: {
     dataSanityOperationRequestRun: (_: any, { operation_name }: { operation_name: string }, context: any) => setForceRun(context, context.user, operation_name),
-    dataSanityUpdateMaintenancePlanning: (_: any, { planning }: { planning: MaintenancePlanning }, context: any) => updateMaintenancePlanning(context, context.user, planning),
+    dataSanityUpdateMaintenancePlanning: (_: any, { planning, timezone_offset }: { planning: MaintenancePlanning; timezone_offset: number }, context: any) => updateMaintenancePlanning(context, context.user, planning, timezone_offset),
   },
 };
 

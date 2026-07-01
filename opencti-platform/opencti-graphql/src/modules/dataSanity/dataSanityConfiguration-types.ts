@@ -16,14 +16,17 @@ export type MaintenancePlanning = MaintenanceWindow[];
 
 export interface BasicStoreEntityDataSanityConfiguration extends BasicStoreEntity {
   maintenance_planning: string; // JSON-serialized MaintenancePlanning
+  timezone_offset: number; // UTC offset in minutes (e.g., 120 for UTC+2, -300 for UTC-5)
 }
 
 export interface StoreEntityDataSanityConfiguration extends StoreEntity {
   maintenance_planning: string; // JSON-serialized MaintenancePlanning
+  timezone_offset: number;
 }
 
 export interface StixDataSanityConfiguration extends StixObject {
   maintenance_planning: string;
+  timezone_offset: number;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

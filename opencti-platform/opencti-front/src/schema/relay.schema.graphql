@@ -10780,7 +10780,7 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
-  dataSanityUpdateMaintenancePlanning(planning: [DataSanityMaintenanceWindowInput!]!): DataSanityConfiguration
+  dataSanityUpdateMaintenancePlanning(planning: [DataSanityMaintenanceWindowInput!]!, timezone_offset: Int!): DataSanityConfiguration
 }
 
 enum WorkflowExecutionStatus {
@@ -16821,6 +16821,7 @@ type DataSanityMaintenanceWindow {
 type DataSanityConfiguration {
   id: ID!
   maintenance_planning: [DataSanityMaintenanceWindow!]!
+  timezone_offset: Int!
 }
 
 input DataSanityMaintenanceWindowInput {

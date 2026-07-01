@@ -39,19 +39,21 @@ export const getMaintenancePlanning = async (context: AuthContext, user: AuthUse
 /**
  * Update or create the DataSanityConfiguration with a new maintenance planning.
  */
-export const updateMaintenancePlanning = async (context: AuthContext, user: AuthUser, planning: MaintenancePlanning) => {
+export const updateMaintenancePlanning = async (context: AuthContext, user: AuthUser, planning: MaintenancePlanning, timezoneOffset: number) => {
   const existing = await getDataSanityConfigurationFromDatabase(context, user);
   const planningJson = JSON.stringify(planning);
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_CONFIGURATION, [
       { key: 'maintenance_planning', value: [planningJson] },
+      { key: 'timezone_offset', value: [timezoneOffset] },
     ]);
-    return { id: existing.internal_id, maintenance_planning: planning };
+    return { id: existing.internal_id, maintenance_planning: planning, timezone_offset: timezoneOffset };
   }
   const created = await createEntity(context, user, {
     maintenance_planning: planningJson,
+    timezone_offset: timezoneOffset,
   }, ENTITY_TYPE_DATA_SANITY_CONFIGURATION);
-  return { id: created.internal_id, maintenance_planning: planning };
+  return { id: created.internal_id, maintenance_planning: planning, timezone_offset: timezoneOffset };
 };
 
 /**
@@ -64,7 +66,7 @@ export const getDataSanityConfiguration = async (context: AuthContext, user: Aut
     return null;
   }
   const planning = await getMaintenancePlanning(context, user);
-  return { id: config.internal_id, maintenance_planning: planning };
+  return { id: config.internal_id, maintenance_planning: planning, timezone_offset: config.timezone_offset ?? 0 };
 };
 
 /**
@@ -80,16 +82,27 @@ export const parseTimeToMinutes = (time: string): number => {
 };
 
 /**
- * Check if the current time (UTC) is within a maintenance window.
+ * Check if the current time is within a maintenance window.
+ * Times are evaluated in the configured timezone (via timezone_offset).
  * If no maintenance planning is configured, operations are always allowed.
  */
 export const isWithinMaintenanceWindow = async (context: AuthContext, user: AuthUser): Promise<boolean> => {
-  const planning = await getMaintenancePlanning(context, user);
-  // If no planning is configured, always allow operations
+  const config = await getDataSanityConfigurationFromDatabase(context, user);
+  if (!config?.maintenance_planning) {
+    return true;
+  }
+  let planning: MaintenancePlanning;
+  try {
+    planning = JSON.parse(config.maintenance_planning) as MaintenancePlanning;
+  } catch {
+    return true;
+  }
   if (planning.length === 0) {
     return true;
   }
-  const now = utcDate();
+  // Apply timezone offset to get the "local" time as configured by the user
+  const timezoneOffset = config.timezone_offset ?? 0;
+  const now = utcDate().utcOffset(timezoneOffset);
   const currentDay = DAYS_OF_WEEK[now.day()] as DayOfWeek;
   const currentMinutes = now.hour() * 60 + now.minute();
   return planning.some((window: MaintenanceWindow) => {

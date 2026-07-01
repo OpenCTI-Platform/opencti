@@ -48,6 +48,7 @@ type DataSanityMaintenanceWindow {
 type DataSanityConfiguration {
     id: ID!
     maintenance_planning: [DataSanityMaintenanceWindow!]!
+    timezone_offset: Int!
 }
 
 input DataSanityMaintenanceWindowInput {
@@ -62,5 +63,5 @@ extend type Query {
 
 extend type Mutation {
     dataSanityOperationRequestRun(operation_name: String!): ID @auth(for: [BYPASS])
-    dataSanityUpdateMaintenancePlanning(planning: [DataSanityMaintenanceWindowInput!]!): DataSanityConfiguration @auth(for: [BYPASS])
+    dataSanityUpdateMaintenancePlanning(planning: [DataSanityMaintenanceWindowInput!]!, timezone_offset: Int!): DataSanityConfiguration @auth(for: [BYPASS])
 }

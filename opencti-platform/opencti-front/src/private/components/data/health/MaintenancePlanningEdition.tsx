@@ -1,10 +1,11 @@
 import React, { FunctionComponent, Suspense, useCallback, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import MuiButton from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { ContentCopyOutlined, EditOutlined } from '@mui/icons-material';
+import { ContentCopyOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
+import Button from '@common/button/Button';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -21,19 +22,21 @@ const maintenancePlanningQuery = graphql`
         start_time
         end_time
       }
+      timezone_offset
     }
   }
 `;
 
 const maintenancePlanningMutation = graphql`
-  mutation MaintenancePlanningEditionMutation($planning: [DataSanityMaintenanceWindowInput!]!) {
-    dataSanityUpdateMaintenancePlanning(planning: $planning) {
+  mutation MaintenancePlanningEditionMutation($planning: [DataSanityMaintenanceWindowInput!]!, $timezone_offset: Int!) {
+    dataSanityUpdateMaintenancePlanning(planning: $planning, timezone_offset: $timezone_offset) {
       id
       maintenance_planning {
         day
         start_time
         end_time
       }
+      timezone_offset
     }
   }
 `;
@@ -102,8 +105,10 @@ const MaintenancePlanningForm: FunctionComponent<MaintenancePlanningFormProps> =
     { setSubmitting, setErrors }: { setSubmitting: (flag: boolean) => void; setErrors: (errors: Record<string, string>) => void },
   ) => {
     const planning = formValuesToPlanning(values);
+    // Send the browser's timezone offset (minutes ahead of UTC)
+    const timezoneOffset = -(new Date().getTimezoneOffset());
     commitMutation({
-      variables: { planning },
+      variables: { planning, timezone_offset: timezoneOffset },
       onCompleted: () => {
         setSubmitting(false);
         onClose();
@@ -129,6 +134,8 @@ const MaintenancePlanningForm: FunctionComponent<MaintenancePlanningFormProps> =
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
             {t_i18n('Leave both start and end empty to disable the window for a given day.')}
+            {' '}
+            {`(${t_i18n('Timezone')}: UTC${(() => { const off = -(new Date().getTimezoneOffset()); return off >= 0 ? `+${String(Math.floor(off / 60)).padStart(2, '0')}:${String(off % 60).padStart(2, '0')}` : `-${String(Math.floor(-off / 60)).padStart(2, '0')}:${String((-off) % 60).padStart(2, '0')}`; })()})`}
           </Typography>
           {DAYS_OF_WEEK.map((day) => (
             <div key={day.value} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 15 }}>
@@ -152,7 +159,7 @@ const MaintenancePlanningForm: FunctionComponent<MaintenancePlanningFormProps> =
             </div>
           ))}
           <div style={{ marginTop: 20, display: 'flex', justifyContent: 'space-between' }}>
-            <Button
+            <MuiButton
               variant="outlined"
               size="small"
               startIcon={<ContentCopyOutlined />}
@@ -168,10 +175,9 @@ const MaintenancePlanningForm: FunctionComponent<MaintenancePlanningFormProps> =
               }}
             >
               {t_i18n('Copy Monday to all days')}
-            </Button>
+            </MuiButton>
             <Button
-              variant="contained"
-              color="secondary"
+              variant="primary"
               onClick={submitForm}
               disabled={isSubmitting}
             >
@@ -194,11 +200,10 @@ const MaintenancePlanningEdition: FunctionComponent = () => {
   return (
     <>
       <Button
-        variant="outlined"
-        size="small"
-        startIcon={<EditOutlined />}
+        variant="primary"
         onClick={handleOpen}
-        sx={{ marginBottom: 2 }}
+        aria-label={t_i18n('Maintenance planning')}
+        title={t_i18n('Maintenance planning')}
       >
         {t_i18n('Maintenance planning')}
       </Button>

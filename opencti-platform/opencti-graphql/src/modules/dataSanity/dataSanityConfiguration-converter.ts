@@ -8,6 +8,7 @@ const convertDataSanityConfigurationToStix = (instance: StoreEntityDataSanityCon
   return {
     ...stixObject,
     maintenance_planning: instance.maintenance_planning,
+    timezone_offset: instance.timezone_offset,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

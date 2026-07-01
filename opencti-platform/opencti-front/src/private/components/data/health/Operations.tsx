@@ -173,7 +173,9 @@ const Operations = () => {
         ]}
         noMargin
       />
-      <MaintenancePlanningEdition />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+        <MaintenancePlanningEdition />
+      </div>
       <DataTableWithoutFragment
         dataColumns={dataColumns}
         storageKey="health_operations"

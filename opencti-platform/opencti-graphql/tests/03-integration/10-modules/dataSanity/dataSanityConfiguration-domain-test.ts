@@ -44,7 +44,7 @@ describe('Data sanity configuration test coverage', () => {
 
     it('should update planning configured be ok', async () => {
       const planning: MaintenancePlanning = [{ day: 'monday', start_time: '08:00', end_time: '10:00' }, { day: 'tuesday', start_time: '09:00', end_time: '10:30' }];
-      await updateMaintenancePlanning(testContext, ADMIN_USER, planning);
+      await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
       const newPlanning = await getMaintenancePlanning(testContext, ADMIN_USER);
       expect(newPlanning).toStrictEqual([{ day: 'monday', start_time: '08:00', end_time: '10:00' }, { day: 'tuesday', start_time: '09:00', end_time: '10:30' }]);
     });
@@ -71,7 +71,7 @@ describe('Data sanity configuration test coverage', () => {
       const endTime = `${String(Math.floor(endTotalMinutes / 60)).padStart(2, '0')}:${String(endTotalMinutes % 60).padStart(2, '0')}`;
 
       const planning: MaintenancePlanning = [{ day: currentDay, start_time: startTime, end_time: endTime }];
-      await updateMaintenancePlanning(testContext, ADMIN_USER, planning);
+      await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
 
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeTruthy();
@@ -85,7 +85,7 @@ describe('Data sanity configuration test coverage', () => {
       const differentDay = daysOfWeek[tomorrowIndex];
 
       const planning: MaintenancePlanning = [{ day: differentDay, start_time: '00:00', end_time: '23:59' }];
-      await updateMaintenancePlanning(testContext, ADMIN_USER, planning);
+      await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
 
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeFalsy();
@@ -106,7 +106,7 @@ describe('Data sanity configuration test coverage', () => {
       const endTime = `${String(Math.floor(endTotalMinutes / 60)).padStart(2, '0')}:${String(endTotalMinutes % 60).padStart(2, '0')}`;
 
       const planning: MaintenancePlanning = [{ day: currentDay, start_time: startTime, end_time: endTime }];
-      await updateMaintenancePlanning(testContext, ADMIN_USER, planning);
+      await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
 
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeFalsy();
@@ -137,7 +137,7 @@ describe('Data sanity configuration test coverage', () => {
       }
 
       const planning: MaintenancePlanning = [{ day: currentDay, start_time: startTime, end_time: endTime }];
-      await updateMaintenancePlanning(testContext, ADMIN_USER, planning);
+      await updateMaintenancePlanning(testContext, ADMIN_USER, planning, 0);
 
       const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
       expect(isWithinPlanning).toBeTruthy();
@@ -150,6 +150,33 @@ describe('Data sanity configuration test coverage', () => {
       expect(config).not.toBeNull();
       expect(config?.maintenance_planning).toBeDefined();
       expect(Array.isArray(config?.maintenance_planning)).toBeTruthy();
+      expect(config?.timezone_offset).toBe(0);
+    });
+
+    it('should respect timezone offset when evaluating maintenance window', async () => {
+      const now = new Date();
+      const currentHour = now.getUTCHours();
+      const currentMinute = now.getUTCMinutes();
+
+      // Set a window that does NOT include current UTC time, but DOES include UTC+2 time
+      // e.g., if UTC is 06:00, UTC+2 is 08:00. Set window 07:55–08:05 with offset +120
+      const offsetMinutes = 120; // UTC+2
+      const localTotalMinutes = (currentHour * 60 + currentMinute + offsetMinutes + 1440) % 1440;
+
+      const startMin = (localTotalMinutes - 5 + 1440) % 1440;
+      const endMin = (localTotalMinutes + 5) % 1440;
+      const startTime = `${String(Math.floor(startMin / 60)).padStart(2, '0')}:${String(startMin % 60).padStart(2, '0')}`;
+      const endTime = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+
+      // Use day corresponding to the offset-adjusted time
+      const offsetDate = new Date(now.getTime() + offsetMinutes * 60 * 1000);
+      const offsetDay = daysOfWeek[offsetDate.getUTCDay()];
+
+      const planning: MaintenancePlanning = [{ day: offsetDay, start_time: startTime, end_time: endTime }];
+      await updateMaintenancePlanning(testContext, ADMIN_USER, planning, offsetMinutes);
+
+      const isWithinPlanning = await isWithinMaintenanceWindow(testContext, ADMIN_USER);
+      expect(isWithinPlanning).toBeTruthy();
     });
   });
 });

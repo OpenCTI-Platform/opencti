@@ -1,10 +1,10 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { computeCollisionGroup, migrateEntityType } from '../../../../../src/modules/dataSanity/operations/caseSensitiveDuplicatedId';
+import { caseSensitiveDuplicatedIdDryRun, computeCollisionGroup, migrateEntityType } from '../../../../../src/modules/dataSanity/operations/caseSensitiveDuplicatedId';
 import { ADMIN_USER, testContext } from '../../../../utils/testQuery';
 import { elDelete, elIndex } from '../../../../../src/database/engine';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../../../../../src/database/utils';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../../../../../src/schema/stixDomainObject';
 import { internalLoadById } from '../../../../../src/database/middleware-loader';
 
 describe('Operation caseSensitiveDuplicatedId coverage', () => {
@@ -74,6 +74,17 @@ describe('Operation caseSensitiveDuplicatedId coverage', () => {
     expect(ids).toContain(attackPatternIdCollision1);
     expect(ids).toContain(attackPatternIdCollision2);
     expect(ids).not.toContain(attackPatternNoCollision);
+  });
+
+  it('should dry run works', async () => {
+    const impacted = await caseSensitiveDuplicatedIdDryRun([ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION])(testContext);
+    expect(impacted).toStrictEqual({
+      impact: {
+        total: 1,
+        detail: {
+          'Attack-Pattern': 1,
+          'Course-Of-Action': 0,
+        } } });
   });
 
   it('should not flag entities with unique x_mitre_id as collisions', async () => {

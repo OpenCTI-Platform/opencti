@@ -29,6 +29,17 @@ const DATA_SANITY_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityDataSani
       upsert: true,
       isFilterable: false,
     },
+    {
+      name: 'timezone_offset',
+      label: 'Timezone offset (minutes)',
+      type: 'numeric',
+      precision: 'integer',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      isFilterable: false,
+    },
   ],
   relations: [],
   representative: (_stix: StixDataSanityConfiguration) => {

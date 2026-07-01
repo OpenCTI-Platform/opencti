@@ -4,6 +4,11 @@ import { dataSanityHandler } from '../../../../src/manager/dataSanityManager';
 import { findDataSanityByOperationName, setForceRun } from '../../../../src/modules/dataSanity/dataSanity-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
+import { getDataSanityConfigurationFromDatabase } from '../../../../src/modules/dataSanity/dataSanityConfiguration-domain';
+import convertDataSanityConfigurationToStix from '../../../../src/modules/dataSanity/dataSanityConfiguration-converter';
+import type { StoreEntityDataSanityConfiguration } from '../../../../src/modules/dataSanity/dataSanityConfiguration-types';
+import convertDataSanityToStix from '../../../../src/modules/dataSanity/dataSanity-converter';
+import type { StoreEntityDataSanity } from '../../../../src/modules/dataSanity/dataSanity-types';
 
 describe('Data sanity manager handler test coverage', () => {
   afterEach(() => {
@@ -67,6 +72,21 @@ describe('Data sanity manager handler test coverage', () => {
     expect(runOnceOp?.last_run_date).toBe(runOnceFirstRunDate);
   });
 
+  it('should force run of a run once script work', async () => {
+    await setForceRun(testContext, ADMIN_USER, 'mockRunOnceOperation');
+    const runOnceOpBefore = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
+    expect(runOnceOpBefore).toBeDefined();
+    expect(runOnceOpBefore?.force_run).toBeTruthy();
+
+    await dataSanityHandler();
+
+    // Check run_once operation has NOT been re-executed
+    const runOnceOp = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
+    expect(runOnceOp).toBeDefined();
+    expect(runOnceOpBefore?.force_run).toBeFalsy();
+    expect(runOnceOp?.last_run_date.getTime()).toBeGreaterThan(runOnceFirstRunDate.getTime());
+  });
+
   it('should operation with error be managed', async () => {
     // GIVEN a force run has been requested
     await setForceRun(testContext, ADMIN_USER, 'mockRunOnceOperationThatFails');
@@ -80,5 +100,14 @@ describe('Data sanity manager handler test coverage', () => {
     expect(onDemandOpAfterRun?.last_execution_time).toBeGreaterThanOrEqual(0);
     expect(onDemandOpAfterRun?.last_run_message).toBe('This is raising error - mockRunOnceOperationThatFails');
     expect(onDemandOpAfterRun?.force_run).toBe(false); // should be back to false
+  });
+
+  it('should stix conversion works', async () => {
+    const runOnceOp = await findDataSanityByOperationName(testContext, 'mockRunOnceOperation');
+    if (runOnceOp) {
+      const result = convertDataSanityToStix(runOnceOp as StoreEntityDataSanity);
+      expect(result.operation_name).toBe('mockRunOnceOperation');
+      expect(result.type).toBe('run_once');
+    }
   });
 });
