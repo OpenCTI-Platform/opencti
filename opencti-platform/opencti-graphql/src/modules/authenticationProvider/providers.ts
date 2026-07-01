@@ -39,9 +39,11 @@ export interface ProviderAuthInfo {
     provider_metadata?: unknown;
   };
   groupsMapping: {
+    groupsMapping: { provider: string; platform: string }[];
     groups: string[];
     autoCreateGroup: boolean;
     preventDefaultGroups: boolean;
+    extendPlatformGroups: boolean;
   };
   organizationsMapping: {
     organizations: string[];
@@ -63,9 +65,11 @@ export const handleProviderLogin = async (logger: AuthenticationProviderLogger, 
   const user = await loginFromProvider(
     info.userMapping,
     {
+      providerGroupsMapping: info.groupsMapping.groupsMapping,
       providerGroups: info.groupsMapping.groups,
       autoCreateGroup: info.groupsMapping.autoCreateGroup,
       preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
+      extendPlatformGroups: info.groupsMapping.extendPlatformGroups,
       providerOrganizations: info.organizationsMapping.organizations,
       autoCreateOrganization: info.organizationsMapping.autoCreateOrganization,
     },

@@ -16129,6 +16129,7 @@ type GroupsMapping {
   groups_mapping: [MappingEntry!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean
 }
 
 input GroupsMappingInput {
@@ -16138,6 +16139,7 @@ input GroupsMappingInput {
   groups_mapping: [MappingEntryInput!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean!
 }
 
 type OrganizationsMapping {

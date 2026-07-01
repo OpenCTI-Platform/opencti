@@ -485,6 +485,7 @@ export const initializeData = async (context, withMarkings = true) => {
         groups_mapping: [],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       },
       organizations_mapping: {
         default_organizations: [],
@@ -512,6 +513,7 @@ export const initializeData = async (context, withMarkings = true) => {
         groups_mapping: [],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       },
       organizations_mapping: {
         default_organizations: [],
