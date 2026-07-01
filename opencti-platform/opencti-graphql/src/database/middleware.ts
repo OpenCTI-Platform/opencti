@@ -23,6 +23,7 @@ import {
   ValidationError,
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -872,7 +873,7 @@ export const distributionEntities = async (
   let distributionData;
 
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
-  if (field.startsWith('x_opencti_cf_')) {
+  if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
     const { getCustomFieldDefinitionByName: lookupCfDef, getCustomFieldValueField: getCfValueField } = await import('../modules/customField/custom-field-domain');
     const customFieldDef = lookupCfDef(field);
     let valueField = 'custom_field_values.string_value';
@@ -916,7 +917,7 @@ export const distributionEntities = async (
 
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (!field.startsWith('x_opencti_cf_')) {
+  if (!field.startsWith(CUSTOM_FIELD_PREFIX)) {
     if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
       return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
     }
