@@ -1,6 +1,10 @@
 # Usage telemetry
 
-The application collects statistical data related to its usage and performances.
+The OpenCTI platform collects anonymous usage statistics related to its usage and sends them to Filigran. This data helps the development team understand how the platform is used and prioritize improvements.
+
+!!! note "This is NOT observability telemetry"
+
+    This page documents the **anonymous product analytics** sent to Filigran. If you are looking for **operational metrics** (API latency, request counts, error rates) to monitor your own deployment with Prometheus or an OTLP collector, see [Deployment > Telemetry](../deployment/telemetry.md).
 
 !!! note "Confidentiality"
 
@@ -8,7 +12,7 @@ The application collects statistical data related to its usage and performances.
 
 All data collected is anonymized and aggregated to protect the privacy of individual users, in compliance with all privacy regulations.
 
-## Purpose of the telemetry
+## Purpose
 
 The collected data is used for the following purposes:
 
@@ -16,15 +20,15 @@ The collected data is used for the following purposes:
 - Analyzing user behavior to enhance user experience.
 - Generating aggregated and anonymized statistics for internal and external reporting.
 
-## Important thing to know
+## How it works
 
 The platform send the metrics to the hostname `telemetry.filigran.io` using the OTLP protocol (over HTTPS). The format of the data is OpenTelemetry JSON.
 
-The metrics push is done every 6 hours if OpenCTI was able to connect to the hostname when the telemetry manager is started. Metrics are also written in specific logs files in order to be included in support package
+The metrics push is done every 6 hours if OpenCTI was able to connect to the hostname when the telemetry manager is started. Metrics are also written in specific log files in order to be included in support packages.
 
-## Telemetry metrics
+## Collected metrics
 
-The application collects statistical data related to its usage. Here is an exhaustive list of the collected metrics:
+Here is an exhaustive list of the collected metrics:
 
 ### Platform information
 
