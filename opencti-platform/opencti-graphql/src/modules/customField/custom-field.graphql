@@ -65,7 +65,7 @@ type CustomFieldDefinitionEdge {
 
 # Queries
 type Query {
-  customFieldDefinition(id: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinition(id: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
   customFieldDefinitions(
     first: Int
     after: ID
@@ -73,7 +73,7 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-  ): CustomFieldDefinitionConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  ): CustomFieldDefinitionConnection @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
 }
 
 # Mutations
@@ -96,9 +96,9 @@ input CustomFieldDefinitionAddInput {
 }
 
 type Mutation {
-  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldDefinitionDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldDefinitionAddEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
 }
