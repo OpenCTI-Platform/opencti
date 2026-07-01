@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildAttackPatternCoverageMap, CoverageRelationEdge } from './securityCoverageAggregation';
+import { buildAverageCoverageMap, CoverageRelationEdge } from './securityCoverageAggregation';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -29,13 +29,13 @@ const AP_3 = 'attack-pattern-T1566';
 
 describe('buildAttackPatternCoverageMap', () => {
   it('returns an empty map when given no edges', () => {
-    const result = buildAttackPatternCoverageMap([]);
+    const result = buildAverageCoverageMap([]);
     expect(result.size).toBe(0);
   });
 
   it('skips edges with a null/missing node', () => {
     const edges: CoverageRelationEdge[] = [{ node: null }];
-    const result = buildAttackPatternCoverageMap(edges);
+    const result = buildAverageCoverageMap(edges);
     expect(result.size).toBe(0);
   });
 
@@ -43,19 +43,17 @@ describe('buildAttackPatternCoverageMap', () => {
     const edges: CoverageRelationEdge[] = [
       { node: { coverage_information: [{ coverage_name: 'DETECTION', coverage_score: 80 }], to: null } },
     ];
-    const result = buildAttackPatternCoverageMap(edges);
+    const result = buildAverageCoverageMap(edges);
     expect(result.size).toBe(0);
   });
 
   it('handles a single edge with a single coverage correctly', () => {
     const edges = [makeEdge(AP_1, [{ name: 'DETECTION', score: 80 }], 'Command and Scripting Interpreter')];
-    const result = buildAttackPatternCoverageMap(edges);
+    const result = buildAverageCoverageMap(edges);
 
     expect(result.size).toBe(1);
     const entry = result.get(AP_1)!;
-    expect(entry.id).toBe(AP_1);
-    expect(entry.name).toBe('Command and Scripting Interpreter');
-    expect(entry.averages).toEqual([{ coverage_name: 'DETECTION', coverage_score: 80 }]);
+    expect(entry).toEqual([{ coverage_name: 'DETECTION', coverage_score: 80 }]);
   });
 
   it('handles a single edge with multiple coverages correctly', () => {
@@ -65,8 +63,8 @@ describe('buildAttackPatternCoverageMap', () => {
         { name: 'PREVENTION', score: 70 },
       ]),
     ];
-    const result = buildAttackPatternCoverageMap(edges);
-    const { averages } = result.get(AP_1)!;
+    const result = buildAverageCoverageMap(edges);
+    const averages = result.get(AP_1)!;
 
     expect(averages).toHaveLength(2);
     expect(averages.find((e) => e.coverage_name === 'DETECTION')?.coverage_score).toBe(80);
@@ -79,10 +77,10 @@ describe('buildAttackPatternCoverageMap', () => {
       makeEdge(AP_1, [{ name: 'DETECTION', score: 80 }]),
       makeEdge(AP_1, [{ name: 'DETECTION', score: 60 }]),
     ];
-    const result = buildAttackPatternCoverageMap(edges);
+    const result = buildAverageCoverageMap(edges);
 
     expect(result.size).toBe(1);
-    expect(result.get(AP_1)!.averages).toEqual([{ coverage_name: 'DETECTION', coverage_score: 70 }]);
+    expect(result.get(AP_1)).toEqual([{ coverage_name: 'DETECTION', coverage_score: 70 }]);
   });
 
   it('rounds the average to the nearest integer', () => {
@@ -91,8 +89,8 @@ describe('buildAttackPatternCoverageMap', () => {
       makeEdge(AP_1, [{ name: 'DETECTION', score: 80 }]),
       makeEdge(AP_1, [{ name: 'DETECTION', score: 61 }]),
     ];
-    const result = buildAttackPatternCoverageMap(edges);
-    expect(result.get(AP_1)!.averages[0].coverage_score).toBe(71);
+    const result = buildAverageCoverageMap(edges);
+    expect(result.get(AP_1)![0].coverage_score).toBe(71);
   });
 
   it('averages scores across three edges for the same AP', () => {
@@ -102,8 +100,8 @@ describe('buildAttackPatternCoverageMap', () => {
       makeEdge(AP_1, [{ name: 'DETECTION', score: 90 }]),
       makeEdge(AP_1, [{ name: 'DETECTION', score: 70 }]),
     ];
-    const result = buildAttackPatternCoverageMap(edges);
-    expect(result.get(AP_1)!.averages[0].coverage_score).toBe(80);
+    const result = buildAverageCoverageMap(edges);
+    expect(result.get(AP_1)![0].coverage_score).toBe(80);
   });
 
   it('keeps different coverage_names separate for the same AP', () => {
@@ -112,7 +110,7 @@ describe('buildAttackPatternCoverageMap', () => {
       makeEdge(AP_1, [{ name: 'DETECTION', score: 80 }]),
       makeEdge(AP_1, [{ name: 'PREVENTION', score: 90 }]),
     ];
-    const { averages } = buildAttackPatternCoverageMap(edges).get(AP_1)!;
+    const averages = buildAverageCoverageMap(edges).get(AP_1)!;
 
     expect(averages.find((e) => e.coverage_name === 'DETECTION')?.coverage_score).toBe(80);
     expect(averages.find((e) => e.coverage_name === 'PREVENTION')?.coverage_score).toBe(90);
@@ -125,7 +123,7 @@ describe('buildAttackPatternCoverageMap', () => {
       makeEdge(AP_1, [{ name: 'DETECTION', score: 60 }]),
       makeEdge(AP_1, [{ name: 'PREVENTION', score: 90 }]),
     ];
-    const { averages } = buildAttackPatternCoverageMap(edges).get(AP_1)!;
+    const averages = buildAverageCoverageMap(edges).get(AP_1)!;
 
     expect(averages.find((e) => e.coverage_name === 'DETECTION')?.coverage_score).toBe(70);
     expect(averages.find((e) => e.coverage_name === 'PREVENTION')?.coverage_score).toBe(90);
@@ -137,37 +135,22 @@ describe('buildAttackPatternCoverageMap', () => {
       makeEdge(AP_2, [{ name: 'DETECTION', score: 40 }]),
       makeEdge(AP_3, [{ name: 'PREVENTION', score: 100 }]),
     ];
-    const result = buildAttackPatternCoverageMap(edges);
+    const result = buildAverageCoverageMap(edges);
 
     expect(result.size).toBe(3);
-    expect(result.get(AP_1)!.averages[0].coverage_score).toBe(80);
-    expect(result.get(AP_2)!.averages[0].coverage_score).toBe(40);
-    expect(result.get(AP_3)!.averages[0].coverage_score).toBe(100);
+    expect(result.get(AP_1)![0].coverage_score).toBe(80);
+    expect(result.get(AP_2)![0].coverage_score).toBe(40);
+    expect(result.get(AP_3)![0].coverage_score).toBe(100);
   });
 
   it('deduplicates: result has one entry per AP even with many edges for the same AP', () => {
     const edges = Array.from({ length: 10 }, (_, i) =>
       makeEdge(AP_1, [{ name: 'DETECTION', score: i * 10 }]),
     );
-    const result = buildAttackPatternCoverageMap(edges);
+    const result = buildAverageCoverageMap(edges);
     expect(result.size).toBe(1);
     // average of 0,10,20,30,40,50,60,70,80,90 = 450/10 = 45
-    expect(result.get(AP_1)!.averages[0].coverage_score).toBe(45);
-  });
-
-  it('preserves the AP name from the first edge', () => {
-    const edges = [
-      makeEdge(AP_1, [{ name: 'DETECTION', score: 80 }], 'Command and Scripting Interpreter'),
-      makeEdge(AP_1, [{ name: 'DETECTION', score: 60 }], 'Command and Scripting Interpreter'),
-    ];
-    expect(buildAttackPatternCoverageMap(edges).get(AP_1)!.name).toBe('Command and Scripting Interpreter');
-  });
-
-  it('falls back to id when AP name is missing', () => {
-    const edges: CoverageRelationEdge[] = [
-      { node: { coverage_information: [{ coverage_name: 'DETECTION', coverage_score: 80 }], to: { id: AP_1 } } },
-    ];
-    expect(buildAttackPatternCoverageMap(edges).get(AP_1)!.name).toBe(AP_1);
+    expect(result.get(AP_1)![0].coverage_score).toBe(45);
   });
 });
 
@@ -189,7 +172,7 @@ describe('performance', () => {
     }));
 
     const start = performance.now();
-    const coverageMap = buildAttackPatternCoverageMap(edges);
+    const coverageMap = buildAverageCoverageMap(edges);
     const elapsed = performance.now() - start;
 
     expect(coverageMap.size).toBe(200);

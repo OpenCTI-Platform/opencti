@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import SecurityCoverageScores from './SecurityCoverageScores';
-import { buildAttackPatternCoverageMap, CoverageRelationEdge } from './securityCoverageAggregation';
+import { buildAverageCoverageMap, CoverageRelationEdge } from './securityCoverageAggregation';
 
 interface SecurityCoverageAggregatedScoresProps {
   edges: ReadonlyArray<CoverageRelationEdge>;
@@ -18,7 +18,7 @@ interface SecurityCoverageAggregatedScoresProps {
 const SecurityCoverageAggregatedScores: FunctionComponent<SecurityCoverageAggregatedScoresProps> = ({ edges }) => {
   const { coverageMap, computeTimeMs } = useMemo(() => {
     const start = performance.now();
-    const map = buildAttackPatternCoverageMap(edges);
+    const map = buildAverageCoverageMap(edges);
     const elapsed = performance.now() - start;
     return { coverageMap: map, computeTimeMs: elapsed };
   }, [edges]);
@@ -37,10 +37,10 @@ const SecurityCoverageAggregatedScores: FunctionComponent<SecurityCoverageAggreg
           variant="outlined"
         />
       </Box>
-      {Array.from(coverageMap.values()).map(({ id, name, averages }) => (
+      {Array.from(coverageMap.entries()).map(([id, averages]) => (
         <Box key={id} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
           <Typography variant="body2" sx={{ minWidth: 200, flexShrink: 0 }}>
-            {name}
+            {id}
           </Typography>
           <SecurityCoverageScores
             coverage_information={averages}
