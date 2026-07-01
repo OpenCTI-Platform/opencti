@@ -9,6 +9,7 @@ import {
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
   publishWorkflowDefinition,
+  restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
@@ -33,6 +34,9 @@ const workflowResolvers = {
     },
     workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return publishWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return restorePublishedWorkflowDefinition(context, context.user!, entityType);
     },
     workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
