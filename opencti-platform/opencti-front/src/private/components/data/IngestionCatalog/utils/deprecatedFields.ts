@@ -42,7 +42,7 @@ const isDeprecated = (property?: IngestionTypedProperty) => {
 
 /** Returns true when a deprecated field explicitly defines a default value. */
 const hasDefinedDefault = (property: IngestionTypedProperty) => {
-  return property.default !== undefined;
+  return property.default !== undefined && property.default !== null;
 };
 
 /**
@@ -162,6 +162,14 @@ export const filterValuesForEditionPayload = (
     Object.entries(values).filter(([key]) => {
       const property = properties[key];
       if (!isDeprecated(property)) return true;
+
+      // Deprecated fields explicitly configured with default:null are hidden in
+      // edition visibility rules, but must be preserved when already configured.
+      // Fields with truly missing defaults (undefined) remain filtered out.
+      if (property.default === null) {
+        return !isEmptyValue(values[key]);
+      }
+
       return keepDeprecatedKeys.has(key);
     }),
   );

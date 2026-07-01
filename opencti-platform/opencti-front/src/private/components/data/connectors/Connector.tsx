@@ -762,9 +762,17 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         return false;
       }
 
+      const configurationByKey = new Map<string, string>();
+      connector.manager_contract_configuration?.forEach((entry) => {
+        if (typeof entry.key !== 'string' || configurationByKey.has(entry.key)) {
+          return;
+        }
+        configurationByKey.set(entry.key, entry.value ?? '');
+      });
+
       const currentValues: Record<string, unknown> = {};
       Object.keys(properties).forEach((key) => {
-        const { value } = connector.manager_contract_configuration?.find((entry) => entry.key === key) ?? {};
+        const value = configurationByKey.get(key);
         if (!value) {
           return;
         }

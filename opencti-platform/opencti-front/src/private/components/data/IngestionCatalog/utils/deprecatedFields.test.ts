@@ -266,7 +266,7 @@ describe('deprecatedFields utils', () => {
       expect(shouldShowDeprecatedAlert(some)).toBe(true);
     });
 
-    it('shows deprecated field when default is null and value is non-empty', () => {
+    it('does not show deprecated field when default is null and value is non-empty', () => {
       const descriptors = getDeprecatedDescriptorsForEdition(
         {
           DEPRECATED_NULL_DEFAULT: {
@@ -281,8 +281,7 @@ describe('deprecatedFields utils', () => {
         },
       );
 
-      expect(descriptors).toHaveLength(1);
-      expect(descriptors[0].key).toBe('DEPRECATED_NULL_DEFAULT');
+      expect(descriptors).toEqual([]);
     });
   });
 
@@ -382,7 +381,7 @@ describe('deprecatedFields utils', () => {
       expect(resetToDefault).toEqual(['DEPRECATED_WITH_DEFAULT']);
     });
 
-    it('keeps deprecated null-default field visible in-session when cleared', () => {
+    it('does not keep deprecated null-default field visible in-session when cleared', () => {
       const properties: Record<string, IngestionTypedProperty> = {
         DEPRECATED_NULL_DEFAULT: {
           type: 'string',
@@ -402,8 +401,31 @@ describe('deprecatedFields utils', () => {
         },
       );
 
-      expect(visibility.showDeprecatedAlert).toBe(true);
-      expect(Object.keys(visibility.visibleDeprecatedProperties)).toEqual(['DEPRECATED_NULL_DEFAULT']);
+      expect(visibility.showDeprecatedAlert).toBe(false);
+      expect(Object.keys(visibility.visibleDeprecatedProperties)).toEqual([]);
+    });
+
+    it('keeps deprecated null-default field in payload when non-empty', () => {
+      const payload = filterValuesForEditionPayload(
+        {
+          DEPRECATED_NULL_DEFAULT: 'legacy-value',
+          NORMAL_FIELD: 'ok',
+        },
+        {
+          DEPRECATED_NULL_DEFAULT: {
+            type: 'string',
+            deprecated: true,
+            default: null,
+            description: 'nullable',
+          } as unknown as IngestionTypedProperty,
+          NORMAL_FIELD: makeStringProp({ deprecated: false }),
+        },
+      );
+
+      expect(payload).toEqual({
+        DEPRECATED_NULL_DEFAULT: 'legacy-value',
+        NORMAL_FIELD: 'ok',
+      });
     });
   });
 });
