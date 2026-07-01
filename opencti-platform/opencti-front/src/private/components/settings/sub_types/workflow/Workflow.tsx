@@ -152,6 +152,7 @@ const Workflow = ({
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
+  console.log('Render', { nodes, edges });
 
   const layoutOptions: LayoutOptions = {
     direction: 'TB' as Direction,
@@ -321,8 +322,19 @@ const Workflow = ({
     restoreWorkflowDefinition({
       variables: { entityType: 'DraftWorkspace' },
       onCompleted: () => {
-        // Trigger a network refetch to the parent component to get the latest published workflow definition.
-        // the sync useEffect above will then update nodes/edges.
+        // Directly reset local state to `initialNodes`/`initialEdges`.
+        // The Relay store already holds the published states (only full queries update
+        // `states`/`transitions`; mutation responses don't). So after deletion of all
+        // nodes the store is unchanged → the sync useEffect won't fire on a refetch
+        // that returns identical data. Calling setNodes here is the reliable path.
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+        previousSchemaRef.current = JSON.stringify(
+          transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
+        );
+        setWorkflowDefinitionStatus({ published: true, validationErrors: [] });
+        // Also refetch in case the store is stale (e.g. published version changed
+        // after the initial page load). The sync useEffect handles that case.
         onRefetch();
       },
     });
