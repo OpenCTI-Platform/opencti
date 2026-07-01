@@ -1648,7 +1648,7 @@ describe('Password policy propagation to all users', () => {
     });
 
     // Act: simulate policy change from 10 to 600 (diff = +590 days)
-    await adjustAllUsersPasswordValidUntil(testContext, ADMIN_USER, 10, 600);
+    await adjustAllUsersPasswordValidUntil(testContext, 10, 600);
 
     // Assert: editor date should be shifted by +590 days
     const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
@@ -1677,7 +1677,7 @@ describe('Password policy propagation to all users', () => {
     });
 
     // Act
-    await clearAllUsersPasswordValidUntil(testContext, ADMIN_USER);
+    await clearAllUsersPasswordValidUntil(testContext);
 
     // Assert: both should now have no expiry (undefined after ES clear)
     const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);

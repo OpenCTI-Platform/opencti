@@ -78,10 +78,10 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     const newValidityDays = Number(input.password_policy_validity_days);
     if (newValidityDays <= 0) {
       // Policy disabled: clear all users' expiration dates
-      await clearAllUsersPasswordValidUntil(context, user);
+      await clearAllUsersPasswordValidUntil(context);
     } else if (newValidityDays !== oldValidityDays) {
       // Policy duration changed: shift all existing expiration dates by the difference
-      await adjustAllUsersPasswordValidUntil(context, user, oldValidityDays, newValidityDays);
+      await adjustAllUsersPasswordValidUntil(context, oldValidityDays, newValidityDays);
     }
   }
 
