@@ -1891,7 +1891,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:9.1.9, @graphql-tools/merge@npm:^9.0.0, @graphql-tools/merge@npm:^9.0.6, @graphql-tools/merge@npm:^9.1.9":
+"@graphql-tools/merge@npm:9.1.10, @graphql-tools/merge@npm:^9.1.10":
+  version: 9.1.10
+  resolution: "@graphql-tools/merge@npm:9.1.10"
+  dependencies:
+    "@graphql-tools/utils": "npm:^11.1.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/3844e3d83480216f74e461f20756016031d64e5ee020b78bc44dedc731eacaf373d872df9e3bf5bfeb456e0d610b4b2d66a888100a37ec3e60ece98e890fe031
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/merge@npm:^9.0.0, @graphql-tools/merge@npm:^9.0.6, @graphql-tools/merge@npm:^9.1.9":
   version: 9.1.9
   resolution: "@graphql-tools/merge@npm:9.1.9"
   dependencies:
@@ -1927,7 +1939,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/schema@npm:10.0.33, @graphql-tools/schema@npm:^10.0.0, @graphql-tools/schema@npm:^10.0.29, @graphql-tools/schema@npm:^10.0.33":
+"@graphql-tools/schema@npm:10.0.34":
+  version: 10.0.34
+  resolution: "@graphql-tools/schema@npm:10.0.34"
+  dependencies:
+    "@graphql-tools/merge": "npm:^9.1.10"
+    "@graphql-tools/utils": "npm:^11.1.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/ae8a44de0ac29d0e66416f7e7d9e8fb0756fbd7fec1ab6e078ae725301120fcf07c07bdb7478db16ccb1eed2ddb5c4905d507c2f41724e7a2804a8ccd3a9b0c6
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/schema@npm:^10.0.0, @graphql-tools/schema@npm:^10.0.29, @graphql-tools/schema@npm:^10.0.33":
   version: 10.0.33
   resolution: "@graphql-tools/schema@npm:10.0.33"
   dependencies:
@@ -1962,9 +1987,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:11.1.0, @graphql-tools/utils@npm:^11.0.0, @graphql-tools/utils@npm:^11.1.0":
-  version: 11.1.0
-  resolution: "@graphql-tools/utils@npm:11.1.0"
+"@graphql-tools/utils@npm:11.1.1, @graphql-tools/utils@npm:^11.1.1":
+  version: 11.1.1
+  resolution: "@graphql-tools/utils@npm:11.1.1"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     "@whatwg-node/promise-helpers": "npm:^1.0.0"
@@ -1972,7 +1997,7 @@ __metadata:
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/4858ee4a1df0f858c65a5459d991bedcfde488054484c8707c97e2ce9db9a8f74aaaa0d7c20f38ff872507db9a73fc1182d4d1860dd72099509552538dfd477a
+  checksum: 10c0/5a617173cf9786e07f90fc38596e3f921744aafd0ecab9584bde18ada654c9024f547a66d71f44a58ca58532538c1bb3ae5877f4579db80dfc2a2500cd81645a
   languageName: node
   linkType: hard
 
@@ -1987,6 +2012,20 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10c0/73459332c199d8f3aa698bdee4ac6ce802274dba95cc7eff1f0219b6fe6e3a8f314d2e824168e296df8f5ce18f6dbd23ca14406b71890a41ce80b7548e8ccd6d
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/utils@npm:^11.0.0, @graphql-tools/utils@npm:^11.1.0":
+  version: 11.1.0
+  resolution: "@graphql-tools/utils@npm:11.1.0"
+  dependencies:
+    "@graphql-typed-document-node/core": "npm:^3.1.1"
+    "@whatwg-node/promise-helpers": "npm:^1.0.0"
+    cross-inspect: "npm:1.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/4858ee4a1df0f858c65a5459d991bedcfde488054484c8707c97e2ce9db9a8f74aaaa0d7c20f38ff872507db9a73fc1182d4d1860dd72099509552538dfd477a
   languageName: node
   linkType: hard
 
@@ -10162,9 +10201,9 @@ __metadata:
     "@graphql-codegen/cli": "npm:6.3.1"
     "@graphql-codegen/introspection": "npm:5.0.2"
     "@graphql-codegen/typescript-resolvers": "npm:5.1.8"
-    "@graphql-tools/merge": "npm:9.1.9"
-    "@graphql-tools/schema": "npm:10.0.33"
-    "@graphql-tools/utils": "npm:11.1.0"
+    "@graphql-tools/merge": "npm:9.1.10"
+    "@graphql-tools/schema": "npm:10.0.34"
+    "@graphql-tools/utils": "npm:11.1.1"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.2.0"
     "@langchain/mistralai": "npm:1.2.0"
