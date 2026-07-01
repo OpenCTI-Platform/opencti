@@ -104,7 +104,7 @@ export const savedFilterEditAuthorizedMembers = async (
     entityType: ENTITY_TYPE_SAVED_FILTER,
   };
   const result = await editAuthorizedMembers(context, user, args);
-  if (isSavedFilterShared(result)) addSharedSavedFiltersPermissionChangesCount();
+  addSharedSavedFiltersPermissionChangesCount();
   return result;
 };
 
