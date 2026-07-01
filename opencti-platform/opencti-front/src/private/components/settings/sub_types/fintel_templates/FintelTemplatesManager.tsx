@@ -41,6 +41,20 @@ const fintelTemplatesFragment = graphql`
   }
 `;
 
+export const fintelTemplatesRefetchableFragment = graphql`
+  fragment FintelTemplatesManager_query on Query
+  @argumentDefinitions(
+    id: { type: "String!" }
+  )
+  @refetchable(queryName: "FintelTemplatesManagerRefetchQuery") {
+    subType(id: $id) {
+      settings {
+        ...FintelTemplatesManager_templates
+      }
+    }
+  }
+`;
+
 const FintelTemplatesManager = () => {
   const { subType } = useSubTypeOutletContext();
 

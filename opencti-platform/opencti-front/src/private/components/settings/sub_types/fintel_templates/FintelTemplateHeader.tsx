@@ -22,6 +22,7 @@ const headerFragment = graphql`
     description
     start_date
     template_content
+    default
   }
 `;
 
@@ -87,6 +88,8 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
             onUpdate={() => setFormOpen(true)}
             entitySettingId={entitySettingId}
             templateId={template.id}
+            settingsType={subTypeId}
+            isDefault={!!template.default}
             inline={false}
             onDeleteComplete={() => navigate(subTypeLink)}
           />
@@ -108,6 +111,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
           name: template.name,
           description: template.description ?? null,
           published: !!template.start_date,
+          default: template.default,
         }}
         onClose={() => setFormOpen(false)}
       />

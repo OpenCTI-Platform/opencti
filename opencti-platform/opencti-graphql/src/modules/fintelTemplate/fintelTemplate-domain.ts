@@ -3,12 +3,15 @@ import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type EditInput,
+  FilterMode,
+  FilterOperator,
   type FilterGroup,
   type FintelTemplateAddInput,
   type FintelTemplateWidget,
   type FintelTemplateWidgetAddInput,
   type Widget,
   type WidgetDataSelection,
+  type EntitySettingFintelTemplatesArgs,
 } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE, type StoreEntityFintelTemplate } from './fintelTemplate-types';
@@ -16,7 +19,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -24,6 +27,9 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import pjson from '../../../package.json';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
+import { emptyPaginationResult } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import type { BasicConnection } from '../../types/store';
 import {
   SELF_ID,
   widgetContainerAttackPatterns,
@@ -56,6 +62,20 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
 };
 
+export const getTemplatesForSetting = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetType: string,
+  opts: EntitySettingFintelTemplatesArgs,
+): Promise<BasicConnection<BasicStoreEntityFintelTemplate>> => {
+  const canGetTemplates = await canViewTemplates(context);
+  if (!canGetTemplates) {
+    return emptyPaginationResult<BasicStoreEntityFintelTemplate>();
+  }
+  const filters = addFilter(undefined, 'settings_types', [targetType]);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { ...opts, filters });
+};
+
 // check validity of variable_name of fintel template widgets
 export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
   const invalidVariableNames: string[] = [];
@@ -80,6 +100,76 @@ export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: Fintel
   if (invalidVariableNames.length > 0) {
     throw FunctionalError('Variable names should not contain spaces or special chars (except - and _)', { invalidVariableNames });
   }
+};
+
+const applyUniqueDefaultTemplateConstraint = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsType: string,
+  newDefaultTemplateId: string,
+): Promise<StoreEntityFintelTemplate[]> => {
+  const previousDefaultTemplates = await fullEntitiesList<BasicStoreEntityFintelTemplate>(
+    context,
+    user,
+    [ENTITY_TYPE_FINTEL_TEMPLATE],
+    {
+      baseData: true,
+      filters: {
+        filters: [{
+          key: ['settings_types'],
+          values: [settingsType],
+        }, {
+          key: ['default'],
+          values: ['true'],
+        }, {
+          key: ['id'],
+          values: [newDefaultTemplateId],
+          operator: FilterOperator.NotEq,
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+  if (previousDefaultTemplates.length === 0) {
+    return [];
+  }
+  // There should be only one but we never know as the constraint is not
+  // enforced at the DB level.
+  const results = await Promise.all(
+    previousDefaultTemplates.map((entity: BasicStoreEntityFintelTemplate) => updateAttribute<StoreEntityFintelTemplate>(
+      context,
+      user,
+      entity.id,
+      ENTITY_TYPE_FINTEL_TEMPLATE,
+      [{
+        key: 'default',
+        value: ['false'],
+      }],
+    )),
+  );
+  return results.map(({ element }) => element);
+};
+
+export const setTemplateAsDefault = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsType: string,
+  templateId: string,
+) => {
+  await canCustomizeTemplate(context);
+  const { element } = await updateAttribute<StoreEntityFintelTemplate>(
+    context,
+    user,
+    templateId,
+    ENTITY_TYPE_FINTEL_TEMPLATE,
+    [{
+      key: 'default',
+      value: ['true'],
+    }],
+  );
+  const deDefaulted = await applyUniqueDefaultTemplateConstraint(context, user, settingsType, templateId);
+  return [element, ...deDefaulted];
 };
 
 export const addFintelTemplate = async (
@@ -152,6 +242,10 @@ export const addFintelTemplate = async (
     finalInput,
     ENTITY_TYPE_FINTEL_TEMPLATE,
   );
+  if (input.default) {
+    await setTemplateAsDefault(context, user, settings_type, created.id);
+  }
+
   await publishUserAction({
     user,
     event_type: 'mutation',

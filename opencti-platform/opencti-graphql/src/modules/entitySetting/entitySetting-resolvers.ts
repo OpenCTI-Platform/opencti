@@ -4,7 +4,6 @@ import {
   findById,
   findByType,
   getOverviewLayoutCustomization,
-  getTemplatesForSetting,
   queryDefaultValuesAttributesForSetting,
   queryEntitySettingSchemaAttributes,
   queryMandatoryAttributesForSetting,
@@ -16,6 +15,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { getRequestAccessConfiguration } from '../requestAccess/requestAccess-domain';
+import { getTemplatesForSetting } from '../fintelTemplate/fintelTemplate-domain';
 
 const entitySettingResolvers: Resolvers = {
   Query: {

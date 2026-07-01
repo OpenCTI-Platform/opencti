@@ -87,6 +87,8 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
           onUpdate={() => onUpdate(template)}
           entitySettingId={entitySettingId}
           templateId={template.id}
+          settingsType={targetType}
+          isDefault={!!template.default}
         />
       )}
     />
