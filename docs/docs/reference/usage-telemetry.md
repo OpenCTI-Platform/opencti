@@ -24,14 +24,91 @@ The metrics push is done every 6 hours if OpenCTI was able to connect to the hos
 
 ## Telemetry metrics
 
-The application collects statistical data related to its usage. Here are an exhaustive list of the collected metrics:
+The application collects statistical data related to its usage. Here is an exhaustive list of the collected metrics:
+
+### Platform information
 
 - The current platform version
 - The platform unique identifier
 - The platform creation date
-- The number of active users
-- The number of total users
-- The number of nodes in the platform
+- The number of nodes in the cluster
+
+### Users and accounts
+
+- The number of users (excluding service accounts)
+- The number of service accounts
+- The number of user logins (session-based, does not count token authentication)
+- The number of users turned into service accounts
+- The number of service accounts turned into users
+- The number of clicks on Forgot Password
+- The number of background tasks on User scope
+
+### Enterprise Edition
+
 - Enterprise Edition status (activated or not)
+
+### Connectors
+
 - The number of active connectors
+- The number of connectors deployed via composer
+
+### Drafts
+
+- The number of active drafts
+- The number of draft creations
+- The number of draft validations
+- The number of roles with capability in draft
+- The number of times the capabilities in draft tab is loaded
+
+### Workbenches
+
+- The number of active workbenches
+- The number of workbench uploads (creation and updates)
+- The number of workbench to draft conversions
+- The number of workbench validations
+
+### Features usage
+
+- The number of dissemination feature usages
+- The number of NLQ feature usages
+- The number of request access creations (RFI of request access type)
+- The number of custom views created
+- The number of custom views enabled
+
+### Email and notifications
+
+- The number of emails sent from the platform
+- The number of email templates created
+
+### Form intakes
+
+- The number of form intakes created
+- The number of form intakes updated
+- The number of form intakes deleted
+- The number of form intakes submitted
+
+### Security and compliance
+
+- The number of security coverages
+- The number of PIRs
+- The number of decay rules created
+
+### Retention and activity
+
+- Whether the history retention rule is active on the platform
+- Whether the activity retention rule is active on the platform
+- Whether activity is enabled on the platform (has activity listeners configured)
+
+### SSO providers configuration
+
+- Whether Local authentication strategy is enabled
+- Whether OpenID Connect strategy is enabled
+- Whether LDAP strategy is enabled
+- Whether SAML strategy is enabled
+- Whether Auth0 strategy is enabled
+- Whether Certificate strategy is enabled
+- Whether Header strategy is enabled
+- Whether Facebook strategy is enabled
+- Whether Google strategy is enabled
+- Whether GitHub strategy is enabled
 
