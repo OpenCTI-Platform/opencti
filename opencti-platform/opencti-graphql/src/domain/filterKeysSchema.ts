@@ -56,7 +56,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
-import { getCustomFieldDefinitionsForEntityType, getCustomFieldValueField } from '../modules/customField/custom-field-domain';
+import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-domain';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 
 export type FilterDefinition = {
@@ -241,7 +241,6 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   if (isStixDomainObject(type)) {
     const customFieldDefs = getCustomFieldDefinitionsForEntityType(type);
     for (const cfDef of customFieldDefs) {
-      const valueField = getCustomFieldValueField(cfDef.field_type);
       // Map custom field type to filter type
       let filterType = 'string';
       if (cfDef.field_type === 'integer') filterType = 'integer';
@@ -250,7 +249,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       else if (cfDef.field_type === 'select') filterType = 'enum';
 
       const elementsForSearch = cfDef.field_type === 'select' && cfDef.select_options
-        ? [] // Select values are known from definition, no entity lookup needed
+        ? cfDef.select_options
         : [];
 
       filterDefinitionsMap.set(

@@ -39,7 +39,6 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
   }
   const { caseTemplates } = caseToCreate;
   delete caseToCreate.caseTemplates;
-  delete caseToCreate.caseTemplates;
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
   if (caseTemplates) {
     await Promise.all(caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
