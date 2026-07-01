@@ -49,7 +49,7 @@ describe('Telemetry manager test coverage', () => {
   beforeAll(async () => {
     const savedFilter = JSON.stringify({ mode: 'and', filters: [{ key: 'objectLabel', value: [], operator: 'nil' }], filterGroups: [] });
 
-    // Create a saved filter and share it (restricted_members > 1)
+    // Create a saved filter and share it with someone else than the creator
     const sharedSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
       name: 'telemetry-shared-filter',
       filters: savedFilter,
