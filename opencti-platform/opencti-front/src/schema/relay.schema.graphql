@@ -1743,8 +1743,8 @@ type User implements BasicObject & InternalObject {
   description: String
   firstname: String
   otp_activated: Boolean
-  otp_qr: String
   otp_mandatory: Boolean
+  otp_qr: String
   user_service_account: Boolean
   lastname: String
   theme: String
