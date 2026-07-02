@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import jsonMappingExecution from '../../../src/parser/json-mapper';
+import { JsonMapperRepresentationType } from '../../../src/modules/internal/jsonMapper/jsonMapper-types';
+import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { cisa_data, cisa_mapper } from './json-mapper-cisa';
 import { trino_data, trino_mapper } from './json-mapper-trino';
@@ -224,5 +226,35 @@ describe('JSON mapper testing', () => {
     expect(rel).toBeDefined();
     expect(rel.source_ref).toBe(source.id);
     expect(rel.target_ref).toBe(target.id);
+  });
+});
+
+describe('JSON mapper extractWithRegexp', () => {
+  const makeMapper = (formula) => ({
+    type: 'jsonMapper',
+    name: 'regexp-test',
+    variables: [],
+    representations: [{
+      id: 'rep1',
+      type: JsonMapperRepresentationType.Entity,
+      target: { entity_type: ENTITY_TYPE_MALWARE, path: '$[*]' },
+      identifier: undefined,
+      attributes: [
+        { key: 'name', mode: 'complex', complex_path: { variables: [{ variable: 'name', path: '$.name' }], formula } },
+        { key: 'is_family', mode: 'simple', default_values: ['true'] },
+      ],
+    }],
+  });
+
+  it('should extract a capture group from a matching value', async () => {
+    const data = JSON.stringify([{ name: 'CobaltStrike - T1059' }]);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'));
+    expect(objects[0].name).toBe('CobaltStrike');
+  });
+
+  it('should return the original value when the pattern does not match', async () => {
+    const data = JSON.stringify([{ name: 'Sliver' }]);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'));
+    expect(objects[0].name).toBe('Sliver');
   });
 });
