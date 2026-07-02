@@ -1,3 +1,8 @@
+---
+applyTo: "opencti-platform/opencti-graphql/src/telemetry/**, opencti-platform/opencti-graphql/src/manager/telemetryManager.ts, docs/docs/reference/usage-telemetry.md"
+description: "How to add a telemetry metric and ensure the telemetry metrics documentation stays complete"
+---
+
 # Adding a New Telemetry Metric
 
 ## Scope
@@ -11,9 +16,8 @@ When reviewing a PR that touches telemetry files, **always verify that every reg
 
 If a PR adds or modifies any of the following, flag it for missing documentation:
 
-1. **A new `this.registerGauge(...)` call** in `TelemetryMeterManager.ts` → the metric MUST have a corresponding entry in `docs/docs/reference/usage-telemetry.md`.
-2. **A new `TELEMETRY_GAUGE_*` constant** in `telemetryManager.ts` → same requirement.
-3. **A new property ending in `Count` or starting with `is`** in `TelemetryMeterManager.ts` → same requirement.
+1. **A new `this.registerGauge(...)` call** or a new property in `opencti-platform/opencti-graphql/src/telemetry/TelemetryMeterManager.ts` → the metric MUST have a corresponding entry in `docs/docs/reference/usage-telemetry.md`.
+2. **A new `TELEMETRY_GAUGE_*` constant** in `opencti-platform/opencti-graphql/src/manager/telemetryManager.ts` → same requirement.
 
 ### How to Check
 
@@ -21,16 +25,10 @@ If a PR adds or modifies any of the following, flag it for missing documentation
 - The documentation entry should describe **what** is measured in plain language (not the technical gauge name).
 - If the metric is not listed, request the author to add it in the appropriate section of the documentation page.
 
-### Review Comment Template
-
-If a metric is missing from the documentation, leave the following comment:
-
-> ⚠️ **Missing telemetry documentation** — The new metric `<gauge_name>` registered in `TelemetryMeterManager.ts` is not documented in `docs/docs/reference/usage-telemetry.md`. Every telemetry metric must be listed there so users know what data is collected. Please add a description in the appropriate section.
-
 **Key files:**
-- `src/telemetry/TelemetryMeterManager.ts` — Gauge definitions and state
-- `src/manager/telemetryManager.ts` — Redis event constants, helper functions, data fetching, and gauge registration
-- `src/database/redis.ts` — Low-level Redis telemetry storage (`redisSetTelemetryAdd`, `redisGetTelemetry`)
+- `opencti-platform/opencti-graphql/src/telemetry/TelemetryMeterManager.ts` — Gauge definitions and state
+- `opencti-platform/opencti-graphql/src/manager/telemetryManager.ts` — Redis event constants, helper functions, data fetching, and gauge registration
+- `opencti-platform/opencti-graphql/src/database/redis.ts` — Low-level Redis telemetry storage (`redisSetTelemetryAdd`, `redisGetTelemetry`)
 
 ## Two Types of Metrics
 
