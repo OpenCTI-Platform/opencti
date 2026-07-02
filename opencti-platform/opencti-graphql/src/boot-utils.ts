@@ -16,8 +16,8 @@ export const checkSystemDependencies = async () => {
   checkDependenciesPromises.push(storageInit());
   checkDependenciesPromises.push(rabbitMQIsAlive());
   checkDependenciesPromises.push(redisInit());
-  checkDependenciesPromises.push(smtpIsAlive());
   checkDependenciesPromises.push(checkPythonAvailability(context, SYSTEM_USER));
   await Promise.all(checkDependenciesPromises);
+  await smtpIsAlive(); // smtp needs elastic since config can be stored in db
   return true;
 };
