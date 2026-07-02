@@ -178,7 +178,8 @@ export const objectCovered = async <T extends BasicStoreEntity>(context: AuthCon
 };
 
 export const securityCoverageDelete = async (context: AuthContext, user: AuthUser, securityCoverageId: string) => {
-  const deletedResults = await deleteSecurityCoverageResultsByResultOf(context, user, securityCoverageId);
+  const securityCoverage = await findById(context, user, securityCoverageId);
+  const deletedResults = await deleteSecurityCoverageResultsByResultOf(context, user, securityCoverage);
   logApp.info(`[SECURITY-COVERAGE-RESULT][${securityCoverageId}] SCR deleted: ${deletedResults}`);
   await deleteElementById(context, user, securityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, securityCoverageId, user);
