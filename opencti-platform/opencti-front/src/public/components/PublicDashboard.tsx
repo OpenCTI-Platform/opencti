@@ -14,7 +14,7 @@ import { useFormatter } from '../../components/i18n';
 import type { DashboardManifest } from '../../components/dashboard/dashboard-types';
 import useDashboardRefresh from '../../components/dashboard/useDashboardRefresh';
 import DashboardRefreshControl from '../../components/dashboard/DashboardRefreshControl';
-import DashboardRefreshContext from '../../components/dashboard/DashboardRefreshContext';
+import { DashboardRefreshProvider } from '../../components/dashboard/DashboardRefreshContext';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -82,23 +82,23 @@ const PublicDashboardComponent = ({
   return (
     <>
       <PublicTopBar title={t_i18n('Public dashboard')} />
-      <PublicDashboardHeader
-        title={publicDashboardByUriKey?.name ?? ''}
-        manifestConfig={config}
-        onChangeRelativeDate={onChangeRelativeDate}
-        onChangeStartDate={onChangeStartDate}
-        onChangeEndDate={onChangeEndDate}
-        actions={(
-          <DashboardRefreshControl
-            onRefresh={handleManualRefresh}
-            interval={localRefreshRateSeconds}
-            onIntervalChange={handleRefreshRateChange}
-            isRefreshing={isAutoRefreshing}
-          />
-        )}
-      />
+      <DashboardRefreshProvider refreshToken={refreshToken}>
+        <PublicDashboardHeader
+          title={publicDashboardByUriKey?.name ?? ''}
+          manifestConfig={config}
+          onChangeRelativeDate={onChangeRelativeDate}
+          onChangeStartDate={onChangeStartDate}
+          onChangeEndDate={onChangeEndDate}
+          actions={(
+            <DashboardRefreshControl
+              onRefresh={handleManualRefresh}
+              interval={localRefreshRateSeconds}
+              onIntervalChange={handleRefreshRateChange}
+              isRefreshing={isAutoRefreshing}
+            />
+          )}
+        />
 
-      <DashboardRefreshContext.Provider value={refreshToken}>
         <div ref={containerRef}>
           <ReactGridLayout
             className="layout"
@@ -122,7 +122,7 @@ const PublicDashboardComponent = ({
             ))}
           </ReactGridLayout>
         </div>
-      </DashboardRefreshContext.Provider>
+      </DashboardRefreshProvider>
 
     </>
   );

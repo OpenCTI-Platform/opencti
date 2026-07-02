@@ -27,6 +27,7 @@ vi.mock('react-relay', async (importOriginal) => {
 
 vi.mock('../../../components/dashboard/DashboardRefreshContext', () => ({
   useDashboardRefreshToken: vi.fn(() => refreshTokenMockValue),
+  useDashboardSetQueryPending: vi.fn(() => () => {}),
 }));
 
 describe('usePublicDashboardViz', () => {

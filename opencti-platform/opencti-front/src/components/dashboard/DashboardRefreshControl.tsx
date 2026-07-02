@@ -4,6 +4,7 @@ import Button from '@common/button/Button';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../i18n';
+import { useDashboardRefreshPendingState } from './DashboardRefreshContext';
 
 type RefreshIntervalOption = {
   value: number;
@@ -36,13 +37,15 @@ const DashboardRefreshControl = ({
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const primary = theme.palette.primary.main;
+  const isQueryPending = useDashboardRefreshPendingState();
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const manualResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => {
-    if (!manualResetRef.current) return;
-    clearTimeout(manualResetRef.current);
-    manualResetRef.current = null;
+    if (manualResetRef.current) {
+      clearTimeout(manualResetRef.current);
+      manualResetRef.current = null;
+    }
   }, []);
 
   const handleIntervalChange = (event: SelectChangeEvent<number>) => {
@@ -73,13 +76,17 @@ const DashboardRefreshControl = ({
   }, [t_i18n]);
 
   const handleRefreshClick = () => {
+    // Lock the button immediately: widget queries take a tick to register as
+    // pending, so this short debounce bridges the gap until isQueryPending is true.
     setIsManualRefreshing(true);
     if (manualResetRef.current) clearTimeout(manualResetRef.current);
     manualResetRef.current = setTimeout(() => setIsManualRefreshing(false), 1200);
     onRefresh();
   };
 
-  const spinning = isRefreshing || isManualRefreshing;
+  const spinning = isRefreshing || isManualRefreshing || isQueryPending;
+  // Prevent spamming the refresh button until every widget has finished refreshing.
+  const isRefreshDisabled = isManualRefreshing || isQueryPending;
 
   return (
     <ButtonGroup id="dashboard-refresh-control" size="small" variant="outlined">
@@ -87,6 +94,7 @@ const DashboardRefreshControl = ({
         startIcon={spinning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
         onClick={handleRefreshClick}
         variant="secondary"
+        disabled={isRefreshDisabled}
       >
         {t_i18n('Refresh')}
       </Button>

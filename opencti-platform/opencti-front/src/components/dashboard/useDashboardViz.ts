@@ -2,7 +2,7 @@ import type { WidgetHost, WidgetDataSelection, WidgetPerspective, WidgetParamete
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboard-viz-utils';
 import { useCallback, useEffect, useMemo, useRef, useTransition } from 'react';
-import { useDashboardRefreshToken } from './DashboardRefreshContext';
+import { useDashboardRefreshToken, useDashboardSetQueryPending } from './DashboardRefreshContext';
 import { DashboardConfig } from './dashboard-types';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useQueryLoader } from 'react-relay';
@@ -52,8 +52,10 @@ const useDashboardViz = <TQuery extends OperationType>({
   buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
   const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const lastLoadedVariablesSignatureRef = useRef<string | null>(null);
+  const setQueryPending = useDashboardSetQueryPending();
+  const queryIdRef = useRef(`dashboard-viz-${Math.random().toString(36).slice(2)}`);
   const { filterKeysSchema } = useAuth().schema;
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useMemo(() => resolveDataSelection({
     filterKeysSchema,
@@ -110,6 +112,14 @@ const useDashboardViz = <TQuery extends OperationType>({
   useEffect(() => {
     reloadData(false);
   }, [reloadData]);
+
+  // Expose this widget's in-flight status so the dashboard can lock the manual
+  // refresh button until every widget has finished refreshing.
+  useEffect(() => {
+    const queryId = queryIdRef.current;
+    setQueryPending(queryId, isPending);
+    return () => setQueryPending(queryId, false);
+  }, [isPending, setQueryPending]);
 
   // Used by interval fallback when no dashboard refresh provider is present.
   const forceReloadWithCurrentVariables = useCallback(() => {

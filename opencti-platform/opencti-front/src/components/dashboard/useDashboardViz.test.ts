@@ -51,6 +51,7 @@ vi.mock('./dashboard-viz-utils', () => ({
 
 vi.mock('./DashboardRefreshContext', () => ({
   useDashboardRefreshToken: vi.fn(() => refreshTokenMockValue),
+  useDashboardSetQueryPending: vi.fn(() => () => {}),
 }));
 
 describe('useDashboardViz', () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 interface UseDashboardRefreshOptions {
   initialRefreshRateSeconds?: number;
@@ -32,17 +32,17 @@ const useDashboardRefresh = ({
     setLastRefreshTime(new Date());
   }, [initialRefreshRateSeconds]);
 
-  const lastRefreshTimeRef = useRef(lastRefreshTime);
-  useEffect(() => {
-    lastRefreshTimeRef.current = lastRefreshTime;
-  }, [lastRefreshTime]);
-
   const [refreshToken, setRefreshToken] = useState(0);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  const [, startTransition] = useTransition();
 
   const handleManualRefresh = useCallback(() => {
     setLastRefreshTime(new Date());
-    setRefreshToken((prev) => prev + 1);
+    // Mark the refresh cascade as a non-urgent transition so React can paint the
+    // button's disabled state first and refetch widgets without a long blocking task.
+    startTransition(() => {
+      setRefreshToken((prev) => prev + 1);
+    });
   }, []);
 
   const handleRefreshRateChange = useCallback((refreshRateInSeconds: number) => {
@@ -57,8 +57,9 @@ const useDashboardRefresh = ({
     let resetSpinnerTimeout: ReturnType<typeof setTimeout> | null = null;
     const triggerAutoRefresh = () => {
       setIsAutoRefreshing(true);
-      setLastRefreshTime(new Date());
-      setRefreshToken((prev) => prev + 1);
+      startTransition(() => {
+        setRefreshToken((prev) => prev + 1);
+      });
 
       if (resetSpinnerTimeout) {
         clearTimeout(resetSpinnerTimeout);
@@ -69,7 +70,9 @@ const useDashboardRefresh = ({
     };
 
     let interval: ReturnType<typeof setInterval> | null = null;
-    const msUntilNextTick = Math.max(0, refreshRate - (Date.now() - lastRefreshTimeRef.current.getTime()));
+    // Schedule the next tick a full interval after the last refresh (manual,
+    // auto, or rate change), so any refresh restarts the countdown from now.
+    const msUntilNextTick = Math.max(0, refreshRate - (Date.now() - lastRefreshTime.getTime()));
     const timeout = setTimeout(() => {
       triggerAutoRefresh();
       interval = setInterval(() => {
@@ -87,7 +90,7 @@ const useDashboardRefresh = ({
       }
       setIsAutoRefreshing(false);
     };
-  }, [refreshRate]);
+  }, [refreshRate, lastRefreshTime]);
 
   return {
     localRefreshRateSeconds,
