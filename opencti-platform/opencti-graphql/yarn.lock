@@ -8070,6 +8070,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"install-artifact-from-github@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "install-artifact-from-github@npm:1.6.0"
+  bin:
+    install-from-cache: bin/install-from-cache.js
+    save-to-github-cache: bin/save-to-github-cache.js
+  checksum: 10c0/e480c994a6230ba9c24b76e29908dcfb29977d3ee5b4a193b5c793139065aa0deb9bc5f475d11fd347c516b88ddb1a0f02935aa11fd1d3585761a4a4ccc1885c
+  languageName: node
+  linkType: hard
+
 "internal-slot@npm:^1.1.0":
   version: 1.1.0
   resolution: "internal-slot@npm:1.1.0"
@@ -9628,6 +9638,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nan@npm:^2.27.0":
+  version: 2.28.0
+  resolution: "nan@npm:2.28.0"
+  dependencies:
+    node-gyp: "npm:latest"
+  checksum: 10c0/84e45fbb6a249df751bba657728792a8d93e3b10bad9774200c858d1ff38723c988c3e4cef50b3742fa8a05da2e49fa16806f6d768405382d8b1094d10d42fa5
+  languageName: node
+  linkType: hard
+
 "nanoid@npm:^3.3.12":
   version: 3.3.13
   resolution: "nanoid@npm:3.3.13"
@@ -9784,7 +9803,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp@npm:latest":
+"node-gyp@npm:^13.0.0, node-gyp@npm:latest":
   version: 13.0.0
   resolution: "node-gyp@npm:13.0.0"
   dependencies:
@@ -10295,6 +10314,7 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.2.0"
+    re2: "npm:1.25.0"
     semver: "npm:7.8.4"
     set-interval-async: "npm:3.0.3"
     slug: "npm:11.0.1"
@@ -10322,6 +10342,8 @@ __metadata:
       built: true
     protobufjs:
       built: false
+    re2:
+      built: true
   languageName: unknown
   linkType: soft
 
@@ -10993,6 +11015,17 @@ __metadata:
     iconv-lite: "npm:~0.7.0"
     unpipe: "npm:~1.0.0"
   checksum: 10c0/d266678d08e1e7abea62c0ce5864344e980fa81c64f6b481e9842c5beaed2cdcf975f658a3ccd67ad35fc919c1f6664ccc106067801850286a6cbe101de89f29
+  languageName: node
+  linkType: hard
+
+"re2@npm:1.25.0":
+  version: 1.25.0
+  resolution: "re2@npm:1.25.0"
+  dependencies:
+    install-artifact-from-github: "npm:^1.6.0"
+    nan: "npm:^2.27.0"
+    node-gyp: "npm:^13.0.0"
+  checksum: 10c0/a1b89e4d6c594d3fe675fc18f5ee3ce06ea83d66ebc5b3b2d66abf8c93c57757478969d1c934db4379ffba0575154c149d4168a567d192a936fced369d7c3ecf
   languageName: node
   linkType: hard
 

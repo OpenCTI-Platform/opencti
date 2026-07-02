@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import * as JSONPath from 'jsonpath-plus';
+import RE2 from 're2';
 
 import { v4 as uuidv4 } from 'uuid';
 import type { StixObject } from '../types/stix-2-1-common';
@@ -90,7 +91,7 @@ const extractComplexPathFromJson = async (
     }
   };
   data.extractWithRegexp = (regexp: string, groupIndex: number, value: string) => {
-    const myRegexp = new RegExp(regexp, 'g');
+    const myRegexp = new RE2(regexp, 'g');
     const matches = myRegexp.exec(value);
     if (matches != null) {
       return matches[groupIndex];
