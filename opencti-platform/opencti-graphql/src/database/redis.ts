@@ -791,9 +791,16 @@ export interface FeedLog {
   count?: number;
 }
 
+export interface FeedLog {
+  timestamp: string;
+  status: 'success' | 'error';
+  messages: string[];
+  count?: number;
+}
+
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
-  await getClientBase().set(`connector-${connectorId}-logs`, data);
+  await getClientBase().set(`connector-${connectorId}-logs`, data, 'EX', FIVE_MINUTES);
 };
 export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
   const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
@@ -802,58 +809,34 @@ export const redisGetConnectorLogs = async (connectorId: string): Promise<string
 
 const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
 
-const INGESTION_DEDUP_MAX_COUNT = 100;
-const INGESTION_HISTORY_MAX_LENGTH = 20;
-const INGESTION_HISTORY_UPDATE_RETRIES = 5;
+const redisPushIngestionLog = async (feedId: string, log: FeedLog) => {
+  const key = getIngestionLogKey(feedId);
+  const data = JSON.stringify(log);
+  await redisTx(getClientBase(), async (tx) => {
+    await tx.lpush(key, data);
+    await tx.ltrim(key, 0, 19);
+  });
+};
 
 export const redisAddIngestionHistory = async (feedId: string, log: FeedLog) => {
   const clientBase = getClientBase();
   const key = getIngestionLogKey(feedId);
-  const incomingMessages = JSON.stringify(log.messages);
-
-  for (let attempt = 0; attempt < INGESTION_HISTORY_UPDATE_RETRIES; attempt += 1) {
-    await clientBase.watch(key);
-    try {
-      const latestLogData = await clientBase.lindex(key, 0);
-      const tx = clientBase.multi();
-
-      if (latestLogData) {
-        const latestLog: FeedLog = JSON.parse(latestLogData);
-        const isSameStatus = latestLog.status === log.status;
-        const isSameMessage = JSON.stringify(latestLog.messages) === incomingMessages;
-        const count = latestLog.count ?? 1;
-
-        if (isSameStatus && isSameMessage && count < INGESTION_DEDUP_MAX_COUNT) {
-          const updatedLog: FeedLog = {
-            ...latestLog,
-            count: count + 1,
-            timestamp: log.timestamp,
-          };
-          tx.lset(key, 0, JSON.stringify(updatedLog));
-        } else {
-          tx.lpush(key, JSON.stringify(log));
-          tx.ltrim(key, 0, INGESTION_HISTORY_MAX_LENGTH - 1);
-        }
-      } else {
-        tx.lpush(key, JSON.stringify(log));
-        tx.ltrim(key, 0, INGESTION_HISTORY_MAX_LENGTH - 1);
-      }
-
-      const result = await tx.exec();
-      if (result !== null) {
-        return;
-      }
-    } finally {
-      await clientBase.unwatch();
+  const latestLogData = await clientBase.lindex(key, 0);
+  if (latestLogData) {
+    const latestLog: FeedLog = JSON.parse(latestLogData);
+    const isSameStatus = latestLog.status === log.status;
+    const isSameMessage = latestLog.messages.toString() === log.messages.toString();
+    const count = latestLog.count ?? 0;
+    if (isSameStatus && isSameMessage && count < 100) {
+      const updatedLog: FeedLog = { ...latestLog, count: count + 1, timestamp: log.timestamp };
+      await clientBase.lset(key, 0, JSON.stringify(updatedLog));
+      return;
     }
   }
-
-  throw DatabaseError('Redis transaction conflict while updating ingestion history', {
-    feedId,
-  });
+  await redisPushIngestionLog(feedId, log);
 };
 
-export const redisGetIngestionHistory = async (feedId: string): Promise<FeedLog[]> => {
+export const redisGetConnectorHistory = async (feedId: string): Promise<FeedLog[]> => {
   const rawLogs = await getClientBase().lrange(getIngestionLogKey(feedId), 0, -1);
   return rawLogs.map((entry) => JSON.parse(entry) as FeedLog);
 };
