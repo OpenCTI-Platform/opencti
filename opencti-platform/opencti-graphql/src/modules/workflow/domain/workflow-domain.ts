@@ -9,6 +9,7 @@ import { resolveUserById } from '../../../domain/user';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { type EditInput, FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
@@ -596,6 +597,8 @@ export const publishWorkflowDefinition = async (
   ) as WorkflowDefinitionEntity;
   // Validate consistency after update
   validateVersionConsistency(updatedWorkflow);
+
+  addWorkflowPublishCount();
 
   const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
   return {

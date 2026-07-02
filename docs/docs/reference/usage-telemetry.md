@@ -116,3 +116,6 @@ Here is an exhaustive list of the collected metrics:
 - Whether Google strategy is enabled
 - Whether GitHub strategy is enabled
 
+### Workflows
+
+- The number of workflow definitions published

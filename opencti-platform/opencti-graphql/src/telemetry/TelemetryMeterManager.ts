@@ -130,6 +130,8 @@ export class TelemetryMeterManager {
 
   customViewEnabledCount = 0;
 
+  workflowPublishCount = 0;
+
   // endregion providers usage
 
   constructor(meterProvider: MeterProvider) {
@@ -328,6 +330,10 @@ export class TelemetryMeterManager {
     this.customViewEnabledCount = n;
   }
 
+  setWorkflowPublishCount(n: number) {
+    this.workflowPublishCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: {
     unit?: string;
     valueType?: ValueType;
@@ -392,5 +398,6 @@ export class TelemetryMeterManager {
     this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
     this.registerGauge('custom_view_enabled_count', 'Number of custom views enabled', 'customViewEnabledCount');
+    this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
   }
 }

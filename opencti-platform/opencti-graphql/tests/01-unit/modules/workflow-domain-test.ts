@@ -21,6 +21,7 @@ import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/wo
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { addNotification } from '../../../src/modules/notification/notification-domain';
+import * as telemetryManager from '../../../src/manager/telemetryManager';
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
@@ -79,6 +80,10 @@ vi.mock('../../../src/database/entity-representative', () => ({
 
 vi.mock('../../../src/modules/notification/notification-domain', () => ({
   addNotification: vi.fn().mockResolvedValue({}),
+}));
+
+vi.mock('../../../src/manager/telemetryManager', () => ({
+  addWorkflowPublishCount: vi.fn(),
 }));
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
@@ -385,6 +390,28 @@ describe('Workflow Domain', () => {
       workflow_id: 'workflow-id',
       published: true,
     });
+    expect(telemetryManager.addWorkflowPublishCount).toHaveBeenCalledOnce();
+  });
+
+  it('should not call addWorkflowPublishCount when publish fails due to validation errors', async () => {
+    const draftVersion = {
+      id: 'draft-version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: '{"name":"Invalid Workflow","initialState":"open","states":[],"transitions":[]}',
+      validation_errors: [{ type: 'INVALID_SCHEMA', message: 'Missing required field', path: [] }],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Invalid Workflow',
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
+
+    await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('Cannot publish workflow with validation errors');
+    expect(telemetryManager.addWorkflowPublishCount).not.toHaveBeenCalled();
   });
 
   it('should fail to publish workflow when draft_version has validation errors', async () => {
