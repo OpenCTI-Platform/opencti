@@ -7,6 +7,19 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { isEmptyField } from './utils';
 import { getSmtpConfiguration } from '../modules/smtpConfiguration/smtpConfiguration-domain';
+import { getPlatformCrypto } from '../utils/platformCrypto';
+import { memoize } from '../utils/memoize';
+
+const getSmtpKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveAesKey(['smtp', 'elastic'], 1);
+});
+
+const decryptSmtpSecret = async (value) => {
+  if (!value) return value;
+  const keyPair = await getSmtpKeyPair();
+  return (await keyPair.decrypt(Buffer.from(value, 'base64'))).toString();
+};
 
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
 export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
@@ -132,14 +145,14 @@ const buildSmtpOptionsFromDb = (dbConfig) => ({
   },
 });
 
-const getDbAuthParams = (dbConfig) => ({
+const getDbAuthParams = async (dbConfig) => ({
   username: dbConfig.username,
-  password: dbConfig.password, // TODO(Chunk 2.4): decrypt before use
+  password: await decryptSmtpSecret(dbConfig.password_encrypted),
   oauthUser: dbConfig.oauth_user,
   oauthClientId: dbConfig.oauth_client_id,
-  oauthClientSecret: dbConfig.oauth_client_secret, // TODO(Chunk 2.4): decrypt
+  oauthClientSecret: await decryptSmtpSecret(dbConfig.oauth_client_secret_encrypted),
   oauthIssuer: dbConfig.oauth_issuer,
-  oauthRefreshToken: dbConfig.oauth_refresh_token, // TODO(Chunk 2.4): decrypt
+  oauthRefreshToken: await decryptSmtpSecret(dbConfig.oauth_refresh_token_encrypted),
 });
 
 // Build a nodemailer transporter from the effective SMTP configuration.
@@ -154,7 +167,7 @@ const createSmtpTransporter = async () => {
     : { ...baseSmtpOptions, tls: { ...baseSmtpOptions.tls } };
 
   const effectiveAuthType = useDb ? (dbConfig.auth_type ?? 'basic') : authType;
-  const authParams = useDb ? getDbAuthParams(dbConfig) : getConfAuthParams();
+  const authParams = useDb ? await getDbAuthParams(dbConfig) : getConfAuthParams();
 
   const smtpAuth = await buildSmtpAuth(effectiveAuthType, authParams);
   if (smtpAuth) {

@@ -9,6 +9,45 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { smtpTest } from '../../database/smtp';
+import { getPlatformCrypto } from '../../utils/platformCrypto';
+import { memoize } from '../../utils/memoize';
+
+const getSmtpKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveAesKey(['smtp', 'elastic'], 1);
+});
+
+const encryptSmtpSecret = async (value: string | undefined | null): Promise<string | undefined | null> => {
+  if (!value) return value;
+  const keyPair = await getSmtpKeyPair();
+  const encryptedBuffer = await keyPair.encrypt(Buffer.from(value));
+  return encryptedBuffer.toString('base64');
+};
+
+const SMTP_SECRET_FIELDS = ['password', 'oauth_client_secret', 'oauth_refresh_token'] as const;
+
+const encryptSmtpInput = async (input: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  const result: Record<string, unknown> = { ...input };
+  // oauth_access_token is ephemeral (obtained via refresh token) — never stored
+  delete result.oauth_access_token;
+  for (const field of SMTP_SECRET_FIELDS) {
+    if (field in result) {
+      result[`${field}_encrypted`] = await encryptSmtpSecret(result[field] as string | null | undefined);
+      delete result[field];
+    }
+  }
+  return result;
+};
+
+const sanitizeInputForAudit = (input: Record<string, unknown>): Record<string, unknown> => {
+  const sanitized = { ...input };
+  for (const field of SMTP_SECRET_FIELDS) {
+    delete sanitized[field];
+    delete sanitized[`${field}_encrypted`];
+  }
+  delete sanitized.oauth_access_token;
+  return sanitized;
+};
 
 const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput | SmtpConfigurationEditInput) => {
   if (input.port === 25) {
@@ -32,11 +71,11 @@ export const smtpConfigurationAdd = async (
     throw FunctionalError('An SMTP configuration already exists');
   }
   validateSmtpConfigurationInput(input);
-  // TODO(Chunk 2): secrets will be encrypted before storage.
+  const encryptedInput = await encryptSmtpInput(input as unknown as Record<string, unknown>);
   return createInternalObject<StoreEntitySmtpConfiguration>(
     context,
     user,
-    input,
+    encryptedInput as unknown as SmtpConfigurationAddInput,
     ENTITY_TYPE_SMTP_CONFIGURATION,
   );
 };
@@ -63,12 +102,13 @@ export const smtpConfigurationUpdate = async (
   input: SmtpConfigurationEditInput,
 ): Promise<BasicStoreEntitySmtpConfiguration> => {
   validateSmtpConfigurationInput(input);
+  const encryptedInput = await encryptSmtpInput(input as unknown as Record<string, unknown>);
   const { element } = await patchAttribute<StoreEntitySmtpConfiguration>(
     context,
     user,
     id,
     ENTITY_TYPE_SMTP_CONFIGURATION,
-    input,
+    encryptedInput,
   );
   await publishUserAction({
     user,
@@ -76,10 +116,8 @@ export const smtpConfigurationUpdate = async (
     event_scope: 'update',
     event_access: 'administration',
     message: 'updates smtp configuration',
-    // TODO(Chunk 2): secrets will be encrypted before storage — sanitize input here once done.
-    context_data: { id, entity_type: ENTITY_TYPE_SMTP_CONFIGURATION, input },
+    context_data: { id, entity_type: ENTITY_TYPE_SMTP_CONFIGURATION, input: sanitizeInputForAudit(input as unknown as Record<string, unknown>) },
   });
-  // TODO(Chunk 2): secrets will be encrypted before storage — sanitize element before notify here once done.
   return notify(BUS_TOPICS[ENTITY_TYPE_SMTP_CONFIGURATION].EDIT_TOPIC, element, user);
 };
 
@@ -97,6 +135,5 @@ export const smtpConfigurationDelete = async (
   user: AuthUser,
   id: string,
 ): Promise<string> => {
-  // TODO(Chunk 2): secrets will be encrypted before storage — sanitize audit log context here once done.
   return deleteInternalObject(context, user, id, ENTITY_TYPE_SMTP_CONFIGURATION);
 };

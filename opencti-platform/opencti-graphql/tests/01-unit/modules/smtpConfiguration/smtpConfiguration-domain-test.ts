@@ -15,6 +15,19 @@ vi.mock('../../../../src/database/smtp', () => ({
   smtpTest: vi.fn(async () => true),
 }));
 
+vi.mock('../../../../src/utils/platformCrypto', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/utils/platformCrypto')>();
+  return {
+    ...actual,
+    getPlatformCrypto: vi.fn(async () => ({
+      deriveAesKey: vi.fn(async () => ({
+        encrypt: vi.fn(async (buf: Buffer) => Buffer.from(`encrypted:${buf.toString()}`)),
+        decrypt: vi.fn(async (buf: Buffer) => Buffer.from(buf.toString().replace(/^encrypted:/, ''))),
+      })),
+    })),
+  };
+});
+
 vi.mock('../../../../src/database/middleware', () => ({
   patchAttribute: vi.fn(),
 }));
@@ -126,6 +139,34 @@ describe('smtpConfigurationAdd', () => {
       .rejects.toThrow('oauth_client_id, oauth_client_secret and oauth_issuer are required for OAuth2 authentication');
     expect(InternalObject.createInternalObject).not.toHaveBeenCalled();
   });
+
+  it('should encrypt secrets and never store them in plaintext', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
+    vi.mocked(InternalObject.createInternalObject).mockResolvedValue(MOCK_CONFIG);
+    await smtpConfigurationAdd(mockContext, mockUser, {
+      smtp_enabled: true,
+      use_db_config: true,
+      auth_type: 'basic' as any,
+      username: 'user',
+      password: 'secret-password',
+    });
+    const storedInput = (vi.mocked(InternalObject.createInternalObject).mock.calls[0] as any[])[2];
+    expect(storedInput).not.toHaveProperty('password');
+    expect(storedInput).toHaveProperty('password_encrypted');
+    expect(typeof storedInput.password_encrypted).toBe('string');
+  });
+
+  it('should drop oauth_access_token from stored input', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
+    vi.mocked(InternalObject.createInternalObject).mockResolvedValue(MOCK_CONFIG);
+    await smtpConfigurationAdd(mockContext, mockUser, {
+      smtp_enabled: true,
+      use_db_config: true,
+      oauth_access_token: 'ephemeral-token',
+    });
+    const storedInput = (vi.mocked(InternalObject.createInternalObject).mock.calls[0] as any[])[2];
+    expect(storedInput).not.toHaveProperty('oauth_access_token');
+  });
 });
 
 // ---------- smtpConfigurationUpdate ----------
@@ -157,7 +198,19 @@ describe('smtpConfigurationUpdate', () => {
     expect(Middleware.patchAttribute).not.toHaveBeenCalled();
   });
 
-  it('should pass input as-is to publishUserAction (secrets sanitized in Chunk 2)', async () => {
+  it('should encrypt secrets before calling patchAttribute', async () => {
+    vi.mocked(Middleware.patchAttribute).mockResolvedValue({ element: MOCK_CONFIG } as any);
+    await smtpConfigurationUpdate(mockContext, mockUser, MOCK_CONFIG.id, {
+      hostname: 'smtp.example.com',
+      password: 'new-secret',
+    });
+    const patchInput = (vi.mocked(Middleware.patchAttribute).mock.calls[0] as any[])[4];
+    expect(patchInput).not.toHaveProperty('password');
+    expect(patchInput).toHaveProperty('password_encrypted');
+    expect(typeof patchInput.password_encrypted).toBe('string');
+  });
+
+  it('should not include secrets in publishUserAction audit log', async () => {
     const { publishUserAction } = await import('../../../../src/listener/UserActionListener');
     vi.mocked(Middleware.patchAttribute).mockResolvedValue({ element: MOCK_CONFIG } as any);
     await smtpConfigurationUpdate(mockContext, mockUser, MOCK_CONFIG.id, {
@@ -168,6 +221,10 @@ describe('smtpConfigurationUpdate', () => {
     const call = vi.mocked(publishUserAction).mock.calls[0][0];
     const contextData = call.context_data as { input: Record<string, unknown> };
     expect(contextData.input).toHaveProperty('hostname');
+    expect(contextData.input).not.toHaveProperty('password');
+    expect(contextData.input).not.toHaveProperty('password_encrypted');
+    expect(contextData.input).not.toHaveProperty('oauth_client_secret');
+    expect(contextData.input).not.toHaveProperty('oauth_client_secret_encrypted');
   });
 });
 
