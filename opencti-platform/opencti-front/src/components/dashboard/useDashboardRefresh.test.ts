@@ -49,6 +49,35 @@ describe('useDashboardRefresh', () => {
     expect(onRefreshRateChange).toHaveBeenCalledWith(15);
   });
 
+  it('resets the countdown without refetching when the refresh rate changes', () => {
+    const { result } = renderHook(() => useDashboardRefresh({
+      initialRefreshRateSeconds: 10,
+    }));
+
+    // Wait almost a full interval on the original rate.
+    act(() => {
+      vi.advanceTimersByTime(9_000);
+    });
+    expect(result.current.refreshToken).toBe(0);
+
+    // Changing the rate must not trigger an immediate refresh.
+    act(() => {
+      result.current.handleRefreshRateChange(20);
+    });
+    expect(result.current.refreshToken).toBe(0);
+
+    // The elapsed 9s must be discarded: no tick until a full new interval passes.
+    act(() => {
+      vi.advanceTimersByTime(19_999);
+    });
+    expect(result.current.refreshToken).toBe(0);
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(result.current.refreshToken).toBe(1);
+  });
+
   it('synchronizes local refresh rate when initial refresh rate changes', () => {
     const { result, rerender } = renderHook(
       ({ initialRefreshRateSeconds }) => useDashboardRefresh({ initialRefreshRateSeconds }),
