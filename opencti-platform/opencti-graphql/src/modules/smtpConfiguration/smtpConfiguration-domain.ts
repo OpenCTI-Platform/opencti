@@ -9,7 +9,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { smtpTest } from '../../database/smtp';
-import { getPlatformCrypto } from '../../utils/platformCrypto';
+import { encryptValue, getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 
 const getSmtpKeyPair = memoize(async () => {
@@ -17,12 +17,7 @@ const getSmtpKeyPair = memoize(async () => {
   return factory.deriveAesKey(['smtp', 'elastic'], 1);
 });
 
-const encryptSmtpSecret = async (value: string | undefined | null): Promise<string | undefined | null> => {
-  if (!value) return value;
-  const keyPair = await getSmtpKeyPair();
-  const encryptedBuffer = await keyPair.encrypt(Buffer.from(value));
-  return encryptedBuffer.toString('base64');
-};
+const encryptSmtpSecret = async (value: string | undefined | null) => encryptValue(await getSmtpKeyPair(), value);
 
 const SMTP_SECRET_FIELDS = ['password', 'oauth_client_secret', 'oauth_refresh_token'] as const;
 
