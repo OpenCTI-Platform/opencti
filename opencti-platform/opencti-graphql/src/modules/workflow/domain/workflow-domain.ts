@@ -568,8 +568,6 @@ export const publishWorkflowDefinition = async (
 
   await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
 
-  addWorkflowPublishCount();
-
   const updatedWorkflow = await storeLoadById(
     executionContext,
     executionUser,
@@ -578,6 +576,8 @@ export const publishWorkflowDefinition = async (
   ) as WorkflowDefinitionEntity;
   // Validate consistency after update
   validateVersionConsistency(updatedWorkflow);
+
+  addWorkflowPublishCount();
 
   const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
   return {
