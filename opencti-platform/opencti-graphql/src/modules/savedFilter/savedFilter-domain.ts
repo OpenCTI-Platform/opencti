@@ -7,7 +7,14 @@ import { pageEntitiesConnection, storeLoadById } from '../../database/middleware
 import type { InputMaybe, MemberAccessInput, MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { getUserAccessRight, isUserHasCapability, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import { addSharedSavedFiltersPermissionChangesCount } from '../../manager/telemetryManager';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+
+// saved filters with other members than the creator in restricted_members are considered shared
+export const isSavedFilterShared = (savedFilter: BasicStoreEntitySavedFilter) => {
+  return (savedFilter.restricted_members ?? [])
+    .some((m) => m.id != savedFilter.creator_id);
+};
 
 const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
@@ -96,7 +103,9 @@ export const savedFilterEditAuthorizedMembers = async (
     requiredCapabilities: [KNOWLEDGE_KNSHAREFILTERS],
     entityType: ENTITY_TYPE_SAVED_FILTER,
   };
-  return editAuthorizedMembers(context, user, args);
+  const result = await editAuthorizedMembers(context, user, args);
+  addSharedSavedFiltersPermissionChangesCount();
+  return result;
 };
 
 export const getCurrentUserAccessRight = (

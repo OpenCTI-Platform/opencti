@@ -130,6 +130,12 @@ export class TelemetryMeterManager {
 
   customViewEnabledCount = 0;
 
+  // Number of saved filters shared with at least one other member (non-creator)
+  sharedSavedFiltersCount = 0;
+
+  // Number of access restriction updates on shared saved filters
+  sharedSavedFiltersPermissionChangesCount = 0;
+
   // endregion providers usage
 
   constructor(meterProvider: MeterProvider) {
@@ -328,6 +334,14 @@ export class TelemetryMeterManager {
     this.customViewEnabledCount = n;
   }
 
+  setSharedSavedFiltersCount(n: number) {
+    this.sharedSavedFiltersCount = n;
+  }
+
+  setSharedSavedFiltersPermissionChangesCount(n: number) {
+    this.sharedSavedFiltersPermissionChangesCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: {
     unit?: string;
     valueType?: ValueType;
@@ -392,5 +406,7 @@ export class TelemetryMeterManager {
     this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
     this.registerGauge('custom_view_enabled_count', 'Number of custom views enabled', 'customViewEnabledCount');
+    this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
+    this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
   }
 }
