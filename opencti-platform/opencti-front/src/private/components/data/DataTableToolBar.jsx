@@ -616,6 +616,8 @@ class DataTableToolBar extends Component {
     if (key === 'field') {
       if (value === 'x_opencti_detection') {
         actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
+      } else if (value === 'password_valid_until') {
+        actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
       } else {
         const values = [];
         actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
@@ -971,6 +973,7 @@ class DataTableToolBar extends Component {
           ...options,
           { label: t('Account status'), value: 'account_status' },
           { label: t('Account expiration date'), value: 'account_lock_after_date' },
+          { label: t('Force password change'), value: 'password_valid_until' },
         ];
       }
     } else {
@@ -2103,6 +2106,12 @@ class DataTableToolBar extends Component {
             views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
             format="yyyy-MM-dd hh:mm:ss a"
           />
+        );
+      case 'password_valid_until':
+        return (
+          <Alert severity="info" variant="outlined">
+            {t('Selected users will be forced to change their password on next login.')}
+          </Alert>
         );
       default:
         return (

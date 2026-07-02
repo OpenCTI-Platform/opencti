@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -27,7 +28,7 @@ import {
 } from '../config/errors';
 import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
+import { elLoadBy, elRawDeleteByQuery, ES_MAX_CONCURRENCY } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
   fullEntitiesList,
@@ -675,10 +676,10 @@ export const computePasswordValidUntilFromPolicy = async (context) => {
 export const clearAllUsersPasswordValidUntil = async (context) => {
   const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
   const usersWithExpiry = allUsers.filter((u) => u.password_valid_until != null && !u.external);
-  for (let i = 0; i < usersWithExpiry.length; i += 1) {
+  await BluePromise.map(usersWithExpiry, (user) => {
     const inputs = [{ key: 'password_valid_until', value: [null] }];
-    await updateAttribute(context, SYSTEM_USER, usersWithExpiry[i].id, ENTITY_TYPE_USER, inputs);
-  }
+    return updateAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, inputs);
+  }, { concurrency: ES_MAX_CONCURRENCY });
 };
 
 /**
@@ -695,23 +696,22 @@ export const adjustAllUsersPasswordValidUntil = async (context, oldDays, newDays
   if (diffDays === 0) return;
   const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
   const internalUsers = allUsers.filter((u) => !u.external);
-  for (let i = 0; i < internalUsers.length; i += 1) {
-    const currentUser = internalUsers[i];
+  await BluePromise.map(internalUsers, (currentUser) => {
     if (oldDays <= 0 || currentUser.password_valid_until == null) {
       // Coming from disabled state OR user has no expiry: set fresh now + newDays
       const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
       const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
-      await updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
-    } else {
-      // Active policy shift: move existing expiry by the diff
-      const currentExpiry = DateTime.fromISO(currentUser.password_valid_until);
-      if (currentExpiry.isValid) {
-        const newExpiry = currentExpiry.plus({ days: diffDays }).toUTC().toString();
-        const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
-        await updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
-      }
+      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
     }
-  }
+    // Active policy shift: move existing expiry by the diff
+    const currentExpiry = DateTime.fromISO(currentUser.password_valid_until);
+    if (currentExpiry.isValid) {
+      const newExpiry = currentExpiry.plus({ days: diffDays }).toUTC().toString();
+      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
+      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
+    }
+    return undefined;
+  }, { concurrency: ES_MAX_CONCURRENCY });
 };
 
 export const sendEmailToUser = async (context, user, input) => {

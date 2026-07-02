@@ -105,7 +105,7 @@ describe('UserEditionPassword', () => {
     const expiry = '2026-01-02T00:00:00.000Z';
     testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: expiry }} />);
 
-    const formatted = new Intl.DateTimeFormat('fr-FR', {
+    const formatted = new Intl.DateTimeFormat(undefined, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
