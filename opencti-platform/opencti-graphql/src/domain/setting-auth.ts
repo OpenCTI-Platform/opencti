@@ -22,9 +22,9 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from '../utils/access';
 import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../config/conf';
 import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from './user';
+import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, FEATURE_FORCE_PASSWORD_CHANGE } from './user';
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
@@ -74,7 +74,7 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
 
   // Handle password_valid_until adjustments when validity days policy changes
-  if (input.password_policy_validity_days !== undefined) {
+  if (isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE) && input.password_policy_validity_days !== undefined) {
     const newValidityDays = Number(input.password_policy_validity_days);
     if (newValidityDays <= 0) {
       // Policy disabled: clear all users' expiration dates

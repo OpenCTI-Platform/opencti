@@ -8,7 +8,7 @@ import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlP
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { FilterDefinition, PlatformLang, UserContext } from '../utils/hooks/useAuth';
-import platformModuleHelper from '../utils/platformModulesHelper';
+import platformModuleHelper, { isFeatureEnable } from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import Index from './Index';
@@ -508,7 +508,8 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
   }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
     schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
 
-  const passwordExpired = isPasswordExpiredFront(me);
+  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
+  const passwordExpired = forcePasswordChangeEnabled && isPasswordExpiredFront(me);
   const onForcePasswordChangeRoute = location.pathname.startsWith(FORCE_PASSWORD_CHANGE_PATH);
 
   if (passwordExpired && !onForcePasswordChangeRoute) {
