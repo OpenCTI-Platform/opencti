@@ -2,10 +2,19 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDashboardRefresh from './useDashboardRefresh';
 
+const setTabHidden = (hidden: boolean) => {
+  Object.defineProperty(document, 'hidden', {
+    configurable: true,
+    get: () => hidden,
+  });
+  document.dispatchEvent(new Event('visibilitychange'));
+};
+
 describe('useDashboardRefresh', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-06-05T12:00:00.000Z'));
+    setTabHidden(false);
   });
 
   afterEach(() => {
@@ -136,5 +145,74 @@ describe('useDashboardRefresh', () => {
     });
 
     expect(result.current.isAutoRefreshing).toBe(false);
+  });
+
+  it('pauses auto-refresh while the tab is hidden and resumes the remaining time', () => {
+    const { result } = renderHook(() => useDashboardRefresh({
+      initialRefreshRateSeconds: 10,
+    }));
+
+    // 3s into the interval, hide the tab.
+    act(() => {
+      vi.advanceTimersByTime(3_000);
+    });
+    act(() => {
+      setTabHidden(true);
+    });
+
+    // Hidden for 2s: timers are paused (no tick), and total elapsed since the
+    // last refresh (5s) is still under one interval.
+    act(() => {
+      vi.advanceTimersByTime(2_000);
+    });
+    expect(result.current.refreshToken).toBe(0);
+
+    // On becoming visible again, resume with the remaining time (10s - 5s = 5s),
+    // without refetching now.
+    act(() => {
+      setTabHidden(false);
+    });
+    expect(result.current.refreshToken).toBe(0);
+
+    act(() => {
+      vi.advanceTimersByTime(4_999);
+    });
+    expect(result.current.refreshToken).toBe(0);
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(result.current.refreshToken).toBe(1);
+  });
+
+  it('performs a single catch-up refresh when the tab was hidden longer than an interval', () => {
+    const { result } = renderHook(() => useDashboardRefresh({
+      initialRefreshRateSeconds: 10,
+    }));
+
+    act(() => {
+      setTabHidden(true);
+    });
+
+    // Hidden far longer than one interval.
+    act(() => {
+      vi.advanceTimersByTime(120_000);
+    });
+    expect(result.current.refreshToken).toBe(0);
+
+    // On return, a full interval has elapsed: exactly one immediate catch-up.
+    act(() => {
+      setTabHidden(false);
+    });
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
+    expect(result.current.refreshToken).toBe(1);
+
+    // Then it settles back into the regular cadence (no burst of queued ticks).
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
+    expect(result.current.refreshToken).toBe(2);
   });
 });
