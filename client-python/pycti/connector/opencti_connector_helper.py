@@ -566,12 +566,11 @@ class ListenQueue(threading.Thread):
         # (AMQP heartbeats) while the processing thread is running
         while self.thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
-            if (
-                self.helper.work_id is not None
-                and time.monotonic() - last_ping > five_minutes
-            ):  # Ping every 5 minutes
+            now = time.monotonic()
+            # Ping every 5 minutes
+            if self.helper.work_id is not None and now - last_ping > five_minutes:
                 self.helper.api.work.ping(self.helper.work_id)
-                last_ping = time.monotonic()
+                last_ping = now
         self.helper.connector_logger.info(
             "Message processed, thread terminated",
             {"tag": method.delivery_tag},
