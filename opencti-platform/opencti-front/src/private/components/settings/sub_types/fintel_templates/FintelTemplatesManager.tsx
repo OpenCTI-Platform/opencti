@@ -34,7 +34,22 @@ const fintelTemplatesFragment = graphql`
           settings_types
           start_date
           entity_type
+          default
         }
+      }
+    }
+  }
+`;
+
+export const fintelTemplatesRefetchableFragment = graphql`
+  fragment FintelTemplatesManager_query on Query
+  @argumentDefinitions(
+    id: { type: "String!" }
+  )
+  @refetchable(queryName: "FintelTemplatesManagerRefetchQuery") {
+    subType(id: $id) {
+      settings {
+        ...FintelTemplatesManager_templates
       }
     }
   }
@@ -63,6 +78,7 @@ const FintelTemplatesManager = () => {
       name: template.name,
       description: template.description ?? null,
       published: !!template.start_date,
+      default: template.default,
     });
     setDrawerOpen(true);
   };

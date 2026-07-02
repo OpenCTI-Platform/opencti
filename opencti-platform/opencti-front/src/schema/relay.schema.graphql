@@ -10697,6 +10697,7 @@ type Mutation {
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
+  fintelTemplateSetDefault(id: ID!, settingsType: String!): FintelTemplate
   fintelTemplateConfigurationImport(file: Upload!): FintelTemplate
   disseminationListAdd(input: DisseminationListAddInput!): DisseminationList
   disseminationListDelete(id: ID!): ID
@@ -15302,6 +15303,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
+  default: Boolean
 }
 
 input FintelTemplateWidgetAddInput {
@@ -15319,6 +15321,7 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+  default: Boolean!
 }
 
 type FintelTemplateEdge {

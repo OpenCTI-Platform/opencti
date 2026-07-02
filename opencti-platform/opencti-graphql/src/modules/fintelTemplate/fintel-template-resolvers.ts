@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addFintelTemplate, findById, fintelTemplateConfigurationImport, fintelTemplateDelete, fintelTemplateEditField, fintelTemplateExport } from './fintelTemplate-domain';
+import { addFintelTemplate, findById, fintelTemplateConfigurationImport, fintelTemplateDelete, fintelTemplateEditField, fintelTemplateExport, setTemplateAsDefault } from './fintelTemplate-domain';
 
 const fintelTemplateResolvers: Resolvers = {
   Query: {
@@ -17,6 +17,9 @@ const fintelTemplateResolvers: Resolvers = {
     },
     fintelTemplateFieldPatch: (_, { id, input }, context) => {
       return fintelTemplateEditField(context, context.user, id, input);
+    },
+    fintelTemplateSetDefault: (_, { id, settingsType }, context) => {
+      return setTemplateAsDefault(context, context.user, settingsType, id);
     },
     fintelTemplateConfigurationImport: (_, { file }, context) => {
       return fintelTemplateConfigurationImport(context, context.user, file);

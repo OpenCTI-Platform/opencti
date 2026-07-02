@@ -18,6 +18,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
+  default: Boolean
 }
 
 # Mutation
@@ -33,6 +34,7 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+  default: Boolean!
 }
 
 # Relay connections
@@ -60,5 +62,6 @@ type Mutation {
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelTemplateSetDefault(id: ID!, settingsType: String!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateConfigurationImport(file: Upload!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

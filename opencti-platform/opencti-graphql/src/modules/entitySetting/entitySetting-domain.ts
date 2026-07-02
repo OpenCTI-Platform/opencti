@@ -4,7 +4,7 @@ import { createEntity, loadEntity, updateAttribute } from '../../database/middle
 import type { BasicStoreEntityEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
+import { type EditInput, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -17,11 +17,7 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
-import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
-import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
-import { addFilter } from '../../utils/filtering/filtering-utils';
-import type { BasicConnection, BasicStoreEntity } from '../../types/store';
-import { emptyPaginationResult } from '../../database/utils';
+import type { BasicStoreEntity } from '../../types/store';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
 
@@ -106,20 +102,6 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
 
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
   return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
-};
-
-export const getTemplatesForSetting = async (
-  context: AuthContext,
-  user: AuthUser,
-  targetType: string,
-  opts: EntitySettingFintelTemplatesArgs,
-): Promise<BasicConnection<BasicStoreEntityFintelTemplate>> => {
-  const canGetTemplates = await canViewTemplates(context);
-  if (!canGetTemplates) {
-    return emptyPaginationResult<BasicStoreEntityFintelTemplate>();
-  }
-  const filters = addFilter(undefined, 'settings_types', [targetType]);
-  return pageEntitiesConnection(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { ...opts, filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
