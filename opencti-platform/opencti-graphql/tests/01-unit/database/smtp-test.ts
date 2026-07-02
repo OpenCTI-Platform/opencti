@@ -81,18 +81,9 @@ vi.mock('../../../src/modules/smtpConfiguration/smtpConfiguration-domain', () =>
 
 // Stub smtpConfiguration-crypto so decryptSmtpSecret is a no-op in unit tests
 // (passes the value through unchanged so auth logic is still exercised).
-vi.mock('../../../src/utils/platformCrypto', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../src/utils/platformCrypto')>();
-  return {
-    ...actual,
-    getPlatformCrypto: vi.fn(async () => ({
-      deriveAesKey: vi.fn(async () => ({
-        encrypt: vi.fn(async (buf: Buffer) => Buffer.from(`encrypted:${buf.toString()}`)),
-        decrypt: vi.fn(async (buf: Buffer) => Buffer.from(buf.toString().replace(/^encrypted:/, ''))),
-      })),
-    })),
-  };
-});
+vi.mock('../../../src/modules/smtpConfiguration/smtpConfiguration-crypto', () => ({
+  decryptSmtpSecret: vi.fn(async (v: string | null | undefined) => v),
+}));
 
 import {
   __resetSmtpCachesForTests,

@@ -9,15 +9,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { smtpTest } from '../../database/smtp';
-import { encryptValue, getPlatformCrypto } from '../../utils/platformCrypto';
-import { memoize } from '../../utils/memoize';
-
-const getSmtpKeyPair = memoize(async () => {
-  const factory = await getPlatformCrypto();
-  return factory.deriveAesKey(['smtp', 'elastic'], 1);
-});
-
-const encryptSmtpSecret = async (value: string | undefined | null) => encryptValue(await getSmtpKeyPair(), value);
+import { encryptSmtpSecret } from './smtpConfiguration-crypto';
 
 const SMTP_SECRET_FIELDS = ['password', 'oauth_client_secret', 'oauth_refresh_token'] as const;
 

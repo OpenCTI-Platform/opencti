@@ -15,18 +15,9 @@ vi.mock('../../../../src/database/smtp', () => ({
   smtpTest: vi.fn(async () => true),
 }));
 
-vi.mock('../../../../src/utils/platformCrypto', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../src/utils/platformCrypto')>();
-  return {
-    ...actual,
-    getPlatformCrypto: vi.fn(async () => ({
-      deriveAesKey: vi.fn(async () => ({
-        encrypt: vi.fn(async (buf: Buffer) => Buffer.from(`encrypted:${buf.toString()}`)),
-        decrypt: vi.fn(async (buf: Buffer) => Buffer.from(buf.toString().replace(/^encrypted:/, ''))),
-      })),
-    })),
-  };
-});
+vi.mock('../../../../src/modules/smtpConfiguration/smtpConfiguration-crypto', () => ({
+  encryptSmtpSecret: vi.fn(async (v: string | null | undefined) => (v ? `encrypted:${v}` : v)),
+}));
 
 vi.mock('../../../../src/database/middleware', () => ({
   patchAttribute: vi.fn(),

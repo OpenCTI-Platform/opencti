@@ -7,15 +7,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { isEmptyField } from './utils';
 import { getSmtpConfiguration } from '../modules/smtpConfiguration/smtpConfiguration-domain';
-import { decryptValue, getPlatformCrypto } from '../utils/platformCrypto';
-import { memoize } from '../utils/memoize';
-
-const getSmtpKeyPair = memoize(async () => {
-  const factory = await getPlatformCrypto();
-  return factory.deriveAesKey(['smtp', 'elastic'], 1);
-});
-
-const decryptSmtpSecret = async (value) => decryptValue(await getSmtpKeyPair(), value);
+import { decryptSmtpSecret } from '../modules/smtpConfiguration/smtpConfiguration-crypto';
 
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
 export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
