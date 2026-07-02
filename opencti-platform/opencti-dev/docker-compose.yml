@@ -173,6 +173,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - opencti-dev-telemetry-prometheus
+    profiles:
+      - "telemetry"
 
   # SAML / OpenId provider with keycloak - disabled by default
   # docker compose --profile keycloak up -d
