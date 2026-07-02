@@ -1,11 +1,12 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import ForcePasswordChange from '../ForcePasswordChange';
-import { commitMutation, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
+import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 
 const navigateMock = vi.fn();
+const commitFnMock = vi.fn();
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -15,11 +16,14 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
+vi.mock('../../../../utils/hooks/useApiMutation', () => ({
+  default: () => [commitFnMock, false],
+}));
+
 vi.mock('../../../../relay/environment', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../relay/environment')>();
   return {
     ...actual,
-    commitMutation: vi.fn(),
     handleErrorInForm: vi.fn(),
     MESSAGING$: {
       notifySuccess: vi.fn(),
@@ -51,14 +55,13 @@ describe('ForcePasswordChange', () => {
     await user.type(screen.getByLabelText('Confirmation'), 'NewPassword1!');
     await user.click(screen.getByRole('button', { name: 'Change your password' }));
 
-    const commitMutationMock = commitMutation as Mock;
-    expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
+    expect(commitFnMock).toHaveBeenCalledWith(expect.objectContaining({
       variables: {
         input: [{ key: 'password', value: ['NewPassword1!'] }],
       },
     }));
 
-    const config = commitMutationMock.mock.calls[0][0];
+    const config = commitFnMock.mock.calls[0][0];
     config.onCompleted?.();
 
     expect(MESSAGING$.notifySuccess).toHaveBeenCalledWith('The password has been updated');
@@ -72,8 +75,7 @@ describe('ForcePasswordChange', () => {
     await user.type(screen.getByLabelText('Confirmation'), 'NewPassword1!');
     await user.click(screen.getByRole('button', { name: 'Change your password' }));
 
-    const commitMutationMock = commitMutation as Mock;
-    const config = commitMutationMock.mock.calls[0][0];
+    const config = commitFnMock.mock.calls[0][0];
     const fakeError = { res: { errors: [{ message: 'boom' }] } };
     config.onError?.(fakeError);
 
