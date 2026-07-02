@@ -800,7 +800,7 @@ export interface FeedLog {
 
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
-  await getClientBase().set(`connector-${connectorId}-logs`, data, 'EX', FIVE_MINUTES);
+  await getClientBase().set(`connector-${connectorId}-logs`, data);
 };
 export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
   const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
