@@ -56,6 +56,9 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-domain';
+import { isStixDomainObject } from '../schema/stixDomainObject';
+import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
 export type FilterDefinition = {
   filterKey: string;
@@ -232,6 +235,36 @@ const completeFilterDefinitionMapWithSpecialKeys = (
           },
         );
       }
+    }
+  }
+
+  // Add custom field filters dynamically from loaded definitions
+  if (isStixDomainObject(type) && isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    const customFieldDefs = getCustomFieldDefinitionsForEntityType(type);
+    for (const cfDef of customFieldDefs) {
+      // Map custom field type to filter type
+      let filterType = 'string';
+      if (cfDef.field_type === 'integer') filterType = 'integer';
+      else if (cfDef.field_type === 'boolean') filterType = 'boolean';
+      else if (cfDef.field_type === 'date') filterType = 'date';
+      else if (cfDef.field_type === 'select') filterType = 'enum';
+
+      const elementsForSearch = cfDef.field_type === 'select' && cfDef.select_options
+        ? cfDef.select_options
+        : [];
+
+      filterDefinitionsMap.set(
+        cfDef.name,
+        {
+          filterKey: cfDef.name,
+          type: filterType,
+          label: cfDef.label,
+          multiple: cfDef.multiple ?? false,
+          elementsForFilterValuesSearch: elementsForSearch,
+          subEntityTypes,
+          subFilters: [],
+        },
+      );
     }
   }
 

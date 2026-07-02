@@ -16,6 +16,10 @@ import type { CaseIncidentAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
+import { validateCustomFieldValues } from '../../customField/custom-field-validator';
+import type { CustomFieldValue } from '../../customField/custom-field-types';
+import { enforceEnableFeatureFlag } from '../../../utils/access';
+import { CUSTOM_FIELDS_FEATURE_FLAG } from '../../../config/conf';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
@@ -30,6 +34,22 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
   if (isEmptyField(caseIncidentAdd.createdBy)) {
     const individualId = await resolveUserIndividual(context, user);
     caseToCreate = { ...caseToCreate, createdBy: individualId };
+  }
+  // Validate custom field values if provided
+  if (caseIncidentAdd.customFieldValues && caseIncidentAdd.customFieldValues.length > 0) {
+    enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
+    // Normalize GraphQL input (explicit null allowed) to the internal CustomFieldValue shape (undefined only)
+    const customFieldValues: CustomFieldValue[] = caseIncidentAdd.customFieldValues.map((v) => ({
+      field_id: v.field_id,
+      field_name: v.field_name,
+      int_value: v.int_value ?? undefined,
+      string_value: v.string_value ?? undefined,
+      boolean_value: v.boolean_value ?? undefined,
+      date_value: v.date_value ?? undefined,
+      select_value: v.select_value ?? undefined,
+    }));
+    validateCustomFieldValues(customFieldValues, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+    (caseToCreate as any).custom_field_values = customFieldValues;
   }
   const { caseTemplates } = caseToCreate;
   delete caseToCreate.caseTemplates;
