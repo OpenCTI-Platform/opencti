@@ -20,20 +20,20 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
-import { QueryRenderer } from '../../../relay/environment';
-import { isNotEmptyField } from '../../../utils/utils';
-import { capitalizeFirstLetter } from '../../../utils/String';
+import { QueryRenderer } from 'src/relay/environment';
+import { isNotEmptyField } from 'src/utils/utils';
+import { capitalizeFirstLetter } from 'src/utils/String';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
-import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from 'src/components/i18n';
+import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetColumn, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from '../../../utils/widget/widgetUtils';
+import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
+import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
-import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
 import useHelper from '../../../utils/hooks/useHelper';
-import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
@@ -227,12 +227,16 @@ const WidgetCreationParameters = () => {
 
   const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
     const prevSelection = dataSelection[index];
+    const entityType = host.kind === 'custom-view'
+      ? host.customViewTargetEntityType
+      : undefined;
+
     const newSelection = {
       ...prevSelection,
       layout: newLayout,
       columns: prevSelection.columns?.length
         ? prevSelection.columns
-        : getDefaultCustomAttributesColumns(),
+        : getDefaultCustomAttributesColumns(entityType),
     };
     setDataSelectionWithIndex(newSelection, index);
   };
@@ -572,7 +576,7 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute'].includes(type) && (
+                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute', 'custom-attributes'].includes(type) && (
                   <div
                     style={{
                       display: 'flex',
@@ -971,16 +975,20 @@ const WidgetCreationParameters = () => {
             }
             return null;
           })}
-        {getCurrentCategory(type) === 'custom-attributes' && (
-          <WidgetCustomAttributesColumnsInput
-            layout={dataSelection[0]?.layout ?? '1'}
-            onLayoutChange={(newLayout) => setLayout(0, newLayout)}
-            availableColumns={getCustomAttributesColumns(getCurrentSelectedEntityTypes(0)[0])}
-            defaultColumns={getDefaultCustomAttributesColumns()}
-            value={[...(dataSelection[0]?.columns ?? getDefaultCustomAttributesColumns())]}
-            onChange={(newColumns) => setColumns(0, newColumns)}
-          />
-        )}
+        {getCurrentCategory(type) === 'custom-attributes' && (() => {
+          const entityType = host.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
+          const allColumns = getCustomAttributesColumns(entityType);
+          return (
+            <WidgetCustomAttributesColumnsInput
+              layout={dataSelection[0]?.layout ?? '1'}
+              onLayoutChange={(newLayout) => setLayout(0, newLayout)}
+              availableColumns={allColumns}
+              defaultColumns={getDefaultCustomAttributesColumns(entityType)}
+              value={[...(dataSelection[0]?.columns ?? allColumns)]}
+              onChange={(newColumns) => setColumns(0, newColumns)}
+            />
+          );
+        })()}
       </div>
     </div>
   );
