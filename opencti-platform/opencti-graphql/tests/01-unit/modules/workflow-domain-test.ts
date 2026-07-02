@@ -14,7 +14,8 @@ import {
   clearWorkflowPendingState,
   getWorkflowPublishedVersionId,
 } from '../../../src/modules/workflow/domain/workflow-domain';
-import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
+import { resolveUserById } from '../../../src/domain/user';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
@@ -30,7 +31,12 @@ vi.mock('../../../src/database/middleware', () => ({
 
 vi.mock('../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(),
+  internalLoadById: vi.fn(),
   storeLoadById: vi.fn(),
+}));
+
+vi.mock('../../../src/domain/user', () => ({
+  resolveUserById: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/entitySetting/entitySetting-domain', () => ({
@@ -1107,6 +1113,9 @@ describe('Transition comments – Domain', () => {
       (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
       (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
       (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
+      // Default: every recipient resolves to a user object that has access.
+      (resolveUserById as any).mockImplementation((_ctx: any, id: string) => Promise.resolve({ id }));
+      (internalLoadById as any).mockResolvedValue(mockEntity);
     };
 
     beforeEach(() => {
@@ -1203,6 +1212,83 @@ describe('Transition comments – Domain', () => {
 
       expect(result.success).toBe(true);
       expect(addNotification).not.toHaveBeenCalled();
+    });
+
+    // -----------------------------------------------------------------------
+    // Access-control tests (new behaviour: resolveUserById + internalLoadById)
+    // -----------------------------------------------------------------------
+
+    it('should NOT send notification to recipients who cannot access the entity', async () => {
+      setupMocks();
+      (loadAssignees as any).mockResolvedValue([{ id: 'has-access' }, { id: 'no-access' }]);
+      (loadParticipants as any).mockResolvedValue([]);
+      // 'no-access' user: internalLoadById returns null (no visibility)
+      (internalLoadById as any).mockImplementation((_ctx: any, user: any) => {
+        if (user.id === 'no-access') return Promise.resolve(null);
+        return Promise.resolve(mockEntity);
+      });
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Access test');
+
+      expect(addNotification).toHaveBeenCalledTimes(1);
+      expect((addNotification as any).mock.calls[0][2].user_id).toBe('has-access');
+    });
+
+    it('should NOT send notification when all recipients fail the access check', async () => {
+      setupMocks();
+      (loadAssignees as any).mockResolvedValue([{ id: 'no-access-1' }, { id: 'no-access-2' }]);
+      (loadParticipants as any).mockResolvedValue([]);
+      (internalLoadById as any).mockResolvedValue(null);
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Access test');
+
+      expect(addNotification).not.toHaveBeenCalled();
+    });
+
+    it('should skip a recipient silently when resolveUserById returns null', async () => {
+      setupMocks();
+      (loadAssignees as any).mockResolvedValue([{ id: 'ghost-user' }, { id: 'real-user' }]);
+      (loadParticipants as any).mockResolvedValue([]);
+      (resolveUserById as any).mockImplementation((_ctx: any, id: string) => {
+        if (id === 'ghost-user') return Promise.resolve(null);
+        return Promise.resolve({ id });
+      });
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Ghost test');
+
+      expect(addNotification).toHaveBeenCalledTimes(1);
+      expect((addNotification as any).mock.calls[0][2].user_id).toBe('real-user');
+    });
+
+    it('should skip a recipient silently when resolveUserById throws', async () => {
+      setupMocks();
+      (loadAssignees as any).mockResolvedValue([{ id: 'broken-user' }, { id: 'ok-user' }]);
+      (loadParticipants as any).mockResolvedValue([]);
+      (resolveUserById as any).mockImplementation((_ctx: any, id: string) => {
+        if (id === 'broken-user') return Promise.reject(new Error('DB error'));
+        return Promise.resolve({ id });
+      });
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Error test');
+
+      expect(addNotification).toHaveBeenCalledTimes(1);
+      expect((addNotification as any).mock.calls[0][2].user_id).toBe('ok-user');
+    });
+
+    it('should use internalLoadById (not storeLoadById) for the access check', async () => {
+      setupMocks();
+      (loadAssignees as any).mockResolvedValue([{ id: 'recipient-1' }]);
+      (loadParticipants as any).mockResolvedValue([]);
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Audit check');
+
+      // internalLoadById must be called for the access check
+      expect(internalLoadById).toHaveBeenCalled();
+      // The call to internalLoadById must use the entity's internal_id
+      const accessCheckCall = (internalLoadById as any).mock.calls.find(
+        (call: any[]) => call[2] === 'entity-id',
+      );
+      expect(accessCheckCall).toBeDefined();
     });
   });
 });
