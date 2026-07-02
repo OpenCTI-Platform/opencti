@@ -973,7 +973,7 @@ class DataTableToolBar extends Component {
           ...options,
           { label: t('Account status'), value: 'account_status' },
           { label: t('Account expiration date'), value: 'account_lock_after_date' },
-          { label: t('Force password change'), value: 'password_valid_until' },
+          { label: t('Force password change date'), value: 'password_valid_until' },
         ];
       }
     } else {

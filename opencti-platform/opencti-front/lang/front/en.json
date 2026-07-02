@@ -2052,6 +2052,7 @@
   "Force download on this support package": "Force download on this support package",
   "Force manual coverage (prevent enrichment connectors from running)": "Force manual coverage (prevent enrichment connectors from running)",
   "Force now": "Force now",
+  "Force password change date": "Force password change date",
   "Force re-authentication even if user has valid SSO session": "Force re-authentication even if user has valid SSO session",
   "Force reauthentication": "Force reauthentication",
   "Force-unlock this transition (admin only). The background task will be orphaned.": "Force-unlock this transition (admin only). The background task will be orphaned.",

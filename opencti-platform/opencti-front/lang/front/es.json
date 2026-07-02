@@ -2044,6 +2044,7 @@
   "Force download on this support package": "Forzar la descarga de este paquete de soporte",
   "Force manual coverage (prevent enrichment connectors from running)": "Forzar cobertura manual (impedir que se ejecuten los conectores de enriquecimiento)",
   "Force now": "Forzar ahora",
+  "Force password change date": "Fijar la fecha de cambio de contraseña",
   "Force re-authentication even if user has valid SSO session": "Forzar la reautenticación incluso si el usuario tiene una sesión SSO válida",
   "Force reauthentication": "Forzar reautenticación",
   "Force-unlock this transition (admin only). The background task will be orphaned.": "Forzar el desbloqueo de esta transición (sólo para administradores). La tarea en segundo plano quedará huérfana.",

@@ -2044,6 +2044,7 @@
   "Force download on this support package": "이 지원 패키지 강제 다운로드",
   "Force manual coverage (prevent enrichment connectors from running)": "수동 적용 범위 강제 적용(보강 커넥터가 실행되지 않도록 함)",
   "Force now": "지금 강제",
+  "Force password change date": "비밀번호 변경 날짜 강제 지정",
   "Force re-authentication even if user has valid SSO session": "사용자에게 유효한 SSO 세션이 있더라도 재인증 강제 수행",
   "Force reauthentication": "강제 재인증",
   "Force-unlock this transition (admin only). The background task will be orphaned.": "이 전환을 강제 잠금 해제합니다(관리자만 해당). 백그라운드 작업이 고아가 됩니다.",
