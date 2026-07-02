@@ -3,6 +3,7 @@ import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { emptyFilled, truncate } from '../utils/String';
 import MarkdownDisplay from './markdownDisplay/MarkdownDisplay';
+import { useFormatter } from './i18n';
 
 interface ExpandableMarkdownProps {
   source?: string | null;
@@ -16,13 +17,14 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   removeLinks = false,
 }) => {
   const [expand, setExpand] = useState(false);
+  const { t_i18n } = useFormatter();
   const onClick = () => setExpand(!expand);
   const shouldBeTruncated = (source || '').length > limit;
   return (
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
         <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton onClick={onClick}>
+          <IconButton aria-label={t_i18n(expand ? 'collapse' : 'expand')} onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>

@@ -111,6 +111,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
       disablePadding
       secondaryAction={(
         <IconButton
+          aria-label={t_i18n('Remove suggested mapping')}
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity)}
         >
           <CloseOutlined />
@@ -193,13 +194,19 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
 
 export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: ContainerStixCoreObjectsSuggestedMappingLineComponentProps) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { dataColumns } = props;
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
-        <IconButton disabled={true} aria-haspopup="true" classes={classes.itemIconDisabled}>
+        <IconButton
+          disabled={true}
+          aria-label={t_i18n('Open menu')}
+          aria-haspopup="true"
+          classes={classes.itemIconDisabled}
+        >
           <MoreVert />
         </IconButton>
       )}

@@ -119,6 +119,7 @@ const DataTableLine = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { redirectionMode },
     },
+    formatter: { t_i18n },
   } = useDataTableContext();
 
   const data = useLineData(row);
@@ -249,7 +250,7 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton onClick={() => (link ? navigate(link) : undefined)}>
+              <IconButton aria-label={t_i18n('Open')} onClick={() => (link ? navigate(link) : undefined)}>
                 <KeyboardArrowRightOutlined />
               </IconButton>
             )}

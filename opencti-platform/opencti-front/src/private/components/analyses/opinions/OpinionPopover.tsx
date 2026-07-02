@@ -93,6 +93,7 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
     <>
       {variant === 'inList' ? (
         <IconButton
+          aria-label={t_i18n('Open menu')}
           onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
@@ -102,6 +103,7 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
         </IconButton>
       ) : (
         <ToggleButton
+          aria-label={t_i18n('Open menu')}
           value="popover"
           size="small"
           onClick={handleOpen}

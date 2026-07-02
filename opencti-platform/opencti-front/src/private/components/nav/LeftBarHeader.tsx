@@ -166,6 +166,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
 
         {navOpen && (
           <IconButton
+            aria-label={t_i18n(open ? 'collapse' : 'expand')}
             color={draftContext ? 'warn' : 'default'}
             onClick={handleClickPopover}
           >

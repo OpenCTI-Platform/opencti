@@ -473,6 +473,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
             )}
         {expandable && (
           <IconButton
+            aria-label={t_i18n(expanded ? 'collapse' : 'expand')}
             onClick={handleToggleExpand}
             classes={{ root: classes.buttonExpand }}
           >

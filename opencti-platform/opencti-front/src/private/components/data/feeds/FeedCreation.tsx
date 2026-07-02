@@ -810,6 +810,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                           })}
                           <div className={classes.buttonAdd}>
                             <IconButton
+                              aria-label={t_i18n('Add')}
                               disabled={selectedTypes.length === 0}
                               size="small"
                               onClick={() => handleAddAttribute()}
