@@ -33,6 +33,13 @@ This configuration enables the requirement of a reference message on an entity c
 <a id="workflow-section"></a>
 ## Workflow
 
+### Workflow on Draft Entity 
+
+Draft is the first entity (object) in the platform supporting advanced worfklow configuration. Please navigate to [this page](../usage/draft-workflow.md) for more information.
+
+
+### Workflow on all other entities 
+
 For now, OpenCTI has a simple workflow approach. They're represented by the "Processing status" field embedded in each object. By default, this field is disabled for most objects but can be activated through the platform settings:
 
 1. Navigate to "Settings > Customization > Entity types > [Desired object type]."
