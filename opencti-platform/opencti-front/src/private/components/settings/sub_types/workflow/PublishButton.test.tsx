@@ -27,6 +27,7 @@ const renderWithTheme = (component: React.ReactElement) => {
 
 describe('PublishButton', () => {
   const mockOnPublish = vi.fn();
+  const mockOnReset = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -35,7 +36,7 @@ describe('PublishButton', () => {
   describe('Null validation status', () => {
     it('should return null when validationStatus is null', () => {
       const { container } = renderWithTheme(
-        <PublishButton validationStatus={null} onPublish={mockOnPublish} />,
+        <PublishButton validationStatus={null} onPublish={mockOnPublish} onReset={mockOnReset} />,
       );
       expect(container.firstChild).toBeNull();
     });
@@ -47,6 +48,7 @@ describe('PublishButton', () => {
         <PublishButton
           validationStatus={{ published: true, validationErrors: [] }}
           onPublish={mockOnPublish}
+          onReset={mockOnReset}
         />,
       );
 
@@ -75,6 +77,7 @@ describe('PublishButton', () => {
         <PublishButton
           validationStatus={{ published: false, validationErrors }}
           onPublish={mockOnPublish}
+          onReset={mockOnReset}
         />,
       );
 
@@ -89,6 +92,7 @@ describe('PublishButton', () => {
         <PublishButton
           validationStatus={{ published: false, validationErrors }}
           onPublish={mockOnPublish}
+          onReset={mockOnReset}
         />,
       );
 
@@ -103,6 +107,7 @@ describe('PublishButton', () => {
         <PublishButton
           validationStatus={{ published: false, validationErrors: [] }}
           onPublish={mockOnPublish}
+          onReset={mockOnReset}
         />,
       );
 
@@ -117,6 +122,7 @@ describe('PublishButton', () => {
         <PublishButton
           validationStatus={{ published: false, validationErrors: [] }}
           onPublish={mockOnPublish}
+          onReset={mockOnReset}
         />,
       );
 
@@ -124,6 +130,25 @@ describe('PublishButton', () => {
       await user.click(button);
 
       expect(mockOnPublish).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Reset flow', () => {
+    it('should open reset confirmation and call onReset when confirmed', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ published: false, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /More workflow options/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Reset workflow/i }));
+      await user.click(screen.getByRole('button', { name: /^Reset$/i }));
+
+      expect(mockOnReset).toHaveBeenCalledTimes(1);
     });
   });
 });
