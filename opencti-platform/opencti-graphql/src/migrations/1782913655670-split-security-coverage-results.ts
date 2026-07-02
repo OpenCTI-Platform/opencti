@@ -56,7 +56,6 @@ export const up = async (next: (error?: Error) => void) => {
     }
 
     const allCoveredEntityIds = [...new Set(allHasCoveredRelationships.map((relationship) => relationship.toId))];
-
     const allCoveredEntitiesResult = await internalFindByIds<BasicStoreObject>(
       context,
       SYSTEM_USER,
@@ -209,6 +208,8 @@ export const up = async (next: (error?: Error) => void) => {
       logMigration.info(`${message} bulk operations on SC / SCR / Entities  ${currentProcessing} / ${bulkOperations.length}`);
     };
     await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  } else {
+    logMigration.info(`${message} > No SecurityCoverage found, skipping migration`);
   }
 
   logMigration.info(`${message} > done in ${Date.now() - startTime} ms`);
