@@ -30,6 +30,7 @@ import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/Ing
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/data/IngestionCatalog/utils/JsonFormPasswordRenderer';
+import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/data/IngestionCatalog/utils/JsonFormDeprecatedRenderer';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -40,6 +41,7 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { resolveLink } from '../../../../utils/Entity';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/data/IngestionCatalog/IngestionCatalogUnverifiedDeploymentPopover';
+import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -80,6 +82,7 @@ export const sanitizeContainerName = (label: string): string => {
 const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
+  { tester: jsonFormDeprecatedTester, renderer: JsonFormDeprecatedRenderer },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
@@ -194,7 +197,9 @@ const IngestionCatalogConnectorCreation = ({
     const defaults: Record<string, string | number | boolean | object | string[]> = {};
     let defaultConnectorName = '';
 
-    Object.entries(connector.config_schema.properties).forEach(([key, value]) => {
+    const nonDeprecatedProperties = filterOutDeprecatedProperties(connector.config_schema.properties);
+
+    Object.entries(nonDeprecatedProperties).forEach(([key, value]) => {
       if (key === 'CONNECTOR_NAME') {
         if (value.default !== undefined) {
           const baseName = value.default.toString();
@@ -219,7 +224,7 @@ const IngestionCatalogConnectorCreation = ({
 
     const reqProperties: JsonSchema = {
       properties: requiredProps,
-      required: connector.config_schema.required,
+      required: filterOutDeprecatedRequired(connector.config_schema.required, connector.config_schema.properties),
     };
 
     const optProperties: JsonSchema = {

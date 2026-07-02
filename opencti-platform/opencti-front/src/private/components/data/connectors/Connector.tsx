@@ -1,5 +1,6 @@
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -25,6 +26,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
 import {
   computeConnectorStatus,
   getConnectorOnlyContextualStatus,
@@ -52,6 +54,7 @@ import { graphql } from 'relay-runtime';
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
+import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '../IngestionCatalog/utils/deprecatedFields';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -161,6 +164,42 @@ const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ 
 
 ConnectorWorksSection.displayName = 'ConnectorWorksSection';
 
+interface DeprecatedConfigurationAlertProps {
+  open: boolean;
+  message: string;
+  actionLabel: string;
+  onAction: () => void;
+}
+
+const DeprecatedConfigurationAlert: FunctionComponent<DeprecatedConfigurationAlertProps> = ({
+  open,
+  message,
+  actionLabel,
+  onAction,
+}) => {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <Alert severity="warning" variant="outlined" sx={{ mb: 2 }}>
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}
+      >
+        <span>{message}</span>
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={onAction}
+        >
+          {actionLabel}
+        </Button>
+      </Stack>
+    </Alert>
+  );
+};
+
 interface ConnectorComponentProps {
   connector: Connector_connector$data;
   relay: RelayRefetchProp;
@@ -204,6 +243,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
   const [tabValue, setTabValue] = useState(0);
+  const [editionOpen, setEditionOpen] = useState(false);
 
   // API mutations - defined early to avoid use-before-define errors
   const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
@@ -710,6 +750,42 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return `${excerptTitle} - ${connectorTitle}`;
   })();
 
+  const hasDeprecatedConfiguredFields = useMemo(() => {
+    if (!connector.is_managed || !connector.manager_contract_definition) {
+      return false;
+    }
+
+    try {
+      const contract = JSON.parse(connector.manager_contract_definition) as IngestionConnector;
+      const properties = contract?.config_schema?.properties as Record<string, IngestionTypedProperty> | undefined;
+      if (!properties) {
+        return false;
+      }
+
+      const configurationByKey = new Map<string, string>();
+      connector.manager_contract_configuration?.forEach((entry) => {
+        if (typeof entry.key !== 'string' || configurationByKey.has(entry.key)) {
+          return;
+        }
+        configurationByKey.set(entry.key, entry.value ?? '');
+      });
+
+      const currentValues: Record<string, unknown> = {};
+      Object.keys(properties).forEach((key) => {
+        const value = configurationByKey.get(key);
+        if (!value) {
+          return;
+        }
+        currentValues[key] = ['true', 'false'].includes(value) ? value === 'true' : value;
+      });
+
+      const deprecatedDescriptors = getDeprecatedDescriptorsForEdition(properties, currentValues);
+      return shouldShowDeprecatedAlert(deprecatedDescriptors);
+    } catch {
+      return false;
+    }
+  }, [connector.is_managed, connector.manager_contract_definition, connector.manager_contract_configuration]);
+
   return (
     <>
       <div
@@ -744,6 +820,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               <ConnectorPopover
                 connector={connector}
                 onRefreshData={handleRefreshData}
+                onOpenEditConfiguration={() => setEditionOpen(true)}
               />
               {connector.is_managed && (
                 <Button
@@ -783,6 +860,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <Box>
             {tabValue === 0 && (
               <>
+                <DeprecatedConfigurationAlert
+                  open={hasDeprecatedConfiguredFields}
+                  message={t_i18n('This connector has deprecated configuration fields still set. Open the configuration to review and remove them.')}
+                  actionLabel={t_i18n('Edit configuration')}
+                  onAction={() => setEditionOpen(true)}
+                />
                 {connectorOverviewContent}
                 <ConnectorWorksSection connectorId={connector.id} />
               </>
@@ -795,6 +878,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           {connectorOverviewContent}
           <ConnectorWorksSection connectorId={connector.id} />
         </>
+      )}
+
+      {connector.is_managed && connector.manager_contract_definition && (
+        <ManagedConnectorEdition
+          open={editionOpen}
+          onClose={() => setEditionOpen(false)}
+          connector={connector}
+        />
       )}
     </>
   );
