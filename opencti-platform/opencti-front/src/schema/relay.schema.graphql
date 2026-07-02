@@ -1479,7 +1479,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_ai_has_token: Boolean!
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
-  data_sanity_configuration: DataSanityConfiguration
 }
 
 enum GroupsOrdering {
@@ -10780,7 +10779,6 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
-  dataSanityUpdateMaintenancePlanning(planning: [DataSanityMaintenanceWindowInput!]!, timezone_offset: Int!): DataSanityConfiguration
 }
 
 enum WorkflowExecutionStatus {
@@ -16810,21 +16808,4 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
-}
-
-type DataSanityMaintenanceWindow {
-  day: String!
-  start_time: String!
-  end_time: String!
-}
-
-type DataSanityConfiguration {
-  maintenance_planning: [DataSanityMaintenanceWindow!]!
-  timezone_offset: Int!
-}
-
-input DataSanityMaintenanceWindowInput {
-  day: String!
-  start_time: String!
-  end_time: String!
 }

@@ -4,7 +4,6 @@ import { DATA_SANITY_MANAGER_USER, executionContext } from '../utils/access';
 import type { AuthContext, AuthUser } from '../types/user';
 import { findForceRunOperations, hasOperationBeenExecuted, markOperationAsExecuted, markOperationAsRunning } from '../modules/dataSanity/dataSanity-domain';
 import { type SanityOperation, sanityOperationList } from '../modules/dataSanity/dataSanity-operations';
-import { isWithinMaintenanceWindow } from '../modules/dataSanity/dataSanityConfiguration-domain';
 
 const DATA_SANITY_MANAGER_ID = 'DATA_SANITY_MANAGER';
 const DATA_SANITY_MANAGER_LABEL = 'Data sanity manager';
@@ -81,12 +80,6 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
 export const dataSanityHandler = async () => {
   const context = executionContext(DATA_SANITY_MANAGER_CONTEXT);
   logApp.info('[DATA_SANITY_MANAGER] Running data sanity manager handler', { manager: DATA_SANITY_MANAGER_ID });
-  // Check if we are within a maintenance window before running operations
-  const withinMaintenance = await isWithinMaintenanceWindow(context, DATA_SANITY_MANAGER_USER);
-  if (!withinMaintenance) {
-    logApp.info('[DATA_SANITY_MANAGER] Data sanity manager skipped: not within maintenance window');
-    return;
-  }
   await dataSanityListHandler(context, DATA_SANITY_MANAGER_USER);
   await dataSanityForceRunHandler(context);
   logApp.info('[DATA_SANITY_MANAGER] Data sanity manager handler complete', { manager: DATA_SANITY_MANAGER_ID });

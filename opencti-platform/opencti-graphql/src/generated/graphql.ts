@@ -6788,12 +6788,6 @@ export enum DataComponentsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
-export type DataSanityConfiguration = {
-  __typename?: 'DataSanityConfiguration';
-  maintenance_planning: Array<DataSanityMaintenanceWindow>;
-  timezone_offset: Scalars['Int']['output'];
-};
-
 export type DataSanityDryRunOutput = {
   __typename?: 'DataSanityDryRunOutput';
   estimated_impact: Array<DataSanityImpactedElement>;
@@ -6815,19 +6809,6 @@ export type DataSanityImpactedElement = {
   __typename?: 'DataSanityImpactedElement';
   count: Scalars['Int']['output'];
   key: Scalars['String']['output'];
-};
-
-export type DataSanityMaintenanceWindow = {
-  __typename?: 'DataSanityMaintenanceWindow';
-  day: Scalars['String']['output'];
-  end_time: Scalars['String']['output'];
-  start_time: Scalars['String']['output'];
-};
-
-export type DataSanityMaintenanceWindowInput = {
-  day: Scalars['String']['input'];
-  end_time: Scalars['String']['input'];
-  start_time: Scalars['String']['input'];
 };
 
 export type DataSanityOperation = {
@@ -17107,7 +17088,6 @@ export type Mutation = {
   dataComponentRelationAdd?: Maybe<StixRefRelationship>;
   dataComponentRelationDelete?: Maybe<DataComponent>;
   dataSanityOperationRequestRun?: Maybe<Scalars['ID']['output']>;
-  dataSanityUpdateMaintenancePlanning?: Maybe<DataSanityConfiguration>;
   dataSourceAdd?: Maybe<DataSource>;
   dataSourceContextClean?: Maybe<DataSource>;
   dataSourceContextPatch?: Maybe<DataSource>;
@@ -18004,12 +17984,6 @@ export type MutationDataComponentRelationDeleteArgs = {
 
 export type MutationDataSanityOperationRequestRunArgs = {
   operation_name: Scalars['String']['input'];
-};
-
-
-export type MutationDataSanityUpdateMaintenancePlanningArgs = {
-  planning: Array<DataSanityMaintenanceWindowInput>;
-  timezone_offset: Scalars['Int']['input'];
 };
 
 
@@ -30296,7 +30270,6 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   caller_ip?: Maybe<Scalars['String']['output']>;
   cert_auth?: Maybe<CertAuthConfig>;
   created_at: Scalars['DateTime']['output'];
-  data_sanity_configuration?: Maybe<DataSanityConfiguration>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   filigran_chatbot_ai_cgu_status: CguStatus;
@@ -39657,12 +39630,9 @@ export type ResolversTypes = ResolversObject<{
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
   DataComponentEdge: ResolverTypeWrapper<Omit<DataComponentEdge, 'node'> & { node: ResolversTypes['DataComponent'] }>;
   DataComponentsOrdering: DataComponentsOrdering;
-  DataSanityConfiguration: ResolverTypeWrapper<DataSanityConfiguration>;
   DataSanityDryRunOutput: ResolverTypeWrapper<DataSanityDryRunOutput>;
   DataSanityExecution: ResolverTypeWrapper<DataSanityExecution>;
   DataSanityImpactedElement: ResolverTypeWrapper<DataSanityImpactedElement>;
-  DataSanityMaintenanceWindow: ResolverTypeWrapper<DataSanityMaintenanceWindow>;
-  DataSanityMaintenanceWindowInput: DataSanityMaintenanceWindowInput;
   DataSanityOperation: ResolverTypeWrapper<DataSanityOperation>;
   DataSource: ResolverTypeWrapper<BasicStoreEntityDataSource>;
   DataSourceAddInput: DataSourceAddInput;
@@ -40775,12 +40745,9 @@ export type ResolversParentTypes = ResolversObject<{
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
   DataComponentEdge: Omit<DataComponentEdge, 'node'> & { node: ResolversParentTypes['DataComponent'] };
-  DataSanityConfiguration: DataSanityConfiguration;
   DataSanityDryRunOutput: DataSanityDryRunOutput;
   DataSanityExecution: DataSanityExecution;
   DataSanityImpactedElement: DataSanityImpactedElement;
-  DataSanityMaintenanceWindow: DataSanityMaintenanceWindow;
-  DataSanityMaintenanceWindowInput: DataSanityMaintenanceWindowInput;
   DataSanityOperation: DataSanityOperation;
   DataSource: BasicStoreEntityDataSource;
   DataSourceAddInput: DataSourceAddInput;
@@ -43761,11 +43728,6 @@ export type DataComponentEdgeResolvers<ContextType = any, ParentType extends Res
   node?: Resolver<ResolversTypes['DataComponent'], ParentType, ContextType>;
 }>;
 
-export type DataSanityConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityConfiguration'] = ResolversParentTypes['DataSanityConfiguration']> = ResolversObject<{
-  maintenance_planning?: Resolver<Array<ResolversTypes['DataSanityMaintenanceWindow']>, ParentType, ContextType>;
-  timezone_offset?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-}>;
-
 export type DataSanityDryRunOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityDryRunOutput'] = ResolversParentTypes['DataSanityDryRunOutput']> = ResolversObject<{
   estimated_impact?: Resolver<Array<ResolversTypes['DataSanityImpactedElement']>, ParentType, ContextType>;
 }>;
@@ -43784,12 +43746,6 @@ export type DataSanityExecutionResolvers<ContextType = any, ParentType extends R
 export type DataSanityImpactedElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityImpactedElement'] = ResolversParentTypes['DataSanityImpactedElement']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type DataSanityMaintenanceWindowResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityMaintenanceWindow'] = ResolversParentTypes['DataSanityMaintenanceWindow']> = ResolversObject<{
-  day?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  end_time?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  start_time?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type DataSanityOperationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityOperation'] = ResolversParentTypes['DataSanityOperation']> = ResolversObject<{
@@ -47452,7 +47408,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataComponentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationAddArgs, 'id' | 'input'>>;
   dataComponentRelationDelete?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   dataSanityOperationRequestRun?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataSanityOperationRequestRunArgs, 'operation_name'>>;
-  dataSanityUpdateMaintenancePlanning?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType, RequireFields<MutationDataSanityUpdateMaintenancePlanningArgs, 'planning' | 'timezone_offset'>>;
   dataSourceAdd?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceAddArgs, 'input'>>;
   dataSourceContextClean?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextCleanArgs, 'id'>>;
   dataSourceContextPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextPatchArgs, 'id' | 'input'>>;
@@ -50466,7 +50421,6 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   caller_ip?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cert_auth?: Resolver<Maybe<ResolversTypes['CertAuthConfig']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  data_sanity_configuration?: Resolver<Maybe<ResolversTypes['DataSanityConfiguration']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filigran_chatbot_ai_cgu_status?: Resolver<ResolversTypes['CGUStatus'], ParentType, ContextType>;
@@ -53368,11 +53322,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;
-  DataSanityConfiguration?: DataSanityConfigurationResolvers<ContextType>;
   DataSanityDryRunOutput?: DataSanityDryRunOutputResolvers<ContextType>;
   DataSanityExecution?: DataSanityExecutionResolvers<ContextType>;
   DataSanityImpactedElement?: DataSanityImpactedElementResolvers<ContextType>;
-  DataSanityMaintenanceWindow?: DataSanityMaintenanceWindowResolvers<ContextType>;
   DataSanityOperation?: DataSanityOperationResolvers<ContextType>;
   DataSource?: DataSourceResolvers<ContextType>;
   DataSourceConnection?: DataSourceConnectionResolvers<ContextType>;

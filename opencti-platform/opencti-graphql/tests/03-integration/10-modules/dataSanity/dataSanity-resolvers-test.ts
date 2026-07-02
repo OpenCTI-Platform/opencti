@@ -47,37 +47,9 @@ const DATA_SANITY_DRY_RUN_QUERY = gql`
   }
 `;
 
-const DATA_SANITY_CONFIGURATION_QUERY = gql`
-  query DataSanityConfiguration {
-    settings {
-      data_sanity_configuration {
-        maintenance_planning {
-          day
-          start_time
-          end_time
-        }
-        timezone_offset
-      }
-    }
-  }
-`;
-
 const DATA_SANITY_REQUEST_RUN_MUTATION = gql`
   mutation DataSanityOperationRequestRun($operation_name: String!) {
     dataSanityOperationRequestRun(operation_name: $operation_name)
-  }
-`;
-
-const DATA_SANITY_UPDATE_PLANNING_MUTATION = gql`
-  mutation DataSanityUpdateMaintenancePlanning($planning: [DataSanityMaintenanceWindowInput!]!, $timezone_offset: Int!) {
-    dataSanityUpdateMaintenancePlanning(planning: $planning, timezone_offset: $timezone_offset) {
-      maintenance_planning {
-        day
-        start_time
-        end_time
-      }
-      timezone_offset
-    }
   }
 `;
 
@@ -115,17 +87,6 @@ describe('Data sanity resolvers test coverage', () => {
       expect(result.data.dataSanityOperationDryRun.estimated_impact).toBeDefined();
       expect(Array.isArray(result.data.dataSanityOperationDryRun.estimated_impact)).toBeTruthy();
     });
-
-    it('should return data sanity configuration (nullable)', async () => {
-      const result = await queryAsAdminWithSuccess({ query: DATA_SANITY_CONFIGURATION_QUERY });
-      // Configuration may or may not exist depending on test order
-      // Just verify the query resolves without error
-      const config = result.data.settings.data_sanity_configuration;
-      if (config) {
-        expect(Array.isArray(config.maintenance_planning)).toBeTruthy();
-        expect(typeof config.timezone_offset).toBe('number');
-      }
-    });
   });
 
   describe('Mutations', () => {
@@ -137,34 +98,6 @@ describe('Data sanity resolvers test coverage', () => {
       expect(result.data.dataSanityOperationRequestRun).toBeDefined();
       // Returns the internal_id of the execution entity
       expect(typeof result.data.dataSanityOperationRequestRun).toBe('string');
-    });
-
-    it('should update maintenance planning', async () => {
-      const planning = [
-        { day: 'monday', start_time: '08:00', end_time: '12:00' },
-        { day: 'wednesday', start_time: '22:00', end_time: '04:00' },
-      ];
-      const result = await queryAsAdminWithSuccess({
-        query: DATA_SANITY_UPDATE_PLANNING_MUTATION,
-        variables: { planning, timezone_offset: 120 },
-      });
-      const config = result.data.dataSanityUpdateMaintenancePlanning;
-      expect(config).toBeDefined();
-      expect(config.timezone_offset).toBe(120);
-      expect(config.maintenance_planning).toHaveLength(2);
-      expect(config.maintenance_planning[0]).toMatchObject({ day: 'monday', start_time: '08:00', end_time: '12:00' });
-      expect(config.maintenance_planning[1]).toMatchObject({ day: 'wednesday', start_time: '22:00', end_time: '04:00' });
-    });
-
-    it('should update maintenance planning with empty array', async () => {
-      const result = await queryAsAdminWithSuccess({
-        query: DATA_SANITY_UPDATE_PLANNING_MUTATION,
-        variables: { planning: [], timezone_offset: 0 },
-      });
-      const config = result.data.dataSanityUpdateMaintenancePlanning;
-      expect(config).toBeDefined();
-      expect(config.maintenance_planning).toHaveLength(0);
-      expect(config.timezone_offset).toBe(0);
     });
 
     it('should verify force_run was set after requesting run', async () => {
@@ -199,16 +132,6 @@ describe('Data sanity resolvers test coverage', () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: DATA_SANITY_REQUEST_RUN_MUTATION,
         variables: { operation_name: 'caseSensitiveDuplicatedId' },
-      });
-    });
-
-    it('should forbid dataSanityUpdateMaintenancePlanning mutation for non-bypass user', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
-        query: DATA_SANITY_UPDATE_PLANNING_MUTATION,
-        variables: {
-          planning: [{ day: 'monday', start_time: '08:00', end_time: '12:00' }],
-          timezone_offset: 0,
-        },
       });
     });
   });

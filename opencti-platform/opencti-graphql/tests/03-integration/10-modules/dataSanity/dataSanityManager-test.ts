@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as sanityManagerConfigMock from '../../../../src/modules/dataSanity/dataSanity-operations';
-import * as maintenanceConfigMock from '../../../../src/modules/dataSanity/dataSanityConfiguration-domain';
 import { dataSanityHandler } from '../../../../src/manager/dataSanityManager';
 import { findDataSanityByOperationName, setForceRun } from '../../../../src/modules/dataSanity/dataSanity-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
@@ -16,8 +15,6 @@ describe('Data sanity manager handler test coverage', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    // Always allow operations to run regardless of maintenance window configuration
-    vi.spyOn(maintenanceConfigMock, 'isWithinMaintenanceWindow').mockResolvedValue(true);
     vi.spyOn(sanityManagerConfigMock, 'sanityOperationList').mockReturnValue([
       {
         identifier: 'mockRunOnceOperation',

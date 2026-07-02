@@ -6,7 +6,6 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import { OperationsQuery } from './__generated__/OperationsQuery.graphql';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import OperationPopover from './OperationPopover';
-import MaintenancePlanningEdition from './MaintenancePlanningEdition';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 
@@ -173,9 +172,6 @@ const Operations = () => {
         ]}
         noMargin
       />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-        <MaintenancePlanningEdition />
-      </div>
       <DataTableWithoutFragment
         dataColumns={dataColumns}
         storageKey="health_operations"
