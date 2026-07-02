@@ -8,6 +8,7 @@ import { fullEntitiesList, storeLoadById } from '../../../database/middleware-lo
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { type EditInput, FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
@@ -566,6 +567,8 @@ export const publishWorkflowDefinition = async (
   ];
 
   await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
+
+  addWorkflowPublishCount();
 
   const updatedWorkflow = await storeLoadById(
     executionContext,
