@@ -769,13 +769,54 @@ export const redisGetManagerEventState = async (managerName: string) => {
 // endregion
 
 // region connector logs
+export interface FeedLog {
+  timestamp: string;
+  status: 'success' | 'error';
+  messages: string[];
+  count?: number;
+}
+
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
-  await getClientBase().set(`connector-${connectorId}-logs`, data);
+  await getClientBase().set(`connector-${connectorId}-logs`, data, 'EX', FIVE_MINUTES);
 };
 export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
   const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
   return rawLogs ? JSON.parse(rawLogs) : [];
+};
+
+const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
+
+const redisPushIngestionLog = async (feedId: string, log: FeedLog) => {
+  const key = getIngestionLogKey(feedId);
+  const data = JSON.stringify(log);
+  await redisTx(getClientBase(), async (tx) => {
+    await tx.lpush(key, data);
+    await tx.ltrim(key, 0, 19);
+  });
+};
+
+export const redisAddIngestionHistory = async (feedId: string, log: FeedLog) => {
+  const clientBase = getClientBase();
+  const key = getIngestionLogKey(feedId);
+  const latestLogData = await clientBase.lindex(key, 0);
+  if (latestLogData) {
+    const latestLog: FeedLog = JSON.parse(latestLogData);
+    const isSameStatus = latestLog.status === log.status;
+    const isSameMessage = latestLog.messages.toString() === log.messages.toString();
+    const count = latestLog.count ?? 0;
+    if (isSameStatus && isSameMessage && count < 100) {
+      const updatedLog: FeedLog = { ...latestLog, count: count + 1, timestamp: log.timestamp };
+      await clientBase.lset(key, 0, JSON.stringify(updatedLog));
+      return;
+    }
+  }
+  await redisPushIngestionLog(feedId, log);
+};
+
+export const redisGetConnectorHistory = async (feedId: string): Promise<FeedLog[]> => {
+  const rawLogs = await getClientBase().lrange(getIngestionLogKey(feedId), 0, -1);
+  return rawLogs.map((entry) => JSON.parse(entry) as FeedLog);
 };
 // endregion
 
