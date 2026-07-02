@@ -94,7 +94,7 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
         cursor: { type: "ID" }
       ) {
         id
-        attackPatterns: stixCoreRelationships(
+        attackPatterns: stixCoreRelationshipsFromResults(
           relationship_type: "has-covered"
           toTypes: ["Attack-Pattern"]
           search: $search
