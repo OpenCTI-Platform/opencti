@@ -9120,6 +9120,7 @@ export type ExportAskInput = {
 export type ExportContext = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
+  visible_columns?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export type ExtendedContract = {

@@ -51,6 +51,7 @@ const DataTableInternalFilters = ({
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
   const {
+    columns,
     availableFilterKeys,
     useDataTablePaginationLocalStorage: {
       viewStorage: { searchTerm },
@@ -58,7 +59,17 @@ const DataTableInternalFilters = ({
       paginationOptions,
     },
   } = useDataTableContext();
-
+  const extendedExportContext = React.useMemo(
+    () => (exportContext
+      ? {
+          ...exportContext,
+          visible_columns: columns
+            .filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible)
+            .map((c) => c.id),
+        }
+      : undefined),
+    [exportContext, columns],
+  );
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
 
   return (
@@ -90,7 +101,7 @@ const DataTableInternalFilters = ({
               availableEntityTypes={availableEntityTypes}
               availableRelationshipTypes={availableRelationshipTypes}
               availableRelationFilterTypes={availableRelationFilterTypes}
-              exportContext={exportContext}
+              exportContext={extendedExportContext}
               paginationOptions={paginationOptions}
               additionalHeaderButtons={additionalHeaderButtons}
               additionalHeaderToggleButtons={additionalToggleButtons}

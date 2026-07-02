@@ -112,6 +112,7 @@ export const askListExport = async (context, user, exportContext, format, select
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
 
   const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: selectedIds });
+  const extendedListParams = { ...listParams, visible_columns: exportContext.visible_columns };
 
   const baseEvent = {
     format, // extension mime type
@@ -138,6 +139,7 @@ export const askListExport = async (context, user, exportContext, format, select
           export_scope: 'selection', // query or selection or single
           file_name: fileName, // Export expected file name
           selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
+          list_params: extendedListParams,
           ...baseEvent,
         },
       };
@@ -147,7 +149,7 @@ export const askListExport = async (context, user, exportContext, format, select
       event: {
         export_scope: 'query', // query or selection or single
         file_name: fileName, // Export expected file name
-        list_params: listParams,
+        list_params: extendedListParams,
         ...baseEvent,
       },
     };
