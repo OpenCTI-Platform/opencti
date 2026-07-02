@@ -23,14 +23,22 @@ interface PublishButtonProps {
   validationStatus: ValidationStatus | null;
   onPublish: () => void;
   onReset: () => void;
+  onRestore: () => void;
   disabled?: boolean;
 }
 
-const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: PublishButtonProps) => {
+const PublishButton = ({
+  validationStatus,
+  onPublish,
+  onReset,
+  onRestore,
+  disabled,
+}: PublishButtonProps) => {
   const { t_i18n } = useFormatter();
   const anchorRef = useRef<HTMLDivElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
 
   const handleToggle = () => setDropdownOpen((prev) => !prev);
 
@@ -49,7 +57,15 @@ const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: Publi
     onReset();
   };
 
-  const menuWidth = anchorRef.current?.offsetWidth;
+  const handleRestoreClick = () => {
+    setDropdownOpen(false);
+    setRestoreConfirmOpen(true);
+  };
+
+  const handleConfirmRestore = () => {
+    setRestoreConfirmOpen(false);
+    onRestore();
+  };
 
   if (!validationStatus) {
     return null;
@@ -118,9 +134,12 @@ const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: Publi
             {...TransitionProps}
             style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
           >
-            <Paper sx={{ width: menuWidth }}>
+            <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="workflow-action-menu" autoFocusItem>
+                  <MenuItem onClick={handleRestoreClick} disabled={published}>
+                    {t_i18n('Restore published version')}
+                  </MenuItem>
                   <MenuItem onClick={handleResetClick}>
                     {t_i18n('Reset workflow')}
                   </MenuItem>
@@ -143,6 +162,22 @@ const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: Publi
           </Button>
           <Button intent="destructive" onClick={handleConfirmReset}>
             {t_i18n('Reset')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={restoreConfirmOpen}
+        onClose={() => setRestoreConfirmOpen(false)}
+        title={t_i18n('Restore published version')}
+        size="small"
+      >
+        {t_i18n('This will replace the workflow with the last published version. All unpublished changes will be lost. Are you sure?')}
+        <DialogActions>
+          <Button variant="secondary" onClick={() => setRestoreConfirmOpen(false)}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={handleConfirmRestore}>
+            {t_i18n('Restore')}
           </Button>
         </DialogActions>
       </Dialog>
