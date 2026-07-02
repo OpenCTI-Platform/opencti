@@ -353,6 +353,11 @@
     "stream_batch_size": 7500,
     "max_concurrency": 5
   },
+  "data_sanity_manager": {
+    "enabled": true,
+    "lock_key": "data_sanity_manager_lock",
+    "interval": 600000
+  },
   "exclusion_list_cache_build_manager": {
     "enabled": true,
     "lock_key": "exclusion_list_cache_build_manager_lock",

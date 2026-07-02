@@ -40,6 +40,7 @@ const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./restriction/Root'));
+const Health = lazy(() => import('./health/Root'));
 
 const Root = () => {
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -239,6 +240,10 @@ const Root = () => {
         <Route
           path="/restriction/*"
           element={boundaryWrapper(Management)}
+        />
+        <Route
+          path="/health/*"
+          element={boundaryWrapper(Health)}
         />
       </Routes>
     </Suspense>

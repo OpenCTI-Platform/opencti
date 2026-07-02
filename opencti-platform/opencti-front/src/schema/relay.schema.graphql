@@ -9809,6 +9809,9 @@ type Query {
   redisStreamInfo: RedisStreamInfo
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
+  dataSanityOperations: [DataSanityOperation!]!
+  dataSanityExecutions: [DataSanityExecution!]!
+  dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
 }
 
 type Subscription {
@@ -10775,6 +10778,7 @@ type Mutation {
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
+  dataSanityOperationRequestRun(operation_name: String!): ID
 }
 
 enum WorkflowExecutionStatus {
@@ -16769,4 +16773,39 @@ type RetentionRuleEdge {
 type RetentionRuleEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): RetentionRule
+}
+
+type DataSanityOperation {
+  identifier: String!
+  display_name: String!
+  execution_type: String!
+  description: String!
+  eligible_entity_types: [String!]!
+  is_running: Boolean!
+  force_run: Boolean!
+  last_run_date: DateTime
+  last_execution_time: Int
+  last_run_success: Boolean
+  last_run_message: String
+  last_run_output: String
+}
+
+type DataSanityExecution {
+  id: ID!
+  operation_name: String!
+  last_run_date: DateTime!
+  last_execution_time: Int!
+  last_run_success: Boolean
+  last_run_message: String
+  last_run_output: String
+  force_run: Boolean!
+}
+
+type DataSanityImpactedElement {
+  key: String!
+  count: Int!
+}
+
+type DataSanityDryRunOutput {
+  estimated_impact: [DataSanityImpactedElement!]!
 }
