@@ -93,7 +93,7 @@ const extractComplexPathFromJson = async (
   data.extractWithRegexp = (regexp: string, groupIndex: number, value: string) => {
     const myRegexp = new RE2(regexp, 'g');
     const matches = myRegexp.exec(value);
-    if (matches != null) {
+    if (matches != null && matches[groupIndex] != null) {
       return matches[groupIndex];
     }
     return value;

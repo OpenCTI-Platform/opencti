@@ -257,4 +257,11 @@ describe('JSON mapper extractWithRegexp', () => {
     const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'));
     expect(objects[0].name).toBe('Sliver');
   });
+
+  it('should return the original value when groupIndex is out of range', async () => {
+    const data = JSON.stringify([{ name: 'CobaltStrike - T1059' }]);
+    // Pattern has 3 groups; groupIndex 99 is out of range
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 99, name)'));
+    expect(objects[0].name).toBe('CobaltStrike - T1059');
+  });
 });
