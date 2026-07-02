@@ -486,6 +486,41 @@ describe('authenticateUserByUserId', () => {
       authenticateUserByUserId(mockContext, mockReq, 'unknown-user'),
     ).rejects.toThrow('Cannot identify user with id');
   });
+
+  it('should throw PasswordChangeRequired when user has expired password_valid_until', async () => {
+    const expiredDate = DateTime.now().minus({ days: 1 }).toUTC().toString();
+    const cachedUser = buildCachedUser('expired-pwd-user', { password_valid_until: expiredDate });
+    const usersMap = new Map([['expired-pwd-user', cachedUser]]);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+
+    await expect(
+      authenticateUserByUserId(mockContext, mockReq, 'expired-pwd-user'),
+    ).rejects.toThrow('You must change your password before continuing.');
+  });
+
+  it('should NOT throw PasswordChangeRequired when password_valid_until is in the future', async () => {
+    const futureDate = DateTime.now().plus({ days: 10 }).toUTC().toString();
+    const cachedUser = buildCachedUser('valid-pwd-user', { password_valid_until: futureDate });
+    const usersMap = new Map([['valid-pwd-user', cachedUser]]);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+
+    const result = await authenticateUserByUserId(mockContext, mockReq, 'valid-pwd-user');
+    expect(result).toBeDefined();
+    expect(result.id).toBe('valid-pwd-user');
+  });
+
+  it('should NOT throw PasswordChangeRequired when password_valid_until is null', async () => {
+    const cachedUser = buildCachedUser('no-expiry-user', { password_valid_until: null });
+    const usersMap = new Map([['no-expiry-user', cachedUser]]);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+
+    const result = await authenticateUserByUserId(mockContext, mockReq, 'no-expiry-user');
+    expect(result).toBeDefined();
+    expect(result.id).toBe('no-expiry-user');
+  });
 });
 
 describe('authenticateUserByJWT', () => {

@@ -91,6 +91,7 @@ const usersLineFragment = graphql`
         max_confidence
       }
       otp_activated
+      password_valid_until
       created_at
     }
   `;
@@ -99,7 +100,7 @@ const LOCAL_STORAGE_KEY = 'users';
 
 const Users = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Users | Security | Settings'));
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -180,10 +181,10 @@ const Users = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 25,
+      percentWidth: 15,
     },
     user_email: {
-      percentWidth: 25,
+      percentWidth: 15,
     },
     firstname: {
       percentWidth: 12.5,
@@ -197,8 +198,13 @@ const Users = () => {
     otp: {
       percentWidth: 5,
     },
+    password_valid_until: {
+      label: 'Password valid until',
+      percentWidth: 15,
+      render: ({ password_valid_until }) => fd(password_valid_until),
+    },
     created_at: {
-      percentWidth: 10,
+      percentWidth: 15,
     },
   };
 

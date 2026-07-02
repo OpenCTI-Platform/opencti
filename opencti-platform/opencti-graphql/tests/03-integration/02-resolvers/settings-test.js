@@ -37,6 +37,7 @@ const READ_QUERY = gql`
         provider
         type
       }
+      password_policy_validity_days
       editContext {
         name
         focusOn
@@ -71,6 +72,7 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.caller_ip).toBeDefined();
     expect(settings.platform_ip_whitelist_exclusions).toBeDefined();
     expect(settings.platform_theme.name).toEqual('Dark');
+    expect(settings.password_policy_validity_days).toBeDefined();
     expect(settings.editContext.length).toEqual(0);
   });
   it('should update settings', async () => {

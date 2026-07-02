@@ -3,8 +3,8 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
+import MenuItem from '@mui/material/MenuItem';
 import { UserEditionOverview_user$data } from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../../components/TextField';
@@ -18,6 +18,7 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { handleError } from '../../../../../relay/environment';
 import type { Theme } from '../../../../../components/Theme';
 
 export const userMutationFieldPatch = graphql`
@@ -139,6 +140,9 @@ const UserEditionOverviewComponent: FunctionComponent<
           variables: {
             id: user.id,
             input: { key: name, value: value || '' },
+          },
+          onError: (error: Error) => {
+            handleError(error);
           },
         });
       })
@@ -340,6 +344,7 @@ const UserEditionOverview = createFragmentContainer(
         theme
         otp_activated
         otp_qr
+        password_valid_until
         account_status
         account_lock_after_date
         roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {

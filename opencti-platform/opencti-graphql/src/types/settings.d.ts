@@ -69,4 +69,5 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   local_auth?: LocalAuthConfig;
   cert_auth?: CertAuthConfig;
   headers_auth?: HeadersAuthConfig;
+  password_policy_validity_days?: number;
 }
