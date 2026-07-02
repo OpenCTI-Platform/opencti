@@ -29737,6 +29737,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   coverage_last_result?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_from?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_to?: Maybe<Scalars['DateTime']['output']>;
+  coveredEntitiesDistribution?: Maybe<Array<Maybe<Distribution>>>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -29790,6 +29791,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  stixCoreRelationshipsFromResults?: Maybe<StixCoreRelationshipConnection>;
   toStix?: Maybe<Scalars['String']['output']>;
   toStixBundle?: Maybe<Scalars['String']['output']>;
   type_affinity?: Maybe<Scalars['String']['output']>;
@@ -29817,6 +29819,29 @@ export type SecurityCoverageConnectorsArgs = {
 export type SecurityCoverageContainersArgs = {
   entityTypes?: InputMaybe<Array<Scalars['String']['input']>>;
   first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type SecurityCoverageCoveredEntitiesDistributionArgs = {
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  fromId?: InputMaybe<Array<Scalars['String']['input']>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  isTo?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  relationship_type: Array<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Array<Scalars['String']['input']>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -29956,6 +29981,30 @@ export type SecurityCoverageStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type SecurityCoverageStixCoreRelationshipsFromResultsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
+  fromId?: InputMaybe<Scalars['StixRef']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Scalars['StixRef']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -50649,6 +50698,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   coverage_last_result?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_to?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  coveredEntitiesDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageCoveredEntitiesDistributionArgs, 'field' | 'operation' | 'relationship_type'>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -50702,6 +50752,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SecurityCoverageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  stixCoreRelationshipsFromResults?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SecurityCoverageStixCoreRelationshipsFromResultsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SecurityCoverageToStixArgs>>;
   toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type_affinity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

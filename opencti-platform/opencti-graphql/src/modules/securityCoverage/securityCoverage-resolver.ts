@@ -36,11 +36,9 @@ const SecurityCoverageResolvers: Resolvers = {
     coverage_valid_to: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
     coverage_information: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_information'),
     external_uri: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'external_uri'),
-    // For tested entities - TODO create specific API - TODO create specific API and modify call in front
-    stixCoreRelationshipsDistribution: (securityCoverage, args, context) =>
-      distributionRelations(context, context.user, { ...args as unknown as any, fromOrToId: securityCoverage[RELATION_RESULT_OF] }) as unknown as any,
-    // List of entities in relation with SC results - TODO create specific API and modify call in front
-    stixCoreRelationships: (securityCoverage, args, context) => stixCoreRelationshipsPaginated(context, context.user, securityCoverage[RELATION_RESULT_OF], args),
+    coveredEntitiesDistribution: (securityCoverage, args, context) =>
+      distributionRelations(context, context.user, { ...args, fromOrToId: securityCoverage[RELATION_RESULT_OF] } as any),
+    stixCoreRelationshipsFromResults: (securityCoverage, args, context) => stixCoreRelationshipsPaginated(context, context.user, securityCoverage[RELATION_RESULT_OF], args),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
