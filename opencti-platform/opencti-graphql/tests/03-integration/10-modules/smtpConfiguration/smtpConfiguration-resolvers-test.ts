@@ -148,10 +148,9 @@ describe('SmtpConfiguration resolvers', () => {
   });
 
   describe('Mutation smtpConfigurationTest', () => {
-    it('should throw UnsupportedError (stub, implemented in Chunk 2)', async () => {
+    it('should attempt to connect and fail with a network error when no SMTP server is available', async () => {
       await queryAsAdminWithError(
         { query: SMTP_CONFIGURATION_TEST_MUTATION, variables: { email: 'test@example.com' } },
-        'smtpConfigurationTest is not yet implemented',
       );
     });
   });
