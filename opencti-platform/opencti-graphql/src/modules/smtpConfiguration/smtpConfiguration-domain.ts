@@ -2,12 +2,13 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { patchAttribute } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import { type BasicStoreEntitySmtpConfiguration, ENTITY_TYPE_SMTP_CONFIGURATION, type StoreEntitySmtpConfiguration } from './smtpConfiguration-types';
 import { SmtpAuthType, type SmtpConfigurationAddInput, type SmtpConfigurationEditInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+import { smtpTest } from '../../database/smtp';
 
 const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput | SmtpConfigurationEditInput) => {
   if (input.port === 25) {
@@ -82,13 +83,13 @@ export const smtpConfigurationUpdate = async (
   return notify(BUS_TOPICS[ENTITY_TYPE_SMTP_CONFIGURATION].EDIT_TOPIC, element, user);
 };
 
-// Stub — smtp.js integration added in Chunk 2
+// Implemented in Chunk 2 — delegates to smtp.js to use the effective config (DB or JSON).
 export const smtpConfigurationTest = async (
   _context: AuthContext,
   _user: AuthUser,
-  _email: string,
+  email: string,
 ): Promise<boolean> => {
-  throw UnsupportedError('smtpConfigurationTest is not yet implemented');
+  return smtpTest(email);
 };
 
 export const smtpConfigurationDelete = async (
