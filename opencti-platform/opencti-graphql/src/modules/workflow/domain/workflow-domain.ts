@@ -4,7 +4,7 @@ import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
-import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
+import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { resolveUserById } from '../../../domain/user';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { type EditInput, FilterMode } from '../../../generated/graphql';
@@ -136,7 +136,7 @@ const notifyWorkflowTransitionComment = async (
         try {
           const recipientUser = await resolveUserById(context, recipientId);
           if (!recipientUser) return;
-          const hasAccess = await storeLoadById(context, recipientUser, entity.internal_id ?? entity.id, entity.entity_type);
+          const hasAccess = await internalLoadById(context, recipientUser, entity.internal_id ?? entity.id);
           if (hasAccess) {
             recipientIdsWithAccess.add(recipientId);
           }
