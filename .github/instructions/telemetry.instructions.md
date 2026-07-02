@@ -188,7 +188,7 @@ manager.setMyEntityCount(myEntityCount);
 
 ## Conventions
 
-- **Property names**: camelCase ending with `Count` (e.g., `myNewFeatureCount`).
+- **Property names**: camelCase; use a `*Count` suffix for numeric counts (e.g., `myNewFeatureCount`) and an `is*` prefix for boolean gauges (e.g., `isEEActivated`).
 - **Gauge names**: snake_case (e.g., `my_new_feature_count`). The `opencti_` prefix is added automatically.
 - **Redis keys**: use the same string as the property name.
 - **Unit**: defaults to `'count'`. Use `{ unit: 'boolean' }` for 0/1 flags.
