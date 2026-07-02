@@ -162,7 +162,8 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       });
       const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
-      const paginationObjects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed);
+      const maxObjects = maxResults === 0 ? 0 : maxResults - objects.length;
+      const paginationObjects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed, maxObjects);
       if (paginationObjects.length > 0) {
         objects = objects.concat(paginationObjects);
       }
