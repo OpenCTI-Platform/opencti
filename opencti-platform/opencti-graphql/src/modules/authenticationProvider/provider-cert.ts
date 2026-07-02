@@ -40,6 +40,7 @@ export const registerCertStrategy = async () => {
           providerGroups: info.groupsMapping.groups,
           autoCreateGroup: cert_auth.groups_mapping.auto_create_groups,
           preventDefaultGroups: cert_auth.groups_mapping.prevent_default_groups,
+          extendPlatformGroups: cert_auth.groups_mapping.extend_platform_groups,
           providerOrganizations: info.organizationsMapping.organizations,
           autoCreateOrganization: cert_auth?.organizations_mapping.auto_create_organizations,
         };

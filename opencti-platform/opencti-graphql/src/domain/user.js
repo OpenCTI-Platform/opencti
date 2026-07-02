@@ -1319,7 +1319,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
   const { providerGroups = [], providerOrganizations = [], preventDefaultGroups = false } = opts;
-  const { autoCreateGroup = false, autoCreateOrganization = false } = opts;
+  const { autoCreateGroup = false, extendPlatformGroups = false, autoCreateOrganization = false, providerGroupsMapping = [] } = opts;
   const context = executionContext('login_provider');
   // region test the groups / organization existence and eventually auto create
   if (providerGroups.length > 0) {
@@ -1387,9 +1387,14 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
-    // 01 - Delete all groups relation from the user
+    // 01 - Delete group relations from the user
     const userGroups = await fullEntitiesThroughRelationsToList(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
-    const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    let deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    if (extendPlatformGroups) {
+      // swap to delete groups that are managed by the provider that arent in the provided groups
+      const providerManagedGroups = providerGroupsMapping.map((mapping) => mapping.platform).filter((group) => !providerGroups.includes(group));
+      deleteGroups = userGroups.filter((o) => providerManagedGroups.includes(o.name));
+    }
     for (let index = 0; index < deleteGroups.length; index += 1) {
       const deleteGroup = deleteGroups[index];
       await userDeleteRelation(context, SYSTEM_USER, user, deleteGroup.id, RELATION_MEMBER_OF);
