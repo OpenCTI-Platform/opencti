@@ -38,6 +38,7 @@ esbuild.build({
     minifyWhitespace: true,
     minifyIdentifiers: false,
     minifySyntax: true,
+    lineLimit: 160,
     keepNames: false,
     sourcemap: true,
     outdir: 'build',
