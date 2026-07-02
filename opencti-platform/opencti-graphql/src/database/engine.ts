@@ -2425,9 +2425,14 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 },
               });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+              // For custom_field_values nested filters only: use the original value (not the
+              // stringified version) to preserve numeric types. The int_value field is mapped
+              // with { coerce: false } which rejects string range values in ES queries.
+              // All other nested filters pass string values from GraphQL, so rangeValue === nestedSearchValue for them.
+              const rangeValue = parentKey === 'custom_field_values' ? nestedValues[i] : nestedSearchValue;
               nestedShould.push({
                 range: {
-                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue },
+                  [nestedFieldKey]: { [nestedOperator]: rangeValue },
                 },
               });
             } else { // nestedOperator = 'eq'
@@ -3282,7 +3287,11 @@ export const elPaginate = async <T extends BasicStoreBase>(
   if (withoutRels) { // Force denorm rel security
     query.docvalue_fields = REL_DEFAULT_FETCH;
   }
-  logApp.debug('[SEARCH] paginate', { query });
+  if (JSON.stringify(query).includes('x_opencti_cf_score')) {
+    // FIXME debugging, do not keep
+    logApp.info('[SEARCH] paginate', { query: JSON.stringify(query) });
+  }
+
   try {
     const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
     const elements = await elConvertHits<T>(hits);

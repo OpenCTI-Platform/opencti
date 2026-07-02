@@ -41,6 +41,7 @@ import { idLabel } from '../../schema/schema-labels';
 import { INTERNAL_RELATIONSHIPS } from '../../schema/internalRelationship';
 import { getMetricsAttributesNames } from '../../modules/metrics/metrics-utils';
 import { pushAll } from '../arrayUtil';
+import { CF_COMMENT_KEY, CF_SCORE_KEY } from '../../modules/customField/custom-field-domain';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -459,6 +460,11 @@ const getAvailableKeys = () => {
   return availableKeysCache;
 };
 
+// FIXME POC hack
+export const getCustomFieldAttributesNames = () => {
+  return [CF_COMMENT_KEY, CF_SCORE_KEY];
+};
+
 /**
  * Check the filter keys exist in the schema
  */
@@ -469,6 +475,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     .filter((k) => !(getAvailableKeys().has(k)
       || k.startsWith(RULE_PREFIX)
       || getMetricsAttributesNames().includes(k)
+      || getCustomFieldAttributesNames().includes(k)
     ));
 
   if (incorrectKeys.length > 0) {

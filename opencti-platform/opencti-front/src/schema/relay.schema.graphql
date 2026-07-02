@@ -9809,6 +9809,8 @@ type Query {
   redisStreamInfo: RedisStreamInfo
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
+  customFieldDefinition(id: String!): CustomFieldDefinition
+  customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
 }
 
 type Subscription {
@@ -10775,6 +10777,11 @@ type Mutation {
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
+  customFieldDefinitionDelete(id: ID!): ID
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!): CustomFieldDefinition
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
 }
 
 enum WorkflowExecutionStatus {
@@ -12602,6 +12609,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  custom_field_values: [CustomFieldValue]
 }
 
 enum CaseIncidentsOrdering {
@@ -12670,6 +12678,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  custom_field_values: [CustomFieldValueAddInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -16769,4 +16778,75 @@ type RetentionRuleEdge {
 type RetentionRuleEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): RetentionRule
+}
+
+type CustomFieldValue {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  select_value: String
+}
+
+input CustomFieldValueAddInput {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  select_value: String
+}
+
+type CustomFieldDefinition implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created: DateTime
+  modified: DateTime
+  name: String!
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  mandatory: Boolean!
+  description: String
+  default_value: String
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
+}
+
+enum CustomFieldDefinitionsOrdering {
+  name
+  label
+  field_type
+  created
+  _score
+}
+
+type CustomFieldDefinitionConnection {
+  pageInfo: PageInfo!
+  edges: [CustomFieldDefinitionEdge!]!
+}
+
+type CustomFieldDefinitionEdge {
+  cursor: String!
+  node: CustomFieldDefinition!
+}
+
+input CustomFieldDefinitionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  mandatory: Boolean!
+  description: String
+  created: DateTime
+  default_value: String
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
 }

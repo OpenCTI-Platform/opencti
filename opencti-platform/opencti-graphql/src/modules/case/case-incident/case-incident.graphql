@@ -172,6 +172,8 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  # Custom Field Values
+  custom_field_values: [CustomFieldValue]
 }
 
 # Ordering
@@ -218,6 +220,7 @@ type Query {
   caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
 }
 
+
 # Mutations
 input CaseIncidentAddInput {
   stix_id: StixId
@@ -255,6 +258,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  custom_field_values: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

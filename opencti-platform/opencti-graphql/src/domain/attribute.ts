@@ -5,6 +5,8 @@ import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { Attribute, QueryRuntimeAttributesArgs } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
+import type { AttrType, MandatoryType } from '../schema/attribute-definition';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 
 export interface DefaultValue {
   id: string;
@@ -19,13 +21,66 @@ export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, 
 };
 
 export const getSchemaAttributeNames = (elementTypes: string[]) => {
+  // FIXME need to add custom field here for Data > Sharing filters
+  // used also for dashboard widgets like donuts
   const attributes = R.uniq(elementTypes.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat());
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
     R.map((n) => ({ node: { id: n, key: elementTypes[0], value: n } })),
   )(attributes);
+  // FIXME POC HACK   stixCoreObjectsDistribution
+  if (elementTypes.some((e) => e === ENTITY_TYPE_CONTAINER_CASE_INCIDENT)) {
+    finalResult.push({ node: { id: 'x_opencti_cf_score', key: elementTypes[0], value: 'x_opencti_cf_score' } });
+    finalResult.push({ node: { id: 'x_opencti_cf_comment', key: elementTypes[0], value: 'x_opencti_cf_comment' } });
+  }
   return buildPagination<Attribute>(0, null, finalResult, finalResult.length);
+};
+
+interface SchemasAttributeType {
+  name: string;
+  type: AttrType;
+  label: string;
+  mandatory: boolean;
+  mandatoryType: MandatoryType;
+  editDefault: boolean;
+  multiple: boolean;
+  upsert: boolean;
+  scale: string | undefined;
+  defaultValues: undefined;
+}
+
+export const createCustomFieldAttributes = (entityType: string) => {
+  // FIXME customField POC hack
+  const allAttributes: SchemasAttributeType[] = [];
+  if (entityType === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
+    allAttributes.push({
+      name: 'x_opencti_cf_score',
+      type: 'numeric',
+      label: 'cf score',
+      mandatory: false,
+      mandatoryType: 'internal',
+      editDefault: true,
+      upsert: true,
+      multiple: false,
+      defaultValues: undefined,
+      scale: undefined,
+    });
+
+    allAttributes.push({
+      name: 'x_opencti_cf_comment',
+      type: 'string',
+      label: 'cf comment',
+      mandatory: false,
+      mandatoryType: 'internal',
+      editDefault: true,
+      upsert: true,
+      multiple: false,
+      defaultValues: undefined,
+      scale: undefined,
+    });
+  }
+  return allAttributes;
 };
 
 export const getSchemaAttributes = () => {
@@ -38,7 +93,7 @@ export const getSchemaAttributes = () => {
     // Map attributes to TypeAttribute format
     const typeAttributes = attributesArray
       .filter((attr) => !INTERNAL_ATTRIBUTES.includes(attr.name))
-      .map((attr) => ({
+      .map((attr) => (<SchemasAttributeType>{
         name: attr.name,
         type: attr.type,
         label: attr.label || attr.name,
@@ -53,6 +108,8 @@ export const getSchemaAttributes = () => {
         defaultValues: undefined,
       }));
 
+    const customFieldAttributes = createCustomFieldAttributes(entityType);
+    typeAttributes.push(...customFieldAttributes);
     return {
       type: entityType,
       attributes: typeAttributes,

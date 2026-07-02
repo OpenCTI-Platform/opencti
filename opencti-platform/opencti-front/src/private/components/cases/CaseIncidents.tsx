@@ -20,6 +20,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
+
 interface CaseIncidentsProps {
   inputValue?: string;
 }

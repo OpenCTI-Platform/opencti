@@ -162,6 +162,8 @@ export const csvMapperAddInputFromImport = async (context: AuthContext, user: Au
 // Fetch the list of schemas attributes by entity type extended with
 // what is saved in entity settings if any.
 export const csvMapperSchemaAttributes = async (context: AuthContext, user: AuthUser) => {
+  // FIXME add custom field to csvMapperSheamas
+
   const schemaAttributes: CsvMapperSchemaAttributes[] = [];
 
   const types = [

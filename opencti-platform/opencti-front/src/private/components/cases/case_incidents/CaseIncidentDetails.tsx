@@ -25,6 +25,13 @@ const CaseIncidentDetailsFragment = graphql`
     modified
     created_at
     response_types
+    custom_field_values {
+      field_id
+      field_name
+      int_value
+      string_value
+      select_value
+    }
     objectLabel {
       id
       value
@@ -53,6 +60,24 @@ const CaseIncidentDetailsFragment = graphql`
   }
 `;
 
+// Returns the display value for a custom field regardless of its type
+const getCustomFieldDisplayValue = (cfv: {
+  int_value?: number | null | undefined;
+  string_value?: string | null | undefined;
+  select_value?: string | null | undefined;
+}): string => {
+  if (cfv.int_value !== null && cfv.int_value !== undefined) return String(cfv.int_value);
+  if (cfv.string_value) return cfv.string_value;
+  if (cfv.select_value) return cfv.select_value;
+  return '';
+};
+
+// Turns "x_opencti_risk_score" into "Risk score"
+const formatCustomFieldLabel = (fieldName: string): string => {
+  const withoutPrefix = fieldName.replace(/^x_opencti_/, '');
+  return withoutPrefix.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+};
+
 interface CaseIncidentDetailsProps {
   caseIncidentData: CaseIncidentDetails_case$key;
 }
@@ -63,6 +88,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   const { t_i18n } = useFormatter();
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
+  const customFieldValues = data.custom_field_values ?? [];
 
   return (
     <div style={{ height: '100%' }}>
@@ -115,6 +141,26 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
+          {customFieldValues.length > 0 && (
+            <>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+              {customFieldValues.filter((cfv): cfv is NonNullable<typeof cfv> => cfv != null).map((cfv) => {
+                const displayValue = getCustomFieldDisplayValue(cfv);
+                return (
+                  <Grid item xs={6} key={cfv.field_id}>
+                    <Label>
+                      {formatCustomFieldLabel(cfv.field_name)}
+                    </Label>
+                    <FieldOrEmpty source={displayValue}>
+                      <Tag label={displayValue} />
+                    </FieldOrEmpty>
+                  </Grid>
+                );
+              })}
+            </>
+          )}
         </Grid>
         <Divider />
         <RelatedContainers

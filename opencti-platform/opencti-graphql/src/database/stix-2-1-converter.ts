@@ -127,6 +127,8 @@ import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { convertCaseIncidentToStix_2_1 } from '../modules/case/case-incident/case-incident-converter';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -166,6 +168,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     const arrayCreators = Array.isArray(instance.creator_id) ? instance.creator_id : [instance.creator_id];
     pushAll(builtCreatorIds, arrayCreators);
   }
+
   const octiExtensions: S.StixOpenctiExtension = {
     extension_type: 'property-extension',
     // Attributes
@@ -1576,6 +1579,10 @@ const convertToStix_2_1 = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_TYPE_CONTAINER_REPORT === type) {
       return convertReportToStix(basic, type);
+    }
+    // FIXME do we need also RFI and RFC ?
+    if (ENTITY_TYPE_CONTAINER_CASE_INCIDENT === type) {
+      return convertCaseIncidentToStix_2_1(basic);
     }
     if (ENTITY_TYPE_MALWARE === type) {
       return convertMalwareToStix(basic, type);

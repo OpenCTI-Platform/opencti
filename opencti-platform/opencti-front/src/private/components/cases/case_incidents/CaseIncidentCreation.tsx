@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from 'src/relay/environment';
@@ -40,6 +40,9 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import MenuItem from '@mui/material/MenuItem';
+import MuiTextField from '@mui/material/TextField';
+import Divider from '@mui/material/Divider';
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -58,6 +61,37 @@ const caseIncidentMutation = graphql`
     }
   }
 `;
+
+const customFieldDefinitionsQuery = graphql`
+  query CaseIncidentCreationCustomFieldDefinitionsQuery($filters: FilterGroup) {
+    customFieldDefinitions(filters: $filters) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          mandatory
+          min_value
+          max_value
+          select_options
+        }
+      }
+    }
+  }
+`;
+
+// Shape of one custom field definition (from relay)
+interface CustomFieldDef {
+  id: string;
+  name: string;
+  label: string;
+  field_type: string;
+  mandatory: boolean;
+  min_value?: number | null;
+  max_value?: number | null;
+  select_options?: ReadonlyArray<string> | null;
+}
 
 interface FormikCaseIncidentAddInput {
   name: string;
@@ -84,6 +118,8 @@ interface FormikCaseIncidentAddInput {
       value: string;
       type: string;
     }[]; }[] | undefined;
+  // custom field values: keyed by definition id
+  customFields: Record<string, string>;
 }
 
 interface IncidentFormProps {
@@ -101,6 +137,52 @@ interface IncidentFormProps {
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
 
+// Renders the appropriate input for a custom field definition
+const CustomFieldInput: FunctionComponent<{
+  definition: CustomFieldDef;
+  value: string;
+  onChange: (val: string) => void;
+}> = ({ definition, value, onChange }) => {
+  const { t_i18n } = useFormatter();
+  const label = `${definition.label}${definition.mandatory ? ' *' : ''}`;
+
+  if (definition.field_type === 'select' && definition.select_options) {
+    return (
+      <MuiTextField
+        select
+        fullWidth
+        variant="standard"
+        label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={fieldSpacingContainerStyle}
+      >
+        <MenuItem value=""><em>{t_i18n('None')}</em></MenuItem>
+        {definition.select_options.map((opt) => (
+          <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+        ))}
+      </MuiTextField>
+    );
+  }
+
+  return (
+    <MuiTextField
+      fullWidth
+      variant="standard"
+      label={label}
+      value={value}
+      type={definition.field_type === 'integer' ? 'number' : 'text'}
+      inputProps={
+        definition.field_type === 'integer'
+          ? { min: definition.min_value ?? undefined, max: definition.max_value ?? undefined }
+          : undefined
+      }
+      onChange={(e) => onChange(e.target.value)}
+      style={fieldSpacingContainerStyle}
+    />
+  );
+};
+
 export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   updater,
   onClose,
@@ -114,29 +196,53 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    CASE_INCIDENT_TYPE,
-  );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CASE_INCIDENT_TYPE);
+
+  // Fetch custom field definitions applicable to Case-Incident
+  const customFieldData = useLazyLoadQuery<any>(customFieldDefinitionsQuery, {
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'entity_types', values: ['Case-Incident'], operator: 'eq' }],
+      filterGroups: [],
+    },
+  });
+  const customFieldDefs: CustomFieldDef[] = (customFieldData?.customFieldDefinitions?.edges ?? [])
+    .map((e: any) => e?.node)
+    .filter(Boolean);
+
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
     authorized_members: Yup.array().nullable(),
   }, mandatoryAttributes);
-  const validator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-  );
+  const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+
   const [commit] = useApiMutation<CaseIncidentCreationCaseMutation>(
     caseIncidentMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Case-Incident')} ${t_i18n('successfully created')}` },
   );
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    // Build custom_field_values from the form's customFields record
+    const customFieldEntries = Object.entries(values.customFields).filter(([, v]) => v !== '');
+    const customFieldValuesInput = customFieldEntries.map(([fieldId, value]) => {
+      const def = customFieldDefs.find((d) => d.id === fieldId);
+      const fieldName = def ? def.name : fieldId;
+      if (def?.field_type === 'integer') {
+        return { field_id: fieldId, field_name: fieldName, int_value: parseInt(value, 10) };
+      }
+      if (def?.field_type === 'select') {
+        return { field_id: fieldId, field_name: fieldName, select_value: value };
+      }
+      return { field_id: fieldId, field_name: fieldName, string_value: value };
+    });
+
     const input: CaseIncidentAddInput = {
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
@@ -154,6 +260,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      ...(customFieldValuesInput.length > 0 && { custom_field_values: customFieldValuesInput }),
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
@@ -163,9 +270,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       }),
     };
     commit({
-      variables: {
-        input,
-      },
+      variables: { input },
       updater: (store, response) => {
         if (updater && response) {
           updater(store, 'caseIncidentAdd', response.caseIncidentAdd);
@@ -178,13 +283,9 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        if (onClose) {
-          onClose();
-        }
+        if (onClose) onClose();
         if (mapAfter) {
-          navigate(
-            `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
-          );
+          navigate(`/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`);
         }
       },
     });
@@ -210,11 +311,13 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: [],
       file: undefined,
       authorized_members: undefined,
+      customFields: {},
     },
   );
   if (!canEditAuthorizedMembers) {
     delete initialValues.authorized_members;
   }
+
   return (
     <Formik<FormikCaseIncidentAddInput>
       initialValues={initialValues}
@@ -308,6 +411,23 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
               height: 200,
             }}
           />
+          {/* Custom fields section */}
+          {customFieldDefs.length > 0 && (
+            <>
+              <Divider style={{ marginTop: 24, marginBottom: 8 }} />
+              <Typography variant="overline" color="text.secondary">
+                {t_i18n('Custom fields')}
+              </Typography>
+              {customFieldDefs.map((def) => (
+                <CustomFieldInput
+                  key={def.id}
+                  definition={def}
+                  value={values.customFields[def.id] ?? ''}
+                  onChange={(val) => setFieldValue(`customFields.${def.id}`, val)}
+                />
+              ))}
+            </>
+          )}
           <ObjectAssigneeField
             name="objectAssignee"
             required={(mandatoryAttributes.includes('objectAssignee'))}
@@ -346,9 +466,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           {isEnterpriseEdition && (
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-            >
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}>
               <div style={fieldSpacingContainerStyle}>
                 <Accordion>
                   <AccordionSummary id="accordion-panel">
@@ -370,17 +488,10 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             </Security>
           )}
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
             {values.content.length > 0 && (

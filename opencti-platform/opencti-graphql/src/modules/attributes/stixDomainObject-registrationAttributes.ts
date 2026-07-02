@@ -352,3 +352,26 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixDomainObjectsAttributes);
+
+// Custom field values — registered once at boot, content is dynamic (no restart needed)
+schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, [
+  {
+    name: 'custom_field_values',
+    label: 'Custom field values',
+    type: 'object',
+    format: 'nested',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: true,
+    upsert: false,
+    isFilterable: false,
+    mappings: [
+      { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'int_value', label: 'Integer value', type: 'numeric', precision: 'integer', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'string_value', label: 'String value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'select_value', label: 'Select value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    ],
+  },
+]);
+

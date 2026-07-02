@@ -939,7 +939,7 @@ class OpenCTIApiClient:
         :return: returns the data dict with all fields processed
         :rtype: dict
         """
-
+        self.app_logger.info("[POC] process_multiple_fields", {"data": data})
         # Handle process_multiple_fields specific case
         attribute = OpenCTIStix2Utils.retrieveClassForMethod(
             self, data, "entity_type", "process_multiple_fields"
@@ -949,6 +949,12 @@ class OpenCTIApiClient:
 
         if data is None:
             return data
+        # FIXME HACK FOR POC - will have better implem when API use Map and not array
+        if "custom_field_values" in data and data["custom_field_values"] is not None:
+            self.app_logger.info("[POC] CUSTOM FIELD !!", {"custom_field_values": data["custom_field_values"]})
+            data["x_opencti_cf_score"] = 42
+            data["x_opencti_cf_comment"] = "Hacked in client python"
+        # FIXME HACK FOR POC - end
         if "createdBy" in data and data["createdBy"] is not None:
             data["createdById"] = data["createdBy"]["id"]
             if "objectMarking" in data["createdBy"]:

@@ -22,6 +22,9 @@ import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils'
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './domain/user';
+import { CF_COMMENT_KEY, CF_SCORE_KEY, customFieldDefinitionAdd, findCustomFieldDefinitionsPaginated } from './modules/customField/custom-field-domain';
+import { ADMIN_USER, testContext } from '../tests/utils/testQuery';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './modules/case/case-incident/case-incident-types';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -104,6 +107,33 @@ const platformInit = async (withMarkings = true) => {
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
     }
+
+    // FIXME Hack for custom field POC, to be removed
+    const currentCustomFields = await findCustomFieldDefinitionsPaginated(testContext, ADMIN_USER, { first: 50 });
+    if (!currentCustomFields.edges.some((cf) => cf.node.id === CF_SCORE_KEY)) {
+      const input = {
+        entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT],
+        field_type: 'integer',
+        label: 'cf score',
+        max_value: 100,
+        min_value: 0,
+        name: CF_SCORE_KEY,
+        mandatory: false,
+      };
+      await customFieldDefinitionAdd(testContext, ADMIN_USER, input);
+    }
+
+    if (!currentCustomFields.edges.some((cf) => cf.node.id === CF_COMMENT_KEY)) {
+      const input = {
+        entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT],
+        field_type: 'string',
+        label: 'cf comment',
+        name: CF_COMMENT_KEY,
+        mandatory: false,
+      };
+      await customFieldDefinitionAdd(testContext, ADMIN_USER, input);
+    }
+
     await initExclusionListCache();
 
     // Authentication

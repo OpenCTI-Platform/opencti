@@ -59,6 +59,7 @@ import { AuthorizedMember } from '../utils/access';
 import type { Metric } from '../modules/metrics/metrics';
 import type { PirInformation } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import type { CustomFieldValue } from '../modules/customField/custom-field-types';
 
 interface Representative {
   main: string;
@@ -134,6 +135,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   restricted_members?: Array<AuthorizedMember>;
   metrics?: Array<Metric>;
   pir_information?: Array<PirInformation>;
+  custom_field_values?: Array<CustomFieldValue>;
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
@@ -453,6 +455,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_cvss_v4_base_score: number;
   // PIR
   pir_information?: Array<PirInformation>;
+  // Custom fields
+  custom_field_values?: Array<CustomFieldValue>;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {
