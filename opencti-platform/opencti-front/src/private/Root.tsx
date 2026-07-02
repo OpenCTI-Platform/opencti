@@ -415,7 +415,7 @@ const isPasswordExpiredFront = (user: { password_valid_until?: string | null }) 
   if (Number.isNaN(expiryDate.getTime())) {
     return false;
   }
-  return new Date() > expiryDate;
+  return new Date().getTime() >= expiryDate.getTime();
 };
 
 interface RootComponentProps {

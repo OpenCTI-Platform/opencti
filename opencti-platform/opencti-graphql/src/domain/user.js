@@ -2090,7 +2090,7 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
     logged = platformUsers.get(user.internal_id);
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  // Password expiration is enforced after login by the frontend guard on /force-password-change.
+  // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged, settings, { skipForcePasswordCheck: true });
   const withOrigin = userWithOrigin(req, logged);
   const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
