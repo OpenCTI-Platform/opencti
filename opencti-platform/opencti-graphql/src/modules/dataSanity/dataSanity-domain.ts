@@ -138,6 +138,7 @@ export const setForceRun = async (context: AuthContext, user: AuthUser, operatio
     force_run: true,
   }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   return created.internal_id;
+};
 
 /**
  * List all DataSanityExecution entities (operations that have been executed).

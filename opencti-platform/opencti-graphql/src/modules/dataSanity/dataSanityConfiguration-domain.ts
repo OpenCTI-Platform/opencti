@@ -110,6 +110,7 @@ export const isWithinMaintenanceWindow = async (context: AuthContext, user: Auth
   const now = utcDate().utcOffset(timezoneOffset);
   const currentDay = DAYS_OF_WEEK[now.day()] as DayOfWeek;
   const currentMinutes = now.hour() * 60 + now.minute();
+
   return planning.some((window: MaintenanceWindow) => {
     if (window.day !== currentDay) {
       return false;

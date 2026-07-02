@@ -12,7 +12,7 @@ const DATA_SANITY_MANAGER_CONTEXT = 'data_sanity_manager';
 
 const DATA_SANITY_MANAGER_ENABLED = booleanConf('data_sanity_manager:enabled', true);
 const DATA_SANITY_MANAGER_KEY = conf.get('data_sanity_manager:lock_key') || 'data_sanity_manager_lock';
-const SCHEDULE_TIME = conf.get('data_sanity_manager:interval') || 14400000; // 4 hours
+const SCHEDULE_TIME = conf.get('data_sanity_manager:interval') || 600000;
 
 /**
  * Determines if an operation should be skipped based on its execution_type and state in ElasticSearch.
@@ -25,30 +25,25 @@ const shouldSkipOperation = async (context: AuthContext, user: AuthUser, operati
 export const dataSanityForceRunHandler = async (context: AuthContext) => {
   // Run force_run operations from ElasticSearch (operations triggered on demand via the force_run flag)
   const forceRunEntities = await findForceRunOperations(context, DATA_SANITY_MANAGER_USER);
-  const alreadyExecutedInThisRun = sanityOperationList().map((op: SanityOperation) => op.identifier);
   for (const entity of forceRunEntities) {
-    // Skip if already handled in the SANITY_OPERATIONS loop above
-    if (alreadyExecutedInThisRun.includes(entity.operation_name)) {
-      continue;
-    }
     // Find the corresponding operation function in the registry
     const operation = sanityOperationList().find((op: SanityOperation) => op.identifier === entity.operation_name);
     if (!operation) {
-      logApp.warn('[OPENCTI-MODULE] Force run requested for unknown operation, skipping', { operation_name: entity.operation_name });
+      logApp.warn('[DATA_SANITY_MANAGER] Force run requested for unknown operation, skipping', { operation_name: entity.operation_name });
       continue;
     }
     const startTime = Date.now();
     try {
-      logApp.info('[OPENCTI-MODULE] Executing force_run data sanity operation', { operation: operation.identifier });
+      logApp.info('[DATA_SANITY_MANAGER] Executing force_run data sanity operation', { operation: operation.identifier });
       await markOperationAsRunning(context, DATA_SANITY_MANAGER_USER, operation.identifier);
       const output = await operation.operationRun(context);
       const executionTimeMs = Date.now() - startTime;
       await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, true, '', output);
-      logApp.info('[OPENCTI-MODULE] Force_run data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
+      logApp.info('[DATA_SANITY_MANAGER] Force_run data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
     } catch (e: any) {
       const executionTimeMs = Date.now() - startTime;
       const errorMessage = e?.message || String(e);
-      logApp.error('[OPENCTI-MODULE] Force_run data sanity operation failed', { operation: operation.identifier, error: e });
+      logApp.error('[DATA_SANITY_MANAGER] Force_run data sanity operation failed', { operation: operation.identifier, error: e });
       await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, false, errorMessage).catch(() => {});
     }
   }
@@ -58,26 +53,26 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
   for (const operation of sanityOperationList()) {
     const shouldSkip = await shouldSkipOperation(context, user, operation);
     if (shouldSkip) {
-      logApp.debug('[OPENCTI-MODULE] Data sanity operation skipped', { operation: operation.identifier, execution_type: operation.execution_type });
+      logApp.debug('[DATA_SANITY_MANAGER] Data sanity operation skipped', { operation: operation.identifier, execution_type: operation.execution_type });
       continue;
     }
     const startTime = Date.now();
     try {
-      logApp.info('[OPENCTI-MODULE] Executing data sanity operation', { operation: operation.identifier });
+      logApp.info('[DATA_SANITY_MANAGER] Executing data sanity operation', { operation: operation.identifier });
       if (operation.execution_type === 'run_once') {
         const estimatedResult = await operation.dryRun(context);
-        logApp.info('[OPENCTI-MODULE] Estimating run_once impact before actual run', { result: estimatedResult });
+        logApp.info('[DATA_SANITY_MANAGER] Estimating run_once impact before actual run', { result: estimatedResult });
       }
 
       await markOperationAsRunning(context, DATA_SANITY_MANAGER_USER, operation.identifier);
       const output = await operation.operationRun(context);
       const executionTimeMs = Date.now() - startTime;
       await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, true, '', output);
-      logApp.info('[OPENCTI-MODULE] Data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
+      logApp.info('[DATA_SANITY_MANAGER] Data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
     } catch (e: any) {
       const executionTimeMs = Date.now() - startTime;
       const errorMessage = e?.message || String(e);
-      logApp.error('[OPENCTI-MODULE] Data sanity operation failed', { operation: operation.identifier, error: e });
+      logApp.error('[DATA_SANITY_MANAGER] Data sanity operation failed', { operation: operation.identifier, error: e });
       await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, false, errorMessage).catch(() => {});
     }
   }
@@ -85,16 +80,16 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
 
 export const dataSanityHandler = async () => {
   const context = executionContext(DATA_SANITY_MANAGER_CONTEXT);
-  logApp.debug('[OPENCTI-MODULE] Running data sanity manager handler', { manager: DATA_SANITY_MANAGER_ID });
+  logApp.info('[DATA_SANITY_MANAGER] Running data sanity manager handler', { manager: DATA_SANITY_MANAGER_ID });
   // Check if we are within a maintenance window before running operations
   const withinMaintenance = await isWithinMaintenanceWindow(context, DATA_SANITY_MANAGER_USER);
   if (!withinMaintenance) {
-    logApp.debug('[OPENCTI-MODULE] Data sanity manager skipped: not within maintenance window');
+    logApp.info('[DATA_SANITY_MANAGER] Data sanity manager skipped: not within maintenance window');
     return;
   }
   await dataSanityListHandler(context, DATA_SANITY_MANAGER_USER);
   await dataSanityForceRunHandler(context);
-  logApp.debug('[OPENCTI-MODULE] Data sanity manager handler complete', { manager: DATA_SANITY_MANAGER_ID });
+  logApp.info('[DATA_SANITY_MANAGER] Data sanity manager handler complete', { manager: DATA_SANITY_MANAGER_ID });
 };
 
 const DATA_SANITY_MANAGER_DEFINITION: ManagerDefinition = {
