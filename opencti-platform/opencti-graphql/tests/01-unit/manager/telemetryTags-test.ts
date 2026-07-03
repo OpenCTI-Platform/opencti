@@ -67,6 +67,17 @@ describe('Active connectors by catalog identity', () => {
     expect(computeActiveConnectorsByIdentity([manual(''), manual('   '), manual(null), manual(undefined)], CONTRACTS)).toEqual([]);
   });
 
+  it('should not collide identities when a freeform manual name contains separator-like characters', () => {
+    // Under a naive 'slug|managed|type' string key these two would merge.
+    const items = computeActiveConnectorsByIdentity(
+      [manual('a|false', 't'), manual('a', 'false|t')],
+      CONTRACTS,
+    );
+    expect(items).toHaveLength(2);
+    expect(items).toContainEqual({ value: 1, attributes: { slug: 'a|false', managed: 'false', type: 't' } });
+    expect(items).toContainEqual({ value: 1, attributes: { slug: 'a', managed: 'false', type: 'false|t' } });
+  });
+
   it('should aggregate connectors sharing the same identity and keep distinct types apart', () => {
     const items = computeActiveConnectorsByIdentity(
       [

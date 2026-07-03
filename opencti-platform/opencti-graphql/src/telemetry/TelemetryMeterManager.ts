@@ -59,7 +59,9 @@ export const computeActiveConnectorsByIdentity = (
       return;
     }
     const attributes = { slug, managed: isManaged ? 'true' : 'false', type: connector.connector_type ?? '' };
-    const identityKey = `${attributes.slug}|${attributes.managed}|${attributes.type}`;
+    // JSON-encode the key components: manual connector names are freeform, so
+    // a naive separator-joined key could collide across identities.
+    const identityKey = JSON.stringify([attributes.slug, attributes.managed, attributes.type]);
     const existingItem = connectorsByIdentity.get(identityKey);
     if (existingItem) {
       existingItem.value += 1;
@@ -434,10 +436,14 @@ export class TelemetryMeterManager {
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
     const dimensionalGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions);
     dimensionalGauge.addCallback((observableResult: ObservableResult) => {
-      /* eslint-disable @typescript-eslint/ban-ts-comment */
-      // @ts-ignore
-      const items = this[observer] as DimensionalGaugeItem[];
-      items.forEach((item) => observableResult.observe(item.value, item.attributes));
+      const items = (this as unknown as Record<string, unknown>)[observer];
+      // Guard against a mis-registered observer (unset property or scalar
+      // field): observing nothing is better than throwing inside the OTLP
+      // collection callback and breaking the whole export cycle.
+      if (!Array.isArray(items)) {
+        return;
+      }
+      (items as DimensionalGaugeItem[]).forEach((item) => observableResult.observe(item.value, item.attributes));
     });
   }
 
