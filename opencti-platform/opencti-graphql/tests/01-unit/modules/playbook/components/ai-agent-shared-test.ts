@@ -65,6 +65,7 @@ import {
   callXtmAgent,
   isAgentBoundToIntent,
   isRunAsUserAllowed,
+  isXtmOneConfigured,
   resolveAgentJwtUser,
   resolveRunAsUserId,
   sanitizeDefinitionRunAs,
@@ -161,6 +162,21 @@ describe('ai-agent-shared', () => {
       const result = await buildAgentSlugOneOf('cti.stix_transformer');
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('isXtmOneConfigured', () => {
+    it('should be true only when both the XTM One URL and the client token are configured', () => {
+      vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
+      vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
+      expect(isXtmOneConfigured()).toBe(true);
+
+      vi.mocked(nconf.get).mockReturnValue(undefined);
+      expect(isXtmOneConfigured()).toBe(false);
+
+      vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
+      vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
+      expect(isXtmOneConfigured()).toBe(false);
     });
   });
 

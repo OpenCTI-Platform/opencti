@@ -18,7 +18,7 @@ import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import type { StixBundle, StixObject } from '../../../types/stix-2-1-common';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, resolveAgentJwtUser, resolveRunAsUserId } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, isXtmOneConfigured, resolveAgentJwtUser, resolveRunAsUserId } from './ai-agent-shared';
 
 // Canonical STIX 2.1 ID shape: `<type>--<uuid>` where the UUID is the
 // 8-4-4-4-12 hex layout. Stricter than the loose `[\w-]{36}` pattern in
@@ -170,6 +170,15 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
     const { agent_slug, prompt, run_as } = playbookNode.configuration;
     if (!agent_slug) {
       logApp.warn('[PLAYBOOK AI AGENT] No agent configured, returning bundle unmodified');
+      return { output_port: 'unmodified', bundle };
+    }
+    // Without an XTM One configuration the step can never run: skip it
+    // before resolving the JWT identity so no user lookup is performed
+    // and no misleading identity-resolution warning is logged.
+    if (!isXtmOneConfigured()) {
+      logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, returning bundle unmodified', {
+        agentSlug: agent_slug,
+      });
       return { output_port: 'unmodified', bundle };
     }
     // Resolve the XTM One identity ONCE (run-as user, defaulting to the

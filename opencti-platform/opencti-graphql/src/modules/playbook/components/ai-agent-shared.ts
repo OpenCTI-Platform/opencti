@@ -149,11 +149,20 @@ export const resolveAgentJwtUser = async (
       });
     }
   }
-  logApp.error('[PLAYBOOK AI AGENT] No resolvable JWT identity (seeded admin cannot be loaded), skipping XTM One interaction', {
+  logApp.error('[PLAYBOOK AI AGENT] No resolvable JWT identity (no candidate user with a usable email), skipping XTM One interaction', {
     runAsUserId,
   });
   return null;
 };
+
+/**
+ * True when the platform is wired to an XTM One instance (url + token).
+ * Executors check this FIRST so a missing configuration skips the whole
+ * agent step — including the user lookup performed by
+ * ``resolveAgentJwtUser`` — without touching the database or logging
+ * misleading identity-resolution warnings.
+ */
+export const isXtmOneConfigured = (): boolean => !!nconf.get('xtm:xtm_one_url') && xtmOneClient.isConfigured();
 
 /**
  * Runtime defense in depth: re-check that ``slug`` is currently bound to

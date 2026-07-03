@@ -7,6 +7,7 @@ vi.mock('../../../../../src/modules/playbook/components/ai-agent-shared', () => 
   buildAgentSlugOneOf: vi.fn(),
   callXtmAgent: vi.fn(),
   isAgentBoundToIntent: vi.fn(),
+  isXtmOneConfigured: vi.fn(),
   resolveAgentJwtUser: vi.fn(),
   resolveRunAsUserId: vi.fn(),
 }));
@@ -23,6 +24,7 @@ import {
   buildAgentSlugOneOf,
   callXtmAgent,
   isAgentBoundToIntent,
+  isXtmOneConfigured,
   resolveAgentJwtUser,
   resolveRunAsUserId,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
@@ -64,6 +66,8 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(buildAgentMessageContent).mockReturnValue('built content');
+    // XTM One configured by default; the unconfigured test overrides this.
+    vi.mocked(isXtmOneConfigured).mockReturnValue(true);
     // No run-as user configured by default; tests that need it override this.
     vi.mocked(resolveRunAsUserId).mockReturnValue(undefined);
     // The executor resolves the JWT identity once and forwards it to both
@@ -109,6 +113,21 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: '' }),
       );
 
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBeUndefined();
+      expect(result.bundle).toBe(BUNDLE);
+      expect(result.forceBundleTracking).toBe(true);
+    });
+
+    it('should drop the step without any user lookup or XTM One call when XTM One is not configured', async () => {
+      vi.mocked(isXtmOneConfigured).mockReturnValue(false);
+
+      const result = await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(resolveAgentJwtUser).not.toHaveBeenCalled();
+      expect(isAgentBoundToIntent).not.toHaveBeenCalled();
       expect(callXtmAgent).not.toHaveBeenCalled();
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
