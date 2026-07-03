@@ -6,6 +6,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { Attribute, QueryRuntimeAttributesArgs } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-domain';
+import type { AttributeDefinition } from '../schema/attribute-definition';
 
 export interface DefaultValue {
   id: string;
@@ -66,7 +67,7 @@ export const getSchemaAttributes = () => {
     // Inject custom field attributes dynamically
     const customFieldDefs = getCustomFieldDefinitionsForEntityType(entityType);
     for (const cfDef of customFieldDefs) {
-      let attributeType: Attribute['type'] = 'string';
+      let attributeType: AttributeDefinition['type'] = 'string';
       if (cfDef.field_type === 'integer') attributeType = 'numeric';
       else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
       else if (cfDef.field_type === 'date') attributeType = 'date';

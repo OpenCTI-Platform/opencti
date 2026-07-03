@@ -1,5 +1,11 @@
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_PREFIX, type CustomFieldType, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type StoreEntityCustomFieldDefinition } from './custom-field-types';
+import {
+  type BasicStoreEntityCustomFieldDefinition,
+  CUSTOM_FIELD_PREFIX,
+  type CustomFieldType,
+  ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
+  type StoreEntityCustomFieldDefinition,
+} from './custom-field-types';
 import type { CustomFieldDefinitionAddInput, EditInput } from '../../generated/graphql';
 import { EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
@@ -9,7 +15,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, ValidationError } from '../../config/errors';
 import { enforceEnableFeatureFlag, SYSTEM_USER } from '../../utils/access';
 import { CUSTOM_FIELDS_FEATURE_FLAG, logApp } from '../../config/conf';
 
@@ -42,7 +48,7 @@ export const getCustomFieldDefinitions = (): BasicStoreEntityCustomFieldDefiniti
  */
 export const getCustomFieldDefinitionsForEntityType = (entityType: string): BasicStoreEntityCustomFieldDefinition[] => {
   return customFieldDefinitionsCache.filter(
-    (def) => def.entity_types && def.entity_types.includes(entityType)
+    (def) => def.entity_types && def.entity_types.includes(entityType),
   );
 };
 
@@ -52,6 +58,20 @@ export const getCustomFieldDefinitionsForEntityType = (entityType: string): Basi
 export const getCustomFieldDefinitionByName = (name: string): BasicStoreEntityCustomFieldDefinition | undefined => {
   return customFieldDefinitionsCache.find((def) => def.name === name);
 };
+
+/**
+ * Get a cached custom field definition by its label.
+ */
+export const getCustomFieldDefinitionByLabel = (label: string): BasicStoreEntityCustomFieldDefinition | undefined => {
+  return customFieldDefinitionsCache.find((def) => def.label === label);
+};
+
+/**
+ * Technical name must be the custom field prefix followed by lowercase letters,
+ * numbers and underscores, starting with a letter (mirrors the frontend Yup rule,
+ * enforced here again so the constraint cannot be bypassed via a direct GraphQL call).
+ */
+const CUSTOM_FIELD_NAME_REGEX = /^x_opencti_cf_[a-z][a-z0-9_]*$/;
 
 /**
  * Check if a filter key corresponds to a custom field.
@@ -102,7 +122,7 @@ export const findCustomFieldDefinitionsForEntityType = (context: AuthContext, us
 export const findCustomFieldDefinitionByName = async (
   context: AuthContext,
   user: AuthUser,
-  name: string
+  name: string,
 ): Promise<BasicStoreEntityCustomFieldDefinition | null> => {
   const result = await findCustomFieldDefinitionsPaginated(context, user, {
     filters: {
@@ -117,9 +137,21 @@ export const findCustomFieldDefinitionByName = async (
 
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
-  // Validate name starts with the required prefix
-  if (!input.name.startsWith(CUSTOM_FIELD_PREFIX)) {
-    throw FunctionalError('Custom field name must start with the prefix "x_opencti_cf_"', { name: input.name });
+  // Validate name starts with the required prefix and matches the allowed format
+  if (!CUSTOM_FIELD_NAME_REGEX.test(input.name)) {
+    throw ValidationError(
+      'Technical name must start with "x_opencti_cf_" and contain only lowercase letters, numbers and underscores, starting with a letter',
+      'nameSuffix',
+      { name: input.name },
+    );
+  }
+  // Validate the technical name is unique
+  if (getCustomFieldDefinitionByName(input.name)) {
+    throw ValidationError('A custom field with this technical name already exists', 'nameSuffix', { name: input.name });
+  }
+  // Validate the label is unique among all custom fields
+  if (getCustomFieldDefinitionByLabel(input.label)) {
+    throw ValidationError('A custom field with this label already exists', 'label', { label: input.label });
   }
   // Validate field_type is supported
   const allowedTypes: CustomFieldType[] = ['integer', 'string', 'boolean', 'date', 'select'];
@@ -174,6 +206,15 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
   const attemptedForbidden = input.filter((i) => forbiddenKeys.includes(i.key));
   if (attemptedForbidden.length > 0) {
     throw FunctionalError('Cannot modify immutable fields on a custom field definition', { keys: attemptedForbidden.map((i) => i.key) });
+  }
+  // Validate the label stays unique among all custom fields
+  const labelEdit = input.find((i) => i.key === 'label');
+  if (labelEdit) {
+    const newLabel = Array.isArray(labelEdit.value) ? labelEdit.value[0] : labelEdit.value;
+    const existing = getCustomFieldDefinitionByLabel(newLabel);
+    if (existing && existing.id !== customFieldDefinitionId) {
+      throw ValidationError('A custom field with this label already exists', 'label', { label: newLabel });
+    }
   }
 
   const { element: updatedElem } = await updateAttribute<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input);
