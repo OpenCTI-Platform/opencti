@@ -65,6 +65,7 @@ import {
   callXtmAgent,
   isAgentBoundToIntent,
   isRunAsUserAllowed,
+  resolveAgentJwtUser,
   resolveRunAsUserId,
   sanitizeDefinitionRunAs,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
@@ -163,16 +164,97 @@ describe('ai-agent-shared', () => {
     });
   });
 
+  describe('resolveAgentJwtUser', () => {
+    const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
+
+    it('should resolve the seeded admin (single lookup) when no run-as user is configured', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(ADMIN_JWT_USER as any);
+
+      const result = await resolveAgentJwtUser(undefined);
+
+      expect(result).toEqual(ADMIN_JWT_USER);
+      expect(internalLoadById).toHaveBeenCalledTimes(1);
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        OPENCTI_ADMIN_UUID,
+        { type: ENTITY_TYPE_USER },
+      );
+    });
+
+    it('should resolve the run-as user (single lookup) when a runAsUserId is provided', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-7', user_email: 'analyst@org.test' } as any);
+
+      const result = await resolveAgentJwtUser('user-7');
+
+      expect(result).toEqual({ id: 'user-7', user_email: 'analyst@org.test' });
+      expect(internalLoadById).toHaveBeenCalledTimes(1);
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        'user-7',
+        { type: ENTITY_TYPE_USER },
+      );
+    });
+
+    it('should fall back to the seeded admin when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        return null;
+      }) as any);
+
+      await expect(resolveAgentJwtUser('missing-user')).resolves.toEqual(ADMIN_JWT_USER);
+    });
+
+    it('should fall back to the seeded admin when the resolved run-as user has no email', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        return { id: 'user-9' };
+      }) as any);
+
+      await expect(resolveAgentJwtUser('user-9')).resolves.toEqual(ADMIN_JWT_USER);
+    });
+
+    it('should fall back to the seeded admin when resolving the run-as user throws', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        throw new Error('ES down');
+      }) as any);
+
+      await expect(resolveAgentJwtUser('user-x')).resolves.toEqual(ADMIN_JWT_USER);
+    });
+
+    it('should not look the seeded admin up twice when the run-as user IS the seeded admin', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+
+      const result = await resolveAgentJwtUser(OPENCTI_ADMIN_UUID);
+
+      expect(result).toBeNull();
+      expect(internalLoadById).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return null when neither the run-as user nor the seeded admin can be resolved', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+
+      const result = await resolveAgentJwtUser('missing-user');
+
+      expect(result).toBeNull();
+      expect(internalLoadById).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('isAgentBoundToIntent', () => {
     const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
 
-    beforeEach(() => {
-      // No run-as user configured by default -> the seeded admin is resolved.
-      vi.mocked(internalLoadById).mockResolvedValue(ADMIN_JWT_USER as any);
+    it('should return false (without calling XTM One) when the slug is empty', async () => {
+      const result = await isAgentBoundToIntent('cti.stix_transformer', '', ADMIN_JWT_USER);
+      expect(result).toBe(false);
+      expect(xtmOneClient.listAgentsForIntent).not.toHaveBeenCalled();
     });
 
-    it('should return false (without calling XTM One) when the slug is empty', async () => {
-      const result = await isAgentBoundToIntent('cti.stix_transformer', '');
+    it('should fail closed (no catalog call) when no JWT identity could be resolved (jwtUser null)', async () => {
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', null);
+
       expect(result).toBe(false);
       expect(xtmOneClient.listAgentsForIntent).not.toHaveBeenCalled();
     });
@@ -183,68 +265,24 @@ describe('ai-agent-shared', () => {
         { agent_id: '2', agent_name: 'B', agent_slug: 'agent-b', agent_description: null, priority: 0 },
       ]);
 
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-b');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-b', ADMIN_JWT_USER);
 
       expect(result).toBe(true);
     });
 
-    it('should query the catalog as the seeded admin when no run-as user is configured (same identity as the agent call)', async () => {
-      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([]);
-
-      await isAgentBoundToIntent('cti.stix_transformer', 'agent-a');
-
-      expect(internalLoadById).toHaveBeenCalledWith(
-        expect.anything(),
-        SYSTEM_USER,
-        OPENCTI_ADMIN_UUID,
-        { type: ENTITY_TYPE_USER },
-      );
-      const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
-      expect(passedContext.user?.id).toBe(OPENCTI_ADMIN_UUID);
-      expect(passedContext.user?.user_email).toBe('admin@opencti.io');
-    });
-
-    it('should query the catalog as the resolved run-as user when a runAsUserId is provided', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-7', user_email: 'analyst@org.test' } as any);
+    it('should query the catalog as the passed JWT identity (same identity as the agent call), without a user lookup', async () => {
       vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([
         { agent_id: '1', agent_name: 'A', agent_slug: 'agent-a', agent_description: null, priority: 0 },
       ]);
 
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', 'user-7');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', { id: 'user-7', user_email: 'analyst@org.test' });
 
       expect(result).toBe(true);
-      expect(internalLoadById).toHaveBeenCalledWith(
-        expect.anything(),
-        SYSTEM_USER,
-        'user-7',
-        { type: ENTITY_TYPE_USER },
-      );
+      // The identity was resolved once by the executor — no lookup here.
+      expect(internalLoadById).not.toHaveBeenCalled();
       const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
       expect(passedContext.user?.id).toBe('user-7');
       expect(passedContext.user?.user_email).toBe('analyst@org.test');
-    });
-
-    it('should fall back to the seeded admin when the run-as user cannot be loaded', async () => {
-      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
-        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
-        return null;
-      }) as any);
-      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([]);
-
-      await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', 'missing-user');
-
-      const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
-      expect(passedContext.user?.id).toBe(OPENCTI_ADMIN_UUID);
-      expect(passedContext.user?.user_email).toBe('admin@opencti.io');
-    });
-
-    it('should fail closed (no catalog call) when neither the run-as user nor the seeded admin can be resolved', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue(null as any);
-
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', 'missing-user');
-
-      expect(result).toBe(false);
-      expect(xtmOneClient.listAgentsForIntent).not.toHaveBeenCalled();
     });
 
     it('should return false when the slug is NOT in the intent catalog (defense-in-depth check fails closed)', async () => {
@@ -252,7 +290,7 @@ describe('ai-agent-shared', () => {
         { agent_id: '1', agent_name: 'A', agent_slug: 'agent-a', agent_description: null, priority: 0 },
       ]);
 
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-not-bound');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-not-bound', ADMIN_JWT_USER);
 
       expect(result).toBe(false);
     });
@@ -260,7 +298,7 @@ describe('ai-agent-shared', () => {
     it('should fail closed (return false) when the catalog call throws', async () => {
       vi.mocked(xtmOneClient.listAgentsForIntent).mockRejectedValue(new Error('XTM One down'));
 
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', ADMIN_JWT_USER);
 
       expect(result).toBe(false);
     });
@@ -447,34 +485,27 @@ describe('ai-agent-shared', () => {
       vi.mocked(issueXtmJwt).mockResolvedValue('signed.jwt');
       vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
       vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
-      // No run-as user configured by default -> the seeded admin is resolved.
-      vi.mocked(internalLoadById).mockResolvedValue(ADMIN_JWT_USER as any);
     });
 
     it('should return null and not call the HTTP client when XTM One is not configured', async () => {
       vi.mocked(nconf.get).mockReturnValue(undefined);
       vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
 
-      const result = await callXtmAgent('any-agent', 'content');
+      const result = await callXtmAgent('any-agent', 'content', ADMIN_JWT_USER);
 
       expect(result).toBeNull();
       expect(getHttpClient).not.toHaveBeenCalled();
     });
 
-    it('should default to the seeded admin and POST a non-streaming chat message', async () => {
+    it('should mint the JWT for the passed identity (no extra lookup) and POST a non-streaming chat message', async () => {
       const post = vi.fn().mockResolvedValue({ data: { content: 'agent reply' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'hello world');
+      const result = await callXtmAgent('agent-slug', 'hello world', ADMIN_JWT_USER);
 
       expect(result).toBe('agent reply');
-      // No run-as user -> resolve the seeded admin by its fixed UUID.
-      expect(internalLoadById).toHaveBeenCalledWith(
-        expect.anything(),
-        SYSTEM_USER,
-        OPENCTI_ADMIN_UUID,
-        { type: ENTITY_TYPE_USER },
-      );
+      // The identity was resolved once by the executor — no lookup here.
+      expect(internalLoadById).not.toHaveBeenCalled();
       expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
       expect(getHttpClient).toHaveBeenCalledTimes(1);
       const headers = vi.mocked(getHttpClient).mock.calls[0][0].headers as Record<string, string>;
@@ -487,68 +518,21 @@ describe('ai-agent-shared', () => {
       );
     });
 
-    it('should mint the JWT for the resolved run-as user when a runAsUserId is provided', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-7', user_email: 'analyst@org.test' } as any);
+    it('should mint the JWT for a run-as identity exactly as passed', async () => {
       const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'content', 'user-7');
+      const result = await callXtmAgent('agent-slug', 'content', { id: 'user-7', user_email: 'analyst@org.test' });
 
       expect(result).toBe('ok');
-      expect(internalLoadById).toHaveBeenCalledWith(
-        expect.anything(),
-        SYSTEM_USER,
-        'user-7',
-        { type: ENTITY_TYPE_USER },
-      );
       expect(issueXtmJwt).toHaveBeenCalledWith({ id: 'user-7', user_email: 'analyst@org.test' }, 'https://xtm-one.test');
     });
 
-    it('should fall back to the seeded admin when the run-as user cannot be loaded', async () => {
-      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
-        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
-        return null;
-      }) as any);
+    it('should skip the call (return null, no JWT minted) when no JWT identity could be resolved (jwtUser null)', async () => {
       const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      await callXtmAgent('agent-slug', 'content', 'missing-user');
-
-      expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
-    });
-
-    it('should fall back to the seeded admin when the resolved user has no email', async () => {
-      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
-        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
-        return { id: 'user-9' };
-      }) as any);
-      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
-      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
-
-      await callXtmAgent('agent-slug', 'content', 'user-9');
-
-      expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
-    });
-
-    it('should fall back to the seeded admin when resolving the run-as user throws', async () => {
-      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
-        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
-        throw new Error('ES down');
-      }) as any);
-      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
-      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
-
-      await callXtmAgent('agent-slug', 'content', 'user-x');
-
-      expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
-    });
-
-    it('should skip the call (return null, no JWT minted) when neither the run-as user nor the seeded admin can be resolved', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue(null as any);
-      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
-      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
-
-      const result = await callXtmAgent('agent-slug', 'content', 'missing-user');
+      const result = await callXtmAgent('agent-slug', 'content', null);
 
       expect(result).toBeNull();
       expect(issueXtmJwt).not.toHaveBeenCalled();
@@ -559,7 +543,7 @@ describe('ai-agent-shared', () => {
       const post = vi.fn().mockResolvedValue({ data: {} });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'content');
+      const result = await callXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
 
       expect(result).toBeNull();
     });
@@ -568,7 +552,7 @@ describe('ai-agent-shared', () => {
       const post = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'));
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'content');
+      const result = await callXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
 
       expect(result).toBeNull();
     });

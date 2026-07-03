@@ -17,7 +17,7 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, resolveRunAsUserId } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, resolveAgentJwtUser, resolveRunAsUserId } from './ai-agent-shared';
 
 interface AiAgentSendConfiguration {
   agent_slug: string;
@@ -98,6 +98,11 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       logApp.warn('[PLAYBOOK AI AGENT SEND] No agent configured, dropping playbook step', { playbookId });
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
+    // Resolve the XTM One identity ONCE (run-as user, defaulting to the
+    // seeded platform admin) and share it between the binding check and
+    // the agent call: both are guaranteed to run as the same identity
+    // with a single user lookup.
+    const jwtUser = await resolveAgentJwtUser(resolveRunAsUserId(run_as));
     // Defense in depth: re-check that the configured slug is currently
     // bound to the consumer intent before invoking it. AJV `oneOf`
     // validation only covers saves that go through the schema resolver
@@ -106,8 +111,7 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
     // the configured run-as identity. The check runs as the SAME
     // identity as the agent call so the per-user XTM One catalog
     // visibility matches what the call will actually see.
-    const runAsUserId = resolveRunAsUserId(run_as);
-    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug, runAsUserId))) {
+    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug, jwtUser))) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] Configured agent is not bound to the consumer intent, dropping playbook step', {
         playbookId,
         agentSlug: agent_slug,
@@ -116,7 +120,7 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     const content = buildAgentMessageContent(bundle, prompt);
-    const rawResponse = await callXtmAgent(agent_slug, content, runAsUserId);
+    const rawResponse = await callXtmAgent(agent_slug, content, jwtUser);
     if (rawResponse === null) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] Agent call did not complete', {
         playbookId,
