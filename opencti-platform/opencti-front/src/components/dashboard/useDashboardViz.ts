@@ -8,35 +8,10 @@ import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag
 import { useQueryLoader } from 'react-relay';
 import { OperationType } from 'relay-runtime';
 
-const useWidgetAutoRefresh = (reloadData: () => void, refreshInterval?: number | null) => {
-  useEffect(() => {
-    if (typeof refreshInterval !== 'number' || refreshInterval <= 0) {
-      return () => {};
-    }
-
-    let interval: ReturnType<typeof setInterval> | null = null;
-    const msUntilNextTick = refreshInterval - (Date.now() % refreshInterval);
-    const timeout = setTimeout(() => {
-      reloadData();
-      interval = setInterval(() => {
-        reloadData();
-      }, refreshInterval);
-    }, msUntilNextTick);
-
-    return () => {
-      clearTimeout(timeout);
-      if (interval !== null) {
-        clearInterval(interval);
-      }
-    };
-  }, [reloadData, refreshInterval]);
-};
-
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
   perspective,
   host,
-  refreshRate,
   query,
   buildQueryVariables,
   parameters,
@@ -45,6 +20,8 @@ const useDashboardViz = <TQuery extends OperationType>({
   dataSelection: WidgetDataSelection[];
   perspective: WidgetPerspective;
   host?: WidgetHost;
+  // Accepted for backward compatibility with widget props; no longer used for
+  // scheduling (refresh is driven centrally by the refreshToken context).
   refreshRate?: number | null;
   query?: GraphQLTaggedNode;
   config?: DashboardConfig;
@@ -121,11 +98,6 @@ const useDashboardViz = <TQuery extends OperationType>({
     return () => setQueryPending(queryId, false);
   }, [isPending, setQueryPending]);
 
-  // Used by interval fallback when no dashboard refresh provider is present.
-  const forceReloadWithCurrentVariables = useCallback(() => {
-    reloadData(true);
-  }, [reloadData]);
-
   // Used by dashboard token refresh to rebuild variables from latest inputs
   // before forcing the load.
   const forceReloadWithFreshVariables = useCallback(() => {
@@ -142,7 +114,6 @@ const useDashboardViz = <TQuery extends OperationType>({
   // refreshToken is an integer provided via context by DashboardContent and incremented
   // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
   // regardless of whether query variables changed, so fresh data is always fetched.
-  // Outside DashboardContent, token is null and widget-level interval refresh is used instead.
   // prevRefreshTokenRef guards against triggering on the initial mount.
   const refreshToken = useDashboardRefreshToken();
   const prevRefreshTokenRef = useRef(refreshToken);
@@ -157,8 +128,6 @@ const useDashboardViz = <TQuery extends OperationType>({
 
     forceReloadWithFreshVariables();
   }, [refreshToken, isMissingHostEntity, forceReloadWithFreshVariables]);
-
-  useWidgetAutoRefresh(forceReloadWithCurrentVariables, refreshToken === null ? refreshRate : null);
 
   return {
     queryRef,
