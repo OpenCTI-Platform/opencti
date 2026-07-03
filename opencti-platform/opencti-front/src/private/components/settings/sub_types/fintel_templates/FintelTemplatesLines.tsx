@@ -71,6 +71,8 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
     },
   };
 
+  const currentDefaultName = defaultTemplates[0]?.name;
+
   return (
     <DataTableWithoutFragment
       dataColumns={dataColumns}
@@ -89,6 +91,7 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
           templateId={template.id}
           settingsType={targetType}
           isDefault={!!template.default}
+          currentDefaultName={template.default ? undefined : currentDefaultName}
         />
       )}
     />

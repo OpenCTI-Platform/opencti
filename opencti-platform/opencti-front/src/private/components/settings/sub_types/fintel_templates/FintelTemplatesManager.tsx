@@ -90,6 +90,8 @@ const FintelTemplatesManager = () => {
     }
   };
 
+  const currentDefaultName = fintelTemplates?.edges.find(({ node }) => node.default)?.node.name;
+
   return (
     <>
       <VisuallyHiddenInput
@@ -153,6 +155,7 @@ const FintelTemplatesManager = () => {
           isOpen={isDrawerOpen}
           template={templateToEdit}
           entityType={target_type}
+          currentDefaultName={currentDefaultName}
           onClose={() => {
             setDrawerOpen(false);
             setTemplateToEdit(undefined);

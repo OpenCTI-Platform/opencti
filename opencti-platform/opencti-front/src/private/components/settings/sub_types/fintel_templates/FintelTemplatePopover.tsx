@@ -1,7 +1,8 @@
 import MoreVert from '@mui/icons-material/MoreVert';
-import React, { UIEvent, useState } from 'react';
+import { UIEvent, useState } from 'react';
 import { Menu, MenuItem, PopoverProps } from '@mui/material';
 import IconButton from '@common/button/IconButton';
+import FintelTemplateReplaceDefaultDialog from './FintelTemplateReplaceDefaultDialog';
 import useFintelTemplateExport from './useFintelTemplateExport';
 import useFintelTemplateDelete from './useFintelTemplateDelete';
 import useFintelTemplateSetDefault from './useFintelTemplateSetDefault';
@@ -21,6 +22,7 @@ interface FintelTemplatePopoverProps {
   settingsType: string;
   inline?: boolean;
   isDefault: boolean;
+  currentDefaultName?: string;
 }
 
 const FintelTemplatePopover = ({
@@ -31,10 +33,12 @@ const FintelTemplatePopover = ({
   settingsType,
   inline = true,
   isDefault,
+  currentDefaultName,
 }: FintelTemplatePopoverProps) => {
   const { t_i18n } = useFormatter();
   const exportFintel = useFintelTemplateExport();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
+  const [setDefaultDialogOpen, setSetDefaultDialogOpen] = useState(false);
   const [commitDeleteMutation] = useFintelTemplateDelete(entitySettingId);
   const [commitSetDefault] = useFintelTemplateSetDefault();
   const [commitEditMutation] = useFintelTemplateEdit();
@@ -99,9 +103,7 @@ const FintelTemplatePopover = ({
     await exportFintel(templateId);
   };
 
-  const onSetAsDefault = (e: UIEvent) => {
-    stopEvent(e);
-    setAnchorEl(undefined);
+  const doSetDefault = () => {
     commitSetDefault({
       variables: { id: templateId, settingsType },
       onCompleted: () => {
@@ -110,6 +112,16 @@ const FintelTemplatePopover = ({
         });
       },
     });
+  };
+
+  const onSetAsDefault = (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    if (currentDefaultName) {
+      setSetDefaultDialogOpen(true);
+    } else {
+      doSetDefault();
+    }
   };
 
   const onSetRemoveDefault = (e: UIEvent) => {
@@ -161,6 +173,16 @@ const FintelTemplatePopover = ({
         deletion={deletion}
         submitDelete={onDelete}
         message={t_i18n('Do you want to delete this FINTEL template?')}
+      />
+
+      <FintelTemplateReplaceDefaultDialog
+        open={setDefaultDialogOpen}
+        onClose={() => setSetDefaultDialogOpen(false)}
+        onConfirm={() => {
+          setSetDefaultDialogOpen(false);
+          doSetDefault();
+        }}
+        currentDefaultName={currentDefaultName ?? ''}
       />
     </>
   );

@@ -29,9 +29,10 @@ const headerFragment = graphql`
 interface FintelTemplateHeaderProps {
   entitySettingId: string;
   data: FintelTemplateHeader_template$key;
+  currentDefaultName?: string;
 }
 
-const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderProps) => {
+const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: FintelTemplateHeaderProps) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -92,6 +93,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
             isDefault={!!template.default}
             inline={false}
             onDeleteComplete={() => navigate(subTypeLink)}
+            currentDefaultName={template.default ? undefined : currentDefaultName}
           />
           <Button
             onClick={onSubmit}
@@ -113,6 +115,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
           published: !!template.start_date,
           default: template.default,
         }}
+        currentDefaultName={template.default ? undefined : currentDefaultName}
         onClose={() => setFormOpen(false)}
       />
     </>

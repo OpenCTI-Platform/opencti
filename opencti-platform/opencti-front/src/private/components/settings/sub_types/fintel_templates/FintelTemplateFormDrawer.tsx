@@ -1,10 +1,11 @@
 import Drawer from '@components/common/drawer/Drawer';
-import React from 'react';
+import { useState } from 'react';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
 import useFintelTemplateAdd from '@components/settings/sub_types/fintel_templates/useFintelTemplateAdd';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
+import FintelTemplateReplaceDefaultDialog from './FintelTemplateReplaceDefaultDialog';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
@@ -15,6 +16,7 @@ interface FintelTemplateFormDrawerProps {
   entitySettingId: string;
   entityType?: string;
   template?: { id: string } & FintelTemplateFormInputs;
+  currentDefaultName?: string;
 }
 
 const FintelTemplateFormDrawer = ({
@@ -23,6 +25,7 @@ const FintelTemplateFormDrawer = ({
   entityType,
   entitySettingId,
   template,
+  currentDefaultName,
 }: FintelTemplateFormDrawerProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -31,11 +34,9 @@ const FintelTemplateFormDrawer = ({
 
   const [commitAddMutation] = useFintelTemplateAdd(entitySettingId);
   const [commitEditMutation] = useFintelTemplateEdit();
+  const [pendingValues, setPendingValues] = useState<FintelTemplateFormInputs | null>(null);
 
-  const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
+  const doAdd = (values: FintelTemplateFormInputs) => {
     if (!entityType) return;
 
     commitAddMutation({
@@ -49,8 +50,6 @@ const FintelTemplateFormDrawer = ({
         },
       },
       onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
         onClose();
         if (response.fintelTemplateAdd) {
           const { id, entity_type } = response.fintelTemplateAdd;
@@ -59,10 +58,21 @@ const FintelTemplateFormDrawer = ({
         }
       },
       onError: (error) => {
-        setSubmitting(false);
         handleError(error);
       },
     });
+  };
+
+  const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
+    setSubmitting(false);
+    if (values.default && currentDefaultName) {
+      setPendingValues(values);
+    } else {
+      doAdd(values);
+    }
   };
 
   const onEdit = (field: FintelTemplateFormInputKeys, value: unknown) => {
@@ -90,6 +100,18 @@ const FintelTemplateFormDrawer = ({
           defaultValues={template}
         />
       </Drawer>
+
+      <FintelTemplateReplaceDefaultDialog
+        open={!!pendingValues}
+        onClose={() => setPendingValues(null)}
+        onConfirm={() => {
+          if (pendingValues) {
+            setPendingValues(null);
+            doAdd(pendingValues);
+          }
+        }}
+        currentDefaultName={currentDefaultName ?? ''}
+      />
     </>
   );
 };
