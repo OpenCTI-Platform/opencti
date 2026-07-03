@@ -125,7 +125,11 @@ export const resolveAgentJwtUser = async (
     ? [runAsUserId, OPENCTI_ADMIN_UUID]
     : [OPENCTI_ADMIN_UUID];
   const context = executionContext('playbook_components');
-  for (const targetUserId of candidateIds) {
+  for (let candidateIndex = 0; candidateIndex < candidateIds.length; candidateIndex += 1) {
+    const targetUserId = candidateIds[candidateIndex];
+    // Keep the message static for log aggregation; whether another
+    // candidate remains is carried as a structured attribute.
+    const hasNextFallback = candidateIndex < candidateIds.length - 1;
     try {
       const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
         context,
@@ -136,10 +140,11 @@ export const resolveAgentJwtUser = async (
       if (user?.user_email) {
         return { id: user.id, user_email: user.user_email };
       }
-      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found or has no resolvable email, trying next fallback', { targetUserId, userFound: !!user });
+      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found or has no resolvable email', { targetUserId, userFound: !!user, hasNextFallback });
     } catch (e: unknown) {
-      logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve JWT user, trying next fallback', {
+      logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve JWT user', {
         targetUserId,
+        hasNextFallback,
         cause: e instanceof Error ? e.message : String(e),
       });
     }
