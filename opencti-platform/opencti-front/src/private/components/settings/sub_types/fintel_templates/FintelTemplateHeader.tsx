@@ -113,7 +113,7 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
           name: template.name,
           description: template.description ?? null,
           published: !!template.start_date,
-          default: template.default,
+          default: !!template.default,
         }}
         currentDefaultName={template.default ? undefined : currentDefaultName}
         onClose={() => setFormOpen(false)}

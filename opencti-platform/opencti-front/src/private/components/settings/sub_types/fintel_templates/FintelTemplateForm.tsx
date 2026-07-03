@@ -15,7 +15,7 @@ export interface FintelTemplateFormInputs {
   name: string;
   description: string | null;
   published: boolean;
-  default: boolean | null | undefined;
+  default: boolean;
 }
 
 export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
@@ -65,7 +65,7 @@ const FintelTemplateForm = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting, values }) => {
+      {({ submitForm, handleReset, isSubmitting }) => {
         return (
           <Form>
             <Field

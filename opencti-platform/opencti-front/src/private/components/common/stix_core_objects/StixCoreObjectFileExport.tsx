@@ -27,7 +27,6 @@ import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPd
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
-import { FieldOption } from '../../../../utils/field';
 
 export const BUILT_IN_HTML_TO_PDF = {
   value: 'builtInHtmlToPdf',

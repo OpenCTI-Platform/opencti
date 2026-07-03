@@ -64,7 +64,7 @@ const FintelTemplatesManager = () => {
       name: template.name,
       description: template.description ?? null,
       published: !!template.start_date,
-      default: template.default,
+      default: !!template.default,
     });
     setDrawerOpen(true);
   };
