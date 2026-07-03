@@ -5,7 +5,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
-import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
+import { normalizeTelemetryTags, TELEMETRY_SERVICE_NAME, TelemetryMeterManager, type DimensionalGaugeItem } from '../telemetry/TelemetryMeterManager';
 import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
@@ -17,7 +17,8 @@ import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { elCount } from '../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
@@ -227,12 +228,21 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   // Meter Provider creation
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const platformId = settings.id;
-  const filigranResource = resourceFromAttributes({
+  const filigranResourceAttributes: Record<string, string> = {
     [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
     [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
     [ATTR_SERVICE_INSTANCE_ID]: platformId,
     'service.instance.creation': settings.created_at as unknown as string,
-  });
+  };
+  // Optional deployment tags (telemetry_manager:tags / TELEMETRY_MANAGER__TAGS,
+  // normalized to a canonical sorted/lowercased comma string). One resource
+  // attribute on every export so analytics can slice any metric by deployment
+  // dimension (e.g. "saas,eu-west"). Omitted entirely when not configured.
+  const telemetryTags = normalizeTelemetryTags(conf.get('telemetry_manager:tags'));
+  if (telemetryTags.length > 0) {
+    filigranResourceAttributes['filigran.telemetry.tags'] = telemetryTags;
+  }
+  const filigranResource = resourceFromAttributes(filigranResourceAttributes);
   const resource = defaultResource().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
@@ -265,6 +275,31 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const activeConnectors = connectors.filter((c) => c.active);
     manager.setActiveConnectorsCount(activeConnectors.length);
+    // Breakdown by catalog identity: composer-managed connectors resolve to
+    // the catalog contract slug through their stored container image (the
+    // user-set connector name is irrelevant); manually registered connectors
+    // have no catalog reference in database, so their registered name is the
+    // best available identity, flagged managed=false.
+    const contractsByImage = await getSupportedContractsByImage();
+    const connectorsByIdentity = new Map<string, DimensionalGaugeItem>();
+    activeConnectors.forEach((connector) => {
+      const isManaged = isNotEmptyField(connector.catalog_id);
+      const slug = isManaged
+        ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ?? connector.manager_contract_image ?? '')
+        : (connector.name ?? '').trim().toLowerCase();
+      if (slug.length === 0) {
+        return;
+      }
+      const attributes = { slug, managed: isManaged ? 'true' : 'false', type: connector.connector_type ?? '' };
+      const identityKey = `${attributes.slug}|${attributes.managed}|${attributes.type}`;
+      const existingItem = connectorsByIdentity.get(identityKey);
+      if (existingItem) {
+        existingItem.value += 1;
+      } else {
+        connectorsByIdentity.set(identityKey, { value: 1, attributes });
+      }
+    });
+    manager.setActiveConnectorsByIdentity(Array.from(connectorsByIdentity.values()));
     // endregion
 
     // region Roles with draft capability information

@@ -4,6 +4,28 @@ import { ValueType } from '@opentelemetry/api';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 
+// One datapoint of a multi-dimensional gauge: a value observed with a set of
+// OTLP datapoint attributes (labels).
+export interface DimensionalGaugeItem {
+  value: number;
+  attributes: Record<string, string>;
+}
+
+// Normalize the deployment tags configured via telemetry_manager:tags
+// (TELEMETRY_MANAGER__TAGS): split on ",", trim, lowercase, drop empties,
+// dedupe, sort, re-join. Shared Filigran contract (same normalization in
+// XTM One and OpenAEV) so an identical tag set always produces the identical
+// string in the analytics warehouse.
+export const normalizeTelemetryTags = (rawTags: string | null | undefined): string => {
+  const tags = new Set(
+    (rawTags ?? '')
+      .split(',')
+      .map((tag) => tag.trim().toLowerCase())
+      .filter((tag) => tag.length > 0),
+  );
+  return Array.from(tags).sort().join(',');
+};
+
 export class TelemetryMeterManager {
   meterProvider: MeterProvider;
 
@@ -21,6 +43,11 @@ export class TelemetryMeterManager {
 
   // Number of active connectors
   activeConnectorsCount = 0;
+
+  // Active connectors broken down by catalog identity (slug, managed, type).
+  // Composer-managed connectors carry the exact catalog contract slug; manual
+  // connectors fall back to their registered name (managed=false).
+  activeConnectorsByIdentity: DimensionalGaugeItem[] = [];
 
   disseminationCount = 0;
 
@@ -202,6 +229,10 @@ export class TelemetryMeterManager {
     this.activeConnectorsCount = n;
   }
 
+  setActiveConnectorsByIdentity(items: DimensionalGaugeItem[]) {
+    this.activeConnectorsByIdentity = items;
+  }
+
   setDisseminationCount(n: number) {
     this.disseminationCount = n;
   }
@@ -348,6 +379,24 @@ export class TelemetryMeterManager {
     });
   }
 
+  // Multi-dimensional gauge: the observed property holds a list of
+  // DimensionalGaugeItem, each exported as one datapoint with its own OTLP
+  // attributes (labels).
+  registerDimensionalGauge(name: string, description: string, observer: string, opts: {
+    unit?: string;
+    valueType?: ValueType;
+  } = {}) {
+    const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
+    const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
+    const dimensionalGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions);
+    dimensionalGauge.addCallback((observableResult: ObservableResult) => {
+      /* eslint-disable @typescript-eslint/ban-ts-comment */
+      // @ts-ignore
+      const items = this[observer] as DimensionalGaugeItem[];
+      items.forEach((item) => observableResult.observe(item.value, item.attributes));
+    });
+  }
+
   registerFiligranTelemetry() {
     // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
@@ -355,6 +404,7 @@ export class TelemetryMeterManager {
     this.registerGauge('total_service_account_count', 'number of service account', 'serviceAccountCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
+    this.registerDimensionalGauge('active_connectors_by_identity', 'active connectors broken down by catalog identity (slug, managed, type)', 'activeConnectorsByIdentity');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
     this.registerGauge('roles_with_capability_in_draft_count', 'number of roles with capability in draft', 'rolesWithCapabilityInDraftCount');
