@@ -36,6 +36,7 @@ Here is an exhaustive list of the collected metrics:
 - The platform unique identifier
 - The platform creation date
 - The number of nodes in the cluster
+- The deployment tags, when configured by the operator (`telemetry_manager:tags` / `TELEMETRY_MANAGER__TAGS` - comma-separated freeform tags such as `saas,eu-west`, normalized to lowercase and sorted before export)
 
 ### Users and accounts
 
@@ -55,6 +56,7 @@ Here is an exhaustive list of the collected metrics:
 
 - The number of active connectors
 - The number of connectors deployed via composer
+- The active connectors broken down by catalog identity: for composer-managed connectors, the catalog contract slug (resolved from the deployed container image); for manually registered connectors, the registered connector name - together with the connector type and a managed/manual flag. No connector configuration is ever collected.
 
 ### Drafts
 

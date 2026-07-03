@@ -4,6 +4,74 @@ import { ValueType } from '@opentelemetry/api';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 
+// One datapoint of a multi-dimensional gauge: a value observed with a set of
+// OTLP datapoint attributes (labels).
+export interface DimensionalGaugeItem {
+  value: number;
+  attributes: Record<string, string>;
+}
+
+// Normalize the deployment tags configured via telemetry_manager:tags
+// (TELEMETRY_MANAGER__TAGS): split on ",", trim, lowercase, drop empties,
+// dedupe, sort, re-join. Shared Filigran contract (same normalization in
+// XTM One and OpenAEV) so an identical tag set always produces the identical
+// string in the analytics warehouse.
+export const normalizeTelemetryTags = (rawTags: string | null | undefined): string => {
+  const tags = new Set(
+    (rawTags ?? '')
+      .split(',')
+      .map((tag) => tag.trim().toLowerCase())
+      .filter((tag) => tag.length > 0),
+  );
+  return Array.from(tags).sort().join(',');
+};
+
+// The connector fields the identity breakdown relies on (structural subset of
+// BasicStoreEntityConnector, kept minimal so the pure computation stays
+// unit-testable without the store type transitive closure).
+export interface ConnectorIdentitySource {
+  catalog_id?: string | null;
+  manager_contract_image?: string | null;
+  name?: string | null;
+  connector_type?: string | null;
+}
+
+// Breakdown of active connectors by catalog identity: composer-managed
+// connectors resolve to the exact catalog contract slug through their stored
+// container image (the user-set connector name is irrelevant). When the
+// stored image is not in the catalog (e.g. removed contract), the datapoint
+// is SKIPPED rather than exporting the raw image string, which could carry a
+// private registry hostname - only catalog slugs ever leave the platform for
+// managed connectors. Manually registered connectors have no catalog
+// reference, so their trimmed/lowercased registered name is the best
+// available identity, flagged managed=false.
+export const computeActiveConnectorsByIdentity = (
+  activeConnectors: ConnectorIdentitySource[],
+  contractsByImage: ReadonlyMap<string, { slug: string }>,
+): DimensionalGaugeItem[] => {
+  const connectorsByIdentity = new Map<string, DimensionalGaugeItem>();
+  activeConnectors.forEach((connector) => {
+    const isManaged = (connector.catalog_id ?? '').length > 0;
+    const slug = isManaged
+      ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ?? '')
+      : (connector.name ?? '').trim().toLowerCase();
+    if (slug.length === 0) {
+      return;
+    }
+    const attributes = { slug, managed: isManaged ? 'true' : 'false', type: connector.connector_type ?? '' };
+    // JSON-encode the key components: manual connector names are freeform, so
+    // a naive separator-joined key could collide across identities.
+    const identityKey = JSON.stringify([attributes.slug, attributes.managed, attributes.type]);
+    const existingItem = connectorsByIdentity.get(identityKey);
+    if (existingItem) {
+      existingItem.value += 1;
+    } else {
+      connectorsByIdentity.set(identityKey, { value: 1, attributes });
+    }
+  });
+  return Array.from(connectorsByIdentity.values());
+};
+
 export class TelemetryMeterManager {
   meterProvider: MeterProvider;
 
@@ -21,6 +89,11 @@ export class TelemetryMeterManager {
 
   // Number of active connectors
   activeConnectorsCount = 0;
+
+  // Active connectors broken down by catalog identity (slug, managed, type).
+  // Composer-managed connectors carry the exact catalog contract slug; manual
+  // connectors fall back to their registered name (managed=false).
+  activeConnectorsByIdentity: DimensionalGaugeItem[] = [];
 
   disseminationCount = 0;
 
@@ -202,6 +275,10 @@ export class TelemetryMeterManager {
     this.activeConnectorsCount = n;
   }
 
+  setActiveConnectorsByIdentity(items: DimensionalGaugeItem[]) {
+    this.activeConnectorsByIdentity = items;
+  }
+
   setDisseminationCount(n: number) {
     this.disseminationCount = n;
   }
@@ -348,6 +425,28 @@ export class TelemetryMeterManager {
     });
   }
 
+  // Multi-dimensional gauge: the observed property holds a list of
+  // DimensionalGaugeItem, each exported as one datapoint with its own OTLP
+  // attributes (labels).
+  registerDimensionalGauge(name: string, description: string, observer: string, opts: {
+    unit?: string;
+    valueType?: ValueType;
+  } = {}) {
+    const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
+    const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
+    const dimensionalGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions);
+    dimensionalGauge.addCallback((observableResult: ObservableResult) => {
+      const items = (this as unknown as Record<string, unknown>)[observer];
+      // Guard against a mis-registered observer (unset property or scalar
+      // field): observing nothing is better than throwing inside the OTLP
+      // collection callback and breaking the whole export cycle.
+      if (!Array.isArray(items)) {
+        return;
+      }
+      (items as DimensionalGaugeItem[]).forEach((item) => observableResult.observe(item.value, item.attributes));
+    });
+  }
+
   registerFiligranTelemetry() {
     // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
@@ -355,6 +454,7 @@ export class TelemetryMeterManager {
     this.registerGauge('total_service_account_count', 'number of service account', 'serviceAccountCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
+    this.registerDimensionalGauge('active_connectors_by_identity', 'active connectors broken down by catalog identity (slug, managed, type)', 'activeConnectorsByIdentity');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
     this.registerGauge('roles_with_capability_in_draft_count', 'number of roles with capability in draft', 'rolesWithCapabilityInDraftCount');
