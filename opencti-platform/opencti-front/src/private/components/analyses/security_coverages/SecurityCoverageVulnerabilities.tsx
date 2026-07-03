@@ -17,6 +17,7 @@ import SecurityCoverageScores from './SecurityCoverageScores';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import Label from '../../../../components/common/label/Label';
+import { buildAverageCoverageMap } from './securityCoverageAggregation';
 
 interface SecurityCoverageVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
@@ -33,6 +34,9 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
     relationship_type: 'has-covered',
     toTypes: ['Vulnerability'],
   };
+
+  const averageScores = buildAverageCoverageMap(securityCoverage.vulnerabilities?.edges || []);
+
   return (
     <div>
       <Label action={(
@@ -48,7 +52,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
         <FieldOrEmpty source={securityCoverage.vulnerabilities?.edges}>
           {securityCoverage.vulnerabilities?.edges?.map((vulnerabilityEdge) => {
             const vulnerability = vulnerabilityEdge.node.to;
-            const coverage = vulnerabilityEdge.node.coverage_information || [];
+            const coverage = averageScores.get(vulnerability?.id ?? '') || [];
             return (
               <ListItem
                 key={vulnerabilityEdge.node.id}

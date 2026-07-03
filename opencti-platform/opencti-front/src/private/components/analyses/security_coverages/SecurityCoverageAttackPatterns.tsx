@@ -27,6 +27,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
+import { buildAverageCoverageMap } from './securityCoverageAggregation';
 
 const securityCoverageAttackPatternsFragment = graphql`
   fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
@@ -116,6 +117,8 @@ const SecurityCoverageAttackPatterns = ({
   }
   const killChains = Array.from(killChainsSet).sort((a, b) => a.localeCompare(b));
   const showKillChainSelector = killChains.length > 1;
+
+  const averageScores = buildAverageCoverageMap(securityCoverage.attPatterns?.edges || []);
 
   const handleKillChainChange = (event: SelectChangeEvent<unknown>) => {
     setSelectedKillChain(event.target.value as string);
@@ -220,7 +223,7 @@ const SecurityCoverageAttackPatterns = ({
             <FieldOrEmpty source={securityCoverage.attPatterns?.edges || []}>
               {(securityCoverage.attPatterns?.edges || []).map((attackPatternEdge) => {
                 const attackPattern = attackPatternEdge.node.to;
-                const coverage = attackPatternEdge.node.coverage_information || [];
+                const coverage = averageScores.get(attackPattern?.id ?? '') || [];
                 return (
                   <ListItem
                     key={attackPatternEdge.node.id}
