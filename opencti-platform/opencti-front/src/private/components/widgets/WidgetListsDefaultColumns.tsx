@@ -454,10 +454,6 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, me
         baseColumns.push(aliasesColumn);
       }
 
-      if (availableWidgetColumns[entityType]) {
-        baseColumns.push(...availableWidgetColumns[entityType]);
-      }
-
       if (metrics) {
         const metricsForEntity = metrics.find((m) => m.entity_type === entityType.toLowerCase());
         if (metricsForEntity?.metrics) {
