@@ -371,6 +371,7 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
         },
         event: {
           entity_id: dataInstanceId,
+          entity_type: baseData.extensions?.[STIX_EXT_OCTI]?.type,
           bundle,
         },
       };
