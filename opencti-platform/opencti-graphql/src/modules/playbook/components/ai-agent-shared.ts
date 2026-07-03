@@ -90,14 +90,18 @@ export const buildAgentSlugOneOf = async (
  * matching local account and any write-back to OpenCTI is attributed to
  * a real, well-known user.
  *
- * When no run-as user is configured, it defaults to the seeded platform
- * admin (``OPENCTI_ADMIN_UUID``) - a real, indexed account with a
- * resolvable email - rather than the in-memory ``AUTOMATION_MANAGER_USER``,
- * whose placeholder email cannot be resolved on the XTM One side.
+ * When no run-as user is configured — or the run-as user cannot be
+ * loaded — it falls back to the seeded platform admin
+ * (``OPENCTI_ADMIN_UUID``), a real account that is always present in
+ * the database with a resolvable email. The in-memory
+ * ``AUTOMATION_MANAGER_USER`` / ``SYSTEM_USER`` identities are NOT
+ * valid fallbacks: their placeholder emails ("AUTOMATION MANAGER" /
+ * "SYSTEM") can never be resolved to an account on the XTM One side,
+ * so a JWT minted for them is guaranteed to be useless.
  *
- * ``AUTOMATION_MANAGER_USER`` remains the last-resort fallback when the
- * target user (explicit run-as or seeded admin) cannot be loaded, so the
- * component degrades gracefully instead of failing.
+ * Returns ``null`` when no resolvable identity exists at all (the
+ * seeded admin itself cannot be loaded) so callers skip the XTM One
+ * interaction instead of sending a dead JWT.
  *
  * Shared by both the agent call itself (``callXtmAgent``) and the
  * intent-binding pre-check (``isAgentBoundToIntent``) so the catalog
@@ -106,27 +110,34 @@ export const buildAgentSlugOneOf = async (
  */
 const resolveAgentJwtUser = async (
   runAsUserId?: string,
-): Promise<{ id: string; user_email: string }> => {
-  const targetUserId = runAsUserId || OPENCTI_ADMIN_UUID;
-  try {
-    const context = executionContext('playbook_components');
-    const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
-      context,
-      SYSTEM_USER,
-      targetUserId,
-      { type: ENTITY_TYPE_USER },
-    );
-    if (user?.user_email) {
-      return { id: user.id, user_email: user.user_email };
+): Promise<{ id: string; user_email: string } | null> => {
+  const candidateIds = runAsUserId && runAsUserId !== OPENCTI_ADMIN_UUID
+    ? [runAsUserId, OPENCTI_ADMIN_UUID]
+    : [OPENCTI_ADMIN_UUID];
+  const context = executionContext('playbook_components');
+  for (const targetUserId of candidateIds) {
+    try {
+      const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
+        context,
+        SYSTEM_USER,
+        targetUserId,
+        { type: ENTITY_TYPE_USER },
+      );
+      if (user?.user_email) {
+        return { id: user.id, user_email: user.user_email };
+      }
+      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found, trying next fallback', { targetUserId });
+    } catch (e: unknown) {
+      logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve JWT user, trying next fallback', {
+        targetUserId,
+        cause: (e as Error).message,
+      });
     }
-    logApp.warn('[PLAYBOOK AI AGENT] Run-as user not found, falling back to automation user', { runAsUserId: targetUserId });
-  } catch (e: unknown) {
-    logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve run-as user, falling back to automation user', {
-      runAsUserId: targetUserId,
-      cause: (e as Error).message,
-    });
   }
-  return AUTOMATION_MANAGER_USER;
+  logApp.error('[PLAYBOOK AI AGENT] No resolvable JWT identity (seeded admin cannot be loaded), skipping XTM One interaction', {
+    runAsUserId,
+  });
+  return null;
 };
 
 /**
@@ -158,6 +169,11 @@ export const isAgentBoundToIntent = async (
   if (!slug) return false;
   try {
     const jwtUser = await resolveAgentJwtUser(runAsUserId);
+    if (!jwtUser) {
+      // No resolvable identity — the agent call itself could not run
+      // either, so fail closed without hitting XTM One.
+      return false;
+    }
     // The context user is only used to mint the outbound JWT — spread the
     // automation user to satisfy the AuthUser shape, but carry the resolved
     // identity so the catalog lookup matches the subsequent agent call.
@@ -348,6 +364,9 @@ export const sanitizeDefinitionRunAs = async (
  * ``resolveAgentJwtUser``) so XTM One - and any subsequent write-back to
  * OpenCTI - sees the agent call as coming from that real account. When no
  * run-as user is configured it defaults to the seeded platform admin.
+ * When no resolvable identity exists at all, the call is skipped (a JWT
+ * minted for an in-memory placeholder user can never be resolved by
+ * XTM One anyway).
  */
 export const callXtmAgent = async (
   agentSlug: string,
@@ -361,6 +380,9 @@ export const callXtmAgent = async (
   }
   try {
     const jwtUser = await resolveAgentJwtUser(runAsUserId);
+    if (!jwtUser) {
+      return null;
+    }
     const jwt = await issueXtmJwt(jwtUser, xtmOneUrl);
     const httpClient = getHttpClient({
       baseURL: xtmOneUrl,

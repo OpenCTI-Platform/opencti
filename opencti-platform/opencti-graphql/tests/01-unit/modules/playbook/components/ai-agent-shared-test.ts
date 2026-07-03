@@ -224,15 +224,27 @@ describe('ai-agent-shared', () => {
       expect(passedContext.user?.user_email).toBe('analyst@org.test');
     });
 
-    it('should fall back to AUTOMATION_MANAGER_USER when the run-as user cannot be loaded', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+    it('should fall back to the seeded admin when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        return null;
+      }) as any);
       vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([]);
 
       await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', 'missing-user');
 
       const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
-      expect(passedContext.user?.id).toBe(AUTOMATION_MANAGER_USER.id);
-      expect(passedContext.user?.user_email).toBe(AUTOMATION_MANAGER_USER.user_email);
+      expect(passedContext.user?.id).toBe(OPENCTI_ADMIN_UUID);
+      expect(passedContext.user?.user_email).toBe('admin@opencti.io');
+    });
+
+    it('should fail closed (no catalog call) when neither the run-as user nor the seeded admin can be resolved', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', 'missing-user');
+
+      expect(result).toBe(false);
+      expect(xtmOneClient.listAgentsForIntent).not.toHaveBeenCalled();
     });
 
     it('should return false when the slug is NOT in the intent catalog (defense-in-depth check fails closed)', async () => {
@@ -492,34 +504,55 @@ describe('ai-agent-shared', () => {
       expect(issueXtmJwt).toHaveBeenCalledWith({ id: 'user-7', user_email: 'analyst@org.test' }, 'https://xtm-one.test');
     });
 
-    it('should fall back to AUTOMATION_MANAGER_USER when the run-as user cannot be loaded', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+    it('should fall back to the seeded admin when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        return null;
+      }) as any);
       const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
       await callXtmAgent('agent-slug', 'content', 'missing-user');
 
-      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
+      expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
     });
 
-    it('should fall back to AUTOMATION_MANAGER_USER when the resolved user has no email', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-9' } as any);
+    it('should fall back to the seeded admin when the resolved user has no email', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        return { id: 'user-9' };
+      }) as any);
       const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
       await callXtmAgent('agent-slug', 'content', 'user-9');
 
-      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
+      expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
     });
 
-    it('should fall back to AUTOMATION_MANAGER_USER when resolving the run-as user throws', async () => {
-      vi.mocked(internalLoadById).mockRejectedValue(new Error('ES down'));
+    it('should fall back to the seeded admin when resolving the run-as user throws', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        throw new Error('ES down');
+      }) as any);
       const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
       await callXtmAgent('agent-slug', 'content', 'user-x');
 
-      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
+      expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
+    });
+
+    it('should skip the call (return null, no JWT minted) when neither the run-as user nor the seeded admin can be resolved', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await callXtmAgent('agent-slug', 'content', 'missing-user');
+
+      expect(result).toBeNull();
+      expect(issueXtmJwt).not.toHaveBeenCalled();
+      expect(post).not.toHaveBeenCalled();
     });
 
     it('should return null when the assistant content field is missing', async () => {
