@@ -2,12 +2,13 @@ import { Readable } from 'node:stream';
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { addIngestionJson, deleteIngestionJson, ingestionJsonEditField, testJsonIngestionMapping } from '../../../../src/modules/ingestion/ingestion-json-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { type EditInput, IngestionAuthType, type IngestionJsonAddInput } from '../../../../src/generated/graphql';
+import { type EditInput, IngestionAuthType, type IngestionJsonAddInput, JsonMapperRepresentationType } from '../../../../src/generated/graphql';
 import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
 import type { BasicStoreEntityIngestionJson } from '../../../../src/modules/ingestion/ingestion-types';
 import { createJsonMapper, deleteJsonMapper, jsonMapperTest } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
 import type { FileUploadData } from '../../../../src/database/file-storage';
 import { regexpTestData, representationsFormulaMatrix, representationsRegExpr, stixBundleDataFormulaMatrix } from './ingestionManager-testData/ingestion-json-data';
+import { ENTITY_TYPE_TOOL } from '../../../../src/schema/stixDomainObject';
 
 describe('Ingestion Json domain - Deny list coverage', async () => {
   let myJsonFeed: BasicStoreEntityIngestionJson;
@@ -155,5 +156,48 @@ describe('Ingestion Json domain - complex path coverage', async () => {
 
     // "No reference available." -> no match, returns original description
     expect(sliver.description).toBe('Open-source adversary emulation framework. No reference available.');
+  });
+
+  it('should stop jsonMapperTest parsing at 50 objects when input contains more records', async () => {
+    const representations = [{
+      id: 'tool-representation-limit-50',
+      type: JsonMapperRepresentationType.Entity,
+      target: {
+        entity_type: ENTITY_TYPE_TOOL,
+        path: '$.objects[?(@.type == "tool")]',
+      },
+      attributes: [{
+        mode: 'simple',
+        key: 'name',
+        attr_path: { path: '$.name' },
+      }],
+    }];
+
+    const toolObjects = Array.from({ length: 60 }, (_, index) => ({
+      type: 'tool',
+      name: `tool-${index + 1}`,
+    }));
+
+    const configuration = JSON.stringify({
+      name: 'Mapper test limit to 50',
+      representations,
+    });
+
+    const fileUpload: Promise<FileUploadData> = Promise.resolve({
+      createReadStream: () => Readable.from(Buffer.from(JSON.stringify({ objects: toolObjects }))),
+      filename: 'limit-50-test.json',
+      mimeType: 'application/json',
+    });
+
+    const result = await jsonMapperTest(testContext, ADMIN_USER, configuration, fileUpload);
+    const parsedObjects = JSON.parse(result.objects);
+
+    expect(toolObjects.length).toBeGreaterThan(50);
+    expect(parsedObjects).toHaveLength(50);
+    expect(result.nbEntities).toBe(50);
+    expect(result.nbRelationships).toBe(0);
+    expect(parsedObjects[0].name).toBe('tool-1');
+    expect(parsedObjects[49].name).toBe('tool-50');
+    expect(parsedObjects.some((o: any) => o.name === 'tool-51')).toBe(false);
   });
 });
