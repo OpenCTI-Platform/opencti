@@ -164,15 +164,13 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
                 paginationOptionsForUpdater={paginationOptionsForUserEdition}
                 storageKey={LOCAL_STORAGE_KEY}
               >
-                <SearchInput
-                  variant="thin"
-                  onSubmit={helpers.handleSearch}
-                  keyword={searchTerm}
-                  sx={{
-                    marginTop: 2,
-                    marginBottom: 2,
-                  }}
-                />
+                <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+                  <SearchInput
+                    variant="thin"
+                    onSubmit={helpers.handleSearch}
+                    keyword={searchTerm}
+                  />
+                </Box>
               </GroupEditionUsers>
             </React.Suspense>
           </Box>
