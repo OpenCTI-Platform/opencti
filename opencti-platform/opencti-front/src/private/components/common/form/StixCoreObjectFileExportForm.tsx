@@ -67,12 +67,11 @@ export interface StixCoreObjectFileExportFormProps {
   templates?: FieldOption[];
   fileOptions?: FileOption[];
   defaultFileMarkings?: FieldOption[];
+  defaultTemplate?: FieldOption;
   defaultValues?: {
     connector: string;
     format: string;
-    template?: string;
     fileToExport?: string;
-    fintelDesign?: FintelDesignFieldOption;
   };
   scoName?: string;
   handleOpenAskAi: () => void;
@@ -112,6 +111,7 @@ const StixCoreObjectFileExportForm = ({
   fileOptions,
   defaultFileMarkings,
   defaultValues,
+  defaultTemplate,
   scoName,
   handleOpenAskAi,
   instanceType,
@@ -155,7 +155,6 @@ const StixCoreObjectFileExportForm = ({
     }),
   });
   const connectorScopes = Array.from(new Set(connectors.flatMap((c) => c.connectorScope ?? [])));
-  let defaultTemplate = templates?.find((t) => t.value === defaultValues?.template);
   if (defaultValues?.connector === BUILT_IN_FROM_TEMPLATE.value && !defaultTemplate) {
     [defaultTemplate] = templates ?? [];
   }
