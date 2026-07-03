@@ -6,7 +6,6 @@ import { findForceRunOperations, hasOperationBeenExecuted, markOperationAsExecut
 import { type SanityOperation, sanityOperationList } from '../modules/dataSanity/dataSanity-operations';
 
 const DATA_SANITY_MANAGER_ID = 'DATA_SANITY_MANAGER';
-const DATA_SANITY_MANAGER_LABEL = 'Data sanity manager';
 const DATA_SANITY_MANAGER_CONTEXT = 'data_sanity_manager';
 
 const DATA_SANITY_MANAGER_ENABLED = booleanConf('data_sanity_manager:enabled', true);
