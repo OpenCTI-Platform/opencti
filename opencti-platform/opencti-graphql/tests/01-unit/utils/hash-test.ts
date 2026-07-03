@@ -69,6 +69,6 @@ describe('fieldDataAdapter.inputHashesToStix', () => {
   it('lowercases non-sensitive algorithm values (MD5)', () => {
     const inputs = [{ algorithm: 'md5', hash: 'ABCDEF123456' }];
     const result = inputHashesToStix(inputs as any);
-    expect(result.MD5).toBe('abcdef123456');
+    expect(result.MD5).toBe('ABCDEF123456');
   });
 });

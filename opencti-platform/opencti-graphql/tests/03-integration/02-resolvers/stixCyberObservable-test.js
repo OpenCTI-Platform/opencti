@@ -571,6 +571,10 @@ describe('StixCyberObservable resolver promote to indicator behavior', () => {
             algorithm: 'SHA-256',
             hash: 'BFA02EA1994B73DCA866EA3B6596340FE00063D19EAB5957C7D8E6A5FA10599A',
           },
+          {
+            algorithm: 'SHA-512',
+            hash: '0ECF269F1805D6CCC61B247BA7AADD66771B86554509536BB90988B6B0F09521E84167496FD6B9BB3153AE25AF6D461C43FAAE23C75CA4FA050B41D5133A54BA',
+          },
         ],
       },
     };
@@ -579,7 +583,7 @@ describe('StixCyberObservable resolver promote to indicator behavior', () => {
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
     expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('BFA02EA1994B73DCA866EA3B6596340FE00063D19EAB5957C7D8E6A5FA10599A');
+    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('0ECF269F1805D6CCC61B247BA7AADD66771B86554509536BB90988B6B0F09521E84167496FD6B9BB3153AE25AF6D461C43FAAE23C75CA4FA050B41D5133A54BA');
   });
 
   it('should promote observable to indicator', async () => { // + 1 create
