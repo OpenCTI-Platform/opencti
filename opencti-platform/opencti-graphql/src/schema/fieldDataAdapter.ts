@@ -31,7 +31,7 @@ export const inputHashesToStix = (data: Array<HashInput>) => {
   const inputs = Array.isArray(data) ? data : [data];
   const convertedInputs = inputs.map((d) => {
     const hashAlgorithm = d.algorithm.toUpperCase().trim();
-    const hashValue = SENSITIVE_HASHES.includes(hashAlgorithm) ? d.hash : d.hash.toLowerCase();
+    const hashValue = !SENSITIVE_HASHES.includes(hashAlgorithm) ? d.hash.toLowerCase() : d.hash;
     return [hashAlgorithm, hashValue.trim()] as KeyValuePair<string, string>;
   });
   return R.fromPairs(convertedInputs);
