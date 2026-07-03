@@ -1,12 +1,8 @@
 import Typography from '@mui/material/Typography';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../components/i18n';
 import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
-import { DASHBOARD_RELATIVE_DATE_OPTIONS } from '../../../components/dashboard/dashboard-time-filter-options';
+import DashboardRelativeDateSelect from '../../../components/dashboard/DashboardRelativeDateSelect';
 import { buildDate } from '../../../utils/Time';
 import type { ReactNode } from 'react';
 
@@ -50,29 +46,11 @@ const PublicDashboardHeader = ({
           {title}
         </Typography>
 
-        <FormControl
-          variant="outlined"
-          size="small"
-          style={{ width: 200 }}
-        >
-          <InputLabel id="relative" variant="outlined">
-            {t_i18n('Relative time')}
-          </InputLabel>
-          <Select
-            labelId="relative"
-            label={t_i18n('Relative time')}
-            value={relativeDate ?? ''}
-            onChange={(event) => onChangeRelativeDate(event.target.value)}
-            variant="outlined"
-            disabled
-          >
-            {DASHBOARD_RELATIVE_DATE_OPTIONS.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {t_i18n(option.label)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <DashboardRelativeDateSelect
+          value={relativeDate ?? ''}
+          onChange={onChangeRelativeDate}
+          disabled
+        />
         <DatePicker
           disabled
           value={buildDate(startDate)}

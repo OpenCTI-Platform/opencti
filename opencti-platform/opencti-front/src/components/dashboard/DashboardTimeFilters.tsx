@@ -1,8 +1,4 @@
 import React from 'react';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import DatePicker from '@common/input/DatePicker';
 import { parse, buildDate } from '../../utils/Time';
 import { useFormatter } from '../i18n';
@@ -11,7 +7,7 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '../Theme';
 import { DashboardConfig } from './dashboard-types';
 import { EXPORT_KEEP_CLASS, EXPORT_REMOVE_CLASS } from '../../utils/Image';
-import { DASHBOARD_RELATIVE_DATE_OPTIONS } from './dashboard-time-filter-options';
+import DashboardRelativeDateSelect from './DashboardRelativeDateSelect';
 
 interface DashboardTimeFiltersProps {
   config?: DashboardConfig;
@@ -29,8 +25,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const handleChangeRelativeDate = (event: SelectChangeEvent) => {
-    const { value } = event.target;
+  const handleChangeRelativeDate = (value: string) => {
     handleDateChange('relativeDate', value);
   };
 
@@ -41,40 +36,19 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
 
   return (
     <Stack direction="row" gap={1}>
-      <FormControl
-        size="small"
-        style={{ width: 194 }}
-        variant="outlined"
-        className={config.relativeDate ? EXPORT_KEEP_CLASS : EXPORT_REMOVE_CLASS}
-      >
-        <InputLabel
-          id="relative"
-          variant="outlined"
-        >
-          {t_i18n('Relative time')}
-        </InputLabel>
-        <Select
-          labelId="relative"
-          value={config.relativeDate ?? ''}
-          onChange={handleChangeRelativeDate}
-          label={t_i18n('Relative time')}
-          variant="outlined"
-          className={config.relativeDate ? EXPORT_KEEP_CLASS : undefined}
-          sx={{
-            '& fieldset': {
-              border: config.relativeDate
-                ? `1px solid ${theme.palette.border.secondary}`
-                : undefined,
-            },
-          }}
-        >
-          {DASHBOARD_RELATIVE_DATE_OPTIONS.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {t_i18n(option.label)}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <DashboardRelativeDateSelect
+        value={config.relativeDate ?? ''}
+        onChange={handleChangeRelativeDate}
+        formControlClassName={config.relativeDate ? EXPORT_KEEP_CLASS : EXPORT_REMOVE_CLASS}
+        selectClassName={config.relativeDate ? EXPORT_KEEP_CLASS : undefined}
+        selectSx={{
+          '& fieldset': {
+            border: config.relativeDate
+              ? `1px solid ${theme.palette.border.secondary}`
+              : undefined,
+          },
+        }}
+      />
       <DatePicker
         value={buildDate(config.startDate)}
         label={t_i18n('Start date')}
