@@ -1,10 +1,11 @@
 const { spawn } = require('child_process');
 const chokidar = require('chokidar');
 
+// Only watch directories that contain files affecting graphql-codegen output.
 const WATCH_PATHS = [
   'src',
+  'config/schema',
   'builder/schema',
-  'script',
 ];
 
 const IGNORED_PATTERNS = [
@@ -17,8 +18,12 @@ const IGNORED_PATTERNS = [
   '**/*.tmp',
 ];
 
+// Only extensions that can change the graphql-codegen output:
+//   .graphql/.gql — schema definitions read by graphql-codegen
+//   .js           — builder/schema/ scripts that generate the schema
+// .ts files are TypeScript implementation — they never affect the schema.
 const WATCHED_EXTENSIONS = new Set([
-  '.js', '.mjs', '.cjs', '.ts', '.mts', '.cts', '.graphql', '.gql', '.json', '.yaml', '.yml',
+  '.graphql', '.gql', '.js',
 ]);
 
 let isBuilding = false;
