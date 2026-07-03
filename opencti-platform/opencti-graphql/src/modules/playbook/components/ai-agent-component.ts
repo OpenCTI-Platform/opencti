@@ -177,8 +177,11 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
     // covers saves that go through the schema resolver — a crafted
     // playbook update or an agent that was unbound after save would
     // otherwise let us run an arbitrary XTM One agent under the
-    // platform automation identity.
-    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_TRANSFORM_INTENT, agent_slug))) {
+    // configured run-as identity. The check runs as the SAME identity
+    // as the agent call so the per-user XTM One catalog visibility
+    // matches what the call will actually see.
+    const runAsUserId = resolveRunAsUserId(run_as);
+    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_TRANSFORM_INTENT, agent_slug, runAsUserId))) {
       logApp.warn('[PLAYBOOK AI AGENT] Configured agent is not bound to the transformer intent, returning bundle unmodified', {
         agentSlug: agent_slug,
         intent: PLAYBOOK_AI_AGENT_TRANSFORM_INTENT,
@@ -186,7 +189,7 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
       return { output_port: 'unmodified', bundle };
     }
     const content = buildAgentMessageContent(bundle, prompt);
-    const rawResponse = await callXtmAgent(agent_slug, content, resolveRunAsUserId(run_as));
+    const rawResponse = await callXtmAgent(agent_slug, content, runAsUserId);
     if (rawResponse === null) {
       return { output_port: 'unmodified', bundle };
     }

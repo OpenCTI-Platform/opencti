@@ -103,8 +103,11 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
     // validation only covers saves that go through the schema resolver
     // — a crafted playbook update or an agent that was unbound after
     // save would otherwise let us run an arbitrary XTM One agent under
-    // the platform automation identity.
-    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug))) {
+    // the configured run-as identity. The check runs as the SAME
+    // identity as the agent call so the per-user XTM One catalog
+    // visibility matches what the call will actually see.
+    const runAsUserId = resolveRunAsUserId(run_as);
+    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug, runAsUserId))) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] Configured agent is not bound to the consumer intent, dropping playbook step', {
         playbookId,
         agentSlug: agent_slug,
@@ -113,7 +116,7 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     const content = buildAgentMessageContent(bundle, prompt);
-    const rawResponse = await callXtmAgent(agent_slug, content, resolveRunAsUserId(run_as));
+    const rawResponse = await callXtmAgent(agent_slug, content, runAsUserId);
     if (rawResponse === null) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] Agent call did not complete', {
         playbookId,

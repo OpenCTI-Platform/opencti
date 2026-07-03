@@ -137,7 +137,7 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-not-bound-to-transformer' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-not-bound-to-transformer');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-not-bound-to-transformer', undefined);
       expect(callXtmAgent).not.toHaveBeenCalled();
       expect(result.output_port).toBe('unmodified');
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
@@ -150,7 +150,7 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x', undefined);
     });
 
     it('should route to `unmodified` when XTM One call fails (callXtmAgent returns null)', async () => {
@@ -165,7 +165,7 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
     });
 
-    it('should resolve the configured run-as user and forward it to the agent call', async () => {
+    it('should resolve the configured run-as user and forward it to both the binding check and the agent call', async () => {
       vi.mocked(resolveRunAsUserId).mockReturnValue('run-as-user-id');
       vi.mocked(callXtmAgent).mockResolvedValue(null);
 
@@ -173,6 +173,7 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x', 'run-as-user-id');
       expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', 'run-as-user-id');
     });
 

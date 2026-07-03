@@ -113,7 +113,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-not-bound-to-consumer' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-not-bound-to-consumer');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-not-bound-to-consumer', undefined);
       expect(callXtmAgent).not.toHaveBeenCalled();
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
@@ -127,7 +127,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-x');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-x', undefined);
     });
 
     it('should call the agent and still terminate cleanly (bundle tracked) when the agent responds', async () => {
@@ -157,7 +157,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       expect(result.forceBundleTracking).toBe(true);
     });
 
-    it('should resolve the configured run-as user and forward it to the agent call', async () => {
+    it('should resolve the configured run-as user and forward it to both the binding check and the agent call', async () => {
       vi.mocked(resolveRunAsUserId).mockReturnValue('run-as-user-id');
       vi.mocked(callXtmAgent).mockResolvedValue('reply');
 
@@ -165,6 +165,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-x', 'run-as-user-id');
       expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', 'run-as-user-id');
     });
   });

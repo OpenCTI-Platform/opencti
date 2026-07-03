@@ -164,6 +164,13 @@ describe('ai-agent-shared', () => {
   });
 
   describe('isAgentBoundToIntent', () => {
+    const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
+
+    beforeEach(() => {
+      // No run-as user configured by default -> the seeded admin is resolved.
+      vi.mocked(internalLoadById).mockResolvedValue(ADMIN_JWT_USER as any);
+    });
+
     it('should return false (without calling XTM One) when the slug is empty', async () => {
       const result = await isAgentBoundToIntent('cti.stix_transformer', '');
       expect(result).toBe(false);
@@ -179,8 +186,53 @@ describe('ai-agent-shared', () => {
       const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-b');
 
       expect(result).toBe(true);
+    });
+
+    it('should query the catalog as the seeded admin when no run-as user is configured (same identity as the agent call)', async () => {
+      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([]);
+
+      await isAgentBoundToIntent('cti.stix_transformer', 'agent-a');
+
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        OPENCTI_ADMIN_UUID,
+        { type: ENTITY_TYPE_USER },
+      );
       const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
-      expect(passedContext.user).toBe(AUTOMATION_MANAGER_USER);
+      expect(passedContext.user?.id).toBe(OPENCTI_ADMIN_UUID);
+      expect(passedContext.user?.user_email).toBe('admin@opencti.io');
+    });
+
+    it('should query the catalog as the resolved run-as user when a runAsUserId is provided', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-7', user_email: 'analyst@org.test' } as any);
+      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([
+        { agent_id: '1', agent_name: 'A', agent_slug: 'agent-a', agent_description: null, priority: 0 },
+      ]);
+
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', 'user-7');
+
+      expect(result).toBe(true);
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        'user-7',
+        { type: ENTITY_TYPE_USER },
+      );
+      const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
+      expect(passedContext.user?.id).toBe('user-7');
+      expect(passedContext.user?.user_email).toBe('analyst@org.test');
+    });
+
+    it('should fall back to AUTOMATION_MANAGER_USER when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([]);
+
+      await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', 'missing-user');
+
+      const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
+      expect(passedContext.user?.id).toBe(AUTOMATION_MANAGER_USER.id);
+      expect(passedContext.user?.user_email).toBe(AUTOMATION_MANAGER_USER.user_email);
     });
 
     it('should return false when the slug is NOT in the intent catalog (defense-in-depth check fails closed)', async () => {

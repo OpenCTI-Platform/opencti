@@ -84,13 +84,67 @@ export const buildAgentSlugOneOf = async (
 };
 
 /**
+ * Resolve the identity whose email is embedded in the cross-platform JWT
+ * sent to XTM One. When the component is configured with an explicit
+ * ``run_as`` user, the JWT is minted for that user so XTM One resolves a
+ * matching local account and any write-back to OpenCTI is attributed to
+ * a real, well-known user.
+ *
+ * When no run-as user is configured, it defaults to the seeded platform
+ * admin (``OPENCTI_ADMIN_UUID``) - a real, indexed account with a
+ * resolvable email - rather than the in-memory ``AUTOMATION_MANAGER_USER``,
+ * whose placeholder email cannot be resolved on the XTM One side.
+ *
+ * ``AUTOMATION_MANAGER_USER`` remains the last-resort fallback when the
+ * target user (explicit run-as or seeded admin) cannot be loaded, so the
+ * component degrades gracefully instead of failing.
+ *
+ * Shared by both the agent call itself (``callXtmAgent``) and the
+ * intent-binding pre-check (``isAgentBoundToIntent``) so the catalog
+ * visibility check and the actual invocation always run as the SAME
+ * XTM One identity.
+ */
+const resolveAgentJwtUser = async (
+  runAsUserId?: string,
+): Promise<{ id: string; user_email: string }> => {
+  const targetUserId = runAsUserId || OPENCTI_ADMIN_UUID;
+  try {
+    const context = executionContext('playbook_components');
+    const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
+      context,
+      SYSTEM_USER,
+      targetUserId,
+      { type: ENTITY_TYPE_USER },
+    );
+    if (user?.user_email) {
+      return { id: user.id, user_email: user.user_email };
+    }
+    logApp.warn('[PLAYBOOK AI AGENT] Run-as user not found, falling back to automation user', { runAsUserId: targetUserId });
+  } catch (e: unknown) {
+    logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve run-as user, falling back to automation user', {
+      runAsUserId: targetUserId,
+      cause: (e as Error).message,
+    });
+  }
+  return AUTOMATION_MANAGER_USER;
+};
+
+/**
  * Runtime defense in depth: re-check that ``slug`` is currently bound to
  * the expected ``intent`` in the XTM One catalog before the executor
  * actually invokes the agent. AJV validation at playbook save time only
  * guards saves that go through the schema resolver — direct DB writes,
  * future bulk-import paths, or an agent that gets unbound from the
  * intent after save would otherwise let the executor run an arbitrary
- * agent under the platform-internal ``AUTOMATION_MANAGER_USER`` JWT.
+ * agent under the caller's JWT.
+ *
+ * The catalog lookup runs as the SAME identity that ``callXtmAgent``
+ * will mint the JWT for (resolved run-as user, defaulting to the seeded
+ * platform admin — see ``resolveAgentJwtUser``). The XTM One catalog is
+ * scoped per user, so checking with any other identity (previously the
+ * placeholder ``AUTOMATION_MANAGER_USER``) makes the check fail closed
+ * for agents that are bound to the intent but only visible to the
+ * run-as user (e.g. group-shared, non-company-managed agents).
  *
  * Returns ``false`` (and logs a warning) on catalog failure / unknown
  * slug, so the executor falls through to its safe terminal branch
@@ -99,10 +153,19 @@ export const buildAgentSlugOneOf = async (
 export const isAgentBoundToIntent = async (
   intent: string,
   slug: string,
+  runAsUserId?: string,
 ): Promise<boolean> => {
   if (!slug) return false;
   try {
-    const agents = await xtmOneClient.listAgentsForIntent(buildPlaybookAutomationContext(), intent);
+    const jwtUser = await resolveAgentJwtUser(runAsUserId);
+    // The context user is only used to mint the outbound JWT — spread the
+    // automation user to satisfy the AuthUser shape, but carry the resolved
+    // identity so the catalog lookup matches the subsequent agent call.
+    const context: AuthContext = {
+      ...buildPlaybookAutomationContext(),
+      user: { ...AUTOMATION_MANAGER_USER, id: jwtUser.id, user_email: jwtUser.user_email },
+    };
+    const agents = await xtmOneClient.listAgentsForIntent(context, intent);
     return (agents ?? []).some((a) => a.agent_slug === slug);
   } catch (e: unknown) {
     logApp.warn('[PLAYBOOK AI AGENT] Failed to validate agent intent binding', {
@@ -271,47 +334,6 @@ export const sanitizeDefinitionRunAs = async (
     return true;
   }));
   return mutations.some((changed) => changed) ? JSON.stringify(definition) : playbookDefinition;
-};
-
-/**
- * Resolve the identity whose email is embedded in the cross-platform JWT
- * sent to XTM One. When the component is configured with an explicit
- * ``run_as`` user, the JWT is minted for that user so XTM One resolves a
- * matching local account and any write-back to OpenCTI is attributed to
- * a real, well-known user.
- *
- * When no run-as user is configured, it defaults to the seeded platform
- * admin (``OPENCTI_ADMIN_UUID``) - a real, indexed account with a
- * resolvable email - rather than the in-memory ``AUTOMATION_MANAGER_USER``,
- * whose placeholder email cannot be resolved on the XTM One side.
- *
- * ``AUTOMATION_MANAGER_USER`` remains the last-resort fallback when the
- * target user (explicit run-as or seeded admin) cannot be loaded, so the
- * component degrades gracefully instead of failing.
- */
-const resolveAgentJwtUser = async (
-  runAsUserId?: string,
-): Promise<{ id: string; user_email: string }> => {
-  const targetUserId = runAsUserId || OPENCTI_ADMIN_UUID;
-  try {
-    const context = executionContext('playbook_components');
-    const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
-      context,
-      SYSTEM_USER,
-      targetUserId,
-      { type: ENTITY_TYPE_USER },
-    );
-    if (user?.user_email) {
-      return { id: user.id, user_email: user.user_email };
-    }
-    logApp.warn('[PLAYBOOK AI AGENT] Run-as user not found, falling back to automation user', { runAsUserId: targetUserId });
-  } catch (e: unknown) {
-    logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve run-as user, falling back to automation user', {
-      runAsUserId: targetUserId,
-      cause: (e as Error).message,
-    });
-  }
-  return AUTOMATION_MANAGER_USER;
 };
 
 /**
