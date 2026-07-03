@@ -528,6 +528,60 @@ describe('StixCyberObservable resolver promote to indicator behavior', () => {
     expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('0ecf269f1805d6ccc61b247ba7aadd66771b86554509536bb90988b6b0f09521e84167496fd6b9bb3153ae25af6d461c43faae23c75ca4fa050b41d5133a54ba');
     stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
+
+  it('should stixCyberObservable created keeping the original case sensitivity', async () => { // 1 create
+    const CREATE_QUERY = gql`
+      mutation StixCyberObservableCreationMutation(
+        $type: String!
+        $x_opencti_score: Int
+        $x_opencti_description: String
+        $Artifact: ArtifactAddInput
+      ) {
+        stixCyberObservableAdd(
+          type: $type, 
+          x_opencti_score: $x_opencti_score, 
+          x_opencti_description: $x_opencti_description, 
+          Artifact: $Artifact
+        ) {
+          id
+          standard_id
+          observable_value
+          ... on Software {
+            name
+          }
+        }
+      }
+    `;
+    // Create the stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'Artifact',
+      x_opencti_score: 50,
+      x_opencti_description: 'Artifact uploaded',
+      Artifact: {
+        decryption_key: '',
+        encryption_algorithm: '',
+        mime_type: 'application/xml',
+        payload_bin: '',
+        url: '',
+        x_opencti_additional_names: [
+          '[Content_Types].xml',
+        ],
+        hashes: [
+          {
+            algorithm: 'SHA-256',
+            hash: 'BFA02EA1994B73DCA866EA3B6596340FE00063D19EAB5957C7D8E6A5FA10599A',
+          },
+        ],
+      },
+    };
+    const stixCyberObservable = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('BFA02EA1994B73DCA866EA3B6596340FE00063D19EAB5957C7D8E6A5FA10599A');
+  });
+
   it('should promote observable to indicator', async () => { // + 1 create
     const PROMOTE_QUERY = gql`
       mutation StixCyberObservableIndicatorsPromoteMutation(
