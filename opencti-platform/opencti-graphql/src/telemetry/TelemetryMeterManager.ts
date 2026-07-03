@@ -26,6 +26,50 @@ export const normalizeTelemetryTags = (rawTags: string | null | undefined): stri
   return Array.from(tags).sort().join(',');
 };
 
+// The connector fields the identity breakdown relies on (structural subset of
+// BasicStoreEntityConnector, kept minimal so the pure computation stays
+// unit-testable without the store type transitive closure).
+export interface ConnectorIdentitySource {
+  catalog_id?: string | null;
+  manager_contract_image?: string | null;
+  name?: string | null;
+  connector_type?: string | null;
+}
+
+// Breakdown of active connectors by catalog identity: composer-managed
+// connectors resolve to the exact catalog contract slug through their stored
+// container image (the user-set connector name is irrelevant). When the
+// stored image is not in the catalog (e.g. removed contract), the datapoint
+// is SKIPPED rather than exporting the raw image string, which could carry a
+// private registry hostname - only catalog slugs ever leave the platform for
+// managed connectors. Manually registered connectors have no catalog
+// reference, so their trimmed/lowercased registered name is the best
+// available identity, flagged managed=false.
+export const computeActiveConnectorsByIdentity = (
+  activeConnectors: ConnectorIdentitySource[],
+  contractsByImage: ReadonlyMap<string, { slug: string }>,
+): DimensionalGaugeItem[] => {
+  const connectorsByIdentity = new Map<string, DimensionalGaugeItem>();
+  activeConnectors.forEach((connector) => {
+    const isManaged = (connector.catalog_id ?? '').length > 0;
+    const slug = isManaged
+      ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ?? '')
+      : (connector.name ?? '').trim().toLowerCase();
+    if (slug.length === 0) {
+      return;
+    }
+    const attributes = { slug, managed: isManaged ? 'true' : 'false', type: connector.connector_type ?? '' };
+    const identityKey = `${attributes.slug}|${attributes.managed}|${attributes.type}`;
+    const existingItem = connectorsByIdentity.get(identityKey);
+    if (existingItem) {
+      existingItem.value += 1;
+    } else {
+      connectorsByIdentity.set(identityKey, { value: 1, attributes });
+    }
+  });
+  return Array.from(connectorsByIdentity.values());
+};
+
 export class TelemetryMeterManager {
   meterProvider: MeterProvider;
 
