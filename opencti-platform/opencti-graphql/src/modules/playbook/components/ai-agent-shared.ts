@@ -136,11 +136,11 @@ export const resolveAgentJwtUser = async (
       if (user?.user_email) {
         return { id: user.id, user_email: user.user_email };
       }
-      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found, trying next fallback', { targetUserId });
+      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found or has no resolvable email, trying next fallback', { targetUserId, userFound: !!user });
     } catch (e: unknown) {
       logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve JWT user, trying next fallback', {
         targetUserId,
-        cause: (e as Error).message,
+        cause: e instanceof Error ? e.message : String(e),
       });
     }
   }
