@@ -168,10 +168,11 @@ export const resolveAgentJwtUser = async (
  * for agents that are bound to the intent but only visible to the
  * run-as user (e.g. group-shared, non-company-managed agents).
  *
- * Returns ``false`` (and logs a warning) on catalog failure / unknown
- * slug / unresolvable identity (``jwtUser`` null), so the executor
- * falls through to its safe terminal branch (``unmodified`` /
- * fire-and-wait) instead of calling the agent.
+ * Returns ``false`` on catalog failure (logged here as a warning),
+ * unknown slug, or unresolvable identity (``jwtUser`` null — already
+ * logged by ``resolveAgentJwtUser``). In every case the executor logs
+ * the skip and falls through to its safe terminal branch
+ * (``unmodified`` / fire-and-wait) instead of calling the agent.
  */
 export const isAgentBoundToIntent = async (
   intent: string,
@@ -198,7 +199,7 @@ export const isAgentBoundToIntent = async (
     logApp.warn('[PLAYBOOK AI AGENT] Failed to validate agent intent binding', {
       intent,
       slug,
-      cause: (e as Error).message,
+      cause: e instanceof Error ? e.message : String(e),
     });
     return false;
   }
