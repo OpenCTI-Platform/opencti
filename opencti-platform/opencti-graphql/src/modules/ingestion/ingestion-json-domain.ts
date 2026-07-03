@@ -147,7 +147,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   };
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const ingestionUser = ingestion.user_id ? platformUsers.get(ingestion.user_id) : null;
-  let objects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed);
+  let objects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed, maxResults);
   let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
