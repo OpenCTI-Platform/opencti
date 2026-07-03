@@ -177,6 +177,15 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
     // the agent call: both are guaranteed to run as the same identity
     // with a single user lookup.
     const jwtUser = await resolveAgentJwtUser(resolveRunAsUserId(run_as));
+    if (!jwtUser) {
+      // No resolvable JWT identity: neither the binding check nor the
+      // agent call could run — skip both with an accurate log instead
+      // of a misleading "agent not bound" warning.
+      logApp.warn('[PLAYBOOK AI AGENT] No resolvable JWT identity for the agent call, returning bundle unmodified', {
+        agentSlug: agent_slug,
+      });
+      return { output_port: 'unmodified', bundle };
+    }
     // Defense in depth: re-check that the configured slug is currently
     // bound to the transformer intent. AJV `oneOf` validation only
     // covers saves that go through the schema resolver — a crafted

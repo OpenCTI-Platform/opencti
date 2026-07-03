@@ -115,6 +115,20 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       expect(result.forceBundleTracking).toBe(true);
     });
 
+    it('should drop the step (no binding check, no agent call) when no JWT identity can be resolved', async () => {
+      vi.mocked(resolveAgentJwtUser).mockResolvedValue(null);
+
+      const result = await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(isAgentBoundToIntent).not.toHaveBeenCalled();
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBeUndefined();
+      expect(result.bundle).toBe(BUNDLE);
+      expect(result.forceBundleTracking).toBe(true);
+    });
+
     it('should drop the step (no agent call) when the slug is not bound to the cti.stix_consumer intent (defense in depth)', async () => {
       vi.mocked(isAgentBoundToIntent).mockResolvedValue(false);
 

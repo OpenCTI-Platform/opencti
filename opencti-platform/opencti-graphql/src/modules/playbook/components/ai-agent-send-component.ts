@@ -103,6 +103,16 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
     // the agent call: both are guaranteed to run as the same identity
     // with a single user lookup.
     const jwtUser = await resolveAgentJwtUser(resolveRunAsUserId(run_as));
+    if (!jwtUser) {
+      // No resolvable JWT identity: neither the binding check nor the
+      // agent call could run — skip both with an accurate log instead
+      // of a misleading "agent not bound" warning.
+      logApp.warn('[PLAYBOOK AI AGENT SEND] No resolvable JWT identity for the agent call, dropping playbook step', {
+        playbookId,
+        agentSlug: agent_slug,
+      });
+      return { output_port: undefined, bundle, forceBundleTracking: true };
+    }
     // Defense in depth: re-check that the configured slug is currently
     // bound to the consumer intent before invoking it. AJV `oneOf`
     // validation only covers saves that go through the schema resolver

@@ -139,6 +139,19 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
     });
 
+    it('should route to `unmodified` and skip both the binding check and the agent call when no JWT identity can be resolved', async () => {
+      vi.mocked(resolveAgentJwtUser).mockResolvedValue(null);
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(isAgentBoundToIntent).not.toHaveBeenCalled();
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
     it('should route to `unmodified` and not call XTM One when the slug is not bound to the cti.stix_transformer intent (defense in depth)', async () => {
       vi.mocked(isAgentBoundToIntent).mockResolvedValue(false);
 
