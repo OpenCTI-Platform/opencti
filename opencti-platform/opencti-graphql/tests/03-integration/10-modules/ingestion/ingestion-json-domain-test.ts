@@ -1,9 +1,10 @@
 import { Readable } from 'node:stream';
-import { afterAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { addIngestionJson, deleteIngestionJson, ingestionJsonEditField, testJsonIngestionMapping } from '../../../../src/modules/ingestion/ingestion-json-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionJsonAddInput, JsonMapperRepresentationType } from '../../../../src/generated/graphql';
 import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
+import * as httpClientModule from '../../../../src/utils/http-client';
 import type { BasicStoreEntityIngestionJson } from '../../../../src/modules/ingestion/ingestion-types';
 import { createJsonMapper, deleteJsonMapper, jsonMapperTest } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
 import type { FileUploadData } from '../../../../src/database/file-storage';
@@ -198,6 +199,106 @@ describe('Ingestion Json domain - complex path coverage', async () => {
     expect(result.nbRelationships).toBe(0);
     expect(parsedObjects[0].name).toBe('tool-1');
     expect(parsedObjects[49].name).toBe('tool-50');
+    expect(parsedObjects.some((o: any) => o.name === 'tool-51')).toBe(false);
+  });
+});
+
+describe('Ingestion Json domain - ingestionJsonTester mutation (testJsonIngestionMapping)', async () => {
+  let mapperId: string;
+
+  // A minimal tool-only representation used in the limit test below
+  const simpleToolRepresentations = [
+    {
+      id: 'tool-rep',
+      type: JsonMapperRepresentationType.Entity,
+      target: {
+        entity_type: ENTITY_TYPE_TOOL,
+        path: '$.objects[?(@.type == "tool")]',
+      },
+      attributes: [
+        {
+          mode: 'simple',
+          key: 'name',
+          attr_path: { path: '$.name' },
+        },
+      ],
+    },
+  ];
+
+  beforeAll(async () => {
+    const mapper = await createJsonMapper(testContext, ADMIN_USER, {
+      name: 'IngestionJsonTester Test Mapper',
+      representations: JSON.stringify(simpleToolRepresentations),
+    });
+    mapperId = mapper.id;
+  });
+
+  afterAll(async () => {
+    if (mapperId) {
+      await deleteJsonMapper(testContext, ADMIN_USER, mapperId);
+    }
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const buildMockHttpClient = (responseData: unknown) => ({
+    call: vi.fn().mockResolvedValue({ data: responseData, headers: {} }),
+  });
+
+  it('should testJsonIngestionMapping return parsed entities from the mocked HTTP response', async () => {
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue(buildMockHttpClient(JSON.parse(stixBundleDataFormulaMatrix)) as any);
+
+    // stixBundleDataFormulaMatrix contains 3 tools (7-Zip, 3proxy, 16Shop) with no orgs matched by the simple mapper
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'IngestionJsonTester happy-path feed',
+      uri: 'https://example.com/feed.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+
+    expect(result).toBeDefined();
+    // The simple mapper only picks up tools (3 tools in the bundle)
+    expect(result.nbEntities).toBe(3);
+    expect(result.nbRelationships).toBe(0);
+
+    const parsedObjects = JSON.parse(result.objects);
+    expect(parsedObjects.length).toBe(3);
+    const names = parsedObjects.map((o: any) => o.name);
+    expect(names).toContain('7-Zip');
+    expect(names).toContain('3proxy');
+    expect(names).toContain('16Shop');
+  });
+
+  it('should testJsonIngestionMapping cap results at 50 when the feed returns more than 50 objects', async () => {
+    const manyTools = Array.from({ length: 60 }, (_, i) => ({
+      type: 'tool',
+      name: `tool-${i + 1}`,
+    }));
+
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue(buildMockHttpClient({ objects: manyTools }) as any);
+
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'IngestionJsonTester limit-50 feed',
+      uri: 'https://example.com/feed-large.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+    const parsedObjects = JSON.parse(result.objects);
+
+    // Feed has 60 tools but the mutation limits execution to 50
+    expect(manyTools.length).toBeGreaterThan(50);
+    expect(parsedObjects.length).toBeLessThanOrEqual(50);
+    expect(result.nbEntities).toBeLessThanOrEqual(50);
     expect(parsedObjects.some((o: any) => o.name === 'tool-51')).toBe(false);
   });
 });
