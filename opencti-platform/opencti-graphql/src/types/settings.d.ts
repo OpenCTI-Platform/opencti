@@ -1,7 +1,6 @@
 import type { BasicStoreEntity } from './store';
 import type { XtmHubRegistrationStatus, CguStatus } from '../generated/graphql';
 import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
-import type { DataSanityConfigurationObject } from '../modules/dataSanity/dataSanityConfiguration-types';
 
 export interface BasicStoreSettingsMessage {
   id: string;
@@ -70,5 +69,4 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   local_auth?: LocalAuthConfig;
   cert_auth?: CertAuthConfig;
   headers_auth?: HeadersAuthConfig;
-  data_sanity_configuration?: DataSanityConfigurationObject;
 }
