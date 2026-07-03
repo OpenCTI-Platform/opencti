@@ -18,14 +18,13 @@ export interface BasicStoreEntitySmtpConfiguration extends BasicStoreEntity {
   auth_type?: SmtpAuthType;
   // Basic Auth
   username?: string;
-  password?: string;
+  password_encrypted?: string;
   // OAuth2
   oauth_user?: string;
   oauth_client_id?: string;
-  oauth_client_secret?: string;
+  oauth_client_secret_encrypted?: string;
   oauth_issuer?: string;
-  oauth_access_token?: string;
-  oauth_refresh_token?: string;
+  oauth_refresh_token_encrypted?: string;
 }
 
 export interface StoreEntitySmtpConfiguration extends StoreEntity {
@@ -38,13 +37,12 @@ export interface StoreEntitySmtpConfiguration extends StoreEntity {
   reject_unauthorized?: boolean;
   auth_type?: SmtpAuthType;
   username?: string;
-  password?: string;
+  password_encrypted?: string;
   oauth_user?: string;
   oauth_client_id?: string;
-  oauth_client_secret?: string;
+  oauth_client_secret_encrypted?: string;
   oauth_issuer?: string;
-  oauth_access_token?: string;
-  oauth_refresh_token?: string;
+  oauth_refresh_token_encrypted?: string;
 }
 
 export interface StixSmtpConfiguration extends StixObject {
