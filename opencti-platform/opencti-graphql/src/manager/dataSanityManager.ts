@@ -87,7 +87,7 @@ export const dataSanityHandler = async () => {
 
 const DATA_SANITY_MANAGER_DEFINITION: ManagerDefinition = {
   id: DATA_SANITY_MANAGER_ID,
-  label: DATA_SANITY_MANAGER_LABEL,
+  label: 'Data sanity manager',
   executionContext: DATA_SANITY_MANAGER_CONTEXT,
   cronSchedulerHandler: {
     handler: dataSanityHandler,

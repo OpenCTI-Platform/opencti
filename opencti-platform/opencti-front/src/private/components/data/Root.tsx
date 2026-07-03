@@ -13,6 +13,7 @@ import useGranted, {
   MODULES,
   TAXIIAPI,
 } from '../../../utils/hooks/useGranted';
+import useHelper from '../../../utils/hooks/useHelper';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -67,6 +68,8 @@ const Root = () => {
 
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedToAutomation = useGranted([AUTOMATION_AUTMANAGE]);
+  const { isFeatureEnable } = useHelper();
+  const isDataSanityManagerEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -243,7 +246,7 @@ const Root = () => {
         />
         <Route
           path="/health/*"
-          element={boundaryWrapper(Health)}
+          element={isDataSanityManagerEnabled ? boundaryWrapper(Health) : <Navigate to="/dashboard" />}
         />
       </Routes>
     </Suspense>

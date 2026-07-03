@@ -87,7 +87,7 @@ The trash manager is responsible to delete permanently elements stored in the [t
 
 ## Data sanity manager
 
-The data sanity manager runs periodic or on demand operations to detect and fix data integrity issues in the platform, such as merging duplicate entities caused by case-sensitivity changes in identifier generation.
+The data sanity manager runs periodic or on demand operations to improve data consistency.
 
 ## Filigran telemetry manager
 
