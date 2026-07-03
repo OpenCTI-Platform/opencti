@@ -51,6 +51,9 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
     validateCustomFieldValues(customFieldValues, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     (caseToCreate as any).custom_field_values = customFieldValues;
   }
+  // The GraphQL input uses camelCase (customFieldValues) but the store attribute is custom_field_values;
+  // remove the raw camelCase key so it isn't sent to indexing (ES strict mapping rejects unknown fields).
+  delete (caseToCreate as any).customFieldValues;
   const { caseTemplates } = caseToCreate;
   delete caseToCreate.caseTemplates;
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
