@@ -85,6 +85,7 @@ type JsonMapperVariable {
 type JsonMapper implements InternalObject & BasicObject {
     id: ID!
     entity_type: String! @auth
+    representative: Representative!
     standard_id: String! @auth
     parent_types: [String!]!
     metrics:[Metric] @auth

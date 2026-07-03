@@ -2,6 +2,7 @@ type Theme implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
   entity_type: String! @auth
+  representative: Representative!
   parent_types: [String!]! @auth
   # Theme
   name: String!
