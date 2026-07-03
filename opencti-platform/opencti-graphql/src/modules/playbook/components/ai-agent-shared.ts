@@ -84,31 +84,136 @@ export const buildAgentSlugOneOf = async (
 };
 
 /**
+ * Identity whose email is embedded in the cross-platform JWT sent to
+ * XTM One — the minimal shape required by ``issueXtmJwt``.
+ */
+export interface AgentJwtUser {
+  id: string;
+  user_email: string;
+}
+
+/**
+ * Resolve the identity whose email is embedded in the cross-platform JWT
+ * sent to XTM One. When the component is configured with an explicit
+ * ``run_as`` user, the JWT is minted for that user so XTM One resolves a
+ * matching local account and any write-back to OpenCTI is attributed to
+ * a real, well-known user.
+ *
+ * When no run-as user is configured — or the run-as user cannot be
+ * loaded — it falls back to the seeded platform admin
+ * (``OPENCTI_ADMIN_UUID``), a real account that is always present in
+ * the database with a resolvable email. The in-memory
+ * ``AUTOMATION_MANAGER_USER`` / ``SYSTEM_USER`` identities are NOT
+ * valid fallbacks: their placeholder emails ("AUTOMATION MANAGER" /
+ * "SYSTEM") can never be resolved to an account on the XTM One side,
+ * so a JWT minted for them is guaranteed to be useless.
+ *
+ * Returns ``null`` when no resolvable identity exists at all (the
+ * seeded admin itself cannot be loaded) so callers skip the XTM One
+ * interaction instead of sending a dead JWT.
+ *
+ * Executors call this ONCE and hand the resolved identity to both the
+ * intent-binding pre-check (``isAgentBoundToIntent``) and the agent
+ * call itself (``callXtmAgent``), so the catalog visibility check and
+ * the actual invocation are guaranteed to run as the SAME XTM One
+ * identity and the user is only looked up once per playbook step.
+ */
+export const resolveAgentJwtUser = async (
+  runAsUserId?: string,
+): Promise<AgentJwtUser | null> => {
+  const candidateIds = runAsUserId && runAsUserId !== OPENCTI_ADMIN_UUID
+    ? [runAsUserId, OPENCTI_ADMIN_UUID]
+    : [OPENCTI_ADMIN_UUID];
+  const context = executionContext('playbook_components');
+  for (let candidateIndex = 0; candidateIndex < candidateIds.length; candidateIndex += 1) {
+    const targetUserId = candidateIds[candidateIndex];
+    // Keep the message static for log aggregation; whether another
+    // candidate remains is carried as a structured attribute.
+    const hasNextFallback = candidateIndex < candidateIds.length - 1;
+    try {
+      const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
+        context,
+        SYSTEM_USER,
+        targetUserId,
+        { type: ENTITY_TYPE_USER },
+      );
+      if (user?.user_email) {
+        return { id: user.id, user_email: user.user_email };
+      }
+      logApp.warn('[PLAYBOOK AI AGENT] JWT user not found or has no resolvable email', { targetUserId, userFound: !!user, hasNextFallback });
+    } catch (e: unknown) {
+      logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve JWT user', {
+        targetUserId,
+        hasNextFallback,
+        cause: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
+  logApp.error('[PLAYBOOK AI AGENT] No resolvable JWT identity (no candidate user with a usable email), skipping XTM One interaction', {
+    runAsUserId,
+  });
+  return null;
+};
+
+/**
+ * True when the platform is wired to an XTM One instance (url + token).
+ * Executors check this FIRST so a missing configuration skips the whole
+ * agent step — including the user lookup performed by
+ * ``resolveAgentJwtUser`` — without touching the database or logging
+ * misleading identity-resolution warnings.
+ */
+export const isXtmOneConfigured = (): boolean => !!nconf.get('xtm:xtm_one_url') && xtmOneClient.isConfigured();
+
+/**
  * Runtime defense in depth: re-check that ``slug`` is currently bound to
  * the expected ``intent`` in the XTM One catalog before the executor
  * actually invokes the agent. AJV validation at playbook save time only
  * guards saves that go through the schema resolver — direct DB writes,
  * future bulk-import paths, or an agent that gets unbound from the
  * intent after save would otherwise let the executor run an arbitrary
- * agent under the platform-internal ``AUTOMATION_MANAGER_USER`` JWT.
+ * agent under the caller's JWT.
  *
- * Returns ``false`` (and logs a warning) on catalog failure / unknown
- * slug, so the executor falls through to its safe terminal branch
+ * The catalog lookup runs as the SAME identity that ``callXtmAgent``
+ * will mint the JWT for: the executor resolves it once with
+ * ``resolveAgentJwtUser`` (run-as user, defaulting to the seeded
+ * platform admin) and passes it to both calls. The XTM One catalog is
+ * scoped per user, so checking with any other identity (previously the
+ * placeholder ``AUTOMATION_MANAGER_USER``) makes the check fail closed
+ * for agents that are bound to the intent but only visible to the
+ * run-as user (e.g. group-shared, non-company-managed agents).
+ *
+ * Returns ``false`` on catalog failure (logged here as a warning),
+ * unknown slug, or unresolvable identity (``jwtUser`` null — already
+ * logged by ``resolveAgentJwtUser``). In every case the executor logs
+ * the skip and falls through to its safe terminal branch
  * (``unmodified`` / fire-and-wait) instead of calling the agent.
  */
 export const isAgentBoundToIntent = async (
   intent: string,
   slug: string,
+  jwtUser: AgentJwtUser | null,
 ): Promise<boolean> => {
   if (!slug) return false;
+  if (!jwtUser) {
+    // No resolvable identity — the agent call itself could not run
+    // either, so fail closed without hitting XTM One.
+    return false;
+  }
   try {
-    const agents = await xtmOneClient.listAgentsForIntent(buildPlaybookAutomationContext(), intent);
+    // The context user is only used to mint the outbound JWT — spread the
+    // automation user to satisfy the AuthUser shape, but carry the resolved
+    // identity so the catalog lookup matches the subsequent agent call.
+    const context: AuthContext = {
+      ...buildPlaybookAutomationContext(),
+      user: { ...AUTOMATION_MANAGER_USER, id: jwtUser.id, user_email: jwtUser.user_email },
+    };
+    const agents = await xtmOneClient.listAgentsForIntent(context, intent);
     return (agents ?? []).some((a) => a.agent_slug === slug);
   } catch (e: unknown) {
     logApp.warn('[PLAYBOOK AI AGENT] Failed to validate agent intent binding', {
       intent,
       slug,
-      cause: (e as Error).message,
+      cause: e instanceof Error ? e.message : String(e),
     });
     return false;
   }
@@ -274,47 +379,6 @@ export const sanitizeDefinitionRunAs = async (
 };
 
 /**
- * Resolve the identity whose email is embedded in the cross-platform JWT
- * sent to XTM One. When the component is configured with an explicit
- * ``run_as`` user, the JWT is minted for that user so XTM One resolves a
- * matching local account and any write-back to OpenCTI is attributed to
- * a real, well-known user.
- *
- * When no run-as user is configured, it defaults to the seeded platform
- * admin (``OPENCTI_ADMIN_UUID``) - a real, indexed account with a
- * resolvable email - rather than the in-memory ``AUTOMATION_MANAGER_USER``,
- * whose placeholder email cannot be resolved on the XTM One side.
- *
- * ``AUTOMATION_MANAGER_USER`` remains the last-resort fallback when the
- * target user (explicit run-as or seeded admin) cannot be loaded, so the
- * component degrades gracefully instead of failing.
- */
-const resolveAgentJwtUser = async (
-  runAsUserId?: string,
-): Promise<{ id: string; user_email: string }> => {
-  const targetUserId = runAsUserId || OPENCTI_ADMIN_UUID;
-  try {
-    const context = executionContext('playbook_components');
-    const user = await internalLoadById<BasicStoreEntity & { user_email?: string }>(
-      context,
-      SYSTEM_USER,
-      targetUserId,
-      { type: ENTITY_TYPE_USER },
-    );
-    if (user?.user_email) {
-      return { id: user.id, user_email: user.user_email };
-    }
-    logApp.warn('[PLAYBOOK AI AGENT] Run-as user not found, falling back to automation user', { runAsUserId: targetUserId });
-  } catch (e: unknown) {
-    logApp.warn('[PLAYBOOK AI AGENT] Failed to resolve run-as user, falling back to automation user', {
-      runAsUserId: targetUserId,
-      cause: (e as Error).message,
-    });
-  }
-  return AUTOMATION_MANAGER_USER;
-};
-
-/**
  * Synchronous, non-streaming call to XTM One Platform Chat. Returns the
  * raw assistant content or null when the call cannot complete (XTM One
  * not configured, network failure, non-success status). Errors are
@@ -322,23 +386,30 @@ const resolveAgentJwtUser = async (
  * deciding how to react (route to ``unmodified``, swallow at the end
  * of a chain, etc.) instead of crashing the whole run.
  *
- * The JWT is minted on behalf of the configured ``run_as`` user (see
- * ``resolveAgentJwtUser``) so XTM One - and any subsequent write-back to
- * OpenCTI - sees the agent call as coming from that real account. When no
- * run-as user is configured it defaults to the seeded platform admin.
+ * The JWT is minted for the identity the executor resolved once with
+ * ``resolveAgentJwtUser`` (configured ``run_as`` user, defaulting to the
+ * seeded platform admin) — the same identity the intent-binding
+ * pre-check ran as — so XTM One, and any subsequent write-back to
+ * OpenCTI, sees the agent call as coming from that real account. When
+ * no resolvable identity exists at all (``jwtUser`` null), the call is
+ * skipped (a JWT minted for an in-memory placeholder user can never be
+ * resolved by XTM One anyway).
  */
 export const callXtmAgent = async (
   agentSlug: string,
   content: string,
-  runAsUserId?: string,
+  jwtUser: AgentJwtUser | null,
 ): Promise<string | null> => {
   const xtmOneUrl = nconf.get('xtm:xtm_one_url');
   if (!xtmOneUrl || !xtmOneClient.isConfigured()) {
     logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, skipping agent call');
     return null;
   }
+  if (!jwtUser) {
+    // resolveAgentJwtUser already logged why no identity could be resolved.
+    return null;
+  }
   try {
-    const jwtUser = await resolveAgentJwtUser(runAsUserId);
     const jwt = await issueXtmJwt(jwtUser, xtmOneUrl);
     const httpClient = getHttpClient({
       baseURL: xtmOneUrl,
