@@ -35,6 +35,7 @@ const Dialog = ({
       {...dialogProps}
       fullScreen={fullScreen}
       onClose={onClose}
+      onClick={(e) => e.stopPropagation()}
       slotProps={{
         paper: {
           sx: {
