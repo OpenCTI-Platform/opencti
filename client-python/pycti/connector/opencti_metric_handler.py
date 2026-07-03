@@ -6,14 +6,14 @@ allowing monitoring of connector performance and health.
 
 from typing import Type, Union
 
-from prometheus_client import Counter, Enum, start_http_server
+from prometheus_client import Counter, Enum, Info, start_http_server
 
 
 class OpenCTIMetricHandler:
     """Handler for Prometheus metrics in OpenCTI connectors.
 
     This class manages Prometheus metrics for monitoring connector behavior,
-    including bundle sends, records processed, run counts, API pings, and errors.
+    including general info, bundle sends, records processed, run counts, API pings, and errors.
 
     When activated, it starts an HTTP server to expose metrics for scraping
     by Prometheus or compatible monitoring systems.
@@ -117,10 +117,16 @@ class OpenCTIMetricHandler:
                     namespace=namespace,
                     subsystem=subsystem,
                 ),
+                "identity": Info(
+                    "identity",
+                    "Identity and configuration of the connector",
+                    namespace=namespace,
+                    subsystem=subsystem,
+                ),
             }
 
     def _metric_exists(
-        self, name: str, expected_type: Union[Type[Counter], Type[Enum]]
+        self, name: str, expected_type: Union[Type[Counter], Type[Enum], Type[Info]]
     ) -> bool:
         """Check if a metric exists and has the expected type.
 
@@ -129,8 +135,8 @@ class OpenCTIMetricHandler:
 
         :param name: Name of the metric to validate
         :type name: str
-        :param expected_type: Expected Prometheus metric type (Counter or Enum)
-        :type expected_type: Union[Type[Counter], Type[Enum]]
+        :param expected_type: Expected Prometheus metric type (Counter, Enum or Info)
+        :type expected_type: Union[Type[Counter], Type[Enum], Type[Info]]
 
         :return: True if metric exists and has correct type, False otherwise
         :rtype: bool
@@ -198,3 +204,20 @@ class OpenCTIMetricHandler:
         if self.activated:
             if self._metric_exists(name, Enum):
                 self._metrics[name].state(state)
+
+    def set_info(
+        self,
+        connector_id: str,
+        connector_name: str,
+        connector_type: str,
+        connector_scope: str,
+    ) -> None:
+        if self.activated:
+            self._metrics["identity"].info(
+                {
+                    "id": connector_id,
+                    "name": connector_name,
+                    "type": connector_type,
+                    "scope": connector_scope,
+                }
+            )

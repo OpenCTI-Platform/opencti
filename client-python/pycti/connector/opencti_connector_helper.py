@@ -2379,6 +2379,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             metrics_subsystem,
             metrics_port,
         )
+
+        self.metric.set_info(
+            connector_id=self.connect_id,
+            connector_name=self.connect_name,
+            connector_type=self.connect_type,
+            connector_scope=self.connect_scope,
+        )
+
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
             connector_id=self.connect_id,

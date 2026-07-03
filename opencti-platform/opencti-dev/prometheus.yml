@@ -1,9 +1,0 @@
-global:
-  scrape_interval: 15s
-
-scrape_configs:
-  - job_name: 'opencti-dev-telemetry-prometheus'
-    static_configs:
-      - targets: ['host.docker.internal:14269']
-        labels:
-          app: 'opencti'
