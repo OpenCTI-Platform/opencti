@@ -545,7 +545,7 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
     .filter((value): value is string => typeof value === 'string' && value.length > 0);
 };
 
-const isTransitoryError = (error: any): boolean => {
+export const isTransitoryError = (error: any): boolean => {
   const statusCode = error?.statusCode
     ?? error?.meta?.statusCode
     ?? error?.status
