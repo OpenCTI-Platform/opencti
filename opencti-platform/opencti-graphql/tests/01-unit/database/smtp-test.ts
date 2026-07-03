@@ -79,6 +79,12 @@ const smtpConfigurationDomainMocks = vi.hoisted(() => ({
 }));
 vi.mock('../../../src/modules/smtpConfiguration/smtpConfiguration-domain', () => smtpConfigurationDomainMocks);
 
+// Stub smtpConfiguration-crypto so decryptSmtpSecret is a no-op in unit tests
+// (passes the value through unchanged so auth logic is still exercised).
+vi.mock('../../../src/modules/smtpConfiguration/smtpConfiguration-crypto', () => ({
+  decryptSmtpSecret: vi.fn(async (v: string | null | undefined) => v),
+}));
+
 import {
   __resetSmtpCachesForTests,
   buildSmtpAuth as buildSmtpAuthImpl,
@@ -475,12 +481,29 @@ describe('createSmtpTransporter — DB vs JSON config, sendMail, smtpIsAlive', (
       reject_unauthorized: true,
       auth_type: 'basic',
       username: 'user',
-      password: 'pass',
+      password_encrypted: 'encrypted-pass',
     } as any);
     await smtpIsAlive();
     const callOptions = (nodemailerCreateTransport.mock.calls[0] as any[])[0];
     expect(callOptions).toMatchObject({ host: 'smtp.company.com', port: 587, secure: true });
     expect(callOptions.tls).toMatchObject({ rejectUnauthorized: true });
+  });
+
+  it('should decrypt password_encrypted when using DB config and pass plaintext to nodemailer auth', async () => {
+    smtpConfigurationDomainMocks.getSmtpConfiguration.mockResolvedValue({
+      use_db_config: true,
+      smtp_enabled: true,
+      hostname: 'smtp.company.com',
+      port: 587,
+      auth_type: 'basic',
+      username: 'user@company.com',
+      password_encrypted: 'c29tZWVuY3J5cHRlZGRhdGE=', // any non-empty base64 string
+    } as any);
+    await smtpIsAlive();
+    // Verify decryption was wired: nodemailer auth.pass must be a string (decryptSmtpSecret ran)
+    const callOptions = (nodemailerCreateTransport.mock.calls[0] as any[])[0];
+    expect(callOptions.auth).toHaveProperty('user', 'user@company.com');
+    expect(typeof callOptions.auth.pass).toBe('string');
   });
 
   it('should not send and not call createTransport when smtp_enabled is false in DB', async () => {
