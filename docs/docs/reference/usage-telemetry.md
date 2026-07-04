@@ -56,7 +56,7 @@ Here is an exhaustive list of the collected metrics:
 
 - The number of active connectors
 - The number of connectors deployed via composer
-- The active connectors broken down by catalog identity: for composer-managed connectors, the catalog contract slug (resolved from the deployed container image); for manually registered connectors, the registered connector name - together with the connector type and a managed/manual flag. No connector configuration is ever collected.
+- The active connectors broken down by catalog identity: for composer-managed connectors, the catalog contract slug (resolved from the deployed container image), or the image repository path with the registry hostname stripped when the image is not part of the catalog; for manually registered connectors, the registered connector name - together with the connector type and a managed/manual flag. No connector configuration and no registry hostname is ever collected.
 
 ### Drafts
 
