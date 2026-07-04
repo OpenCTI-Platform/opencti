@@ -25,7 +25,7 @@ import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
 import ItemOperations from '../ItemOperations';
 import ItemDueDate from '../ItemDueDate';
-import { APP_BASE_PATH } from '../../relay/environment';
+import { getFlagUrl } from '../../utils/flags';
 import FieldOrEmpty from '../FieldOrEmpty';
 import ItemHistory from '../ItemHistory';
 import { useFormatter } from '../i18n';
@@ -103,7 +103,7 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
               <Tooltip title={country.name}>
                 <img
                   style={{ width: 20 }}
-                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                  src={getFlagUrl(flag)}
                   alt={country.name}
                 />
               </Tooltip>
@@ -1575,7 +1575,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               <Tooltip title={x_opencti_aliases}>
                 <img
                   style={{ width: 20 }}
-                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                  src={getFlagUrl(flag)}
                   alt={x_opencti_aliases}
                 />
               </Tooltip>

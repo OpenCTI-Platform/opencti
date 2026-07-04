@@ -14,7 +14,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { CountryLine_node$key } from './__generated__/CountryLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { getFlagUrl } from '../../../../utils/flags';
 import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -94,7 +94,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
         {flag ? (
           <img
             style={{ width: 20 }}
-            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+            src={getFlagUrl(flag)}
             alt={data.name}
           />
         ) : (

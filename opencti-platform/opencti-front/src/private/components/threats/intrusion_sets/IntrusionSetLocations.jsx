@@ -14,7 +14,8 @@ import * as R from 'ramda';
 import { ListItemButton, Tooltip } from '@mui/material';
 import AddLocations from './AddLocations';
 import { addLocationsMutationRelationDelete } from './AddLocationsLines';
-import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
+import { getFlagUrl } from '../../../../utils/flags';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -114,7 +115,7 @@ class IntrusionSetLocationsComponent extends Component {
                       {flag ? (
                         <img
                           style={{ width: 20 }}
-                          src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                          src={getFlagUrl(flag)}
                           alt={location.name}
                         />
                       ) : (

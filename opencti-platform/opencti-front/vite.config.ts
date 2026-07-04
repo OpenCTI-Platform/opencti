@@ -94,7 +94,6 @@ export default defineConfig({
       '/feeds': backProxy(),
       '/graphql': backProxy(true),
       '/auth': backProxy(),
-      '/static/flags': backProxy(),
       '/chatbot': backProxy(),
     },
   },

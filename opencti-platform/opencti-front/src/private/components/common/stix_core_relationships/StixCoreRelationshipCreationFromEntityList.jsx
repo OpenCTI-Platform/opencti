@@ -15,7 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from './StixCoreRelationshipCreationForm';
 import { formatDate } from '../../../../utils/Time';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { getFlagUrl } from '../../../../utils/flags';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -419,7 +419,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
                             {flag ? (
                               <img
                                 style={{ width: 20 }}
-                                src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                                src={getFlagUrl(flag)}
                                 alt={node.name}
                               />
                             ) : (

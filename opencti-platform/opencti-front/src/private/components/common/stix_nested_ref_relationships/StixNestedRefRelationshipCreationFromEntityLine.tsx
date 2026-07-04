@@ -13,7 +13,7 @@ import {
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipCreationFromEntityLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { getFlagUrl } from '../../../../utils/flags';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -285,7 +285,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
         {flag ? (
           <img
             style={{ width: 20 }}
-            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+            src={getFlagUrl(flag)}
             alt={data.name}
           />
         ) : (

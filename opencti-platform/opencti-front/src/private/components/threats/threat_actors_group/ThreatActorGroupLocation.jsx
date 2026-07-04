@@ -12,7 +12,8 @@ import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
+import { getFlagUrl } from '../../../../utils/flags';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -97,7 +98,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                       {flag ? (
                         <img
                           style={{ width: 20 }}
-                          src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                          src={getFlagUrl(flag)}
                           alt={location.name}
                         />
                       ) : (
