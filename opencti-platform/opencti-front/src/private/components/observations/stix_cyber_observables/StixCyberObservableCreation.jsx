@@ -385,7 +385,7 @@ const StixCyberObservableCreation = ({
         dissoc('hashes_SHA-512'),
         toPairs,
         map((n) => (includes(n[0], dateAttributes)
-          ? [n[0], n[1] ? parse(n[1]).format() : null]
+          ? [n[0], n[1] ? parse(n[1]).toISOString() : null]
           : n)),
         map((n) => (includes(n[0], numberAttributes)
           ? [n[0], n[1] ? parseInt(n[1], 10) : null]

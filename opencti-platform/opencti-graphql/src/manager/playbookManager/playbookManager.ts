@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import type { Moment } from 'moment/moment';
 import { createStreamProcessor, fetchStreamInfo } from '../../database/stream/stream-handler';
 import { type StreamProcessor } from '../../database/stream/stream-utils';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
@@ -275,34 +274,30 @@ const initPlaybookManager = () => {
       if (lock) await lock.unlock();
     }
   };
-  const shouldTriggerNow = (cronConfiguration: CronConfiguration, baseDate: Moment): boolean => {
-    const now = baseDate.clone().startOf('minutes'); // 2022-11-25T19:11:00.000Z
+  const shouldTriggerNow = (cronConfiguration: CronConfiguration, baseDate: Date): boolean => {
+    const nowDate = new Date(baseDate);
+    nowDate.setSeconds(0, 0); // startOf('minutes')
     const { triggerTime } = cronConfiguration;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const formatTime = (d: Date) => `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}.${String(d.getUTCMilliseconds()).padStart(3, '0')}`;
     switch (cronConfiguration.period) {
       case 'minute': {
-        // Need to check if time is aligned on the perfect hour
-        const nowMinuteAlign = now.clone().startOf('minutes');
-        return now.isSame(nowMinuteAlign);
+        return true; // always aligned on a minute
       }
       case 'hour': {
-        // Need to check if time is aligned on the perfect hour
-        const nowHourAlign = now.clone().startOf('hours');
-        return now.isSame(nowHourAlign);
+        return nowDate.getUTCMinutes() === 0;
       }
       case 'day': {
-        // Need to check if time is aligned on the day hour (like 19:11:00.000Z)
-        const dayTime = `${now.clone().format('HH:mm:ss.SSS')}Z`;
+        const dayTime = `${formatTime(nowDate)}Z`;
         return triggerTime === dayTime;
       }
       case 'week': {
-        // Need to check if time is aligned on the week hour (like 1-19:11:00.000Z)
-        // 1 being Monday and 7 being Sunday.
-        const weekTime = `${now.clone().isoWeekday()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+        const isoWeekday = nowDate.getUTCDay() === 0 ? 7 : nowDate.getUTCDay();
+        const weekTime = `${isoWeekday}-${formatTime(nowDate)}Z`;
         return triggerTime === weekTime;
       }
       case 'month': {
-        // Need to check if time is aligned on the month hour (like 22-19:11:00.000Z)
-        const monthTime = `${now.clone().date()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+        const monthTime = `${nowDate.getUTCDate()}-${formatTime(nowDate)}Z`;
         return triggerTime === monthTime;
       }
       default:
@@ -310,7 +305,8 @@ const initPlaybookManager = () => {
     }
   };
   const handlePlaybookCrons = async (context: AuthContext) => {
-    const baseDate = utcDate().startOf('minutes');
+    const baseDate = new Date();
+    baseDate.setSeconds(0, 0); // startOf('minutes')
     const isEE = await isEnterpriseEdition(context);
     if (!isEE) {
       return;
@@ -334,7 +330,8 @@ const initPlaybookManager = () => {
             const convertedFilters = convertRelationRefsFilterKeys(jsonFilters);
             let conversionOpts = {};
             if (cronConfiguration.onlyLast) {
-              const fromDate = baseDate.clone().subtract(1, cronConfiguration.period).toDate();
+              const periodMs: Record<string, number> = { minute: 60000, hour: 3600000, day: 86400000, week: 604800000, month: 2592000000 };
+              const fromDate = new Date(baseDate.getTime() - (periodMs[cronConfiguration.period] ?? 86400000));
               conversionOpts = { ...conversionOpts, after: fromDate };
             }
             const queryOptions = await convertFiltersToQueryOptions(convertedFilters, conversionOpts);

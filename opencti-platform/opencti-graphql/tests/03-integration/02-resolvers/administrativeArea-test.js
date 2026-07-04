@@ -250,7 +250,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     expect(queryResult.data?.administrativeAreaAdd.name).toEqual('Administrative-Area by previous');
   });
   it('should not upsert administrativeArea if outdated', async () => {
-    const eventId = `${utcDate().subtract(1, 'minute').valueOf()}-0`;
+    const eventId = `${Date.now() - 60000}-0`;
     const CREATE_QUERY = gql`
           mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
               administrativeAreaAdd(input: $input) {

@@ -1,5 +1,5 @@
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
-import { now } from 'moment';
+import { now } from '../../../src/utils/format';
 import { GraphQLError } from 'graphql';
 import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, TEST_ORGANIZATION, GREEN_GROUP, inPlatformContext } from '../../utils/testQuery';

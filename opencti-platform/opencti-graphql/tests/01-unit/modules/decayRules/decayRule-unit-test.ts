@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import moment from 'moment';
+import { subDays, addDays, format as fnsFormat } from 'date-fns';
 import {
   computeIndicatorDecayHistory,
   computeIndicatorDecayPatch,
@@ -81,17 +81,17 @@ describe('Decay formula testing', () => {
   });
 
   it('should find the next reaction date', () => {
-    const startDate = moment('2023-01-01');
+    const startDate = new Date('2023-01-01');
 
     // GIVEN a decay based on fallback, WHEN stable score is the last reaction point
     let nextReactionDate = computeNextScoreReactionDate(100, 20, TEST_DEFAULT_DECAY_RULE, startDate);
     // THEN the next reaction date should be the revoke day, 1 year after the start date.
-    expect((moment(nextReactionDate)).format('YYYY-MM-DD'), 'Next reaction date should be the revoke date.').toBe('2024-01-01');
+    expect(fnsFormat(nextReactionDate!, 'yyyy-MM-dd'), 'Next reaction date should be the revoke date.').toBe('2024-01-01');
 
     // GIVEN a decay based on fallback, WHEN stable score is the first stable score
     nextReactionDate = computeNextScoreReactionDate(100, 100, TEST_DEFAULT_DECAY_RULE, startDate);
     // THEN the next reaction date should be the one for score 80 => after 2.9 days
-    expect((moment(nextReactionDate)).format('YYYY-MM-DD'), 'Next reaction date should be after two days').toBe('2023-01-03');
+    expect(fnsFormat(nextReactionDate!, 'yyyy-MM-dd'), 'Next reaction date should be after two days').toBe('2023-01-03');
     const expected80ScoreDays = computeTimeFromExpectedScore(100, 80, TEST_DEFAULT_DECAY_RULE);
     expect(expected80ScoreDays).toBeCloseTo(2.9, 1);
   });
@@ -104,10 +104,10 @@ describe('Decay update testing', () => {
       decay_applied_rule: indicator_fallback_applied_rule,
       decay_base_score: 100,
       x_opencti_score: 50,
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
       decay_history: [{
-        updated_at: moment().subtract('5', 'days').toDate(),
+        updated_at: subDays(new Date(), 5),
         score: 50,
         updated_by: ADMIN_USER.id,
       }],
@@ -130,8 +130,8 @@ describe('Decay update testing', () => {
       x_opencti_score: 100,
       decay_base_score: 100,
       decay_history: [],
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
       decay_applied_rule: {
         decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
@@ -160,8 +160,8 @@ describe('Decay update testing', () => {
       decay_history: [
         { updated_at: new Date(2023, 1), score: 100, updated_by: ADMIN_USER.id },
       ],
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
       decay_applied_rule: {
         decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
@@ -189,8 +189,8 @@ describe('Decay update testing', () => {
       x_opencti_score: 30,
       decay_base_score: 100,
       decay_history: [],
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
       decay_applied_rule: {
         decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
@@ -217,8 +217,8 @@ describe('Decay update testing', () => {
       x_opencti_score: 50,
       decay_base_score: 100,
       decay_history: [],
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
       decay_applied_rule: {
         decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
@@ -244,8 +244,8 @@ describe('Decay update testing', () => {
       x_opencti_score: 50,
       decay_base_score: 100,
       decay_history: [],
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
     };
 
     // WHEN next reaction point is computed
@@ -280,10 +280,10 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
     const indicator: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 100,
       decay_base_score: 100,
-      decay_base_score_date: moment().subtract('5', 'days').toDate(),
+      decay_base_score_date: subDays(new Date(), 5),
       decay_applied_rule: indicator_fallback_applied_rule,
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
     };
 
     const liveScore = computeLiveScore(indicator as BasicStoreEntityIndicator);
@@ -296,8 +296,8 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_base_score: 100,
       decay_base_score_date: undefined,
       decay_history: [],
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
     };
     const liveScore = computeLiveScore(indicator as BasicStoreEntityIndicator);
     expect(liveScore, 'The live score should be = score when data required for computation are missing.').toBe(42);
@@ -307,11 +307,11 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
     const indicator: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 42,
       decay_base_score: 100,
-      decay_base_score_date: moment().subtract('5', 'days').toDate(),
+      decay_base_score_date: subDays(new Date(), 5),
       decay_history: [],
       decay_applied_rule: indicator_fallback_applied_rule,
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate(),
+      valid_from: subDays(new Date(), 5),
+      valid_until: addDays(new Date(), 5),
     };
 
     const result = computeLivePoints(indicator as BasicStoreEntityIndicator);
@@ -349,30 +349,30 @@ describe('Decay chart data generation', () => {
     const result = computeChartDecayAlgoSerie(computeChartInput);
 
     expect(result[0].score).toBe(100);
-    expect(moment(result[0].updated_at).format('DD/MM/YYYY'), 'Base core 100 should be at start date').toBe('15/12/2023');
+    expect(fnsFormat(new Date(result[0].updated_at), 'dd/MM/yyyy'), 'Base core 100 should be at start date').toBe('15/12/2023');
 
     expect(result[25].score).toBe(75);
-    expect(moment(result[25].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('20/12/2023');
+    expect(fnsFormat(new Date(result[25].updated_at), 'dd/MM/yyyy'), 'expect 1').toBe('20/12/2023');
 
     expect(result[50].score).toBe(50);
-    expect(moment(result[50].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('29/01/2024');
+    expect(fnsFormat(new Date(result[50].updated_at), 'dd/MM/yyyy'), 'expect 1').toBe('29/01/2024');
 
     expect(result[100].score).toBe(0);
-    expect(moment(result[100].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('14/12/2024');
+    expect(fnsFormat(new Date(result[100].updated_at), 'dd/MM/yyyy'), 'expect 1').toBe('14/12/2024');
   });
 
   it('should compute live score serie with Decay reset', () => {
     const computedScoreList: number[] = computeScoreList(99);
     const computeChartInput: ComputeDecayChartInput = {
       decayBaseScore: 99,
-      decayBaseScoreDate: moment().subtract('5', 'days').toDate(),
+      decayBaseScoreDate: subDays(new Date(), 5),
       decayRule: indicator_fallback_applied_rule,
       scoreList: computedScoreList,
       decayHistory: [
-        { updated_at: moment().subtract('10', 'days').toDate(), score: 100 }, // score in time before decay reset
-        { updated_at: moment().subtract('8', 'days').toDate(), score: 80 }, // score in time before decay reset
-        { updated_at: moment().subtract('5', 'days').toDate(), score: 99 }, // reset at D-5
-        { updated_at: moment().subtract('4', 'days').toDate(), score: 70 }, // reaction after reset
+        { updated_at: subDays(new Date(), 10), score: 100 }, // score in time before decay reset
+        { updated_at: subDays(new Date(), 8), score: 80 }, // score in time before decay reset
+        { updated_at: subDays(new Date(), 5), score: 99 }, // reset at D-5
+        { updated_at: subDays(new Date(), 4), score: 70 }, // reaction after reset
       ],
     };
 

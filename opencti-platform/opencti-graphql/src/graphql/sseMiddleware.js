@@ -1,7 +1,7 @@
 import { once } from 'events';
 import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
-import { now } from 'moment';
+import { now } from '../utils/format';
 import conf, { basePath, logApp } from '../config/conf';
 import { TAXIIAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/stream/stream-handler';
@@ -102,7 +102,7 @@ const authenticate = async (req, res, next) => {
       req.user = context.user;
       req.capabilities = context.user.capabilities;
       req.allowed_marking = context.user.allowed_marking;
-      req.expirationTime = utcDate().add(1, 'days').toDate();
+      req.expirationTime = new Date(Date.now() + 86400000);
       next();
     } else {
       res.statusMessage = 'You are not authenticated, please check your credentials';
@@ -180,7 +180,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
 
 export const authenticateForPublic = async (req, res, next) => {
   const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
-  req.expirationTime = utcDate().add(1, 'days').toDate();
+  req.expirationTime = new Date(Date.now() + 86400000);
   const { error, collection, streamFilters, originFilters } = await computeUserAndCollection(req, res, {
     context,
     user: context.user ?? SYSTEM_USER,
@@ -758,7 +758,7 @@ const createSseMiddleware = () => {
         const recoveringMessage = recoverIsoDate ? ` - recovering to ${recoverIsoDate}` : '';
         logApp.info(`[STREAM] Listening stream ${id} from ${startMessage}${recoveringMessage}`);
         // Start recovery if needed
-        const isRecoveryMode = isNotEmptyField(recoverIsoDate) && utcDate(recoverIsoDate).isAfter(startIsoDate);
+        const isRecoveryMode = isNotEmptyField(recoverIsoDate) && utcDate(recoverIsoDate) > utcDate(startIsoDate);
         // Origin filters can only match against the live event envelope; Elasticsearch does not
         // store the original origin so a recovery would either flood the consumer with un-filtered
         // historical data (security/contract violation) or drop everything (useless work).
@@ -768,7 +768,7 @@ const createSseMiddleware = () => {
         if (skipRecoveryForOriginFilters) {
           logApp.warn('[STREAM] Skipping Elasticsearch recovery because origin_filters is set on this stream', { streamCollectionId: id });
           if (channel.connected()) {
-            await channel.sendEvent(streamEventId(utcDate().toDate()), 'no-recover', {
+            await channel.sendEvent(streamEventId(new Date()), 'no-recover', {
               stream: id,
               message: 'Recovery from history is disabled on streams configured with origin filters; resuming from live events only.',
               resume_from: recoverStreamId,

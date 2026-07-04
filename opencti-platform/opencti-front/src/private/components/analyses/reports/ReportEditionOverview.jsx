@@ -126,7 +126,7 @@ const ReportEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('published', parse(values.published).format()),
+      R.assoc('published', parse(values.published).toISOString()),
       R.assoc('report_types', values.report_types),
       R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
       R.assoc('objectParticipant', R.pluck('value', values.objectParticipant)),

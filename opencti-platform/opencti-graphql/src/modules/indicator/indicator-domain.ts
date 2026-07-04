@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import moment from 'moment/moment';
+import { differenceInDays, addMilliseconds, addDays } from 'date-fns';
 import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
@@ -79,7 +79,7 @@ export const findIndicatorPaginated = (context: AuthContext, user: AuthUser, arg
 export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
   if (indicator.decay_base_score_date && indicator.decay_base_score && indicator.decay_applied_rule) {
     const decayRule = indicator.decay_applied_rule;
-    const daysSinceDecayStart = moment().diff(moment(indicator.decay_base_score_date), 'days', true);
+    const daysSinceDecayStart = (Date.now() - new Date(indicator.decay_base_score_date).getTime()) / 86400000;
     return Math.round(computeScoreFromExpectedTime(indicator.decay_base_score, daysSinceDecayStart, decayRule));
   }
   // by default return current score
@@ -99,9 +99,9 @@ export const computeLivePoints = (indicator: BasicStoreEntityIndicator) => {
       const scorePoint = nextKeyPoints[i];
       if (scorePoint < indicator.x_opencti_score) {
         const elapsedTimeInDays = computeTimeFromExpectedScore(indicator.decay_base_score, scorePoint, indicator.decay_applied_rule);
-        const duration = moment.duration(elapsedTimeInDays, 'days');
-        const scoreDate = moment(indicator.decay_base_score_date).add(duration.asMilliseconds(), 'ms');
-        result.push({ updated_at: scoreDate.toDate(), score: scorePoint });
+        const ms = elapsedTimeInDays * 86400000;
+        const scoreDate = addMilliseconds(new Date(indicator.decay_base_score_date), ms);
+        result.push({ updated_at: scoreDate, score: scorePoint });
       }
     }
     return result;
@@ -325,7 +325,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     const nextScoreReactionDate = computeNextScoreReactionDate(indicatorBaseScore, indicatorBaseScore, decayRule, validFrom);
     const decayHistory: DecayHistory[] = [];
     decayHistory.push({
-      updated_at: validFrom.toDate(),
+      updated_at: validFrom,
       score: indicatorBaseScore,
       updated_by: user.id,
     });
@@ -410,7 +410,7 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
     inputToAdd.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
   }
 
-  const newValidUntil = utcDate().add(indicatorDecayRule.decay_lifetime, 'days');
+  const newValidUntil = addDays(new Date(), indicatorDecayRule.decay_lifetime);
   inputToAdd.push({ key: VALID_UNTIL, value: [newValidUntil.toISOString()] });
 
   return inputToAdd;
@@ -476,7 +476,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   }
 
   if (validUntilEditInput) {
-    const untilDateTime = utcDate(validUntilEditInput?.value[0]).toDate();
+    const untilDateTime = utcDate(validUntilEditInput?.value[0]);
     if (untilDateTime < nowDate && !indicatorBeforeUpdate.revoked) {
       finalInput.push({ key: REVOKED, value: [true] });
       hasRevokedChangedToTrue = true;
@@ -583,7 +583,7 @@ export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser,
     if (newStableScore <= model.decay_revoke_score) {
       patch = { ...patch, revoked: true, x_opencti_detection: false };
     } else {
-      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model, moment(indicator.valid_from));
+      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model, new Date(indicator.valid_from));
       if (nextScoreReactionDate) {
         patch = { ...patch, decay_next_reaction_date: nextScoreReactionDate };
       }

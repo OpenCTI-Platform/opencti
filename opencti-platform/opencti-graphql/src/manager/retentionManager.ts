@@ -1,11 +1,11 @@
-import moment, { type Moment } from 'moment';
+import { sub, formatDistance } from 'date-fns';
 import * as R from 'ramda';
 import { listRules as findRetentionRulesToExecute } from '../modules/retentionRules/retentionRules-domain';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
-import { now, utcDate } from '../utils/format';
+import { now } from '../utils/format';
 import { READ_INDEX_HISTORY, READ_STIX_INDICES } from '../database/utils';
 import { elPaginate } from '../database/engine';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
@@ -58,7 +58,7 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
   }
 };
 
-export const getElementsToDelete = async (context: AuthContext, scope: string, before: Moment, filters?: string) => {
+export const getElementsToDelete = async (context: AuthContext, scope: string, before: Date, filters?: string) => {
   let result;
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
@@ -94,7 +94,7 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
     return;
   }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
-  const before = utcDate().subtract(maxNumber, unit ?? 'days');
+  const before = sub(new Date(), { [unit ?? 'days']: maxNumber });
   const result = await getElementsToDelete(context, scope, before, filters);
   let remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
@@ -110,7 +110,7 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
       try {
         const canElementBeDeleted = await canDeleteElement(context, RETENTION_MANAGER_USER, node);
         if (canElementBeDeleted) { // filter elements that can't be deleted (ex: user individuals)
-          const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
+          const humanDuration = formatDistance(new Date(up), new Date());
           await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, { knowledgeType: node.entity_type });
           logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
 

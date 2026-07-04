@@ -206,7 +206,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     if (R.uniq(eventMarkingRefs).length > 0) {
       contextData.marking_definitions = R.uniq(eventMarkingRefs).map((n) => markingsById.get(n)?.definition ?? 'Unknown');
     }
-    const activityDate = utcDate(eventDate).toDate();
+    const activityDate = utcDate(eventDate);
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
     // add Pir context data for concerned events
     contextData = {
@@ -331,7 +331,7 @@ const initHistoryManager = () => {
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;
-        lastEventId = `${utcDate(histoDate).unix() * 1000}-0`;
+        lastEventId = `${utcDate(histoDate).getTime()}-0`;
       }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {

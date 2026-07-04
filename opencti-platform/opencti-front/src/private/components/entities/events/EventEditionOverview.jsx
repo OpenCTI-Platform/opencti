@@ -114,8 +114,8 @@ const EventEditionOverviewComponent = (props) => {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('start_time', parse(values.start_time).format()),
-      R.assoc('stop_time', parse(values.stop_time).format()),
+      R.assoc('start_time', parse(values.start_time).toISOString()),
+      R.assoc('stop_time', parse(values.stop_time).toISOString()),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.toPairs,
       R.map((n) => ({

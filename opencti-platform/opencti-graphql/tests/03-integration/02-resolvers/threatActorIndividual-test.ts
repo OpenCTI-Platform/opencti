@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import { now } from 'moment';
+import { now } from '../../../src/utils/format';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import type { EditInput, EntitySettingEdge, ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 import { EditOperation } from '../../../src/generated/graphql';
@@ -52,8 +52,8 @@ const isDate = (value: string) => !Number.isNaN(new Date(value).getTime());
 
 describe('Threat actor individual resolver standard behavior', () => {
   let threatActorIndividualEntitySettingId: string;
-  let threatActorIndividualCreatedAt: number;
-  let threatActorIndividualUpdatedAt: number;
+  let threatActorIndividualCreatedAt: string;
+  let threatActorIndividualUpdatedAt: string;
   let defaultTAIOverviewLayoutCustomization: OverviewLayoutCustomization[];
 
   it('should create threat actor individual', async () => {

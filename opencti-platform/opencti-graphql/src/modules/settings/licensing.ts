@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import forge from 'node-forge';
 import { isNotEmptyField } from '../../database/utils';
+import { addMonths, differenceInDays, differenceInMonths } from 'date-fns';
 import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
 import conf, { PLATFORM_VERSION } from '../../config/conf';
@@ -93,7 +94,7 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
         license_expiration_date.setTime(expirationDate.getTime());
       }
       const license_expired = currentDate > license_expiration_date || currentDate < license_start_date;
-      const license_expiration_prevention = license_type !== LICENSE_TYPE_TRIAL && license_type !== LICENSE_TYPE_CI && utcDate(license_expiration_date).diff(now(), 'months') < 3;
+      const license_expiration_prevention = license_type !== LICENSE_TYPE_TRIAL && license_type !== LICENSE_TYPE_CI && differenceInMonths(utcDate(license_expiration_date), new Date()) < 3;
       let license_validated = license_valid_cert && license_platform_match;
       let license_extra_expiration = false;
       let license_extra_expiration_days = 0;
@@ -101,9 +102,9 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
         // If trial or CI license, deactivation for expiration is direct
         if (license_type !== LICENSE_TYPE_TRIAL && license_type !== LICENSE_TYPE_CI) {
           // If standard or lts license, a 3 months safe period is granted
-          const license_extra_expiration_date = utcDate(license_expiration_date).add(3, 'months');
-          license_extra_expiration_days = license_extra_expiration_date.diff(utcDate(), 'days');
-          license_extra_expiration = currentDate < license_extra_expiration_date.toDate();
+          const license_extra_expiration_date = addMonths(utcDate(license_expiration_date), 3);
+          license_extra_expiration_days = differenceInDays(license_extra_expiration_date, new Date());
+          license_extra_expiration = currentDate < license_extra_expiration_date;
           license_validated = license_extra_expiration;
         } else {
           license_validated = false;

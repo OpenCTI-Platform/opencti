@@ -510,8 +510,8 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
           const elementsToPatch = elements
             .map((e: StixWithSeenDates) => {
               // Check if seen dates will be impacted.
-              const isImpactedBefore = isEmptyField(e.first_seen) || publicationDate.isBefore(e.first_seen);
-              const isImpactedAfter = isEmptyField(e.last_seen) || publicationDate.isAfter(e.last_seen);
+              const isImpactedBefore = isEmptyField(e.first_seen) || publicationDate < utcDate(e.first_seen);
+              const isImpactedAfter = isEmptyField(e.last_seen) || publicationDate > utcDate(e.last_seen);
               return { element: e, isImpactedBefore, isImpactedAfter };
             })
             .filter((data: SeenFilter) => {

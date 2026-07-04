@@ -84,7 +84,7 @@ describe('File storage file listing', () => {
     files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { maxFileSize: 1692 });
     expect(files.length).toEqual(0);
     // modifiedSince filtering
-    const oneMinuteAgo = utcDate().subtract(5, 'minutes');
+    const oneMinuteAgo = new Date(Date.now() - 5 * 60000);
     files = await allFilesForPaths(testContext, ADMIN_USER, paths, { modifiedSince: oneMinuteAgo.toISOString() });
     expect(files.length).toEqual(1);
     files = await allFilesForPaths(testContext, ADMIN_USER, paths, { modifiedSince: utcDate().toISOString() });

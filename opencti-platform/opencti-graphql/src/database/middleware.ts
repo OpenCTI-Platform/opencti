@@ -1,4 +1,4 @@
-import moment from 'moment';
+import { subDays, addDays, min as fnsMin, max as fnsMax } from 'date-fns';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import Bluebird, { Promise as BluePromise } from 'bluebird';
@@ -1377,7 +1377,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           return {};
         }
       }
-      if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
+      if (utcDate(instance[key]).getTime() === utcDate(evaluateValue).getTime()) {
         return {};
       }
     }
@@ -2299,8 +2299,8 @@ const updateAttributeRaw = async (
   const validUntilInput = R.find((e) => e.key === VALID_UNTIL, preparedElements);
   if (validUntilInput) {
     const untilDate = R.head(validUntilInput.value);
-    const untilDateTime = utcDate(untilDate).toDate();
-    const nowDate = utcDate().toDate();
+    const untilDateTime = utcDate(untilDate);
+    const nowDate = utcDate();
     const isMustBeRevoked = untilDateTime < nowDate;
     const revokedInput = R.find((e) => e.key === REVOKED, preparedElements);
     if (!revokedInput) {
@@ -2939,7 +2939,7 @@ const getAllRulesField = (instance: Record<string, any>, field: string) => {
     .flat()
     .filter((val) => isNotEmptyField(val));
 };
-const convertRulesTimeValues = (timeValues: Date[]) => timeValues.map((d) => moment(d));
+const convertRulesTimeValues = (timeValues: Date[]) => timeValues.map((d) => new Date(d));
 const createRuleDataPatch = (instance: Record<string, any>) => {
   // 01 - Compute the attributes
   const weight = Object.keys(instance)
@@ -2979,7 +2979,7 @@ const createRuleDataPatch = (instance: Record<string, any>) => {
           patch[attribute] = R.min(values);
         } else if (isDateAttribute(attribute)) {
           const timeValues = convertRulesTimeValues(values);
-          patch[attribute] = moment.min(timeValues).utc().toISOString();
+          patch[attribute] = fnsMin(timeValues).toISOString();
         } else {
           throw UnsupportedError('Can apply min on non numeric or date attribute');
         }
@@ -2992,7 +2992,7 @@ const createRuleDataPatch = (instance: Record<string, any>) => {
           patch[attribute] = R.max(values);
         } else if (isDateAttribute(attribute)) {
           const timeValues = convertRulesTimeValues(values);
-          patch[attribute] = moment.max(timeValues).utc().toISOString();
+          patch[attribute] = fnsMax(timeValues).toISOString();
         } else {
           throw UnsupportedError('Can apply max on non numeric or date attribute');
         }
@@ -3109,8 +3109,8 @@ const buildRelationDeduplicationFilters = (input: Record<string, any>) => {
     // args.relationFilter = { relation: RELATION_CREATED_BY, id: createdBy.id };
     filters.push({ key: [buildRefRelationKey(RELATION_CREATED_BY)], values: [createdBy.id] });
   }
-  const prepareBeginning = (key: string) => prepareDate(moment(input[key]).subtract(config.past_days, 'days').utc());
-  const prepareStopping = (key: string) => prepareDate(moment(input[key]).add(config.next_days, 'days').utc());
+  const prepareBeginning = (key: string) => prepareDate(subDays(new Date(input[key]), config.past_days));
+  const prepareStopping = (key: string) => prepareDate(addDays(new Date(input[key]), config.next_days));
   // Prepare for stix core
   if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {

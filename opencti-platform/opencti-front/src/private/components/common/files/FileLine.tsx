@@ -19,7 +19,7 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import type { OverridableStringUnion } from '@mui/types';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import moment from 'moment';
+import { formatDistance } from 'date-fns';
 import { isEmpty } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
@@ -145,9 +145,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const history: { message?: string | null; timestamp?: unknown }[] = [];
 
   if (isOutdated) {
-    const time = moment
-      .duration(file.lastModifiedSinceMin, 'minutes')
-      .humanize();
+    const time = formatDistance(0, (file.lastModifiedSinceMin ?? 0) * 60 * 1000, { includeSeconds: true });
     history.push({
       message: `Connector execution timeout, no activity for ${time}`,
     });
@@ -264,7 +262,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   if (isFail) {
     status = t_i18n('Failed');
   }
-  const lastModifiedDate = fld(file?.lastModified ?? moment());
+  const lastModifiedDate = fld(file?.lastModified ?? new Date().toISOString());
 
   return (
     <>

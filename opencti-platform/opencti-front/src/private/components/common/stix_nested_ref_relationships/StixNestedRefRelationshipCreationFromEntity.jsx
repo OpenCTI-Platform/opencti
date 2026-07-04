@@ -433,8 +433,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         ...values,
         fromId: fromEntityId,
         toId: toEntityId,
-        start_time: parse(values.start_time).format(),
-        stop_time: parse(values.stop_time).format(),
+        start_time: parse(values.start_time).toISOString(),
+        stop_time: parse(values.stop_time).toISOString(),
       };
       try {
         await commit(finalValues);

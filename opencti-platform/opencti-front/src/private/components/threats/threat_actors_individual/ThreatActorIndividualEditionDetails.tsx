@@ -164,8 +164,8 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
 
     const inputValues = Object.entries({
       ...otherValues,
-      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
-      last_seen: values.last_seen ? parse(values.last_seen).format() : null,
+      first_seen: values.first_seen ? parse(values.first_seen).toISOString() : null,
+      last_seen: values.last_seen ? parse(values.last_seen).toISOString() : null,
       goals: values.goals && values.goals.length ? values.goals.split('\n') : [],
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 

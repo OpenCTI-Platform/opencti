@@ -1,4 +1,4 @@
-import moment from 'moment';
+import { formatDistance, differenceInMilliseconds } from 'date-fns';
 import * as jsonpatch from 'fast-json-patch';
 import type { ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../../modules/playbook/playbook-types';
 import type { StixBundle } from '../../types/stix-2-1-common';
@@ -106,10 +106,10 @@ export const playbookExecutor = async ({
       // Execution was done correctly, log the step
       // For internal component, register directly the observability
       const end = utcDate();
-      const durationDiff = end.diff(start);
-      const duration = moment.duration(durationDiff);
+      const durationDiff = differenceInMilliseconds(end, start);
+      const durationHuman = formatDistance(start, end, { includeSeconds: true });
       const observation: ObservationFn = {
-        message: `${nextStep.instance.name.trim()} successfully executed in ${duration.humanize()}`,
+        message: `${nextStep.instance.name.trim()} successfully executed in ${durationHuman}`,
         status: 'success',
         executionId,
         previousStepId: previousStep?.instance?.id,
@@ -131,11 +131,11 @@ export const playbookExecutor = async ({
       const executionError = error as Error;
       logApp.error('[OPENCTI-MODULE] Playbook manager executor error', { cause: error, manager: 'PLAYBOOK_MANAGER', step: instanceWithConfig, bundle: baseBundle });
       const end = utcDate();
-      const durationDiff = end.diff(start);
-      const duration = moment.duration(durationDiff);
+      const durationDiff = differenceInMilliseconds(end, start);
+      const durationHuman = formatDistance(start, end, { includeSeconds: true });
       const logError = { message: executionError.message, stack: executionError.stack, name: executionError.name };
       const observation: ObservationFn = {
-        message: `${nextStep.component.name.trim()} fail execution in ${duration.humanize()}`,
+        message: `${nextStep.component.name.trim()} fail execution in ${durationHuman}`,
         status: 'error',
         executionId,
         previousStepId: undefined,

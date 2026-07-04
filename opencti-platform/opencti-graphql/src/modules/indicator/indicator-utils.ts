@@ -1,4 +1,4 @@
-import type { Moment } from 'moment';
+import { addDays, addSeconds, isBefore, isEqual } from 'date-fns';
 import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED, STATIC_MARKING_IDS } from '../../schema/identifier';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
@@ -77,7 +77,7 @@ export const computeValidTTL = async (context: AuthContext, user: AuthUser, indi
   return DEFAULT_INDICATOR_TTL;
 };
 
-export const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
+export const computeValidFrom = (indicator: IndicatorAddInput): Date => {
   if (isNotEmptyField(indicator.valid_from)) {
     return utcDate(indicator.valid_from);
   }
@@ -87,27 +87,27 @@ export const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   return utcDate();
 };
 
-export const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Moment => {
-  let validUntil: Moment;
+export const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Date, lifetimeInDays: number): Date => {
+  let validUntil: Date;
   if (indicator.revoked && isEmptyField(indicator.valid_until)) {
     // If indicator is explicitly revoked and not valid_until is specified
     // Ensure the valid_until will be revoked by the time computation.
     // Adding one second to the validFrom if valid_until is empty,
     // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
-    validUntil = validFrom.clone().add(1, 'seconds');
+    validUntil = addSeconds(validFrom, 1);
   } else if (isNotEmptyField(indicator.valid_until)) {
     const validUntilDate = utcDate(indicator.valid_until as string);
     // Ensure valid_until is strictly greater than valid_from
-    if (validUntilDate.isBefore(validFrom)) {
+    if (isBefore(validUntilDate, validFrom)) {
       throw ValidationError('The valid until date must be greater than the valid from date', 'valid_until');
-    } else if (validUntilDate.isSame(validFrom)) {
+    } else if (isEqual(validUntilDate, validFrom)) {
       // When creating directly through API, we accept the same date and add an extra second to valid_until
-      validUntil = utcDate(indicator.valid_until).add(1, 'seconds');
+      validUntil = addSeconds(utcDate(indicator.valid_until), 1);
     } else {
       validUntil = utcDate(indicator.valid_until);
     }
   } else {
-    validUntil = validFrom.clone().add(lifetimeInDays, 'days');
+    validUntil = addDays(validFrom, lifetimeInDays);
   }
   return validUntil;
 };
@@ -115,11 +115,12 @@ export const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Momen
 export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeInDays: number) => {
   const validFrom = computeValidFrom(indicator);
   const validUntil = computeValidUntil(indicator, validFrom, lifetimeInDays);
+  const now = utcDate();
   return {
     validFrom,
     validUntil,
-    revoked: validUntil.isSameOrBefore(utcDate()),
-    validPeriod: validFrom.isBefore(validUntil),
+    revoked: validUntil.getTime() <= now.getTime(),
+    validPeriod: isBefore(validFrom, validUntil),
   };
 };
 

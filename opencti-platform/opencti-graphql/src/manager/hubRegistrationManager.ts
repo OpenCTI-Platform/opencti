@@ -4,7 +4,7 @@ import { executionContext, HUB_REGISTRATION_MANAGER_USER } from '../utils/access
 import { checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../domain/xtm-hub';
 import { XtmHubRegistrationStatus } from '../generated/graphql';
 import { cleanOldNewsFeedItems } from '../modules/xtm/hub/news-feed/news-feed-domain';
-import moment from 'moment';
+import { sub } from 'date-fns';
 
 const HUB_REGISTRATION_MANAGER_ENABLED = booleanConf('hub_registration_manager:enabled', true);
 const HUB_REGISTRATION_MANAGER_KEY = conf.get('hub_registration_manager:lock_key') || 'hub_registration_manager_lock';
@@ -41,9 +41,7 @@ export const hubRegistrationManager = async () => {
     await loadAndSaveLatestNewsFeed(context, HUB_REGISTRATION_MANAGER_USER);
   }
   try {
-    const cutoffDate = moment()
-      .subtract(NEWS_FEED_CLEANUP_INTERVAL_VALUE, NEWS_FEED_CLEANUP_INTERVAL_UNIT as ValidCleanupUnit)
-      .toDate();
+    const cutoffDate = sub(new Date(), { [NEWS_FEED_CLEANUP_INTERVAL_UNIT as ValidCleanupUnit]: NEWS_FEED_CLEANUP_INTERVAL_VALUE });
     const deletedCount = await cleanOldNewsFeedItems(
       context,
       HUB_REGISTRATION_MANAGER_USER,

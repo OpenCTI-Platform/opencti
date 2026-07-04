@@ -1,4 +1,3 @@
-import moment from 'moment';
 import { isEmptyField, isNotEmptyField, REDACTED_INFORMATION } from './utils';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
@@ -84,12 +83,8 @@ export const extractEntityRepresentativeName = (entityData) => {
   } else if (isNotEmptyField(entityData.phase_name)) {
     mainValue = entityData.phase_name;
   } else if (isNotEmptyField(entityData.first_observed) && isNotEmptyField(entityData.last_observed)) {
-    const from = moment(entityData.first_observed)
-      .utc()
-      .toISOString();
-    const to = moment(entityData.last_observed)
-      .utc()
-      .toISOString();
+    const from = new Date(entityData.first_observed).toISOString();
+    const to = new Date(entityData.last_observed).toISOString();
     mainValue = `${from} - ${to}`;
   } else if (isNotEmptyField(entityData.result_name)) { // MALWARE-ANALYSES
     mainValue = entityData.result_name;

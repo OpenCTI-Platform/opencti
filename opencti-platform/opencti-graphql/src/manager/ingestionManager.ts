@@ -5,7 +5,6 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import type { Moment } from 'moment';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -125,7 +124,7 @@ interface DataItem {
   link: string | undefined;
   content: string;
   labels: string[];
-  pubDate: Moment;
+  pubDate: Date;
 }
 
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
@@ -183,9 +182,9 @@ const rssHttpGetter = (ingestion: BasicStoreEntityIngestionRss): Getter => {
 // A valid date is required, and after the current_state_date
 const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined): DataItem[] => {
   return items.filter((e) => isNotEmptyField(e.title))
-    .filter((e) => e.pubDate.isValid())
-    .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
-    .sort((a, b) => a.pubDate.diff(b.pubDate));
+    .filter((e) => !Number.isNaN(e.pubDate.getTime()))
+    .filter((e) => !current_state_date || e.pubDate > current_state_date)
+    .sort((a, b) => a.pubDate.getTime() - b.pubDate.getTime());
 };
 
 export const rssDataParser = async (turndownService: TurndownService, data: convertableToString, current_state_date: Date | undefined): Promise<DataItem[]> => {

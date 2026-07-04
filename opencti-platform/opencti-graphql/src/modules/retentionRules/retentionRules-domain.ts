@@ -5,6 +5,7 @@ import { generateInternalId, generateStandardId } from '../../schema/identifier'
 import { elIndex, elPaginate } from '../../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_STIX_INDICES } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
+import { sub } from 'date-fns';
 import { utcDate } from '../../utils/format';
 import { RETENTION_MANAGER_USER } from '../../utils/access';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
@@ -19,7 +20,7 @@ import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internal
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
-  const before = utcDate().subtract(maxDays, unit ?? 'days');
+  const before = sub(new Date(), { [unit ?? 'days']: maxDays });
   let result: any = [];
   // knowledge rule
   if (scope === 'knowledge') {

@@ -122,8 +122,8 @@ const ObservedDataEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('first_observed', parse(values.first_observed).format()),
-      R.assoc('last_observed', parse(values.last_observed).format()),
+      R.assoc('first_observed', parse(values.first_observed).toISOString()),
+      R.assoc('last_observed', parse(values.last_observed).toISOString()),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
