@@ -2,5 +2,6 @@
   "src": "./src",
   "schema": "./src/schema/relay.schema.graphql",
   "language": "typescript",
-  "eagerEsModules": true
+  "eagerEsModules": true,
+  "excludes": ["**/relay.lsp-directives.graphql"]
 }
