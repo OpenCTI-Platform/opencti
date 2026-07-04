@@ -36,13 +36,38 @@ export interface ConnectorIdentitySource {
   connector_type?: string | null;
 }
 
+// Reduce a container image reference to its repository path: drop any digest
+// (@sha256:...), any tag (":x" after the last "/") and the registry hostname.
+// Per the Docker reference grammar the first path component is a registry
+// host iff it contains "." or ":" or is exactly "localhost" - bare Docker Hub
+// namespaces (e.g. "opencti/connector-mitre") are therefore preserved. The
+// registry hostname is the only deployment-infrastructure detail in an image
+// reference, so stripping it keeps the connector identity exportable without
+// leaking where the image is hosted.
+export const stripImageToRepositoryPath = (imageReference: string | null | undefined): string => {
+  const reference = (imageReference ?? '').trim().toLowerCase();
+  if (reference.length === 0) {
+    return '';
+  }
+  const withoutDigest = reference.split('@')[0];
+  const lastSlash = withoutDigest.lastIndexOf('/');
+  const lastColon = withoutDigest.lastIndexOf(':');
+  const withoutTag = lastColon > lastSlash ? withoutDigest.slice(0, lastColon) : withoutDigest;
+  const segments = withoutTag.split('/').filter((segment) => segment.length > 0);
+  if (segments.length > 1 && (segments[0].includes('.') || segments[0].includes(':') || segments[0] === 'localhost')) {
+    segments.shift();
+  }
+  return segments.join('/');
+};
+
 // Breakdown of active connectors by catalog identity: composer-managed
 // connectors resolve to the exact catalog contract slug through their stored
 // container image (the user-set connector name is irrelevant). When the
-// stored image is not in the catalog (e.g. removed contract), the datapoint
-// is SKIPPED rather than exporting the raw image string, which could carry a
-// private registry hostname - only catalog slugs ever leave the platform for
-// managed connectors. Manually registered connectors have no catalog
+// stored image is not in the catalog (custom contract, removed contract,
+// private catalog on an on-premise deployment), the registry-stripped
+// repository path of the image is exported instead so those deployments stay
+// visible - the raw reference (and thus a private registry hostname) never
+// leaves the platform. Manually registered connectors have no catalog
 // reference, so their trimmed/lowercased registered name is the best
 // available identity, flagged managed=false.
 export const computeActiveConnectorsByIdentity = (
@@ -53,7 +78,7 @@ export const computeActiveConnectorsByIdentity = (
   activeConnectors.forEach((connector) => {
     const isManaged = (connector.catalog_id ?? '').length > 0;
     const slug = isManaged
-      ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ?? '')
+      ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ?? stripImageToRepositoryPath(connector.manager_contract_image))
       : (connector.name ?? '').trim().toLowerCase();
     if (slug.length === 0) {
       return;
