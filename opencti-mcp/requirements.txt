@@ -1,0 +1,5 @@
+mcp>=1.0
+pycti>=6.0.0
+python-dotenv>=1.0
+starlette>=0.27
+uvicorn>=0.20

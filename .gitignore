@@ -13,6 +13,13 @@
 # NodeJS
 node_modules/
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
 # Yarn
 .yarn/
 opencti-platform/opencti-front/.yarnrc.yml
