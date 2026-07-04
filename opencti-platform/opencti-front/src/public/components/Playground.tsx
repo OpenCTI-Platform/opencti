@@ -2,9 +2,11 @@ import React from 'react';
 import { GraphiQL } from 'graphiql';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/styles';
 import { APP_BASE_PATH } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
 import PublicTopBar from './PublicTopBar';
+import type { Theme } from '../../components/Theme';
 
 const defaultQuery = `query ExampleQuery {
   intrusionSets {
@@ -81,6 +83,7 @@ const fetcher = createGraphiQLFetcher({ url: `${APP_BASE_PATH}/graphql` });
 
 const Playground: React.FC = () => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   return (
     <Box
       sx={{
@@ -99,7 +102,7 @@ const Playground: React.FC = () => {
           { query: placeholder },
           { query: exampleWithVariables, variables: JSON.stringify(exampleVariables, null, '  ') },
         ]}
-        forcedTheme="dark"
+        forcedTheme={theme.palette.mode} // this permit to align with the platform default theme. User preference is not taken into account here
       />
     </Box>
   );
