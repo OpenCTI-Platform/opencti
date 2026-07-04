@@ -36,13 +36,17 @@ const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics' : 'https://telemetry.filigran.io/v1/metrics';
 
 const ONE_MINUTE = 60 * 1000;
-const TWO_MINUTE = 2 * ONE_MINUTE;
 const ONE_HOUR = 60 * ONE_MINUTE;
+const THREE_HOUR = 3 * ONE_HOUR;
 const SIX_HOUR = 6 * ONE_HOUR;
 // Collect data period, corresponds to data point collection
 const TELEMETRY_COLLECT_INTERVAL = DEV_MODE ? ONE_MINUTE : ONE_HOUR;
-// Export data period, sending information to files, console and otlp
-const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
+// Export data period, sending information to files, console and otlp.
+// Dev mode uses a 3h window instead of the production 6h: tight-enough to
+// observe a full cycle in a working day, without flooding the staging
+// collector (one object per export per instance) when many dev instances
+// run at once.
+const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? THREE_HOUR : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
