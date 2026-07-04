@@ -54,7 +54,10 @@ export const stripImageToRepositoryPath = (imageReference: string | null | undef
   const lastColon = withoutDigest.lastIndexOf(':');
   const withoutTag = lastColon > lastSlash ? withoutDigest.slice(0, lastColon) : withoutDigest;
   const segments = withoutTag.split('/').filter((segment) => segment.length > 0);
-  if (segments.length > 1 && (segments[0].includes('.') || segments[0].includes(':') || segments[0] === 'localhost')) {
+  // Strip the registry host even when it is the ONLY segment (host-only,
+  // repository-less reference): returning it would leak the hostname the
+  // whole helper exists to withhold. Callers treat '' as "no usable identity".
+  if (segments.length > 0 && (segments[0].includes('.') || segments[0].includes(':') || segments[0] === 'localhost')) {
     segments.shift();
   }
   return segments.join('/');

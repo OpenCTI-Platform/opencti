@@ -37,6 +37,14 @@ describe('Container image repository path stripping', () => {
     expect(stripImageToRepositoryPath('custom-connector')).toEqual('custom-connector');
   });
 
+  it('should return an empty string for host-only references (never export a bare registry hostname)', () => {
+    expect(stripImageToRepositoryPath('registry.private.corp')).toEqual('');
+    expect(stripImageToRepositoryPath('registry.private.corp:5000')).toEqual('');
+    expect(stripImageToRepositoryPath('localhost')).toEqual('');
+    expect(stripImageToRepositoryPath('localhost:5000')).toEqual('');
+    expect(stripImageToRepositoryPath('registry.private.corp/')).toEqual('');
+  });
+
   it('should strip tags and digests', () => {
     expect(stripImageToRepositoryPath('opencti/connector-mitre:6.0.0')).toEqual('opencti/connector-mitre');
     expect(stripImageToRepositoryPath('custom-connector:latest')).toEqual('custom-connector');
