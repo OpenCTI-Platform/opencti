@@ -713,22 +713,15 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
- * Increment a gauge by its name
+ * Increment a gauge by its name.
+ * HINCRBY is atomic: concurrent increments (multiple API instances, or
+ * fire-and-forget calls racing on the same node) can never lose updates,
+ * unlike the previous hget + hset read-modify-write.
  * @param gaugeName
  * @param countToAdd 1 or more to be added in count
  */
 export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number) => {
-  const currentCountStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
-  if (currentCountStr) {
-    const currentCount: number = +currentCountStr;
-    if (!Number.isNaN(currentCount) && countToAdd > 0) {
-      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, currentCount + countToAdd);
-    } else {
-      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
-    }
-  } else {
-    await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
-  }
+  await getClientBase().hincrby(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
 };
 
 /**

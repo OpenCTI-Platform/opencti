@@ -341,10 +341,12 @@ export const addExportGeneratedCount = () => {
 
 // Volume counter: adds the number of objects processed by a completed work.
 export const addIngestionObjectsProcessedCount = (count: number) => {
-  if (!Number.isFinite(count) || count <= 0) {
+  // Floored because the Redis accumulation relies on the integer-only HINCRBY.
+  const objectsCount = Math.floor(count);
+  if (!Number.isFinite(objectsCount) || objectsCount <= 0) {
     return;
   }
-  redisSetTelemetryAdd(TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED, count)
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED, objectsCount)
     .catch((reason) => logApp.warn('Error adding ingestion objects processed count to telemetry', { reason }));
 };
 
