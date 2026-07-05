@@ -6,6 +6,7 @@ import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/impo
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { internalLoadById } from '../database/middleware-loader';
 import {
+  redisAcquireWorkCompletionFlag,
   redisDeleteWorks,
   redisGetWork,
   redisGetWorkCompletionState,
@@ -301,8 +302,12 @@ const isWorkFinished = (expected, total) => total >= expected;
 
 // Works exist for the whole connector surface (imports, exports, analysis,
 // notifications...). The ingestion volume proxy must only count import-side
-// pipelines, and only on the FIRST transition to complete (reportExpectation
-// and updateProcessedTime can both observe completion for the same work).
+// pipelines, and only ONCE per work: reportExpectation and updateProcessedTime
+// can both observe the completion of the same work concurrently (even from
+// different nodes), so uniqueness is enforced with an atomic Redis SET NX
+// flag - only the caller that acquires it counts. The status check is just a
+// cheap short-circuit for works that are already complete in the index.
+// Fire-and-forget: a telemetry failure must never break the work completion.
 const INGESTION_WORK_EVENT_TYPES = [
   'EXTERNAL_IMPORT', // external connectors, built-in ingesters, form intakes
   'INTERNAL_IMPORT_FILE', // file imports
@@ -310,9 +315,16 @@ const INGESTION_WORK_EVENT_TYPES = [
   'INTERNAL_INGESTION', // draft validation
 ];
 const countIngestionObjectsProcessed = (work, objectsCount) => {
-  if (work && work.status !== 'complete' && INGESTION_WORK_EVENT_TYPES.includes(work.event_type)) {
-    addIngestionObjectsProcessedCount(objectsCount);
+  if (!work || work.status === 'complete' || !INGESTION_WORK_EVENT_TYPES.includes(work.event_type)) {
+    return;
   }
+  redisAcquireWorkCompletionFlag(work.id)
+    .then((isFirstCompletion) => {
+      if (isFirstCompletion) {
+        addIngestionObjectsProcessedCount(objectsCount);
+      }
+    })
+    .catch((reason) => logApp.warn('Error acquiring work completion flag for telemetry', { reason }));
 };
 
 export const reportExpectation = async (context, user, workId, errorData) => {

@@ -534,6 +534,16 @@ export const redisInitializeWork = async (workId: string, isMultiPartWork: boole
     });
   });
 };
+// Atomic first-completion marker for a work: SET NX guarantees that exactly
+// one caller wins, whichever completion path (reportExpectation vs
+// updateProcessedTime) and whichever node observes the completion first.
+// A dedicated TTL-bounded key is used instead of a field on the work hash so
+// the marker can never recreate or orphan a deleted work key.
+const WORK_COMPLETION_FLAG_TTL = 86400; // 1 day, works complete well within it
+export const redisAcquireWorkCompletionFlag = async (workId: string): Promise<boolean> => {
+  const result = await getClientBase().set(`work_completion_counted:${workId}`, '1', 'EX', WORK_COMPLETION_FLAG_TTL, 'NX');
+  return result === 'OK';
+};
 // endregion
 // region async calls tracking
 const ASYNC_CALL_TTL = 300;

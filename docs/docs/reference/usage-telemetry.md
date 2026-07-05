@@ -92,7 +92,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of playbook AI agent component runs
 - Whether the built-in LLM configuration is enabled, with the provider type as dimension (`mistralai`, `openai`, `azureopenai`, `other`, or `none` when disabled)
 - Whether XTM One is configured (URL and token)
-- Whether the Filigran chatbot AI CGU have been accepted
+- Whether the Filigran chatbot AI CGU has been accepted
 
 ### Product adoption
 
