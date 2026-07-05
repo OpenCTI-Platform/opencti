@@ -235,6 +235,88 @@ export class TelemetryMeterManager {
 
   // endregion providers usage
 
+  // region AI usage (backend-agnostic: no legacy/xtm_one dimension anywhere)
+  // Number of chatbot messages sent (legacy Flowise and XTM One combined)
+  chatbotMessageCount = 0;
+
+  // AI Insights requests broken down by cache state (hit | miss)
+  aiInsightRequestItems: DimensionalGaugeItem[] = [];
+
+  // Ask AI queries broken down by feature (fix_spelling, summarize, ...)
+  askAiQueryItems: DimensionalGaugeItem[] = [];
+
+  // Direct XTM One agent calls broken down by channel (direct | direct_files)
+  xtmAgentCallItems: DimensionalGaugeItem[] = [];
+
+  // Number of playbook AI agent component runs
+  playbookAiAgentRunCount = 0;
+
+  // Built-in LLM configuration state, with the provider type as dimension
+  isAiEnabledItems: DimensionalGaugeItem[] = [];
+
+  // Segmentation keys for before/after XTM One adoption analysis
+  isXtmOneConfigured = 0;
+
+  isChatbotCguAccepted = 0;
+  // endregion AI usage
+
+  // region Product adoption
+  // Knowledge graph scale broken down by curated entity type
+  knowledgeObjectsByType: DimensionalGaugeItem[] = [];
+
+  // Built-in ingesters broken down by type (rss | taxii | ...) and running state
+  ingestersByType: DimensionalGaugeItem[] = [];
+
+  // Data sharing surfaces broken down by type and public (anonymous) state
+  dataSharesByType: DimensionalGaugeItem[] = [];
+
+  // Playbooks broken down by running state (EE)
+  playbooksItems: DimensionalGaugeItem[] = [];
+
+  // Number of activated inference rules
+  inferenceRulesActiveCount = 0;
+
+  // Notification triggers broken down by type (live | digest)
+  triggersByType: DimensionalGaugeItem[] = [];
+
+  // Notifiers broken down by connector (email | webhook | ui | other)
+  notifiersByConnector: DimensionalGaugeItem[] = [];
+
+  // RBAC scale
+  groupsCount = 0;
+
+  rolesCount = 0;
+
+  organizationsCount = 0;
+
+  // Number of OpenCTI-to-OpenCTI synchronizers
+  synchronizersCount = 0;
+
+  // Whether organization segregation is configured (EE)
+  isOrganizationSegregationEnabled = 0;
+
+  // Whether the file indexing manager is running
+  isFileIndexingEnabled = 0;
+
+  // Whether the platform is registered on XTM Hub
+  isXtmHubRegistered = 0;
+
+  // Number of indexed files
+  indexedFilesCount = 0;
+
+  // Number of playbook executions started
+  playbookExecutionCount = 0;
+
+  // Notifications sent broken down by channel (email | webhook | ui)
+  notificationSentItems: DimensionalGaugeItem[] = [];
+
+  // Number of export generations requested
+  exportGeneratedCount = 0;
+
+  // Number of objects processed by completed works (ingestion volume proxy)
+  ingestionObjectsProcessedCount = 0;
+  // endregion Product adoption
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -439,6 +521,114 @@ export class TelemetryMeterManager {
     this.workflowPublishCount = n;
   }
 
+  setChatbotMessageCount(n: number) {
+    this.chatbotMessageCount = n;
+  }
+
+  setAiInsightRequestItems(items: DimensionalGaugeItem[]) {
+    this.aiInsightRequestItems = items;
+  }
+
+  setAskAiQueryItems(items: DimensionalGaugeItem[]) {
+    this.askAiQueryItems = items;
+  }
+
+  setXtmAgentCallItems(items: DimensionalGaugeItem[]) {
+    this.xtmAgentCallItems = items;
+  }
+
+  setPlaybookAiAgentRunCount(n: number) {
+    this.playbookAiAgentRunCount = n;
+  }
+
+  setIsAiEnabledItems(items: DimensionalGaugeItem[]) {
+    this.isAiEnabledItems = items;
+  }
+
+  setIsXtmOneConfigured(n: number) {
+    this.isXtmOneConfigured = n;
+  }
+
+  setIsChatbotCguAccepted(n: number) {
+    this.isChatbotCguAccepted = n;
+  }
+
+  setKnowledgeObjectsByType(items: DimensionalGaugeItem[]) {
+    this.knowledgeObjectsByType = items;
+  }
+
+  setIngestersByType(items: DimensionalGaugeItem[]) {
+    this.ingestersByType = items;
+  }
+
+  setDataSharesByType(items: DimensionalGaugeItem[]) {
+    this.dataSharesByType = items;
+  }
+
+  setPlaybooksItems(items: DimensionalGaugeItem[]) {
+    this.playbooksItems = items;
+  }
+
+  setInferenceRulesActiveCount(n: number) {
+    this.inferenceRulesActiveCount = n;
+  }
+
+  setTriggersByType(items: DimensionalGaugeItem[]) {
+    this.triggersByType = items;
+  }
+
+  setNotifiersByConnector(items: DimensionalGaugeItem[]) {
+    this.notifiersByConnector = items;
+  }
+
+  setGroupsCount(n: number) {
+    this.groupsCount = n;
+  }
+
+  setRolesCount(n: number) {
+    this.rolesCount = n;
+  }
+
+  setOrganizationsCount(n: number) {
+    this.organizationsCount = n;
+  }
+
+  setSynchronizersCount(n: number) {
+    this.synchronizersCount = n;
+  }
+
+  setIsOrganizationSegregationEnabled(n: number) {
+    this.isOrganizationSegregationEnabled = n;
+  }
+
+  setIsFileIndexingEnabled(n: number) {
+    this.isFileIndexingEnabled = n;
+  }
+
+  setIsXtmHubRegistered(n: number) {
+    this.isXtmHubRegistered = n;
+  }
+
+  setIndexedFilesCount(n: number) {
+    this.indexedFilesCount = n;
+  }
+
+  setPlaybookExecutionCount(n: number) {
+    this.playbookExecutionCount = n;
+  }
+
+  setNotificationSentItems(items: DimensionalGaugeItem[]) {
+    this.notificationSentItems = items;
+  }
+
+  setExportGeneratedCount(n: number) {
+    this.exportGeneratedCount = n;
+  }
+
+  setIngestionObjectsProcessedCount(n: number) {
+    this.ingestionObjectsProcessedCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: {
     unit?: string;
     valueType?: ValueType;
@@ -527,5 +717,36 @@ export class TelemetryMeterManager {
     this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
     this.registerGauge('custom_view_enabled_count', 'Number of custom views enabled', 'customViewEnabledCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    // region AI usage (backend-agnostic counters, see telemetryManager)
+    this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');
+    this.registerDimensionalGauge('ai_insight_request_count', 'AI Insights requests broken down by cache state (hit, miss)', 'aiInsightRequestItems');
+    this.registerDimensionalGauge('ask_ai_query_count', 'Ask AI queries broken down by feature', 'askAiQueryItems');
+    this.registerDimensionalGauge('xtm_agent_call_count', 'Direct XTM One agent calls broken down by channel (direct, direct_files)', 'xtmAgentCallItems');
+    this.registerGauge('playbook_ai_agent_run_count', 'Number of playbook AI agent component runs', 'playbookAiAgentRunCount');
+    this.registerDimensionalGauge('is_ai_enabled', 'Built-in LLM configuration state with provider type dimension', 'isAiEnabledItems', { unit: 'boolean' });
+    this.registerGauge('is_xtm_one_configured', 'XTM One is configured (url and token)', 'isXtmOneConfigured', { unit: 'boolean' });
+    this.registerGauge('is_chatbot_cgu_accepted', 'Filigran chatbot AI CGU accepted', 'isChatbotCguAccepted', { unit: 'boolean' });
+    // endregion
+    // region Product adoption
+    this.registerDimensionalGauge('knowledge_objects_by_type', 'knowledge graph scale broken down by curated entity type', 'knowledgeObjectsByType');
+    this.registerDimensionalGauge('ingesters_by_type', 'built-in ingesters broken down by type and running state', 'ingestersByType');
+    this.registerDimensionalGauge('data_shares_by_type', 'data sharing surfaces broken down by type and public state', 'dataSharesByType');
+    this.registerDimensionalGauge('playbooks_count', 'playbooks broken down by running state', 'playbooksItems');
+    this.registerGauge('inference_rules_active_count', 'number of activated inference rules', 'inferenceRulesActiveCount');
+    this.registerDimensionalGauge('triggers_by_type', 'notification triggers broken down by type (live, digest)', 'triggersByType');
+    this.registerDimensionalGauge('notifiers_count', 'notifiers broken down by connector (email, webhook, ui, other)', 'notifiersByConnector');
+    this.registerGauge('groups_count', 'number of groups', 'groupsCount');
+    this.registerGauge('roles_count', 'number of roles', 'rolesCount');
+    this.registerGauge('organizations_count', 'number of organizations', 'organizationsCount');
+    this.registerGauge('synchronizers_count', 'number of OpenCTI synchronizers', 'synchronizersCount');
+    this.registerGauge('is_organization_segregation_enabled', 'organization segregation is configured', 'isOrganizationSegregationEnabled', { unit: 'boolean' });
+    this.registerGauge('is_file_indexing_enabled', 'file indexing manager is running', 'isFileIndexingEnabled', { unit: 'boolean' });
+    this.registerGauge('is_xtm_hub_registered', 'platform is registered on XTM Hub', 'isXtmHubRegistered', { unit: 'boolean' });
+    this.registerGauge('indexed_files_count', 'number of indexed files', 'indexedFilesCount');
+    this.registerGauge('playbook_execution_count', 'number of playbook executions started', 'playbookExecutionCount');
+    this.registerDimensionalGauge('notification_sent_count', 'notifications sent broken down by channel (email, webhook, ui)', 'notificationSentItems');
+    this.registerGauge('export_generated_count', 'number of export generations requested', 'exportGeneratedCount');
+    this.registerGauge('ingestion_objects_processed_count', 'number of objects processed by completed works', 'ingestionObjectsProcessedCount');
+    // endregion
   }
 }

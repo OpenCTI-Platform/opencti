@@ -24,6 +24,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } 
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { now, sinceNowInMinutes } from '../utils/format';
+import { addIngestionObjectsProcessedCount } from '../manager/telemetryManager';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -324,6 +325,8 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       sourceScript += `ctx._source['status'] = "complete";
       ctx._source['completed_number'] = params.completed_number;
       ctx._source['completed_time'] = params.now;`;
+      // Telemetry: objects processed by this completed work (volume proxy).
+      addIngestionObjectsProcessedCount(total);
     }
     // To avoid maximum string in Elastic and too big memory footprint, arbitrary limit the number of possible errors in a work to 100
     if (errorData) {
@@ -443,6 +446,8 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
                ctx._source['import_expected_number'] = params.completed_number;
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
+    // Telemetry: objects processed by this completed work (volume proxy).
+    addIngestionObjectsProcessedCount(params.completed_number);
   }
   if (isNotEmptyField(message)) {
     if (inError) {

@@ -27,6 +27,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { StixBundle } from '../../../types/stix-2-1-common';
 import type { ComponentDefinition } from '../playbook-types';
+import { addPlaybookAiAgentRunCount } from '../../../manager/telemetryManager';
 
 // 5 minutes — agent runs may take a while when the LLM has to materialise
 // a large STIX bundle or call multiple tools. Keep well above the default
@@ -409,6 +410,10 @@ export const callXtmAgent = async (
     // resolveAgentJwtUser already logged why no identity could be resolved.
     return null;
   }
+  // Telemetry: one playbook AI agent run (attempts semantics, counted before
+  // the upstream call). Fire-and-forget so a telemetry failure never breaks
+  // the playbook execution.
+  addPlaybookAiAgentRunCount();
   try {
     const jwt = await issueXtmJwt(jwtUser, xtmOneUrl);
     const httpClient = getHttpClient({

@@ -114,6 +114,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-typ
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { buildTranslatedIdsMap } from '../database/data-changes';
+import { addAskAiQueryCount } from '../manager/telemetryManager';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -1079,6 +1080,7 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // region ai
 export const aiActivity = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await addAskAiQueryCount('activity');
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1119,6 +1121,7 @@ export const aiActivity = async (context, user, args) => {
 
 export const aiForecast = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await addAskAiQueryCount('forecast');
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1150,6 +1153,7 @@ export const aiForecast = async (context, user, args) => {
 
 export const aiHistory = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await addAskAiQueryCount('history');
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
