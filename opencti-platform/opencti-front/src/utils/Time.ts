@@ -9,9 +9,6 @@ import {
   differenceInMinutes,
   differenceInSeconds,
   differenceInDays,
-  endOfDay,
-  isValid as fnsIsValid,
-  isBefore,
 } from 'date-fns';
 import { isNone } from '../components/i18n';
 
