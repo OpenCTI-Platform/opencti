@@ -193,6 +193,10 @@ export const XTM_AGENT_CHANNELS = ['direct', 'direct_files'] as const;
 export type XtmAgentChannel = typeof XTM_AGENT_CHANNELS[number];
 export const NOTIFICATION_CHANNELS = ['email', 'webhook', 'ui'] as const;
 export type NotificationChannel = typeof NOTIFICATION_CHANNELS[number];
+// Providers supported by the built-in LLM configuration (see database/ai-llm.ts).
+// Any other configured value is exported as 'other' to keep the is_ai_enabled
+// type dimension bounded.
+export const AI_PROVIDER_TYPES = ['mistralai', 'openai', 'azureopenai'] as const;
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -288,23 +292,30 @@ export const addWorkflowPublishCount = () => {
     .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
 };
 
+// All the counters below are fire-and-forget: they are called from feature
+// hot paths (HTTP handlers, domain functions), so a Redis failure must never
+// break the feature itself - it is only logged.
 // One chatbot message sent, whatever the serving backend (legacy Flowise or XTM One).
-export const addChatbotMessageCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_CHATBOT_MESSAGE, 1);
+export const addChatbotMessageCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CHATBOT_MESSAGE, 1)
+    .catch((reason) => logApp.warn('Error adding chatbot message count to telemetry', { reason }));
 };
 
-export const addAiInsightRequestCount = async (cache: AiInsightCacheState) => {
-  await redisSetTelemetryAdd(`${TELEMETRY_GAUGE_AI_INSIGHT_REQUEST}:${cache}`, 1);
+export const addAiInsightRequestCount = (cache: AiInsightCacheState) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_AI_INSIGHT_REQUEST}:${cache}`, 1)
+    .catch((reason) => logApp.warn('Error adding AI insight request count to telemetry', { reason }));
 };
 
 // Counted at the feature entry point (domain function), not in the LLM client,
 // so the number does not move if a feature is re-routed to another backend.
-export const addAskAiQueryCount = async (feature: AskAiFeature) => {
-  await redisSetTelemetryAdd(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`, 1);
+export const addAskAiQueryCount = (feature: AskAiFeature) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`, 1)
+    .catch((reason) => logApp.warn('Error adding Ask AI query count to telemetry', { reason }));
 };
 
-export const addXtmAgentCallCount = async (channel: XtmAgentChannel) => {
-  await redisSetTelemetryAdd(`${TELEMETRY_GAUGE_XTM_AGENT_CALL}:${channel}`, 1);
+export const addXtmAgentCallCount = (channel: XtmAgentChannel) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_XTM_AGENT_CALL}:${channel}`, 1)
+    .catch((reason) => logApp.warn('Error adding XTM agent call count to telemetry', { reason }));
 };
 
 // Fire-and-forget: a telemetry failure must never break a playbook run.
@@ -435,7 +446,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // AI feature adoption before/after an XTM One deployment - usage counters
     // themselves never carry a legacy/xtm_one dimension.
     const aiEnabled = conf.get('ai:enabled') === true || conf.get('ai:enabled') === 'true';
-    const aiType: string = aiEnabled ? (conf.get('ai:type') ?? 'none') : 'none';
+    const configuredAiType: string = conf.get('ai:type') ?? '';
+    // Bounded enum: none when disabled, a known provider, or 'other' for any
+    // unrecognized configured value (misconfiguration must not explode the
+    // dimension cardinality).
+    let aiType = 'none';
+    if (aiEnabled) {
+      aiType = (AI_PROVIDER_TYPES as readonly string[]).includes(configuredAiType) ? configuredAiType : 'other';
+    }
     manager.setIsAiEnabledItems([{ value: aiEnabled ? 1 : 0, attributes: { type: aiType } }]);
     const isXtmOneConfigured = !!(conf.get('xtm:xtm_one_url') && conf.get('xtm:xtm_one_token'));
     manager.setIsXtmOneConfigured(isXtmOneConfigured ? 1 : 0);

@@ -282,7 +282,7 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
 
 export const aiSummary = async (context, user, args) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('container_summary');
+  addAskAiQueryCount('container_summary');
 
   const { busId = null, language = 'English', forceRefresh = false } = args;
   const hasTypesArgs = args.types && args.types.length > 0;

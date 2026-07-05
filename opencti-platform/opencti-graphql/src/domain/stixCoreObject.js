@@ -1080,7 +1080,7 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // region ai
 export const aiActivity = async (context, user, args) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('activity');
+  addAskAiQueryCount('activity');
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1121,7 +1121,7 @@ export const aiActivity = async (context, user, args) => {
 
 export const aiForecast = async (context, user, args) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('forecast');
+  addAskAiQueryCount('forecast');
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1153,7 +1153,7 @@ export const aiForecast = async (context, user, args) => {
 
 export const aiHistory = async (context, user, args) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('history');
+  addAskAiQueryCount('history');
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;

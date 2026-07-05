@@ -55,7 +55,7 @@ const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence an
 
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('fix_spelling');
+  addAskAiQueryCount('fix_spelling');
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -76,7 +76,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
 
 export const makeShorter = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('make_shorter');
+  addAskAiQueryCount('make_shorter');
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -97,7 +97,7 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
 
 export const makeLonger = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('make_longer');
+  addAskAiQueryCount('make_longer');
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -120,7 +120,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
 // eslint-disable-next-line max-len
 export const changeTone = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text, tone: InputMaybe<Tone> = Tone.Tactical) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('change_tone');
+  addAskAiQueryCount('change_tone');
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -141,7 +141,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
 
 export const summarize = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('summarize');
+  addAskAiQueryCount('summarize');
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -161,7 +161,7 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
 
 export const explain = async (context: AuthContext, user: AuthUser, id: string, content: string) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('explain');
+  addAskAiQueryCount('explain');
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -181,7 +181,7 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
 
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('container_report');
+  addAskAiQueryCount('container_report');
   const { id, containerId, paragraphs = 10, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const container = await storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
@@ -223,7 +223,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
 // TODO This function is deprecated (AI Insights)
 export const summarizeFiles = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('summarize_files');
+  addAskAiQueryCount('summarize_files');
   const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
@@ -283,7 +283,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
 // TODO This function is deprecated (NLP)
 export const convertFilesToStix = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
-  await addAskAiQueryCount('convert_files_to_stix');
+  addAskAiQueryCount('convert_files_to_stix');
   const { id, elementId, fileIds } = args;
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
   let finalFilesIds = fileIds;
@@ -422,7 +422,8 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   await checkEnterpriseEdition(context);
   // Counted here (feature entry point) rather than in the LLM client so the
   // metric stays backend-agnostic if NLQ is ever served by XTM One.
-  await addNlqQueryCount();
+  // Fire-and-forget: a telemetry failure must never break the NLQ feature.
+  addNlqQueryCount().catch((reason) => logApp.warn('Error adding NLQ query count to telemetry', { reason }));
   const { search } = args;
   const promptValue = await NLQPromptTemplate.formatPromptValue({ text: search });
 

@@ -4,7 +4,18 @@ import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../../../src/telemetry/TelemetryMeterManager';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
-import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION, TELEMETRY_GAUGE_DRAFT_CREATION } from '../../../src/manager/telemetryManager';
+import {
+  addAskAiQueryCount,
+  addChatbotMessageCount,
+  addDisseminationCount,
+  addNotificationSentCount,
+  fetchTelemetryData,
+  TELEMETRY_GAUGE_ASK_AI_QUERY,
+  TELEMETRY_GAUGE_CHATBOT_MESSAGE,
+  TELEMETRY_GAUGE_DISSEMINATION,
+  TELEMETRY_GAUGE_DRAFT_CREATION,
+  TELEMETRY_GAUGE_NOTIFICATION_SENT,
+} from '../../../src/manager/telemetryManager';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
 import { waitInSec } from '../../../src/database/utils';
 
@@ -39,12 +50,33 @@ describe('Telemetry manager test coverage', () => {
     // AND GIVEN some "user event" from another node (simulated by a direct redis update)
     await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, DISSEMINATION_EVENT_NODE2);
 
+    // AND GIVEN some AI / product events counted through the fire-and-forget
+    // helpers (scalar key + dimensional "key:attribute" formats)
+    const CHATBOT_MESSAGE_EVENTS = 4;
+    const ASK_AI_SUMMARIZE_EVENTS = 2;
+    const NOTIFICATION_EMAIL_EVENTS = 3;
+    for (let i = 0; i < CHATBOT_MESSAGE_EVENTS; i += 1) {
+      addChatbotMessageCount();
+    }
+    for (let i = 0; i < ASK_AI_SUMMARIZE_EVENTS; i += 1) {
+      addAskAiQueryCount('summarize');
+    }
+    for (let i = 0; i < NOTIFICATION_EMAIL_EVENTS; i += 1) {
+      addNotificationSentCount('email');
+    }
+
     const loopCount = 3; // 3' max
     let loopCurrent = 0;
 
     const isRedisUpdatedCallback = async () => {
       const disseminationGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
-      return disseminationGaugeValue === (DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2);
+      const chatbotGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
+      const askAiGaugeValue = await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:summarize`);
+      const notificationGaugeValue = await redisGetTelemetry(`${TELEMETRY_GAUGE_NOTIFICATION_SENT}:email`);
+      return disseminationGaugeValue === (DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2)
+        && chatbotGaugeValue === CHATBOT_MESSAGE_EVENTS
+        && askAiGaugeValue === ASK_AI_SUMMARIZE_EVENTS
+        && notificationGaugeValue === NOTIFICATION_EMAIL_EVENTS;
     };
     let isRedisUpdated = await isRedisUpdatedCallback();
     while (!isRedisUpdated && loopCurrent < loopCount) {
@@ -63,6 +95,17 @@ describe('Telemetry manager test coverage', () => {
     expect(filigranTelemetryMeterManager.disseminationCount).toBe(DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2);
     expect(filigranTelemetryMeterManager.instancesCount).toBe(1);
     expect(filigranTelemetryMeterManager.isEEActivated).toBe(1); // 1 mean true
+    // AND the new AI / product Redis counters are wired with the right key
+    // formats and dimensional attributes
+    expect(filigranTelemetryMeterManager.chatbotMessageCount).toBe(CHATBOT_MESSAGE_EVENTS);
+    const summarizeItem = filigranTelemetryMeterManager.askAiQueryItems.find((item) => item.attributes.feature === 'summarize');
+    expect(summarizeItem?.value).toBe(ASK_AI_SUMMARIZE_EVENTS);
+    const fixSpellingItem = filigranTelemetryMeterManager.askAiQueryItems.find((item) => item.attributes.feature === 'fix_spelling');
+    expect(fixSpellingItem?.value).toBe(0); // zero-valued datapoints are kept
+    const emailItem = filigranTelemetryMeterManager.notificationSentItems.find((item) => item.attributes.channel === 'email');
+    expect(emailItem?.value).toBe(NOTIFICATION_EMAIL_EVENTS);
+    const webhookItem = filigranTelemetryMeterManager.notificationSentItems.find((item) => item.attributes.channel === 'webhook');
+    expect(webhookItem?.value).toBe(0);
     // filigranTelemetryMeterManager.activeConnectorsCount : count cannot be verified since there are many ways to create internal connectors.
     // expect(filigranTelemetryMeterManager.draftCount).toBe(getCounterTotal(ENTITY_TYPE_DRAFT_WORKSPACE));
     // expect(filigranTelemetryMeterManager.workbenchCount).toBe(getCounterTotal(ENTITY_TYPE_WORKSPACE));

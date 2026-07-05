@@ -299,6 +299,22 @@ const updateWorkTaskToComplete = async (context, user, work) => {
 
 const isWorkFinished = (expected, total) => total >= expected;
 
+// Works exist for the whole connector surface (imports, exports, analysis,
+// notifications...). The ingestion volume proxy must only count import-side
+// pipelines, and only on the FIRST transition to complete (reportExpectation
+// and updateProcessedTime can both observe completion for the same work).
+const INGESTION_WORK_EVENT_TYPES = [
+  'EXTERNAL_IMPORT', // external connectors, built-in ingesters, form intakes
+  'INTERNAL_IMPORT_FILE', // file imports
+  'INTERNAL_ENRICHMENT', // enrichment results ingested back
+  'INTERNAL_INGESTION', // draft validation
+];
+const countIngestionObjectsProcessed = (work, objectsCount) => {
+  if (work && work.status !== 'complete' && INGESTION_WORK_EVENT_TYPES.includes(work.event_type)) {
+    addIngestionObjectsProcessedCount(objectsCount);
+  }
+};
+
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   await redisUpdateWorkFigures(workId);
@@ -325,8 +341,6 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       sourceScript += `ctx._source['status'] = "complete";
       ctx._source['completed_number'] = params.completed_number;
       ctx._source['completed_time'] = params.now;`;
-      // Telemetry: objects processed by this completed work (volume proxy).
-      addIngestionObjectsProcessedCount(total);
     }
     // To avoid maximum string in Elastic and too big memory footprint, arbitrary limit the number of possible errors in a work to 100
     if (errorData) {
@@ -338,6 +352,11 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
     if (currentWork) {
+      if (isComplete) {
+        // Telemetry: objects processed by this completed work (volume proxy,
+        // import-side pipelines only, first completion only).
+        countIngestionObjectsProcessed(currentWork, total);
+      }
       await elUpdate(context, currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
       // If work is associated to a task, we also need to update work to completed on the task
       if (isComplete) {
@@ -446,8 +465,10 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
                ctx._source['import_expected_number'] = params.completed_number;
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
-    // Telemetry: objects processed by this completed work (volume proxy).
-    addIngestionObjectsProcessedCount(params.completed_number);
+    // Telemetry: objects processed by this completed work (volume proxy,
+    // import-side pipelines only, first completion only). Use the real
+    // processed total, not the defaulted-to-1 completed_number.
+    countIngestionObjectsProcessed(currentWork, total);
   }
   if (isNotEmptyField(message)) {
     if (inError) {
