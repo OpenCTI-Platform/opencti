@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { differenceInDays, addMilliseconds, addDays } from 'date-fns';
+import { addMilliseconds, addDays } from 'date-fns';
 import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
