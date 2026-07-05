@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { format as fnsFormat, parseISO, addYears, addMonths, addWeeks, addDays, addHours, startOfHour, differenceInYears, differenceInMonths, differenceInWeeks, differenceInDays, differenceInHours } from 'date-fns';
+import { format as fnsFormat, addYears, addMonths, addWeeks, addDays, addHours, startOfHour, differenceInYears, differenceInMonths, differenceInWeeks, differenceInDays, differenceInHours } from 'date-fns';
 import type { estypes } from '@elastic/elasticsearch';
 import { DatabaseError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
