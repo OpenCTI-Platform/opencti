@@ -111,6 +111,14 @@ vi.mock('../../../src/modules/xtm/one/xtm-one-client', () => ({
   default: { isConfigured: vi.fn(() => true) },
 }));
 
+// Telemetry counters are fire-and-forget side effects; mocking the manager
+// also keeps its heavy transitive dependency graph out of this unit test.
+vi.mock('../../../src/manager/telemetryManager', () => ({
+  addChatbotMessageCount: vi.fn(),
+  addAiInsightRequestCount: vi.fn(),
+  addXtmAgentCallCount: vi.fn(),
+}));
+
 // Mock getHttpClient — the core HTTP abstraction
 const mockPost = vi.fn();
 const mockGet = vi.fn();

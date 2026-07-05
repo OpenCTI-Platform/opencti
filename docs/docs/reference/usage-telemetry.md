@@ -81,6 +81,41 @@ Here is an exhaustive list of the collected metrics:
 - The number of custom views created
 - The number of custom views enabled
 
+### AI features
+
+All AI usage counters are backend-agnostic: the same counter is incremented whether the feature is served by the legacy backend or by XTM One, and no counter carries a legacy/XTM One dimension.
+
+- The number of chatbot messages sent
+- The number of AI Insights requests, broken down by cache state (`hit`, `miss`)
+- The number of Ask AI queries, broken down by feature (`fix_spelling`, `make_shorter`, `make_longer`, `change_tone`, `summarize`, `explain`, `container_report`, `summarize_files`, `convert_files_to_stix`, `activity`, `forecast`, `history`, `container_summary`)
+- The number of direct XTM One agent calls, broken down by channel (`direct`, `direct_files`)
+- The number of playbook AI agent component runs
+- Whether the built-in LLM configuration is enabled, with the provider type as dimension (`mistralai`, `openai`, `azureopenai`, `other`, or `none` when disabled)
+- Whether XTM One is configured (URL and token)
+- Whether the Filigran chatbot AI CGU has been accepted
+
+### Product adoption
+
+- The number of knowledge objects, broken down by a curated list of entity types (reports, groupings, notes, opinions, cases, tasks, feedbacks, indicators, malware, intrusion sets, threat actors, incidents), plus the total number of observables and the total number of relationships. No knowledge content is ever collected, only counts.
+- The number of built-in ingesters, broken down by type (`rss`, `taxii`, `taxii-collection`, `csv`, `json`) and running state
+- The number of OpenCTI-to-OpenCTI synchronizers
+- The number of data sharing surfaces, broken down by type (`live_stream`, `feed`, `taxii_collection`, `public_dashboard`) and public (anonymous access) state
+- The number of playbooks, broken down by running state
+- The number of playbook executions started
+- The number of activated inference rules
+- The number of notification triggers, broken down by type (`live`, `digest`)
+- The number of notifiers, broken down by connector (`email`, `webhook`, `ui`, `other`)
+- The number of notifications sent, broken down by channel (`email`, `webhook`, `ui`)
+- The number of export generations requested
+- The number of objects processed by completed import works (ingestion volume proxy)
+- The number of groups
+- The number of roles
+- The number of organizations
+- Whether organization segregation is configured
+- Whether the file indexing manager is running
+- The number of indexed files
+- Whether the platform is registered on XTM Hub
+
 ### Email and notifications
 
 - The number of emails sent from the platform

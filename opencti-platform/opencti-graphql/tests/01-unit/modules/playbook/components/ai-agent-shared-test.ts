@@ -45,6 +45,12 @@ vi.mock('../../../../../src/schema/general', () => ({
   OPENCTI_ADMIN_UUID: 'admin-uuid',
 }));
 
+// Telemetry counters are fire-and-forget side effects; mocking the manager
+// also keeps its heavy transitive dependency graph out of this unit test.
+vi.mock('../../../../../src/manager/telemetryManager', () => ({
+  addPlaybookAiAgentRunCount: vi.fn(),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────────
 
 import nconf from 'nconf';

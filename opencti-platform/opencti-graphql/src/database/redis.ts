@@ -534,6 +534,16 @@ export const redisInitializeWork = async (workId: string, isMultiPartWork: boole
     });
   });
 };
+// Atomic first-completion marker for a work: SET NX guarantees that exactly
+// one caller wins, whichever completion path (reportExpectation vs
+// updateProcessedTime) and whichever node observes the completion first.
+// A dedicated TTL-bounded key is used instead of a field on the work hash so
+// the marker can never recreate or orphan a deleted work key.
+const WORK_COMPLETION_FLAG_TTL = 86400; // 1 day, works complete well within it
+export const redisAcquireWorkCompletionFlag = async (workId: string): Promise<boolean> => {
+  const result = await getClientBase().set(`work_completion_counted:${workId}`, '1', 'EX', WORK_COMPLETION_FLAG_TTL, 'NX');
+  return result === 'OK';
+};
 // endregion
 // region async calls tracking
 const ASYNC_CALL_TTL = 300;
@@ -713,22 +723,15 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
- * Increment a gauge by its name
+ * Increment a gauge by its name.
+ * HINCRBY is atomic: concurrent increments (multiple API instances, or
+ * fire-and-forget calls racing on the same node) can never lose updates,
+ * unlike the previous hget + hset read-modify-write.
  * @param gaugeName
  * @param countToAdd 1 or more to be added in count
  */
 export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number) => {
-  const currentCountStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
-  if (currentCountStr) {
-    const currentCount: number = +currentCountStr;
-    if (!Number.isNaN(currentCount) && countToAdd > 0) {
-      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, currentCount + countToAdd);
-    } else {
-      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
-    }
-  } else {
-    await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
-  }
+  await getClientBase().hincrby(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
 };
 
 /**
