@@ -8,8 +8,8 @@ the OpenCTI GraphQL API.
 
 | Category | Tools |
 | --- | --- |
-| Indicators | `lookup_indicator`, `list_indicators`, `get_indicator`, `add_indicator`, `update_indicator`, `promote_observable_to_indicator`, `get_indicator_relationships` |
-| Observables | `lookup_observable`, `list_observables`, `get_observable`, `add_observable`, `enrich_observable`, `get_observable_indicators`, `get_observable_relationships` |
+| Indicators | `list_indicators`, `get_indicator`, `add_indicator`, `update_indicator`, `promote_observable_to_indicator`, `get_indicator_relationships` |
+| Observables | `list_observables`, `get_observable`, `add_observable`, `enrich_observable`, `get_observable_indicators`, `get_observable_relationships` |
 | Reports | `lookup_report`, `list_reports`, `create_report`, `add_object_to_report`, `get_report_objects`, `export_report_stix` |
 | Cases | `create_incident_case`, `create_rfi`, `lookup_case`, `list_cases`, `add_object_to_case`, `update_case_status` |
 | Tasks | `create_task`, `complete_task` |
@@ -48,7 +48,7 @@ For development:
 cd opencti-mcp
 pip install -r requirements.txt
 pip install -r test-requirements.txt
-pip install -e ".[dev]"
+pip install -e .
 ```
 
 ## Configuration
@@ -196,7 +196,7 @@ docker compose down -v
 cd opencti-mcp
 pip install -r requirements.txt
 pip install -r test-requirements.txt
-pip install -e ".[dev]"
+pip install -e .
 ```
 
 Run checks:

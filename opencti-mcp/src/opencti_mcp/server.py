@@ -62,6 +62,37 @@ def _add_sse_request_controls(app: Any, cfg: Config) -> None:
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.responses import Response
 
+    class _BodySizeLimitMiddleware:
+        def __init__(self, app: Any) -> None:
+            self.app = app
+
+        async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+            if scope["type"] != "http":
+                await self.app(scope, receive, send)
+                return
+
+            messages = []
+            body_size = 0
+            more_body = True
+            while more_body:
+                message = await receive()
+                messages.append(message)
+                if message["type"] != "http.request":
+                    continue
+                body_size += len(message.get("body", b""))
+                if body_size > cfg.max_request_body_bytes:
+                    response = Response("Request body too large", status_code=413)
+                    await response(scope, receive, send)
+                    return
+                more_body = message.get("more_body", False)
+
+            async def replay_receive() -> Any:
+                if messages:
+                    return messages.pop(0)
+                return {"type": "http.request", "body": b"", "more_body": False}
+
+            await self.app(scope, replay_receive, send)
+
     semaphore = asyncio.Semaphore(cfg.max_concurrent_requests)
     request_windows: dict[str, list[float]] = {}
 
@@ -95,6 +126,7 @@ def _add_sse_request_controls(app: Any, cfg: Config) -> None:
                 semaphore.release()
 
     app.add_middleware(_RequestControlsMiddleware)
+    app.add_middleware(_BodySizeLimitMiddleware)
 
 
 def _run_sse(mcp: FastMCP, cfg: Config) -> None:

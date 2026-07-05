@@ -123,6 +123,28 @@ class TestLookupCase:
             assert isinstance(data, list)
 
 
+class TestAddObjectToCase:
+    def test_returns_simple_error_when_all_case_types_fail(self) -> None:
+        mock = _mock_client()
+        for case_api in (mock.case_incident, mock.case_rfi, mock.case_rft):
+            case_api.add_stix_object_or_stix_relationship.side_effect = ValueError("api failure")
+
+        with _patch_client(mock):
+            from mcp.server.fastmcp import FastMCP
+
+            mcp = FastMCP("test")
+            cases.register(mcp)
+            tool_fn = mcp._tool_manager._tools["add_object_to_case"].fn
+            result = tool_fn(
+                case_id="case-incident--abc123",
+                object_id="indicator--abc123",
+            )
+            data = json.loads(result)
+            assert data == {
+                "error": "Could not add object to case: case ID may be invalid or inaccessible"
+            }
+
+
 class TestCreateTask:
     def test_creates_task(self) -> None:
         mock = _mock_client()
@@ -150,3 +172,5 @@ class TestCompleteTask:
             data = json.loads(result)
             assert "error" not in data
             mock.task.update_field.assert_called_once()
+            _, kwargs = mock.task.update_field.call_args
+            assert kwargs["input"] == [{"key": "completed", "value": [True]}]

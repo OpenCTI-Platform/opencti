@@ -193,7 +193,6 @@ def register(mcp: FastMCP) -> None:
         :return: JSON with ``{"success": true}`` or ``{"error": …}``.
         """
         client = get_client()
-        last_error: str = ""
         for adder_type in (client.case_incident, client.case_rfi, client.case_rft):
             try:
                 adder_type.add_stix_object_or_stix_relationship(
@@ -202,15 +201,9 @@ def register(mcp: FastMCP) -> None:
                 )
                 return json.dumps({"success": True})
             except Exception:
-                last_error = "Failed to link object to case"
                 logger.debug("add_object_to_case: attempt failed", exc_info=True)
         return json.dumps(
-            {
-                "error": (
-                    f"Could not add object to case — case ID may be invalid or inaccessible"
-                    f" (last error: {last_error})"
-                )
-            }
+            {"error": "Could not add object to case: case ID may be invalid or inaccessible"}
         )
 
     @mcp.tool()
@@ -281,7 +274,7 @@ def register(mcp: FastMCP) -> None:
         try:
             result = client.task.update_field(
                 id=task_id,
-                input=[{"key": "completed", "value": ["true"]}],
+                input=[{"key": "completed", "value": [True]}],
             )
             return json.dumps(result, default=str)
         except Exception as exc:

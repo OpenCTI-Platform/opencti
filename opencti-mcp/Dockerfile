@@ -19,6 +19,7 @@ WORKDIR /app
 
 # Copy package metadata first for better layer caching
 COPY pyproject.toml ./
+COPY README.md requirements.txt ./
 COPY src/ ./src/
 
 # Install the package (no dev extras needed at runtime)
