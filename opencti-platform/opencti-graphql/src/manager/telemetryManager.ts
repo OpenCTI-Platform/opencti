@@ -195,8 +195,11 @@ export const AI_PROVIDER_TYPES = ['mistralai', 'openai', 'azureopenai'] as const
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
 };
-export const addNlqQueryCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1);
+// Fire-and-forget (like the other feature counters below): a telemetry
+// failure must never break the NLQ feature.
+export const addNlqQueryCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1)
+    .catch((reason) => logApp.warn('Error adding NLQ query count to telemetry', { reason }));
 };
 export const addRequestAccessCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);

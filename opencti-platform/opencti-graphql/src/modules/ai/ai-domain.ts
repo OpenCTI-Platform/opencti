@@ -422,8 +422,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   await checkEnterpriseEdition(context);
   // Counted here (feature entry point) rather than in the LLM client so the
   // metric stays backend-agnostic if NLQ is ever served by XTM One.
-  // Fire-and-forget: a telemetry failure must never break the NLQ feature.
-  addNlqQueryCount().catch((reason) => logApp.warn('Error adding NLQ query count to telemetry', { reason }));
+  addNlqQueryCount();
   const { search } = args;
   const promptValue = await NLQPromptTemplate.formatPromptValue({ text: search });
 
