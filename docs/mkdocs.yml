@@ -122,6 +122,7 @@ nav:
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
+      - MCP server (via XTM One): deployment/mcp-server.md
       - Manager:
         - Overview: deployment/integration-manager.md
         - Quick start: deployment/integration-manager/quick-start.md
