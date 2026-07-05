@@ -1,15 +1,4 @@
-import {
-  format as fnsFormat,
-  parseISO,
-  subDays,
-  subMinutes,
-  subMonths,
-  subYears,
-  addDays,
-  differenceInMinutes,
-  differenceInSeconds,
-  differenceInDays,
-} from 'date-fns';
+import { format as fnsFormat, parseISO, subDays, subMinutes, subMonths, subYears, addDays, differenceInMinutes, differenceInSeconds, differenceInDays } from 'date-fns';
 import { isNone } from '../components/i18n';
 
 const defaultDateFormat = 'yyyy-MM-dd';
