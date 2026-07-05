@@ -543,16 +543,19 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Knowledge graph scale
-    const knowledgeAggregation = await elAggregationCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-      field: 'entity_type',
-      types: KNOWLEDGE_OBJECT_TYPES,
-      normalizeLabel: false,
-    });
+    // The three independent ES queries run in parallel.
+    const [knowledgeAggregation, observablesCount, relationshipsCount] = await Promise.all([
+      elAggregationCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        field: 'entity_type',
+        types: KNOWLEDGE_OBJECT_TYPES,
+        normalizeLabel: false,
+      }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CYBER_OBSERVABLES, {}),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, {}),
+    ]);
     const knowledgeItems: DimensionalGaugeItem[] = knowledgeAggregation
       .map(({ label, count }) => ({ value: count, attributes: { type: String(label).toLowerCase() } }));
-    const observablesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CYBER_OBSERVABLES, {});
     knowledgeItems.push({ value: observablesCount, attributes: { type: 'observable' } });
-    const relationshipsCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, {});
     knowledgeItems.push({ value: relationshipsCount, attributes: { type: 'relationship' } });
     manager.setKnowledgeObjectsByType(knowledgeItems);
     // endregion
@@ -646,11 +649,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region RBAC scale
-    const groupsCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_GROUP] });
+    // The three independent ES count queries run in parallel.
+    const [groupsCount, rolesCount, organizationsCount] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_GROUP] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_ROLE] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Organization'] }),
+    ]);
     manager.setGroupsCount(groupsCount);
-    const rolesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_ROLE] });
     manager.setRolesCount(rolesCount);
-    const organizationsCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Organization'] });
     manager.setOrganizationsCount(organizationsCount);
     // endregion
 
