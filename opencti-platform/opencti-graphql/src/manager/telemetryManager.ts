@@ -41,7 +41,6 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
 } from '../database/utils';
-import { fullEntitiesList } from '../database/middleware-loader';
 import type { BasicStoreEntity } from '../types/store';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
@@ -92,21 +91,16 @@ const KNOWLEDGE_OBJECT_TYPES = [
   'Incident',
 ];
 
-// Structural subsets used by the snapshot collectors below - kept minimal so
-// the collectors do not depend on each module's full store type.
-type IngesterLike = BasicStoreEntity & { ingestion_running?: boolean };
-type DataShareLike = BasicStoreEntity & { stream_public?: boolean; feed_public?: boolean; taxii_public?: boolean; enabled?: boolean };
+// Structural subset used by the cache-based snapshot collectors below - kept
+// minimal so the collectors do not depend on each module's full store type.
+type DataShareLike = BasicStoreEntity & { stream_public?: boolean; enabled?: boolean };
 
-// Build the two running=true/false datapoints of a dimensional gauge from a
-// list of entities and a predicate. Zero-valued datapoints are kept so that
-// "configured but stopped" adoption states stay visible.
-const buildRunningBreakdown = (type: string, entities: { running: boolean }[]): DimensionalGaugeItem[] => {
-  const runningCount = entities.filter((entity) => entity.running).length;
-  return [
-    { value: runningCount, attributes: { type, running: 'true' } },
-    { value: entities.length - runningCount, attributes: { type, running: 'false' } },
-  ];
-};
+// Filter matching entities whose boolean attribute is true (ES count queries).
+const booleanTrueFilter = (key: string) => ({
+  mode: FilterMode.And,
+  filters: [{ key: [key], values: ['true'] }],
+  filterGroups: [],
+});
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
@@ -561,6 +555,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Ingestion adoption
+    // Total/running counts are computed with ES count queries (no document
+    // fetching) and the independent queries run in parallel. Zero-valued
+    // datapoints are kept so "configured but stopped" adoption states stay
+    // visible.
     const ingesterDefinitions: [string, string][] = [
       [ENTITY_TYPE_INGESTION_RSS, 'rss'],
       [ENTITY_TYPE_INGESTION_TAXII, 'taxii'],
@@ -568,33 +566,43 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       [ENTITY_TYPE_INGESTION_CSV, 'csv'],
       [ENTITY_TYPE_INGESTION_JSON, 'json'],
     ];
-    const ingesterItems: DimensionalGaugeItem[] = [];
-    for (let ingesterIndex = 0; ingesterIndex < ingesterDefinitions.length; ingesterIndex += 1) {
-      const [entityType, label] = ingesterDefinitions[ingesterIndex];
-      const ingesters = await fullEntitiesList<IngesterLike>(context, TELEMETRY_MANAGER_USER, [entityType]);
-      ingesterItems.push(...buildRunningBreakdown(label, ingesters.map((ingester) => ({ running: ingester.ingestion_running === true }))));
-    }
-    manager.setIngestersByType(ingesterItems);
+    const ingesterBreakdowns = await Promise.all(ingesterDefinitions.map(async ([entityType, label]) => {
+      const [totalCount, runningCount] = await Promise.all([
+        elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [entityType] }),
+        elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [entityType], filters: booleanTrueFilter('ingestion_running') }),
+      ]);
+      return [
+        { value: runningCount, attributes: { type: label, running: 'true' } },
+        { value: Math.max(totalCount - runningCount, 0), attributes: { type: label, running: 'false' } },
+      ];
+    }));
+    manager.setIngestersByType(ingesterBreakdowns.flat());
     const synchronizersCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_SYNC] });
     manager.setSynchronizersCount(synchronizersCount);
     // endregion
 
     // region Data sharing adoption
     const dataShareItems: DimensionalGaugeItem[] = [];
-    const buildPublicBreakdown = (type: string, shares: { isPublic: boolean }[]) => {
-      const publicCount = shares.filter((share) => share.isPublic).length;
+    const buildPublicBreakdown = (type: string, totalCount: number, publicCount: number) => {
       dataShareItems.push({ value: publicCount, attributes: { type, public: 'true' } });
-      dataShareItems.push({ value: shares.length - publicCount, attributes: { type, public: 'false' } });
+      dataShareItems.push({ value: Math.max(totalCount - publicCount, 0), attributes: { type, public: 'false' } });
     };
+    // Live streams and public dashboards are already held in the entity cache;
+    // feeds and TAXII collections are counted with ES count queries (they are
+    // not cached and can be numerous on large deployments).
     const liveStreams = await getEntitiesListFromCache<DataShareLike>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_STREAM_COLLECTION);
-    buildPublicBreakdown('live_stream', liveStreams.map((stream) => ({ isPublic: stream.stream_public === true })));
-    const feeds = await fullEntitiesList<DataShareLike>(context, TELEMETRY_MANAGER_USER, [ENTITY_TYPE_FEED]);
-    buildPublicBreakdown('feed', feeds.map((feed) => ({ isPublic: feed.feed_public === true })));
-    const taxiiCollections = await fullEntitiesList<DataShareLike>(context, TELEMETRY_MANAGER_USER, [ENTITY_TYPE_TAXII_COLLECTION]);
-    buildPublicBreakdown('taxii_collection', taxiiCollections.map((collection) => ({ isPublic: collection.taxii_public === true })));
+    buildPublicBreakdown('live_stream', liveStreams.length, liveStreams.filter((stream) => stream.stream_public === true).length);
+    const [feedsCount, publicFeedsCount, taxiiCollectionsCount, publicTaxiiCollectionsCount] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_FEED] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_FEED], filters: booleanTrueFilter('feed_public') }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_TAXII_COLLECTION] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_TAXII_COLLECTION], filters: booleanTrueFilter('taxii_public') }),
+    ]);
+    buildPublicBreakdown('feed', feedsCount, publicFeedsCount);
+    buildPublicBreakdown('taxii_collection', taxiiCollectionsCount, publicTaxiiCollectionsCount);
     // Public dashboards are anonymous-access by nature once enabled.
     const publicDashboards = await getEntitiesListFromCache<DataShareLike>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
-    buildPublicBreakdown('public_dashboard', publicDashboards.map((dashboard) => ({ isPublic: dashboard.enabled === true })));
+    buildPublicBreakdown('public_dashboard', publicDashboards.length, publicDashboards.filter((dashboard) => dashboard.enabled === true).length);
     manager.setDataSharesByType(dataShareItems);
     // endregion
 
