@@ -1,5 +1,4 @@
 import { filter, map, assoc } from 'ramda';
-import { parseISO } from 'date-fns';
 import { metrics } from '../database/rabbitmq';
 
 export const getMetrics = async (context, user, args) => {
