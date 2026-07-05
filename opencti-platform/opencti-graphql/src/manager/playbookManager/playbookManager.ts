@@ -330,8 +330,15 @@ const initPlaybookManager = () => {
             const convertedFilters = convertRelationRefsFilterKeys(jsonFilters);
             let conversionOpts = {};
             if (cronConfiguration.onlyLast) {
-              const periodMs: Record<string, number> = { minute: 60000, hour: 3600000, day: 86400000, week: 604800000, month: 2592000000 };
-              const fromDate = new Date(baseDate.getTime() - (periodMs[cronConfiguration.period] ?? 86400000));
+              const fromDate = new Date(baseDate);
+              switch (cronConfiguration.period) {
+                case 'minute': fromDate.setUTCMinutes(fromDate.getUTCMinutes() - 1); break;
+                case 'hour': fromDate.setUTCHours(fromDate.getUTCHours() - 1); break;
+                case 'day': fromDate.setUTCDate(fromDate.getUTCDate() - 1); break;
+                case 'week': fromDate.setUTCDate(fromDate.getUTCDate() - 7); break;
+                case 'month': fromDate.setUTCMonth(fromDate.getUTCMonth() - 1); break;
+                default: fromDate.setUTCDate(fromDate.getUTCDate() - 1);
+              }
               conversionOpts = { ...conversionOpts, after: fromDate };
             }
             const queryOptions = await convertFiltersToQueryOptions(convertedFilters, conversionOpts);
