@@ -48,6 +48,7 @@ const smtpConfigurationQuery = graphql`
         oauth_user
         oauth_client_id
         oauth_issuer
+        oauth_refresh_token_expires_at
     }
   }
 `;
@@ -61,7 +62,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
   smtpConfigurationQueryRef,
   refetch,
 }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const { smtpConfiguration } = usePreloadedQuery(smtpConfigurationQuery, smtpConfigurationQueryRef);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -205,9 +206,13 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
               <ListItemText primary={t_i18n('OAuth client ID')} />
               <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
             </ListItem>
-            <ListItem divider={false}>
+            <ListItem divider={true}>
               <ListItemText primary={t_i18n('OAuth issuer')} />
               {renderText(smtpConfiguration?.oauth_issuer)}
+            </ListItem>
+            <ListItem divider={false}>
+              <ListItemText primary={t_i18n('Refresh token expiration date')} />
+              {renderText(smtpConfiguration?.oauth_refresh_token_expires_at ? nsdt(smtpConfiguration.oauth_refresh_token_expires_at) : null)}
             </ListItem>
           </>
         )}

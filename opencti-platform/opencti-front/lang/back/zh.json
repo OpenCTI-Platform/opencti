@@ -685,6 +685,7 @@
   "OAuth issuer": "OAuth 颁发者",
   "OAuth refresh token": "OAuth 刷新令牌",
   "OAuth refresh token (encrypted)": "OAuth 刷新令牌（已加密）",
+  "OAuth refresh token expiration date": "OAuth 刷新令牌的过期日期",
   "OAuth user": "OAuth 用户",
   "Object markings": "对象标记",
   "Objective": "目标",

@@ -9,6 +9,7 @@ import Button from '@common/button/Button';
 import SwitchField from 'src/components/fields/SwitchField';
 import SelectField from 'src/components/fields/SelectField';
 import TextField from 'src/components/TextField';
+import DateTimePickerField from 'src/components/DateTimePickerField';
 import { useFormatter } from 'src/components/i18n';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { MESSAGING$ } from 'src/relay/environment';
@@ -32,6 +33,7 @@ export const smtpConfigurationAddMutation = graphql`
       oauth_user
       oauth_client_id
       oauth_issuer
+      oauth_refresh_token_expires_at
     }
   }
 `;
@@ -52,6 +54,7 @@ export const smtpConfigurationUpdateMutation = graphql`
       oauth_user
       oauth_client_id
       oauth_issuer
+      oauth_refresh_token_expires_at
     }
   }
 `;
@@ -70,6 +73,7 @@ export interface SmtpConfigurationData {
   oauth_user?: string | null;
   oauth_client_id?: string | null;
   oauth_issuer?: string | null;
+  oauth_refresh_token_expires_at?: string | null;
 }
 
 interface SmtpConfigurationFormProps {
@@ -94,6 +98,7 @@ interface SmtpConfigurationFormValues {
   oauth_client_secret: string;
   oauth_issuer: string;
   oauth_refresh_token: string;
+  oauth_refresh_token_expires_at: string | null;
 }
 
 // Secrets (password, oauth_client_secret, oauth_refresh_token) are never returned by the API,
@@ -154,6 +159,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
     oauth_client_secret: '',
     oauth_issuer: smtpConfiguration?.oauth_issuer ?? '',
     oauth_refresh_token: '',
+    oauth_refresh_token_expires_at: smtpConfiguration?.oauth_refresh_token_expires_at ?? null,
   };
 
   const buildInput = (values: SmtpConfigurationFormValues) => {
@@ -178,6 +184,9 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
       if (values.oauth_refresh_token) {
         input.oauth_refresh_token = values.oauth_refresh_token;
       }
+      input.oauth_refresh_token_expires_at = values.oauth_refresh_token_expires_at
+        ? new Date(values.oauth_refresh_token_expires_at).toISOString()
+        : null;
     }
     return input;
   };
@@ -347,6 +356,16 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 label={t_i18n('OAuth refresh token')}
                 fullWidth
                 style={{ marginTop: 20 }}
+              />
+              <Field
+                component={DateTimePickerField}
+                name="oauth_refresh_token_expires_at"
+                textFieldProps={{
+                  label: t_i18n('Refresh token expiration date'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
               />
             </>
           )}

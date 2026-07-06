@@ -685,6 +685,7 @@
   "OAuth issuer": "OAuth-Aussteller",
   "OAuth refresh token": "OAuth-Aktualisierungstoken",
   "OAuth refresh token (encrypted)": "OAuth-Aktualisierungstoken (verschlüsselt)",
+  "OAuth refresh token expiration date": "Ablaufdatum des OAuth-Aktualisierungstokens",
   "OAuth user": "OAuth-Benutzer",
   "Object markings": "Objektmarkierungen",
   "Objective": "Zielsetzung",
