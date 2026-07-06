@@ -1,8 +1,7 @@
 import * as R from 'ramda';
 import { elCount, elPaginate, type PaginateOpts } from '../database/engine';
-import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
-import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
+import { READ_INDEX_HISTORY } from '../database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import { OrderingMode, type QueryAuditsArgs, type QueryLogsArgs } from '../generated/graphql';
@@ -85,17 +84,4 @@ export const auditsMultiTimeSeries = (context: AuthContext, user: AuthUser, args
 
 export const auditsDistribution = async (context: AuthContext, user: AuthUser, args: any) => {
   return distributionHistory(context, user, { ...args, historyFiltering: true });
-};
-
-export const logsWorkerConfig = () => {
-  const elasticSearchUrl = conf.get('elasticsearch:url');
-  return {
-    elasticsearch_url: Array.isArray(elasticSearchUrl) ? elasticSearchUrl : [elasticSearchUrl],
-    elasticsearch_proxy: conf.get('elasticsearch:proxy') || null,
-    elasticsearch_index: INDEX_HISTORY,
-    elasticsearch_username: conf.get('elasticsearch:username') || null,
-    elasticsearch_password: conf.get('elasticsearch:password') || null,
-    elasticsearch_api_key: conf.get('elasticsearch:api_key') || null,
-    elasticsearch_ssl_reject_unauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
-  };
 };
