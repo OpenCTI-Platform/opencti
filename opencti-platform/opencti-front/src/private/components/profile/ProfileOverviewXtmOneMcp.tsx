@@ -4,26 +4,9 @@ import { ContentCopyOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import { IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import Label from '../../../components/common/label/Label';
 import { useFormatter } from '../../../components/i18n';
+import { toSafeHttpUrl } from '../../../utils/url';
 import { copyToClipboard } from '../../../utils/utils';
 import { useChatbot } from '../chatbox/ChatbotContext';
-
-/**
- * Only `http(s)` URLs are safe to display / open. `xtm_one_url` is server-side
- * config surfaced by `/chatbot/config`, so this guards against a misconfigured
- * or tampered value (e.g. a `javascript:` URL) ever being rendered as a link.
- * Returns the original URL (trailing slash trimmed) when valid, else null.
- */
-const toSafeHttpUrl = (rawUrl: string | null): string | null => {
-  if (!rawUrl) return null;
-  try {
-    const { protocol } = new URL(rawUrl);
-    return protocol === 'http:' || protocol === 'https:'
-      ? rawUrl.replace(/\/+$/, '')
-      : null;
-  } catch {
-    return null;
-  }
-};
 
 /**
  * "XTM One MCP server" profile card - shown only when the platform is
@@ -40,9 +23,16 @@ const toSafeHttpUrl = (rawUrl: string | null): string | null => {
  */
 const ProfileOverviewXtmOneMcp = () => {
   const { t_i18n } = useFormatter();
-  const { xtmOneConfigured, xtmOneUrl } = useChatbot();
+  let xtmOneConfigured: boolean | null = null;
+  let xtmOneUrl: string | null = null;
+  try {
+    ({ xtmOneConfigured, xtmOneUrl } = useChatbot());
+  } catch (_) {
+    // Graceful fallback if rendered outside of ChatbotProvider (e.g. tests
+    // mounting <Profile /> directly) - same pattern as utils/hooks/useAI.ts.
+  }
 
-  const safeXtmOneUrl = toSafeHttpUrl(xtmOneUrl);
+  const safeXtmOneUrl = toSafeHttpUrl(xtmOneUrl)?.replace(/\/+$/, '') ?? null;
   if (xtmOneConfigured !== true || !safeXtmOneUrl) {
     return null;
   }
@@ -58,7 +48,7 @@ const ProfileOverviewXtmOneMcp = () => {
       <div style={{ marginTop: 16 }}>
         <Label>{t_i18n('MCP endpoint URL')}</Label>
         <Stack direction="row" alignItems="center" gap={1}>
-          <pre style={{ flex: 1, margin: 0 }}>{mcpEndpointUrl}</pre>
+          <pre style={{ flex: 1, minWidth: 0, margin: 0, overflowX: 'auto' }}>{mcpEndpointUrl}</pre>
           <Tooltip title={t_i18n('Copy MCP endpoint URL')}>
             <IconButton
               size="small"

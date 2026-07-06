@@ -17,3 +17,20 @@ export const isRelativeUrl = (value: string): boolean => {
     && !ABSOLUTE_URL_SCHEME_PATTERN.test(trimmed)
     && !ENCODED_SCHEME_PATTERN.test(trimmed);
 };
+
+/**
+ * Only `http(s)` URLs are safe to render as a link or hand to `window.open`
+ * as a top-level navigation. Use this on any server-provided absolute URL
+ * (e.g. `xtm_one_url` from `/chatbot/config`) so that a misconfigured or
+ * tampered value (`javascript:`, `data:`, ...) is never displayed or opened.
+ * Returns the original URL when valid, else null.
+ */
+export const toSafeHttpUrl = (rawUrl: string | null): string | null => {
+  if (!rawUrl) return null;
+  try {
+    const { protocol } = new URL(rawUrl);
+    return protocol === 'http:' || protocol === 'https:' ? rawUrl : null;
+  } catch {
+    return null;
+  }
+};
