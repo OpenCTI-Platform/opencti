@@ -33,8 +33,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_SAVED_FILTER, type BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
-import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
+import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { elAggregationCount, elCount } from '../database/engine';
 import {
   READ_INDEX_FILES,
@@ -68,7 +67,6 @@ import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
-import { fullEntitiesList } from '../database/middleware-loader';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -553,14 +551,27 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Shared saved filters
-    const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(
-      context,
-      TELEMETRY_MANAGER_USER,
-      [ENTITY_TYPE_SAVED_FILTER],
-      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members'] },
-    );
-    const sharedSavedFilters = savedFilters.filter((f) => isSavedFilterShared(f));
-    manager.setSharedSavedFiltersCount(sharedSavedFilters.length);
+    // A saved filter is considered shared when it has restricted_members entries
+    // whose id differs from the creator_id. We use an internal_script filter to
+    // count them directly in ES to avoid fetching the full entity list.
+    const sharedSavedFiltersScript = 'def members = params._source.restricted_members; '
+      + 'if (members == null || members.isEmpty()) { return false; } '
+      + 'def creator = params._source.creator_id; '
+      + 'for (def m : members) { if (m.id != creator) { return true; } } '
+      + 'return false;';
+    const sharedSavedFiltersCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_SAVED_FILTER],
+      filters: {
+        mode: FilterMode.And,
+        filters: [{
+          key: ['restricted_members'],
+          values: [sharedSavedFiltersScript],
+          operator: 'internal_script',
+        }],
+        filterGroups: [],
+      },
+    });
+    manager.setSharedSavedFiltersCount(sharedSavedFiltersCount);
     // endregion
 
     // region Knowledge graph scale
