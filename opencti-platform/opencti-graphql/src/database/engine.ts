@@ -556,7 +556,7 @@ export const retryElOperations = async (operation: () => Promise<any>): Promise<
     } catch (error) {
       if (attempt < BULK_MAX_RETRIES && isTransitoryError(error)) {
         const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
-        logApp.warn(`[SEARCH] Bulk request transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
+        logApp.warn(`[SEARCH] Engine transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
         await wait(delayMs);
       } else {
         throw error;
