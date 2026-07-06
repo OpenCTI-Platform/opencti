@@ -105,9 +105,11 @@ const useIngestionCatalogFilters = ({
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.search) params.set('search', filters.search);
-    if (filters.types.length > 0) params.set('type', filters.types.join(','));
-    if (filters.useCases.length > 0) params.set('useCase', filters.useCases.join(','));
-    if (filters.statuses.length > 0) params.set('status', filters.statuses.join(','));
+    // Values are sorted so the same logical filter set always produces the
+    // same canonical URL regardless of selection order.
+    if (filters.types.length > 0) params.set('type', [...filters.types].sort().join(','));
+    if (filters.useCases.length > 0) params.set('useCase', [...filters.useCases].sort().join(','));
+    if (filters.statuses.length > 0) params.set('status', [...filters.statuses].sort().join(','));
     if (sort !== 'name') params.set('sort', sort);
 
     const queryString = params.toString();

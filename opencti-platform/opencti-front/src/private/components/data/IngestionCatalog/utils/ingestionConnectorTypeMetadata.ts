@@ -9,7 +9,7 @@ export type IngestionConnectorType
     | 'INTERNAL_IMPORT_FILE'
     | 'STREAM';
 
-const CONNECTOR_TYPE_ICONS: Record<string, SvgIconComponent> = {
+const CONNECTOR_TYPE_ICONS: Record<IngestionConnectorType, SvgIconComponent> = {
   EXTERNAL_IMPORT: CloudDownloadOutlined,
   INTERNAL_ENRICHMENT: AutoAwesomeOutlined,
   INTERNAL_EXPORT_FILE: FileDownloadOutlined,
@@ -19,6 +19,7 @@ const CONNECTOR_TYPE_ICONS: Record<string, SvgIconComponent> = {
 };
 
 export const getConnectorTypeIcon = (containerType: IngestionConnectorType): SvgIconComponent => {
+  // Fallback kept on purpose: catalog data may carry types unknown to this build.
   return CONNECTOR_TYPE_ICONS[containerType] ?? ExtensionOutlined;
 };
 
