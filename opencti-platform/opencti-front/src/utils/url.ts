@@ -23,13 +23,14 @@ export const isRelativeUrl = (value: string): boolean => {
  * as a top-level navigation. Use this on any server-provided absolute URL
  * (e.g. `xtm_one_url` from `/chatbot/config`) so that a misconfigured or
  * tampered value (`javascript:`, `data:`, ...) is never displayed or opened.
- * Returns the original URL when valid, else null.
+ * Returns the trimmed URL when valid, else null.
  */
 export const toSafeHttpUrl = (rawUrl: string | null): string | null => {
-  if (!rawUrl) return null;
+  const trimmed = rawUrl?.trim();
+  if (!trimmed) return null;
   try {
-    const { protocol } = new URL(rawUrl);
-    return protocol === 'http:' || protocol === 'https:' ? rawUrl : null;
+    const { protocol } = new URL(trimmed);
+    return protocol === 'http:' || protocol === 'https:' ? trimmed : null;
   } catch {
     return null;
   }
