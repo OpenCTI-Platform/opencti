@@ -603,7 +603,7 @@ class Note:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["notes"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["notes"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["notes"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Notes", {"after": after})
@@ -619,7 +619,7 @@ class Note:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["notes"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

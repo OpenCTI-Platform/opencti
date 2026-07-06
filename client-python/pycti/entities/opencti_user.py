@@ -280,7 +280,7 @@ class User:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["users"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["users"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["users"]["pageInfo"]["endCursor"]
                 result = self.opencti.query(
@@ -295,7 +295,7 @@ class User:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["users"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

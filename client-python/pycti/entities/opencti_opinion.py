@@ -358,7 +358,7 @@ class Opinion:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["opinions"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["opinions"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["opinions"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Opinions", {"after": after})
@@ -374,7 +374,7 @@ class Opinion:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["opinions"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

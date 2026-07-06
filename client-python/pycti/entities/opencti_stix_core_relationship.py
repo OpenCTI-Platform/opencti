@@ -548,7 +548,7 @@ class StixCoreRelationship:
             data = self.opencti.process_multiple(
                 result["data"]["stixCoreRelationships"]
             )
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixCoreRelationships"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreRelationships"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug(
@@ -579,7 +579,7 @@ class StixCoreRelationship:
                 data = self.opencti.process_multiple(
                     result["data"]["stixCoreRelationships"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

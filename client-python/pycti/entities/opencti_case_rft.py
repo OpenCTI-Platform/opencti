@@ -598,7 +598,7 @@ class CaseRft:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["caseRfts"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["caseRfts"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["caseRfts"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Case Rfts", {"after": after})
@@ -614,7 +614,7 @@ class CaseRft:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["caseRfts"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

@@ -384,7 +384,7 @@ class AttackPattern:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["attackPatterns"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["attackPatterns"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["attackPatterns"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.info(
@@ -402,7 +402,7 @@ class AttackPattern:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["attackPatterns"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

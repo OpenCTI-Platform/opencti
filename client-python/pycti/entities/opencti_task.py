@@ -348,7 +348,7 @@ class Task:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["tasks"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["tasks"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["tasks"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Tasks", {"after": after})
@@ -364,7 +364,7 @@ class Task:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["tasks"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

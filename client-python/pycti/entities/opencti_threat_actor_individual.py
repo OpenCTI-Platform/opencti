@@ -264,7 +264,7 @@ class ThreatActorIndividual:
             data = self.opencti.process_multiple(
                 result["data"]["threatActorsIndividuals"]
             )
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["threatActorsIndividuals"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["threatActorsIndividuals"]["pageInfo"][
                     "endCursor"
@@ -286,7 +286,7 @@ class ThreatActorIndividual:
                 data = self.opencti.process_multiple(
                     result["data"]["threatActorsIndividuals"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

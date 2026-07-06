@@ -381,7 +381,7 @@ class Location:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["locations"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["locations"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["locations"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Locations", {"after": after})
@@ -398,7 +398,7 @@ class Location:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["locations"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

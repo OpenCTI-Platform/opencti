@@ -122,7 +122,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["stixCyberObservables"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixCyberObservables"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCyberObservables"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.info(
@@ -143,7 +143,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 data = self.opencti.process_multiple(
                     result["data"]["stixCyberObservables"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

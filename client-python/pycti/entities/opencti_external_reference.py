@@ -191,7 +191,7 @@ class ExternalReference:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["externalReferences"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["externalReferences"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["externalReferences"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug(
@@ -210,7 +210,7 @@ class ExternalReference:
                 data = self.opencti.process_multiple(
                     result["data"]["externalReferences"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

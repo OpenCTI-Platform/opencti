@@ -338,7 +338,7 @@ class Narrative:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["narratives"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["narratives"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["narratives"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Narratives", {"after": after})
@@ -354,7 +354,7 @@ class Narrative:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["narratives"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

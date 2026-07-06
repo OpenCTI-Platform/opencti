@@ -354,7 +354,7 @@ class Campaign:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["campaigns"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["campaigns"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["campaigns"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Campaigns", {"after": after})
@@ -370,7 +370,7 @@ class Campaign:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["campaigns"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

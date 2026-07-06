@@ -118,7 +118,7 @@ class Label:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["labels"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["labels"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["labels"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Labels", {"after": after})
@@ -134,7 +134,7 @@ class Label:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["labels"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

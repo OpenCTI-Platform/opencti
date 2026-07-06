@@ -352,7 +352,7 @@ class DataSource:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["dataSources"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["dataSources"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["dataSources"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Data-Sources", {"after": after})
@@ -368,7 +368,7 @@ class DataSource:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["dataSources"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

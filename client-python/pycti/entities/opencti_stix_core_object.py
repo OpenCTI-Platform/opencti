@@ -1519,7 +1519,7 @@ class StixCoreObject:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["stixCoreObjects"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixCoreObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreObjects"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug(
@@ -1538,7 +1538,7 @@ class StixCoreObject:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["stixCoreObjects"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

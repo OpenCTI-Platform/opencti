@@ -127,7 +127,7 @@ class Role:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["roles"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["roles"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["roles"]["pageInfo"]["endCursor"]
                 result = self.opencti.query(
@@ -141,7 +141,7 @@ class Role:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["roles"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

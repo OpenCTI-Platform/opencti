@@ -354,7 +354,7 @@ class Event:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["events"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["events"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["events"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Events", {"after": after})
@@ -370,7 +370,7 @@ class Event:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["events"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

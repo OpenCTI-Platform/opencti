@@ -365,7 +365,7 @@ class Incident:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["incidents"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["incidents"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["incidents"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Incidents", {"after": after})
@@ -381,7 +381,7 @@ class Incident:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["incidents"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

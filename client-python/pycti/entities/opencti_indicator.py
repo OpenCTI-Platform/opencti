@@ -144,7 +144,7 @@ class Indicator:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["indicators"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["indicators"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["indicators"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Indicators", {"after": after})
@@ -161,7 +161,7 @@ class Indicator:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["indicators"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

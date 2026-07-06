@@ -1195,7 +1195,7 @@ class StixDomainObject:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["stixDomainObjects"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixDomainObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixDomainObjects"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug(
@@ -1216,7 +1216,7 @@ class StixDomainObject:
                 data = self.opencti.process_multiple(
                     result["data"]["stixDomainObjects"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

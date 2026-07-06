@@ -384,7 +384,7 @@ class DataComponent:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["dataComponents"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["dataComponents"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["dataComponents"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.info(
@@ -402,7 +402,7 @@ class DataComponent:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["dataComponents"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
