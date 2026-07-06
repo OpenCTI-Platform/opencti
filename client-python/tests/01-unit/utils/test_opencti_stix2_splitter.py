@@ -132,6 +132,40 @@ def test_split_cyclic_bundle():
             )
 
 
+def test_split_bundle_deduplicates_refs_preserving_order():
+    stix_splitter = OpenCTIStix2Splitter()
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--dedup",
+        "objects": [
+            {
+                "id": "report--root",
+                "type": "report",
+                "object_refs": [
+                    "indicator--2",
+                    "indicator--1",
+                    "indicator--2",
+                ],
+            },
+            {"id": "indicator--1", "type": "indicator"},
+            {"id": "indicator--2", "type": "indicator"},
+        ],
+    }
+
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle, use_json=False
+    )
+    root = next(
+        item
+        for split_bundle in bundles
+        for item in split_bundle["objects"]
+        if item["id"] == "report--root"
+    )
+
+    assert expectations == 3
+    assert root["object_refs"] == ["indicator--2", "indicator--1"]
+
+
 def test_create_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     report = Report(

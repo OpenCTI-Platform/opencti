@@ -89,7 +89,7 @@ class OpenCTIStix2Splitter:
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
         :param parent_acc: accumulator of parent IDs to prevent circular references
-        :type parent_acc: list
+        :type parent_acc: set
         :return: number of dependencies enlisted
         :rtype: int
         """
@@ -103,12 +103,13 @@ class OpenCTIStix2Splitter:
 
         item = raw_data[item_id]
         if self.cache_refs.get(item_id) is None:
-            self.cache_refs[item_id] = []
+            self.cache_refs[item_id] = set()
         for key in list(item.keys()):
             value = item[key]
             # Recursive enlist for every refs
             if key.endswith("_refs") and item[key] is not None:
                 to_keep = []
+                to_keep_ids = set()
                 for element_ref in item[key]:
                     # We need to check if this ref is not already a reference
                     is_missing_ref = raw_data.get(element_ref) is None
@@ -125,14 +126,15 @@ class OpenCTIStix2Splitter:
                         and element_ref != item_id
                         and not_dependency_ref
                     ):
-                        self.cache_refs[item_id].append(element_ref)
+                        self.cache_refs[item_id].add(element_ref)
                         nb_deps += self.enlist_element(
                             element_ref,
                             raw_data,
                             cleanup_inconsistent_bundle,
-                            parent_acc + [element_ref],
+                            parent_acc | {element_ref},
                         )
-                        if element_ref not in to_keep:
+                        if element_ref not in to_keep_ids:
+                            to_keep_ids.add(element_ref)
                             to_keep.append(element_ref)
                     item[key] = to_keep
             elif key.endswith("_ref"):
@@ -151,12 +153,12 @@ class OpenCTIStix2Splitter:
                     and value != item_id
                     and not_dependency_ref
                 ):
-                    self.cache_refs[item_id].append(value)
+                    self.cache_refs[item_id].add(value)
                     nb_deps += self.enlist_element(
                         value,
                         raw_data,
                         cleanup_inconsistent_bundle,
-                        parent_acc + [value],
+                        parent_acc | {value},
                     )
                 else:
                     item[key] = None
@@ -281,7 +283,9 @@ class OpenCTIStix2Splitter:
             for internal_id in self.get_internal_ids_in_extension(item):
                 raw_data[internal_id] = item
         for item in bundle_data["objects"]:
-            self.enlist_element(item["id"], raw_data, cleanup_inconsistent_bundle, [])
+            self.enlist_element(
+                item["id"], raw_data, cleanup_inconsistent_bundle, set()
+            )
 
         # Build the bundles
         bundles = []
