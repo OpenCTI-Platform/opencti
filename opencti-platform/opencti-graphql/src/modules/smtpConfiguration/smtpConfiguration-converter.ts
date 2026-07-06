@@ -19,6 +19,7 @@ const convertSmtpConfigurationToStix = (instance: StoreEntitySmtpConfiguration):
     oauth_user: instance.oauth_user,
     oauth_client_id: instance.oauth_client_id,
     oauth_issuer: instance.oauth_issuer,
+    oauth_refresh_token_expires_at: instance.oauth_refresh_token_expires_at,
     // Secrets are intentionally excluded from the STIX representation
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

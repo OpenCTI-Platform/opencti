@@ -33,6 +33,7 @@ const SMTP_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntitySmtpConfigurati
     { name: 'oauth_client_secret_encrypted', label: 'OAuth client secret (encrypted)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'oauth_issuer', label: 'OAuth issuer', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'oauth_refresh_token_encrypted', label: 'OAuth refresh token (encrypted)', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'oauth_refresh_token_expires_at', label: 'OAuth refresh token expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (_instance: StixSmtpConfiguration) => {
