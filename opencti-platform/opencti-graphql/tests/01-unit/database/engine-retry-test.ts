@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const testMocks = vi.hoisted(() => ({
+  index: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
   reindex: vi.fn(),
@@ -20,6 +21,8 @@ vi.mock('@elastic/elasticsearch', () => {
     public delete = testMocks.delete;
 
     public reindex = testMocks.reindex;
+
+    public index = testMocks.index;
 
     // eslint-disable-next-line no-useless-constructor
     constructor(_config: unknown) {}
@@ -79,7 +82,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   };
 });
 
-import { elDelete, elReindexElements, elUpdate, searchEngineInit } from '../../../src/database/engine';
+import { elDelete, elIndex, elReindexElements, elUpdate, searchEngineInit } from '../../../src/database/engine';
 
 const TRANSIENT_ERROR = new Error('circuit_breaking_exception: data too large');
 const MAX_RETRY_ATTEMPTS = 6;
@@ -122,6 +125,32 @@ describe('engine retries on circuit breaking exception', () => {
       await vi.runAllTimersAsync();
       await rejectionAssertion;
       expect(testMocks.update).toHaveBeenCalledTimes(MAX_RETRY_ATTEMPTS);
+    });
+  });
+
+  describe('elIndex', () => {
+    it('retries after circuit_breaking_exception', async () => {
+      vi.useFakeTimers();
+      testMocks.index
+        .mockRejectedValueOnce(TRANSIENT_ERROR)
+        .mockResolvedValueOnce({});
+      const indexPromise = elIndex('entities', { internal_id: 'entity-1', entity_type: 'Report' });
+      await vi.advanceTimersByTimeAsync(500);
+      await expect(indexPromise).resolves.toMatchObject({ internal_id: 'entity-1' });
+      expect(testMocks.index).toHaveBeenCalledTimes(2);
+    });
+
+    it('throws higher level exception when retries are exhausted', async () => {
+      vi.useFakeTimers();
+      testMocks.index.mockRejectedValue(TRANSIENT_ERROR);
+      const indexPromise = elIndex('entities', { internal_id: 'entity-1', entity_type: 'Report' });
+      const rejectionAssertion = expect(indexPromise).rejects.toMatchObject({
+        message: 'Simple indexing fail',
+        extensions: { code: 'DATABASE_ERROR' },
+      });
+      await vi.runAllTimersAsync();
+      await rejectionAssertion;
+      expect(testMocks.index).toHaveBeenCalledTimes(MAX_RETRY_ATTEMPTS);
     });
   });
 
