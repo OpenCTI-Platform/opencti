@@ -203,6 +203,127 @@ describe('Ingestion Json domain - complex path coverage', async () => {
   });
 });
 
+describe('Ingestion Json domain - pagination with sub-page coverage', async () => {
+  let mapperId: string;
+
+  const simpleToolRepresentations = [
+    {
+      id: 'tool-rep-pagination',
+      type: JsonMapperRepresentationType.Entity,
+      target: {
+        entity_type: ENTITY_TYPE_TOOL,
+        path: '$.objects[?(@.type == "tool")]',
+      },
+      attributes: [
+        {
+          mode: 'simple',
+          key: 'name',
+          attr_path: { path: '$.name' },
+        },
+      ],
+    },
+  ];
+
+  beforeAll(async () => {
+    const mapper = await createJsonMapper(testContext, ADMIN_USER, {
+      name: 'Pagination Sub-Page Test Mapper',
+      representations: JSON.stringify(simpleToolRepresentations),
+    });
+    mapperId = mapper.id;
+  });
+
+  afterAll(async () => {
+    if (mapperId) {
+      await deleteJsonMapper(testContext, ADMIN_USER, mapperId);
+    }
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should follow the next-page URL and combine results from multiple pages', async () => {
+    const page1Data = {
+      objects: Array.from({ length: 5 }, (_, i) => ({ type: 'tool', name: `tool-page1-${i + 1}` })),
+      next_url: 'https://example.com/feed?page=2',
+    };
+    const page2Data = {
+      objects: Array.from({ length: 5 }, (_, i) => ({ type: 'tool', name: `tool-page2-${i + 1}` })),
+      // no next_url → pagination stops
+    };
+
+    const callMock = vi.fn()
+      .mockResolvedValueOnce({ data: page1Data, headers: {} })
+      .mockResolvedValueOnce({ data: page2Data, headers: {} });
+
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ call: callMock } as any);
+
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Pagination sub-page feed',
+      uri: 'https://example.com/feed.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+      body: '',
+      pagination_with_sub_page: true,
+      pagination_with_sub_page_attribute_path: '$.next_url',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+    const parsedObjects = JSON.parse(result.objects);
+
+    // Both pages were fetched
+    expect(callMock).toHaveBeenCalledTimes(2);
+    // 5 tools from page 1 + 5 tools from page 2 = 10 total
+    expect(result.nbEntities).toBe(10);
+    expect(result.nbRelationships).toBe(0);
+    expect(parsedObjects.some((o: any) => o.name === 'tool-page1-1')).toBe(true);
+    expect(parsedObjects.some((o: any) => o.name === 'tool-page2-5')).toBe(true);
+  });
+
+  it('should stop pagination at 50-object cap even when sub-pages would exceed it', async () => {
+    // Page 1: 40 tools + next_url
+    const page1Data = {
+      objects: Array.from({ length: 40 }, (_, i) => ({ type: 'tool', name: `tool-p1-${i + 1}` })),
+      next_url: 'https://example.com/feed?page=2',
+    };
+    // Page 2: 20 tools (would bring total to 60, but cap is 50)
+    const page2Data = {
+      objects: Array.from({ length: 20 }, (_, i) => ({ type: 'tool', name: `tool-p2-${i + 1}` })),
+    };
+
+    const callMock = vi.fn()
+      .mockResolvedValueOnce({ data: page1Data, headers: {} })
+      .mockResolvedValueOnce({ data: page2Data, headers: {} });
+
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ call: callMock } as any);
+
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Pagination cap-50 feed',
+      uri: 'https://example.com/feed-large.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+      body: '',
+      pagination_with_sub_page: true,
+      pagination_with_sub_page_attribute_path: '$.next_url',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+    const parsedObjects = JSON.parse(result.objects);
+
+    // Result must be capped at 50 even though page1 (40) + page2 (20) = 60
+    expect(parsedObjects.length).toBeLessThanOrEqual(50);
+    expect(result.nbEntities).toBeLessThanOrEqual(50);
+    // tool-p1-1 is from page 1, must be present
+    expect(parsedObjects.some((o: any) => o.name === 'tool-p1-1')).toBe(true);
+    // tool-p2-11 would be the 51st object, must NOT be present
+    expect(parsedObjects.some((o: any) => o.name === 'tool-p2-11')).toBe(false);
+  });
+});
+
 describe('Ingestion Json domain - ingestionJsonTester mutation (testJsonIngestionMapping)', async () => {
   let mapperId: string;
 
