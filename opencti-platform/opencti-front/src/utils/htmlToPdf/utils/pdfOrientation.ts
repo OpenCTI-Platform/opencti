@@ -1,4 +1,4 @@
-import { TIPTAP_EDITOR_SELECTOR, CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
+import { TIPTAP_EDITOR_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
 
 /**
  * Loop through elements inside the editor to determine if it is
@@ -6,15 +6,12 @@ import { TIPTAP_EDITOR_SELECTOR, CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT
  *
  * @returns 'landscape' or 'portrait'.
  */
-const determineOrientation = (isTiptapEnabled = false) => {
+const determineOrientation = () => {
   let pdfElementMaxWidth = 0;
-  const selector = isTiptapEnabled ? TIPTAP_EDITOR_SELECTOR : CKEDITOR_CONTAINER_SELECTOR;
-  const elementEditor = document.querySelector(selector);
+  const elementEditor = document.querySelector(TIPTAP_EDITOR_SELECTOR);
   if (elementEditor) {
     // We need to get tables and img width inside the editor in order to choose orientation.
-    // Tiptap uses <table>, legacy editor used figure.table
-    const tableSelector = isTiptapEnabled ? 'table, figure.table' : 'figure.table';
-    const tables = Array.from(elementEditor.querySelectorAll(tableSelector) ?? []);
+    const tables = Array.from(elementEditor.querySelectorAll('table, figure.table') ?? []);
     const images = Array.from(elementEditor.querySelectorAll('img') ?? []);
     [...tables, ...images].forEach((child) => {
       const width = (child as HTMLElement).clientWidth;
