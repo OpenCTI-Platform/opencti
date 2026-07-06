@@ -132,8 +132,8 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       disabled={disabled}
       controlledDial={UpdateGroupControlledDial}
     >
-      <>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Roles')} />
@@ -154,31 +154,31 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
         )}
         {currentTab === 2 && <GroupEditionMarkings group={group} />}
         {currentTab === 3 && userQueryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inline} />}
-          >
-            <GroupEditionUsers
-              group={group}
-              queryRef={userQueryRef}
-              paginationOptionsForUpdater={paginationOptionsForUserEdition}
-              storageKey={LOCAL_STORAGE_KEY}
+          <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inline} />}
             >
-              <SearchInput
-                variant="thin"
-                onSubmit={helpers.handleSearch}
-                keyword={searchTerm}
-                sx={{
-                  marginTop: 2,
-                  marginBottom: 2,
-                }}
-              />
-            </GroupEditionUsers>
-          </React.Suspense>
+              <GroupEditionUsers
+                group={group}
+                queryRef={userQueryRef}
+                paginationOptionsForUpdater={paginationOptionsForUserEdition}
+                storageKey={LOCAL_STORAGE_KEY}
+              >
+                <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+                  <SearchInput
+                    variant="thin"
+                    onSubmit={helpers.handleSearch}
+                    keyword={searchTerm}
+                  />
+                </Box>
+              </GroupEditionUsers>
+            </React.Suspense>
+          </Box>
         )}
         {hasSetAccess && currentTab === 4 && (
           <GroupEditionConfidence group={group} context={editContext} />
         )}
-      </>
+      </Box>
     </Drawer>
   );
 };

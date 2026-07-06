@@ -16,6 +16,7 @@ type IngestionQueryAttribute {
 type IngestionJson implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
+    representative: Representative!
     connector_id: String!
     standard_id: String!
     parent_types: [String!]!

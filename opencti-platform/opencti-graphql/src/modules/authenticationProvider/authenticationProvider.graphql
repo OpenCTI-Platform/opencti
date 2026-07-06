@@ -274,6 +274,7 @@ type AuthenticationProvider implements InternalObject & BasicObject & Authentica
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric] # needed ?
   created_at: DateTime!

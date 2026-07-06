@@ -16,11 +16,6 @@ on:
         type: boolean
         required: false
         default: false
-      dockerfile_target:
-        description: "Target to build in the multi stage docker file - testing or app"
-        type: string
-        required: false
-        default: app
       publish_to_registry:
         description: "Publish image to registry. If false, will save the image as github artifact"
         type: string
@@ -63,6 +58,30 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    - name: Docker meta (builder)
+      id: meta-builder
+      uses: docker/metadata-action@v6
+      with:
+        images: filigran/builder
+        tags: type=raw,value=${{ inputs.image_tag }}
+
+    - name: Build (builder)
+      uses: docker/build-push-action@v7
+      with:
+        context: opencti-platform
+        file: opencti-platform/Dockerfile
+        target: builder
+        outputs: type=docker,dest=/tmp/opencti-builder.tar
+        tags: ${{ steps.meta-builder.outputs.tags }}
+        labels: ${{ steps.meta-builder.outputs.labels }}
+
+    - name: Upload builder docker image artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: docker-image-opencti-builder
+        path: /tmp/opencti-builder.tar
+        retention-days: 7
+
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v6
@@ -74,8 +93,7 @@ jobs:
       uses: docker/build-push-action@v7
       with:
         context: opencti-platform
-        file: opencti-platform/Dockerfile_featurebranch
-        target: ${{ inputs.dockerfile_target }}
+        file: opencti-platform/Dockerfile
         push: ${{ inputs.publish_to_registry == 'true' }}
         outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
@@ -103,7 +121,7 @@ jobs:
 
     - name: Use client-python in worker from same branch
       if: ${{ inputs.client_python_local == true }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/src/requirements.txt
+      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/requirements.txt
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4

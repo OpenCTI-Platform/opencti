@@ -37,6 +37,7 @@ import { notify } from '../database/redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 import { toB64 } from '../utils/base64';
+import { addAskAiQueryCount } from '../manager/telemetryManager';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -281,6 +282,7 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
 
 export const aiSummary = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  addAskAiQueryCount('container_summary');
 
   const { busId = null, language = 'English', forceRefresh = false } = args;
   const hasTypesArgs = args.types && args.types.length > 0;
