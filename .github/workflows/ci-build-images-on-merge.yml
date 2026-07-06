@@ -69,6 +69,9 @@ jobs:
       - uses: ./.github/actions/generate-sbom
         with:
           tags: '["${{ github.sha }}"]'
+          image_name: "filigran/platform"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-platform"
 
   generate-sbom-platform-ubi9:
     name: Generate SBOM (platform UBI9)
@@ -78,7 +81,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/generate-sbom
         with:
-          tags: '["${{ github.sha }}-ubi9"]'
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/platform"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-platform-ubi9"
 
   generate-sbom-platform-fips:
     name: Generate SBOM (platform FIPS)
@@ -88,7 +94,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/generate-sbom
         with:
-          tags: '["${{ github.sha }}-fips"]'
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/platform"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-platform-fips"
 
   generate-sbom-worker-standard:
     name: Generate SBOM (worker standard)
@@ -99,6 +108,9 @@ jobs:
       - uses: ./.github/actions/generate-sbom
         with:
           tags: '["${{ github.sha }}"]'
+          image_name: "filigran/worker"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-worker"
 
   generate-sbom-worker-ubi9:
     name: Generate SBOM (worker UBI9)
@@ -108,7 +120,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/generate-sbom
         with:
-          tags: '["${{ github.sha }}-ubi9"]'
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/worker"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-worker-ubi9"
 
   upload-artifacts:
     name: Upload all artifacts

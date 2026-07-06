@@ -1,12 +1,25 @@
 name: Generate SBOM files
 description: >
-  Generates one or more SBOM files for OpenCTI platform docker images and uploads them as artifacts.
+  Generates one or more SBOM files for OpenCTI docker images and uploads them as artifacts.
   The SBOM files are generated in CycloneDX JSON format.
+  Supports two sources: "registry" (pull from Docker Hub) or "artifact" (load from a GitHub artifact tar file).
 
 inputs:
   tags:
     description: 'JSON array of image tags (e.g. ["7.260619.0", "7.260619.0-ubi9", "7.260619.0-fips"])'
     required: true
+  image_name:
+    description: 'Docker image name without tag (e.g. "opencti/platform" or "opencti/worker")'
+    required: false
+    default: "opencti/platform"
+  source:
+    description: 'Where to get the image from: "registry" (Docker Hub) or "artifact" (GitHub artifact)'
+    required: false
+    default: "registry"
+  artifact_name:
+    description: 'Name of the GitHub artifact containing the docker image tar (required when source is "artifact")'
+    required: false
+    default: ""
   overwrite:
     description: "Overwrite existing artifacts if they already exist"
     required: false
@@ -18,24 +31,57 @@ runs:
     - name: Install Syft
       uses: anchore/sbom-action/download-syft@v0
 
+    - name: Download docker image artifact
+      if: ${{ inputs.source == 'artifact' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: /tmp/sbom-image
+
+    - name: Load docker image from artifact
+      if: ${{ inputs.source == 'artifact' }}
+      shell: bash
+      run: |
+        for tarfile in /tmp/sbom-image/*.tar; do
+          echo "Loading docker image from ${tarfile}"
+          docker load --input "${tarfile}"
+        done
+        docker images
+
     - name: Generate SBOMs
       shell: bash
       env:
         TAGS: ${{ inputs.tags }}
+        IMAGE_NAME: ${{ inputs.image_name }}
+        SOURCE: ${{ inputs.source }}
       run: |
         for TAG in $(echo "${TAGS}" | jq -r '.[]'); do
           echo "::group::Processing tag: ${TAG}"
 
-          echo "Verifying docker image exists: opencti/platform:${TAG}"
-          if ! docker manifest inspect "opencti/platform:${TAG}" > /dev/null 2>&1; then
-            echo "::error::Image opencti/platform:${TAG} does not exist in the registry"
-            exit 1
+          IMAGE_REF="${IMAGE_NAME}:${TAG}"
+
+          if [ "${SOURCE}" = "registry" ]; then
+            echo "Verifying docker image exists in registry: ${IMAGE_REF}"
+            if ! docker manifest inspect "${IMAGE_REF}" > /dev/null 2>&1; then
+              echo "::error::Image ${IMAGE_REF} does not exist in the registry"
+              exit 1
+            fi
+          else
+            echo "Verifying docker image is loaded locally: ${IMAGE_REF}"
+            if ! docker image inspect "${IMAGE_REF}" > /dev/null 2>&1; then
+              echo "::error::Image ${IMAGE_REF} is not available locally"
+              exit 1
+            fi
           fi
 
-          echo "Generating SBOM for opencti/platform:${TAG}"
-          syft "opencti/platform:${TAG}" \
+          # Sanitize tag for filename (replace / and : with -)
+          SAFE_TAG=$(echo "${TAG}" | tr '/:' '-')
+          SAFE_IMAGE=$(echo "${IMAGE_NAME}" | tr '/' '-')
+
+          echo "Generating SBOM for ${IMAGE_REF}"
+          syft "${IMAGE_REF}" \
             -c "${{ github.workspace }}/.syft.yaml" \
-            -o "cyclonedx-json=opencti-platform-${TAG}.cdx.json"
+            -o "cyclonedx-json=${SAFE_IMAGE}-${SAFE_TAG}.cdx.json"
 
           echo "::endgroup::"
         done
@@ -43,8 +89,8 @@ runs:
     - name: Upload SBOM artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: sbom-opencti-platform
-        path: "opencti-platform-*.cdx.json"
+        name: sbom-${{ inputs.artifact_name || inputs.image_name }}
+        path: "*.cdx.json"
         overwrite: ${{ inputs.overwrite }}
         retention-days: 3
 
