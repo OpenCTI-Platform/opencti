@@ -2489,9 +2489,8 @@ class OpenCTIStix2:
                 del entity["x_opencti_id"]
             return result
         elif mode == "full":
-            uuids = [entity["id"]]
-            for y in result:
-                uuids.append(y["id"])
+            uuids = {entity["id"]}
+            uuids.update(y["id"] for y in result)
             # Get extra refs
             for key in entity.keys():
                 if key.endswith("_ref"):
@@ -2551,8 +2550,8 @@ class OpenCTIStix2:
                 relation_object_bundle = self.filter_objects(
                     uuids, relation_object_data
                 )
-                uuids = uuids + [x["id"] for x in relation_object_bundle]
-                result = result + relation_object_bundle
+                uuids.update(x["id"] for x in relation_object_bundle)
+                result.extend(relation_object_bundle)
 
             # Get sighting
             stix_sighting_relationships = self.opencti.stix_sighting_relationship.list(
@@ -2574,8 +2573,8 @@ class OpenCTIStix2:
                 relation_object_bundle = self.filter_objects(
                     uuids, relation_object_data
                 )
-                uuids = uuids + [x["id"] for x in relation_object_bundle]
-                result = result + relation_object_bundle
+                uuids.update(x["id"] for x in relation_object_bundle)
+                result.extend(relation_object_bundle)
 
             if no_custom_attributes:
                 del entity["x_opencti_id"]
@@ -2601,8 +2600,8 @@ class OpenCTIStix2:
                     entity_object_bundle = self.filter_objects(
                         uuids, stix_entity_object
                     )
-                    uuids = uuids + [x["id"] for x in entity_object_bundle]
-                    result = result + entity_object_bundle
+                    uuids.update(x["id"] for x in entity_object_bundle)
+                    result.extend(entity_object_bundle)
             # Get extra reports
             """
             for uuid in uuids:
