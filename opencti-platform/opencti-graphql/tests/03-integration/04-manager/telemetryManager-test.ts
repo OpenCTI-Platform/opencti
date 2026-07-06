@@ -36,7 +36,6 @@ import {
 import { aiActivity, aiForecast, aiHistory } from '../../../src/domain/stixCoreObject';
 import { aiSummary } from '../../../src/domain/container';
 import { askEntityExport, askListExport } from '../../../src/domain/stix';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { addSavedFilter, deleteSavedFilter, savedFilterEditAuthorizedMembers } from '../../../src/modules/savedFilter/savedFilter-domain';
 
