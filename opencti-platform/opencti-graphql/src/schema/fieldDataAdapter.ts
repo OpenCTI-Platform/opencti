@@ -10,7 +10,6 @@ import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-
 import type { HashInput } from '../generated/graphql';
 import { isStixRefRelationship } from './stixRefRelationship';
 
-export const SENSITIVE_HASHES = ['SSDEEP', 'SDHASH'];
 export const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
 
 export const noReferenceAttributes = ['x_opencti_graph_data'];
