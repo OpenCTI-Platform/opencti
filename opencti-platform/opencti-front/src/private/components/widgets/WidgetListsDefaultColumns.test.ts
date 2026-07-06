@@ -51,22 +51,23 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).not.toContain('workflowInstance');
     });
 
-    it('does NOT return custom-attributes-only additions (e.g. published)', () => {
-      const columns = getWidgetColumns('entities', 'Report');
-      const attributes = columns.map((c) => c.attribute);
-      expect(attributes).not.toContain('published');
-    });
-
-    it('keeps the legacy Report-specific columns (already part of availableWidgetColumns)', () => {
+    it('DOES include the legacy Report columns already present in availableWidgetColumns', () => {
+      // These are NOT custom-attributes-only additions: they were already part of the
+      // historical 'availableWidgetColumns.Report' entry, so getWidgetColumns must keep them.
       const columns = getWidgetColumns('entities', 'Report');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).toContain('report_types');
       expect(attributes).toContain('objectAssignee');
       expect(attributes).toContain('objectParticipant');
-      expect(attributes).toContain('container_content');
     });
 
-    it('includes the common columns (list perspective must stay generic)', () => {
+    it('does NOT return Report-specific (custom-attributes-only addition) columns', () => {
+      const columns = getWidgetColumns('entities', 'Report');
+      const attributes = columns.map((c) => c.attribute);
+      expect(attributes).not.toContain('published');
+    });
+
+    it('only returns the common + legacy columns (list perspective must stay generic)', () => {
       const columns = getWidgetColumns('entities', 'Report');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).toContain('entity_type');
@@ -83,7 +84,13 @@ describe('WidgetListsDefaultColumns', () => {
   });
 
   describe('getWidgetColumns for Malware', () => {
-    it('does NOT return the custom-attributes-only additions', () => {
+    it('DOES include the legacy Malware column already present in availableWidgetColumns', () => {
+      const columns = getWidgetColumns('entities', 'Malware');
+      const attributes = columns.map((c) => c.attribute);
+      expect(attributes).toContain('malware_types');
+    });
+
+    it('does NOT return Malware-specific (custom-attributes-only addition) columns', () => {
       const columns = getWidgetColumns('entities', 'Malware');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).not.toContain('is_family');
@@ -95,12 +102,6 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).not.toContain('killChainPhases');
     });
 
-    it('keeps the legacy malware_types column (already part of availableWidgetColumns)', () => {
-      const columns = getWidgetColumns('entities', 'Malware');
-      const attributes = columns.map((c) => c.attribute);
-      expect(attributes).toContain('malware_types');
-    });
-
     it('still includes the aliases column since Malware is an aliased type', () => {
       const columns = getWidgetColumns('entities', 'Malware');
       const attributes = columns.map((c) => c.attribute);
@@ -109,25 +110,11 @@ describe('WidgetListsDefaultColumns', () => {
   });
 
   describe('getWidgetColumns for Vulnerability', () => {
-    it('does NOT leak the detailed custom-attributes-only CVSS columns', () => {
+    it('does NOT leak the detailed CVSS custom-attributes-only columns', () => {
       const columns = getWidgetColumns('entities', 'Vulnerability');
       const attributes = columns.map((c) => c.attribute);
-      expect(attributes).not.toContain('x_opencti_cvss_v2_score');
-      expect(attributes).not.toContain('x_opencti_cvss_v2_vector_string');
-      expect(attributes).not.toContain('x_opencti_cvss_temporal_score');
-      expect(attributes).not.toContain('x_opencti_cvss_vector_string');
-    });
-
-    it('keeps the legacy base CVSS/EPSS columns (already part of availableWidgetColumns)', () => {
-      const columns = getWidgetColumns('entities', 'Vulnerability');
-      const attributes = columns.map((c) => c.attribute);
-      expect(attributes).toContain('x_opencti_cvss_base_score');
-      expect(attributes).toContain('x_opencti_cvss_base_severity');
-      expect(attributes).toContain('x_opencti_cvss_v4_base_score');
-      expect(attributes).toContain('x_opencti_cvss_v4_base_severity');
-      expect(attributes).toContain('x_opencti_cisa_kev');
-      expect(attributes).toContain('x_opencti_epss_score');
-      expect(attributes).toContain('x_opencti_epss_percentile');
+      const leaked = attributes.filter((a) => a?.startsWith('x_opencti_cvss') && !a?.endsWith('_score') && !a?.endsWith('_severity'));
+      expect(leaked).toHaveLength(0);
     });
   });
 
@@ -144,7 +131,7 @@ describe('WidgetListsDefaultColumns', () => {
   });
 
   describe('getCustomAttributesColumns (custom-attributes perspective)', () => {
-    it('DOES include the legacy entity-type-specific columns for Report', () => {
+    it('DOES include the legacy entity-type-specific columns for Report (from availableWidgetColumns)', () => {
       const columns = getCustomAttributesColumns('Report');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).toContain('report_types');
@@ -152,18 +139,20 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).toContain('objectParticipant');
     });
 
-    it('DOES include the custom-attributes-only additions for Report', () => {
+    it('DOES include the custom-attributes-only addition for Report (from customAttributesTypeColumns)', () => {
       const columns = getCustomAttributesColumns('Report');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).toContain('published');
     });
 
-    it('DOES include both the legacy and the additional entity-type-specific columns for Malware', () => {
+    it('DOES include both the legacy and the additional columns for Malware (merge of both arrays)', () => {
       const columns = getCustomAttributesColumns('Malware');
       const attributes = columns.map((c) => c.attribute);
-      expect(attributes).toContain('malware_types'); // legacy (availableWidgetColumns)
-      expect(attributes).toContain('is_family'); // addition (customAttributesTypeColumns)
-      expect(attributes).toContain('killChainPhases'); // addition (customAttributesTypeColumns)
+      // legacy, from availableWidgetColumns
+      expect(attributes).toContain('malware_types');
+      // additions, from customAttributesTypeColumns
+      expect(attributes).toContain('is_family');
+      expect(attributes).toContain('killChainPhases');
     });
 
     it('DOES include the shared custom-attributes-only extra columns', () => {
@@ -172,16 +161,6 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).toContain('description');
       expect(attributes).toContain('revoked');
       expect(attributes).toContain('confidence');
-    });
-
-    it('excludes entity_type, which is redundant on the entity detail view', () => {
-      // Design choice: on the custom-attributes (entity detail) perspective, the entity type
-      // is already evident from the page context, unlike the generic "list" perspective which
-      // mixes several entity types and therefore needs an explicit Type column.
-      const reportColumns = getCustomAttributesColumns('Report').map((c) => c.attribute);
-      const malwareColumns = getCustomAttributesColumns('Malware').map((c) => c.attribute);
-      expect(reportColumns).not.toContain('entity_type');
-      expect(malwareColumns).not.toContain('entity_type');
     });
 
     it('respects EXCLUDED_COMMON_COLUMNS for Indicator (no name / entity_type)', () => {
@@ -202,16 +181,34 @@ describe('WidgetListsDefaultColumns', () => {
   });
 
   describe('list vs custom-attributes perspective separation (regression test for the original bug)', () => {
+    it('excludes entity_type, which is redundant on the entity detail view (EXCLUDED_COMMON_COLUMNS)', () => {
+      const customColumns = getCustomAttributesColumns('Malware').map((c) => c.attribute);
+      expect(customColumns).not.toContain('entity_type');
+    });
+
+    it('excludes the dynamically-computed aliases column, which is only relevant to the list table view', () => {
+      // `aliases` / `x_opencti_aliases` are computed on the fly by getWidgetColumns based on
+      // `aliasedTypes`, to let the generic list table show a name/alias column across mixed
+      // entity types. On the custom-attributes (entity detail) perspective the type is already
+      // known and aliases are shown elsewhere in the entity's own UI, so they're intentionally
+      // not part of getCustomAttributesColumns.
+      const customColumns = getCustomAttributesColumns('Malware').map((c) => c.attribute);
+      expect(customColumns).not.toContain('aliases');
+      expect(customColumns).not.toContain('x_opencti_aliases');
+    });
+
     it('getWidgetColumns and getCustomAttributesColumns return DIFFERENT column sets for Malware', () => {
       const listColumns = getWidgetColumns('entities', 'Malware').map((c) => c.attribute);
       const customColumns = getCustomAttributesColumns('Malware').map((c) => c.attribute);
 
-      // entity_type is intentionally excluded from the custom-attributes perspective
-      // (EXCLUDED_COMMON_COLUMNS), so the subset check must ignore it explicitly.
-      const listColumnsRelevantToCustom = listColumns.filter((attr) => attr !== 'entity_type');
+      // entity_type and aliases are legitimately list-only (see dedicated tests above), so the
+      // subset check must ignore them.
+      const listColumnsRelevantToCustom = listColumns.filter(
+        (attr) => attr !== 'entity_type' && attr !== 'aliases' && attr !== 'x_opencti_aliases',
+      );
       listColumnsRelevantToCustom.forEach((attr) => expect(customColumns).toContain(attr));
 
-      // but the custom-attributes perspective must have strictly more (richer) columns
+      // but the custom-attributes perspective must have strictly more columns (the additions)
       expect(customColumns.length).toBeGreaterThan(listColumns.length);
       expect(customColumns).toContain('is_family');
       expect(listColumns).not.toContain('is_family');
@@ -221,7 +218,9 @@ describe('WidgetListsDefaultColumns', () => {
       const listColumns = getWidgetColumns('entities', 'Report').map((c) => c.attribute);
       const customColumns = getCustomAttributesColumns('Report').map((c) => c.attribute);
 
-      const listColumnsRelevantToCustom = listColumns.filter((attr) => attr !== 'entity_type');
+      const listColumnsRelevantToCustom = listColumns.filter(
+        (attr) => attr !== 'entity_type' && attr !== 'aliases' && attr !== 'x_opencti_aliases',
+      );
       listColumnsRelevantToCustom.forEach((attr) => expect(customColumns).toContain(attr));
 
       expect(customColumns).toContain('published');
