@@ -22,6 +22,7 @@ import { StixCoreObjectsCustomAttributesQuery$data } from '@components/common/st
 import { entityTypeRenderers } from 'src/utils/widget/widgetCustomAttributesRendererUtils';
 import ListItemText from '@mui/material/ListItemText';
 import { openVocabListRenderers, openVocabSingleRenderers } from 'src/utils/widget/widgetOpenVocabRendererUtils';
+import { EMPTY_VALUE } from 'src/utils/String';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -51,7 +52,7 @@ const getField = <T,>(
 
 const empty = () => (
   <Typography>
-    -
+    {EMPTY_VALUE}
   </Typography>
 );
 
@@ -175,7 +176,7 @@ const renderAttributeValue = (
   if (!data) {
     return (
       <Typography>
-        -
+        {EMPTY_VALUE}
       </Typography>
     );
   }

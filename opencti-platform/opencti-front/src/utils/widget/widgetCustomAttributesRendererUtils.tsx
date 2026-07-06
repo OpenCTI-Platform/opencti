@@ -9,6 +9,7 @@ import ItemCvssScore from 'src/components/ItemCvssScore';
 import ItemSeverity from 'src/components/ItemSeverity';
 import TextList from '@common/text/TextList';
 import ItemOpenVocab from 'src/components/ItemOpenVocab';
+import { EMPTY_VALUE } from 'src/utils/String';
 
 type AttributeRenderer = (
   data: StixCoreObject,
@@ -22,7 +23,7 @@ const getField = <T,>(data: unknown, key: string): T | undefined =>
   (data as Record<string, unknown>)[key] as T | undefined;
 
 const empty = () => (
-  <Typography>-</Typography>
+  <Typography>{EMPTY_VALUE}</Typography>
 );
 
 const getCvssCriticity = (score: number | null | undefined): string | null => {
