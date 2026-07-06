@@ -1330,7 +1330,7 @@ class BatchCallbackWrapper:
         self.batch_timeout = batch_timeout
 
         # Batch state
-        self.batch: List = []
+        self.batch: deque = deque()
         self.batch_start_time: Optional[float] = None
         self._lock = threading.Lock()
 
@@ -1424,11 +1424,11 @@ class BatchCallbackWrapper:
         :return: Dictionary containing events and batch metadata
         """
         if self.batch_size:
-            extracted = self.batch[: self.batch_size]
-            self.batch = self.batch[self.batch_size :]
+            extract_count = min(self.batch_size, len(self.batch))
+            extracted = [self.batch.popleft() for _ in range(extract_count)]
         else:
-            extracted = self.batch.copy()
-            self.batch = []
+            extracted = list(self.batch)
+            self.batch.clear()
 
         elapsed = time.time() - self.batch_start_time if self.batch_start_time else 0
 
