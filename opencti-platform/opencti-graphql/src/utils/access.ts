@@ -81,7 +81,7 @@ export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
-const DATA_SANITY_MANAGER_USER_UUID = 'a1b2c3d4-5678-4abc-9def-0123456789ab';
+const DATA_SANITY_MANAGER_USER_UUID = '4a25a566-017d-4455-811e-e8e1b3889390';
 
 export enum AccessOperation {
   EDIT = 'edit',

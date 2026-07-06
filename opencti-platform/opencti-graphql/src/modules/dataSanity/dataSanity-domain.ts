@@ -31,7 +31,7 @@ export const findDataSanityByOperationName = async (context: AuthContext, user: 
  */
 export const hasOperationBeenExecuted = async (context: AuthContext, user: AuthUser, operationName: string): Promise<boolean> => {
   const entity = await findDataSanityByOperationName(context, user, operationName);
-  return entity !== undefined && !entity.force_run;
+  return entity !== undefined && !entity.force_run && !entity.is_running;
 };
 
 /**

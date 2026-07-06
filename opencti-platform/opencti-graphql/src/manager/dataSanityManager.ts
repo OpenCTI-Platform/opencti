@@ -12,14 +12,6 @@ const DATA_SANITY_MANAGER_ENABLED = booleanConf('data_sanity_manager:enabled', t
 const DATA_SANITY_MANAGER_KEY = conf.get('data_sanity_manager:lock_key') || 'data_sanity_manager_lock';
 const SCHEDULE_TIME = conf.get('data_sanity_manager:interval') || 600000;
 
-/**
- * Determines if an operation should be skipped based on its execution_type and state in ElasticSearch.
- * - run_once: skip if already executed (unless force_run is set)
- */
-const shouldSkipOperation = async (context: AuthContext, user: AuthUser, operation: SanityOperation): Promise<boolean> => {
-  return hasOperationBeenExecuted(context, user, operation.identifier);
-};
-
 export const dataSanityForceRunHandler = async (context: AuthContext) => {
   // Run force_run operations from ElasticSearch (operations triggered on demand via the force_run flag)
   const forceRunEntities = await findForceRunOperations(context, DATA_SANITY_MANAGER_USER);
@@ -49,7 +41,7 @@ export const dataSanityForceRunHandler = async (context: AuthContext) => {
 
 export const dataSanityListHandler = async (context: AuthContext, user: AuthUser) => {
   for (const operation of sanityOperationList()) {
-    const shouldSkip = await shouldSkipOperation(context, user, operation);
+    const shouldSkip = await hasOperationBeenExecuted(context, user, operation.identifier);
     if (shouldSkip) {
       logApp.debug('[DATA_SANITY_MANAGER] Data sanity operation skipped', { operation: operation.identifier, execution_type: operation.execution_type });
       continue;
