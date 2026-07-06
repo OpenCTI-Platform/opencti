@@ -529,44 +529,22 @@ const elExecuteWithAbortSignal = async (
 const BULK_MAX_RETRIES = 5;
 const BULK_INITIAL_DELAY_MS = 500;
 
-const collectErrorCandidates = (error: any): any[] => {
-  const candidates: any[] = [];
-  const queue: any[] = [error];
-  const visited = new Set<any>();
-  while (queue.length > 0) {
-    const current = queue.shift();
-    if (!current || visited.has(current)) {
-      continue;
-    }
-    visited.add(current);
-    candidates.push(current);
-    queue.push(current?.cause);
-    queue.push(current?.originalError);
-    queue.push(current?.extensions?.data?.cause);
-  }
-  return candidates;
-};
-
 const isTransitoryError = (error: any): boolean => {
-  const errorsToInspect = collectErrorCandidates(error);
-  for (let index = 0; index < errorsToInspect.length; index += 1) {
-    const currentError = errorsToInspect[index];
-    const statusCode = currentError?.statusCode ?? currentError?.meta?.statusCode ?? currentError?.status;
-    // 429: Too many requests, 503: Service unavailable, both can be transient and should be retried
-    if (statusCode === 429 || statusCode === 503) {
-      return true;
-    }
-    const errorCode = currentError?.code;
-    // All these error codes are commonly associated with transient issues that can occur in network communication
-    // or when the search engine is under heavy load, and thus are good candidates for retrying the operation.
-    if (['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(errorCode)) {
-      return true;
-    }
-    const errorMessage = currentError?.message ?? '';
-    // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
-    if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
-      return true;
-    }
+  const statusCode = error?.statusCode ?? error?.meta?.statusCode ?? error?.status;
+  // 429: Too many requests, 503: Service unavailable, both can be transient and should be retried
+  if (statusCode === 429 || statusCode === 503) {
+    return true;
+  }
+  const errorCode = error?.code ?? error?.cause?.code;
+  // All these error codes are commonly associated with transient issues that can occur in network communication
+  // or when the search engine is under heavy load, and thus are good candidates for retrying the operation.
+  if (['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(errorCode)) {
+    return true;
+  }
+  const errorMessage = error?.message ?? '';
+  // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
+  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
+    return true;
   }
   return false;
 };
