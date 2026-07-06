@@ -3,7 +3,8 @@ name: OpenCTI Build Images and SBOM on Merge
 on:
   push:
     branches:
-      - master
+      # FIXME change to master before merge.
+      - issue/16821-docker-wf
 
 jobs:
   build-platform-standard:
