@@ -64,8 +64,17 @@ runs:
         images: filigran/platform
         tags: type=raw,value=${{ inputs.image_tag }}
 
+    - name: Build (platform)
+      uses: docker/build-push-action@v7
+      with:
+        context: opencti-platform
+        file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
+        push: 'false'
+        outputs: type=docker,dest=/tmp/opencti-platform.tar
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
     - name: Upload opencti docker image artifact
-      if: ${{ inputs.publish_to_registry == 'false' }}
       uses: actions/upload-artifact@v7
       with:
         name: docker-image-opencti-platform
