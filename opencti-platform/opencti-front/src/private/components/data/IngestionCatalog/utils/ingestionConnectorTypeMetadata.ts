@@ -1,3 +1,6 @@
+import { AutoAwesomeOutlined, CloudDownloadOutlined, ExtensionOutlined, FileDownloadOutlined, InputOutlined, StreamOutlined, UploadFileOutlined } from '@mui/icons-material';
+import type { SvgIconComponent } from '@mui/icons-material';
+
 export type IngestionConnectorType
   = | 'INTERNAL_ENRICHMENT'
     | 'INTERNAL_INGESTION'
@@ -5,6 +8,19 @@ export type IngestionConnectorType
     | 'INTERNAL_EXPORT_FILE'
     | 'INTERNAL_IMPORT_FILE'
     | 'STREAM';
+
+const CONNECTOR_TYPE_ICONS: Record<string, SvgIconComponent> = {
+  EXTERNAL_IMPORT: CloudDownloadOutlined,
+  INTERNAL_ENRICHMENT: AutoAwesomeOutlined,
+  INTERNAL_EXPORT_FILE: FileDownloadOutlined,
+  INTERNAL_IMPORT_FILE: UploadFileOutlined,
+  INTERNAL_INGESTION: InputOutlined,
+  STREAM: StreamOutlined,
+};
+
+export const getConnectorTypeIcon = (containerType: IngestionConnectorType): SvgIconComponent => {
+  return CONNECTOR_TYPE_ICONS[containerType] ?? ExtensionOutlined;
+};
 
 export const getConnectorMetadata = (
   containerType: IngestionConnectorType,

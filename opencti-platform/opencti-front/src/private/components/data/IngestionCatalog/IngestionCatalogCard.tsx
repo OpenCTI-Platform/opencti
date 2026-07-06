@@ -1,9 +1,8 @@
-import CardHeader from '@mui/material/CardHeader';
-import CardContent from '@mui/material/CardContent';
+import React from 'react';
 import { CardActions, Stack, Typography } from '@mui/material';
 import { GroupsOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { getConnectorMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
@@ -14,7 +13,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
@@ -33,16 +31,32 @@ interface ConnectorLogoProps {
 }
 
 const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
+  const theme = useTheme();
   return (
-    <img
-      style={{
-        height: 80,
-        width: 80,
-        borderRadius: 4,
+    <Box
+      sx={{
+        height: 56,
+        width: 56,
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 1,
+        border: `1px solid ${alpha(theme.palette.text.primary, 0.1)}`,
+        backgroundColor: alpha(theme.palette.text.primary, 0.04),
       }}
-      src={src}
-      alt={alt}
-    />
+    >
+      <img
+        style={{
+          height: 44,
+          width: 44,
+          objectFit: 'contain',
+          borderRadius: 4,
+        }}
+        src={src}
+        alt={alt}
+      />
+    </Box>
   );
 };
 
@@ -54,15 +68,15 @@ const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
   return (
     <Tooltip title={title} placement="bottom-start">
       <Typography
-        variant="h1"
         sx={{
-          fontWeight: 800,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          fontSize: 13.5,
+          fontWeight: 600,
+          lineHeight: 1.35,
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',
-          opacity: 0.9,
+          overflow: 'hidden',
+          wordBreak: 'break-word',
         }}
       >
         {title}
@@ -127,7 +141,7 @@ const IngestionCatalogCard = ({
   deploymentCount = 0,
 }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
+  const theme = useTheme();
 
   const navigate = useNavigate();
 
@@ -143,49 +157,51 @@ const IngestionCatalogCard = ({
   };
 
   return (
-    <Card
-      onClick={handleCardClick}
+    <Box
+      data-testid="connector-card"
       sx={{
-        height: 330,
-        borderRadius: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s ease-in-out',
-        '&:hover': {
-          backgroundColor: theme.palette.action?.hover,
+        height: '100%',
+        '& .MuiCard-root': {
+          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+          transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+        },
+        '&:hover .MuiCard-root': {
+          transform: 'translateY(-2px)',
+          borderColor: alpha(theme.palette.primary.main, 0.3),
+          boxShadow: `0 0 30px ${alpha(theme.palette.primary.main, 0.12)}`,
         },
       }}
     >
-      <CardHeader
+      <Card
+        onClick={handleCardClick}
         sx={{
-          width: '100%',
-          padding: 0,
-          paddingBottom: 3,
-          alignItems: 'flex-start',
-          '& .MuiCardHeader-content': {
-            minWidth: 0,
-            overflow: 'hidden',
-            width: '100%',
-          },
-          '& .MuiCardHeader-action': {
-            marginTop: 0,
-          },
+          height: 280,
+          borderRadius: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          cursor: 'pointer',
+          alignItems: 'stretch',
         }}
-        avatar={<ConnectorLogo src={connector.logo} alt={connector.title} />}
-        title={(
-          <>
+      >
+        <Stack direction="row" gap={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
+          <ConnectorLogo src={connector.logo} alt={connector.title} />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               variant="body2"
-              color={theme.palette.primary.main}
-              gutterBottom
+              sx={{
+                color: theme.palette.primary.main,
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                marginBottom: 0.5,
+              }}
             >
               {connectorMetadata.label}
             </Typography>
             <ConnectorTitle title={connector.title} />
-          </>
-        )}
-        action={(
+          </Box>
           <Tooltip
             title={
               connector.verified
@@ -206,41 +222,33 @@ const IngestionCatalogCard = ({
               <GroupsOutlined color="disabled" />
             )}
           </Tooltip>
-        )}
-      />
+        </Stack>
 
-      <CardContent
-        sx={{
-          flexGrow: 1,
-          padding: 0,
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'flex-start',
-        }}
-      >
-        <Typography
-          variant="body2"
-          sx={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 5,
-            WebkitBoxOrient: 'vertical',
-            lineHeight: 1.5,
-            opacity: 0.8,
-          }}
-        >
-          {connector.short_description}
-        </Typography>
-      </CardContent>
+        <Box sx={{ flexGrow: 1, overflow: 'hidden', width: '100%' }}>
+          <Typography
+            variant="body2"
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 4,
+              WebkitBoxOrient: 'vertical',
+              lineHeight: 1.5,
+              color: theme.palette.text.secondary,
+            }}
+          >
+            {connector.short_description}
+          </Typography>
+        </Box>
 
-      <ConnectorActions
-        connector={connector}
-        isEnterpriseEdition={isEnterpriseEdition}
-        deploymentCount={deploymentCount}
-        onClickDeploy={onClickDeploy}
-      />
-    </Card>
+        <ConnectorActions
+          connector={connector}
+          isEnterpriseEdition={isEnterpriseEdition}
+          deploymentCount={deploymentCount}
+          onClickDeploy={onClickDeploy}
+        />
+      </Card>
+    </Box>
   );
 };
 
