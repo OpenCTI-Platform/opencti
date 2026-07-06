@@ -11,6 +11,7 @@ export interface FintelDesign {
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
+  default: boolean;
 }
 
 // region Database types
@@ -21,6 +22,7 @@ export interface BasicStoreEntityFintelDesign extends BasicStoreEntity {
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
+  default: boolean;
 }
 
 export interface StoreEntityFintelDesign extends StoreEntity {
@@ -30,6 +32,7 @@ export interface StoreEntityFintelDesign extends StoreEntity {
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
+  default: boolean;
 }
 // end region
 
@@ -41,6 +44,7 @@ export interface StixFintelDesign extends StixObject {
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
+  default: boolean;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

@@ -1,9 +1,9 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { FintelDesignsLinesPaginationQuery$variables } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { graphql } from 'react-relay';
-import { FormikConfig } from 'formik/dist/types';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
@@ -14,12 +14,14 @@ import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { fetchQuery, handleError, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { resolveLink } from '../../../../utils/Entity';
 import type { Theme } from '../../../../components/Theme';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import SwitchField from '../../../../components/fields/SwitchField';
+import FintelDesignReplaceDefaultDialog from './FintelDesignReplaceDefaultDialog';
 
 const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
@@ -43,6 +45,12 @@ const CreateFintelDesignControlledDial = (
 interface FintelDesignCreationFormData {
   name: string;
   description: string;
+  default: boolean;
+}
+
+interface PendingCreateData {
+  values: FintelDesignCreationFormData;
+  helpers: FormikHelpers<FintelDesignCreationFormData>;
 }
 
 interface FintelDesignCreationFormProps {
@@ -64,13 +72,32 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const [commit] = useApiMutation<FintelDesignCreationAddMutation>(fintelDesignCreationMutation);
-  const onSubmit: FormikConfig<FintelDesignCreationFormData>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm, setErrors },
+  const [pendingValues, setPendingValues] = useState<PendingCreateData | null>(null);
+  const [currentDefaultName, setCurrentDefaultName] = useState<string | undefined>(undefined);
+
+  const fintelDesignsRefetchQuery = graphql`
+    query FintelDesignCreationCurrentDefaultQuery {
+      fintelDesigns(orderBy: name, orderMode: asc) {
+        edges {
+          node {
+            id
+            name
+            default
+          }
+        }
+      }
+    }
+  `;
+
+  const doCreate = (
+    values: FintelDesignCreationFormData,
+    helpers: FormikHelpers<FintelDesignCreationFormData>,
   ) => {
+    const { setSubmitting, setErrors, resetForm } = helpers;
     const input = {
       name: values.name,
       description: values.description,
+      default: values.default,
     };
     commit({
       variables: {
@@ -96,6 +123,40 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
     });
   };
 
+  const onSubmit: FormikConfig<FintelDesignCreationFormData>['onSubmit'] = (
+    values,
+    helpers,
+  ) => {
+    if (!values.default) {
+      doCreate(values, helpers);
+      return;
+    }
+
+    fetchQuery(fintelDesignsRefetchQuery, {}).toPromise()
+      .then((res) => {
+        const typedResult = res as {
+          fintelDesigns?: {
+            edges?: Array<{ node?: { id: string; name: string; default?: boolean } | null } | null>;
+          };
+        } | undefined;
+
+        const existingDefault = typedResult?.fintelDesigns?.edges
+          ?.map((edge) => edge?.node)
+          .find((node) => node?.default);
+        if (existingDefault?.name) {
+          setCurrentDefaultName(existingDefault.name);
+          setPendingValues({ values, helpers });
+        } else {
+          doCreate(values, helpers);
+        }
+      })
+      .catch((error) => {
+        handleErrorInForm(error as Error, helpers.setErrors);
+        handleError(error as Error);
+        helpers.setSubmitting(false);
+      });
+  };
+
   const fintelDesignCreationValidator = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -104,53 +165,78 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
   const initialValues: FintelDesignCreationFormData = {
     name: '',
     description: '',
+    default: false,
   };
 
   return (
-    <Formik<FintelDesignCreationFormData>
-      initialValues={initialValues}
-      validateOnBlur={false}
-      validateOnChange={false}
-      validationSchema={fintelDesignCreationValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}
-    >
-      {({ submitForm, handleReset, isSubmitting }) => (
-        <Form style={{ margin: theme.spacing(0) }}>
-          <Field
-            component={TextField}
-            name="name"
-            label={t_i18n('Name')}
-            fullWidth={true}
-            required
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows={2}
-            style={{ marginTop: 20 }}
-          />
-          <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </FormButtonContainer>
-        </Form>
-      )}
-    </Formik>
+    <>
+      <Formik<FintelDesignCreationFormData>
+        initialValues={initialValues}
+        validateOnBlur={false}
+        validateOnChange={false}
+        validationSchema={fintelDesignCreationValidator}
+        onSubmit={onSubmit}
+        onReset={onReset}
+      >
+        {({ submitForm, handleReset, isSubmitting }) => (
+          <Form style={{ margin: theme.spacing(0) }}>
+            <Field
+              component={TextField}
+              name="name"
+              label={t_i18n('Name')}
+              fullWidth={true}
+              required
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={2}
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="default"
+              label={t_i18n('Set as default')}
+              containerstyle={{ marginTop: 20 }}
+            />
+            <FormButtonContainer>
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                onClick={submitForm}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </FormButtonContainer>
+          </Form>
+        )}
+      </Formik>
+      <FintelDesignReplaceDefaultDialog
+        open={!!pendingValues}
+        onClose={() => {
+          pendingValues?.helpers.setSubmitting(false);
+          setPendingValues(null);
+        }}
+        onConfirm={() => {
+          if (pendingValues) {
+            const { values, helpers } = pendingValues;
+            setPendingValues(null);
+            doCreate(values, helpers);
+          }
+        }}
+        currentDefaultName={currentDefaultName ?? ''}
+      />
+    </>
   );
 };
 

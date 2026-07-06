@@ -24,6 +24,7 @@ const LIST_QUERY = gql`
         node {
           id
           name
+          default
           description
           file_id
           gradiantFromColor
@@ -83,6 +84,7 @@ describe('Fintel Design resolver standard behavior', () => {
     gradiantToColor: '#000000',
     textColor: '#333333',
   };
+  let secondFintelDesignInternalId: string;
 
   beforeAll(() => {
     // Activate EE for this test
@@ -115,6 +117,34 @@ describe('Fintel Design resolver standard behavior', () => {
     expect(listResult.data?.fintelDesigns.edges.length).toBeGreaterThan(0);
   });
 
+  it('should enforce unique default Fintel Design', async () => {
+    await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelDesignInternalId,
+        input: [{ key: 'default', value: ['true'] }],
+      },
+    });
+
+    const secondDesign = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          ...fintelDesignInput,
+          name: 'Test Fintel Design 2',
+          default: true,
+        },
+      },
+    });
+    secondFintelDesignInternalId = secondDesign.data?.fintelDesignAdd.id;
+
+    const listResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 50 } });
+    const firstDesign = listResult.data?.fintelDesigns.edges.find((e: { node: { id: string } }) => e.node.id === fintelDesignInternalId)?.node;
+    const secondDesignFromList = listResult.data?.fintelDesigns.edges.find((e: { node: { id: string } }) => e.node.id === secondFintelDesignInternalId)?.node;
+    expect(firstDesign?.default).toEqual(false);
+    expect(secondDesignFromList?.default).toEqual(true);
+  });
+
   it('should update Fintel Design', async () => {
     // update fintel design
     const updateResult = await queryAsAdmin({
@@ -138,6 +168,9 @@ describe('Fintel Design resolver standard behavior', () => {
       }
     `;
     await queryAsAdmin({ query: DELETE_QUERY, variables: { id: fintelDesignInternalId } });
+    if (secondFintelDesignInternalId) {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: secondFintelDesignInternalId } });
+    }
     const readAfterDelete = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelDesignInternalId } });
     expect(readAfterDelete).not.toBeNull();
     expect(readAfterDelete.data?.fintelDesign).toBeNull();

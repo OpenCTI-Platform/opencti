@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN, type StoreEntityFintelDesign } from './fintelDesign-types';
-import type { EditContext, FintelDesignAddInput, MutationFintelDesignFieldPatchArgs } from '../../generated/graphql';
+import { type EditContext, type FintelDesignAddInput, FilterMode, FilterOperator, type MutationFintelDesignFieldPatchArgs } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../config/conf';
@@ -25,6 +25,10 @@ export const findFintelDesignPaginated = async (context: AuthContext, user: Auth
 export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
   await checkEnterpriseEdition(context);
   const created = await createEntity(context, user, fintelDesign, ENTITY_TYPE_FINTEL_DESIGN);
+  const shouldSetDefault = (fintelDesign as { default?: boolean }).default === true;
+  if (shouldSetDefault) {
+    await applyUniqueDefaultFintelDesignConstraint(context, user, created.id);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -38,6 +42,64 @@ export const addFintelDesign = async (context: AuthContext, user: AuthUser, fint
     },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].ADDED_TOPIC, created, user);
+};
+
+const applyUniqueDefaultFintelDesignConstraint = async (
+  context: AuthContext,
+  user: AuthUser,
+  newDefaultDesignId: string,
+): Promise<StoreEntityFintelDesign[]> => {
+  const previousDefaultDesigns = await fullEntitiesList<BasicStoreEntityFintelDesign>(
+    context,
+    user,
+    [ENTITY_TYPE_FINTEL_DESIGN],
+    {
+      baseData: true,
+      filters: {
+        filters: [{
+          key: ['default'],
+          values: ['true'],
+        }, {
+          key: ['id'],
+          values: [newDefaultDesignId],
+          operator: FilterOperator.NotEq,
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+
+  if (previousDefaultDesigns.length === 0) {
+    return [];
+  }
+
+  const results = await Promise.all(
+    previousDefaultDesigns.map((entity) => updateAttribute<StoreEntityFintelDesign>(
+      context,
+      user,
+      entity.id,
+      ENTITY_TYPE_FINTEL_DESIGN,
+      [{
+        key: 'default',
+        value: ['false'],
+      }],
+    )),
+  );
+
+  return results.map(({ element }) => element);
+};
+
+const isEditInputSetAsDefault = (input: MutationFintelDesignFieldPatchArgs['input']) => {
+  const defaultInput = input?.find((i) => i.key === 'default');
+  const firstValue = defaultInput?.value?.[0];
+  if (typeof firstValue === 'boolean') {
+    return firstValue;
+  }
+  if (typeof firstValue === 'string') {
+    return firstValue === 'true';
+  }
+  return false;
 };
 
 const uploadFintelDesignFile = async (context: AuthContext, user: AuthUser, fintelDesignId: string, file: FileUploadData) => {
@@ -73,6 +135,9 @@ export const fintelDesignEditField = async (
     return null;
   }
   const { element } = await updateAttribute<StoreEntityFintelDesign>(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
+  if (isEditInputSetAsDefault(finalInput)) {
+    await applyUniqueDefaultFintelDesignConstraint(context, user, element.id);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
