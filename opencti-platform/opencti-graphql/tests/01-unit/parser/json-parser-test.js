@@ -122,7 +122,7 @@ describe('JSON mapper extractWithRegexp', () => {
     representations: [{
       id: 'rep1',
       type: JsonMapperRepresentationType.Entity,
-      target: { entity_type: ENTITY_TYPE_MALWARE, path: '$[*]' },
+      target: { entity_type: ENTITY_TYPE_MALWARE, path: '$' },
       identifier: undefined,
       attributes: [
         { key: 'name', mode: 'complex', complex_path: { variables: [{ variable: 'name', path: '$.name' }], formula } },
