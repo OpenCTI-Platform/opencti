@@ -4030,15 +4030,17 @@ export const elIndex = async (
   if (pipeline) {
     indexParams = { ...indexParams, pipeline };
   }
-  if (engine instanceof ElkClient) {
-    await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
-  } else {
-    await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
-  }
+  const indexOperation = async () => {
+    // Branching kept to please tsc
+    if (engine instanceof ElkClient) {
+      return await engine.index(indexParams);
+    } else {
+      return await engine.index(indexParams);
+    }
+  };
+  await retryElOperations(indexOperation).catch((err: any) => {
+    throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+  });
 
   return documentBody;
 };
