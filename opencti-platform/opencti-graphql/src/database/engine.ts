@@ -556,7 +556,7 @@ export const retryElOperations = async (operation: () => Promise<any>): Promise<
     } catch (error) {
       if (attempt < BULK_MAX_RETRIES && isTransitoryError(error)) {
         const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
-        logApp.warn(`[SEARCH] Bulk request transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
+        logApp.warn(`[SEARCH] Engine transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
         await wait(delayMs);
       } else {
         throw error;
@@ -4030,15 +4030,17 @@ export const elIndex = async (
   if (pipeline) {
     indexParams = { ...indexParams, pipeline };
   }
-  if (engine instanceof ElkClient) {
-    await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
-  } else {
-    await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
-  }
+  const indexOperation = async () => {
+    // Branching kept to please tsc
+    if (engine instanceof ElkClient) {
+      return await engine.index(indexParams);
+    } else {
+      return await engine.index(indexParams);
+    }
+  };
+  await retryElOperations(indexOperation).catch((err: any) => {
+    throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+  });
 
   return documentBody;
 };
