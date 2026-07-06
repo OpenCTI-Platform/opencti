@@ -1,11 +1,28 @@
+import { useState } from 'react';
 import { type FormikConfig } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
-import { handleError, MESSAGING$ } from '../../../../../relay/environment';
+import { fetchQuery, handleError, MESSAGING$ } from '../../../../../relay/environment';
 import useCustomViewEdit from './useCustomViewEdit';
 import useCustomViewAdd from './useCustomViewAdd';
 import CustomViewForm, { type CustomViewFormInputs } from './CustomViewForm';
+import CustomViewReplaceDefaultDialog from './CustomViewReplaceDefaultDialog';
+import { graphql } from 'react-relay';
+
+const customViewCurrentDefaultQuery = graphql`
+  query CustomViewFormDrawerCurrentDefaultQuery($entityType: String!) {
+    customViews(entityType: $entityType, first: 5, orderBy: default, orderMode: desc) {
+      edges {
+        node {
+          id
+          name
+          default
+        }
+      }
+    }
+  }
+`;
 
 interface CustomViewFormDrawerProps {
   isOpen: boolean;
@@ -28,15 +45,10 @@ const CustomViewFormDrawer = ({
 
   const commitAddMutation = useCustomViewAdd();
   const [commitEditMutation] = useCustomViewEdit();
+  const [pendingValues, setPendingValues] = useState<CustomViewFormInputs | null>(null);
+  const [currentDefaultName, setCurrentDefaultName] = useState<string | undefined>(undefined);
 
-  const handleSubmitForm: FormikConfig<CustomViewFormInputs>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
-    if (isEdition) {
-      setSubmitting(false);
-      return;
-    }
+  const doAdd = (values: CustomViewFormInputs, setSubmitting?: (isSubmitting: boolean) => void) => {
     commitAddMutation({
       variables: {
         input: {
@@ -47,19 +59,52 @@ const CustomViewFormDrawer = ({
         },
       },
       onCompleted: (response) => {
-        resetForm();
+        setSubmitting?.(false);
         onClose();
         if (response.customViewAdd) {
           const { id } = response.customViewAdd;
           navigate(`/dashboard/settings/customization/entity_types/${entityType}/custom-views/${id}`);
         }
-        setSubmitting(false);
       },
       onError: (error) => {
-        setSubmitting(false);
+        setSubmitting?.(false);
         handleError(error);
       },
     });
+  };
+
+  const handleSubmitForm: FormikConfig<CustomViewFormInputs>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
+    if (isEdition) {
+      setSubmitting(false);
+      return;
+    }
+
+    if (values.default) {
+      fetchQuery(customViewCurrentDefaultQuery, { entityType })
+        .toPromise()
+        .then((result: unknown) => {
+          const data = result as { customViews?: { edges: { node: { id: string; name: string; default: boolean } }[] } };
+          const existingDefault = data.customViews?.edges
+            .map((e) => e.node)
+            .find((n) => n.default);
+          if (existingDefault) {
+            setCurrentDefaultName(existingDefault.name);
+            setSubmitting(false);
+            setPendingValues(values);
+          } else {
+            doAdd(values, setSubmitting);
+          }
+        })
+        .catch((err) => {
+          setSubmitting(false);
+          handleError(err);
+        });
+    } else {
+      doAdd(values, setSubmitting);
+    }
   };
 
   const handleEditField = (
@@ -87,19 +132,33 @@ const CustomViewFormDrawer = ({
   const title = isEdition ? editionTitle : createTitle;
 
   return (
-    <Drawer
-      title={title}
-      open={isOpen}
-      onClose={onClose}
-    >
-      <CustomViewForm
+    <>
+      <Drawer
+        title={title}
+        open={isOpen}
         onClose={onClose}
-        onSubmit={handleSubmitForm}
-        onSubmitField={handleEditField}
-        isEdition={isEdition}
-        values={customView}
+      >
+        <CustomViewForm
+          onClose={onClose}
+          onSubmit={handleSubmitForm}
+          onSubmitField={handleEditField}
+          isEdition={isEdition}
+          values={customView}
+        />
+      </Drawer>
+
+      <CustomViewReplaceDefaultDialog
+        open={!!pendingValues}
+        onClose={() => setPendingValues(null)}
+        onConfirm={() => {
+          if (pendingValues) {
+            setPendingValues(null);
+            doAdd(pendingValues);
+          }
+        }}
+        currentDefaultName={currentDefaultName ?? ''}
       />
-    </Drawer>
+    </>
   );
 };
 

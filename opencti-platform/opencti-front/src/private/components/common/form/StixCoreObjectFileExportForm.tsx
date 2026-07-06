@@ -155,8 +155,10 @@ const StixCoreObjectFileExportForm = ({
     }),
   });
   const connectorScopes = Array.from(new Set(connectors.flatMap((c) => c.connectorScope ?? [])));
+
+  let selectedDefaultTemplate = defaultTemplate;
   if (defaultValues?.connector === BUILT_IN_FROM_TEMPLATE.value && !defaultTemplate) {
-    [defaultTemplate] = templates ?? [];
+    [selectedDefaultTemplate] = templates ?? [];
   }
   const defaultFileToExport = fileOptions?.find((f) => f.value === defaultValues?.fileToExport);
   let defaultFormat = '';
@@ -169,7 +171,7 @@ const StixCoreObjectFileExportForm = ({
     connector: connectors.find((c) => c.value === defaultValues?.connector) ?? null,
     format: defaultFormat,
     type: null,
-    template: defaultTemplate ?? null,
+    template: selectedDefaultTemplate ?? null,
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
     contentMaxMarkings: [],

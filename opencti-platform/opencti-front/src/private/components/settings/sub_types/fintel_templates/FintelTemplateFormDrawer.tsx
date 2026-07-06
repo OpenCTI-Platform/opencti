@@ -36,7 +36,7 @@ const FintelTemplateFormDrawer = ({
   const [commitEditMutation] = useFintelTemplateEdit();
   const [pendingValues, setPendingValues] = useState<FintelTemplateFormInputs | null>(null);
 
-  const doAdd = (values: FintelTemplateFormInputs) => {
+  const doAdd = (values: FintelTemplateFormInputs, setSubmitting?: (isSubmitting: boolean) => void) => {
     if (!entityType) return;
 
     commitAddMutation({
@@ -50,6 +50,7 @@ const FintelTemplateFormDrawer = ({
         },
       },
       onCompleted: (response) => {
+        setSubmitting?.(false);
         onClose();
         if (response.fintelTemplateAdd) {
           const { id, entity_type } = response.fintelTemplateAdd;
@@ -58,6 +59,7 @@ const FintelTemplateFormDrawer = ({
         }
       },
       onError: (error) => {
+        setSubmitting?.(false);
         handleError(error);
       },
     });
@@ -67,11 +69,11 @@ const FintelTemplateFormDrawer = ({
     values,
     { setSubmitting },
   ) => {
-    setSubmitting(false);
     if (values.default && currentDefaultName) {
+      setSubmitting(false);
       setPendingValues(values);
     } else {
-      doAdd(values);
+      doAdd(values, setSubmitting);
     }
   };
 
