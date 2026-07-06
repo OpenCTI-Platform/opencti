@@ -207,17 +207,14 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
 
   // Handle reset action — clears the draft to an empty schema without touching the published version
   const handleReset = () => {
-    const emptySchema = JSON.stringify({
-      id: workflowDefinition?.id,
-      name: workflowDefinition?.name,
-      initialState: '',
-      states: [],
-      transitions: [],
-    });
-    // Keep local state and autosave guard aligned with the empty graph state.
-    previousSchemaRef.current = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
+    // Derive the schema from transformToWorkflowDefinition so that the payload and
+    // the autosave guard are always aligned: the effect recomputes the same function
+    // after setNodes([]) / setEdges([]) and will see an identical string, preventing
+    // a spurious follow-up mutation.
+    const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
+    previousSchemaRef.current = emptySchemaString;
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: emptySchema },
+      variables: { entityType: 'DraftWorkspace', definition: emptySchemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
