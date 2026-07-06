@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
 import ItemBoolean from '../../../../../components/ItemBoolean';
+import Tag from '@common/tag/Tag';
 
 const headerFragment = graphql`
   fragment FintelTemplateHeader_template on FintelTemplate {
@@ -84,6 +85,21 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
             label={template.start_date ? t_i18n('Published') : t_i18n('Not published')}
           />
         </div>
+        {template.default
+          && (
+            <div
+              style={{
+                float: 'left',
+                margin: '0 0 0 5px',
+              }}
+            >
+              <Tag
+                color={theme.palette.success.main}
+                label={t_i18n('Default')}
+              />
+            </div>
+          )
+        }
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: theme.spacing(1) }}>
           <FintelTemplatePopover
             onUpdate={() => setFormOpen(true)}
