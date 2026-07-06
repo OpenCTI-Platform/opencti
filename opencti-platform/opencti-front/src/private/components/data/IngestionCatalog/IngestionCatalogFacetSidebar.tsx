@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Box, ButtonBase, Stack, Typography } from '@mui/material';
 import { Check } from '@mui/icons-material';
@@ -139,7 +139,7 @@ const toggleValue = <T,>(list: T[], value: T): T[] => {
 
 interface IngestionCatalogFacetSidebarProps {
   filters: CatalogFilterState;
-  onFiltersChange: (filters: CatalogFilterState) => void;
+  onFiltersChange: Dispatch<SetStateAction<CatalogFilterState>>;
   hasActiveFilters: boolean;
   onClearAll: () => void;
   facets: {
@@ -226,7 +226,7 @@ const IngestionCatalogFacetSidebar = ({
               count={facets.typeCounts[type] ?? 0}
               icon={getConnectorTypeIcon(type)}
               label={getConnectorMetadata(type, t_i18n).label}
-              onToggle={() => onFiltersChange({ ...filters, types: toggleValue(filters.types, type) })}
+              onToggle={() => onFiltersChange((prev) => ({ ...prev, types: toggleValue(prev.types, type) }))}
             />
           ))}
         </Box>
@@ -240,7 +240,7 @@ const IngestionCatalogFacetSidebar = ({
                 checked={filters.useCases.includes(useCase)}
                 count={facets.useCaseCounts[useCase] ?? 0}
                 label={useCase} // no translation on purpose, values come from the catalog
-                onToggle={() => onFiltersChange({ ...filters, useCases: toggleValue(filters.useCases, useCase) })}
+                onToggle={() => onFiltersChange((prev) => ({ ...prev, useCases: toggleValue(prev.useCases, useCase) }))}
               />
             ))}
           </Box>
@@ -254,7 +254,7 @@ const IngestionCatalogFacetSidebar = ({
               checked={filters.statuses.includes(status)}
               count={facets.statusCounts[status] ?? 0}
               label={statusLabel(status)}
-              onToggle={() => onFiltersChange({ ...filters, statuses: toggleValue(filters.statuses, status) })}
+              onToggle={() => onFiltersChange((prev) => ({ ...prev, statuses: toggleValue(prev.statuses, status) }))}
             />
           ))}
         </Box>

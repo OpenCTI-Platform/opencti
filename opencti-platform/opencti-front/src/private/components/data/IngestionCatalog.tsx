@@ -338,14 +338,14 @@ const IngestionCatalogComponent = ({
 
   const handleSearchInputSubmit = (value: string) => {
     setSearchInput(value);
-    setFilters({ ...filters, search: value });
+    setFilters((prev) => ({ ...prev, search: value }));
   };
 
   const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
     setSearchInput(value);
     if (!value) {
-      setFilters({ ...filters, search: '' });
+      setFilters((prev) => ({ ...prev, search: '' }));
     }
   };
 
@@ -360,17 +360,17 @@ const IngestionCatalogComponent = ({
     ...filters.types.map((type) => ({
       key: `type-${type}`,
       label: getConnectorMetadata(type as IngestionConnectorType, t_i18n).label,
-      remove: () => setFilters({ ...filters, types: filters.types.filter((v) => v !== type) }),
+      remove: () => setFilters((prev) => ({ ...prev, types: prev.types.filter((v) => v !== type) })),
     })),
     ...filters.useCases.map((useCase) => ({
       key: `useCase-${useCase}`,
       label: useCase,
-      remove: () => setFilters({ ...filters, useCases: filters.useCases.filter((v) => v !== useCase) }),
+      remove: () => setFilters((prev) => ({ ...prev, useCases: prev.useCases.filter((v) => v !== useCase) })),
     })),
     ...filters.statuses.map((status) => ({
       key: `status-${status}`,
       label: statusLabel(status),
-      remove: () => setFilters({ ...filters, statuses: filters.statuses.filter((v) => v !== status) }),
+      remove: () => setFilters((prev) => ({ ...prev, statuses: prev.statuses.filter((v) => v !== status) })),
     })),
   ];
 
