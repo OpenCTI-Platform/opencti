@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildLocalMustFilter, prepareElementForIndexing } from '../../../src/database/engine';
+import { buildLocalMustFilter, prepareElementForIndexing, retryElOperations } from '../../../src/database/engine';
+import { DatabaseError } from '../../../src/config/errors';
 import * as engineConfig from '../../../src/database/engine-config';
 
 describe('prepareElementForIndexing testing', () => {
@@ -110,6 +111,24 @@ describe('buildLocalMustFilter testing', () => {
           },
         ],
       },
+    });
+  });
+
+  describe('retryElOperations testing', () => {
+    it('should retry when transient error is wrapped in DatabaseError', async () => {
+      vi.useFakeTimers();
+      try {
+        const operation = vi
+          .fn()
+          .mockRejectedValueOnce(DatabaseError('Update indexing fail', { cause: { statusCode: 429 } }))
+          .mockResolvedValueOnce('ok');
+        const retryPromise = retryElOperations(operation);
+        await vi.advanceTimersByTimeAsync(500);
+        await expect(retryPromise).resolves.toBe('ok');
+        expect(operation).toHaveBeenCalledTimes(2);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });
