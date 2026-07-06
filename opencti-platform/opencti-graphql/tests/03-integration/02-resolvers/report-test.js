@@ -638,7 +638,77 @@ describe('Report resolver standard behavior', () => {
       }
     });
 
-    it.skip('should keep relationAdd idempotent on duplicate lock-first additions', async () => {
+    it('should deduplicate duplicate object ids in one ADD payload', async () => {
+      const CREATE_QUERY = gql`
+        mutation ReportAdd($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const DELETE_QUERY = gql`
+        mutation reportDelete($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const REPORT_OBJECTS_QUERY = gql`
+        query report($id: String!) {
+          report(id: $id) {
+            id
+            objects(first: 200) {
+              edges {
+                node {
+                  ... on BasicObject {
+                    id
+                  }
+                  ... on BasicRelationship {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      const isolatedReport = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            stix_id: `report--${randomUUID()}`,
+            name: `Duplicate candidates add ${now()}`,
+            description: 'Regression test report for duplicate refs in one add payload',
+            published: '2020-02-26T00:51:35.000Z',
+          },
+        },
+      });
+      const isolatedReportId = isolatedReport.data.reportAdd.id;
+      const objectToAdd = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `Duplicate candidates object ${randomUUID()}`,
+        description: 'Temporary object for duplicate refs regression test',
+      });
+
+      try {
+        const loadedReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, isolatedReportId);
+        const addResult = await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, loadedReport, [
+          { key: 'objects', operation: 'add', value: [objectToAdd.internal_id, objectToAdd.internal_id] },
+        ]);
+
+        expect(addResult.event).not.toBeNull();
+        const reportAfterAdd = await queryAsAdmin({ query: REPORT_OBJECTS_QUERY, variables: { id: isolatedReportId } });
+        const matchingTargetEdges = reportAfterAdd?.data?.report?.objects?.edges
+          ?.filter((edge) => edge?.node?.id === objectToAdd.id) ?? [];
+        expect(matchingTargetEdges).toHaveLength(1);
+        expect(reportAfterAdd?.data?.report?.objects?.edges ?? []).toHaveLength(1);
+      } finally {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, objectToAdd.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: isolatedReportId } });
+      }
+    });
+
+    it('should keep relationAdd idempotent on duplicate lock-first additions', async () => {
       const CREATE_QUERY = gql`
         mutation ReportAdd($input: ReportAddInput!) {
           reportAdd(input: $input) {

@@ -2658,14 +2658,15 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const candidateIds = refs.map((r) => r.internal_id);
+          const uniqueRefs = R.uniqBy((r: any) => r.internal_id, refs);
+          const candidateIds = uniqueRefs.map((r) => r.internal_id);
           const currentRels = await fullRelationsList(context, user, relType, {
             indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
             fromId: initial.internal_id,
             toId: candidateIds,
           });
           const currentIds = new Set(currentRels.map((r: BasicStoreRelation) => r.toId));
-          const refsToCreate = refs.filter((r) => !currentIds.has(r.internal_id));
+          const refsToCreate = uniqueRefs.filter((r) => !currentIds.has(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             pushAll(relationsToCreate, newRelations);
@@ -2932,8 +2933,7 @@ export const updateAttributeLockFirst = async <T extends StoreObject>(
     }
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
     await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
-    const lockScopedIds = getInstanceIds(initial);
-    const mergedOpts = { ...opts, locks: R.uniq([...(opts.locks ?? []), ...lockScopedIds]) };
+    const mergedOpts = { ...opts, locks: R.uniq([...(opts.locks ?? []), id]) };
     const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, mergedOpts);
     if (!opts.noEnrich && data.event) {
       await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);

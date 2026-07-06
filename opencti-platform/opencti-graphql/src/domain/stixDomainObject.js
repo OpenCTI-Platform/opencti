@@ -56,7 +56,6 @@ import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTem
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { lockResources } from '../lock/master-lock';
 import { getDraftContext } from '../utils/draftContext';
-import { getInstanceIds } from '../schema/identifier';
 
 export const findStixDomainObjectPaginated = async (context, user, args) => {
   let types = [];
@@ -397,13 +396,12 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
-    const lockScopedIds = getInstanceIds(stixDomainObject);
     const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(
       context,
       user,
       stixDomainObject,
       [{ key: 'x_opencti_files', value: nonResolvedFiles }],
-      { locks: R.uniq([sdoId, ...lockScopedIds]) },
+      { locks: [sdoId] },
     );
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
   } finally {
