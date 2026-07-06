@@ -4050,27 +4050,25 @@ export const elUpdate = async (
   documentBody: any,
   retry = ES_RETRY_ON_CONFLICT,
 ) => {
-  const updateOperation = async () => {
-    const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-    const updateRequest = {
-      id: documentId,
-      index: indexName,
-      retry_on_conflict: retry,
-      timeout: BULK_TIMEOUT,
-      refresh: true,
-      body: documentBody,
-    };
-    try {
-      return await elExecuteWithAbortSignal(
-        context?.requestAbortSignal,
-        (opts) => (engine as ElkClient).update(updateRequest, opts),
-        () => (engine as OpenClient).update(updateRequest),
-      );
-    } catch (err: any) {
-      throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    }
+  const entityType = documentBody.entity_type ? documentBody.entity_type : '';
+  const updateRequest = {
+    id: documentId,
+    index: indexName,
+    retry_on_conflict: retry,
+    timeout: BULK_TIMEOUT,
+    refresh: true,
+    body: documentBody,
   };
-  return retryElOperations(updateOperation);
+  const updateOperation = async () => {
+    return await elExecuteWithAbortSignal(
+      context?.requestAbortSignal,
+      (opts) => (engine as ElkClient).update(updateRequest, opts),
+      () => (engine as OpenClient).update(updateRequest),
+    );
+  };
+  return retryElOperations(updateOperation).catch((err: any) => {
+    throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+  });
 };
 export const elReplace = async (
   context: AuthContext,
@@ -4096,23 +4094,21 @@ export const elReplace = async (
   });
 };
 export const elDelete = (indexName: string, documentId: string) => {
-  const deleteOperation = async () => {
-    const deleteRequest = {
-      id: documentId,
-      index: indexName,
-      timeout: BULK_TIMEOUT,
-      refresh: true,
-    };
-    try {
-      if (engine instanceof ElkClient) {
-        return await engine.delete(deleteRequest);
-      }
-      return await engine.delete(deleteRequest);
-    } catch (err: any) {
-      throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
-    }
+  const deleteRequest = {
+    id: documentId,
+    index: indexName,
+    timeout: BULK_TIMEOUT,
+    refresh: true,
   };
-  return retryElOperations(deleteOperation);
+  const deleteOperation = async () => {
+    if (engine instanceof ElkClient) {
+      return await engine.delete(deleteRequest);
+    }
+    return await engine.delete(deleteRequest);
+  };
+  return retryElOperations(deleteOperation).catch((err: any) => {
+    throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
+  });
 };
 const getRelatedRelations = async (
   context: AuthContext,
@@ -4325,54 +4321,52 @@ export const elReindexElements = async (
   destIndex: string,
   opts: { dbId?: string; sourceUpdate?: any } = {},
 ) => {
-  const reindexOperation = async () => {
-    const { dbId, sourceUpdate = {} } = opts;
-    const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
-      + "ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('objectOrganization'); "
-      + "ctx._source.remove('rel_has-reference'); ctx._source.remove('rel_has-reference.internal_id'); "
-      + "ctx._source.remove('i_valid_from_day'); ctx._source.remove('i_valid_until_day'); "
-      + "ctx._source.remove('i_valid_from_month'); ctx._source.remove('i_valid_until_month'); "
-      + "ctx._source.remove('i_valid_from_year'); ctx._source.remove('i_valid_until_year'); "
-      + "ctx._source.remove('i_stop_time_year'); ctx._source.remove('i_start_time_year'); "
-      + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
-      + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
-      + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
-      + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');"
-      + "ctx._source.remove('x_opencti_cvss_vector'); ctx._source.remove('x_opencti_cvss_v2_vector'); ctx._source.remove('x_opencti_cvss_v4_vector');"
-      + "ctx._source.remove('authorized_members');"; // after renaming authorized_members to restricted_members
-    const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
-    const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
-    const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
-    const reindexParams = {
-      body: {
-        source: {
-          index: sourceIndex,
-          query: {
-            ids: {
-              values: ids,
-            },
+  const { dbId, sourceUpdate = {} } = opts;
+  const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
+    + "ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('objectOrganization'); "
+    + "ctx._source.remove('rel_has-reference'); ctx._source.remove('rel_has-reference.internal_id'); "
+    + "ctx._source.remove('i_valid_from_day'); ctx._source.remove('i_valid_until_day'); "
+    + "ctx._source.remove('i_valid_from_month'); ctx._source.remove('i_valid_until_month'); "
+    + "ctx._source.remove('i_valid_from_year'); ctx._source.remove('i_valid_until_year'); "
+    + "ctx._source.remove('i_stop_time_year'); ctx._source.remove('i_start_time_year'); "
+    + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
+    + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
+    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
+    + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');"
+    + "ctx._source.remove('x_opencti_cvss_vector'); ctx._source.remove('x_opencti_cvss_v2_vector'); ctx._source.remove('x_opencti_cvss_v4_vector');"
+    + "ctx._source.remove('authorized_members');"; // after renaming authorized_members to restricted_members
+  const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
+  const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
+  const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
+  const reindexParams = {
+    body: {
+      source: {
+        index: sourceIndex,
+        query: {
+          ids: {
+            values: ids,
           },
         },
-        dest: {
-          index: destIndex,
-        },
-        script: { // remove old fields that are not mapped anymore but can be present in DB
-          params: { changes: sourceUpdate, replaceId: !!dbId, newId: dbId },
-          source,
-        },
       },
-      refresh: true,
-    };
-    try {
-      if (engine instanceof ElkClient) {
-        return await engine.reindex(reindexParams);
-      }
-      return await engine.reindex(reindexParams);
-    } catch (err: any) {
-      throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
-    }
+      dest: {
+        index: destIndex,
+      },
+      script: { // remove old fields that are not mapped anymore but can be present in DB
+        params: { changes: sourceUpdate, replaceId: !!dbId, newId: dbId },
+        source,
+      },
+    },
+    refresh: true,
   };
-  return retryElOperations(reindexOperation);
+  const reindexOperation = async () => {
+    if (engine instanceof ElkClient) {
+      return await engine.reindex(reindexParams);
+    }
+    return await engine.reindex(reindexParams);
+  };
+  return retryElOperations(reindexOperation).catch((err: any) => {
+    throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
+  });
 };
 
 export const elRemoveDraftIdFromElements = async (
