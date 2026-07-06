@@ -17,9 +17,9 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   common: [
     { attribute: 'entity_type', label: 'Type' },
     { attribute: 'name', label: 'Name' },
-    { attribute: 'created', label: 'Original creation date', attributeType: 'date' },
-    { attribute: 'created_at', label: 'Platform creation date', attributeType: 'date' },
-    { attribute: 'modified', label: 'Modification date', attributeType: 'date' },
+    { attribute: 'created', label: 'Original creation date' },
+    { attribute: 'created_at', label: 'Platform creation date' },
+    { attribute: 'modified', label: 'Modification date' },
     { attribute: 'createdBy' },
     { attribute: 'creators', label: 'Creators' },
     { attribute: 'x_opencti_workflow_id', label: 'Processing status' },
@@ -52,21 +52,122 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     ...defaultWidgetColumns.common,
   ],
   Report: [
-    { attribute: 'report_types', label: 'Report type', attributeType: 'tag_list' },
-    { attribute: 'published', label: 'Publication date', attributeType: 'date' },
+    { attribute: 'report_types', label: 'Report type' },
+    { attribute: 'objectAssignee' },
+    { attribute: 'objectParticipant' },
+    { attribute: 'container_content', label: 'Content' },
+  ],
+  Grouping: [
+    { attribute: 'context' },
+    { attribute: 'container_content', label: 'Content' },
+  ],
+  'Malware-Analysis': [
+    { attribute: 'product', label: 'Product' },
+    { attribute: 'objectAssignee' },
+  ],
+  Note: [
+    { attribute: 'note_types', label: 'Note type' },
+  ],
+  'Case-Incident': [
+    { attribute: 'priority' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'response_types', label: 'Response type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
   ],
-  Grouping: [
-    { attribute: 'context', label: 'Context', attributeType: 'open_vocab' },
+  'Case-Rfi': [
+    { attribute: 'priority' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'information_types', label: 'Request for information types' },
+    { attribute: 'objectAssignee' },
+    { attribute: 'objectParticipant' },
+    { attribute: 'container_content', label: 'Content' },
   ],
-  Campaign: [
-    { attribute: 'objective', label: 'Objective', attributeType: 'markdown' },
-    { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
-    { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
+  'Case-Rft': [
+    { attribute: 'priority' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'takedown_types', label: 'Request for takedown types' },
+    { attribute: 'objectAssignee' },
+    { attribute: 'objectParticipant' },
+    { attribute: 'container_content', label: 'Content' },
+  ],
+  Task: [
+    { attribute: 'due_date', label: 'Due date' },
+    { attribute: 'objectAssignee' },
+    { attribute: 'objectParticipant' },
+  ],
+  Incident: [
+    { attribute: 'incident_type' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'container_content', label: 'Content' },
+  ],
+  Indicator: [
+    { attribute: 'pattern_type', label: 'Pattern type' },
+    { attribute: 'valid_from', label: 'Valid from' },
+    { attribute: 'valid_until', label: 'Valid until' },
+    { attribute: 'x_opencti_score' },
+  ],
+  'Threat-Actor': [
+    { attribute: 'threat_actor_types', label: 'Threat actor types' },
+  ],
+  'Threat-Actor-Individual': [
+    { attribute: 'threat_actor_types', label: 'Threat actor types' },
+  ],
+  'Threat-Actor-Group': [
+    { attribute: 'threat_actor_types', label: 'Threat actor types' },
+  ],
+  'Intrusion-Set': [
+    { attribute: 'resource_level', label: 'Resource level' },
+  ],
+  Malware: [
+    { attribute: 'malware_types', label: 'Malware type' },
+  ],
+  Channel: [
+    { attribute: 'channel_types', label: 'Channel type' },
+  ],
+  Tool: [
+    { attribute: 'tool_types', label: 'Tool types' },
+  ],
+  Vulnerability: [
+    { attribute: 'x_opencti_cvss_base_score', label: 'CVSS3 - Score' },
+    { attribute: 'x_opencti_cvss_base_severity', label: 'CVSS3 - Severity' },
+    { attribute: 'x_opencti_cvss_v4_base_score', label: 'CVSS4 - Score' },
+    { attribute: 'x_opencti_cvss_v4_base_severity', label: 'CVSS4 - Severity' },
+    { attribute: 'x_opencti_cisa_kev', label: 'CISA - KEV' },
+    { attribute: 'x_opencti_epss_score', label: 'EPSS Score' },
+    { attribute: 'x_opencti_epss_percentile', label: 'EPSS Percentile' },
+  ],
+  'Attack-Pattern': [
+    { attribute: 'x_mitre_id', label: 'External ID' },
+  ],
+  'Course-Of-Action': [
+    { attribute: 'x_mitre_id', label: 'External ID' },
+  ],
+  Event: [
+    { attribute: 'event_types', label: 'Event type' },
+  ],
+  Organization: [
+    { attribute: 'x_opencti_organization_type', label: 'Organization type' },
+    { attribute: 'x_opencti_score', label: 'Score' },
+  ],
+  DraftWorkspace: [
+    { attribute: 'name', label: 'Name' },
+    { attribute: 'draft_status', label: 'Processing status' },
+    { attribute: 'workflowInstance', label: 'Workflow status' },
+    { attribute: 'created_at', label: 'Platform creation date' },
+    { attribute: 'creators', label: 'Creators' },
+    { attribute: 'createdBy' },
+    { attribute: 'objectAssignee' },
+    { attribute: 'objectParticipant' },
+  ],
+};
+
+// Additional columns, only available in the "custom-attributes" perspective.
+const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
+  Report: [
+    { attribute: 'published', label: 'Publication date', attributeType: 'date' },
   ],
   'Malware-Analysis': [
-    { attribute: 'product', label: 'Product', attributeType: 'markdown' },
     { attribute: 'result_name', label: 'Report name', attributeType: 'markdown' },
     { attribute: 'result', label: 'Maliciousness', attributeType: 'tag' },
     { attribute: 'version', label: 'Version of the product', attributeType: 'tag' },
@@ -77,40 +178,8 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'submitted', label: 'Submission date', attributeType: 'date' },
     { attribute: 'analysis_started', label: 'Analysis started', attributeType: 'date' },
     { attribute: 'analysis_ended', label: 'Analysis ended', attributeType: 'date' },
-    { attribute: 'objectAssignee' },
-  ],
-  Note: [
-    { attribute: 'note_types', label: 'Note type', attributeType: 'open_vocab_list' },
-  ],
-  'Case-Incident': [
-    { attribute: 'priority', label: 'Priority', attributeType: 'open_vocab' },
-    { attribute: 'severity', label: 'Severity', attributeType: 'open_vocab' },
-    { attribute: 'response_types', label: 'Response type', attributeType: 'open_vocab_list' },
-    { attribute: 'objectAssignee' },
-    { attribute: 'objectParticipant' },
-  ],
-  'Case-Rfi': [
-    { attribute: 'priority', label: 'Priority', attributeType: 'open_vocab' },
-    { attribute: 'severity', label: 'Severity', attributeType: 'open_vocab' },
-    { attribute: 'information_types', label: 'Request for information types', attributeType: 'open_vocab_list' },
-    { attribute: 'objectAssignee' },
-    { attribute: 'objectParticipant' },
-  ],
-  'Case-Rft': [
-    { attribute: 'priority', label: 'Priority', attributeType: 'open_vocab' },
-    { attribute: 'severity', label: 'Severity', attributeType: 'open_vocab' },
-    { attribute: 'takedown_types', label: 'Request for takedown types', attributeType: 'open_vocab_list' },
-    { attribute: 'objectAssignee' },
-    { attribute: 'objectParticipant' },
-  ],
-  Task: [
-    { attribute: 'due_date', label: 'Due date', attributeType: 'date' },
-    { attribute: 'objectAssignee' },
-    { attribute: 'objectParticipant' },
   ],
   Incident: [
-    { attribute: 'incident_type', label: 'Incident Type', attributeType: 'open_vocab' },
-    { attribute: 'severity', label: 'Severity', attributeType: 'open_vocab' },
     { attribute: 'source', label: 'Source', attributeType: 'tag' },
     { attribute: 'objective', label: 'Objective', attributeType: 'markdown' },
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
@@ -120,26 +189,13 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   Indicator: [
     { attribute: 'pattern', label: 'Indicator pattern' },
-    { attribute: 'valid_from', label: 'Valid from', attributeType: 'date' },
-    { attribute: 'valid_until', label: 'Valid until', attributeType: 'date' },
-    { attribute: 'x_opencti_score', label: 'Score', attributeType: 'score' },
     { attribute: 'x_opencti_detection', label: 'Detection', attributeType: 'boolean' },
     { attribute: 'indicator_types', label: 'Indicator types', attributeType: 'open_vocab_list' },
     { attribute: 'x_opencti_main_observable_type', label: 'Main observable type', attributeType: 'open_vocab' },
     { attribute: 'x_mitre_platforms_indicator', label: 'Platforms', attributeType: 'tag_list' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
-  Infrastructure: [
-    { attribute: 'infrastructure_types', label: 'Infrastructure types', attributeType: 'open_vocab_list' },
-    { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
-    { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
-    { attribute: 'killChainPhases', label: 'Kill chain phases' },
-  ],
-  'Threat-Actor': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types', attributeType: 'open_vocab_list' },
-  ],
   'Threat-Actor-Individual': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types', attributeType: 'open_vocab_list' },
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
     { attribute: 'sophistication', label: 'Sophistication' },
@@ -161,7 +217,6 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'ethnicity', label: 'Ethnicity' },
   ],
   'Threat-Actor-Group': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types', attributeType: 'open_vocab_list' },
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
     { attribute: 'sophistication', label: 'Sophistication' },
@@ -174,13 +229,11 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   'Intrusion-Set': [
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
-    { attribute: 'resource_level', label: 'Resource level', attributeType: 'open_vocab' },
     { attribute: 'primary_motivation', label: 'Primary motivation', attributeType: 'open_vocab' },
     { attribute: 'secondary_motivations', label: 'Secondary motivations', attributeType: 'text_list' },
     { attribute: 'goals', label: 'Goals', attributeType: 'text_list' },
   ],
   Malware: [
-    { attribute: 'malware_types', label: 'Malware types', attributeType: 'open_vocab_list' },
     { attribute: 'is_family', label: 'Is family', attributeType: 'boolean' },
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
@@ -189,22 +242,11 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'capabilities', label: 'Capabilities', attributeType: 'open_vocab_list' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
-  Channel: [
-    { attribute: 'channel_types', label: 'Channel type', attributeType: 'open_vocab_list' },
-  ],
   Tool: [
-    { attribute: 'tool_types', label: 'Tool types', attributeType: 'open_vocab_list' },
     { attribute: 'tool_version', label: 'Tool version', attributeType: 'tag' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
   Vulnerability: [
-    { attribute: 'x_opencti_cvss_base_score', label: 'CVSS3 - Score', attributeType: 'cvss_score' },
-    { attribute: 'x_opencti_cvss_base_severity', label: 'CVSS3 - Severity', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_base_score', label: 'CVSS4 - Score', attributeType: 'cvss_score' },
-    { attribute: 'x_opencti_cvss_v4_base_severity', label: 'CVSS4 - Severity', attributeType: 'tag' },
-    { attribute: 'x_opencti_cisa_kev', label: 'CISA - KEV', attributeType: 'boolean' },
-    { attribute: 'x_opencti_epss_score', label: 'EPSS Score', attributeType: 'tag' },
-    { attribute: 'x_opencti_epss_percentile', label: 'EPSS Percentile', attributeType: 'tag' },
     { attribute: 'x_opencti_score', label: 'Score', attributeType: 'score' },
     { attribute: 'x_opencti_cwe', label: 'Associated CWE(s)', attributeType: 'text_list' },
     { attribute: 'x_opencti_first_seen_active', label: 'First seen active', attributeType: 'date' },
@@ -251,24 +293,28 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_cvss_v4_exploit_maturity', label: 'CVSS4 - Exploit Maturity', attributeType: 'tag' },
   ],
   'Attack-Pattern': [
-    { attribute: 'x_mitre_id', label: 'External ID' },
     { attribute: 'x_mitre_platforms_attack_pattern', label: 'Platforms', attributeType: 'tag_list' },
     { attribute: 'x_mitre_permissions_required', label: 'Required permissions', attributeType: 'tag_list' },
     { attribute: 'x_mitre_detection', label: 'Detection', attributeType: 'markdown' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
-  'Course-Of-Action': [
-    { attribute: 'x_mitre_id', label: 'External ID' },
-  ],
   Event: [
-    { attribute: 'event_types', label: 'Event type', attributeType: 'open_vocab_list' },
     { attribute: 'start_time', label: 'Start time', attributeType: 'date' },
     { attribute: 'stop_time', label: 'Stop time', attributeType: 'date' },
   ],
   Organization: [
-    { attribute: 'x_opencti_organization_type', label: 'Organization type', attributeType: 'open_vocab' },
-    { attribute: 'x_opencti_score', label: 'Score', attributeType: 'score' },
     { attribute: 'contact_information', label: 'Contact information', attributeType: 'markdown' },
+  ],
+  Campaign: [
+    { attribute: 'objective', label: 'Objective', attributeType: 'markdown' },
+    { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
+    { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
+  ],
+  Infrastructure: [
+    { attribute: 'infrastructure_types', label: 'Infrastructure types', attributeType: 'open_vocab_list' },
+    { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
+    { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
+    { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
   SecurityPlatform: [
     { attribute: 'security_platform_type', label: 'Security platform type', attributeType: 'tag' },
@@ -313,16 +359,6 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   City: [
     { attribute: 'latitude', label: 'Latitude' },
     { attribute: 'longitude', label: 'Longitude' },
-  ],
-  DraftWorkspace: [
-    { attribute: 'name', label: 'Name' },
-    { attribute: 'draft_status', label: 'Processing status' },
-    { attribute: 'workflowInstance', label: 'Workflow status' },
-    { attribute: 'created_at', label: 'Platform creation date' },
-    { attribute: 'creators', label: 'Creators' },
-    { attribute: 'createdBy' },
-    { attribute: 'objectAssignee' },
-    { attribute: 'objectParticipant' },
   ],
 };
 
@@ -417,6 +453,10 @@ export const getCustomAttributesColumns = (entityType?: string): WidgetColumn[] 
       baseColumns.push(...availableWidgetColumns[entityType]);
     }
 
+    if (customAttributesTypeColumns[entityType]) {
+      baseColumns.push(...customAttributesTypeColumns[entityType]);
+    }
+
     return baseColumns;
   }
 
@@ -452,6 +492,10 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, me
           ? { attribute: 'aliases', label: 'Aliases' }
           : { attribute: 'x_opencti_aliases', label: 'Aliases' };
         baseColumns.push(aliasesColumn);
+      }
+
+      if (availableWidgetColumns[entityType]) {
+        baseColumns.push(...availableWidgetColumns[entityType]);
       }
 
       if (metrics) {

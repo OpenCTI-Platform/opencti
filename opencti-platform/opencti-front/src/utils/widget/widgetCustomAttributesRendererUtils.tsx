@@ -22,7 +22,7 @@ const getField = <T,>(data: unknown, key: string): T | undefined =>
   (data as Record<string, unknown>)[key] as T | undefined;
 
 const empty = () => (
-  <Typography variant="body2" sx={{ color: 'text.disabled' }}>-</Typography>
+  <Typography>-</Typography>
 );
 
 const getCvssCriticity = (score: number | null | undefined): string | null => {
@@ -83,11 +83,13 @@ const threatActorGroupRenderers: EntityRenderers = {
   sophistication: (data) => {
     const value = getField<string>(data, 'sophistication');
     return (
-      <ItemOpenVocab
-        displayMode="chip"
-        type="threat-actor-group-sophistication-ov"
-        value={value}
-      />
+      <FieldOrEmpty source={value}>
+        <ItemOpenVocab
+          displayMode="chip"
+          type="threat-actor-group-sophistication-ov"
+          value={value}
+        />
+      </FieldOrEmpty>
     );
   },
 };
@@ -105,11 +107,13 @@ const threatActorIndividualRenderers: EntityRenderers = {
   sophistication: (data) => {
     const value = getField<string>(data, 'sophistication');
     return (
-      <ItemOpenVocab
-        displayMode="chip"
-        type="threat-actor-individual-sophistication-ov"
-        value={value}
-      />
+      <FieldOrEmpty source={value}>
+        <ItemOpenVocab
+          displayMode="chip"
+          type="threat-actor-individual-sophistication-ov"
+          value={value}
+        />
+      </FieldOrEmpty>
     );
   },
   ethnicity: (data) => {

@@ -49,8 +49,8 @@ const getField = <T,>(
   return value as T | undefined;
 };
 
-const empty = (italic = false) => (
-  <Typography variant="body2" sx={{ color: 'text.disabled', ...(italic && { fontStyle: 'italic' }) }}>
+const empty = () => (
+  <Typography>
     -
   </Typography>
 );
@@ -71,8 +71,11 @@ const renderByAttributeType = (
   switch (attributeType) {
     case 'date': {
       const value = getField(data, attribute, isString);
-      if (!value) return empty();
-      return <Typography variant="body2">{fldt(value)}</Typography>;
+      return (
+        <FieldOrEmpty source={value}>
+          <Typography variant="body2">{fldt(value)}</Typography>
+        </FieldOrEmpty>
+      );
     }
 
     case 'boolean': {
@@ -89,8 +92,11 @@ const renderByAttributeType = (
 
     case 'tag': {
       const value = getField(data, attribute, isString);
-      if (!value) return empty();
-      return <Tag label={value} />;
+      return (
+        <FieldOrEmpty source={value}>
+          <Tag label={value} />
+        </FieldOrEmpty>
+      );
     }
 
     case 'tag_list': {
@@ -107,8 +113,11 @@ const renderByAttributeType = (
 
     case 'text_list': {
       const list = getField(data, attribute, isStringArray);
-      if (!list) return empty();
-      return <TextList list={list} />;
+      return (
+        <FieldOrEmpty source={list}>
+          <TextList list={list} />
+        </FieldOrEmpty>
+      );
     }
 
     case 'markdown': {
@@ -165,8 +174,8 @@ const renderAttributeValue = (
 
   if (!data) {
     return (
-      <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
-        —
+      <Typography>
+        -
       </Typography>
     );
   }

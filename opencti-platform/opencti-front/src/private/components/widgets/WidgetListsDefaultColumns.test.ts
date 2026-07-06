@@ -51,16 +51,22 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).not.toContain('workflowInstance');
     });
 
-    it('does NOT return Report-specific (custom-attributes only) columns', () => {
+    it('DOES return the legacy, lightweight Report columns (part of availableWidgetColumns, list perspective)', () => {
       const columns = getWidgetColumns('entities', 'Report');
       const attributes = columns.map((c) => c.attribute);
-      expect(attributes).not.toContain('report_types');
-      expect(attributes).not.toContain('published');
-      expect(attributes).not.toContain('objectAssignee');
-      expect(attributes).not.toContain('objectParticipant');
+      expect(attributes).toContain('report_types');
+      expect(attributes).toContain('objectAssignee');
+      expect(attributes).toContain('objectParticipant');
+      expect(attributes).toContain('container_content');
     });
 
-    it('only returns the common columns (list perspective must stay generic)', () => {
+    it('does NOT return the richer, custom-attributes-only Report columns', () => {
+      const columns = getWidgetColumns('entities', 'Report');
+      const attributes = columns.map((c) => c.attribute);
+      expect(attributes).not.toContain('published');
+    });
+
+    it('returns the common columns plus the Report-specific ones (list perspective stays lightweight, not empty)', () => {
       const columns = getWidgetColumns('entities', 'Report');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).toContain('entity_type');
@@ -77,10 +83,15 @@ describe('WidgetListsDefaultColumns', () => {
   });
 
   describe('getWidgetColumns for Malware', () => {
-    it('does NOT return Malware-specific (custom-attributes only) columns', () => {
+    it('DOES return the legacy, lightweight Malware column (malware_types)', () => {
       const columns = getWidgetColumns('entities', 'Malware');
       const attributes = columns.map((c) => c.attribute);
-      expect(attributes).not.toContain('malware_types');
+      expect(attributes).toContain('malware_types');
+    });
+
+    it('does NOT leak the richer, custom-attributes-only Malware columns (regression test for the original bug)', () => {
+      const columns = getWidgetColumns('entities', 'Malware');
+      const attributes = columns.map((c) => c.attribute);
       expect(attributes).not.toContain('is_family');
       expect(attributes).not.toContain('first_seen');
       expect(attributes).not.toContain('last_seen');
@@ -98,10 +109,22 @@ describe('WidgetListsDefaultColumns', () => {
   });
 
   describe('getWidgetColumns for Vulnerability', () => {
-    it('does NOT leak any CVSS-related custom attribute columns', () => {
+    it('DOES return the legacy, lightweight Vulnerability columns', () => {
       const columns = getWidgetColumns('entities', 'Vulnerability');
       const attributes = columns.map((c) => c.attribute);
-      const leaked = attributes.filter((a) => a?.startsWith('x_opencti_cvss'));
+      expect(attributes).toContain('x_opencti_cvss_base_score');
+      expect(attributes).toContain('x_opencti_cvss_base_severity');
+      expect(attributes).toContain('x_opencti_cvss_v4_base_score');
+      expect(attributes).toContain('x_opencti_cvss_v4_base_severity');
+      expect(attributes).toContain('x_opencti_cisa_kev');
+      expect(attributes).toContain('x_opencti_epss_score');
+      expect(attributes).toContain('x_opencti_epss_percentile');
+    });
+
+    it('does NOT leak the detailed CVSS v2/v3/v4 custom-attributes-only columns', () => {
+      const columns = getWidgetColumns('entities', 'Vulnerability');
+      const attributes = columns.map((c) => c.attribute ?? '');
+      const leaked = attributes.filter((a) => a.includes('_v2_') || a.includes('vector_string') || a.includes('temporal_score') || a.includes('attack_vector') || a.includes('attack_complexity'));
       expect(leaked).toHaveLength(0);
     });
   });
@@ -119,24 +142,34 @@ describe('WidgetListsDefaultColumns', () => {
   });
 
   describe('getCustomAttributesColumns (custom-attributes perspective)', () => {
-    it('DOES include the entity-type-specific columns for Report', () => {
+    it('includes both the legacy columns (from availableWidgetColumns) and the extra ones (from customAttributesTypeColumns) for Report', () => {
       const columns = getCustomAttributesColumns('Report');
       const attributes = columns.map((c) => c.attribute);
+      // legacy / shared with the list perspective
       expect(attributes).toContain('report_types');
-      expect(attributes).toContain('published');
       expect(attributes).toContain('objectAssignee');
       expect(attributes).toContain('objectParticipant');
+      expect(attributes).toContain('container_content');
+      // custom-attributes-only addition
+      expect(attributes).toContain('published');
     });
 
-    it('DOES include the entity-type-specific columns for Malware', () => {
+    it('includes both the legacy column and the extra rich columns for Malware', () => {
       const columns = getCustomAttributesColumns('Malware');
       const attributes = columns.map((c) => c.attribute);
+      // legacy / shared with the list perspective
       expect(attributes).toContain('malware_types');
+      // custom-attributes-only additions
       expect(attributes).toContain('is_family');
+      expect(attributes).toContain('first_seen');
+      expect(attributes).toContain('last_seen');
+      expect(attributes).toContain('architecture_execution_envs');
+      expect(attributes).toContain('implementation_languages');
+      expect(attributes).toContain('capabilities');
       expect(attributes).toContain('killChainPhases');
     });
 
-    it('DOES include the shared custom-attributes-only extra columns', () => {
+    it('DOES include the shared custom-attributes-only extra columns (description, revoked, confidence)', () => {
       const columns = getCustomAttributesColumns('Malware');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).toContain('description');
@@ -151,6 +184,14 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).not.toContain('entity_type');
       expect(attributes).toContain('pattern');
     });
+
+    it('exposes richer Vulnerability columns than the list perspective (CVSS v2 detail included)', () => {
+      const columns = getCustomAttributesColumns('Vulnerability');
+      const attributes = columns.map((c) => c.attribute);
+      expect(attributes).toContain('x_opencti_cvss_base_score');
+      expect(attributes).toContain('x_opencti_cvss_v2_base_score');
+      expect(attributes).toContain('x_opencti_cvss_vector_string');
+    });
   });
 
   describe('getDefaultCustomAttributesColumns', () => {
@@ -158,6 +199,31 @@ describe('WidgetListsDefaultColumns', () => {
       const columns = getDefaultCustomAttributesColumns('Report');
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).toContain('report_types');
+      expect(attributes).toContain('published');
+    });
+  });
+
+  describe('list vs custom-attributes perspective separation (regression test for the original bug)', () => {
+    it('getWidgetColumns and getCustomAttributesColumns return DIFFERENT column sets for Malware', () => {
+      const listColumns = getWidgetColumns('entities', 'Malware').map((c) => c.attribute);
+      const customColumns = getCustomAttributesColumns('Malware').map((c) => c.attribute);
+
+      // the list perspective must stay a strict subset of the custom-attributes perspective
+      listColumns.forEach((attr) => expect(customColumns).toContain(attr));
+
+      // but the custom-attributes perspective must have strictly more columns
+      expect(customColumns.length).toBeGreaterThan(listColumns.length);
+      expect(customColumns).toContain('capabilities');
+      expect(listColumns).not.toContain('capabilities');
+    });
+
+    it('getWidgetColumns and getCustomAttributesColumns return DIFFERENT column sets for Report', () => {
+      const listColumns = getWidgetColumns('entities', 'Report').map((c) => c.attribute);
+      const customColumns = getCustomAttributesColumns('Report').map((c) => c.attribute);
+
+      listColumns.forEach((attr) => expect(customColumns).toContain(attr));
+      expect(customColumns).toContain('published');
+      expect(listColumns).not.toContain('published');
     });
   });
 });
