@@ -10,6 +10,7 @@ import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-
 import type { HashInput } from '../generated/graphql';
 import { isStixRefRelationship } from './stixRefRelationship';
 
+export const SENSITIVE_HASHES = ['SSDEEP', 'SDHASH'];
 export const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
 
 export const noReferenceAttributes = ['x_opencti_graph_data'];
@@ -30,8 +31,8 @@ export const inputHashesToStix = (data: Array<HashInput>) => {
   const inputs = Array.isArray(data) ? data : [data];
   const convertedInputs = inputs.map((d) => {
     const hashAlgorithm = d.algorithm.toUpperCase().trim();
-    const hashValue = d.hash.trim();
-    return [hashAlgorithm, hashValue] as KeyValuePair<string, string>;
+    const hashValue = SENSITIVE_HASHES.includes(hashAlgorithm) ? d.hash : d.hash.toLowerCase();
+    return [hashAlgorithm, hashValue.trim()] as KeyValuePair<string, string>;
   });
   return R.fromPairs(convertedInputs);
 };
