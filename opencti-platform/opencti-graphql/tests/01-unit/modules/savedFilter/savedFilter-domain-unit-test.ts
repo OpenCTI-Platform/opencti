@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { isSavedFilterShared } from '../../../../src/modules/savedFilter/savedFilter-domain';
 import type { BasicStoreEntitySavedFilter } from '../../../../src/modules/savedFilter/savedFilter-types';
+import { MEMBER_ACCESS_ALL, MEMBER_ACCESS_CREATOR } from '../../../../src/utils/access';
 
 const buildSavedFilter = (creatorId: string, restrictedMembers: { id: string; access_right: string }[] | undefined): BasicStoreEntitySavedFilter => {
   return {
-    creator_id: creatorId,
+    creator_id: [creatorId],
     restricted_members: restrictedMembers,
   } as unknown as BasicStoreEntitySavedFilter;
 };
@@ -42,10 +43,17 @@ describe('isSavedFilterShared', () => {
     expect(isSavedFilterShared(filter)).toBe(true);
   });
 
+  it('should return false when shared with MEMBER_ACCESS_CREATOR only', () => {
+    const filter = buildSavedFilter('user-1', [
+      { id: MEMBER_ACCESS_CREATOR, access_right: 'admin' },
+    ]);
+    expect(isSavedFilterShared(filter)).toBe(false);
+  });
+
   it('should return true when shared with MEMBER_ACCESS_ALL', () => {
     const filter = buildSavedFilter('user-1', [
       { id: 'user-1', access_right: 'admin' },
-      { id: 'ALL', access_right: 'view' },
+      { id: MEMBER_ACCESS_ALL, access_right: 'view' },
     ]);
     expect(isSavedFilterShared(filter)).toBe(true);
   });

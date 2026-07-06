@@ -91,6 +91,31 @@ it('should buildLocalMustFilter build query from ids filter with terms', () => {
   expect(query).toEqual(expectedQuery);
 });
 
+it('should buildLocalMustFilter build query from filter with internal_script operator', () => {
+  const scriptSource = 'def members = params._source.restricted_members; '
+    + "for (def m : members) { if (m['access_right'] == 'admin') { return true; } } "
+    + 'return false;';
+  const filter = {
+    key: ['restricted_members'],
+    values: [scriptSource],
+    operator: 'internal_script',
+  };
+  const query = buildLocalMustFilter(filter);
+  const expectedQuery = {
+    bool: {
+      should: [
+        {
+          script: {
+            script: scriptSource,
+          },
+        },
+      ],
+      minimum_should_match: 1,
+    },
+  };
+  expect(query).toEqual(expectedQuery);
+});
+
 it('should generate search clauses for both activity and history fields in historyFiltering mode', () => {
   const shouldSearch = elGenerateFullTextSearchShould('login', { historyFiltering: true });
   const topLevelActivityAndHistoryQueryString = shouldSearch.find(

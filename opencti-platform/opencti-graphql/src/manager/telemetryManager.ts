@@ -148,7 +148,7 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
-export const TELEMETRY_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
+export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
@@ -288,7 +288,7 @@ export const addCustomViewEnabledCount = () => {
 };
 
 export const addSharedSavedFiltersPermissionChangesCount = () => {
-  redisSetTelemetryAdd(TELEMETRY_SAVED_FILTER_PERMISSION_CHANGES, 1)
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES, 1)
     .catch((reason) => logApp.warn('Error adding shared saved filters permission changes count to telemetry', { reason }));
 };
 
@@ -554,13 +554,22 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // A saved filter is considered shared when it has restricted_members entries
     // whose id differs from the creator_id. We use an internal_script filter to
     // count them directly in ES to avoid fetching the full entity list.
-    const sharedSavedFiltersScript = 'def members = params._source.restricted_members; '
-      + 'if (members == null || members.isEmpty()) { return false; } '
-      + 'def creator = params._source.creator_id; '
-      + 'for (def m : members) { if (!creator.contains(m.id)) { return true; } } '
-      + 'return false;';
+    const sharedSavedFiltersScript = `
+      def members = doc.containsKey('restricted_members.id.keyword')
+        ? doc['restricted_members.id.keyword']
+        : (doc.containsKey('restricted_members.id') ? doc['restricted_members.id'] : null);
+      if (members == null || members.size() == 0) return false;
+      def creator = (doc.containsKey('creator_id.keyword') && doc['creator_id.keyword'].size() > 0)
+        ? doc['creator_id.keyword'][0]
+        : null;
+      for (def m : members) {
+        if (m != null && m != creator && m != 'CREATOR') return true;
+      }
+      return false;
+    `;
     const sharedSavedFiltersCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
       types: [ENTITY_TYPE_SAVED_FILTER],
+      includeAuthorities: true,
       filters: {
         mode: FilterMode.And,
         filters: [{
@@ -753,7 +762,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
-    const sharedSavedFiltersPermissionChangesCountInRedis = await redisGetTelemetry(TELEMETRY_SAVED_FILTER_PERMISSION_CHANGES);
+    const sharedSavedFiltersPermissionChangesCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES);
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
