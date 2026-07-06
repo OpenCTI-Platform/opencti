@@ -258,6 +258,7 @@ describe('Ingestion Json domain - ingestionJsonTester mutation (testJsonIngestio
       user_id: ADMIN_USER.id,
       json_mapper_id: mapperId,
       verb: 'GET',
+      body: '',
     };
 
     const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
@@ -290,6 +291,7 @@ describe('Ingestion Json domain - ingestionJsonTester mutation (testJsonIngestio
       user_id: ADMIN_USER.id,
       json_mapper_id: mapperId,
       verb: 'GET',
+      body: '',
     };
 
     const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
