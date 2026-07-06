@@ -164,6 +164,7 @@
     "python-shell": "5.0.0",
     "ramda": "0.32.0",
     "rate-limiter-flexible": "9.1.1",
+    "re2": "1.25.0",
     "semver": "7.7.4",
     "set-interval-async": "3.0.3",
     "source-map": "0.7.6",
@@ -243,6 +244,9 @@
     },
     "protobufjs": {
       "built": false
+    },
+    "re2": {
+      "built": true
     }
   }
 }

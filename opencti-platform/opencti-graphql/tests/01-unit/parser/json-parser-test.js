@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import jsonMappingExecution from '../../../src/parser/json-mapper';
+import { JsonMapperRepresentationType } from '../../../src/modules/internal/jsonMapper/jsonMapper-types';
+import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { cisa_data, cisa_mapper } from './json-mapper-cisa';
 import { trino_data, trino_mapper } from './json-mapper-trino';
@@ -109,5 +111,42 @@ describe('JSON mapper testing', () => {
     expect(report.name).toBe('Secret Blizzard compromising Storm-0156 infrastructure for espionage / Snowblind: The Invisible Hand of Secret Blizzard');
     expect(report.report_types).toStrictEqual(['misp-event']);
     expect(report.object_refs.length).toBe(121);
+  });
+});
+
+describe('JSON mapper extractWithRegexp', () => {
+  const makeMapper = (formula) => ({
+    type: 'jsonMapper',
+    name: 'regexp-test',
+    variables: [],
+    representations: [{
+      id: 'rep1',
+      type: JsonMapperRepresentationType.Entity,
+      target: { entity_type: ENTITY_TYPE_MALWARE, path: '$' },
+      identifier: undefined,
+      attributes: [
+        { key: 'name', mode: 'complex', complex_path: { variables: [{ variable: 'name', path: '$.name' }], formula } },
+        { key: 'is_family', mode: 'simple', default_values: ['true'] },
+      ],
+    }],
+  });
+
+  it('should extract a capture group from a matching value', async () => {
+    const data = JSON.stringify([{ name: 'CobaltStrike - T1059' }]);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'));
+    expect(objects[0].name).toBe('CobaltStrike');
+  });
+
+  it('should return the original value when the pattern does not match', async () => {
+    const data = JSON.stringify([{ name: 'Sliver' }]);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'));
+    expect(objects[0].name).toBe('Sliver');
+  });
+
+  it('should return the original value when groupIndex is out of range', async () => {
+    const data = JSON.stringify([{ name: 'CobaltStrike - T1059' }]);
+    // Pattern has 3 groups; groupIndex 99 is out of range
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 99, name)'));
+    expect(objects[0].name).toBe('CobaltStrike - T1059');
   });
 });
