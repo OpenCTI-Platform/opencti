@@ -110,7 +110,7 @@ testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
-testDeletedCounter.artifact = 2;
+testDeletedCounter.artifact = 3;
 testDeletedCounter['attack-pattern'] = 5;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 7;
