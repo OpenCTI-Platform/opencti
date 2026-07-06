@@ -1,0 +1,41 @@
+# Default (Project Leadership)
+*                                                           @OpenCTI-Platform/ent:opencti-project-leadership
+
+# --------------------------------------------------------------------------------------
+# Source code
+/client-python/docs                                         @OpenCTI-Platform/ent:opencti-senior-developers
+/client-python/examples                                     @OpenCTI-Platform/ent:opencti-senior-developers
+/client-python/tests                                        @OpenCTI-Platform/ent:opencti-senior-developers
+/client-python/pycti                                        @OpenCTI-Platform/ent:opencti-senior-developers
+
+/opencti-platform/opencti-dev/                              @OpenCTI-Platform/ent:opencti-senior-developers
+
+/opencti-platform/opencti-front/lang/                       @OpenCTI-Platform/ent:opencti-senior-developers
+/opencti-platform/opencti-front/scripts/                    @OpenCTI-Platform/ent:opencti-senior-developers
+/opencti-platform/opencti-front/src/                        @OpenCTI-Platform/ent:opencti-senior-developers
+/opencti-platform/opencti-front/tests_e2e/                  @OpenCTI-Platform/ent:opencti-senior-developers
+
+/opencti-platform/opencti-graphql/config/                   @OpenCTI-Platform/ent:opencti-senior-developers
+/opencti-platform/opencti-graphql/scripts/                  @OpenCTI-Platform/ent:opencti-senior-developers
+/opencti-platform/opencti-graphql/src/                      @OpenCTI-Platform/ent:opencti-senior-developers
+/opencti-platform/opencti-graphql/static/                   @OpenCTI-Platform/ent:opencti-senior-developers
+/opencti-platform/opencti-graphql/tests/                    @OpenCTI-Platform/ent:opencti-senior-developers
+
+/opencti-worker/src/                                        @OpenCTI-Platform/ent:opencti-senior-developers
+
+# --------------------------------------------------------------------------------------
+# Critical areas (Tech Leadership)
+/opencti-platform/opencti-graphql/src/graphql/              @OpenCTI-Platform/ent:opencti-tech-leadership
+/opencti-platform/opencti-graphql/src/http/                 @OpenCTI-Platform/ent:opencti-tech-leadership
+/opencti-platform/opencti-graphql/src/lock/                 @OpenCTI-Platform/ent:opencti-tech-leadership
+/opencti-platform/opencti-graphql/src/database/engine*      @OpenCTI-Platform/ent:opencti-tech-leadership
+/opencti-platform/opencti-graphql/src/database/middleware*  @OpenCTI-Platform/ent:opencti-tech-leadership
+/opencti-platform/opencti-graphql/src/database/redis*       @OpenCTI-Platform/ent:opencti-tech-leadership
+/opencti-platform/opencti-graphql/src/database/rabbitmq*    @OpenCTI-Platform/ent:opencti-tech-leadership
+
+# --------------------------------------------------------------------------------------
+# Documentation
+.readthedocs.yaml                                           @OpenCTI-Platform/ent:opencti-developers
+/docs/                                                      @OpenCTI-Platform/ent:opencti-product
+/docs/overrides/                                            @OpenCTI-Platform/ent:opencti-developers
+/docs/project.json                                          @OpenCTI-Platform/ent:opencti-developers
