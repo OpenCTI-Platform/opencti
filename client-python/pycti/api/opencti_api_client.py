@@ -815,30 +815,6 @@ class OpenCTIApiClient:
             return False
         return False
 
-    def get_logs_worker_config(self):
-        """Get the logs worker configuration from the OpenCTI platform.
-
-        :return: the logs worker configuration including Elasticsearch settings
-        :rtype: dict
-        """
-
-        self.app_logger.info("Getting logs worker config...")
-        query = """
-            query LogsWorkerConfig {
-                logsWorkerConfig {
-                    elasticsearch_url
-                    elasticsearch_proxy
-                    elasticsearch_index
-                    elasticsearch_username
-                    elasticsearch_password
-                    elasticsearch_api_key
-                    elasticsearch_ssl_reject_unauthorized
-                }
-            }
-        """
-        result = self.query(query)
-        return result["data"]["logsWorkerConfig"]
-
     def not_empty(self, value):
         """Check if a value is empty for str, list and int.
 
