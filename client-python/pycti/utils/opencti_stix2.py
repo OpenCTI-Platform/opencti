@@ -2906,7 +2906,7 @@ class OpenCTIStix2:
             withFiles=(mode == "full"),
         )
         if entities_list is not None:
-            uuids = []
+            uuids = set()
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
                     entity=self.generate_export(entity),
@@ -2915,9 +2915,8 @@ class OpenCTIStix2:
                 )
                 if entity_bundle is not None:
                     entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
-                    for x in entity_bundle_filtered:
-                        uuids.append(x["id"])
-                    bundle["objects"] = bundle["objects"] + entity_bundle_filtered
+                    uuids.update(x["id"] for x in entity_bundle_filtered)
+                    bundle["objects"].extend(entity_bundle_filtered)
         self._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
         return bundle
 
