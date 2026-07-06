@@ -1,0 +1,50 @@
+name: Generate SBOM files
+description: >
+  Generates one or more SBOM files for OpenCTI platform docker images and uploads them as artifacts.
+  The SBOM files are generated in CycloneDX JSON format.
+
+inputs:
+  tags:
+    description: 'JSON array of image tags (e.g. ["7.260619.0", "7.260619.0-ubi9", "7.260619.0-fips"])'
+    required: true
+  overwrite:
+    description: "Overwrite existing artifacts if they already exist"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Syft
+      uses: anchore/sbom-action/download-syft@v0
+
+    - name: Generate SBOMs
+      shell: bash
+      env:
+        TAGS: ${{ inputs.tags }}
+      run: |
+        for TAG in $(echo "${TAGS}" | jq -r '.[]'); do
+          echo "::group::Processing tag: ${TAG}"
+
+          echo "Verifying docker image exists: opencti/platform:${TAG}"
+          if ! docker manifest inspect "opencti/platform:${TAG}" > /dev/null 2>&1; then
+            echo "::error::Image opencti/platform:${TAG} does not exist in the registry"
+            exit 1
+          fi
+
+          echo "Generating SBOM for opencti/platform:${TAG}"
+          syft "opencti/platform:${TAG}" \
+            -c "${{ github.workspace }}/.syft.yaml" \
+            -o "cyclonedx-json=opencti-platform-${TAG}.cdx.json"
+
+          echo "::endgroup::"
+        done
+
+    - name: Upload SBOM artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom-opencti-platform
+        path: "opencti-platform-*.cdx.json"
+        overwrite: ${{ inputs.overwrite }}
+        retention-days: 3
+
