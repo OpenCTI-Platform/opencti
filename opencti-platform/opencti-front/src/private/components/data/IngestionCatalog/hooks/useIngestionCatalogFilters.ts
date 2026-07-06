@@ -141,6 +141,9 @@ const useIngestionCatalogFilters = ({
     return { entries: parsedEntries, parseFailures: failures };
   }, [catalogs, deploymentCounts]);
 
+  // t_i18n is intentionally omitted from the dependencies: useFormatter
+  // returns a new function identity on every render, so including it would
+  // re-fire the notification on each render while failures are present.
   useEffect(() => {
     if (parseFailures > 0) {
       MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));

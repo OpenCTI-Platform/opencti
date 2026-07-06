@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Suspense, useContext, useEffect, useState } from 'react';
+import React, { ChangeEvent, Suspense, useContext, useEffect, useMemo, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
@@ -313,7 +313,9 @@ const IngestionCatalogComponent = ({
   const catalogs = catalogsData.catalogs || [];
   const { connectors } = deploymentData;
 
-  const deploymentCounts = createDeploymentCountMap(connectors);
+  // Memoized so its identity stays stable across renders: it feeds the
+  // contract-parsing useMemo in useIngestionCatalogFilters.
+  const deploymentCounts = useMemo(() => createDeploymentCountMap(connectors), [connectors]);
 
   const {
     entries,
