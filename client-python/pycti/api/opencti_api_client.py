@@ -590,33 +590,43 @@ class OpenCTIApiClient:
         if isinstance(obj, File):
             return None, [{"key": path_prefix, "file": obj, "multiple": False}]
 
-        if (
-            isinstance(obj, list)
-            and len(obj) > 0
-            and all(map(lambda x: isinstance(x, File), obj))
-        ):
-            return [None] * len(obj), [
-                {"key": path_prefix, "file": obj, "multiple": True}
-            ]
-
         if isinstance(obj, dict):
-            cleaned = {}
+            cleaned = obj
             files_vars = []
             for key, val in obj.items():
+                if not isinstance(val, (File, dict, list)):
+                    continue
                 new_path = f"{path_prefix}.{key}" if path_prefix else key
                 cleaned_val, nested_files = self._extract_files(val, new_path)
-                cleaned[key] = cleaned_val
-                files_vars.extend(nested_files)
+                if nested_files:
+                    if cleaned is obj:
+                        cleaned = obj.copy()
+                    cleaned[key] = cleaned_val
+                    files_vars.extend(nested_files)
             return cleaned, files_vars
 
         if isinstance(obj, list):
-            cleaned = []
+            if (
+                len(obj) > 0
+                and isinstance(obj[0], File)
+                and all(isinstance(item, File) for item in obj)
+            ):
+                return [None] * len(obj), [
+                    {"key": path_prefix, "file": obj, "multiple": True}
+                ]
+
+            cleaned = obj
             files_vars = []
             for i, item in enumerate(obj):
+                if not isinstance(item, (File, dict, list)):
+                    continue
                 new_path = f"{path_prefix}.{i}" if path_prefix else str(i)
                 cleaned_item, nested_files = self._extract_files(item, new_path)
-                cleaned.append(cleaned_item)
-                files_vars.extend(nested_files)
+                if nested_files:
+                    if cleaned is obj:
+                        cleaned = obj.copy()
+                    cleaned[i] = cleaned_item
+                    files_vars.extend(nested_files)
             return cleaned, files_vars
 
         return obj, []
@@ -639,7 +649,9 @@ class OpenCTIApiClient:
         # Support for single or multiple upload
         # Batching or mixed upload or not supported
         # Recursively extract File objects from nested dictionaries
-        query_var, files_vars = self._extract_files(variables)
+        query_var, files_vars = (
+            self._extract_files(variables) if variables else (variables, [])
+        )
 
         query_headers = self.request_headers.copy()
         if disable_impersonate and "opencti-applicant-id" in query_headers:
