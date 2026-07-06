@@ -557,7 +557,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const sharedSavedFiltersScript = 'def members = params._source.restricted_members; '
       + 'if (members == null || members.isEmpty()) { return false; } '
       + 'def creator = params._source.creator_id; '
-      + 'for (def m : members) { if (m.id != creator) { return true; } } '
+      + 'for (def m : members) { if (!creator.contains(m.id)) { return true; } } '
       + 'return false;';
     const sharedSavedFiltersCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
       types: [ENTITY_TYPE_SAVED_FILTER],
