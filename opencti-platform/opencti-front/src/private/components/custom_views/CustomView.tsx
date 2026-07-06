@@ -46,11 +46,26 @@ const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewCompo
     type: 'startDate' | 'endDate' | 'relativeDate',
     value: string | null,
   ) => {
-    setDateOverride({
-      startDate: effectiveConfig?.startDate ?? null,
-      endDate: effectiveConfig?.endDate ?? null,
-      relativeDate: effectiveConfig?.relativeDate ?? null,
-      [type]: value,
+    setDateOverride((prev) => {
+      const base = prev ?? helpers.config;
+      const normalizedValue = value === 'none' ? null : value;
+
+      let nextConfig: DashboardConfig = {
+        startDate: base?.startDate ?? null,
+        endDate: base?.endDate ?? null,
+        relativeDate: base?.relativeDate ?? null,
+        [type]: normalizedValue,
+      };
+
+      if (type === 'relativeDate' && value !== 'none') {
+        nextConfig = {
+          ...nextConfig,
+          startDate: null,
+          endDate: null,
+        };
+      }
+
+      return nextConfig;
     });
   };
 
