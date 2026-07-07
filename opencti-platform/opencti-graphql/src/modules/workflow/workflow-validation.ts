@@ -62,7 +62,7 @@ export const workflowDefinitionSchema = z.object({
   transitions: z.array(workflowSerializedTransitionSchema),
 });
 
-const extractAllStatesFromDefinition = (definition: z.infer<typeof workflowDefinitionSchema>): Set<string> => {
+export const extractAllStatesFromDefinition = (definition: z.infer<typeof workflowDefinitionSchema>): Set<string> => {
   const stateIds = new Set<string>();
 
   if (definition.initialState !== '*') {
@@ -324,26 +324,39 @@ export const validateWorkflowDefinitionData = async (
         const newStates = extractAllStatesFromDefinition(validationResult.data);
         const removedStates = [...oldStates].filter((s) => !newStates.has(s));
         if (removedStates.length > 0) {
-          // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
-          // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
-          // Instead, we filter by currentState in ES and post-filter by workflow_id.
-          const instancesInRemovedStates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-            filters: {
-              mode: FilterMode.And,
-              filters: [
-                { key: ['currentState'], values: removedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
-              ],
-              filterGroups: [],
-            },
-          });
-          const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId);
+          // Ending states (no outgoing transitions in the old workflow) are safe to remove even when
+          // instances are in them — those instances are terminal and cannot progress anyway.
+          const statesWithOutgoingTransitions = new Set<string>();
+          for (const transition of oldValidation.data.transitions) {
+            const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+            for (const s of fromStates) {
+              if (s && s !== '*') statesWithOutgoingTransitions.add(s);
+            }
+          }
+          const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
 
-          if (conflictingInstances.length > 0) {
-            errors.push({
-              type: 'STATE_IN_USE',
-              message: `Cannot remove states ${removedStates.join(', ')} that are currently in use by workflow instances`,
-              path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
+          if (nonEndingRemovedStates.length > 0) {
+            // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
+            // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
+            // Instead, we filter by currentState in ES and post-filter by workflow_id.
+            const instancesInRemovedStates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+              filters: {
+                mode: FilterMode.And,
+                filters: [
+                  { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
+                ],
+                filterGroups: [],
+              },
             });
+            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId);
+
+            if (conflictingInstances.length > 0) {
+              errors.push({
+                type: 'STATE_IN_USE',
+                message: `Cannot remove states ${nonEndingRemovedStates.join(', ')} that are currently in use by workflow instances`,
+                path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
+              });
+            }
           }
         }
       }

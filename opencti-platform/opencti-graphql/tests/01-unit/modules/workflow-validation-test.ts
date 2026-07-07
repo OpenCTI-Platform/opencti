@@ -442,12 +442,12 @@ describe('Workflow Validation', () => {
     expect(errors).toEqual([]);
   });
 
-  it('should return error for state in use when removing states', async () => {
+  it('should return error for state in use when removing a non-ending state', async () => {
     // Reset mocks for this test
     vi.mocked(middlewareLoader.storeLoadById).mockReset();
     vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
 
-    // Mock existing workflow with states
+    // Old workflow: state-a → state-b → state-c. state-b has an outgoing transition → non-ending.
     vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
       id: 'existing-workflow',
       draft_version: {
@@ -457,9 +457,11 @@ describe('Workflow Validation', () => {
           states: [
             { statusId: 'state-a' },
             { statusId: 'state-b' },
+            { statusId: 'state-c' },
           ],
           transitions: [
             { from: 'state-a', to: 'state-b', event: 'proceed' },
+            { from: 'state-b', to: 'state-c', event: 'complete' },
           ],
         }),
         validation_errors: [],
@@ -483,10 +485,11 @@ describe('Workflow Validation', () => {
       },
     );
 
+    // New workflow: remove state-b (non-ending state currently in use)
     const updated = {
       initialState: 'state-a',
-      states: [{ statusId: 'state-a' }], // Removing state-b
-      transitions: [],
+      states: [{ statusId: 'state-a' }, { statusId: 'state-c' }],
+      transitions: [{ from: 'state-a', to: 'state-c', event: 'skip' }],
     };
 
     const errors = await validateWorkflowDefinitionData(
@@ -499,6 +502,60 @@ describe('Workflow Validation', () => {
 
     expect(errors.length).toBeGreaterThan(0);
     expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(true);
+  });
+
+  it('should allow removing an ending state even if instances are in it', async () => {
+    // Reset mocks for this test
+    vi.mocked(middlewareLoader.storeLoadById).mockReset();
+    vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
+
+    // Old workflow: state-a → state-b. state-b has NO outgoing transitions → ending/terminal state.
+    vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
+      id: 'existing-workflow',
+      draft_version: {
+        id: 'v1', timestamp: '', createdBy: '',
+        content: JSON.stringify({
+          initialState: 'state-a',
+          states: [
+            { statusId: 'state-a' },
+            { statusId: 'state-b' },
+          ],
+          transitions: [
+            { from: 'state-a', to: 'state-b', event: 'finish' },
+          ],
+        }),
+        validation_errors: [],
+      },
+    } as any);
+
+    vi.mocked(middlewareLoader.fullEntitiesList).mockImplementation(
+      async (_context: any, _user: any, entityTypes: any): Promise<any> => {
+        if (entityTypes.includes('WorkflowDefinition')) return [];
+        // There IS an instance stuck in the ending state
+        if (entityTypes.includes('WorkflowInstance')) {
+          return [{ id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b' }];
+        }
+        return [];
+      },
+    );
+
+    // New workflow: remove state-b (ending state)
+    const updated = {
+      initialState: 'state-a',
+      states: [{ statusId: 'state-a' }],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(
+      mockContext,
+      mockUser,
+      JSON.stringify(updated),
+      'Incident',
+      'existing-workflow',
+    );
+
+    // Ending states can be removed even when instances are in them
+    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(false);
   });
 
   it('should allow removing states not in use', async () => {
