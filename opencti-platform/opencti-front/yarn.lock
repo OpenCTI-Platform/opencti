@@ -1840,9 +1840,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/rich-text-editor@npm:1.0.3":
-  version: 1.0.3
-  resolution: "@filigran/rich-text-editor@npm:1.0.3"
+"@filigran/rich-text-editor@npm:1.2.0":
+  version: 1.2.0
+  resolution: "@filigran/rich-text-editor@npm:1.2.0"
   dependencies:
     "@tiptap/core": "npm:3.23.1"
     "@tiptap/pm": "npm:3.23.1"
@@ -1853,7 +1853,7 @@ __metadata:
     react: ">=18"
     react-color: ">=2"
     react-dom: ">=18"
-  checksum: 10c0/f641d5a4db53ec26ba71c56dc555d1bff0781692ed51e6433c464921a14cba9b0dd4f6075c2c5efcc760d06390a6be41ada3f77136cb51ed2bb02eb04be9b0fb
+  checksum: 10c0/715e0fba461478256388e1586500532aa223d5299f1ef44f9daec2aab2e0fc27a29ca79e3a67034585f3c65f9f2b5538fc4244225f8b6e2ca95bb9dcc55603c7
   languageName: node
   linkType: hard
 
@@ -13385,7 +13385,7 @@ __metadata:
     "@faker-js/faker": "npm:10.5.0"
     "@filigran/chatbot": "npm:3.7.4"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/rich-text-editor": "npm:1.0.3"
+    "@filigran/rich-text-editor": "npm:1.2.0"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
     "@graphiql/toolkit": "npm:0.12.1"
