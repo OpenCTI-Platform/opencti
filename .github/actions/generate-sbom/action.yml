@@ -33,7 +33,7 @@ runs:
 
     - name: Download docker image artifact
       if: ${{ inputs.source == 'artifact' }}
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: ${{ inputs.artifact_name }}
         path: /tmp/sbom-image

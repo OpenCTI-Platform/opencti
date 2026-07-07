@@ -34,10 +34,20 @@ jobs:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
           client_python_local: true
 
+  wf-build-builder-image:
+    name: Build opencti:builder image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-builder
+        with:
+          checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+          client_python_local: true
+
   wf-backend-test:
       name: Backend
       uses: ./.github/workflows/ci-test-backend.yml
-      needs:  [wf-build-platform-image,wf-build-worker-image]
+      needs:  [wf-build-platform-image,wf-build-worker-image,wf-build-builder-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         run-id: ${{ github.run_id }}

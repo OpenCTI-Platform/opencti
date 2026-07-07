@@ -166,13 +166,13 @@ jobs:
     needs: [generate-sbom-platform-standard, generate-sbom-platform-ubi9, generate-sbom-platform-fips, generate-sbom-worker-standard, generate-sbom-worker-ubi9, generate-sbom-worker-fips]
     steps:
       - name: Download all SBOM artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: sbom-*
           path: artifacts/
 
       - name: Download all Docker artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: docker-image-*
           path: artifacts/

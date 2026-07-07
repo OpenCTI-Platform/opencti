@@ -1,5 +1,5 @@
-name: docker-build-platform
-description: Build the opencti:platform docker image and store in local github artefact
+name: docker-build-builder
+description: Build the opencti:builder docker image (builder stage) and store in local github artefact
 
 inputs:
   image_tag:
@@ -26,34 +26,35 @@ runs:
     - name: Use client-python in OpenCTI from same branch
       shell: bash
       if: ${{ inputs.client_python_local == 'true' }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-platform/opencti-graphql/src/python/requirements.txt
+      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
       with:
-        name: gha-builder-platform
+        name: gha-builder-builder
 
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v6
       with:
-        images: filigran/platform
+        images: filigran/builder
         tags: type=raw,value=${{ inputs.image_tag }}
 
-
-    - name: Build (platform)
+    - name: Build (builder)
       uses: docker/build-push-action@v7
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
+        target: builder
         push: 'false'
-        outputs: type=docker,dest=/tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
+        outputs: type=docker,dest=/tmp/opencti-builder${{ inputs.docker_image_suffix }}.tar
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Upload platform docker image artifact
+    - name: Upload builder docker image artifact
       uses: actions/upload-artifact@v7
       with:
-        name: docker-image-opencti-platform${{ inputs.docker_image_suffix }}
-        path: /tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
+        name: docker-image-opencti-builder${{ inputs.docker_image_suffix }}
+        path: /tmp/opencti-builder${{ inputs.docker_image_suffix }}.tar
         retention-days: 7
+
