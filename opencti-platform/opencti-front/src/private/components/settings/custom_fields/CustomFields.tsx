@@ -75,8 +75,6 @@ export const CustomFieldsLineFragment = graphql`
     name
     label
     field_type
-    mandatory
-    default_value
     entity_types
   }
 `;
@@ -123,24 +121,6 @@ const CustomFields = () => {
       label: 'Label',
       percentWidth: 15,
       render: (data: CustomFieldsLine_node$data) => defaultRender(data.label),
-    },
-    mandatory: {
-      id: 'mandatory',
-      label: 'Mandatory',
-      percentWidth: 8,
-      isSortable: false,
-      render: (data: CustomFieldsLine_node$data) => (data.mandatory ? t_i18n('Yes') : t_i18n('No')),
-    },
-    default_value: {
-      id: 'default_value',
-      label: 'Default value',
-      percentWidth: 15,
-      isSortable: false,
-      render: (data: CustomFieldsLine_node$data) => (
-        <FieldOrEmpty source={data.default_value}>
-          {data.default_value}
-        </FieldOrEmpty>
-      ),
     },
     entity_types: {
       id: 'entity_types',
