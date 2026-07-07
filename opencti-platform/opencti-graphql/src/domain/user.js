@@ -13,7 +13,6 @@ import conf, {
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
-  isFeatureEnabled,
   logApp,
 } from '../config/conf';
 import {
@@ -655,12 +654,7 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
-export const FEATURE_FORCE_PASSWORD_CHANGE = 'FORCE_PASSWORD_CHANGE';
-
 export const computePasswordValidUntilFromPolicy = async (context) => {
-  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
-    return null;
-  }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validityDays = Number(settings.password_policy_validity_days ?? 0);
   if (!Number.isFinite(validityDays) || validityDays <= 0) {
@@ -1677,6 +1671,11 @@ export const sessionLogin = async (context, input) => {
     }
   }
   if (loggedUser) {
+    // After session creation, check if the password is expired.
+    // The session is kept so the user can call meEdit to set a new password.
+    if (isPasswordExpired(loggedUser)) {
+      throw PasswordChangeRequired();
+    }
     // [SECURITY] api_token plaintext is no longer returned from the login mutation.
     // The session has been created above; the token value must not be exposed via this endpoint.
     return null;
@@ -2017,9 +2016,6 @@ const internalAuthenticateUser = async (context, req, user) => {
  * @returns {boolean}
  */
 export const isPasswordExpired = (user) => {
-  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
-    return false;
-  }
   if (user.password_valid_until == null) {
     return false;
   }
