@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql } from 'react-relay';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import IngestionRssPopover from './ingestionRss/IngestionRssPopover';
+import { ingestionRssLineFragment, ingestionRssLinesFragment, ingestionRssLinesQuery } from './ingestionRss/IngestionRss.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
@@ -27,72 +27,6 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 
 const LOCAL_STORAGE_KEY = 'ingestionRss';
-
-export const ingestionRssLineFragment = graphql`
-  fragment IngestionRssLine_ingestionRss on IngestionRss {
-    id
-    name
-    uri
-    ingestion_running
-    current_state_date
-    last_execution_date
-  }
-`;
-
-export const ingestionRssLinesQuery = graphql`
-  query IngestionRssLinesDataTableQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: IngestionRssOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-  ) {
-    ...IngestionRssLinesDataTable_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
-  }
-`;
-
-export const ingestionRssLinesFragment = graphql`
-  fragment IngestionRssLinesDataTable_data on Query
-  @argumentDefinitions(
-    search: { type: "String" }
-    count: { type: "Int", defaultValue: 25 }
-    cursor: { type: "ID" }
-    orderBy: { type: "IngestionRssOrdering", defaultValue: name }
-    orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "FilterGroup" }
-  )
-  @refetchable(queryName: "IngestionRssLinesDataTableRefetchQuery") {
-    ingestionRsss(
-      search: $search
-      first: $count
-      after: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) @connection(key: "Pagination_ingestionRsss") {
-      edges {
-        node {
-          id
-          ...IngestionRssLine_ingestionRss
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-        globalCount
-      }
-    }
-  }
-`;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
