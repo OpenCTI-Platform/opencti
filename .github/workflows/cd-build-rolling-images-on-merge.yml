@@ -1,4 +1,6 @@
-name: OpenCTI CD
+name: OpenCTI CD Rolling
+# This workflow prepare all artifact for the rolling images
+# Build on each merge on master
 
 on:
   push:
@@ -7,8 +9,11 @@ on:
       - issue/16821-docker-wf
 
 jobs:
+  # -----------------------
+  # Standard default images
+  # -----------------------
   build-platform-standard:
-    name: Build rolling platform (standard)
+    name: Build platform (standard)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -18,7 +23,7 @@ jobs:
           client_python_local: true
 
   build-worker-standard:
-    name: Build rolling worker (standard)
+    name: Build worker (standard)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -27,8 +32,37 @@ jobs:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
 
+  generate-sbom-platform-standard:
+    name: Generate SBOM (platform standard)
+    runs-on: ubuntu-latest
+    needs: [build-platform-standard]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/platform"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-platform"
+
+  generate-sbom-worker-standard:
+    name: Generate SBOM (worker standard)
+    runs-on: ubuntu-latest
+    needs: [build-worker-standard]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/worker"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-worker"
+
+  # -----------------------
+  # UBI 9 images
+  # -----------------------
   build-platform-ubi9:
-    name: Build rolling platform (UBI9)
+    name: Build platform (UBI9)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -39,7 +73,7 @@ jobs:
           docker_image_suffix: "_ubi9"
 
   build-worker-ubi9:
-    name: Build rolling worker (UBI9)
+    name: Build worker (UBI9)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -49,8 +83,37 @@ jobs:
           client_python_local: true
           docker_image_suffix: "_ubi9"
 
+  generate-sbom-platform-ubi9:
+    name: Generate SBOM (platform UBI9)
+    runs-on: ubuntu-latest
+    needs: [build-platform-ubi9]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/platform"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-platform_ubi9"
+
+  generate-sbom-worker-ubi9:
+    name: Generate SBOM (worker UBI9)
+    runs-on: ubuntu-latest
+    needs: [build-worker-ubi9]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/worker"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-worker_ubi9"
+
+  # -----------------------
+  # FIPS 9 images
+  # -----------------------
   build-platform-fips:
-    name: Build rolling platform (FIPS)
+    name: Build platform (FIPS)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -60,36 +123,21 @@ jobs:
           client_python_local: true
           docker_image_suffix: "_fips"
 
-  generate-sbom-platform-standard:
-    name: Generate rolling SBOM (platform standard)
+  build-worker-fips:
+    name: Build worker (FIPS)
     runs-on: ubuntu-latest
-    needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/generate-sbom
+      - uses: ./.github/actions/docker-build-worker
         with:
-          tags: '["${{ github.sha }}"]'
-          image_name: "filigran/platform"
-          source: "artifact"
-          artifact_name: "docker-image-opencti-platform"
-
-  generate-sbom-platform-ubi9:
-    name: Generate rolling SBOM (platform UBI9)
-    runs-on: ubuntu-latest
-    needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/generate-sbom
-        with:
-          tags: '["${{ github.sha }}"]'
-          image_name: "filigran/platform"
-          source: "artifact"
-          artifact_name: "docker-image-opencti-platform-ubi9"
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+          docker_image_suffix: "_fips"
 
   generate-sbom-platform-fips:
-    name: Generate rolling SBOM (platform FIPS)
+    name: Generate SBOM (platform FIPS)
     runs-on: ubuntu-latest
-    needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
+    needs: [build-platform-fips]
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/generate-sbom
@@ -97,12 +145,12 @@ jobs:
           tags: '["${{ github.sha }}"]'
           image_name: "filigran/platform"
           source: "artifact"
-          artifact_name: "docker-image-opencti-platform-fips"
+          artifact_name: "docker-image-opencti-platform_fips"
 
-  generate-sbom-worker-standard:
-    name: Generate rolling SBOM (worker standard)
+  generate-sbom-worker-fips:
+    name: Generate SBOM (worker FIPS)
     runs-on: ubuntu-latest
-    needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
+    needs: [ build-worker-fips ]
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/generate-sbom
@@ -110,32 +158,19 @@ jobs:
           tags: '["${{ github.sha }}"]'
           image_name: "filigran/worker"
           source: "artifact"
-          artifact_name: "docker-image-opencti-worker"
-
-  generate-sbom-worker-ubi9:
-    name: Generate rolling SBOM (worker UBI9)
-    runs-on: ubuntu-latest
-    needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/generate-sbom
-        with:
-          tags: '["${{ github.sha }}"]'
-          image_name: "filigran/worker"
-          source: "artifact"
-          artifact_name: "docker-image-opencti-worker-ubi9"
+          artifact_name: "docker-image-opencti-worker_fips"
 
   upload-artifacts:
-    name: Upload all rolling artifacts
+    name: Upload all artifacts
     runs-on: ubuntu-latest
-    needs: [generate-sbom-platform-standard, generate-sbom-platform-ubi9, generate-sbom-platform-fips, generate-sbom-worker-standard, generate-sbom-worker-ubi9]
+    needs: [generate-sbom-platform-standard, generate-sbom-platform-ubi9, generate-sbom-platform-fips, generate-sbom-worker-standard, generate-sbom-worker-ubi9, generate-sbom-worker-fips]
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
 
-      - name: Upload consolidated rolling artifacts
+      - name: Upload consolidated artifacts
         uses: actions/upload-artifact@v4
         with:
           name: opencti-release-${{ github.sha }}

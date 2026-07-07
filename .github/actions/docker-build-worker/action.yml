@@ -54,6 +54,6 @@ runs:
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
-        name: docker-image-opencti-worker
-        path: /tmp/opencti-worker.tar
+        name: docker-image-opencti-worker${{ inputs.docker_image_suffix }}
+        path: /tmp/opencti-worker${{ inputs.docker_image_suffix }}.tar
         retention-days: 7

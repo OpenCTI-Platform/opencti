@@ -33,30 +33,6 @@ runs:
       with:
         name: gha-builder-platform
 
-    - name: Docker meta (builder)
-      id: meta-builder
-      uses: docker/metadata-action@v6
-      with:
-        images: filigran/builder
-        tags: type=raw,value=${{ inputs.image_tag }}
-
-    - name: Build (builder)
-      uses: docker/build-push-action@v7
-      with:
-        context: opencti-platform
-        file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
-        target: builder
-        outputs: type=docker,dest=/tmp/opencti-builder.tar
-        tags: ${{ steps.meta-builder.outputs.tags }}
-        labels: ${{ steps.meta-builder.outputs.labels }}
-
-    - name: Upload builder docker image artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: docker-image-opencti-builder
-        path: /tmp/opencti-builder.tar
-        retention-days: 7
-
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v6
@@ -77,6 +53,6 @@ runs:
     - name: Upload opencti docker image artifact
       uses: actions/upload-artifact@v7
       with:
-        name: docker-image-opencti-platform
-        path: /tmp/opencti-platform.tar
+        name: docker-image-opencti-platform${{ inputs.docker_image_suffix }}
+        path: /tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
         retention-days: 7
