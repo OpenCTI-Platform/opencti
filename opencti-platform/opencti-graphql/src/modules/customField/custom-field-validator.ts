@@ -35,8 +35,8 @@ export const validateCustomFieldValues = (
     validateSingleCustomFieldValue(value, definition);
   }
 
-  // Check mandatory fields are present
-  const mandatoryDefs = definitions.filter((d) => d.mandatory);
+  // Check mandatory fields are present (mandatory is resolved per entity type - US.2)
+  const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
   for (const def of mandatoryDefs) {
     const valueEntry = customFieldValues.find((v) => v.field_name === def.name);
     if (!valueEntry) {

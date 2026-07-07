@@ -2,6 +2,7 @@ import { type EntityOptions, type FilterGroupWithNested, countAllThings, fullEnt
 import {
   type BasicStoreEntityCustomFieldDefinition,
   CUSTOM_FIELD_PREFIX,
+  type CustomFieldEntityTypeSetting,
   type CustomFieldType,
   ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
   type StoreEntityCustomFieldDefinition,
@@ -52,6 +53,17 @@ export const getCustomFieldDefinitionsForEntityType = (entityType: string): Basi
   return customFieldDefinitionsCache.filter(
     (def) => def.entity_types && def.entity_types.includes(entityType),
   );
+};
+
+/**
+ * Resolve the per-entity-type settings (mandatory / default_value) of a definition
+ * for a given entity type. Returns undefined if the field is not attached to it.
+ */
+export const getCustomFieldSettingForEntityType = (
+  definition: BasicStoreEntityCustomFieldDefinition,
+  entityType: string,
+): CustomFieldEntityTypeSetting | undefined => {
+  return definition.entity_type_settings?.find((setting) => setting.entity_type === entityType);
 };
 
 /**
@@ -353,10 +365,71 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
-export const customFieldDefinitionAddEntityType = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, entityType: string) => {
-  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Add }]);
+export const customFieldDefinitionAddEntityType = async (
+  context: AuthContext,
+  user: AuthUser,
+  customFieldDefinitionId: string,
+  entityType: string,
+  mandatory: boolean,
+  defaultValue?: string | null,
+) => {
+  const definition = await findById(context, user, customFieldDefinitionId);
+  if (!definition) {
+    throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });
+  }
+  const currentTypes = definition.entity_types ?? [];
+  const currentSettings = definition.entity_type_settings ?? [];
+  const nextTypes = currentTypes.includes(entityType) ? currentTypes : [...currentTypes, entityType];
+  const nextSettings = [
+    ...currentSettings.filter((setting) => setting.entity_type !== entityType),
+    { entity_type: entityType, mandatory, default_value: defaultValue ?? undefined },
+  ];
+  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+    { key: 'entity_types', value: nextTypes, operation: EditOperation.Replace },
+    { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
+  ]);
 };
 
-export const customFieldDefinitionRemoveEntityType = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, entityType: string) => {
-  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [{ key: 'entity_types', value: [entityType], operation: EditOperation.Remove }]);
+export const customFieldDefinitionUpdateEntityType = async (
+  context: AuthContext,
+  user: AuthUser,
+  customFieldDefinitionId: string,
+  entityType: string,
+  mandatory: boolean,
+  defaultValue?: string | null,
+) => {
+  const definition = await findById(context, user, customFieldDefinitionId);
+  if (!definition) {
+    throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });
+  }
+  const currentTypes = definition.entity_types ?? [];
+  if (!currentTypes.includes(entityType)) {
+    throw FunctionalError('Custom field definition is not attached to this entity type', { id: customFieldDefinitionId, entityType });
+  }
+  const currentSettings = definition.entity_type_settings ?? [];
+  const nextSettings = [
+    ...currentSettings.filter((setting) => setting.entity_type !== entityType),
+    { entity_type: entityType, mandatory, default_value: defaultValue ?? undefined },
+  ];
+  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+    { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
+  ]);
+};
+
+export const customFieldDefinitionRemoveEntityType = async (
+  context: AuthContext,
+  user: AuthUser,
+  customFieldDefinitionId: string,
+  entityType: string,
+) => {
+  const definition = await findById(context, user, customFieldDefinitionId);
+  if (!definition) {
+    throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });
+  }
+  const nextTypes = (definition.entity_types ?? []).filter((type) => type !== entityType);
+  const nextSettings = (definition.entity_type_settings ?? []).filter((setting) => setting.entity_type !== entityType);
+  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+    { key: 'entity_types', value: nextTypes, operation: EditOperation.Replace },
+    { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
+  ]);
 };

@@ -21,10 +21,25 @@ const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFiel
     { name: 'label', label: 'Label', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'field_type', label: 'Field type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'entity_types', label: 'Entity types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
-    { name: 'mandatory', label: 'Mandatory', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    // Per-entity-type settings: mandatory / default_value are defined for each entity type the field is attached to (US.2)
+    {
+      name: 'entity_type_settings',
+      label: 'Entity type settings',
+      type: 'object',
+      format: 'nested',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+      mappings: [
+        { name: 'entity_type', label: 'Entity type', type: 'string', format: 'short', mandatoryType: 'internal', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+        { name: 'mandatory', label: 'Mandatory', type: 'boolean', mandatoryType: 'internal', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+        { name: 'default_value', label: 'Default value', type: 'string', format: 'short', mandatoryType: 'no', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+      ],
+    },
     { name: 'multiple', label: 'Multiple', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    { name: 'default_value', label: 'Default value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     // Integer-specific
     { name: 'min_value', label: 'Min value', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'max_value', label: 'Max value', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },

@@ -19,6 +19,13 @@ input CustomFieldValueAddInput {
   select_value: String
 }
 
+# Per-entity-type settings of a custom field definition (mandatory / default value are per entity type - US.2)
+type CustomFieldEntityTypeSetting {
+  entity_type: String!
+  mandatory: Boolean!
+  default_value: String
+}
+
 type CustomFieldDefinition implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -32,11 +39,11 @@ type CustomFieldDefinition implements InternalObject & BasicObject {
   label: String!
   field_type: String!
   entity_types: [String!]
-  mandatory: Boolean!
+  # Per-entity-type mandatory / default_value settings (US.2)
+  entity_type_settings: [CustomFieldEntityTypeSetting!]
   multiple: Boolean!
   # Common optional
   description: String
-  default_value: String
   # Integer-specific
   min_value: Int
   max_value: Int
@@ -82,12 +89,9 @@ input CustomFieldDefinitionAddInput {
   label: String! @constraint(minLength: 2, format: "not-blank")
   field_type: String!
   entity_types: [String!]
-  mandatory: Boolean!
   multiple: Boolean
   description: String
   created: DateTime
-  # Common optional
-  default_value: String
   # Integer-specific
   min_value: Int
   max_value: Int
@@ -99,6 +103,7 @@ type Mutation {
   customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
   customFieldDefinitionDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
   customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
-  customFieldDefinitionAddEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
 }
