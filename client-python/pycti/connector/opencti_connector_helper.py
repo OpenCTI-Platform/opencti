@@ -814,7 +814,7 @@ class ListenQueue(threading.Thread):
                 content={"error": "Invalid JSON payload"},
             )
         try:
-            self._data_handler(data)
+            await asyncio.to_thread(self._data_handler, data)
         except Exception as e:
             self.helper.connector_logger.error(
                 "Error processing message", {"cause": str(e)}
@@ -894,6 +894,14 @@ class ListenQueue(threading.Thread):
                     time.sleep(10)
         elif self.listen_protocol == "API":
             self.helper.connector_logger.info("Starting Listen HTTP thread")
+
+            # Health endpoint for load balancer health checks.
+            # Registered separately from the callback route so it responds
+            # even while _data_handler is processing in a background thread.
+            @app.get("/health")
+            async def _health():
+                return JSONResponse(content={"status": "ok"}, status_code=200)
+
             app.add_api_route(
                 self.listen_protocol_api_path,
                 self._http_process_callback,
