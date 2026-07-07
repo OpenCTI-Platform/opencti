@@ -1,4 +1,4 @@
-import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, type FilterGroupWithNested, countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import {
   type BasicStoreEntityCustomFieldDefinition,
   CUSTOM_FIELD_PREFIX,
@@ -248,6 +248,48 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
     const existing = getCustomFieldDefinitionByLabel(newLabel);
     if (existing && existing.id !== customFieldDefinitionId) {
       throw ValidationError('A custom field with this label already exists', 'label', { label: newLabel });
+    }
+  }
+  // Prevent removing a select option that is still stored on at least one entity
+  const optionsEdit = input.find((i) => i.key === 'select_options');
+  if (optionsEdit) {
+    const definition = await findById(context, user, customFieldDefinitionId);
+    if (definition && definition.field_type === 'select') {
+      const previousOptions = definition.select_options ?? [];
+      const editValues = (Array.isArray(optionsEdit.value) ? optionsEdit.value : [optionsEdit.value]) as string[];
+      const editOperation = optionsEdit.operation ?? EditOperation.Replace;
+      let removedOptions: string[] = [];
+      if (editOperation === EditOperation.Remove) {
+        // The provided values are the options being removed
+        removedOptions = editValues.filter((option) => previousOptions.includes(option));
+      } else if (editOperation === EditOperation.Replace) {
+        // The provided values are the new full list; anything missing is removed
+        removedOptions = previousOptions.filter((option) => !editValues.includes(option));
+      } // EditOperation.Add only adds options, nothing is removed
+      if (removedOptions.length > 0) {
+        // Count entities holding a value for this field set to one of the removed options.
+        // Runs as SYSTEM_USER to cover all entities regardless of the requester's visibility.
+        const usageFilters: FilterGroupWithNested = {
+          mode: FilterMode.And,
+          filters: [{
+            key: ['custom_field_values'],
+            values: [],
+            nested: [
+              { key: 'field_name', values: [definition.name], operator: FilterOperator.Eq },
+              { key: 'select_value', values: removedOptions, operator: FilterOperator.Eq },
+            ],
+          }],
+          filterGroups: [],
+        };
+        const usageCount = await countAllThings(context, SYSTEM_USER, { filters: usageFilters });
+        if (usageCount > 0) {
+          throw ValidationError(
+            'Cannot remove a select option that is still used by existing entities',
+            'select_options',
+            { options: removedOptions, usageCount },
+          );
+        }
+      }
     }
   }
 
