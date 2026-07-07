@@ -125,7 +125,9 @@ const createApolloServer = () => {
       // To maintain compatibility with client in version 3.
       const enrichedError = { ...error, name: error.extensions?.code ?? error.name };
       // Remove the exception stack in production.
-      return DEV_MODE ? enrichedError : dissocPath(['extensions', 'exception'], enrichedError);
+      let limitedError = dissocPath(['extensions', 'stacktrace'], enrichedError);
+      limitedError = dissocPath(['locations'], limitedError);
+      return DEV_MODE ? enrichedError : limitedError;
     },
   });
   return { schema, apolloServer };
