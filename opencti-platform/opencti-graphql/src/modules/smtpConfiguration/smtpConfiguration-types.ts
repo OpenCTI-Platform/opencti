@@ -25,6 +25,7 @@ export interface BasicStoreEntitySmtpConfiguration extends BasicStoreEntity {
   oauth_client_secret_encrypted?: string;
   oauth_issuer?: string;
   oauth_refresh_token_encrypted?: string;
+  oauth_refresh_token_expires_at?: string;
 }
 
 export interface StoreEntitySmtpConfiguration extends StoreEntity {
@@ -43,6 +44,7 @@ export interface StoreEntitySmtpConfiguration extends StoreEntity {
   oauth_client_secret_encrypted?: string;
   oauth_issuer?: string;
   oauth_refresh_token_encrypted?: string;
+  oauth_refresh_token_expires_at?: string;
 }
 
 export interface StixSmtpConfiguration extends StixObject {
@@ -58,6 +60,7 @@ export interface StixSmtpConfiguration extends StixObject {
   oauth_user?: string;
   oauth_client_id?: string;
   oauth_issuer?: string;
+  oauth_refresh_token_expires_at?: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

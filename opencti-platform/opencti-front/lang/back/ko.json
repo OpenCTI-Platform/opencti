@@ -685,6 +685,7 @@
   "OAuth issuer": "OAuth 발급자",
   "OAuth refresh token": "OAuth 리프레시 토큰",
   "OAuth refresh token (encrypted)": "OAuth 리프레시 토큰(암호화됨)",
+  "OAuth refresh token expiration date": "OAuth 리프레시 토큰 만료일",
   "OAuth user": "OAuth 사용자",
   "Object markings": "객체 마킹",
   "Objective": "목표",

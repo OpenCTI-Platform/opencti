@@ -30489,6 +30489,7 @@ export type SmtpConfiguration = {
   id: Scalars['ID']['output'];
   oauth_client_id?: Maybe<Scalars['String']['output']>;
   oauth_issuer?: Maybe<Scalars['String']['output']>;
+  oauth_refresh_token_expires_at?: Maybe<Scalars['DateTime']['output']>;
   oauth_user?: Maybe<Scalars['String']['output']>;
   port?: Maybe<Scalars['Int']['output']>;
   reject_unauthorized?: Maybe<Scalars['Boolean']['output']>;
@@ -30507,6 +30508,7 @@ export type SmtpConfigurationAddInput = {
   oauth_client_secret?: InputMaybe<Scalars['String']['input']>;
   oauth_issuer?: InputMaybe<Scalars['String']['input']>;
   oauth_refresh_token?: InputMaybe<Scalars['String']['input']>;
+  oauth_refresh_token_expires_at?: InputMaybe<Scalars['DateTime']['input']>;
   oauth_user?: InputMaybe<Scalars['String']['input']>;
   password?: InputMaybe<Scalars['String']['input']>;
   port?: InputMaybe<Scalars['Int']['input']>;
@@ -30526,6 +30528,7 @@ export type SmtpConfigurationEditInput = {
   oauth_client_secret?: InputMaybe<Scalars['String']['input']>;
   oauth_issuer?: InputMaybe<Scalars['String']['input']>;
   oauth_refresh_token?: InputMaybe<Scalars['String']['input']>;
+  oauth_refresh_token_expires_at?: InputMaybe<Scalars['DateTime']['input']>;
   oauth_user?: InputMaybe<Scalars['String']['input']>;
   password?: InputMaybe<Scalars['String']['input']>;
   port?: InputMaybe<Scalars['Int']['input']>;
@@ -50698,6 +50701,7 @@ export type SmtpConfigurationResolvers<ContextType = any, ParentType extends Res
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   oauth_client_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   oauth_issuer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  oauth_refresh_token_expires_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   oauth_user?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   reject_unauthorized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

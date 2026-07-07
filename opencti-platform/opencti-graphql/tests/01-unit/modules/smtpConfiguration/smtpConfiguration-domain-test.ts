@@ -158,6 +158,22 @@ describe('smtpConfigurationAdd', () => {
     const storedInput = (vi.mocked(InternalObject.createInternalObject).mock.calls[0] as any[])[2];
     expect(storedInput).not.toHaveProperty('oauth_access_token');
   });
+
+  it('should persist oauth_refresh_token_expires_at as plain (unencrypted) value', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
+    vi.mocked(InternalObject.createInternalObject).mockResolvedValue(MOCK_CONFIG);
+    await smtpConfigurationAdd(mockContext, mockUser, {
+      smtp_enabled: true,
+      use_db_config: true,
+      auth_type: 'oauth2' as any,
+      oauth_client_id: 'client-id',
+      oauth_client_secret: 'client-secret',
+      oauth_issuer: 'https://issuer.example.com',
+      oauth_refresh_token_expires_at: '2026-12-31T00:00:00.000Z',
+    });
+    const storedInput = (vi.mocked(InternalObject.createInternalObject).mock.calls[0] as any[])[2];
+    expect(storedInput).toHaveProperty('oauth_refresh_token_expires_at', '2026-12-31T00:00:00.000Z');
+  });
 });
 
 // ---------- smtpConfigurationUpdate ----------
@@ -199,6 +215,16 @@ describe('smtpConfigurationUpdate', () => {
     expect(patchInput).not.toHaveProperty('password');
     expect(patchInput).toHaveProperty('password_encrypted');
     expect(typeof patchInput.password_encrypted).toBe('string');
+  });
+
+  it('should persist oauth_refresh_token_expires_at as plain (unencrypted) value on update', async () => {
+    vi.mocked(Middleware.patchAttribute).mockResolvedValue({ element: MOCK_CONFIG } as any);
+    await smtpConfigurationUpdate(mockContext, mockUser, MOCK_CONFIG.id, {
+      hostname: 'smtp.example.com',
+      oauth_refresh_token_expires_at: '2026-12-31T00:00:00.000Z',
+    });
+    const patchInput = (vi.mocked(Middleware.patchAttribute).mock.calls[0] as any[])[4];
+    expect(patchInput).toHaveProperty('oauth_refresh_token_expires_at', '2026-12-31T00:00:00.000Z');
   });
 
   it('should not include secrets in publishUserAction audit log', async () => {
