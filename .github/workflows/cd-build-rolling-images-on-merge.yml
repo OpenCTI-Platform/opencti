@@ -1,4 +1,4 @@
-name: OpenCTI Build Images and SBOM on Merge
+name: OpenCTI CD Build Rolling artifacts (master)
 
 on:
   push:
