@@ -12,6 +12,10 @@ for (const [path, url] of Object.entries(flagModules)) {
   }
 }
 
-export const getFlagUrl = (countryCode: string): string => {
-  return flagsByCode[countryCode.toLowerCase()] ?? '';
-};
+export const findFlagUrl = (aliases: readonly (string | null | undefined)[] | null | undefined) => (
+  (aliases ?? [])
+    .filter((alias): alias is string => alias !== undefined && alias !== null && alias.length === 2)
+    .map((alias) => flagsByCode[alias.toLowerCase()])
+    .filter((url) => url !== undefined)
+    .at(0)
+);
