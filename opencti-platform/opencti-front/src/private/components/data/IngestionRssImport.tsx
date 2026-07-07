@@ -11,7 +11,7 @@ import useXtmHubDownloadDocument from '../../../utils/hooks/useXtmHubDownloadDoc
 import IngestionRssCreation from '@components/data/ingestionRss/IngestionRssCreation';
 import { IngestionRssImportQuery$data } from '@components/data/__generated__/IngestionRssImportQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
-import { IngestionRssLinesDataTableQuery$variables } from '@components/data/__generated__/IngestionRssLinesDataTableQuery.graphql';
+import { IngestionRssLinesDataTableQuery$variables } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
 
 export const rssFeedImportQuery = graphql`
   query IngestionRssImportQuery($file: Upload!) {

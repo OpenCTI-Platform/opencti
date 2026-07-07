@@ -18,7 +18,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
 import { IngestionRssImportQuery$data } from '@components/data/__generated__/IngestionRssImportQuery.graphql';
-import { IngestionRssLinesDataTableQuery$variables } from '@components/data/__generated__/IngestionRssLinesDataTableQuery.graphql';
+import { IngestionRssLinesDataTableQuery$variables } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SwitchField from '../../../../components/fields/SwitchField';
 
