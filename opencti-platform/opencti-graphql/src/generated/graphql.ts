@@ -6511,6 +6511,7 @@ export type CustomFieldValue = {
   field_name: Scalars['String']['output'];
   int_value?: Maybe<Scalars['Int']['output']>;
   select_value?: Maybe<Scalars['String']['output']>;
+  select_values?: Maybe<Array<Scalars['String']['output']>>;
   string_value?: Maybe<Scalars['String']['output']>;
 };
 
@@ -6521,6 +6522,7 @@ export type CustomFieldValueAddInput = {
   field_name: Scalars['String']['input'];
   int_value?: InputMaybe<Scalars['Int']['input']>;
   select_value?: InputMaybe<Scalars['String']['input']>;
+  select_values?: InputMaybe<Array<Scalars['String']['input']>>;
   string_value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -43977,6 +43979,7 @@ export type CustomFieldValueResolvers<ContextType = any, ParentType extends Reso
   field_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   int_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   select_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  select_values?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   string_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 

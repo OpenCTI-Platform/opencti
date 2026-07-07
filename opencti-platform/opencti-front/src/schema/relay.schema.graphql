@@ -10799,7 +10799,8 @@ type Mutation {
   customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
   customFieldDefinitionDelete(id: ID!): ID
   customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
-  customFieldDefinitionAddEntityType(id: ID!, entityType: String!): CustomFieldDefinition
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
 }
 
@@ -16940,6 +16941,7 @@ type CustomFieldValue {
   boolean_value: Boolean
   date_value: DateTime
   select_value: String
+  select_values: [String!]
 }
 
 input CustomFieldValueAddInput {
@@ -16950,6 +16952,13 @@ input CustomFieldValueAddInput {
   boolean_value: Boolean
   date_value: DateTime
   select_value: String
+  select_values: [String!]
+}
+
+type CustomFieldEntityTypeSetting {
+  entity_type: String!
+  mandatory: Boolean!
+  default_value: String
 }
 
 type CustomFieldDefinition implements InternalObject & BasicObject {
@@ -16964,10 +16973,9 @@ type CustomFieldDefinition implements InternalObject & BasicObject {
   label: String!
   field_type: String!
   entity_types: [String!]
-  mandatory: Boolean!
+  entity_type_settings: [CustomFieldEntityTypeSetting!]
   multiple: Boolean!
   description: String
-  default_value: String
   min_value: Int
   max_value: Int
   select_options: [String!]
@@ -16999,11 +17007,9 @@ input CustomFieldDefinitionAddInput {
   label: String!
   field_type: String!
   entity_types: [String!]
-  mandatory: Boolean!
   multiple: Boolean
   description: String
   created: DateTime
-  default_value: String
   min_value: Int
   max_value: Int
   select_options: [String!]
