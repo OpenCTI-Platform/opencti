@@ -166,12 +166,12 @@ jobs:
     needs: [generate-sbom-platform-standard, generate-sbom-platform-ubi9, generate-sbom-platform-fips, generate-sbom-worker-standard, generate-sbom-worker-ubi9, generate-sbom-worker-fips]
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts/
 
       - name: Upload consolidated artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: opencti-release-${{ github.sha }}
           path: artifacts/
