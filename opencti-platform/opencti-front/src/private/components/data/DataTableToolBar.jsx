@@ -2109,9 +2109,21 @@ class DataTableToolBar extends Component {
         );
       case 'password_valid_until':
         return (
-          <Alert severity="info" variant="outlined">
-            {t('Selected users will be forced to change their password on next login.')}
-          </Alert>
+          <>
+            <DateTimePicker
+              variant="inline"
+              disableToolbar={false}
+              autoOk={true}
+              allowKeyboardControl={true}
+              onChange={this.handleChangeDate.bind(this, i)}
+              onAccept={this.handleAcceptDate.bind(this, i)}
+              views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+              format="yyyy-MM-dd hh:mm:ss a"
+            />
+            <Alert severity="info" variant="outlined" sx={{ mt: 1 }}>
+              {t('Selected users will be forced to change their password after this date.')}
+            </Alert>
+          </>
         );
       default:
         return (

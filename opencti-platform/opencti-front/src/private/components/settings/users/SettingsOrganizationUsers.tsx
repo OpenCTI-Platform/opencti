@@ -172,10 +172,10 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 25,
+      percentWidth: 20,
     },
     user_email: {
-      percentWidth: 30,
+      percentWidth: 25,
     },
     firstname: {
       percentWidth: 10,

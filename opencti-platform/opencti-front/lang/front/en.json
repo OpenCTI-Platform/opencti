@@ -4018,7 +4018,7 @@
   "Selected entities": "Selected entities",
   "Selected rules": "Selected rules",
   "Selected scale template": "Selected scale template",
-  "Selected users will be forced to change their password on next login.": "Selected users will be forced to change their password on next login.",
+  "Selected users will be forced to change their password after this date.": "Selected users will be forced to change their password after this date.",
   "Semicolon": "Semicolon",
   "Send": "Send",
   "Send a test email to selected user": "Send a test email to selected user",
