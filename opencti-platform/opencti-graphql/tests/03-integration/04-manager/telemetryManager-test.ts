@@ -200,73 +200,73 @@ describe('Telemetry manager test coverage', () => {
     // filigranTelemetryMeterManager.activeConnectorsCount : count cannot be verified since there are many ways to create internal connectors.
     // expect(filigranTelemetryMeterManager.draftCount).toBe(getCounterTotal(ENTITY_TYPE_DRAFT_WORKSPACE));
     // expect(filigranTelemetryMeterManager.workbenchCount).toBe(getCounterTotal(ENTITY_TYPE_WORKSPACE));
+  });
 
-    test('AI and export feature entry points increment the usage counters', async () => {
-      // GIVEN a clean telemetry state in redis
-      await redisClearTelemetry();
+  test('AI and export feature entry points increment the usage counters', async () => {
+    // GIVEN a clean telemetry state in redis
+    await redisClearTelemetry();
 
-      // WHEN the text-based Ask AI features are called with a too-short content,
-      // they short-circuit before any LLM call but still count the attempt
-      expect(await fixSpelling(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
-      expect(await makeShorter(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
-      expect(await makeLonger(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
-      expect(await changeTone(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
-      expect(await summarize(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
-      expect(await explain(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
+    // WHEN the text-based Ask AI features are called with a too-short content,
+    // they short-circuit before any LLM call but still count the attempt
+    expect(await fixSpelling(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
+    expect(await makeShorter(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
+    expect(await makeLonger(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
+    expect(await changeTone(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
+    expect(await summarize(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
+    expect(await explain(testContext, ADMIN_USER, 'test-bus-id', 'abc')).toBe('Content is too short (3)');
 
-      // AND WHEN the other feature entry points are called without any AI/XTM One
-      // configuration, they fail downstream but the counters keep the attempts
-      // semantics (incremented at the entry point, before the upstream call)
-      const attempt = async (fn: () => Promise<unknown>) => {
-        try {
-          await fn();
-        } catch {
-          // Expected without an AI configuration in the test platform.
-        }
-      };
-      await attempt(() => generateContainerReport(testContext, ADMIN_USER, { containerId: 'unknown-container-id' } as never));
-      await attempt(() => summarizeFiles(testContext, ADMIN_USER, { elementId: 'unknown-element-id' } as never));
-      await attempt(() => convertFilesToStix(testContext, ADMIN_USER, { elementId: 'unknown-element-id' } as never));
-      await attempt(() => generateNLQresponse(testContext, ADMIN_USER, { search: 'malware targeting the energy sector' } as never));
-      await attempt(() => aiActivity(testContext, ADMIN_USER, { id: 'unknown-entity-id' }));
-      await attempt(() => aiForecast(testContext, ADMIN_USER, { id: 'unknown-entity-id' }));
-      await attempt(() => aiHistory(testContext, ADMIN_USER, { id: 'unknown-entity-id' }));
-      await attempt(() => aiSummary(testContext, ADMIN_USER, { first: 1 }));
-
-      // AND WHEN export generations are requested (no export connector registered:
-      // the calls resolve or fail downstream, the attempts are counted either way)
-      await attempt(() => askListExport(testContext, ADMIN_USER, { entity_type: 'Report' }, 'application/json', [], {}, 'simple', [], []));
-      await attempt(() => askEntityExport(testContext, ADMIN_USER, 'application/json', {
-        id: 'unknown-entity-id',
-        entity_type: 'Report',
-        name: 'unknown',
-      }, 'simple', [], []));
-
-      // THEN every Ask AI feature has been counted exactly once under its
-      // dimensional key, and the scalar NLQ / export counters as well.
-      // The counters are fire-and-forget, so poll until the writes land.
-      const allCountersUpdated = async () => {
-        for (let featureIndex = 0; featureIndex < ASK_AI_FEATURES.length; featureIndex += 1) {
-          const featureValue = await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${ASK_AI_FEATURES[featureIndex]}`);
-          if (featureValue !== 1) return false;
-        }
-        const nlqValue = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
-        const exportValue = await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED);
-        return nlqValue === 1 && exportValue === 2;
-      };
-      let countersUpdated = await allCountersUpdated();
-      let pollCurrent = 0;
-      while (!countersUpdated && pollCurrent < 3) {
-        await waitInSec(1);
-        countersUpdated = await allCountersUpdated();
-        pollCurrent += 1;
+    // AND WHEN the other feature entry points are called without any AI/XTM One
+    // configuration, they fail downstream but the counters keep the attempts
+    // semantics (incremented at the entry point, before the upstream call)
+    const attempt = async (fn: () => Promise<unknown>) => {
+      try {
+        await fn();
+      } catch {
+        // Expected without an AI configuration in the test platform.
       }
+    };
+    await attempt(() => generateContainerReport(testContext, ADMIN_USER, { containerId: 'unknown-container-id' } as never));
+    await attempt(() => summarizeFiles(testContext, ADMIN_USER, { elementId: 'unknown-element-id' } as never));
+    await attempt(() => convertFilesToStix(testContext, ADMIN_USER, { elementId: 'unknown-element-id' } as never));
+    await attempt(() => generateNLQresponse(testContext, ADMIN_USER, { search: 'malware targeting the energy sector' } as never));
+    await attempt(() => aiActivity(testContext, ADMIN_USER, { id: 'unknown-entity-id' }));
+    await attempt(() => aiForecast(testContext, ADMIN_USER, { id: 'unknown-entity-id' }));
+    await attempt(() => aiHistory(testContext, ADMIN_USER, { id: 'unknown-entity-id' }));
+    await attempt(() => aiSummary(testContext, ADMIN_USER, { first: 1 }));
+
+    // AND WHEN export generations are requested (no export connector registered:
+    // the calls resolve or fail downstream, the attempts are counted either way)
+    await attempt(() => askListExport(testContext, ADMIN_USER, { entity_type: 'Report' }, 'application/json', [], {}, 'simple', [], []));
+    await attempt(() => askEntityExport(testContext, ADMIN_USER, 'application/json', {
+      id: 'unknown-entity-id',
+      entity_type: 'Report',
+      name: 'unknown',
+    }, 'simple', [], []));
+
+    // THEN every Ask AI feature has been counted exactly once under its
+    // dimensional key, and the scalar NLQ / export counters as well.
+    // The counters are fire-and-forget, so poll until the writes land.
+    const allCountersUpdated = async () => {
       for (let featureIndex = 0; featureIndex < ASK_AI_FEATURES.length; featureIndex += 1) {
-        const feature = ASK_AI_FEATURES[featureIndex];
-        expect(await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`), `feature ${feature} should be counted once`).toBe(1);
+        const featureValue = await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${ASK_AI_FEATURES[featureIndex]}`);
+        if (featureValue !== 1) return false;
       }
-      expect(await redisGetTelemetry(TELEMETRY_GAUGE_NLQ)).toBe(1);
-      expect(await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED)).toBe(2);
-    });
+      const nlqValue = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
+      const exportValue = await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED);
+      return nlqValue === 1 && exportValue === 2;
+    };
+    let countersUpdated = await allCountersUpdated();
+    let pollCurrent = 0;
+    while (!countersUpdated && pollCurrent < 3) {
+      await waitInSec(1);
+      countersUpdated = await allCountersUpdated();
+      pollCurrent += 1;
+    }
+    for (let featureIndex = 0; featureIndex < ASK_AI_FEATURES.length; featureIndex += 1) {
+      const feature = ASK_AI_FEATURES[featureIndex];
+      expect(await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`), `feature ${feature} should be counted once`).toBe(1);
+    }
+    expect(await redisGetTelemetry(TELEMETRY_GAUGE_NLQ)).toBe(1);
+    expect(await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED)).toBe(2);
   });
 });
