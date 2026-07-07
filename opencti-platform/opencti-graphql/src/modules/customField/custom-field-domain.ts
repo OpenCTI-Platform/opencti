@@ -292,6 +292,52 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
       }
     }
   }
+  // Prevent tightening integer bounds beyond a value already stored on an entity
+  const minEdit = input.find((i) => i.key === 'min_value');
+  const maxEdit = input.find((i) => i.key === 'max_value');
+  if (minEdit || maxEdit) {
+    const definition = await findById(context, user, customFieldDefinitionId);
+    if (definition && definition.field_type === 'integer') {
+      const readBound = (edit: EditInput | undefined, fallback: number | undefined): number | undefined => {
+        if (!edit) return fallback;
+        const raw = Array.isArray(edit.value) ? edit.value[0] : edit.value;
+        return raw === null || raw === undefined || raw === '' ? undefined : Number(raw);
+      };
+      const newMin = readBound(minEdit, definition.min_value);
+      const newMax = readBound(maxEdit, definition.max_value);
+      // Bounds coherence (mirrors the creation-time check)
+      if (newMin != null && newMax != null && newMin > newMax) {
+        throw FunctionalError('min_value cannot be greater than max_value', { min_value: newMin, max_value: newMax });
+      }
+      const buildOutOfBoundFilter = (operator: FilterOperator, bound: number): FilterGroupWithNested => ({
+        mode: FilterMode.And,
+        filters: [{
+          key: ['custom_field_values'],
+          values: [],
+          nested: [
+            { key: 'field_name', values: [definition.name], operator: FilterOperator.Eq },
+            { key: 'int_value', values: [String(bound)], operator },
+          ],
+        }],
+        filterGroups: [],
+      });
+      // Count as SYSTEM_USER to cover all entities regardless of the requester's visibility.
+      let outOfBoundCount = 0;
+      if (newMin != null) {
+        outOfBoundCount += await countAllThings(context, SYSTEM_USER, { filters: buildOutOfBoundFilter(FilterOperator.Lt, newMin) });
+      }
+      if (outOfBoundCount === 0 && newMax != null) {
+        outOfBoundCount += await countAllThings(context, SYSTEM_USER, { filters: buildOutOfBoundFilter(FilterOperator.Gt, newMax) });
+      }
+      if (outOfBoundCount > 0) {
+        throw ValidationError(
+          'Cannot restrict the value range: existing entities hold a value outside the new bounds',
+          minEdit ? 'min_value' : 'max_value',
+          { min_value: newMin, max_value: newMax },
+        );
+      }
+    }
+  }
 
   const { element: updatedElem } = await updateAttribute<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input);
   await publishUserAction({
