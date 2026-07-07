@@ -2409,7 +2409,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.enrichment_shared_organizations = None
         self.connector_id = connector_configuration["id"]
         self.applicant_id = connector_configuration["connector_user_id"]
-        self.connector_state = connector_configuration["connector_state"]
+        self.connector_state = self._normalize_state(
+            connector_configuration["connector_state"]
+        )
         self.connector_config = connector_configuration["config"]
         self.connector_config["connector_jwks"] = connector_configuration["jwks"]
 
@@ -2821,19 +2823,45 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """
         return self.connect_validate_before_import
 
+    @staticmethod
+    def _clone_state_value(value):
+        """Clone JSON-compatible connector state without serializing it."""
+
+        if isinstance(value, Dict):
+            return {
+                key: OpenCTIConnectorHelper._clone_state_value(item)
+                for key, item in value.items()
+            }
+        if isinstance(value, (list, tuple)):
+            return [OpenCTIConnectorHelper._clone_state_value(item) for item in value]
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+        raise TypeError(
+            f"Object of type {type(value).__name__} is not JSON serializable"
+        )
+
+    @staticmethod
+    def _normalize_state(state) -> Optional[Dict]:
+        """Normalize connector state into an internal dictionary snapshot."""
+
+        if isinstance(state, str):
+            try:
+                state = json.loads(state)
+            except (TypeError, ValueError):
+                return None
+        if isinstance(state, Dict) and state:
+            return OpenCTIConnectorHelper._clone_state_value(state)
+        return None
+
     def set_state(self, state) -> None:
         """Set the connector state.
 
-        Stores the connector state as a JSON string for persistence across runs.
-        The state can be retrieved later using get_state().
+        Stores a snapshot of the connector state for later retrieval.
 
         :param state: State object to store, or None to clear the state
-        :type state: Dict or None
+        :type state: Dict, str, or None
         """
-        if isinstance(state, Dict):
-            self.connector_state = json.dumps(state)
-        else:
-            self.connector_state = None
+        self.connector_state = self._normalize_state(state)
 
     def get_state(self) -> Optional[Dict]:
         """Get the connector state.
@@ -2844,13 +2872,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: The current state of the connector, or None if no state exists
         :rtype: Optional[Dict]
         """
-        try:
-            if self.connector_state:
-                state = json.loads(self.connector_state)
-                if isinstance(state, Dict) and state:
-                    return state
-        except:  # pylint: disable=bare-except  # noqa: E722
-            pass
+        if isinstance(self.connector_state, str):
+            self.connector_state = self._normalize_state(self.connector_state)
+        if isinstance(self.connector_state, Dict) and self.connector_state:
+            return self._clone_state_value(self.connector_state)
         return None
 
     def force_ping(self):
