@@ -18,6 +18,7 @@ import { FunctionComponent, Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
+import MarkdownFieldBase from '../../../../../components/fields/markdownField/MarkdownFieldBase';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
@@ -82,6 +83,10 @@ export const getCustomFieldTypeLabel = (fieldType: string, t_i18n: (s: string) =
       return t_i18n('Date');
     case 'select':
       return t_i18n('Selection list');
+    case 'multi_select':
+      return t_i18n('Multiple selection list');
+    case 'markdown':
+      return t_i18n('Markdown');
     default:
       return t_i18n('Text');
   }
@@ -153,6 +158,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
           />
         );
       case 'select':
+      case 'multi_select':
         return (
           <MuiTextField
             select
@@ -192,6 +198,17 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
             onChange={(event) => setDefaultValue(event.target.value)}
             slotProps={{ inputLabel: { shrink: true } }}
             style={{ marginTop: 20 }}
+          />
+        );
+      case 'markdown':
+        return (
+          <MarkdownFieldBase
+            name="default_value"
+            label={t_i18n('Default value')}
+            value={defaultValue}
+            onValueChange={(nextValue) => setDefaultValue(nextValue)}
+            style={{ marginTop: 20 }}
+            height={200}
           />
         );
       default:

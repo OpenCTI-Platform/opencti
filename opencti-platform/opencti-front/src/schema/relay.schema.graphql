@@ -16963,12 +16963,6 @@ type CustomFieldEntityTypeSetting {
   default_value: String
 }
 
-type CustomFieldEntityTypeSetting {
-  entity_type: String!
-  mandatory: Boolean!
-  default_value: String
-}
-
 type CustomFieldDefinition implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!

@@ -59,7 +59,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
         ? schema.min(minValue, t_i18n('Max value must be greater than min value'))
         : schema)),
     select_options: Yup.array().of(Yup.string()).when('field_type', {
-      is: 'select',
+      is: (fieldType: string) => fieldType === 'select' || fieldType === 'multi_select',
       then: (schema) => schema.min(1, t_i18n('At least one option is required')),
     }),
   });
@@ -89,7 +89,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       description: values.description || undefined,
       min_value: values.field_type === 'integer' && values.min_value !== null && String(values.min_value) !== '' ? Number(values.min_value) : undefined,
       max_value: values.field_type === 'integer' && values.max_value !== null && String(values.max_value) !== '' ? Number(values.max_value) : undefined,
-      select_options: values.field_type === 'select' ? values.select_options : undefined,
+      select_options: (values.field_type === 'select' || values.field_type === 'multi_select') ? values.select_options : undefined,
     };
     commitMutation({
       ...defaultCommitMutation,
@@ -139,10 +139,12 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
               >
                 <MenuItem value="" disabled>{t_i18n('Select a type')}</MenuItem>
                 <MenuItem value="string">{t_i18n('Text')}</MenuItem>
+                <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
                 <MenuItem value="integer">{t_i18n('Number')}</MenuItem>
                 <MenuItem value="boolean">{t_i18n('Boolean')}</MenuItem>
                 <MenuItem value="date">{t_i18n('Date')}</MenuItem>
                 <MenuItem value="select">{t_i18n('Selection list')}</MenuItem>
+                <MenuItem value="multi_select">{t_i18n('Multiple selection list')}</MenuItem>
               </Field>
               {values.field_type !== '' && (
                 <>
@@ -190,7 +192,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                       />
                     </>
                   )}
-                  {values.field_type === 'select' && (
+                  {(values.field_type === 'select' || values.field_type === 'multi_select') && (
                     <>
                       <MuiAutocomplete
                         multiple
