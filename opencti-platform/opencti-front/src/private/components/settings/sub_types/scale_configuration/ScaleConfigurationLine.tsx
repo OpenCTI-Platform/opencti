@@ -91,7 +91,7 @@ const ScaleConfigurationLine: FunctionComponent<
                 <Grid item xs={1} style={{ paddingTop: noMargin ? 0 : 24 }}>
                   <div className={classes.button}>
                     {handleDelete && (
-                      <IconButton onClick={() => handleDelete()}>
+                      <IconButton aria-label={t_i18n('Delete')} onClick={() => handleDelete()}>
                         <DeleteOutline fontSize="small" style={{ color: '#00b1ff' }} />
                       </IconButton>
                     )}

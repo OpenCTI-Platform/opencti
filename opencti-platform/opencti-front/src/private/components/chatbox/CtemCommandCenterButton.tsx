@@ -7,23 +7,8 @@ import React from 'react';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
+import { toSafeHttpUrl } from '../../../utils/url';
 import { useChatbot } from './ChatbotContext';
-
-/**
- * Only `http(s)` URLs are safe to hand to `window.open` as a top-level
- * navigation. `xtm_one_url` is server-side config surfaced by `/chatbot/config`,
- * so this guards against a misconfigured or tampered value (e.g. a `javascript:`
- * or `data:` URL) ever being opened. Returns the original URL when valid, else null.
- */
-const toSafeHttpUrl = (rawUrl: string | null): string | null => {
-  if (!rawUrl) return null;
-  try {
-    const { protocol } = new URL(rawUrl);
-    return protocol === 'http:' || protocol === 'https:' ? rawUrl : null;
-  } catch {
-    return null;
-  }
-};
 
 /**
  * Top-bar shortcut to the XTM One CTEM Command Center (the cross-product exposure

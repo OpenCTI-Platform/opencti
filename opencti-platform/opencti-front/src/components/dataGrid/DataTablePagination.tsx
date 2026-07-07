@@ -155,6 +155,7 @@ const DataTablePagination = ({
           variant="tertiary"
           size="default"
           disabled={firstItem === 1}
+          aria-label={t_i18n('Previous')}
           style={{
             padding: 0,
             borderRight: 'none',
@@ -191,6 +192,7 @@ const DataTablePagination = ({
           onClick={() => fetchMore('forward')}
           variant="tertiary"
           size="default"
+          aria-label={t_i18n('Next')}
           disabled={lastItem === numberOfElements.original}
           style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
         >

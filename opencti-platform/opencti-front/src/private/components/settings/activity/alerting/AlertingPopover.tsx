@@ -72,6 +72,7 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
   return (
     <div style={{ marginRight: 25 }}>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}

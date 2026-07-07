@@ -7,6 +7,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   ## Fintel

@@ -560,18 +560,17 @@ class ListenQueue(threading.Thread):
         self.thread = threading.Thread(target=self._data_handler, args=[json_data])
         self.thread.start()
         five_minutes = 60 * 5
-        time_wait = 0
+        last_ping = time.monotonic()
         # Wait for end of execution of the _data_handler
+        # pika_connection.sleep is required to keep servicing the connection I/O
+        # (AMQP heartbeats) while the processing thread is running
         while self.thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
-            if (
-                self.helper.work_id is not None and time_wait > five_minutes
-            ):  # Ping every 5 minutes
+            now = time.monotonic()
+            # Ping every 5 minutes
+            if self.helper.work_id is not None and now - last_ping > five_minutes:
                 self.helper.api.work.ping(self.helper.work_id)
-                time_wait = 0
-            else:
-                time_wait += 1
-            time.sleep(1)
+                last_ping = now
         self.helper.connector_logger.info(
             "Message processed, thread terminated",
             {"tag": method.delivery_tag},

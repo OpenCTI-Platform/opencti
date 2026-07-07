@@ -1,0 +1,60 @@
+name: docker-build-builder
+description: Build the opencti:builder docker image (builder stage) and store in local github artefact
+
+inputs:
+  image_tag:
+    description: "Image Tag"
+    default: ${{ github.sha }}
+  checkout_ref:
+    description: "Reference of the branch or commit sha"
+    default: ${{ github.sha }}
+  client_python_local:
+    description: "Use client python from the same commit"
+    required: false
+    default: "false"
+  docker_image_suffix:
+    description: "Dockerfile image suffix such as _ubi9 or _fips"
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Use client-python in OpenCTI from same branch
+      shell: bash
+      if: ${{ inputs.client_python_local == 'true' }}
+      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+      with:
+        name: gha-builder-builder
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v6
+      with:
+        images: filigran/builder
+        tags: type=raw,value=${{ inputs.image_tag }}
+
+    - name: Build (builder)
+      uses: docker/build-push-action@v7
+      with:
+        context: opencti-platform
+        file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
+        target: builder
+        push: 'false'
+        outputs: type=docker,dest=/tmp/opencti-builder${{ inputs.docker_image_suffix }}.tar
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Upload builder docker image artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: docker-image-opencti-builder${{ inputs.docker_image_suffix }}
+        path: /tmp/opencti-builder${{ inputs.docker_image_suffix }}.tar
+        retention-days: 7
+

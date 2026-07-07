@@ -1,0 +1,16 @@
+"""
+Controls the rate of traffic.
+This directive definition exists for LSP tooling only.
+The actual implementation is provided at runtime by graphql-rate-limit-directive.
+"""
+directive @rateLimit(
+  """
+  Number of occurrences allowed over duration.
+  """
+  limit: Int! = 60
+
+  """
+  Number of seconds before limit is reset.
+  """
+  duration: Int! = 60
+) on OBJECT | FIELD_DEFINITION

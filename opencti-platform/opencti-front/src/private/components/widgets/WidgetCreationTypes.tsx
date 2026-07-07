@@ -32,7 +32,7 @@ const WidgetCreationTypes = () => {
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });
-    setStep(type === 'text' || type === 'attribute' ? 3 : 1);
+    setStep(type === 'text' || type === 'attribute' || type === 'custom-attributes' ? 3 : 1);
   };
 
   return (

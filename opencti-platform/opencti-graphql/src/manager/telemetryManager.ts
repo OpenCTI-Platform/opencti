@@ -5,19 +5,58 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
-import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
+import {
+  computeActiveConnectorsByIdentity,
+  type DimensionalGaugeItem,
+  normalizeTelemetryTags,
+  TELEMETRY_SERVICE_NAME,
+  TelemetryMeterManager,
+} from '../telemetry/TelemetryMeterManager';
 import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_FEED,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_INTERNAL_FILE,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_RULE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_SYNC,
+  ENTITY_TYPE_TAXII_COLLECTION,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { elCount } from '../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { elAggregationCount, elCount } from '../database/engine';
+import {
+  READ_INDEX_FILES,
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+} from '../database/utils';
+import type { BasicStoreEntity } from '../types/store';
+import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
+import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
+import { NOTIFIER_CONNECTOR_EMAIL, NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL, NOTIFIER_CONNECTOR_UI, NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
+import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
+import {
+  ENTITY_TYPE_INGESTION_CSV,
+  ENTITY_TYPE_INGESTION_JSON,
+  ENTITY_TYPE_INGESTION_RSS,
+  ENTITY_TYPE_INGESTION_TAXII,
+  ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
+} from '../modules/ingestion/ingestion-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
+import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
@@ -29,19 +68,56 @@ import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationP
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
+
+// Curated allowlist of knowledge object types exported by the
+// knowledge_objects_by_type gauge (attribute values are the lowercased
+// entity types). Kept bounded on purpose - this is a product adoption
+// signal, not a full data model census.
+const KNOWLEDGE_OBJECT_TYPES = [
+  'Report',
+  'Grouping',
+  'Note',
+  'Opinion',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+  'Task',
+  'Feedback',
+  'Indicator',
+  'Malware',
+  'Intrusion-Set',
+  'Threat-Actor-Group',
+  'Threat-Actor-Individual',
+  'Incident',
+];
+
+// Structural subset used by the cache-based snapshot collectors below - kept
+// minimal so the collectors do not depend on each module's full store type.
+type DataShareLike = BasicStoreEntity & { stream_public?: boolean; enabled?: boolean };
+
+// Filter matching entities whose boolean attribute is true (ES count queries).
+const booleanTrueFilter = (key: string) => ({
+  mode: FilterMode.And,
+  filters: [{ key: [key], values: ['true'] }],
+  filterGroups: [],
+});
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics' : 'https://telemetry.filigran.io/v1/metrics';
 
 const ONE_MINUTE = 60 * 1000;
-const TWO_MINUTE = 2 * ONE_MINUTE;
 const ONE_HOUR = 60 * ONE_MINUTE;
+const THREE_HOUR = 3 * ONE_HOUR;
 const SIX_HOUR = 6 * ONE_HOUR;
 // Collect data period, corresponds to data point collection
 const TELEMETRY_COLLECT_INTERVAL = DEV_MODE ? ONE_MINUTE : ONE_HOUR;
-// Export data period, sending information to files, console and otlp
-const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
+// Export data period, sending information to files, console and otlp.
+// Dev mode uses a 3h window instead of the production 6h: tight-enough to
+// observe a full cycle in a working day, without flooding the staging
+// collector (one object per export per instance) when many dev instances
+// run at once.
+const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? THREE_HOUR : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
@@ -70,12 +146,60 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
+export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+// AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
+// call is the SAME feature whether it is served by the legacy path or by
+// XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
+// XTM One adoption analysis is done in analytics by segmenting instances on
+// the is_xtm_one_configured gauge.
+export const TELEMETRY_GAUGE_CHATBOT_MESSAGE = 'chatbotMessageCount';
+export const TELEMETRY_GAUGE_AI_INSIGHT_REQUEST = 'aiInsightRequestCount';
+export const TELEMETRY_GAUGE_ASK_AI_QUERY = 'askAiQueryCount';
+export const TELEMETRY_GAUGE_XTM_AGENT_CALL = 'xtmAgentCallCount';
+export const TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN = 'playbookAiAgentRunCount';
+// Product usage counters
+export const TELEMETRY_GAUGE_PLAYBOOK_EXECUTION = 'playbookExecutionCount';
+export const TELEMETRY_GAUGE_NOTIFICATION_SENT = 'notificationSentCount';
+export const TELEMETRY_GAUGE_EXPORT_GENERATED = 'exportGeneratedCount';
+export const TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED = 'ingestionObjectsProcessedCount';
+
+// Bounded enums for dimensional counters (cardinality discipline: every
+// dimension value set is a closed list, mirrored by the warehouse models).
+export const ASK_AI_FEATURES = [
+  'fix_spelling',
+  'make_shorter',
+  'make_longer',
+  'change_tone',
+  'summarize',
+  'explain',
+  'container_report',
+  'summarize_files',
+  'convert_files_to_stix',
+  'activity',
+  'forecast',
+  'history',
+  'container_summary',
+] as const;
+export type AskAiFeature = typeof ASK_AI_FEATURES[number];
+export const AI_INSIGHT_CACHE_STATES = ['hit', 'miss'] as const;
+export type AiInsightCacheState = typeof AI_INSIGHT_CACHE_STATES[number];
+export const XTM_AGENT_CHANNELS = ['direct', 'direct_files'] as const;
+export type XtmAgentChannel = typeof XTM_AGENT_CHANNELS[number];
+export const NOTIFICATION_CHANNELS = ['email', 'webhook', 'ui'] as const;
+export type NotificationChannel = typeof NOTIFICATION_CHANNELS[number];
+// Providers supported by the built-in LLM configuration (see database/ai-llm.ts).
+// Any other configured value is exported as 'other' to keep the is_ai_enabled
+// type dimension bounded.
+export const AI_PROVIDER_TYPES = ['mistralai', 'openai', 'azureopenai'] as const;
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
 };
-export const addNlqQueryCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1);
+// Fire-and-forget (like the other feature counters below): a telemetry
+// failure must never break the NLQ feature.
+export const addNlqQueryCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1)
+    .catch((reason) => logApp.warn('Error adding NLQ query count to telemetry', { reason }));
 };
 export const addRequestAccessCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);
@@ -160,6 +284,69 @@ export const addCustomViewEnabledCount = () => {
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
 };
 
+export const addWorkflowPublishCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_PUBLISH, 1)
+    .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
+};
+
+// All the counters below are fire-and-forget: they are called from feature
+// hot paths (HTTP handlers, domain functions), so a Redis failure must never
+// break the feature itself - it is only logged.
+// One chatbot message sent, whatever the serving backend (legacy Flowise or XTM One).
+export const addChatbotMessageCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CHATBOT_MESSAGE, 1)
+    .catch((reason) => logApp.warn('Error adding chatbot message count to telemetry', { reason }));
+};
+
+export const addAiInsightRequestCount = (cache: AiInsightCacheState) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_AI_INSIGHT_REQUEST}:${cache}`, 1)
+    .catch((reason) => logApp.warn('Error adding AI insight request count to telemetry', { reason }));
+};
+
+// Counted at the feature entry point (domain function), not in the LLM client,
+// so the number does not move if a feature is re-routed to another backend.
+export const addAskAiQueryCount = (feature: AskAiFeature) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`, 1)
+    .catch((reason) => logApp.warn('Error adding Ask AI query count to telemetry', { reason }));
+};
+
+export const addXtmAgentCallCount = (channel: XtmAgentChannel) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_XTM_AGENT_CALL}:${channel}`, 1)
+    .catch((reason) => logApp.warn('Error adding XTM agent call count to telemetry', { reason }));
+};
+
+// Fire-and-forget: a telemetry failure must never break a playbook run.
+export const addPlaybookAiAgentRunCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN, 1)
+    .catch((reason) => logApp.warn('Error adding playbook AI agent run count to telemetry', { reason }));
+};
+
+export const addPlaybookExecutionCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_PLAYBOOK_EXECUTION, 1)
+    .catch((reason) => logApp.warn('Error adding playbook execution count to telemetry', { reason }));
+};
+
+export const addNotificationSentCount = (channel: NotificationChannel) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_NOTIFICATION_SENT}:${channel}`, 1)
+    .catch((reason) => logApp.warn('Error adding notification sent count to telemetry', { reason }));
+};
+
+export const addExportGeneratedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_EXPORT_GENERATED, 1)
+    .catch((reason) => logApp.warn('Error adding export generated count to telemetry', { reason }));
+};
+
+// Volume counter: adds the number of objects processed by a completed work.
+export const addIngestionObjectsProcessedCount = (count: number) => {
+  // Floored because the Redis accumulation relies on the integer-only HINCRBY.
+  const objectsCount = Math.floor(count);
+  if (!Number.isFinite(objectsCount) || objectsCount <= 0) {
+    return;
+  }
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED, objectsCount)
+    .catch((reason) => logApp.warn('Error adding ingestion objects processed count to telemetry', { reason }));
+};
+
 // End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
@@ -221,12 +408,21 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   // Meter Provider creation
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const platformId = settings.id;
-  const filigranResource = resourceFromAttributes({
+  const filigranResourceAttributes: Record<string, string> = {
     [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
     [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
     [ATTR_SERVICE_INSTANCE_ID]: platformId,
     'service.instance.creation': settings.created_at as unknown as string,
-  });
+  };
+  // Optional deployment tags (telemetry_manager:tags / TELEMETRY_MANAGER__TAGS,
+  // normalized to a canonical sorted/lowercased comma string). One resource
+  // attribute on every export so analytics can slice any metric by deployment
+  // dimension (e.g. "saas,eu-west"). Omitted entirely when not configured.
+  const telemetryTags = normalizeTelemetryTags(conf.get('telemetry_manager:tags'));
+  if (telemetryTags.length > 0) {
+    filigranResourceAttributes['filigran.telemetry.tags'] = telemetryTags;
+  }
+  const filigranResource = resourceFromAttributes(filigranResourceAttributes);
   const resource = defaultResource().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
@@ -244,6 +440,27 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIsEEActivated(isEnterpriseEditionFromSettings(settings) ? 1 : 0);
     // endregion
 
+    // region AI / ecosystem configuration gauges
+    // These booleans are the segmentation keys used by analytics to compare
+    // AI feature adoption before/after an XTM One deployment - usage counters
+    // themselves never carry a legacy/xtm_one dimension.
+    const aiEnabled = conf.get('ai:enabled') === true || conf.get('ai:enabled') === 'true';
+    const configuredAiType: string = conf.get('ai:type') ?? '';
+    // Bounded enum: none when disabled, a known provider, or 'other' for any
+    // unrecognized configured value (misconfiguration must not explode the
+    // dimension cardinality).
+    let aiType = 'none';
+    if (aiEnabled) {
+      aiType = (AI_PROVIDER_TYPES as readonly string[]).includes(configuredAiType) ? configuredAiType : 'other';
+    }
+    manager.setIsAiEnabledItems([{ value: aiEnabled ? 1 : 0, attributes: { type: aiType } }]);
+    const isXtmOneConfigured = !!(conf.get('xtm:xtm_one_url') && conf.get('xtm:xtm_one_token'));
+    manager.setIsXtmOneConfigured(isXtmOneConfigured ? 1 : 0);
+    manager.setIsChatbotCguAccepted(settings.filigran_chatbot_ai_cgu_status === 'enabled' ? 1 : 0);
+    manager.setIsOrganizationSegregationEnabled(settings.platform_organization ? 1 : 0);
+    manager.setIsXtmHubRegistered(settings.xtm_hub_registration_status === 'registered' ? 1 : 0);
+    // endregion
+
     // region Cluster information
     const clusterInfo = await getClusterInformation();
     manager.setInstancesCount(clusterInfo.info.instances_number);
@@ -259,6 +476,12 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const activeConnectors = connectors.filter((c) => c.active);
     manager.setActiveConnectorsCount(activeConnectors.length);
+    // Breakdown by catalog identity (see computeActiveConnectorsByIdentity):
+    // composer-managed connectors resolve to the catalog contract slug
+    // through their stored container image; manually registered connectors
+    // fall back to their registered name, flagged managed=false.
+    const contractsByImage = await getSupportedContractsByImage();
+    manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors, contractsByImage));
     // endregion
 
     // region Roles with draft capability information
@@ -319,6 +542,136 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSecurityCoveragesCount(securityCoveragesCount);
     // endregion
 
+    // region Knowledge graph scale
+    // The three independent ES queries run in parallel.
+    const [knowledgeAggregation, observablesCount, relationshipsCount] = await Promise.all([
+      elAggregationCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        field: 'entity_type',
+        types: KNOWLEDGE_OBJECT_TYPES,
+        normalizeLabel: false,
+      }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CYBER_OBSERVABLES, {}),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, {}),
+    ]);
+    const knowledgeItems: DimensionalGaugeItem[] = knowledgeAggregation
+      .map(({ label, count }) => ({ value: count, attributes: { type: String(label).toLowerCase() } }));
+    knowledgeItems.push({ value: observablesCount, attributes: { type: 'observable' } });
+    knowledgeItems.push({ value: relationshipsCount, attributes: { type: 'relationship' } });
+    manager.setKnowledgeObjectsByType(knowledgeItems);
+    // endregion
+
+    // region Ingestion adoption
+    // Total/running counts are computed with ES count queries (no document
+    // fetching) and the independent queries run in parallel. Zero-valued
+    // datapoints are kept so "configured but stopped" adoption states stay
+    // visible.
+    const ingesterDefinitions: [string, string][] = [
+      [ENTITY_TYPE_INGESTION_RSS, 'rss'],
+      [ENTITY_TYPE_INGESTION_TAXII, 'taxii'],
+      [ENTITY_TYPE_INGESTION_TAXII_COLLECTION, 'taxii-collection'],
+      [ENTITY_TYPE_INGESTION_CSV, 'csv'],
+      [ENTITY_TYPE_INGESTION_JSON, 'json'],
+    ];
+    const ingesterBreakdowns = await Promise.all(ingesterDefinitions.map(async ([entityType, label]) => {
+      const [totalCount, runningCount] = await Promise.all([
+        elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [entityType] }),
+        elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [entityType], filters: booleanTrueFilter('ingestion_running') }),
+      ]);
+      return [
+        { value: runningCount, attributes: { type: label, running: 'true' } },
+        { value: Math.max(totalCount - runningCount, 0), attributes: { type: label, running: 'false' } },
+      ];
+    }));
+    manager.setIngestersByType(ingesterBreakdowns.flat());
+    const synchronizersCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_SYNC] });
+    manager.setSynchronizersCount(synchronizersCount);
+    // endregion
+
+    // region Data sharing adoption
+    const dataShareItems: DimensionalGaugeItem[] = [];
+    const buildPublicBreakdown = (type: string, totalCount: number, publicCount: number) => {
+      dataShareItems.push({ value: publicCount, attributes: { type, public: 'true' } });
+      dataShareItems.push({ value: Math.max(totalCount - publicCount, 0), attributes: { type, public: 'false' } });
+    };
+    // Live streams and public dashboards are already held in the entity cache;
+    // feeds and TAXII collections are counted with ES count queries (they are
+    // not cached and can be numerous on large deployments).
+    const liveStreams = await getEntitiesListFromCache<DataShareLike>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_STREAM_COLLECTION);
+    buildPublicBreakdown('live_stream', liveStreams.length, liveStreams.filter((stream) => stream.stream_public === true).length);
+    const [feedsCount, publicFeedsCount, taxiiCollectionsCount, publicTaxiiCollectionsCount] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_FEED] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_FEED], filters: booleanTrueFilter('feed_public') }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_TAXII_COLLECTION] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_TAXII_COLLECTION], filters: booleanTrueFilter('taxii_public') }),
+    ]);
+    buildPublicBreakdown('feed', feedsCount, publicFeedsCount);
+    buildPublicBreakdown('taxii_collection', taxiiCollectionsCount, publicTaxiiCollectionsCount);
+    // Public dashboards are anonymous-access by nature once enabled.
+    const publicDashboards = await getEntitiesListFromCache<DataShareLike>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
+    buildPublicBreakdown('public_dashboard', publicDashboards.length, publicDashboards.filter((dashboard) => dashboard.enabled === true).length);
+    manager.setDataSharesByType(dataShareItems);
+    // endregion
+
+    // region Automation adoption (playbooks and inference rules)
+    // The entity cache only holds RUNNING playbooks; the total comes from the
+    // index so the stopped count is total minus running.
+    const runningPlaybooks = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PLAYBOOK);
+    const totalPlaybooksCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_PLAYBOOK] });
+    manager.setPlaybooksItems([
+      { value: runningPlaybooks.length, attributes: { running: 'true' } },
+      { value: Math.max(totalPlaybooksCount - runningPlaybooks.length, 0), attributes: { running: 'false' } },
+    ]);
+    const rules = await getEntitiesListFromCache<BasicStoreEntity & { active?: boolean }>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_RULE);
+    manager.setInferenceRulesActiveCount(rules.filter((rule) => rule.active === true).length);
+    // endregion
+
+    // region Notifications adoption
+    const triggers = await getEntitiesListFromCache<BasicStoreEntity & { trigger_type?: string }>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_TRIGGER);
+    const liveTriggersCount = triggers.filter((trigger) => trigger.trigger_type === 'live').length;
+    manager.setTriggersByType([
+      { value: liveTriggersCount, attributes: { type: 'live' } },
+      { value: triggers.length - liveTriggersCount, attributes: { type: 'digest' } },
+    ]);
+    const notifiers = await getEntitiesListFromCache<BasicStoreEntity & { notifier_connector_id?: string }>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_NOTIFIER);
+    const notifierConnectorLabel = (connectorId?: string) => {
+      if (connectorId === NOTIFIER_CONNECTOR_EMAIL || connectorId === NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL) return 'email';
+      if (connectorId === NOTIFIER_CONNECTOR_WEBHOOK) return 'webhook';
+      if (connectorId === NOTIFIER_CONNECTOR_UI) return 'ui';
+      return 'other';
+    };
+    const notifierItems = new Map<string, DimensionalGaugeItem>();
+    ['email', 'webhook', 'ui', 'other'].forEach((connector) => notifierItems.set(connector, { value: 0, attributes: { connector } }));
+    notifiers.forEach((notifier) => {
+      const item = notifierItems.get(notifierConnectorLabel(notifier.notifier_connector_id));
+      if (item) item.value += 1;
+    });
+    manager.setNotifiersByConnector(Array.from(notifierItems.values()));
+    // endregion
+
+    // region RBAC scale
+    // The three independent ES count queries run in parallel.
+    const [groupsCount, rolesCount, organizationsCount] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_GROUP] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_ROLE] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Organization'] }),
+    ]);
+    manager.setGroupsCount(groupsCount);
+    manager.setRolesCount(rolesCount);
+    manager.setOrganizationsCount(organizationsCount);
+    // endregion
+
+    // region File indexing
+    const managerConfigurations = await getEntitiesListFromCache<BasicStoreEntity & { manager_id?: string; manager_running?: boolean }>(
+      context,
+      TELEMETRY_MANAGER_USER,
+      ENTITY_TYPE_MANAGER_CONFIGURATION,
+    );
+    const fileIndexConfiguration = managerConfigurations.find((configuration) => configuration.manager_id === 'FILE_INDEX_MANAGER');
+    manager.setIsFileIndexingEnabled(fileIndexConfiguration?.manager_running === true ? 1 : 0);
+    const indexedFilesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_FILES, {});
+    manager.setIndexedFilesCount(indexedFilesCount);
+    // endregion
+
     // region Telemetry user events
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
@@ -368,6 +721,46 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
+    const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
+    manager.setWorkflowPublishCount(workflowPublishCountInRedis);
+    const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
+    manager.setChatbotMessageCount(chatbotMessageCountInRedis);
+    const aiInsightItems: DimensionalGaugeItem[] = [];
+    for (let cacheIndex = 0; cacheIndex < AI_INSIGHT_CACHE_STATES.length; cacheIndex += 1) {
+      const cache = AI_INSIGHT_CACHE_STATES[cacheIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_AI_INSIGHT_REQUEST}:${cache}`);
+      aiInsightItems.push({ value, attributes: { cache } });
+    }
+    manager.setAiInsightRequestItems(aiInsightItems);
+    const askAiItems: DimensionalGaugeItem[] = [];
+    for (let featureIndex = 0; featureIndex < ASK_AI_FEATURES.length; featureIndex += 1) {
+      const feature = ASK_AI_FEATURES[featureIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`);
+      askAiItems.push({ value, attributes: { feature } });
+    }
+    manager.setAskAiQueryItems(askAiItems);
+    const xtmAgentItems: DimensionalGaugeItem[] = [];
+    for (let channelIndex = 0; channelIndex < XTM_AGENT_CHANNELS.length; channelIndex += 1) {
+      const channel = XTM_AGENT_CHANNELS[channelIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_XTM_AGENT_CALL}:${channel}`);
+      xtmAgentItems.push({ value, attributes: { channel } });
+    }
+    manager.setXtmAgentCallItems(xtmAgentItems);
+    const playbookAiAgentRunCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN);
+    manager.setPlaybookAiAgentRunCount(playbookAiAgentRunCountInRedis);
+    const playbookExecutionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PLAYBOOK_EXECUTION);
+    manager.setPlaybookExecutionCount(playbookExecutionCountInRedis);
+    const notificationSentItems: DimensionalGaugeItem[] = [];
+    for (let channelIndex = 0; channelIndex < NOTIFICATION_CHANNELS.length; channelIndex += 1) {
+      const channel = NOTIFICATION_CHANNELS[channelIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_NOTIFICATION_SENT}:${channel}`);
+      notificationSentItems.push({ value, attributes: { channel } });
+    }
+    manager.setNotificationSentItems(notificationSentItems);
+    const exportGeneratedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED);
+    manager.setExportGeneratedCount(exportGeneratedCountInRedis);
+    const ingestionObjectsProcessedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED);
+    manager.setIngestionObjectsProcessedCount(ingestionObjectsProcessedCountInRedis);
     // end region Telemetry user events
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);

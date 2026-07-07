@@ -588,6 +588,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {field.label || t_i18n('New Field')}
           </Typography>
           <IconButton
+            aria-label={t_i18n('Delete')}
             size="small"
             onClick={() => {
               const updatedRelationships = [...formData.relationships];
@@ -783,6 +784,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Typography>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
+              aria-label={t_i18n('Move up')}
               size="small"
               onClick={() => handleMoveFieldUp(entityId, field.id)}
               disabled={isFirstInEntity}
@@ -791,6 +793,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               <ArrowUpward fontSize="small" color={isFirstInEntity ? 'disabled' : 'primary'} />
             </IconButton>
             <IconButton
+              aria-label={t_i18n('Move down')}
               size="small"
               onClick={() => handleMoveFieldDown(entityId, field.id)}
               disabled={isLastInEntity}
@@ -800,6 +803,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             </IconButton>
             {(!field.isMandatory || isInParsedMode) && (
               <IconButton
+                aria-label={t_i18n('Delete')}
                 size="small"
                 onClick={() => handleRemoveField(field.id)}
               >
@@ -983,6 +987,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                     style={{ flex: 1, marginRight: 10 }}
                   />
                   <IconButton
+                    aria-label={t_i18n('Delete')}
                     size="small"
                     onClick={() => {
                       const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
@@ -1133,6 +1138,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {displayLabel}
           </Typography>
           <IconButton
+            aria-label={t_i18n('Remove')}
             size="small"
             onClick={() => handleRemoveAdditionalEntity(entity.id)}
             style={{ alignSelf: 'flex-start' }}
@@ -1460,6 +1466,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Relationship')} {index + 1}
           </Typography>
           <IconButton
+            aria-label={t_i18n('Remove')}
             size="small"
             onClick={() => handleRemoveRelationship(relationship.id)}
           >

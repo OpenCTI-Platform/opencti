@@ -113,6 +113,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
 
         <div>
           <IconButton
+            aria-label={t_i18n('Go to note')}
             component={Link}
             to={`/dashboard/analyses/notes/${note.id}`}
             sx={{ mr: 1 }}

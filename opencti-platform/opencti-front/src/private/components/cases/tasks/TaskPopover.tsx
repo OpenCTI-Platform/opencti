@@ -103,6 +103,7 @@ const TaskPopover = ({
       {variant === 'inLine' ? (
         <IconButton
           onClick={handleOpen}
+          aria-label={t_i18n('Open menu')}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
           color="primary"

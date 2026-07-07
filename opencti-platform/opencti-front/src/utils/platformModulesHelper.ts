@@ -3,7 +3,6 @@ import { RootSettings$data } from '../private/__generated__/RootSettings.graphql
 export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform administrator must enable the according manager in the config.';
 
 export const RUNTIME_SORTING = 'RUNTIME_SORTING';
-
 export const SUBSCRIPTION_MANAGER = 'SUBSCRIPTION_MANAGER';
 export const RULE_ENGINE = 'RULE_ENGINE';
 export const HISTORY_MANAGER = 'HISTORY_MANAGER';

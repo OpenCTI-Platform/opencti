@@ -1,32 +1,11 @@
 name: PR conventions checks
+# This workflow should work for forks without requiring manual run.
+# It avoids jobs that require elevated write permissions/secrets on fork PRs; PR-write operations should live in a separate workflow.
+
 on:
   pull_request:
     types: [opened, edited, reopened, ready_for_review, synchronize]
 jobs:
-  check-organization:
-    name: Check if PR author is an OpenCTI-Platform member and add label
-    # except for renovate
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'dependencies') }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Check organization membership and set label
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-        run: |
-          # Determine author association from PR payload (OWNER/MEMBER/COLLABORATOR/CONTRIBUTOR/...)
-          set -euo pipefail
-          AUTHOR_ASSOCIATION="${{ github.event.pull_request.author_association }}"
-
-          if [ "$AUTHOR_ASSOCIATION" = "OWNER" ] || [ "$AUTHOR_ASSOCIATION" = "MEMBER" ]; then
-            echo "$PR_AUTHOR is associated as $AUTHOR_ASSOCIATION"
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "filigran team" || true
-          fi
   check-pr-title-convention:
     name: Check that PR title follows convention
     if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
@@ -39,6 +18,7 @@ jobs:
           regexp: '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z0-9._/-]+\))?!?: .+ \(#[0-9]+(, ?#[0-9]+)*\)$'
           flags: "gm"
           helpMessage: "Format: 'type(scope?): description (#issue)' for example 'docs: updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
+
   check-signed-commits:
     name: Check signed commits in PR
     runs-on: ubuntu-latest
@@ -55,28 +35,3 @@ jobs:
         with:
           comment: |
             Thank you for your contribution, but we need you to sign your commits. Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
-  check-pr-issue:
-    name: Check Pull Request is linked to an issue
-    # Only for PR that are targeting 'master' or 'lts/*' and except for renovate
-    if: ${{ (github.base_ref == 'master' || startsWith(github.base_ref, 'lts/')) && !contains(github.event.pull_request.labels.*.name, 'dependencies') }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Check for linked issues
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-        run: |
-          # Get PR details including linked issues
-          LINKED_ISSUES=$(gh pr view $PR_NUMBER --repo $REPO --json closingIssuesReferences --jq '.closingIssuesReferences | length')
-          
-          if [ "$LINKED_ISSUES" -eq 0 ]; then
-            echo "::error::No linked issues found. Please link at least one issue to this Pull Request."
-            echo "You can link an issue by using keywords like 'Fixes #123', 'Closes #123', or 'Resolves #123' in the PR description."
-            exit 1
-          else
-            echo "✓ Found $LINKED_ISSUES linked issue(s)"
-          fi

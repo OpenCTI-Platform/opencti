@@ -229,6 +229,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const navigate = useNavigate();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -252,6 +253,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  const isDataHealthEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
 
   const [selectedMenu, setSelectedMenu] = useState(
     JSON.parse(localStorage.getItem('selectedMenu') ?? '[]'),
@@ -722,6 +724,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
                   { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
+                  { granted: isDataHealthEnabled && isGrantedToManage && !draftContext, link: '/dashboard/data/health', label: t_i18n('Health') },
                 ]}
               />
             </Security>

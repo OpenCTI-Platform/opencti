@@ -426,7 +426,12 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             handleAddFilter={helpers.handleAddFilter}
             searchContext={{ entityTypes: ['stix-core-relationship'] }}
           />
-          <IconButton color="primary" onClick={handleOpenTimeField} size="small">
+          <IconButton
+            aria-label={t_i18n('Open time field')}
+            color="primary"
+            onClick={handleOpenTimeField}
+            size="small"
+          >
             <SettingsOutlined fontSize="small" />
           </IconButton>
           <Popover

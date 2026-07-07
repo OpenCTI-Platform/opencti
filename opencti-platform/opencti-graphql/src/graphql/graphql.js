@@ -47,7 +47,7 @@ const createApolloServer = () => {
         enabled: conf.get('app:graphql:armor_protection:block_field_suggestion') ?? true,
       },
       costLimit: { // Limit the complexity of a GraphQL document.
-        maxCost: conf.get('app:graphql:armor_protection:cost_limit') ?? 3000000,
+        maxCost: conf.get('app:graphql:armor_protection:cost_limit') ?? 50000000,
       },
       maxDepth: { // maxDepth: Limit the depth of a document.
         n: conf.get('app:graphql:armor_protection:max_depth') ?? 20,
