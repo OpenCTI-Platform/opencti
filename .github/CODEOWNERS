@@ -15,10 +15,10 @@ yarn.lock                                     @OpenCTI-Platform/ent:opencti-staf
 
 # --------------------------------------------------------------------------------------
 # Development Team Scope
-/client-python/docs/                           @OpenCTI-Platform/ent:opencti
-/client-python/examples/                       @OpenCTI-Platform/ent:opencti
-/client-python/tests/                          @OpenCTI-Platform/ent:opencti
-/client-python/pycti/                          @OpenCTI-Platform/ent:opencti
+/client-python/docs/                          @OpenCTI-Platform/ent:opencti
+/client-python/examples/                      @OpenCTI-Platform/ent:opencti
+/client-python/tests/                         @OpenCTI-Platform/ent:opencti
+/client-python/pycti/                         @OpenCTI-Platform/ent:opencti
 
 /opencti-platform/opencti-front/lang/         @OpenCTI-Platform/ent:opencti
 /opencti-platform/opencti-front/scripts/      @OpenCTI-Platform/ent:opencti
@@ -43,3 +43,7 @@ yarn.lock                                     @OpenCTI-Platform/ent:opencti-staf
 # Product Team Scope
 /docs/docs/                                   @OpenCTI-Platform/ent:opencti-product
 /docs/mkdocs.yml                              @OpenCTI-Platform/ent:opencti-product
+
+# --------------------------------------------------------------------------------------
+# CODEOWNER Protection
+/.github/CODEOWNERS                           @OpenCTI-Platform/ent:opencti-director-principal
