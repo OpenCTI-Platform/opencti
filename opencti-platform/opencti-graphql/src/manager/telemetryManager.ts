@@ -33,7 +33,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
+import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { elAggregationCount, elCount } from '../database/engine';
 import {
   READ_INDEX_FILES,
@@ -67,6 +67,8 @@ import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
+import { fullEntitiesList } from '../database/middleware-loader';
+import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -551,36 +553,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Shared saved filters
-    // A saved filter is considered shared when it has restricted_members entries
-    // whose id differs from the creator_id. We use an internal_script filter to
-    // count them directly in ES to avoid fetching the full entity list.
-    const sharedSavedFiltersScript = `
-      def members = doc.containsKey('restricted_members.id.keyword')
-        ? doc['restricted_members.id.keyword']
-        : (doc.containsKey('restricted_members.id') ? doc['restricted_members.id'] : null);
-      if (members == null || members.size() == 0) return false;
-      def creator = (doc.containsKey('creator_id.keyword') && doc['creator_id.keyword'].size() > 0)
-        ? doc['creator_id.keyword'][0]
-        : null;
-      for (def m : members) {
-        if (m != null && m != creator && m != 'CREATOR') return true;
-      }
-      return false;
-    `;
-    const sharedSavedFiltersCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
-      types: [ENTITY_TYPE_SAVED_FILTER],
-      includeAuthorities: true,
-      filters: {
-        mode: FilterMode.And,
-        filters: [{
-          key: ['restricted_members'],
-          values: [sharedSavedFiltersScript],
-          operator: 'internal_script',
-        }],
-        filterGroups: [],
-      },
-    });
-    manager.setSharedSavedFiltersCount(sharedSavedFiltersCount);
+    const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(
+      context,
+      TELEMETRY_MANAGER_USER,
+      [ENTITY_TYPE_SAVED_FILTER],
+      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members'] },
+    );
+    const sharedSavedFilters = savedFilters.filter((f) => isSavedFilterShared(f));
+    manager.setSharedSavedFiltersCount(sharedSavedFilters.length);
     // endregion
 
     // region Knowledge graph scale
