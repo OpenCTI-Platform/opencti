@@ -3867,12 +3867,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :rtype: list
         """
 
-        ids = []
+        ids = set()
         final_items = []
         for item in items:
             if item["id"] not in ids:
                 final_items.append(item)
-                ids.append(item["id"])
+                ids.add(item["id"])
         return final_items
 
     @staticmethod
