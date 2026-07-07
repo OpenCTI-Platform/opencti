@@ -61,8 +61,8 @@ TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
 """List of string values considered as boolean False."""
 
-DIRECTORY_RETENTION_CLEANUP_INTERVAL_SECONDS = 60
-"""Minimum interval between full directory retention scans."""
+BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS = 60
+"""Minimum interval between full bundle retention scans."""
 
 app = FastAPI()
 
@@ -2173,6 +2173,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self._directory_cleanup_lock = threading.Lock()
         self._directory_cleanup_deadlines = {}
+        self._s3_cleanup_lock = threading.Lock()
+        self._next_s3_cleanup_at = 0
         # S3 send mode configuration
         self.bundle_send_to_s3 = get_config_variable(
             "CONNECTOR_SEND_TO_S3",
@@ -2712,6 +2714,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param s3_client: Configured boto3 S3 client
         :type s3_client: boto3.client
         """
+        now_monotonic = time.monotonic()
+        with self._s3_cleanup_lock:
+            if now_monotonic < self._next_s3_cleanup_at:
+                return
+            self._next_s3_cleanup_at = (
+                now_monotonic + BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS
+            )
+
         # Build prefix: folder + connector name prefix
         # Strip trailing slashes to avoid double slashes in S3 keys
         folder = (
@@ -2759,7 +2769,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             if now_monotonic < next_cleanup_at:
                 return
             self._directory_cleanup_deadlines[cleanup_key] = (
-                now_monotonic + DIRECTORY_RETENTION_CLEANUP_INTERVAL_SECONDS
+                now_monotonic + BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS
             )
 
         cutoff_time = time.time() - 86400 * retention_days
