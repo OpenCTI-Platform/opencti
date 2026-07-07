@@ -371,7 +371,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
           )}
           {expandable && (
             <IconButton
-              aria-label={expanded ? t('collapse') : t('expand')}
+              aria-label={expanded ? t('Collapse') : t('Expand')}
               size="small"
               onClick={this.handleToggleExpand.bind(this)}
               classes={{ root: classes.buttonExpand }}

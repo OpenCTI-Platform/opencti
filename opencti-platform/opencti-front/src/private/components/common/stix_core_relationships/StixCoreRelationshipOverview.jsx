@@ -553,7 +553,7 @@ class StixCoreRelationshipContainer extends Component {
               ))}
               {expandable && (
                 <IconButton
-                  aria-label={expanded ? t('collapse') : t('expand')}
+                  aria-label={expanded ? t('Collapse') : t('Expand')}
                   variant="tertiary"
                   size="small"
                   onClick={this.handleToggleExpand.bind(this)}

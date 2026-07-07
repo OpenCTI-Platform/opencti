@@ -121,7 +121,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                   disablePadding
                   secondaryAction={(
                     <IconButton
-                      aria-label={this.state.expandedLines[stixRelationship.id] ? t('collapse') : t('expand')}
+                      aria-label={this.state.expandedLines[stixRelationship.id] ? t('Collapse') : t('Expand')}
                       onClick={this.handleToggleLine.bind(
                         this,
                         stixRelationship.id,
