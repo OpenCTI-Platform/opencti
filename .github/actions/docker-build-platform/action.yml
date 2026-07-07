@@ -46,7 +46,7 @@ runs:
         context: opencti-platform
         file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
         push: 'false'
-        outputs: type=docker,dest=/tmp/opencti-platform.tar
+        outputs: type=docker,dest=/tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
