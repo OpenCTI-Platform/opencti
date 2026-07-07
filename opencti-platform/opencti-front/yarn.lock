@@ -7529,15 +7529,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:3.4.1":
-  version: 3.4.1
-  resolution: "dompurify@npm:3.4.1"
+"dompurify@npm:3.4.11":
+  version: 3.4.11
+  resolution: "dompurify@npm:3.4.11"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10c0/440a4246020cb54b82ef2cb66381e4d310a0c470f9994655e61b6122811f0eaa00a2f9665d2bed30ca3f58932ba7bb0d5e26fdfce61c8daf35d21a3f5a799e48
+  checksum: 10c0/31439481c7e8fc3805d40c376936fd66936620fb1b1a31a2ec097f6165412c37f2d868e082c9ceba62bb37661c1ea132a5db4d5213434317e30df68d4aca9cc9
   languageName: node
   linkType: hard
 
@@ -12259,7 +12259,7 @@ __metadata:
     d3-scale: "npm:4.0.2"
     d3-timer: "npm:3.0.1"
     date-fns: "npm:4.1.0"
-    dompurify: "npm:3.4.1"
+    dompurify: "npm:3.4.11"
     esbuild: "npm:0.27.3"
     eslint: "npm:10.0.2"
     eslint-import-resolver-typescript: "npm:4.4.4"
