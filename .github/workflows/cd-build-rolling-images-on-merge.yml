@@ -5,8 +5,7 @@ name: OpenCTI CD Rolling
 on:
   push:
     branches:
-      # FIXME change again to target master before merge
-      - issue/16821-docker-wf
+      - master
 
 jobs:
   # -----------------------
