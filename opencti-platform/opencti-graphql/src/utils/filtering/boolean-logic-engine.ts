@@ -1,4 +1,4 @@
-import moment from 'moment';
+import { isValid as fnsIsValid } from 'date-fns';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { isFilterGroupNotEmpty } from './filtering-utils';
 
@@ -148,7 +148,7 @@ export const testNumericFilter = (filter: FilterExcerpt, stixCandidate: number |
  */
 export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCandidate: string | null | undefined) => {
   // make sure the dates are valid, otherwise we won't use them.
-  const filterValuesAsDates = values.map((v) => moment(new Date(v))).filter((d) => d.isValid());
+  const filterValuesAsDates = values.map((v) => new Date(v)).filter((d) => fnsIsValid(d) && !Number.isNaN(d.getTime()));
 
   if (operator === 'nil' || (operator === 'eq' && filterValuesAsDates.length === 0)) {
     return stixCandidate === null;
@@ -162,29 +162,30 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
     return false;
   }
 
-  const stixDate = moment(new Date(stixCandidate));
-  if (!stixDate.isValid()) {
+  const stixDate = new Date(stixCandidate);
+  if (!fnsIsValid(stixDate) || Number.isNaN(stixDate.getTime())) {
     // This is actually an error case that should not happen (invalid stix)
     return false;
   }
 
+  const stixTime = stixDate.getTime();
   if (mode === 'and') {
     // NOTE: equality is very strict (milliseconds)
-    return (operator === 'eq' && filterValuesAsDates.every((v) => stixDate.isSame(v)))
-      || (operator === 'not_eq' && filterValuesAsDates.every((v) => !stixDate.isSame(v)))
-      || (operator === 'lt' && filterValuesAsDates.every((v) => stixDate.isBefore(v)))
-      || (operator === 'lte' && filterValuesAsDates.every((v) => stixDate.isSameOrBefore(v)))
-      || (operator === 'gt' && filterValuesAsDates.every((v) => stixDate.isAfter(v)))
-      || (operator === 'gte' && filterValuesAsDates.every((v) => stixDate.isSameOrAfter(v)));
+    return (operator === 'eq' && filterValuesAsDates.every((v) => stixTime === v.getTime()))
+      || (operator === 'not_eq' && filterValuesAsDates.every((v) => stixTime !== v.getTime()))
+      || (operator === 'lt' && filterValuesAsDates.every((v) => stixTime < v.getTime()))
+      || (operator === 'lte' && filterValuesAsDates.every((v) => stixTime <= v.getTime()))
+      || (operator === 'gt' && filterValuesAsDates.every((v) => stixTime > v.getTime()))
+      || (operator === 'gte' && filterValuesAsDates.every((v) => stixTime >= v.getTime()));
   }
   if (mode === 'or') {
     // value must compare to at least one of the candidates according to operator
-    return (operator === 'eq' && filterValuesAsDates.some((v) => stixDate.isSame(v)))
-      || (operator === 'not_eq' && filterValuesAsDates.some((v) => !stixDate.isSame(v)))
-      || (operator === 'lt' && filterValuesAsDates.some((v) => stixDate.isBefore(v)))
-      || (operator === 'lte' && filterValuesAsDates.some((v) => stixDate.isSameOrBefore(v)))
-      || (operator === 'gt' && filterValuesAsDates.some((v) => stixDate.isAfter(v)))
-      || (operator === 'gte' && filterValuesAsDates.some((v) => stixDate.isSameOrAfter(v)));
+    return (operator === 'eq' && filterValuesAsDates.some((v) => stixTime === v.getTime()))
+      || (operator === 'not_eq' && filterValuesAsDates.some((v) => stixTime !== v.getTime()))
+      || (operator === 'lt' && filterValuesAsDates.some((v) => stixTime < v.getTime()))
+      || (operator === 'lte' && filterValuesAsDates.some((v) => stixTime <= v.getTime()))
+      || (operator === 'gt' && filterValuesAsDates.some((v) => stixTime > v.getTime()))
+      || (operator === 'gte' && filterValuesAsDates.some((v) => stixTime >= v.getTime()));
   }
 
   return false;

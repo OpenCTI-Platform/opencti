@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { elAggregationCount, elCount, elDeleteInstances, elFindByIds, elIndex } from '../../../database/engine';
@@ -40,7 +39,7 @@ export const getIndexFromDate = async (context: AuthContext) => {
   };
   const lastIndexedFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
   const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;
-  return lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toISOString() : FROM_START_STR;
+  return lastIndexedFile ? new Date(lastIndexedFile.uploaded_at).toISOString() : FROM_START_STR;
 };
 
 export const buildFileDataForIndexing = (file: File, draftContext?: string | undefined) => {

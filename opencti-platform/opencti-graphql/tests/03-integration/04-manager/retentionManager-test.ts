@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { Readable } from 'stream';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { subMinutes } from 'date-fns';
 import { utcDate } from '../../../src/utils/format';
 import { deleteElement, executeProcessing, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
@@ -393,7 +394,7 @@ describe('Retention Manager tests ', () => {
   it('should execute processing for history scope: patch the rule and collect deleted entries', async () => {
     // Insert a synthetic History entry old enough to be caught by a 1-minute retention rule
     const historyId = generateInternalId();
-    const historyDate = utcDate().subtract(5, 'minutes').toDate();
+    const historyDate = subMinutes(new Date(), 5);
     const historyEntry = {
       internal_id: historyId,
       standard_id: `history--${historyId}`,
@@ -429,7 +430,7 @@ describe('Retention Manager tests ', () => {
     const rule = ruleQuery.data?.retentionRuleAdd;
     expect(rule).toBeDefined();
     // Ensure there are history entries older than 1
-    const before = utcDate().subtract(1, 'minutes');
+    const before = subMinutes(new Date(), 1);
     const historyElements = await getElementsToDelete(context, 'history', before);
     expect(historyElements.edges.length).toBeGreaterThan(0);
     // Run executeProcessing for this rule
@@ -503,7 +504,7 @@ describe('Retention Manager tests ', () => {
   it('should delete an activity log entry using deleteElement with activity scope', async () => {
     // Insert a synthetic Activity entry in the history index to be able to delete it
     const activityId = generateInternalId();
-    const activityDate = utcDate().subtract(5, 'minutes').toDate();
+    const activityDate = subMinutes(new Date(), 5);
     const activityEntry = {
       internal_id: activityId,
       standard_id: activityId,
@@ -534,7 +535,7 @@ describe('Retention Manager tests ', () => {
   it('should execute processing for activity scope: patch the rule and collect deleted entries', async () => {
     // Insert a synthetic Activity entry old enough to be caught by a 1-minute retention rule
     const activityId = generateInternalId();
-    const activityDate = utcDate().subtract(5, 'minutes').toDate();
+    const activityDate = subMinutes(new Date(), 5);
     const activityEntry = {
       internal_id: activityId,
       standard_id: activityId,
@@ -570,7 +571,7 @@ describe('Retention Manager tests ', () => {
     const rule = ruleQuery.data?.retentionRuleAdd;
     expect(rule).toBeDefined();
     // Ensure the synthetic entry is in the deletion window
-    const before = utcDate().subtract(1, 'minutes');
+    const before = subMinutes(new Date(), 1);
     const activityElements = await getElementsToDelete(context, 'activity', before);
     expect(activityElements.edges.length).toBeGreaterThan(0);
     // Run executeProcessing

@@ -291,11 +291,11 @@ class StixNestedRefRelationshipCreation extends Component {
           R.assoc('toId', toObject.id),
           R.assoc(
             'start_time',
-            values.start_time ? parse(values.start_time).format() : null,
+            values.start_time ? parse(values.start_time).toISOString() : null,
           ),
           R.assoc(
             'stop_time',
-            values.stop_time ? parse(values.stop_time).format() : null,
+            values.stop_time ? parse(values.stop_time).toISOString() : null,
           ),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
         )(values);

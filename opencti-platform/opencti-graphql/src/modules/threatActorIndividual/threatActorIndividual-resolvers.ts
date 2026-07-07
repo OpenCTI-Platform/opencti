@@ -23,10 +23,10 @@ const threatActorIndividualResolvers: Resolvers = {
     ethnicity: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_ETHNICITY),
     height: (threatActorIndividual, _, __) => (threatActorIndividual.height ?? [])
       .map((height, index) => ({ ...height, index }))
-      .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
+      .sort((a, b) => utcDate(a.date_seen).getTime() - utcDate(b.date_seen).getTime()),
     weight: (threatActorIndividual, _, __) => (threatActorIndividual.weight ?? [])
       .map((weight, index) => ({ ...weight, index }))
-      .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
+      .sort((a, b) => utcDate(a.date_seen).getTime() - utcDate(b.date_seen).getTime()),
   },
   Mutation: {
     threatActorIndividualAdd: (_, { input }, context) => {

@@ -1,6 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync as clearDynamicIntervalAsync, setIntervalAsync as setDynamicIntervalAsync } from 'set-interval-async/dynamic';
-import moment from 'moment/moment';
+import { differenceInMilliseconds } from 'date-fns';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { type StreamProcessor } from '../database/stream/stream-utils';
 import { lockResources } from '../lock/master-lock';
@@ -92,7 +92,7 @@ const initManager = (manager: ManagerDefinition) => {
         if (lock) await lock.unlock();
         if (cronInput && cronInput.shutdown) await cronInput.shutdown();
         if (startDate) {
-          const duration = moment.duration(utcDate().diff(startDate)).asMilliseconds();
+          const duration = differenceInMilliseconds(new Date(), startDate);
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} done in ${duration}ms`);
         }
       }

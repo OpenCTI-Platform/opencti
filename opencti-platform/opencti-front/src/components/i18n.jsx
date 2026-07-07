@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { injectIntl, useIntl } from 'react-intl';
-import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
 import { EMPTY_VALUE } from '../utils/String';
 
@@ -23,8 +22,9 @@ export const isNone = (date) => {
   if (date.length === 0) return true;
   if (date === (new Date(FROM_START).toISOString())) return true;
   if (date === (new Date(UNTIL_END).toISOString())) return true;
-  const parsedDate = moment(date).format();
-  return isDateStringNone(parsedDate);
+  const parsedDate = new Date(date);
+  const formatted = Number.isNaN(parsedDate.getTime()) ? 'Invalid date' : parsedDate.toISOString();
+  return isDateStringNone(formatted);
 };
 
 const inject18n = (WrappedComponent) => {

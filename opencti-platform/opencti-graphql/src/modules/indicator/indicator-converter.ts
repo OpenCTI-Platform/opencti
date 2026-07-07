@@ -1,4 +1,3 @@
-import moment from 'moment';
 import { getObservableValuesFromPattern } from './indicator-domain';
 import { buildKillChainPhases, buildMITREExtensions, buildStixDomain } from '../../database/stix-2-1-converter';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
@@ -17,7 +16,7 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
   // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
   const computedValidUntil = (
     isNotEmptyField(instance.valid_from) && isNotEmptyField(instance.valid_until) && instance.valid_until === instance.valid_from
-  ) ? moment(instance.valid_from).add(1, 'seconds').toDate() : instance.valid_until;
+  ) ? new Date(new Date(instance.valid_from).getTime() + 1000) : instance.valid_until;
   return {
     ...indicator,
     name: instance.name,

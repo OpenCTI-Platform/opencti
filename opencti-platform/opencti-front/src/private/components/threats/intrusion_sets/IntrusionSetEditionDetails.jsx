@@ -112,11 +112,11 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       R.dissoc('references'),
       R.assoc(
         'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
+        values.first_seen ? parse(values.first_seen).toISOString() : null,
       ),
       R.assoc(
         'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
+        values.last_seen ? parse(values.last_seen).toISOString() : null,
       ),
       R.assoc(
         'goals',

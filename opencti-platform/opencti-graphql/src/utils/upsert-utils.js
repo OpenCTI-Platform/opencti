@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import moment from 'moment/moment';
+import { isBefore, isAfter } from 'date-fns';
 import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
@@ -25,23 +25,23 @@ import { pushAll } from './arrayUtil';
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
 const computeExtendedDateValues = (newValue, currentValue, mode) => {
-  const newValueDate = moment(newValue);
+  const newValueDate = new Date(newValue);
   if (isNotEmptyField(currentValue)) {
-    const currentValueDate = moment(currentValue);
+    const currentValueDate = new Date(currentValue);
     if (mode === ALIGN_OLDEST) {
-      if (newValueDate.isBefore(currentValueDate)) {
-        return { updated: true, date: newValueDate.utc().toISOString() };
+      if (isBefore(newValueDate, currentValueDate)) {
+        return { updated: true, date: newValueDate.toISOString() };
       }
-      return { updated: false, date: currentValueDate.utc().toISOString() };
+      return { updated: false, date: currentValueDate.toISOString() };
     }
     if (mode === ALIGN_NEWEST) {
-      if (newValueDate.isAfter(currentValueDate)) {
-        return { updated: true, date: newValueDate.utc().toISOString() };
+      if (isAfter(newValueDate, currentValueDate)) {
+        return { updated: true, date: newValueDate.toISOString() };
       }
-      return { updated: false, date: currentValueDate.utc().toISOString() };
+      return { updated: false, date: currentValueDate.toISOString() };
     }
   }
-  return { updated: true, date: newValueDate.utc().toISOString() };
+  return { updated: true, date: newValueDate.toISOString() };
 };
 
 const isOutdatedUpdate = (context, element, attributeKey) => {
@@ -51,7 +51,7 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
     if (lastAttributeUpdateDate) {
       try {
         const eventDate = computeDateFromEventId(context.eventId);
-        return utcDate(lastAttributeUpdateDate).isAfter(eventDate);
+        return utcDate(lastAttributeUpdateDate) > utcDate(eventDate);
       } catch (_e) {
         logApp.error('Error evaluating event id', { key: attributeKey, event_id: context.eventId });
       }

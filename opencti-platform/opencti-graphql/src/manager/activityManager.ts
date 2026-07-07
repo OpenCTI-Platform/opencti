@@ -91,7 +91,7 @@ export const buildActivityHistoryElements = async (context: AuthContext, events:
       if ((event.data.data.object_marking_refs_ids ?? []).length > 0) {
         contextData.marking_definitions = (event.data.data.object_marking_refs_ids ?? []).map((n) => markingDefinitions.get(n)?.definition ?? 'Unknown');
       }
-      const activityDate = utcDate(eventDate).toDate();
+      const activityDate = utcDate(eventDate);
       const isAdminEvent = event.data.event_access === 'administration';
       return {
         _index: INDEX_HISTORY,
@@ -201,7 +201,7 @@ const initActivityManager = () => {
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;
-        lastEventId = `${utcDate(histoDate).unix() * 1000}-0`;
+        lastEventId = `${utcDate(histoDate).getTime()}-0`;
       }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {

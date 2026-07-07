@@ -130,11 +130,11 @@ const IndicatorAddObservablesLinesContainer = (props) => {
       assoc('confidence', parseInt(input.confidence, 10)),
       assoc(
         'start_time',
-        input.start_time ? parse(input.start_time).format() : null,
+        input.start_time ? parse(input.start_time).toISOString() : null,
       ),
       assoc(
         'stop_time',
-        input.stop_time ? parse(input.stop_time).format() : null,
+        input.stop_time ? parse(input.stop_time).toISOString() : null,
       ),
       assoc('killChainPhases', pluck('value', input.killChainPhases)),
       assoc('createdBy', input.createdBy?.value),

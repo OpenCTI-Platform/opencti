@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { now } from 'moment';
+import { now } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, ONE_MINUTE, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { FilterMode, FilterOperator, PirType, StatsOperation } from '../../../src/generated/graphql';
@@ -399,7 +399,7 @@ describe('PIR resolver standard behavior', () => {
       interval: 'day',
       operation: StatsOperation.Count,
       relationship_type: ['in-pir'],
-      startDate: now() - ONE_MINUTE, // the last minute
+      startDate: new Date(Date.now() - ONE_MINUTE).toISOString(), // the last minute
       timeSeriesParameters: [{ field: 'created_at', pirId: pirInternalId1 }],
     };
     const timeSeries = await pirRelationshipsMultiTimeSeries(testContext, ADMIN_USER, args);

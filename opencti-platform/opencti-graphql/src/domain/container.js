@@ -289,7 +289,7 @@ export const aiSummary = async (context, user, args) => {
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
   const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10 };
   const identifier = toB64(R.dissoc('busId', finalArgs));
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt) > minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT)) {
     logApp.info('Response found in cache', { busId });
     await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content: aiResponseCache[identifier].result }, user);
     return aiResponseCache[identifier];

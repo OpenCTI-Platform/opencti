@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { v4 as uuid } from 'uuid';
-import moment from 'moment/moment';
+import { subDays } from 'date-fns';
 import { findById as findWorkById, worksForConnector } from '../../../src/domain/work';
 import { registerConnector } from '../../../src/domain/connector';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -68,9 +68,9 @@ describe('Old work of connector cleanup test', () => {
     // one older than connector_manager.works_day_range (default: 7 days) and one more recent
     await createConnectorForTest();
 
-    await createWorkForTest('Work 8 days old and complete', moment().subtract('8', 'days').toDate(), 'complete');
-    await createWorkForTest('Work 9 days old and not complete', moment().subtract('9', 'days').toDate(), 'wait');
-    await createWorkForTest('Work 2 days old and complete', moment().subtract('2', 'days').toDate(), 'complete');
+    await createWorkForTest('Work 8 days old and complete', subDays(new Date(), 8), 'complete');
+    await createWorkForTest('Work 9 days old and not complete', subDays(new Date(), 9), 'wait');
+    await createWorkForTest('Work 2 days old and complete', subDays(new Date(), 2), 'complete');
 
     const allWorkBeforeCleanup = await worksForConnector(testContext, ADMIN_USER, testConnector.id) as Work[];
     expect(allWorkBeforeCleanup.length).toBe(3);

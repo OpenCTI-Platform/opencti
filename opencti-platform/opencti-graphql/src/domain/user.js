@@ -950,11 +950,11 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       }
       // If moving to unexpired status and expiration date is already in the past, reset the value
       if (R.head(input.value) !== ACCOUNT_STATUS_EXPIRED && userToUpdate.account_lock_after_date
-        && utcDate().isAfter(userToUpdate.account_lock_after_date)) {
+        && utcDate() > utcDate(userToUpdate.account_lock_after_date)) {
         inputs.push({ key: 'account_lock_after_date', value: [null] });
       }
     }
-    if (input.key === 'account_lock_after_date' && utcDate().isAfter(utcDate(R.head(input.value)))) {
+    if (input.key === 'account_lock_after_date' && utcDate() > utcDate(R.head(input.value))) {
       inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
       await killUserSessions(userId);
     }
@@ -1922,7 +1922,7 @@ const validateUser = (user, settings) => {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
   // Check account expiration date
-  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
+  if (user.account_lock_after_date && utcDate() > utcDate(user.account_lock_after_date)) {
     throw AuthenticationFailure(ACCOUNT_STATUSES.Expired);
   }
   // Validate user's account status

@@ -651,7 +651,7 @@ export const upload = async (
       return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
     }
     // keep version handling backward compatible, if the existing file version is newer or equal than the uploaded one, we skip the upload
-    if (utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(metadata.version as string))) {
+    if (utcDate((currentFile.metaData as FileMetadata).version as string) >= utcDate(metadata.version as string)) {
       return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
     }
     if (errorOnExisting) {

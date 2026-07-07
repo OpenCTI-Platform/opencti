@@ -1,5 +1,16 @@
-import Moment from 'moment';
-import { extendMoment } from 'moment-range';
+import {
+  format as fnsFormat,
+  parseISO,
+  differenceInMinutes,
+  subMinutes,
+  subHours,
+  subMonths,
+  subYears,
+  isValid as fnsIsValid,
+  isBefore,
+  min as fnsMin,
+  max as fnsMax,
+} from 'date-fns';
 import * as R from 'ramda';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -61,54 +72,72 @@ export const schedulingPeriodToMs = (scheduling_period) => {
 // ----------------------------------------------------------------------------------------------------------------------
 // Date formatting
 
-const moment = extendMoment(Moment);
-
 export const FROM_START = 0;
 export const FROM_START_STR = '1970-01-01T00:00:00.000Z';
 export const UNTIL_END = 100000000000000;
 export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 
-const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
+const dateFormatPattern = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
-const isValidDuration = (duration) => {
-  const durationObj = moment.duration(duration);
-  return durationObj !== null && !Number.isNaN(durationObj.asMilliseconds());
+// Parse an ISO 8601 duration string (e.g. P30D, PT1H, P1Y2M3D) to milliseconds.
+// Returns NaN if the duration is not valid.
+export const parseISODuration = (duration) => {
+  if (!duration || typeof duration !== 'string') return NaN;
+  const match = duration.match(/^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/);
+  if (!match) return NaN;
+  const [, years, months, weeks, days, hours, minutes, seconds] = match;
+  if (!years && !months && !weeks && !days && !hours && !minutes && !seconds) return NaN;
+  const ms = ((Number(years || 0) * 365.25 + Number(months || 0) * 30.44 + Number(weeks || 0) * 7 + Number(days || 0)) * 86400000)
+    + (Number(hours || 0) * 3600000)
+    + (Number(minutes || 0) * 60000)
+    + (Number(seconds || 0) * 1000);
+  return ms;
 };
 
-export const utcDate = (date) => (date ? moment(date).utc() : moment().utc());
-export const utcEpochTime = (date = null) => utcDate(date).toDate().getTime();
+const isValidDuration = (duration) => {
+  const ms = parseISODuration(duration);
+  return !Number.isNaN(ms);
+};
+
+const toDate = (date) => {
+  if (date instanceof Date) return date;
+  if (typeof date === 'number') return new Date(date);
+  if (typeof date === 'string') return parseISO(date);
+  return new Date();
+};
+
+export const utcDate = (date) => (date != null ? toDate(date) : new Date());
+export const utcEpochTime = (date = null) => utcDate(date).getTime();
 export const isDateInRange = (startDate, duration, specificDate) => {
   if (!isValidDuration(duration)) {
     return true;
   }
-  const start = moment(startDate);
-  if (!start.isValid()) {
+  const start = toDate(startDate);
+  if (!fnsIsValid(start)) {
     return true;
   }
-  const durationObj = moment.duration(duration);
-  const end = moment(start).add(durationObj);
-  const specific = moment(specificDate);
-  return specific.isBetween(start, end, null, '[]');
+  const durationMs = parseISODuration(duration);
+  const end = new Date(start.getTime() + durationMs);
+  const specific = toDate(specificDate);
+  return specific >= start && specific <= end;
 };
 export const computeDateFromEventId = (eventId) => {
-  return utcDate(parseInt(eventId.split('-')[0], 10)).toISOString();
+  return new Date(parseInt(eventId.split('-')[0], 10)).toISOString();
 };
 export const streamEventId = (date = null, index = 0) => `${utcEpochTime(date)}-${index}`;
-export const now = () => utcDate().toISOString();
+export const now = () => new Date().toISOString();
 export const nowTime = () => timeFormat(now());
 export const sinceNowInMinutes = (lastModified) => {
-  const diff = utcDate().diff(utcDate(lastModified));
-  const duration = moment.duration(diff);
-  return Math.floor(duration.asMinutes());
+  return Math.floor(differenceInMinutes(new Date(), toDate(lastModified)));
 };
 export const sinceNowInDays = (lastModified) => {
   return sinceNowInMinutes(lastModified) / 1440;
 };
-export const prepareDate = (date) => utcDate(date).format(dateFormat);
-export const yearFormat = (date) => utcDate(date).format('YYYY');
-export const monthFormat = (date) => utcDate(date).format('YYYY-MM');
-export const dayFormat = (date) => utcDate(date).format('YYYY-MM-DD');
-export const timeFormat = (date) => utcDate(date).format('YYYY-MM-DD HH:mm');
+export const prepareDate = (date) => fnsFormat(utcDate(date), dateFormatPattern);
+export const yearFormat = (date) => fnsFormat(utcDate(date), 'yyyy');
+export const monthFormat = (date) => fnsFormat(utcDate(date), 'yyyy-MM');
+export const dayFormat = (date) => fnsFormat(utcDate(date), 'yyyy-MM-dd');
+export const timeFormat = (date) => fnsFormat(utcDate(date), 'yyyy-MM-dd HH:mm');
 
 export const escape = (chars) => {
   const toEscape = chars && typeof chars === 'string';
@@ -118,21 +147,22 @@ export const escape = (chars) => {
   return chars;
 };
 
-export const buildPeriodFromDates = (a, b) => moment.range(a, b);
+export const buildPeriodFromDates = (a, b) => ({ start: toDate(a), end: toDate(b) });
 
 export const computeRangeIntersection = (a, b) => {
-  const range = a.intersect(b);
-  if (range) {
-    return { start: range.start.toISOString(), end: range.end.toISOString() };
+  const intStart = fnsMax([a.start, b.start]);
+  const intEnd = fnsMin([a.end, b.end]);
+  if (isBefore(intStart, intEnd) || intStart.getTime() === intEnd.getTime()) {
+    return { start: intStart.toISOString(), end: intEnd.toISOString() };
   }
   // No range intersection, get min/max to build the range
-  const minStart = moment.min([a.start, b.start]);
-  const maxStop = moment.max([b.end, b.end]);
+  const minStart = fnsMin([a.start, b.start]);
+  const maxStop = fnsMax([a.end, b.end]);
   return { start: minStart.toISOString(), end: maxStop.toISOString() };
 };
 
-export const minutesAgo = (minutes) => moment().utc().subtract(minutes, 'minutes');
-export const hoursAgo = (hours) => moment().utc().subtract(hours, 'hours');
+export const minutesAgo = (minutes) => subMinutes(new Date(), minutes);
+export const hoursAgo = (hours) => subHours(new Date(), hours);
 
 /**
  * @param {number} days Number of days
@@ -147,7 +177,7 @@ export const daysAgo = (days) => {
 export const dayStartDate = (date = null, fromStart = true) => {
   let start = new Date();
   if (date) {
-    start = utcDate(date).toDate();
+    start = utcDate(date);
   }
   if (fromStart) {
     start.setHours(0, 0, 0, 0);
@@ -155,9 +185,9 @@ export const dayStartDate = (date = null, fromStart = true) => {
   return start;
 };
 
-export const monthsAgo = (number) => moment(dayStartDate()).subtract(number, 'months').format();
+export const monthsAgo = (number) => subMonths(dayStartDate(), number).toISOString();
 
-export const yearsAgo = (number) => moment(dayStartDate()).subtract(number, 'years').format();
+export const yearsAgo = (number) => subYears(dayStartDate(), number).toISOString();
 
 const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
 export const hashValue = (stixCyberObservable) => {
@@ -172,8 +202,7 @@ export const hashValue = (stixCyberObservable) => {
   return null;
 };
 
-// Moment.js parsing is only compatible with ISO-8601 and RFC-2822 date formats
-// see https://momentjs.com/docs/#/parsing/string/
+// Date parsing is only compatible with ISO-8601 and RFC-2822 date formats.
 // We handle cases that might happen in the platform (data ingestion for instance)
 export const sanitizeForMomentParsing = (date) => date
   .replace('CET', '+0100') // reported in RSS feeds

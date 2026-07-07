@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { now } from 'moment';
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
@@ -197,7 +196,7 @@ export const findPirContainers = async (
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   await checkEnterpriseEdition(context);
   // -- create Pir --
-  const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
+  const rescanStartDate = Date.now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
   const authorized_members = input.authorized_members ?? [
     {
       id: user.id,

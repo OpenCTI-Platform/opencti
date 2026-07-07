@@ -1,4 +1,3 @@
-import moment from 'moment';
 import * as R from 'ramda';
 import { logApp } from '../config/conf';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
@@ -34,7 +33,7 @@ export const workToExportFile = (work) => {
     id: work.internal_id,
     name: work.name || 'Unknown',
     size: 0,
-    lastModified: moment(work.updated_at).toDate(),
+    lastModified: new Date(work.updated_at),
     lastModifiedSinceMin,
     uploadStatus: (isWorkActive || work.status === 'complete') ? work.status : 'timeout',
     metaData: {

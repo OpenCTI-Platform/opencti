@@ -35,7 +35,7 @@ export const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: 
     updated_at: csvNow.toISOString(),
     connector_info: {
       last_run_datetime: csvNow.toISOString(),
-      next_run_datetime: csvNow.add(INGESTION_MANAGER_SCHEDULE_TIME, 'milliseconds').toISOString(),
+      next_run_datetime: new Date(csvNow.getTime() + INGESTION_MANAGER_SCHEDULE_TIME).toISOString(),
       run_and_terminate: false,
       buffering: opts.buffering ?? false,
       queue_threshold: 0,

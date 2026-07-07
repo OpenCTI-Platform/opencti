@@ -1,6 +1,5 @@
 import React, { FunctionComponent, ReactNode, useContext } from 'react';
 import { IntlProvider } from 'react-intl';
-import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -83,7 +82,6 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
   const baseMessages = i18n.messages[locale] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
   const translation = JSON.parse(settings.platform_translations ?? '{}');
   const messages = { ...baseMessages, ...(translation[locale] ?? {}) };
-  moment.locale(locale);
   useDocumentLangModifier(locale.split('-')[0]);
   return (
     <IntlProvider

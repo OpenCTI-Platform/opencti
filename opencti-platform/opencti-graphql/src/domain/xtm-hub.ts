@@ -168,7 +168,7 @@ const checkHubIfBackendIsReachable = async (context: AuthContext, user: AuthUser
 
 const handleLostConnectivityEmail = async (context: AuthContext, settings: BasicStoreSettings, isConnectivityActive: boolean): Promise<AttributeUpdate[]> => {
   const lastCheckDate = utcDate(settings.xtm_hub_last_connectivity_check);
-  const are24HoursPassed = utcDate().diff(lastCheckDate, 'hours') >= 24;
+  const are24HoursPassed = (Date.now() - lastCheckDate.getTime()) >= 24 * 3600000;
   const isEmailEnabled = booleanConf('xtm:xtmhub_connectivity_email_enabled', true);
   const shouldSendLostConnectivityEmail = !isConnectivityActive
     && are24HoursPassed

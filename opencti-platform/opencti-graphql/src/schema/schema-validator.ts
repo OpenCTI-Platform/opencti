@@ -72,7 +72,7 @@ export const validateAndFormatSchemaAttribute = (
   if (attributeDefinition.type === 'date') {
     // Test date value (Accept only ISO date string)
     editInput.value.forEach((value) => {
-      if (value && !R.is(String, value) && !utcDate(value).isValid()) {
+      if (value && !R.is(String, value) && Number.isNaN(utcDate(value).getTime())) {
         throw ValidationError('Attribute must be a boolean/string', attributeName, extendedErrors({ input: editInput }));
       }
     });

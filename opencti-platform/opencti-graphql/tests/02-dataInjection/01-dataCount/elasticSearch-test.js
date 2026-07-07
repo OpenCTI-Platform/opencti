@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as R from 'ramda';
-import moment from 'moment';
+
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -231,8 +231,9 @@ describe('Elasticsearch computation', () => {
     );
     expect(data.length).toEqual(1);
     // noinspection JSUnresolvedVariable
-    const storedFormat = moment(R.head(data).date)._f;
-    expect(storedFormat).toEqual('YYYY-MM-DD');
+    const dateStr = R.head(data).date;
+    expect(dateStr).toMatch(/^\d{4}-\d{2}-\d{2}/);
+
     expect(R.head(data).value).toEqual(34 + TESTING_ORGS.length);
   });
   it('should month histogram accurate', async () => {

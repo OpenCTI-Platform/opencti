@@ -108,8 +108,8 @@ export const ObservedDataCreationForm: FunctionComponent<
   ) => {
     const input: ObservedDataCreationMutation$variables['input'] = {
       objects: values.objects.map((v) => v.value),
-      first_observed: values.first_observed ? parse(values.first_observed).format() : null,
-      last_observed: values.last_observed ? parse(values.last_observed).format() : null,
+      first_observed: values.first_observed ? parse(values.first_observed).toISOString() : null,
+      last_observed: values.last_observed ? parse(values.last_observed).toISOString() : null,
       number_observed: parseInt(String(values.number_observed), 10),
       confidence: parseInt(String(values.confidence), 10),
       createdBy: values.createdBy?.value,

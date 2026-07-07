@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import moment, { type DurationInputArg2 } from 'moment/moment';
+import { format as fnsFormat, addYears, addMonths, addWeeks, addDays, addHours, startOfHour, differenceInYears, differenceInMonths, differenceInWeeks, differenceInDays, differenceInHours } from 'date-fns';
 import type { estypes } from '@elastic/elasticsearch';
 import { DatabaseError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
@@ -176,45 +176,66 @@ const getMonday = (d: Date): Date => {
 };
 
 export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
-  let startDateParsed = moment.parseZone(startDate);
-  let endDateParsed = moment.parseZone(endDate ?? now());
-  let dateFormat;
+  let startParsed = new Date(startDate);
+  let endParsed = endDate ? new Date(endDate) : new Date(now());
+  let dateFormatStr: string;
   switch (interval) {
     case 'year':
-      dateFormat = 'YYYY';
+      dateFormatStr = 'yyyy';
       break;
     case 'quarter':
     case 'month':
-      dateFormat = 'YYYY-MM';
+      dateFormatStr = 'yyyy-MM';
       break;
     /* v8 ignore next */
     case 'week':
-      dateFormat = 'YYYY-MM-DD';
-      startDateParsed = moment.parseZone(getMonday(new Date(startDateParsed.format(dateFormat))).toISOString());
-      endDateParsed = moment.parseZone(getMonday(new Date(endDateParsed.format(dateFormat))).toISOString());
+      dateFormatStr = 'yyyy-MM-dd';
+      startParsed = getMonday(new Date(startParsed));
+      endParsed = getMonday(new Date(endParsed));
       break;
     case 'hour':
-      dateFormat = 'YYYY-MM-DD HH:mm:ss';
-      startDateParsed = startDateParsed.startOf('hour');
+      dateFormatStr = 'yyyy-MM-dd HH:mm:ss';
+      startParsed = startOfHour(startParsed);
       break;
     default:
-      dateFormat = 'YYYY-MM-DD';
+      dateFormatStr = 'yyyy-MM-dd';
   }
-  const startFormatDate = new Date(endDateParsed.format(dateFormat));
-  const endFormatDate = new Date(startDateParsed.format(dateFormat));
-  const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
-  const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), duration);
+
+  const addInterval = (date: Date, count: number): Date => {
+    switch (interval) {
+      case 'year': return addYears(date, count);
+      case 'quarter': return addMonths(date, count * 3);
+      case 'month': return addMonths(date, count);
+      case 'week': return addWeeks(date, count);
+      case 'hour': return addHours(date, count);
+      default: return addDays(date, count);
+    }
+  };
+
+  const diffInterval = (a: Date, b: Date): number => {
+    switch (interval) {
+      case 'year': return differenceInYears(a, b);
+      case 'quarter': return Math.floor(differenceInMonths(a, b) / 3);
+      case 'month': return differenceInMonths(a, b);
+      case 'week': return differenceInWeeks(a, b);
+      case 'hour': return differenceInHours(a, b);
+      default: return differenceInDays(a, b);
+    }
+  };
+
+  const elementsOfInterval = diffInterval(endParsed, startParsed);
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
-    const workDate = moment(startDateParsed).add(i, duration);
+    const workDate = addInterval(startParsed, i);
+    const workDateFormatted = fnsFormat(workDate, dateFormatStr);
     // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {
-      if (data[j].date === workDate.format(dateFormat)) {
+      if (data[j].date === workDateFormatted) {
         dataValue = data[j].value;
       }
     }
-    const intervalDate = moment(workDate).startOf(interval as moment.unitOfTime.StartOf).utc().toISOString();
+    const intervalDate = workDate.toISOString();
     newData[i] = {
       date: intervalDate,
       value: dataValue,

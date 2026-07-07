@@ -64,12 +64,13 @@ describe('Time utils', () => {
   });
 
   describe('parse', () => {
-    it('should return a Moment object from a date input', () => {
+    it('should return a Date object from a date input', () => {
       const result = parse('2024-01-15T10:00:00.000Z');
-      expect(result.isValid()).toBe(true);
-      expect(result.year()).toBe(2024);
-      expect(result.month()).toBe(0); // January = 0
-      expect(result.date()).toBe(15);
+      expect(result instanceof Date).toBe(true);
+      expect(isNaN(result.getTime())).toBe(false);
+      expect(result.getUTCFullYear()).toBe(2024);
+      expect(result.getUTCMonth()).toBe(0); // January = 0
+      expect(result.getUTCDate()).toBe(15);
     });
   });
 
@@ -117,7 +118,7 @@ describe('Time utils', () => {
   describe('dateFormat', () => {
     it('should format a date with default or specific format', () => {
       expect(dateFormat('2024-06-15T10:00:00.000Z')).toBe('2024-06-15');
-      expect(dateFormat('2024-06-15T10:00:00.000Z', 'YYYY')).toBe('2024');
+      expect(dateFormat('2024-06-15T10:00:00.000Z', 'yyyy')).toBe('2024');
       expect(dateFormat(null)).toBeNull();
     });
   });

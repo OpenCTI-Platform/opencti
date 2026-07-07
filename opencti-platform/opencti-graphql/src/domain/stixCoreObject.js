@@ -1085,7 +1085,7 @@ export const aiActivity = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-activity`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt) > minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT)) {
     await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: identifier, content: aiResponseCache[identifier].result }, user);
     return aiResponseCache[identifier];
   }
@@ -1126,7 +1126,7 @@ export const aiForecast = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-forecast`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt) > minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT)) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -1157,7 +1157,7 @@ export const aiHistory = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt) > minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT)) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity

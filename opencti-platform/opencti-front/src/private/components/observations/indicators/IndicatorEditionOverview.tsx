@@ -172,11 +172,11 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
       valid_from: values.valid_from
-        ? parse(values.valid_from).format()
+        ? parse(values.valid_from).toISOString()
         : null,
 
       valid_until: values.valid_until
-        ? parse(values.valid_until).format()
+        ? parse(values.valid_until).toISOString()
         : null,
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 

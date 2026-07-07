@@ -34,7 +34,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
   };
 
   const handleChangeDate = (type: 'startDate' | 'endDate', value: Date | null) => {
-    const formattedDate = value ? parse(value).format() : null;
+    const formattedDate = value ? parse(value).toISOString() : null;
     handleDateChange(type, formattedDate);
   };
 

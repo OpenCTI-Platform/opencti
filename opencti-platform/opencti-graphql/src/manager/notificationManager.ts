@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import type { Moment } from 'moment';
 import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/stream-utils';
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
@@ -11,7 +10,6 @@ import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStreamUpdateEvent, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
-import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 import type { StixCoreObject, StixId, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
 import {
@@ -219,30 +217,33 @@ export const getLiveNotifications = async (context: AuthContext): Promise<Array<
   return liveNotifications.filter(isLiveKnowledge);
 };
 
-export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean => {
-  const now = baseDate.clone().startOf('minutes'); // 2022-11-25T19:11:00.000Z
+export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Date): boolean => {
+  const nowDate = new Date(baseDate);
+  nowDate.setSeconds(0, 0); // startOf('minutes')
   const { trigger } = digest;
   const triggerTime = trigger.trigger_time;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const formatTime = (d: Date) => `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}.${String(d.getUTCMilliseconds()).padStart(3, '0')}`;
   switch (trigger.period) {
     case 'hour': {
       // Need to check if time is aligned on the perfect hour
-      const nowHourAlign = now.clone().startOf('hours');
-      return now.isSame(nowHourAlign);
+      return nowDate.getUTCMinutes() === 0;
     }
     case 'day': {
       // Need to check if time is aligned on the day hour (like 19:11:00.000Z)
-      const dayTime = `${now.clone().format('HH:mm:ss.SSS')}Z`;
+      const dayTime = `${formatTime(nowDate)}Z`;
       return triggerTime === dayTime;
     }
     case 'week': {
       // Need to check if time is aligned on the week hour (like 1-19:11:00.000Z)
       // 1 being Monday and 7 being Sunday.
-      const weekTime = `${now.clone().isoWeekday()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+      const isoWeekday = nowDate.getUTCDay() === 0 ? 7 : nowDate.getUTCDay();
+      const weekTime = `${isoWeekday}-${formatTime(nowDate)}Z`;
       return triggerTime === weekTime;
     }
     case 'month': {
       // Need to check if time is aligned on the month hour (like 22-19:11:00.000Z)
-      const monthTime = `${now.clone().date()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+      const monthTime = `${nowDate.getUTCDate()}-${formatTime(nowDate)}Z`;
       return triggerTime === monthTime;
     }
     default:
@@ -250,7 +251,7 @@ export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean
   }
 };
 
-export const getDigestNotifications = async (context: AuthContext, baseDate: Moment): Promise<Array<ResolvedDigest>> => {
+export const getDigestNotifications = async (context: AuthContext, baseDate: Date): Promise<Array<ResolvedDigest>> => {
   const notifications = await getNotifications(context);
   return notifications.filter(isDigest).filter((digest) => isTimeTrigger(digest, baseDate));
 };
@@ -664,16 +665,19 @@ export const collectDigestContent = async (
 };
 
 export const handleDigestNotifications = async (context: AuthContext) => {
-  const baseDate = utcDate().startOf('minutes');
+  const now = new Date();
+  now.setSeconds(0, 0); // startOf('minutes')
+  const baseDate = now;
   // Get digest that need to be executed
   const digestNotifications = await getDigestNotifications(context, baseDate);
   // Iter on each digest and generate the output
   for (let index = 0; index < digestNotifications.length; index += 1) {
     const { trigger, users } = digestNotifications[index];
     const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
-    const fromDate = baseDate.clone().subtract(1, period).toDate();
+    const periodMs: Record<string, number> = { hour: 3600000, day: 86400000, week: 604800000, month: 2592000000 };
+    const fromDate = new Date(baseDate.getTime() - (periodMs[period] ?? 86400000));
     // Read the range in batches and only keep the events related to this digest (bounded by MAX_DIGEST_CONTENT_SIZE)
-    const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate.toDate(), triggerIds);
+    const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate, triggerIds);
     if (truncated) {
       logApp.warn('[OPENCTI-MODULE] Digest content truncated, memory budget reached', { notification_id, period, kept: digestContent.length, byteSize, maxByteSize: MAX_DIGEST_CONTENT_SIZE });
     }

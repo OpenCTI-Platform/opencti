@@ -1,4 +1,4 @@
-import moment, { type Moment } from 'moment/moment';
+import { addMilliseconds } from 'date-fns';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { DecayRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
@@ -221,10 +221,10 @@ export const computeTimeFromExpectedScore = (initialScore: number, score: number
 export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartInput): DecayHistoryChart[] => {
   if (computeChartInput) {
     const decayData: DecayHistoryChart[] = [];
-    const startDateInMs = moment(computeChartInput.decayBaseScoreDate).valueOf();
+    const startDateInMs = new Date(computeChartInput.decayBaseScoreDate).getTime();
     computeChartInput.scoreList.forEach((scoreValue) => {
       const timeForScore = dayToMs(computeTimeFromExpectedScore(computeChartInput.decayBaseScore, scoreValue, computeChartInput.decayRule));
-      const point: DecayHistoryChart = { updated_at: moment(startDateInMs + timeForScore).toDate(), score: scoreValue };
+      const point: DecayHistoryChart = { updated_at: new Date(startDateInMs + timeForScore), score: scoreValue };
       decayData.push(point);
     });
 
@@ -435,13 +435,13 @@ export const computeScoreFromExpectedTime = (initialScore: number, daysFromStart
   return initialScore * (1 - ((daysFromStart / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
 };
 
-export const computeDecayPointReactionDate = (initialScore: number, model: DecayModel, startDate: Moment, decayPoint: number) => {
+export const computeDecayPointReactionDate = (initialScore: number, model: DecayModel, startDate: Date, decayPoint: number) => {
   const daysDelay = computeTimeFromExpectedScore(initialScore, decayPoint, model);
-  const duration = moment.duration(daysDelay, 'days');
-  return moment(startDate).add(duration.asMilliseconds(), 'ms').toDate();
+  const ms = daysDelay * 86400000; // days to milliseconds
+  return addMilliseconds(new Date(startDate), ms);
 };
 
-export const computeNextScoreReactionDate = (initialScore: number, stableScore: number, model: DecayModel, startDate: Moment) => {
+export const computeNextScoreReactionDate = (initialScore: number, stableScore: number, model: DecayModel, startDate: Date) => {
   if (model.decay_points && model.decay_points.length > 0) {
     const nextKeyPoint = model.decay_points.find((p) => p < stableScore) || model.decay_revoke_score;
     return computeDecayPointReactionDate(initialScore, model, startDate, nextKeyPoint);
