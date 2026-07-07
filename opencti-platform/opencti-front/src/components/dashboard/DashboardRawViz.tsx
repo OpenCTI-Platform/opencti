@@ -1,10 +1,10 @@
 import { memo, ReactNode } from 'react';
 import WidgetText from './WidgetText';
-import type { Widget, WidgetHost } from '../../utils/widget/widget';
+import type { Widget, WidgetHost } from 'src/utils/widget/widget';
 import StixCoreObjectsCustomAttributes from '@components/common/stix_core_objects/StixCoreObjectsCustomAttributes';
 import type { DashboardConfig } from './dashboard-types';
-import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import useHelper from '../../utils/hooks/useHelper';
+import { computeStartEndDates } from 'src/components/dashboard/dashboard-viz-utils';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -21,14 +21,7 @@ const DashboardRawViz = ({
 }: DashboardRawVizProps) => {
   const { isFeatureEnable } = useHelper();
   const isCustomAttributesWidgetEnable = isFeatureEnable('CUSTOM_ATTRIBUTES_WIDGET');
-
-  const startDate = config?.relativeDate
-    ? computeRelativeDate(config.relativeDate)
-    : config?.startDate;
-
-  const endDate = config?.relativeDate
-    ? formatDate(dayStartDate(null, false))
-    : config?.endDate;
+  const { startDate, endDate } = computeStartEndDates(config);
 
   switch (widget.type) {
     case 'text':

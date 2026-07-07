@@ -4692,6 +4692,7 @@
   "Unit System": "Система единиц",
   "Unknown": "Неизвестный",
   "Unknown configuration error in the platform.": "Неизвестная ошибка конфигурации платформы.",
+  "Unknown date": "Дата неизвестна",
   "Unknown entities": "Неизвестные сущности",
   "Unknown provider type": "Неизвестный тип провайдера",
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "Если вы не запретите назначение групп по умолчанию, пользователь будет создан с указанными группами и группами по умолчанию.",
