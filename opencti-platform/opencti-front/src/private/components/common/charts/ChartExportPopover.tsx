@@ -52,6 +52,7 @@ const ChartExportPopover = ({
           event.preventDefault();
           setAnchorEl(event.currentTarget);
         }}
+        aria-label={t_i18n('Open download menu')}
         aria-haspopup="true"
         size="small"
         className="noDrag"

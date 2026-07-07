@@ -95,7 +95,11 @@ const ImportActionsPopover = ({
           <ProgressUpload fontSize="small" />
         </IconButton>
       </Tooltip>
-      <IconButton onClick={handleOpen} color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        color="primary"
+      >
         <MoreVert fontSize="small" />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

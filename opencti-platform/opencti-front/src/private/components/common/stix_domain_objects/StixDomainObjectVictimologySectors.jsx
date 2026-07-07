@@ -394,6 +394,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                   disablePadding
                   secondaryAction={(
                     <IconButton
+                      aria-label={this.state.expandedLines[sector.id] ? t('Collapse') : t('Expand')}
                       onClick={this.handleToggleLine.bind(this, sector.id)}
                       aria-haspopup="true"
                     >
@@ -500,6 +501,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                             disablePadding
                             secondaryAction={(
                               <IconButton
+                                aria-label={this.state.expandedLines[subsector.id] ? t('Collapse') : t('Expand')}
                                 onClick={this.handleToggleLine.bind(
                                   this,
                                   subsector.id,

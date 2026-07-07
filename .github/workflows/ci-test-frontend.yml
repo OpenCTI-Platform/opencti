@@ -28,13 +28,9 @@ jobs:
           --name frontend-tests \
           -v ${{ github.workspace }}:/home/workspace \
           node:22-alpine \
-          sh -c 'set -ex
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-            apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
-            npm install -g node-gyp
+          sh -c 'set -eux
             npm install -g corepack
             cd /home/workspace/opencti-platform/opencti-front
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn build
             yarn check-ts
@@ -101,6 +97,7 @@ jobs:
           -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
           -e APP__SESSION_TIMEOUT=3600000 \
           -e APP__HEALTH_ACCESS_KEY=cihealthkey \
+          -e APP__GRAPHQL__ARMOR_PROTECTION__DISABLED=false \
           -e REDIS__HOSTNAME=redis \
           -e REDIS__NAMESPACE=e2e-start \
           -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
@@ -117,14 +114,12 @@ jobs:
           sh -c 'set -eux
             APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
             export APP__ENTERPRISE_EDITION_LICENSE
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-            apk add build-base git libffi-dev cargo
+            apk add build-base git
             cd /home/workspace/client-python
             pip install -r requirements.txt
             pip install -e .[dev,doc]
             cd /home/workspace/opencti-platform/opencti-graphql
             npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn install:python
             yarn build:dev
@@ -139,15 +134,15 @@ jobs:
           -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e WORKER_LOG_LEVEL=info \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -x
-            apk add build-base git libffi-dev cargo
+          sh -c 'set -eux
+            apk add build-base git
             cd /home/workspace/client-python
             echo "[INFO] using client-python on branch $(git branch --show-current)"
             pip install -r requirements.txt
             pip install -e .[dev,doc]
             while ! nc -z opencti-e2e-start 4100 ; do sleep 1 ; done
             cd /home/workspace/opencti-worker
-            pip install -r src/requirements.txt
+            pip install -r requirements.txt
             python3 src/worker.py
         '
 
@@ -161,17 +156,13 @@ jobs:
           -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
           -e BACK_END_URL=http://opencti-e2e-start:4100 \
           -e E2E_TEST=true \
-          -e TEAMS_WEBHOOK="teams-webhook-url" \
           -e NODE_OPTIONS=--max_old_space_size=8192 \
           node:22.21.0 \
-          sh -c 'set -ex;
-              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+          sh -c 'set -eux;
               apt-get update
               apt-get -y install netcat-traditional
               cd /home/workspace/opencti-platform/opencti-front
               npm install -g corepack
-              corepack enable
-              cp /home/workspace/opencti-platform/.yarnrc.yml .
               yarn install
               yarn playwright install --with-deps chromium
               yarn build
@@ -232,7 +223,7 @@ jobs:
           --name frontend-verify-translation \
           -v ${{ github.workspace }}:/home/workspace \
           node:22-alpine \
-          sh -c 'set -ex
+          sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-front
             node script/verify-translation.js
             '

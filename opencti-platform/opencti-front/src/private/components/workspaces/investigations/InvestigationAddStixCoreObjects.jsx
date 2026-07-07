@@ -148,7 +148,6 @@ const InvestigationAddStixCoreObjects = (props) => {
         <Tooltip title={t_i18n('Add an entity to this investigation')}>
           <IconButton
             color="primary"
-            aria-label="Add"
             onClick={() => setOpen(true)}
           >
             <Add />

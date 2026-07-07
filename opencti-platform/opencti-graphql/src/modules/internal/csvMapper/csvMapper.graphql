@@ -64,6 +64,7 @@ type CsvMapperAddInputFromImport {
 type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
+  representative: Representative!
   standard_id: String! @auth
   parent_types: [String!]! @auth
   metrics:[Metric] @auth

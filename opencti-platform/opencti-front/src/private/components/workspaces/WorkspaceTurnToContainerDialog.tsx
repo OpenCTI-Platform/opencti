@@ -223,6 +223,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
         disableClearable
       />
       <IconButton
+        aria-label={t_i18n('Add')}
         onClick={() => setContainerCreation(true)}
         style={{ position: 'absolute', top: 68, right: 48 }}
       >

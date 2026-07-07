@@ -224,8 +224,8 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
-export const customViewsWidgetVisualizationTypes = (isCustomAttributesEnabled: boolean) => [
-  ...(isCustomAttributesEnabled ? [customAttributesVisualizationType] : []),
+export const customViewsWidgetVisualizationTypes = [
+  customAttributesVisualizationType,
   ...workspacesWidgetVisualizationTypes,
 ];
 

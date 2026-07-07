@@ -36,6 +36,7 @@ import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
 import ProfileOverviewNewsFeed from './ProfileOverviewNewsFeed';
+import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 
 const styles = () => ({
   container: {
@@ -600,6 +601,7 @@ const ProfileOverviewComponent = (props) => {
           </Stack>
         </div>
       </Card>
+      <ProfileOverviewXtmOneMcp />
       <ProfileLocalStorage />
     </Stack>
   );

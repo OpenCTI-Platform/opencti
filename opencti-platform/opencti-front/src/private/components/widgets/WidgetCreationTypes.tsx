@@ -13,25 +13,22 @@ import {
 } from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
-import useHelper from '../../../utils/hooks/useHelper';
 
-export const getVisualizationTypes = (host: WidgetHost, isCustomAttributesEnabled: boolean) => {
+export const getVisualizationTypes = (host: WidgetHost) => {
   return host.kind === 'workspace'
     ? workspacesWidgetVisualizationTypes
     : host.kind === 'fintelTemplate'
       ? fintelTemplatesWidgetVisualizationTypes
       : host.kind === 'custom-view'
-        ? customViewsWidgetVisualizationTypes(isCustomAttributesEnabled)
+        ? customViewsWidgetVisualizationTypes
         : [];
 };
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
   const { host, setStep, setConfigWidget, config } = useWidgetConfigContext();
-  const { isFeatureEnable } = useHelper();
-  const isCustomAttributesWidgetEnable = isFeatureEnable('CUSTOM_ATTRIBUTES_WIDGET');
 
-  const visualizationTypes = getVisualizationTypes(host, isCustomAttributesWidgetEnable);
+  const visualizationTypes = getVisualizationTypes(host);
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });

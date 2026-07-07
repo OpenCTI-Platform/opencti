@@ -142,7 +142,7 @@ const RichTextField = ({
             />
           )}
           {hasFullScreen && (
-            <IconButton size="small" onClick={() => setFullScreen(true)}>
+            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)}>
               <FullscreenOutlined fontSize="small" />
             </IconButton>
           )}

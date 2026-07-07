@@ -361,7 +361,12 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                   )}
                   {/* Column 5: Delete Button */}
                   <Grid item xs={0.5}>
-                    <IconButton edge="end" onClick={() => removeFile(file.name)} color="primary">
+                    <IconButton
+                      aria-label={t_i18n('Remove file')}
+                      edge="end"
+                      onClick={() => removeFile(file.name)}
+                      color="primary"
+                    >
                       <DeleteOutlined />
                     </IconButton>
                   </Grid>

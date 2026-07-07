@@ -37,6 +37,9 @@ const GET_SAVED_FILTERS_QUERY = gql`
             entity_type
             access_right
           }
+          representative {
+            main
+          }
         }
       }
     }
@@ -163,8 +166,9 @@ describe('Saved Filter Resolver', () => {
       expect(savedFilters).toBeDefined();
       expect(savedFilters.length).toEqual(1);
       const myFilter = savedFilters[0].node;
-      expect(myFilter.name).toEqual('my new filter');
       expect(myFilter.creator_id).toEqual(ADMIN_USER.id);
+      expect(myFilter.name).toEqual('my new filter');
+      expect(myFilter.representative.main).toEqual('my new filter');
       expect(myFilter.currentUserAccessRight).toEqual('admin');
       expect(myFilter.authorizedMembers.length).toEqual(1);
       expect(myFilter.authorizedMembers[0].name).toEqual(ADMIN_USER.name);

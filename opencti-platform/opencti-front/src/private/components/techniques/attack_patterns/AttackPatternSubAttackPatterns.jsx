@@ -76,7 +76,6 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
               secondaryAction={(
                 <Tooltip title={t_i18n('Delete relationship')}>
                   <IconButton
-                    aria-label="Remove"
                     onClick={() => removeSubAttackPattern(
                       subAttackPattern,
                     )}

@@ -87,6 +87,7 @@ const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabC
                 </Typography>
                 {containerLink && (
                   <IconButton
+                    aria-label={t_i18n('Open link in new tab')}
                     component={Link}
                     to={containerLink}
                     target="_blank"
