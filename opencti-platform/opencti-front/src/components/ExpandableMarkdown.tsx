@@ -24,7 +24,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
         <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton aria-label={expand ? t_i18n('collapse') : t_i18n('expand')} onClick={onClick}>
+          <IconButton aria-label={expand ? t_i18n('Collapse') : t_i18n('Expand')} onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>

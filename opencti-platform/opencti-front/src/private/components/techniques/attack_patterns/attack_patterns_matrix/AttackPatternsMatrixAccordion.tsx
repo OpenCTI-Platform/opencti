@@ -133,7 +133,7 @@ const AccordionAttackPattern = ({
         onClick={(e) => handleOpen(attackPattern, e)}
         expandIcon={(
           <IconButton
-            aria-label={expanded ? t_i18n('collapse') : t_i18n('expand')}
+            aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
             onClick={(event) => {
               event.stopPropagation();
               setExpanded(!expanded);
