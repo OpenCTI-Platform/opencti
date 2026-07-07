@@ -15235,6 +15235,7 @@ type SmtpConfiguration {
   oauth_user: String
   oauth_client_id: String
   oauth_issuer: String
+  oauth_refresh_token_expires_at: DateTime
 }
 
 enum SmtpAuthType {
@@ -15259,6 +15260,7 @@ input SmtpConfigurationAddInput {
   oauth_issuer: String
   oauth_access_token: String
   oauth_refresh_token: String
+  oauth_refresh_token_expires_at: DateTime
 }
 
 input SmtpConfigurationEditInput {
@@ -15278,6 +15280,7 @@ input SmtpConfigurationEditInput {
   oauth_issuer: String
   oauth_access_token: String
   oauth_refresh_token: String
+  oauth_refresh_token_expires_at: DateTime
 }
 
 enum DraftStatus {

@@ -28,6 +28,7 @@ const RootUser = lazy(() => import('../users/Root'));
 const DisseminationLists = lazy(() => import('../dissemination_lists/DisseminationLists'));
 const EmailTemplates = lazy(() => import('../email_template/EmailTemplates'));
 const EmailTemplate = lazy(() => import('../email_template/EmailTemplate'));
+const SmtpConfiguration = lazy(() => import('../smtp_configuration/SmtpConfiguration'));
 
 const AccessesRedirect = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -236,6 +237,17 @@ const RootAccesses = () => {
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SSODefinitions />
+              </Security>
+            )}
+          />
+          <Route
+            path="/smtp"
+            element={(
+              <Security
+                needs={[SETTINGS_SETACCESSES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
+                <SmtpConfiguration />
               </Security>
             )}
           />

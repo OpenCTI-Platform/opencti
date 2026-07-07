@@ -685,6 +685,7 @@
   "OAuth issuer": "Émetteur OAuth",
   "OAuth refresh token": "Jeton de rafraîchissement OAuth",
   "OAuth refresh token (encrypted)": "Jeton de rafraîchissement OAuth (chiffré)",
+  "OAuth refresh token expiration date": "Date d'expiration du jeton de rafraîchissement OAuth",
   "OAuth user": "Utilisateur OAuth",
   "Object markings": "Marques d'objets",
   "Objective": "Objectif",

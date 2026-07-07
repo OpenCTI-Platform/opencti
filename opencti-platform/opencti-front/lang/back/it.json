@@ -685,6 +685,7 @@
   "OAuth issuer": "Emittente OAuth",
   "OAuth refresh token": "Token di aggiornamento OAuth",
   "OAuth refresh token (encrypted)": "Token di aggiornamento OAuth (crittografato)",
+  "OAuth refresh token expiration date": "Data di scadenza del token di aggiornamento OAuth",
   "OAuth user": "Utente OAuth",
   "Object markings": "Marcature dell'oggetto",
   "Objective": "Obiettivo",

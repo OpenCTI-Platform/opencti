@@ -4,6 +4,7 @@ import {
   AlternateEmailOutlined,
   CenterFocusStrongOutlined,
   EmailOutlined,
+  ForwardToInboxOutlined,
   KeyOutlined,
   LocalPoliceOutlined,
   PermIdentityOutlined,
@@ -70,6 +71,13 @@ const AccessesMenu: FunctionComponent = () => {
       isEE: true,
     },
   ];
+  const smtpEntries: MenuEntry[] = [
+    {
+      path: '/dashboard/settings/accesses/smtp',
+      label: 'SMTP configuration',
+      icon: <ForwardToInboxOutlined fontSize="medium" />,
+    },
+  ];
   const authenticationEntries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/authentications',
@@ -97,6 +105,9 @@ const AccessesMenu: FunctionComponent = () => {
   }
   if (setAccess) {
     menuEntries.push(...emailTemplateEntries);
+  }
+  if (setAccess) {
+    menuEntries.push(...smtpEntries);
   }
   if (!setAccess && isOrgaAdmin) {
     menuEntries.push(
