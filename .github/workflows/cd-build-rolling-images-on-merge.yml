@@ -1,4 +1,4 @@
-name: OpenCTI CD Build Rolling artifacts (master)
+name: OpenCTI CD
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-platform-standard:
-    name: Build platform (standard)
+    name: Build rolling platform (standard)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -18,7 +18,7 @@ jobs:
           client_python_local: true
 
   build-worker-standard:
-    name: Build worker (standard)
+    name: Build rolling worker (standard)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -28,7 +28,7 @@ jobs:
           client_python_local: true
 
   build-platform-ubi9:
-    name: Build platform (UBI9)
+    name: Build rolling platform (UBI9)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -39,7 +39,7 @@ jobs:
           docker_image_suffix: "_ubi9"
 
   build-worker-ubi9:
-    name: Build worker (UBI9)
+    name: Build rolling worker (UBI9)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -50,7 +50,7 @@ jobs:
           docker_image_suffix: "_ubi9"
 
   build-platform-fips:
-    name: Build platform (FIPS)
+    name: Build rolling platform (FIPS)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -61,7 +61,7 @@ jobs:
           docker_image_suffix: "_fips"
 
   generate-sbom-platform-standard:
-    name: Generate SBOM (platform standard)
+    name: Generate rolling SBOM (platform standard)
     runs-on: ubuntu-latest
     needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
     steps:
@@ -74,7 +74,7 @@ jobs:
           artifact_name: "docker-image-opencti-platform"
 
   generate-sbom-platform-ubi9:
-    name: Generate SBOM (platform UBI9)
+    name: Generate rolling SBOM (platform UBI9)
     runs-on: ubuntu-latest
     needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
     steps:
@@ -87,7 +87,7 @@ jobs:
           artifact_name: "docker-image-opencti-platform-ubi9"
 
   generate-sbom-platform-fips:
-    name: Generate SBOM (platform FIPS)
+    name: Generate rolling SBOM (platform FIPS)
     runs-on: ubuntu-latest
     needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
     steps:
@@ -100,7 +100,7 @@ jobs:
           artifact_name: "docker-image-opencti-platform-fips"
 
   generate-sbom-worker-standard:
-    name: Generate SBOM (worker standard)
+    name: Generate rolling SBOM (worker standard)
     runs-on: ubuntu-latest
     needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
     steps:
@@ -113,7 +113,7 @@ jobs:
           artifact_name: "docker-image-opencti-worker"
 
   generate-sbom-worker-ubi9:
-    name: Generate SBOM (worker UBI9)
+    name: Generate rolling SBOM (worker UBI9)
     runs-on: ubuntu-latest
     needs: [build-platform-standard, build-worker-standard, build-platform-ubi9, build-worker-ubi9, build-platform-fips]
     steps:
@@ -126,7 +126,7 @@ jobs:
           artifact_name: "docker-image-opencti-worker-ubi9"
 
   upload-artifacts:
-    name: Upload all artifacts
+    name: Upload all rolling artifacts
     runs-on: ubuntu-latest
     needs: [generate-sbom-platform-standard, generate-sbom-platform-ubi9, generate-sbom-platform-fips, generate-sbom-worker-standard, generate-sbom-worker-ubi9]
     steps:
@@ -135,7 +135,7 @@ jobs:
         with:
           path: artifacts/
 
-      - name: Upload consolidated artifacts
+      - name: Upload consolidated rolling artifacts
         uses: actions/upload-artifact@v4
         with:
           name: opencti-release-${{ github.sha }}
