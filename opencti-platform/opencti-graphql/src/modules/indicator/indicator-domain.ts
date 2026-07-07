@@ -52,7 +52,7 @@ import {
   checkDecayRules,
 } from '../decayRule/decayRule-domain';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
-import { checkScore, prepareDate, utcDate } from '../../utils/format';
+import { checkScore, prepareDate, UNTIL_END_STR, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
@@ -309,7 +309,9 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   if (isDecayActivated && exclusionRule) {
     finalIndicatorToCreate = {
-      ...indicatorToCreate,
+      valid_until: UNTIL_END_STR,
+      ...resolvedIndicator,
+      valid_from: validFrom.toISOString(),
       decay_exclusion_applied_rule: {
         decay_exclusion_id: exclusionRule.id,
         decay_exclusion_name: exclusionRule.name,
