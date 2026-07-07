@@ -69,6 +69,10 @@ if (shouldWatch) {
                 const duration = Date.now() - startTime;
                 if (result.errors.length > 0) {
                     console.error(`❌ Build failed with ${result.errors.length} error(s)`);
+                    // Notify the parent so it can cancel any pending restart
+                    if (process.send && buildCount > 1) {
+                        process.send({ type: 'rebuild-failed' });
+                    }
                 } else {
                     if (buildCount === 1) {
                         console.log('✅ Initial build complete');

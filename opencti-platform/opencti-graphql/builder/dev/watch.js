@@ -12,6 +12,7 @@ let shuttingDown = false;
 let appProcess = null;
 let esbuildProcess = null;
 let graphQLWatchProcess = null;
+let pendingRestart = false;
 
 function pipeFormattedOutput(stream, outputStream) {
   if (!stream) {
@@ -61,8 +62,7 @@ function startApp() {
   appProcess.on('exit', (code) => {
     appProcess = null;
     if (!shuttingDown && code !== 0 && code !== null) {
-      console.error(`[WATCH] backend process exited with code ${code}`);
-      shutdown(1);
+      console.error(`[WATCH] backend process exited with code ${code}, waiting for next successful build...`);
     }
   });
 
@@ -72,14 +72,16 @@ function startApp() {
   });
 }
 
-function startAppWatch() {
-  startApp();
-}
-
 function restartApp() {
   console.log('[WATCH] Restarting backend...');
   if (appProcess) {
-    appProcess.once('exit', () => startApp());
+    pendingRestart = true;
+    appProcess.once('exit', () => {
+      if (pendingRestart) {
+        pendingRestart = false;
+        startApp();
+      }
+    });
     appProcess.kill('SIGTERM');
   } else {
     startApp();
@@ -133,10 +135,13 @@ function startEsbuildWatch() {
     if (msg.type === 'initial-build-complete' && !initialBuildDone) {
       console.log('[WATCH] Received initial-build-complete IPC, starting app...');
       initialBuildDone = true;
-      startAppWatch();
+      startApp();
       startGraphQLSchemaWatch();
     } else if (msg.type === 'rebuild-complete') {
       restartApp();
+    } else if (msg.type === 'rebuild-failed' && pendingRestart) {
+      pendingRestart = false;
+      console.log('[WATCH] Build failed while restarting backend, waiting for next successful build...');
     }
   });
 

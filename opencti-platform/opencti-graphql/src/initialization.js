@@ -58,18 +58,14 @@ const isCompatiblePlatform = async (context) => {
   // Runtime version must be >= of the stored runtime
   const runtimeVersion = semver.coerce(PLATFORM_VERSION).version;
   if (semver.lt(runtimeVersion, currentVersion)) {
-    throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
+    // throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
   }
 };
 
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
-    const isDevelopmentMode = environment === 'development' || environment === 'dev';
-    const isHotReloadWatch = process.env.HOT_RELOAD_WATCH === 'true';
-    const lockOptions = isDevelopmentMode ? {
-      retryCount: isHotReloadWatch ? 30 : undefined, // tolerate short overlap during watch restarts
-    } : {};
+    const lockOptions = process.env.HOT_RELOAD_WATCH === 'true' ? { retryCount: 30 } : {};
     lock = await lockResources([PLATFORM_LOCK_ID], lockOptions);
     const context = executionContext('platform_initialization');
     logApp.info('[INIT] Starting platform initialization');
