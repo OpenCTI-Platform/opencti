@@ -180,6 +180,6 @@ jobs:
       - name: Upload consolidated artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: opencti-release-${{ github.sha }}
+          name: opencti-rolling-${{ github.sha }}
           path: artifacts/
           retention-days: 7
