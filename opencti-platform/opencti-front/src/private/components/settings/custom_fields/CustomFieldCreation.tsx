@@ -9,16 +9,12 @@ import MenuItem from '@mui/material/MenuItem';
 import MuiAutocomplete from '@mui/material/Autocomplete';
 import MuiTextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import * as Yup from 'yup';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
-import SwitchField from '../../../../components/fields/SwitchField';
-import DatePicker from '../../../../components/common/input/DatePicker';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { CustomFieldDefinitionAddInput } from './__generated__/CustomFieldCreationMutation.graphql';
@@ -56,7 +52,6 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       .matches(/^[a-z][a-z0-9_]*$/, t_i18n('Only lowercase letters, numbers and underscores, starting with a letter')),
     label: Yup.string().required(t_i18n('This field is required')),
     field_type: Yup.string().required(t_i18n('This field is required')),
-    mandatory: Yup.boolean(),
     description: Yup.string().nullable(),
     min_value: Yup.number().nullable(),
     max_value: Yup.number().nullable()
@@ -67,21 +62,16 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       is: 'select',
       then: (schema) => schema.min(1, t_i18n('At least one option is required')),
     }),
-    default_value: Yup.string().nullable(),
-    useFirstOptionAsDefault: Yup.boolean(),
   });
 
   const initialValues = {
     nameSuffix: '',
     label: '',
     field_type: '',
-    mandatory: false,
     description: '',
     min_value: null as number | null,
     max_value: null as number | null,
     select_options: [] as string[],
-    default_value: '',
-    useFirstOptionAsDefault: false,
   };
 
   const onSubmit = (
@@ -96,14 +86,10 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       name: `${CUSTOM_FIELD_NAME_PREFIX}${values.nameSuffix}`,
       label: values.label,
       field_type: values.field_type,
-      mandatory: values.mandatory,
       description: values.description || undefined,
       min_value: values.field_type === 'integer' && values.min_value !== null && String(values.min_value) !== '' ? Number(values.min_value) : undefined,
       max_value: values.field_type === 'integer' && values.max_value !== null && String(values.max_value) !== '' ? Number(values.max_value) : undefined,
       select_options: values.field_type === 'select' ? values.select_options : undefined,
-      default_value: values.field_type === 'select'
-        ? (values.useFirstOptionAsDefault ? values.select_options[0] : undefined)
-        : (values.default_value || undefined),
     };
     commitMutation({
       ...defaultCommitMutation,
@@ -202,15 +188,6 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        type="number"
-                        name="default_value"
-                        label={t_i18n('Default value')}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                      />
                     </>
                   )}
                   {values.field_type === 'select' && (
@@ -236,58 +213,8 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                           />
                         )}
                       />
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="useFirstOptionAsDefault"
-                        label={t_i18n('Use the first option as the default value')}
-                        containerstyle={{ marginTop: 20 }}
-                      />
                     </>
                   )}
-                  {values.field_type === 'boolean' && (
-                    <FormControlLabel
-                      style={{ marginTop: 20, display: 'flex' }}
-                      control={(
-                        <Switch
-                          checked={values.default_value === 'true'}
-                          onChange={(_, checked) => setFieldValue('default_value', checked ? 'true' : 'false')}
-                        />
-                      )}
-                      label={t_i18n('Default value')}
-                    />
-                  )}
-                  {values.field_type === 'date' && (
-                    <DatePicker
-                      value={values.default_value ? new Date(values.default_value) : null}
-                      onChange={(date) => setFieldValue('default_value', date ? date.toISOString() : '')}
-                      label={t_i18n('Default value')}
-                      slotProps={{
-                        textField: {
-                          variant: 'standard',
-                          fullWidth: true,
-                          style: { marginTop: 20 },
-                        },
-                      }}
-                    />
-                  )}
-                  {values.field_type === 'string' && (
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="default_value"
-                      label={t_i18n('Default value')}
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                    />
-                  )}
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="mandatory"
-                    label={t_i18n('Mandatory')}
-                    containerstyle={{ marginTop: 20 }}
-                  />
                   <Field
                     component={TextField}
                     variant="standard"

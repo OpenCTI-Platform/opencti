@@ -3,6 +3,8 @@ import Dialog from '@common/dialog/Dialog';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import MuiTextField from '@mui/material/TextField';
 import { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -13,10 +15,15 @@ import { EntitySettingCustomFieldsQuery } from './__generated__/EntitySettingCus
 import { CustomFieldDefinitionNode, entitySettingCustomFieldsQuery, getCustomFieldTypeLabel } from './EntitySettingCustomFields';
 
 const entitySettingCustomFieldsAddDialogAddMutation = graphql`
-  mutation EntitySettingCustomFieldsAddDialogAddMutation($id: ID!, $entityType: String!) {
-    customFieldDefinitionAddEntityType(id: $id, entityType: $entityType) {
+  mutation EntitySettingCustomFieldsAddDialogAddMutation($id: ID!, $entityType: String!, $mandatory: Boolean!, $default_value: String) {
+    customFieldDefinitionAddEntityType(id: $id, entityType: $entityType, mandatory: $mandatory, default_value: $default_value) {
       id
       entity_types
+      entity_type_settings {
+        entity_type
+        mandatory
+        default_value
+      }
     }
   }
 `;
@@ -42,11 +49,13 @@ const EntitySettingCustomFieldsAddDialog: FunctionComponent<EntitySettingCustomF
   const candidates = allCustomFields.filter((cf) => !(cf.entity_types ?? []).includes(entityType));
 
   const [selected, setSelected] = useState<CustomFieldDefinitionNode[]>([]);
+  const [mandatory, setMandatory] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [commitAdd] = useApiMutation<EntitySettingCustomFieldsAddDialogAddMutation>(entitySettingCustomFieldsAddDialogAddMutation);
 
   const handleClose = () => {
     setSelected([]);
+    setMandatory(false);
     onClose();
   };
 
@@ -54,13 +63,14 @@ const EntitySettingCustomFieldsAddDialog: FunctionComponent<EntitySettingCustomF
     setSubmitting(true);
     Promise.all(selected.map((cf) => new Promise<void>((resolve, reject) => {
       commitAdd({
-        variables: { id: cf.id, entityType },
+        variables: { id: cf.id, entityType, mandatory },
         onCompleted: () => resolve(),
         onError: (error: Error) => reject(error),
       });
     }))).then(() => {
       setSubmitting(false);
       setSelected([]);
+      setMandatory(false);
       onAdded();
       onClose();
     }).catch(() => {
@@ -91,6 +101,16 @@ const EntitySettingCustomFieldsAddDialog: FunctionComponent<EntitySettingCustomF
             label={t_i18n('Custom fields')}
           />
         )}
+      />
+      <FormControlLabel
+        style={{ marginTop: 20, display: 'flex' }}
+        control={(
+          <Switch
+            checked={mandatory}
+            onChange={(_, checked) => setMandatory(checked)}
+          />
+        )}
+        label={t_i18n('Mandatory')}
       />
       <DialogActions>
         <Button variant="secondary" onClick={handleClose} disabled={submitting}>
