@@ -3,7 +3,6 @@ import WidgetText from './WidgetText';
 import type { Widget, WidgetHost } from 'src/utils/widget/widget';
 import StixCoreObjectsCustomAttributes from '@components/common/stix_core_objects/StixCoreObjectsCustomAttributes';
 import type { DashboardConfig } from './dashboard-types';
-import useHelper from '../../utils/hooks/useHelper';
 import { computeStartEndDates } from 'src/components/dashboard/dashboard-viz-utils';
 
 interface DashboardRawVizProps {
@@ -19,8 +18,6 @@ const DashboardRawViz = ({
   config,
   host,
 }: DashboardRawVizProps) => {
-  const { isFeatureEnable } = useHelper();
-  const isCustomAttributesWidgetEnable = isFeatureEnable('CUSTOM_ATTRIBUTES_WIDGET');
   const { startDate, endDate } = computeStartEndDates(config);
 
   switch (widget.type) {
@@ -32,23 +29,20 @@ const DashboardRawViz = ({
         />
       );
     case 'custom-attributes':
-      if (isCustomAttributesWidgetEnable) {
-        return (
-          <StixCoreObjectsCustomAttributes
-            variant={undefined}
-            height={undefined}
-            endDate={endDate ?? undefined}
-            startDate={startDate ?? undefined}
-            widgetId={widget.id}
-            dataSelection={widget.dataSelection}
-            parameters={widget.parameters as Record<string, unknown>}
-            title={undefined}
-            popover={popover}
-            host={host}
-          />
-        );
-      }
-      return null;
+      return (
+        <StixCoreObjectsCustomAttributes
+          variant={undefined}
+          height={undefined}
+          endDate={endDate ?? undefined}
+          startDate={startDate ?? undefined}
+          widgetId={widget.id}
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters as Record<string, unknown>}
+          title={undefined}
+          popover={popover}
+          host={host}
+        />
+      );
     default:
       return 'Not implemented yet';
   }
