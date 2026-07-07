@@ -102,6 +102,7 @@ const EntityRelationsTabComponent: FunctionComponent<EntityRelationsTabComponent
                 </Typography>
                 {relationLink && (
                   <IconButton
+                    aria-label={t_i18n('Open link in new tab')}
                     component={Link}
                     to={relationLink}
                     target="_blank"

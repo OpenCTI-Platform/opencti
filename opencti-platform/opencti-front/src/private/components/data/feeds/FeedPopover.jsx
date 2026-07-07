@@ -132,6 +132,7 @@ class FeedPopover extends Component {
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
+          aria-label={t('Open menu')}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
           color="primary"

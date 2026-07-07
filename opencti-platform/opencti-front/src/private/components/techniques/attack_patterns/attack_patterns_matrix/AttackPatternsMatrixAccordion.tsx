@@ -19,6 +19,7 @@ import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_p
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
+import { useFormatter } from '../../../../../components/i18n';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
@@ -42,6 +43,7 @@ const AccordionAttackPattern = ({
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const { t_i18n } = useFormatter();
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
@@ -130,10 +132,12 @@ const AccordionAttackPattern = ({
       <MuiAccordionSummary
         onClick={(e) => handleOpen(attackPattern, e)}
         expandIcon={(
-          <IconButton onClick={(event) => {
-            event.stopPropagation();
-            setExpanded(!expanded);
-          }}
+          <IconButton
+            aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
+            onClick={(event) => {
+              event.stopPropagation();
+              setExpanded(!expanded);
+            }}
           >
             <ArrowForwardIosSharpIcon sx={{
               fontSize: '0.9rem',
