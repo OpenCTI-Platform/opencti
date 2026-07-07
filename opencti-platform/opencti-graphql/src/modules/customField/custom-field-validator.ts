@@ -41,7 +41,7 @@ export const validateCustomFieldValues = async (
     }
   }
 
-  // Check mandatory fields are present (mandatory is resolved per entity type - US.2).
+  // Check mandatory fields are present.
   // Runs even when no values are provided, so an omitted mandatory field is rejected.
   const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
   for (const def of mandatoryDefs) {
