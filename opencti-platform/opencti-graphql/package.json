@@ -149,7 +149,7 @@
     "node-calls-python": "1.11.1",
     "node-fetch": "3.3.2",
     "node-forge": "1.4.0",
-    "nodemailer": "8.0.5",
+    "nodemailer": "9.0.1",
     "openai": "4.104.0",
     "openid-client": "6.8.2",
     "openid-clientv5": "npm:openid-client@5.7.1",
@@ -176,7 +176,7 @@
     "validator": "13.15.26",
     "winston": "3.19.0",
     "winston-daily-rotate-file": "5.0.0",
-    "ws": "8.20.1",
+    "ws": "8.21.0",
     "xml2js": "0.6.2",
     "zod": "3.25.76"
   },
