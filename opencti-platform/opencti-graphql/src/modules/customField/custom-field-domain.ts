@@ -7,16 +7,18 @@ import {
   type StoreEntityCustomFieldDefinition,
 } from './custom-field-types';
 import type { CustomFieldDefinitionAddInput, EditInput } from '../../generated/graphql';
-import { EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
+import { BackgroundTaskScope, EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
+import { createQueryTask } from '../../domain/backgroundTask';
+import { ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES } from '../../domain/backgroundTask-common';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { enforceEnableFeatureFlag, SYSTEM_USER } from '../../utils/access';
+import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
 import { CUSTOM_FIELDS_FEATURE_FLAG, logApp } from '../../config/conf';
 
 // ----- In-memory cache of all custom field definitions (loaded at boot) -----
@@ -181,6 +183,37 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
 };
 
+/**
+ * Cascade deletion: schedule a background task that removes all stored values of a
+ * deleted custom field definition from every entity referencing it. The task is
+ * processed asynchronously by the task manager (so it does not block the delete
+ * mutation) and is tracked, retried and monitorable like any other background task.
+ * Only entities actually holding a value for the field are targeted (nested filter).
+ */
+const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, entityTypes: string[]): Promise<void> => {
+  const systemContext = executionContext('custom_field_cascade_delete', SYSTEM_USER);
+  const taskFilters = {
+    mode: FilterMode.And,
+    filters: [
+      ...(entityTypes.length > 0
+        ? [{ key: ['entity_type'], values: entityTypes, operator: FilterOperator.Eq, mode: FilterMode.Or }]
+        : []),
+      { key: ['custom_field_values'], values: [], nested: [{ key: 'field_name', values: [fieldName], operator: FilterOperator.Eq }] },
+    ],
+    filterGroups: [],
+  };
+  const input = {
+    actions: [{ type: ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES, context: { values: [fieldName] } }],
+    filters: JSON.stringify(taskFilters),
+    scope: BackgroundTaskScope.Knowledge,
+    excluded_ids: [],
+    search: null,
+    orderMode: 'asc',
+    description: `Cascade delete of custom field '${fieldName}' values`,
+  };
+  await createQueryTask(systemContext, SYSTEM_USER, input);
+};
+
 export const customFieldDefinitionDelete = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   const element = await deleteElementById<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
@@ -193,9 +226,10 @@ export const customFieldDefinitionDelete = async (context: AuthContext, user: Au
     message: `deletes custom field definition \`${element.name}\``,
     context_data: { id: customFieldDefinitionId, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input: element },
   });
-  // TODO: Cascade deletion - clean custom_field_values from all affected entities (background task)
-  // Reload the cache after deletion
+  // Reload the cache first so the removed definition is no longer applied during cleanup
   await loadCustomFieldDefinitions(context);
+  // Cascade deletion: schedule a background task to clean stored values of this definition from all entities using it
+  await scheduleCustomFieldValuesCleanupTask(element.name, element.entity_types ?? []);
   return customFieldDefinitionId;
 };
 
