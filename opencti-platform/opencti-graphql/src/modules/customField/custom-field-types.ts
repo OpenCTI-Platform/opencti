@@ -8,7 +8,8 @@ export const ENTITY_TYPE_CUSTOM_FIELD_DEFINITION = 'CustomFieldDefinition';
 export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
 
 // Field types supported by custom fields
-export type CustomFieldType = 'integer' | 'string' | 'boolean' | 'date' | 'select';
+// `markdown` reuses the string value channel; `multi_select` reuses select_options but stores an array (select_values).
+export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'date' | 'select' | 'multi_select';
 
 export interface CustomFieldValue {
   field_id: string;
@@ -18,6 +19,7 @@ export interface CustomFieldValue {
   boolean_value?: boolean;
   date_value?: string;
   select_value?: string;
+  select_values?: string[];
 }
 
 // Per-entity-type settings of a custom field definition.

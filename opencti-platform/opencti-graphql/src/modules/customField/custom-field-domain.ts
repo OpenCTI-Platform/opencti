@@ -102,6 +102,7 @@ export const getCustomFieldValueField = (fieldType: CustomFieldType): string => 
     case 'integer':
       return 'int_value';
     case 'string':
+    case 'markdown':
       return 'string_value';
     case 'boolean':
       return 'boolean_value';
@@ -109,6 +110,8 @@ export const getCustomFieldValueField = (fieldType: CustomFieldType): string => 
       return 'date_value';
     case 'select':
       return 'select_value';
+    case 'multi_select':
+      return 'select_values';
     default:
       return 'string_value';
   }
@@ -168,7 +171,7 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
     throw ValidationError('A custom field with this label already exists', 'label', { label: input.label });
   }
   // Validate field_type is supported
-  const allowedTypes: CustomFieldType[] = ['integer', 'string', 'boolean', 'date', 'select'];
+  const allowedTypes: CustomFieldType[] = ['integer', 'string', 'markdown', 'boolean', 'date', 'select', 'multi_select'];
   if (!allowedTypes.includes(input.field_type as CustomFieldType)) {
     throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: allowedTypes });
   }
@@ -176,12 +179,14 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
   if (input.field_type === 'integer' && input.min_value != null && input.max_value != null && input.min_value > input.max_value) {
     throw FunctionalError('min_value cannot be greater than max_value', { min_value: input.min_value, max_value: input.max_value });
   }
-  // Validate select_options is required for select type
-  if (input.field_type === 'select' && (!input.select_options || input.select_options.length === 0)) {
+  // Validate select_options is required for select and multi_select types
+  if ((input.field_type === 'select' || input.field_type === 'multi_select') && (!input.select_options || input.select_options.length === 0)) {
     throw FunctionalError('select_options must be provided for select type fields');
   }
 
-  const created = await createEntity(context, user, { ...input, multiple: input.multiple ?? false }, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+  // multi_select is intrinsically multi-valued; force the multiple flag so the entity attribute is indexed as an array
+  const multiple = input.field_type === 'multi_select' ? true : (input.multiple ?? false);
+  const created = await createEntity(context, user, { ...input, multiple }, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -266,7 +271,7 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
   const optionsEdit = input.find((i) => i.key === 'select_options');
   if (optionsEdit) {
     const definition = await findById(context, user, customFieldDefinitionId);
-    if (definition && definition.field_type === 'select') {
+    if (definition && (definition.field_type === 'select' || definition.field_type === 'multi_select')) {
       const previousOptions = definition.select_options ?? [];
       const editValues = (Array.isArray(optionsEdit.value) ? optionsEdit.value : [optionsEdit.value]) as string[];
       const editOperation = optionsEdit.operation ?? EditOperation.Replace;
@@ -281,6 +286,7 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
       if (removedOptions.length > 0) {
         // Count entities holding a value for this field set to one of the removed options.
         // Runs as SYSTEM_USER to cover all entities regardless of the requester's visibility.
+        const valueKey = getCustomFieldValueField(definition.field_type);
         const usageFilters: FilterGroupWithNested = {
           mode: FilterMode.And,
           filters: [{
@@ -288,7 +294,7 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
             values: [],
             nested: [
               { key: 'field_name', values: [definition.name], operator: FilterOperator.Eq },
-              { key: 'select_value', values: removedOptions, operator: FilterOperator.Eq },
+              { key: valueKey, values: removedOptions, operator: FilterOperator.Eq },
             ],
           }],
           filterGroups: [],

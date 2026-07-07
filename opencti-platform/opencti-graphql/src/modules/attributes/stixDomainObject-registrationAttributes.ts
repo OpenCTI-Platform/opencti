@@ -375,6 +375,7 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, [
       { name: 'boolean_value', label: 'Boolean value', type: 'boolean', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
       { name: 'date_value', label: 'Date value', type: 'date', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
       { name: 'select_value', label: 'Select value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+      { name: 'select_values', label: 'Select values', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: true, isFilterable: false },
     ],
   },
 ]);

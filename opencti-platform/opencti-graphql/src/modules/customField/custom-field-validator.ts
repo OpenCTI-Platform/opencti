@@ -59,6 +59,7 @@ const validateSingleCustomFieldValue = (
       validateIntegerField(value, definition);
       break;
     case 'string':
+    case 'markdown':
       validateStringField(value, definition);
       break;
     case 'boolean':
@@ -69,6 +70,9 @@ const validateSingleCustomFieldValue = (
       break;
     case 'select':
       validateSelectField(value, definition);
+      break;
+    case 'multi_select':
+      validateMultiSelectField(value, definition);
       break;
     default:
       throw FunctionalError('Unknown custom field type', { field_type, field_name: value.field_name });
@@ -132,6 +136,26 @@ const validateSelectField = (value: CustomFieldValue, definition: BasicStoreEnti
     throw FunctionalError('select_value is not in the allowed options', {
       field_name: value.field_name,
       value: value.select_value,
+      allowed: definition.select_options,
+    });
+  }
+};
+
+const validateMultiSelectField = (value: CustomFieldValue, definition: BasicStoreEntityCustomFieldDefinition): void => {
+  if (value.select_values === undefined || value.select_values === null) {
+    throw FunctionalError('select_values is required for multi_select type custom field', { field_name: value.field_name });
+  }
+  if (!Array.isArray(value.select_values)) {
+    throw FunctionalError('select_values must be an array', { field_name: value.field_name });
+  }
+  if (!definition.select_options || definition.select_options.length === 0) {
+    throw FunctionalError('No select_options configured for this custom field', { field_name: value.field_name });
+  }
+  const invalidValues = value.select_values.filter((v) => !definition.select_options?.includes(v));
+  if (invalidValues.length > 0) {
+    throw FunctionalError('select_values contains values that are not in the allowed options', {
+      field_name: value.field_name,
+      value: invalidValues,
       allowed: definition.select_options,
     });
   }

@@ -47,6 +47,7 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
       boolean_value: v.boolean_value ?? undefined,
       date_value: v.date_value ?? undefined,
       select_value: v.select_value ?? undefined,
+      select_values: v.select_values ?? undefined,
     }));
     validateCustomFieldValues(customFieldValues, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     (caseToCreate as any).custom_field_values = customFieldValues;
