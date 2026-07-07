@@ -50,7 +50,7 @@ runs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Upload opencti docker image artifact
+    - name: Upload platform docker image artifact
       uses: actions/upload-artifact@v7
       with:
         name: docker-image-opencti-platform${{ inputs.docker_image_suffix }}

@@ -51,7 +51,7 @@ runs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Upload artifact
+    - name: Upload worker docker image artifact
       uses: actions/upload-artifact@v7
       with:
         name: docker-image-opencti-worker${{ inputs.docker_image_suffix }}
