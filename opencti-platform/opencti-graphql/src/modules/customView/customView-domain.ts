@@ -21,7 +21,6 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
 } from '../../schema/stixDomainObject';
-import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -48,7 +47,6 @@ const ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS = [
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
-  ENTITY_TYPE_SECURITY_COVERAGE,
 ];
 
 /**
@@ -363,7 +361,7 @@ export async function duplicateCustomView(
     );
   }
   return duplicate;
-};
+}
 
 export const deleteCustomView = async (
   context: AuthContext,

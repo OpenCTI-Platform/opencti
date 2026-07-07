@@ -360,6 +360,9 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'latitude', label: 'Latitude' },
     { attribute: 'longitude', label: 'Longitude' },
   ],
+  'Security-Coverage': [
+    { attribute: 'objectCovered', label: 'Covered entity', attributeType: 'entity_ref' },
+  ],
 };
 
 const customAttributesExtraColumns: WidgetColumn[] = [

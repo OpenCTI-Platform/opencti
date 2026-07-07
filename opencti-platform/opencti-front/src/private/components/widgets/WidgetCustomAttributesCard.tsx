@@ -23,6 +23,8 @@ import { entityTypeRenderers } from 'src/utils/widget/widgetCustomAttributesRend
 import ListItemText from '@mui/material/ListItemText';
 import { openVocabListRenderers, openVocabSingleRenderers } from 'src/utils/widget/widgetOpenVocabRendererUtils';
 import { EMPTY_VALUE } from 'src/utils/String';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ItemIcon from 'src/components/ItemIcon';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -118,6 +120,21 @@ const renderByAttributeType = (
         <FieldOrEmpty source={list}>
           <TextList list={list} />
         </FieldOrEmpty>
+      );
+    }
+
+    case 'entity_ref': {
+      const value = getField<{ id: string; entity_type: string; representative?: { main?: string } }>(data, attribute);
+      if (!value?.representative?.main) return empty();
+      return (
+        <List sx={{ py: 0 }}>
+          <ListItem dense divider>
+            <ListItemIcon>
+              <ItemIcon type={value.entity_type} />
+            </ListItemIcon>
+            <ListItemText primary={value.representative.main} />
+          </ListItem>
+        </List>
       );
     }
 

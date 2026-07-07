@@ -498,6 +498,21 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         mime_type
         payload_bin
       }
+      ... on SecurityCoverage {
+        name
+        description
+        created_at
+        updated_at
+        revoked
+        x_opencti_reliability
+        objectCovered {
+          id
+          entity_type
+          representative {
+            main
+          }
+        }
+      }
       createdBy {
         ... on Identity {
           id
