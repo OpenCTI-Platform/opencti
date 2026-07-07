@@ -320,7 +320,8 @@ class Opinion:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Opinions with filters", {"filters": json.dumps(filters)}
+            "Listing Opinions with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

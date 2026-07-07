@@ -561,7 +561,8 @@ class Note:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Notes with filters", {"filters": json.dumps(filters)}
+            "Listing Notes with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

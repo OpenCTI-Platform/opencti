@@ -296,7 +296,8 @@ class Narrative:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Narratives with filters", {"filters": json.dumps(filters)}
+            "Listing Narratives with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

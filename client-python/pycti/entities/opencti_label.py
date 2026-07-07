@@ -80,7 +80,8 @@ class Label:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Labels with filters", {"filters": json.dumps(filters)}
+            "Listing Labels with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

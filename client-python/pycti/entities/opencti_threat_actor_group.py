@@ -221,7 +221,8 @@ class ThreatActorGroup:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Threat-Actors-Group with filters", {"filters": json.dumps(filters)}
+            "Listing Threat-Actors-Group with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

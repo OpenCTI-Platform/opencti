@@ -547,7 +547,8 @@ class CaseIncident:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Case Incidents with filters", {"filters": json.dumps(filters)}
+            "Listing Case Incidents with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

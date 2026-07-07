@@ -150,7 +150,8 @@ class ExternalReference:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing External-Reference with filters", {"filters": json.dumps(filters)}
+            "Listing External-Reference with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

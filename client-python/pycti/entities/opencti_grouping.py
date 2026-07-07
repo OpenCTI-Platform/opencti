@@ -509,7 +509,8 @@ class Grouping:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Groupings with filters", {"filters": json.dumps(filters)}
+            "Listing Groupings with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

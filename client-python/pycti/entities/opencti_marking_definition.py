@@ -108,7 +108,8 @@ class MarkingDefinition:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Marking-Definitions with filters", {"filters": json.dumps(filters)}
+            "Listing Marking-Definitions with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

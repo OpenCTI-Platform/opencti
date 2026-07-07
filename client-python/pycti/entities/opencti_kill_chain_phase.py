@@ -90,7 +90,8 @@ class KillChainPhase:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Kill-Chain-Phase with filters", {"filters": json.dumps(filters)}
+            "Listing Kill-Chain-Phase with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

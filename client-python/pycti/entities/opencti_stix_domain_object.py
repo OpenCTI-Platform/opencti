@@ -1151,7 +1151,8 @@ class StixDomainObject:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Stix-Domain-Objects with filters", {"filters": json.dumps(filters)}
+            "Listing Stix-Domain-Objects with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

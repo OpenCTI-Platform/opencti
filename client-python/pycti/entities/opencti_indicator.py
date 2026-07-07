@@ -97,7 +97,8 @@ class Indicator:
         to_stix = kwargs.get("toStix", False)
 
         self.opencti.app_logger.info(
-            "Listing Indicators with filters", {"filters": json.dumps(filters)}
+            "Listing Indicators with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

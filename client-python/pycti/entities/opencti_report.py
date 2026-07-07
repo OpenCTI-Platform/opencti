@@ -572,7 +572,7 @@ class Report:
 
         self.opencti.app_logger.info(
             "Listing Reports with filters",
-            {"filters": json.dumps(filters), "with_files": with_files},
+            lambda: {"filters": json.dumps(filters), "with_files": with_files},
         )
         query = (
             """

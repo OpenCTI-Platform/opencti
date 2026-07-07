@@ -331,7 +331,8 @@ class Infrastructure:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Infrastructures with filters", {"filters": json.dumps(filters)}
+            "Listing Infrastructures with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

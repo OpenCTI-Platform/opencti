@@ -224,7 +224,7 @@ class ThreatActorIndividual:
 
         self.opencti.app_logger.info(
             "Listing Threat-Actors-Individual with filters",
-            {"filters": json.dumps(filters)},
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

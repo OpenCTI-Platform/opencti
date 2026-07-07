@@ -338,7 +338,8 @@ class Location:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Locations with filters", {"filters": json.dumps(filters)}
+            "Listing Locations with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

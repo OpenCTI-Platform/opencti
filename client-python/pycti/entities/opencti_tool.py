@@ -224,7 +224,8 @@ class Tool:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Tools with filters", {"filters": json.dumps(filters)}
+            "Listing Tools with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

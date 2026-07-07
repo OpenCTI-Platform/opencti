@@ -522,7 +522,8 @@ class ObservedData:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing ObservedDatas with filters", {"filters": json.dumps(filters)}
+            "Listing ObservedDatas with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

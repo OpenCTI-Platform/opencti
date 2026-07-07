@@ -99,9 +99,13 @@ def logger(level, json_logging=True):
 
             :param message: Message to log
             :type message: str
-            :param meta: Optional metadata to include
-            :type meta: dict or None
+            :param meta: Optional metadata to include, or a callable that builds it
+            :type meta: dict, callable, or None
             """
+            if callable(meta):
+                if not self.local_logger.isEnabledFor(logging.INFO):
+                    return
+                meta = meta()
             self.local_logger.info(message, extra=AppLogger.prepare_meta(meta))
 
         def warning(self, message, meta=None):

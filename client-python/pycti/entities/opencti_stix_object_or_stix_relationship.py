@@ -827,7 +827,7 @@ class StixObjectOrStixRelationship:
 
         self.opencti.app_logger.info(
             "Listing StixObjectOrStixRelationships with filters",
-            {"filters": json.dumps(filters)},
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

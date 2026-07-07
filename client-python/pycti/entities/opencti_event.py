@@ -312,7 +312,8 @@ class Event:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Events with filters", {"filters": json.dumps(filters)}
+            "Listing Events with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

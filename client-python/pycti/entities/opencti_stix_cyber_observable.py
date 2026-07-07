@@ -78,7 +78,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
 
         self.opencti.app_logger.info(
             "Listing StixCyberObservables with filters",
-            {"filters": json.dumps(filters)},
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

@@ -329,7 +329,8 @@ class Language:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Languages with filters", {"filters": json.dumps(filters)}
+            "Listing Languages with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

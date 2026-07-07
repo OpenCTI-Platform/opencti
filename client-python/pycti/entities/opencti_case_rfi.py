@@ -557,7 +557,8 @@ class CaseRfi:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Case Rfis with filters", {"filters": json.dumps(filters)}
+            "Listing Case Rfis with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

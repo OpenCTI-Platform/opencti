@@ -342,7 +342,8 @@ class AttackPattern:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Attack-Patterns with filters", {"filters": json.dumps(filters)}
+            "Listing Attack-Patterns with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

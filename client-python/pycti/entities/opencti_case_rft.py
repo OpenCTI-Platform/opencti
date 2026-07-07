@@ -556,7 +556,8 @@ class CaseRft:
         with_pagination = kwargs.get("withPagination", False)
         with_files = kwargs.get("withFiles", False)
         self.opencti.app_logger.info(
-            "Listing Case Rfts with filters", {"filters": json.dumps(filters)}
+            "Listing Case Rfts with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

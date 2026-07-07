@@ -1475,7 +1475,8 @@ class StixCoreObject:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Stix-Core-Objects with filters", {"filters": json.dumps(filters)}
+            "Listing Stix-Core-Objects with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
