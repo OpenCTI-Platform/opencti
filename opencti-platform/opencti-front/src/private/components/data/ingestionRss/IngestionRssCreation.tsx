@@ -18,7 +18,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
 import { IngestionRssImportQuery$data } from '@components/data/__generated__/IngestionRssImportQuery.graphql';
-import { PaginationOptions } from '../../../../components/list_lines';
+import { IngestionRssLinesDataTableQuery$variables } from '@components/data/__generated__/IngestionRssLinesDataTableQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SwitchField from '../../../../components/fields/SwitchField';
 
@@ -64,13 +64,13 @@ interface IngestionRssAddInput {
 const IngestionRssCreationMutation = graphql`
   mutation IngestionRssCreationMutation($input: IngestionRssAddInput!) {
     ingestionRssAdd(input: $input) {
-      ...IngestionRssLine_node
+      ...IngestionRssLine_ingestionRss
     }
   }
 `;
 
 interface IngestionRssCreationProps {
-  paginationOptions?: PaginationOptions;
+  paginationOptions?: IngestionRssLinesDataTableQuery$variables;
   handleClose?: () => void;
   ingestionRssData?: IngestionRssImportQuery$data['ingestionRssAddInputFromImport'];
   triggerButton?: boolean;
