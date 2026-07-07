@@ -3,16 +3,16 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useWidgetConfigContext } from './WidgetConfigContext';
-import { useFormatter } from 'src/components/i18n';
+import { useFormatter } from '../../../components/i18n';
 import {
   fintelTemplatesWidgetVisualizationTypes,
   renderWidgetIcon,
   workspacesWidgetVisualizationTypes,
   WidgetVisualizationTypes,
   customViewsWidgetVisualizationTypes,
-} from 'src/utils/widget/widgetUtils';
+} from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
-import type { WidgetHost } from 'src/utils/widget/widget';
+import type { WidgetHost } from '../../../utils/widget/widget';
 
 export const getVisualizationTypes = (host: WidgetHost) => {
   return host.kind === 'workspace'
