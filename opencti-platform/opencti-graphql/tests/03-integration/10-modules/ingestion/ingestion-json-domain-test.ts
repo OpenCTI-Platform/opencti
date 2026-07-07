@@ -1,9 +1,13 @@
+import { Readable } from 'node:stream';
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { addIngestionJson, deleteIngestionJson, ingestionJsonEditField, testJsonIngestionMapping } from '../../../../src/modules/ingestion/ingestion-json-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionJsonAddInput } from '../../../../src/generated/graphql';
 import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
 import type { BasicStoreEntityIngestionJson } from '../../../../src/modules/ingestion/ingestion-types';
+import { createJsonMapper, deleteJsonMapper, jsonMapperTest } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
+import type { FileUploadData } from '../../../../src/database/file-storage';
+import { regexpTestData, representationsFormulaMatrix, representationsRegExpr, stixBundleDataFormulaMatrix } from './ingestionManager-testData/ingestion-json-data';
 
 describe('Ingestion Json domain - Deny list coverage', async () => {
   let myJsonFeed: BasicStoreEntityIngestionJson;
@@ -48,5 +52,108 @@ describe('Ingestion Json domain - Deny list coverage', async () => {
     };
     await expect(testJsonIngestionMapping(testContext, ADMIN_USER, testInput))
       .rejects.toThrow('This URI is not allowed for ingestion.');
+  });
+});
+
+describe('Ingestion Json domain - complex path coverage', async () => {
+  let mapperId: string;
+
+  afterAll(async () => {
+    if (mapperId) {
+      await deleteJsonMapper(testContext, ADMIN_USER, mapperId);
+    }
+  });
+
+  it('should be able to create a JSON mapper using formula', async () => {
+    const input = {
+      name: 'STIX Bundle Formula Mapper',
+      representations: JSON.stringify(representationsFormulaMatrix),
+    };
+
+    const mapper = await createJsonMapper(testContext, ADMIN_USER, input);
+    expect(mapper).toBeDefined();
+    expect(mapper.id).toBeDefined();
+    expect(mapper.name).toBe('STIX Bundle Formula Mapper');
+    mapperId = mapper.id;
+  });
+
+  it('should parse STIX bundle data using jsonMapperTest with formulas', async () => {
+    const configuration = JSON.stringify({
+      name: 'STIX Bundle Formula Mapper',
+      representations: representationsFormulaMatrix,
+    });
+
+    const fileUpload: Promise<FileUploadData> = Promise.resolve({
+      createReadStream: () => Readable.from(Buffer.from(stixBundleDataFormulaMatrix)),
+      filename: 'stix-bundle.json',
+      mimeType: 'application/json',
+    });
+
+    const result = await jsonMapperTest(testContext, ADMIN_USER, configuration, fileUpload);
+
+    expect(result).toBeDefined();
+    expect(result.nbEntities).toBeGreaterThan(0);
+    // 1 organization + 3 tools = 4 entities
+    expect(result.nbEntities).toBe(4);
+    expect(result.nbRelationships).toBe(0);
+
+    const parsedObjects = JSON.parse(result.objects);
+
+    // Verify formula-generated description on organization
+    const orgObject = parsedObjects.find((o: any) => o.name === 'AlienVault');
+    expect(orgObject).toBeDefined();
+    expect(orgObject.description).toBe('Organization: AlienVault (reliability: C - Fairly reliable)');
+    // Verify tools are parsed
+    const tools = parsedObjects.filter((o: any) => o.type === 'tool');
+    const toolNames = tools.map((o: any) => o.name);
+    expect(toolNames).toContain('7-Zip');
+    expect(toolNames).toContain('3proxy');
+    expect(toolNames).toContain('16Shop');
+    expect(tools.find((o: any) => o.name === '7-Zip')?.confidence).toBe(100);
+    expect(tools.find((o: any) => o.name === '3proxy')?.confidence).toBe(75);
+    expect(tools.find((o: any) => o.name === '16Shop')?.confidence).toBe(56);
+  });
+
+  it('should parse data using jsonMapperTest with extractWithRegexp formula', async () => {
+    const configuration = JSON.stringify({
+      name: 'Regexp Formula Mapper',
+      representations: representationsRegExpr,
+    });
+
+    const fileUpload: Promise<FileUploadData> = Promise.resolve({
+      createReadStream: () => Readable.from(Buffer.from(regexpTestData)),
+      filename: 'regexp-test.json',
+      mimeType: 'application/json',
+    });
+
+    const result = await jsonMapperTest(testContext, ADMIN_USER, configuration, fileUpload);
+
+    expect(result).toBeDefined();
+    expect(result.nbEntities).toBe(4);
+    expect(result.nbRelationships).toBe(0);
+
+    const parsedObjects = JSON.parse(result.objects);
+    // Verify extractWithRegexp extracted the name before " - TXXX"
+    // "CobaltStrike - T1059" -> group 1 = "CobaltStrike"
+    const cobalt = parsedObjects.find((o: any) => o.name === 'CobaltStrike');
+    expect(cobalt).toBeDefined();
+
+    // "Mimikatz - S0002" -> group 1 = "Mimikatz"
+    const mimi = parsedObjects.find((o: any) => o.name === 'Mimikatz');
+    expect(mimi).toBeDefined();
+
+    // "Sliver" has no " - XXXX" suffix, so extractWithRegexp returns original value
+    const sliver = parsedObjects.find((o: any) => o.name === 'Sliver');
+    expect(sliver).toBeDefined();
+
+    // Verify extractWithRegexp extracted reference IDs from descriptions
+    // "Reference: REF-2024-CS-001" -> group 1 = "REF-2024-CS-001"
+    expect(cobalt.description).toBe('REF-2024-CS-001');
+
+    // "Reference: REF-2023-MK-042" -> group 1 = "REF-2023-MK-042"
+    expect(mimi.description).toBe('REF-2023-MK-042');
+
+    // "No reference available." -> no match, returns original description
+    expect(sliver.description).toBe('Open-source adversary emulation framework. No reference available.');
   });
 });

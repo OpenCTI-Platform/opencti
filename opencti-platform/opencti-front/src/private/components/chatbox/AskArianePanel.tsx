@@ -7,7 +7,7 @@ import { LogoXtmOneIcon } from 'filigran-icon';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
-import { APP_BASE_PATH } from '../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import FiligranIcon from '@components/common/FiligranIcon';
@@ -158,6 +158,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       requestHeaders={requestHeaders}
       pageContext={pageContext}
       onRelativeLinkClick={handleRelativeLinkClick}
+      onTaskComplete={(_title, body) => MESSAGING$.notifySuccess(body)}
     />,
     container,
   );

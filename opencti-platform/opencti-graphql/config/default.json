@@ -55,7 +55,7 @@
         "max_depth": 20,
         "max_directives": 20,
         "max_tokens": 100000,
-        "cost_limit": 3000000,
+        "cost_limit": 50000000,
         "block_field_suggestion": true
       },
       "batching_protection": {
@@ -155,6 +155,7 @@
   "no_proxy": "",
   "https_proxy_ca": [],
   "https_proxy_reject_unauthorized": false,
+  "trust_proxy_addresses": [],
   "relations_deduplication": {
     "past_days": 30,
     "next_days": 30,
@@ -275,7 +276,8 @@
     "interval": 10000
   },
   "telemetry_manager": {
-    "lock_key": "telemetry_manager_lock"
+    "lock_key": "telemetry_manager_lock",
+    "tags": ""
   },
   "playbook_manager": {
     "enabled": true,
@@ -351,6 +353,11 @@
     "interval": 30000,
     "stream_batch_size": 7500,
     "max_concurrency": 5
+  },
+  "data_sanity_manager": {
+    "enabled": true,
+    "lock_key": "data_sanity_manager_lock",
+    "interval": 600000
   },
   "exclusion_list_cache_build_manager": {
     "enabled": true,

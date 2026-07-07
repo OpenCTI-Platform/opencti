@@ -397,6 +397,8 @@ class StixObjectOrStixRelationship:
                 standard_id
                 entity_type
                 parent_types
+                created_at
+                relationship_type
                 createdBy {
                     ... on Identity {
                         id
@@ -448,6 +450,226 @@ class StixObjectOrStixRelationship:
                             created
                             modified
                         }
+                    }
+                }
+                from {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixObject {
+                        standard_id
+                        spec_version
+                        created_at
+                        updated_at
+                    }
+                    ... on AttackPattern {
+                        name
+                    }
+                    ... on Campaign {
+                        name
+                    }
+                    ... on CourseOfAction {
+                        name
+                    }
+                    ... on Individual {
+                        name
+                    }
+                    ... on Organization {
+                        name
+                    }
+                    ... on Sector {
+                        name
+                    }
+                    ... on System {
+                        name
+                    }
+                    ... on Indicator {
+                        name
+                    }
+                    ... on Infrastructure {
+                        name
+                    }
+                    ... on IntrusionSet {
+                        name
+                    }
+                    ... on Position {
+                        name
+                    }
+                    ... on City {
+                        name
+                    }
+                    ... on Country {
+                        name
+                    }
+                    ... on Region {
+                        name
+                    }
+                    ... on Malware {
+                        name
+                    }
+                    ... on ThreatActor {
+                        name
+                    }
+                    ... on Tool {
+                        name
+                    }
+                    ... on Vulnerability {
+                        name
+                    }
+                    ... on Incident {
+                        name
+                    }
+                    ... on Event {
+                        name
+                        description
+                    }
+                    ... on Channel {
+                        name
+                        description
+                    }
+                    ... on Narrative {
+                        name
+                        description
+                    }
+                    ... on Language {
+                        name
+                    }
+                    ... on DataComponent {
+                        name
+                        description
+                    }
+                    ... on DataSource {
+                        name
+                        description
+                    }
+                    ... on Case {
+                        name
+                    }
+                    ... on StixCyberObservable {
+                        observable_value
+                    }
+                    ... on StixCoreRelationship {
+                        standard_id
+                        spec_version
+                        created_at
+                        updated_at
+                    }
+                }
+                to {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixObject {
+                        standard_id
+                        spec_version
+                        created_at
+                        updated_at
+                    }
+                    ... on AttackPattern {
+                        name
+                    }
+                    ... on Campaign {
+                        name
+                    }
+                    ... on CourseOfAction {
+                        name
+                    }
+                    ... on Individual {
+                        name
+                    }
+                    ... on Organization {
+                        name
+                    }
+                    ... on Sector {
+                        name
+                    }
+                    ... on System {
+                        name
+                    }
+                    ... on Indicator {
+                        name
+                    }
+                    ... on Infrastructure {
+                        name
+                    }
+                    ... on IntrusionSet {
+                        name
+                    }
+                    ... on Position {
+                        name
+                    }
+                    ... on City {
+                        name
+                    }
+                    ... on Country {
+                        name
+                    }
+                    ... on Region {
+                        name
+                    }
+                    ... on Malware {
+                        name
+                    }
+                    ... on ThreatActor {
+                        name
+                    }
+                    ... on Tool {
+                        name
+                    }
+                    ... on Vulnerability {
+                        name
+                    }
+                    ... on Incident {
+                        name
+                    }
+                    ... on Event {
+                        name
+                        description
+                    }
+                    ... on Channel {
+                        name
+                        description
+                    }
+                    ... on Narrative {
+                        name
+                        description
+                    }
+                    ... on Language {
+                        name
+                    }
+                    ... on DataComponent {
+                        name
+                        description
+                    }
+                    ... on DataSource {
+                        name
+                        description
+                    }
+                    ... on Case {
+                        name
+                    }
+                    ... on StixCyberObservable {
+                        observable_value
+                    }
+                    ... on StixCoreRelationship {
+                        standard_id
+                        spec_version
+                        created_at
+                        updated_at
                     }
                 }
                 revoked

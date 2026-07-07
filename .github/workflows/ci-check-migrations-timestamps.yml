@@ -1,0 +1,82 @@
+name: Migration check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'opencti-platform/opencti-graphql/src/migrations/**'
+
+jobs:
+  check-migration-timestamp:
+    name: Check migration file timestamps
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that new migration file timestamps are greater than existing ones
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          MIGRATION_DIR="opencti-platform/opencti-graphql/src/migrations"
+
+          # Collect migration files added in this PR (relative to merge-base with base branch)
+          ADDED_FILES=$(git diff --name-only --diff-filter=A "origin/${BASE_REF}...HEAD" -- "$MIGRATION_DIR")
+
+          if [ -z "$ADDED_FILES" ]; then
+            echo "No new migration files added in this PR. Skipping timestamp check."
+            exit 0
+          fi
+
+          echo "New migration file(s) found in this PR:"
+          echo "$ADDED_FILES"
+
+          # Determine the maximum timestamp among migration files that already exist on the base branch.
+          # git ls-tree lists the objects at that tree; basename extracts the filename,
+          # then we pick out the leading numeric timestamp and take the highest one.
+          MAX_EXISTING=$(
+            git ls-tree -r --name-only "origin/${BASE_REF}" "${MIGRATION_DIR}/" \
+              | awk -F'/' '{print $NF}' \
+              | grep -E '^[0-9]+-.*\.(js|ts)$' \
+              | cut -d- -f1 \
+              | sort -n \
+              | tail -1 \
+            || true
+          )
+          MAX_EXISTING="${MAX_EXISTING:-0}"
+          echo "Maximum existing migration timestamp on ${BASE_REF}: ${MAX_EXISTING}"
+
+          # Validate each newly added migration file
+          FAILED=0
+          while IFS= read -r file; do
+            FILENAME=$(basename "$file")
+
+            # Filename must match <timestamp>-<description>.{js,ts}
+            if [[ ! "$FILENAME" =~ ^([0-9]+)-.+\.(js|ts)$ ]]; then
+              echo "::error file=${file}::Migration file '${FILENAME}' does not match expected format: <timestamp>-<description>.{js,ts}."
+              FAILED=1
+              continue
+            fi
+
+            TS="${BASH_REMATCH[1]}"
+
+            if [ "$TS" -le "$MAX_EXISTING" ]; then
+              echo "::error file=${file}::Migration file '${FILENAME}' has timestamp ${TS} which is not greater than the current maximum ${MAX_EXISTING}. Please use a timestamp greater than ${MAX_EXISTING}."
+              FAILED=1
+            else
+              echo "✓ '${FILENAME}' — timestamp ${TS} > ${MAX_EXISTING}"
+            fi
+          done <<< "$ADDED_FILES"
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "::error::One or more migration files have an invalid timestamp. Each new migration file must have a timestamp prefix greater than all existing migration files."
+            exit 1
+          fi
+
+          echo ""
+          echo "✓ All new migration file timestamps are valid."

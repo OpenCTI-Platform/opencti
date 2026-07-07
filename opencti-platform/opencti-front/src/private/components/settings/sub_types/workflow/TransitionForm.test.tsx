@@ -221,6 +221,25 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
+  it('pre-populates CREATORS with admin access when toggling "Update authorized members" ON', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+
+    await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      const actions = onSubmit.mock.calls[0][0].syncActions as { type: string; params?: { authorized_members?: { value: string; accessRight: string }[] } }[];
+      const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+      expect(uamAction?.params?.authorized_members).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ value: 'CREATORS', accessRight: 'admin' }),
+        ]),
+      );
+    });
+  });
+
   it('"Validate draft" switch is unchecked when action is absent', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     const vdSwitch = screen.getByRole('checkbox', { name: /validate draft/i });

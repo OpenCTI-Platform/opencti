@@ -1,0 +1,130 @@
+name: OpenCTI CD Rolling
+# This workflow prepare all artifact for the rolling images
+# Build on each merge on master
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  # -----------------------
+  # Build platform images
+  # -----------------------
+  build-platform:
+    name: Build platform (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-platform
+        with:
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+          docker_image_suffix: ${{ matrix.suffix }}
+
+  # -----------------------
+  # Build worker images
+  # -----------------------
+  build-worker:
+    name: Build worker (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-worker
+        with:
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+          docker_image_suffix: ${{ matrix.suffix }}
+
+  # -----------------------
+  # Generate SBOMs
+  # -----------------------
+  generate-sbom-platform:
+    name: Generate SBOM (platform ${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    needs: [build-platform]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/platform"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-platform${{ matrix.suffix }}"
+
+  generate-sbom-worker:
+    name: Generate SBOM (worker ${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    needs: [build-worker]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ github.sha }}"]'
+          image_name: "filigran/worker"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-worker${{ matrix.suffix }}"
+
+  upload-artifacts:
+    name: Upload all artifacts
+    runs-on: ubuntu-latest
+    needs: [generate-sbom-platform, generate-sbom-worker]
+    steps:
+      - name: Download all SBOM artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: sbom-*
+          path: artifacts/
+
+      - name: Download all Docker artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: docker-image-*
+          path: artifacts/
+
+      - name: Upload consolidated artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: opencti-rolling
+          path: artifacts/
+          retention-days: 7

@@ -103,6 +103,10 @@ class ErrorBoundaryComponent extends React.Component {
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
         return <DedicatedWarning title="Complex search" description="Your search have too much terms to be executed. Please limit the number of words or the complexity" />;
       }
+      // IP whitelist block must redirect to login page
+      if (includes('IP_FORBIDDEN', types)) {
+        throw this.state.error;
+      }
       // Access error must be forwarded
       if (includes('FORBIDDEN_ACCESS', types)) {
         return <ErrorNotFound />;

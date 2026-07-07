@@ -30,6 +30,7 @@ import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/Ing
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/data/IngestionCatalog/utils/JsonFormPasswordRenderer';
+import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/data/IngestionCatalog/utils/JsonFormDeprecatedRenderer';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -39,6 +40,8 @@ import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { resolveLink } from '../../../../utils/Entity';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
+import IngestionCatalogUnverifiedDeploymentPopover from '@components/data/IngestionCatalog/IngestionCatalogUnverifiedDeploymentPopover';
+import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -79,6 +82,7 @@ export const sanitizeContainerName = (label: string): string => {
 const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
+  { tester: jsonFormDeprecatedTester, renderer: JsonFormDeprecatedRenderer },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
@@ -116,6 +120,7 @@ const IngestionCatalogConnectorCreation = ({
 }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const [isAcknowledgementPopoverOpen, setIsAcknowledgementPopoverOpen] = useState(false);
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
   const [commitRegister] = useMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
 
@@ -192,7 +197,9 @@ const IngestionCatalogConnectorCreation = ({
     const defaults: Record<string, string | number | boolean | object | string[]> = {};
     let defaultConnectorName = '';
 
-    Object.entries(connector.config_schema.properties).forEach(([key, value]) => {
+    const nonDeprecatedProperties = filterOutDeprecatedProperties(connector.config_schema.properties);
+
+    Object.entries(nonDeprecatedProperties).forEach(([key, value]) => {
       if (key === 'CONNECTOR_NAME') {
         if (value.default !== undefined) {
           const baseName = value.default.toString();
@@ -217,7 +224,7 @@ const IngestionCatalogConnectorCreation = ({
 
     const reqProperties: JsonSchema = {
       properties: requiredProps,
-      required: connector.config_schema.required,
+      required: filterOutDeprecatedRequired(connector.config_schema.required, connector.config_schema.properties),
     };
 
     const optProperties: JsonSchema = {
@@ -246,212 +253,229 @@ const IngestionCatalogConnectorCreation = ({
   };
 
   return (
-    <Drawer
-      title={t_i18n('Deploy a new connector')}
-      open={open}
-      onClose={onClose}
-      header={(
-        <Stack direction="row" alignItems="center" gap={1}>
-          <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
-            <Button
-              variant="secondary"
-              component={Link}
-              size="small"
-              to={buildConnectorsUrl()}
-              startIcon={<HubOutlined />}
-              disabled={deploymentCount === 0}
-            >
-              {`${deploymentCount} ${t_i18n('instances deployed')}`}
-            </Button>
-          </Tooltip>
-
-          <Tooltip title={t_i18n('Vendor contact')}>
-            <span> {/** keep span so tooltip is still displayed if button is disabled * */}
-              <IconButton
-                variant="tertiary"
-                aria-label="Vendor contact"
+    <>
+      <Drawer
+        title={t_i18n('Deploy a new connector')}
+        open={open}
+        onClose={onClose}
+        header={(
+          <Stack direction="row" alignItems="center" gap={1}>
+            <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
+              <Button
+                variant="secondary"
                 component={Link}
-                to={connector.subscription_link}
-                target="blank"
-                rel="noopener noreferrer"
-                disabled={!connector.subscription_link}
-                size="default"
+                size="small"
+                to={buildConnectorsUrl()}
+                startIcon={<HubOutlined />}
+                disabled={deploymentCount === 0}
               >
-                <Launch />
-              </IconButton>
-            </span>
-          </Tooltip>
+                {`${deploymentCount} ${t_i18n('instances deployed')}`}
+              </Button>
+            </Tooltip>
 
-          <Tooltip title={t_i18n('Source code')}>
-            <span>
-              <IconButton
-                variant="tertiary"
-                aria-label="Go to"
-                component={Link}
-                to={connector.source_code}
-                target="blank"
-                rel="noopener noreferrer"
-                size="default"
-              >
-                <LibraryBooksOutlined />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
-      )}
-    >
-      <Stack gap={1}>
-        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
-
-        <Formik<ManagedConnectorValues>
-          onReset={onClose}
-          validationSchema={validationSchema}
-          initialValues={{
-            display_name: connectorName,
-            name: sanitizeContainerName(connectorName),
-            confidence_level: connector.max_confidence_level.toString(),
-            user_id: { label: '', value: '' },
-            automatic_user: true,
-            ...configDefaults,
-          }}
-          onSubmit={() => {}}
-        >
-          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
-            const errors = compiledValidator?.validate(values)?.errors;
-
-            const disableCreate = !isValid || isSubmitting || !!errors?.[0];
-
-            return (
-              <Form>
-                <fieldset
-                  disabled={!hasActiveManagers}
-                  style={{
-                    border: 'none',
-                    padding: 0,
-                    ...(!hasActiveManagers && { opacity: 0.5, pointerEvents: 'none' }),
-                  }}
+            <Tooltip title={t_i18n('Vendor contact')}>
+              <span> {/** keep span so tooltip is still displayed if button is disabled * */}
+                <IconButton
+                  variant="tertiary"
+                  aria-label="Vendor contact"
+                  component={Link}
+                  to={connector.subscription_link}
+                  target="blank"
+                  rel="noopener noreferrer"
+                  disabled={!connector.subscription_link}
+                  size="default"
                 >
-                  <Field
-                    component={TextField}
-                    style={fieldSpacingContainerStyle}
-                    variant="standard"
-                    name="display_name"
-                    label={t_i18n('Display name')}
-                    required
-                    fullWidth={true}
-                    onChange={(_: string, value: string) => {
-                      setFieldValue('name', sanitizeContainerName(value));
-                    }}
-                  />
+                  <Launch />
+                </IconButton>
+              </span>
+            </Tooltip>
 
-                  <Field
-                    component={TextField}
-                    style={fieldSpacingContainerStyle}
-                    variant="standard"
-                    name="name"
-                    label={t_i18n('Instance name')}
-                    fullWidth={true}
-                    disabled
-                  />
+            <Tooltip title={t_i18n('Source code')}>
+              <span>
+                <IconButton
+                  variant="tertiary"
+                  aria-label="Go to"
+                  component={Link}
+                  to={connector.source_code}
+                  target="blank"
+                  rel="noopener noreferrer"
+                  size="default"
+                >
+                  <LibraryBooksOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Stack>
+        )}
+      >
+        <Stack gap={1}>
+          <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} isVerified={connector.verified} />
 
-                  <IngestionCreationUserHandling
-                    default_confidence_level={connector.max_confidence_level}
-                    labelTag="C"
-                    isSensitive={true}
-                  />
+          <Formik<ManagedConnectorValues>
+            onReset={onClose}
+            validationSchema={validationSchema}
+            initialValues={{
+              display_name: connectorName,
+              name: sanitizeContainerName(connectorName),
+              confidence_level: connector.max_confidence_level.toString(),
+              user_id: { label: '', value: '' },
+              automatic_user: true,
+              ...configDefaults,
+            }}
+            onSubmit={() => {}}
+          >
+            {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
+              const errors = compiledValidator?.validate(values)?.errors;
 
-                  {(hasRequiredProperties || hasOptionalProperties) && (
-                    <>
-                      <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-                      {
-                        hasRequiredProperties && (
-                          <Alert
-                            severity="info"
-                            icon={false}
-                            variant="outlined"
-                            style={{
-                              position: 'relative',
-                              width: '100%',
-                              marginTop: 8,
-                            }}
-                            slotProps={{
-                              message: {
-                                style: {
-                                  width: '100%',
-                                  overflow: 'visible',
-                                },
-                              },
-                            }}
-                          >
+              const disableCreate = !isValid || isSubmitting || !!errors?.[0];
 
-                            <JsonForms
-                              data={configDefaults}
-                              schema={requiredProperties}
-                              renderers={customRenderers}
-                              validationMode="NoValidation"
-                              onChange={async ({ data }) => {
-                                await setValues({ ...values, ...data });
-                              }}
-                            />
-                          </Alert>
-                        )
-                      }
+              const createConnectorDeployment = () => {
+                submitConnectorManagementCreation(values, {
+                  setSubmitting,
+                  resetForm,
+                });
+              };
 
-                      {hasOptionalProperties && (
-                        <div style={fieldSpacingContainerStyle}>
-                          <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
-                            <AccordionSummary id="accordion-panel">
-                              <Typography>{t_i18n('Advanced options')}</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails sx={{ paddingTop: 2 }}>
-                              <JsonForms
-                                data={configDefaults}
-                                schema={optionalProperties}
-                                renderers={customRenderers}
-                                validationMode="NoValidation"
-                                onChange={({ data }) => setValues({ ...values, ...data })}
-                              />
-                            </AccordionDetails>
-                          </Accordion>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </fieldset>
+              const handleCreate = () => {
+                if (connector.verified) {
+                  createConnectorDeployment();
+                } else {
+                  setIsAcknowledgementPopoverOpen(true);
+                }
+              };
 
-                <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      resetForm();
+              return (
+                <Form>
+                  <fieldset
+                    disabled={!hasActiveManagers}
+                    style={{
+                      border: 'none',
+                      padding: 0,
+                      ...(!hasActiveManagers && { opacity: 0.5, pointerEvents: 'none' }),
                     }}
                   >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  {
-                    hasActiveManagers && (
-                      <Button
+                    <Field
+                      component={TextField}
+                      style={fieldSpacingContainerStyle}
+                      variant="standard"
+                      name="display_name"
+                      label={t_i18n('Display name')}
+                      required
+                      fullWidth={true}
+                      onChange={(_: string, value: string) => {
+                        setFieldValue('name', sanitizeContainerName(value));
+                      }}
+                    />
+
+                    <Field
+                      component={TextField}
+                      style={fieldSpacingContainerStyle}
+                      variant="standard"
+                      name="name"
+                      label={t_i18n('Instance name')}
+                      fullWidth={true}
+                      disabled
+                    />
+
+                    <IngestionCreationUserHandling
+                      default_confidence_level={connector.max_confidence_level}
+                      labelTag="C"
+                      isSensitive={true}
+                    />
+
+                    {(hasRequiredProperties || hasOptionalProperties) && (
+                      <>
+                        <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+                        {
+                          hasRequiredProperties && (
+                            <Alert
+                              severity="info"
+                              icon={false}
+                              variant="outlined"
+                              style={{
+                                position: 'relative',
+                                width: '100%',
+                                marginTop: 8,
+                              }}
+                              slotProps={{
+                                message: {
+                                  style: {
+                                    width: '100%',
+                                    overflow: 'visible',
+                                  },
+                                },
+                              }}
+                            >
+
+                              <JsonForms
+                                data={configDefaults}
+                                schema={requiredProperties}
+                                renderers={customRenderers}
+                                validationMode="NoValidation"
+                                onChange={async ({ data }) => {
+                                  await setValues({ ...values, ...data });
+                                }}
+                              />
+                            </Alert>
+                          )
+                        }
+
+                        {hasOptionalProperties && (
+                          <div style={fieldSpacingContainerStyle}>
+                            <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
+                              <AccordionSummary id="accordion-panel">
+                                <Typography>{t_i18n('Advanced options')}</Typography>
+                              </AccordionSummary>
+                              <AccordionDetails sx={{ paddingTop: 2 }}>
+                                <JsonForms
+                                  data={configDefaults}
+                                  schema={optionalProperties}
+                                  renderers={customRenderers}
+                                  validationMode="NoValidation"
+                                  onChange={({ data }) => setValues({ ...values, ...data })}
+                                />
+                              </AccordionDetails>
+                            </Accordion>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </fieldset>
+
+                  <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        resetForm();
+                      }}
+                    >
+                      {t_i18n('Cancel')}
+                    </Button>
+                    {
+                      hasActiveManagers && (
+                        <Button
                         // color="secondary"
-                        style={{ marginLeft: theme.spacing(2) }}
-                        onClick={() => {
-                          submitConnectorManagementCreation(values, {
-                            setSubmitting,
-                            resetForm,
-                          });
-                        }}
-                        disabled={disableCreate}
-                      >
-                        {t_i18n('Create')}
-                      </Button>
-                    )
-                  }
-                </div>
-              </Form>
-            );
-          }}
-        </Formik>
-      </Stack>
-    </Drawer>
+                          style={{ marginLeft: theme.spacing(2) }}
+                          onClick={handleCreate}
+                          disabled={disableCreate}
+                        >
+                          {t_i18n('Create')}
+                        </Button>
+                      )
+                    }
+                  </div>
+                  <IngestionCatalogUnverifiedDeploymentPopover
+                    onClose={() => setIsAcknowledgementPopoverOpen(false)}
+                    isOpen={isAcknowledgementPopoverOpen}
+                    onDeploy={createConnectorDeployment}
+                  />
+                </Form>
+              );
+            }}
+          </Formik>
+        </Stack>
+      </Drawer>
+    </>
   );
 };
 

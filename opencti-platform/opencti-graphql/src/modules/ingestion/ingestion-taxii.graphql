@@ -14,6 +14,7 @@ enum IngestionAuthType {
 type IngestionTaxii implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
+    representative: Representative!
     standard_id: String!
     parent_types: [String!]!
     metrics:[Metric]

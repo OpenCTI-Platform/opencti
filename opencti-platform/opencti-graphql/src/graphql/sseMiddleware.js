@@ -52,6 +52,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/data-changes';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isOriginMatchFilterGroup } from '../utils/filtering/filtering-stream-origin/stream-origin-filtering';
+import { buildFilterEventContext } from '../manager/playbookManager/playbookManagerUtils';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
@@ -552,6 +553,7 @@ const createSseMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
+      // No eventContext for dependency checks (we only check entity visibility, not attribute changes)
       const isFromVisible = await isStixMatchFilterGroup(context, user, fromStix, streamFilters);
       const isToVisible = await isStixMatchFilterGroup(context, user, toStix, streamFilters);
       if (isFromVisible || isToVisible) {
@@ -657,13 +659,19 @@ const createSseMiddleware = () => {
                 const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
                 const elementType = stix.extensions[STIX_EXT_OCTI].type;
                 if (!isInferredData || (isInferredData && withInferences)) {
-                  const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters);
+                  // Build event context for has_changed/not_has_changed filter evaluation
+                  const eventContext = type === EVENT_TYPE_UPDATE
+                    ? buildFilterEventContext(eventData)
+                    : type === EVENT_TYPE_CREATE
+                      ? { changedAttributes: [], isCreation: true }
+                      : undefined;
+                  const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters, eventContext);
                   // Only main-event publications are gated by origin. Dependency/container fallbacks
                   // are intentionally left ungated (they target related data lacking real origin).
                   const isOriginVisible = isOriginMatchFilterGroup(eventData, originFilters);
                   if (type === EVENT_TYPE_UPDATE) {
                     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
-                    const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
+                    const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters, eventContext);
                     if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
                       if (isOriginVisible) {
                         await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);

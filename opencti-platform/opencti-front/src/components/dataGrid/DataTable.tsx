@@ -121,6 +121,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'markAsReadEnabled'
   | 'entityTypes'
   | 'trashOperationsEnabled'
+  | 'disableBulkEnroll'
   | 'deleteDisable'
   | 'container'
 > & {
@@ -140,6 +141,7 @@ const DataTableInternalToolbar = ({
   entityTypes,
   displayEditButtons,
   trashOperationsEnabled,
+  disableBulkEnroll,
   deleteDisable,
   container,
 }: DataTableInternalToolbarProps) => {
@@ -182,6 +184,7 @@ const DataTableInternalToolbar = ({
         markAsReadEnabled={markAsReadEnabled}
         displayEditButtons={displayEditButtons}
         trashOperationsEnabled={trashOperationsEnabled}
+        disableBulkEnroll={disableBulkEnroll}
         deleteDisable={deleteDisable}
         container={container}
       />
@@ -250,6 +253,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     removeFromDraftEnabled,
     markAsReadEnabled,
     trashOperationsEnabled,
+    disableBulkEnroll,
     deleteDisable,
     container,
   } = props;
@@ -311,6 +315,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             markAsReadEnabled={markAsReadEnabled}
             displayEditButtons={hasAuthorizedMembersCanEdit}
             trashOperationsEnabled={trashOperationsEnabled}
+            disableBulkEnroll={disableBulkEnroll}
             deleteDisable={deleteDisable}
           />
         )}

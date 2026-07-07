@@ -5,7 +5,6 @@ import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import { useTheme } from '@mui/styles';
-import type { Editor } from '@tiptap/react';
 import { ClassicEditor } from 'ckeditor5';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
@@ -14,7 +13,7 @@ import useAI from '../../utils/hooks/useAI';
 import useHelper from '../../utils/hooks/useHelper';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
-import RichTextEditor from '../RichTextEditor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 
@@ -49,8 +48,7 @@ const RichTextField = ({
 }: RichTextFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isTiptapEditorEnable } = useHelper();
-  const tiptapEditorRef = useRef<Editor | null>(null);
+  const { isOldEditorEnable } = useHelper();
   const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
@@ -58,17 +56,12 @@ const RichTextField = ({
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
-  const RichTextEditorInstance = isTiptapEditorEnable() ? (
+  const RichTextEditorInstance = !isOldEditorEnable() ? (
     <RichTextEditor
-      onReady={(editor) => {
-        tiptapEditorRef.current = editor;
-        editor.on('selectionUpdate', () => {
-          if (tiptapEditorRef.current && onTextSelection && !tiptapEditorRef.current.isEditable && !fullScreen) {
-            const { from, to } = tiptapEditorRef.current.state.selection;
-            const text = tiptapEditorRef.current.state.doc.textBetween(from, to).trim();
-            if (text.length > 2) onTextSelection(text);
-          }
-        });
+      onTextSelection={(text) => {
+        if (onTextSelection && disabled && !fullScreen && text.length > 2) {
+          onTextSelection(text);
+        }
       }}
       data={value}
       onChange={(_, adapter) => {
@@ -149,7 +142,7 @@ const RichTextField = ({
             />
           )}
           {hasFullScreen && (
-            <IconButton size="small" onClick={() => setFullScreen(true)}>
+            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)}>
               <FullscreenOutlined fontSize="small" />
             </IconButton>
           )}

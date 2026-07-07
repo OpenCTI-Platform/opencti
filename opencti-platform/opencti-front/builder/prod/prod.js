@@ -58,6 +58,11 @@ const buildPath = "./builder/prod/build";
       keepNames: true,
       sourcemap: keep,
       outdir: "builder/prod/build",
+      // Workaround to circumvent usage of process.env in react-draggable.
+      // To remove once https://github.com/react-grid-layout/react-draggable/issues/806 is addressed.
+      define: {
+        'process.env.DRAGGABLE_DEBUG': JSON.stringify(process.env.DRAGGABLE_DEBUG === 'true'),
+      },
     });
   // Copy public files to build
   await cp("./src/static/ext",  `${buildPath}/static/ext`, { recursive: true, overwrite: true });

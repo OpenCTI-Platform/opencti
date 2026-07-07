@@ -113,7 +113,7 @@ import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -280,7 +280,7 @@ export const isImpactedRole = (type: string, fromType: string, toType: string, r
   return !UNIMPACTED_ENTITIES_ROLE.includes(role);
 };
 
-let engine: ElkClient | OpenClient;
+export let engine: ElkClient | OpenClient;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
 
@@ -291,7 +291,7 @@ export const isAttachmentProcessorEnabled = () => {
 // The OpenSearch/ELK Body Parser (oebp)
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
-const oebp = (queryResult: any): any => {
+export const oebp = (queryResult: any): any => {
   if (engine instanceof ElkClient) {
     return queryResult;
   }
@@ -529,21 +529,55 @@ const elExecuteWithAbortSignal = async (
 const BULK_MAX_RETRIES = 5;
 const BULK_INITIAL_DELAY_MS = 500;
 
-const isTransitoryError = (error: any): boolean => {
-  const statusCode = error?.statusCode ?? error?.meta?.statusCode ?? error?.status;
+const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
+  const values = [
+    error?.[fieldName],
+    error?.cause?.[fieldName],
+    error?.cause?.meta?.body?.error?.[fieldName],
+    error?.originalError?.[fieldName],
+    error?.meta?.body?.error?.[fieldName],
+    error?.extensions?.data?.cause?.[fieldName],
+    error?.extensions?.data?.cause?.meta?.body?.error?.[fieldName],
+    error?.extensions?.exception?.[fieldName],
+  ];
+
+  return values
+    .filter((value): value is string => typeof value === 'string' && value.length > 0);
+};
+
+export const isTransitoryError = (error: any): boolean => {
+  const statusCode = error?.statusCode
+    ?? error?.meta?.statusCode
+    ?? error?.status
+    ?? error?.cause?.statusCode
+    ?? error?.cause?.meta?.statusCode
+    ?? error?.extensions?.data?.cause?.statusCode
+    ?? error?.extensions?.data?.cause?.meta?.statusCode;
   // 429: Too many requests, 503: Service unavailable, both can be transient and should be retried
   if (statusCode === 429 || statusCode === 503) {
     return true;
   }
-  const errorCode = error?.code ?? error?.cause?.code;
+
+  const errorCode = error?.code
+    ?? error?.cause?.code
+    ?? error?.originalError?.code
+    ?? error?.extensions?.data?.cause?.code;
   // All these error codes are commonly associated with transient issues that can occur in network communication
   // or when the search engine is under heavy load, and thus are good candidates for retrying the operation.
   if (['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(errorCode)) {
     return true;
   }
-  const errorMessage = error?.message ?? '';
+
+  const errorText = [
+    ...collectErrorFieldValues(error, 'message'),
+    ...collectErrorFieldValues(error, 'reason'),
+    ...collectErrorFieldValues(error, 'type'),
+    ...collectErrorFieldValues(error, 'name'),
+    ...collectErrorFieldValues(error, 'stack'),
+  ].join(' ');
+
   // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
-  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
+  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorText)) {
     return true;
   }
   return false;
@@ -2055,6 +2089,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   'event_type',
   'event_scope',
   'context_data.message',
+  'context_data.search',
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
@@ -2166,26 +2201,57 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
   const searchPhrase = R.uniq(querySearch).join(' ');
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|https?:/g, '')));
   if (args.historyFiltering) {
-    pushAll(shouldSearch, cleanExactSearch.map((ex) => [{
-      nested: {
-        path: 'context_data.history_changes',
-        query: {
-          bool: {
-            must: [
-              {
-                multi_match: {
-                  type: 'phrase',
-                  query: ex,
-                  lenient: true,
-                  fields: BASE_SEARCH_HISTORY,
-                },
+    pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+      {
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              multi_match: {
+                type: 'phrase',
+                query: ex,
+                lenient: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
               },
-            ],
+            },
+          ],
+        },
+      },
+      {
+        nested: {
+          path: 'context_data.history_changes',
+          query: {
+            bool: {
+              must: [
+                {
+                  multi_match: {
+                    type: 'phrase',
+                    query: ex,
+                    lenient: true,
+                    fields: BASE_SEARCH_HISTORY,
+                  },
+                },
+              ],
+            },
           },
         },
       },
-    }]).flat());
+    ]).flat());
     if (searchPhrase) {
+      shouldSearch.push({
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              query_string: {
+                query: searchPhrase,
+                analyze_wildcard: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
+              },
+            },
+          ],
+        },
+      });
       shouldSearch.push({
         nested: {
           path: 'context_data.history_changes',

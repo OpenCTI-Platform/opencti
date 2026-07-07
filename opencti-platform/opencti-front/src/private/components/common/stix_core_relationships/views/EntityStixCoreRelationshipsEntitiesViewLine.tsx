@@ -34,13 +34,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
     paddingLeft: 10,
     height: 50,
   },
+  listItemText: {
+    margin: 0,
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+  },
   itemIcon: {
     color: theme.palette.primary?.main,
   },
   bodyItem: {
-    height: 25,
+    height: '100%',
     fontSize: 13,
-    float: 'left',
+    display: 'flex',
+    alignItems: 'center',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -268,8 +278,9 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
+        classes={{ root: classes.listItemText }}
         primary={(
-          <div>
+          <div className={classes.row}>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
@@ -351,8 +362,9 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
+        classes={{ root: classes.listItemText }}
         primary={(
-          <div>
+          <div className={classes.row}>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}

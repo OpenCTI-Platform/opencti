@@ -15,7 +15,7 @@ jobs:
     steps:
 
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: ${{ inputs.checkout_ref }}
 
@@ -28,18 +28,11 @@ jobs:
         docker run  \
           --name backend-verify-licenses \
           -v ${{ github.workspace }}:/home/workspace \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;
-             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-             apk add build-base git libffi-dev cargo
-             pip3 install --upgrade setuptools
-             cd /home/workspace/client-python
-             pip install -r requirements.txt
-             pip install -e .[dev,doc]
-             cd /home/workspace/opencti-platform/opencti-graphql
+          node:22-alpine3.23 \
+          sh -c 'set -eux;
              npm install -g corepack
-             cp /home/workspace/opencti-platform/.yarnrc.yml .
-             yarn install
+             cd /home/workspace/opencti-platform/opencti-graphql
+             yarn install --mode=skip-build
              yarn verify-licenses
             '
 
@@ -48,13 +41,11 @@ jobs:
         docker run  \
           --name frontend-verify-licenses \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22.21.0 \
-          sh -c 'set -ex;
-             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-             cd /home/workspace/opencti-platform/opencti-front
+          node:22-alpine3.23 \
+          sh -c 'set -eux;
              npm install -g corepack
-             cp /home/workspace/opencti-platform/.yarnrc.yml .
-             yarn install
+             cd /home/workspace/opencti-platform/opencti-front
+             yarn install --mode=skip-build
              yarn verify-licenses
             '
 
@@ -63,8 +54,8 @@ jobs:
         docker run  \
           --name generate-licenses \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22.21.0 \
-          sh -c 'set -ex;
+          node:22-alpine3.23 \
+          sh -c 'set -eux;
              cd /home/workspace
              chmod 777 scripts/*
              ./scripts/generate-licenses.sh

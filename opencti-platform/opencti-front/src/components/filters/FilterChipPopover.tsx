@@ -89,6 +89,8 @@ const OperatorKeyValues: {
   within: 'Within',
   only_eq_to: 'Only equal to',
   not_only_eq_to: 'Not only equal to',
+  has_changed: 'Has changed',
+  not_has_changed: 'Has not changed',
 };
 
 export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
@@ -233,7 +235,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const noValueOperator = !['not_nil', 'nil'].includes(filterOperator);
+  const noValueOperator = !['not_nil', 'nil', 'has_changed', 'not_has_changed'].includes(filterOperator);
   const renderSearchScopeSelection = (key: string) => (
     <SearchScopeElement
       name={key}

@@ -1,6 +1,6 @@
 import validator from 'validator';
 import { addSettings } from '../domain/settings';
-import { BYPASS, AUTOMATION, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
+import { AUTOMATION, BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
@@ -17,7 +17,7 @@ import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FIL
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import conf, { isFeatureEnabled, logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
@@ -69,7 +69,7 @@ const KNOWLEDGE_CAPABILITIES = {
     },
     { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
     { name: 'KNDISSEMINATION', description: 'Disseminate files by email', attribute_order: 900 },
-    ...(isFeatureEnabled('SHARE_FILTERS') ? [SHARE_FILTERS_CAPABILITY] : []),
+    SHARE_FILTERS_CAPABILITY,
   ],
 };
 export const SETTINGS_CAPABILITIES = {

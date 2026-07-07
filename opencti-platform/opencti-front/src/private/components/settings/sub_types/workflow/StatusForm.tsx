@@ -7,6 +7,7 @@ import WorkflowFieldList from './WorkflowFieldList';
 import { FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
+import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
 const StatusForm = () => {
   const { t_i18n } = useFormatter();
@@ -18,7 +19,7 @@ const StatusForm = () => {
   const handleToggleUpdateAuthorizedMembers = (field: 'onEnter' | 'onExit', checked: boolean) => {
     const currentActions = values[field] ?? [];
     if (checked) {
-      const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } };
+      const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [{ label: 'Creator', type: CREATOR_AUTHORIZED_CONFIG.type, value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' as const, groupsRestriction: [] }] } };
       setFieldValue(field, [...currentActions, newAction]);
     } else {
       setFieldValue(field, currentActions.filter((a) => a.type !== WorkflowActionType.updateAuthorizedMembers));

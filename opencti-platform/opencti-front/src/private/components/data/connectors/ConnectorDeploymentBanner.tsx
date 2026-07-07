@@ -9,17 +9,27 @@ const URL = 'https://docs.opencti.io/latest/deployment/integration-manager/';
 
 type ConnectorDeploymentBannerProps = {
   hasActiveManagers: boolean;
+  isVerified?: boolean;
 };
 
-const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProps> = ({ hasActiveManagers }) => {
+const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProps> = ({
+  hasActiveManagers,
+  isVerified,
+}) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  if (isEnterpriseEdition && hasActiveManagers) {
-    return null;
+  if (!isEnterpriseEdition) {
+    return (
+      <Alert severity="info" variant="outlined">
+        <Typography>
+          {t_i18n('The deployment of connectors from this catalog requires an Enterprise Edition license.')}
+        </Typography>
+      </Alert>
+    );
   }
 
-  if (isEnterpriseEdition && !hasActiveManagers) {
+  if (!hasActiveManagers) {
     return (
       <Alert severity="warning">
         <Typography>
@@ -32,13 +42,17 @@ const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProp
     );
   }
 
-  return (
-    <Alert severity="info" variant="outlined">
-      <Typography>
-        {t_i18n('The deployment of connectors from this catalog requires an Enterprise Edition license.')}
-      </Typography>
-    </Alert>
-  );
+  if (isVerified === false) {
+    return (
+      <Alert severity="warning">
+        <Typography>
+          {t_i18n('This connector has been developed by the community and is not supported by Filigran.')}
+        </Typography>
+      </Alert>
+    );
+  }
+
+  return null;
 };
 
 export default ConnectorDeploymentBanner;

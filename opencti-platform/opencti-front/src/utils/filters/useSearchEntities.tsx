@@ -907,6 +907,21 @@ const useSearchEntities = ({
                 objectRelationshipType,
               ];
             }
+            // push additional concrete types not covered by abstract type loading (e.g., DraftWorkspace)
+            if (availableEntityTypes) {
+              const knownAbstractTypes = ['Stix-Cyber-Observable', 'Stix-Domain-Object', 'Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label', 'Container', 'Threat-Actor'];
+              const extraConcreteTypes = availableEntityTypes.filter((type) => !knownAbstractTypes.includes(type));
+              if (extraConcreteTypes.length > 0) {
+                result = [
+                  ...result,
+                  ...extraConcreteTypes.map((n) => ({
+                    label: t_i18n(displayEntityTypeForTranslation(n)),
+                    value: n,
+                    type: n,
+                  })),
+                ];
+              }
+            }
             const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
             unionSetEntities(filterKey, entitiesTypes);
           }

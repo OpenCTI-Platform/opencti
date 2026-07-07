@@ -18,7 +18,7 @@ import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import type { StixBundle, StixObject } from '../../../types/stix-2-1-common';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, isXtmOneConfigured, resolveAgentJwtUser, resolveRunAsUserId } from './ai-agent-shared';
 
 // Canonical STIX 2.1 ID shape: `<type>--<uuid>` where the UUID is the
 // 8-4-4-4-12 hex layout. Stricter than the loose `[\w-]{36}` pattern in
@@ -31,6 +31,10 @@ const STIX_UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
 
 interface AiAgentTransformConfiguration {
   agent_slug: string;
+  // User the agent call runs as: the cross-platform JWT carries this
+  // user's email so XTM One (and any write-back to OpenCTI) attributes the
+  // work to a real account. Stored as the member-picker option.
+  run_as?: { label: string; value: string };
   prompt?: string;
 }
 
@@ -43,6 +47,16 @@ const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT_SCHEMA: JSONSchemaType<AiAgentTransf
       type: 'string',
       $ref: 'AI agent',
       // Populated dynamically from the XTM One intent catalog at schema() time.
+      oneOf: [],
+    },
+    run_as: {
+      type: 'object',
+      $ref: 'Run as',
+      nullable: true,
+      default: null,
+      // Stored as the member-picker option ({ label, value }). The empty
+      // oneOf keeps AJV's JSONSchemaType satisfied without enumerating the
+      // option shape (same escape as the access-restrictions component).
       oneOf: [],
     },
     prompt: {
@@ -153,9 +167,32 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
     );
   },
   executor: async ({ playbookNode, bundle }) => {
-    const { agent_slug, prompt } = playbookNode.configuration;
+    const { agent_slug, prompt, run_as } = playbookNode.configuration;
     if (!agent_slug) {
       logApp.warn('[PLAYBOOK AI AGENT] No agent configured, returning bundle unmodified');
+      return { output_port: 'unmodified', bundle };
+    }
+    // Without an XTM One configuration the step can never run: skip it
+    // before resolving the JWT identity so no user lookup is performed
+    // and no misleading identity-resolution warning is logged.
+    if (!isXtmOneConfigured()) {
+      logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, returning bundle unmodified', {
+        agentSlug: agent_slug,
+      });
+      return { output_port: 'unmodified', bundle };
+    }
+    // Resolve the XTM One identity ONCE (run-as user, defaulting to the
+    // seeded platform admin) and share it between the binding check and
+    // the agent call: both are guaranteed to run as the same identity
+    // with a single user lookup.
+    const jwtUser = await resolveAgentJwtUser(resolveRunAsUserId(run_as));
+    if (!jwtUser) {
+      // No resolvable JWT identity: neither the binding check nor the
+      // agent call could run — skip both with an accurate log instead
+      // of a misleading "agent not bound" warning.
+      logApp.warn('[PLAYBOOK AI AGENT] No resolvable JWT identity for the agent call, returning bundle unmodified', {
+        agentSlug: agent_slug,
+      });
       return { output_port: 'unmodified', bundle };
     }
     // Defense in depth: re-check that the configured slug is currently
@@ -163,8 +200,10 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
     // covers saves that go through the schema resolver — a crafted
     // playbook update or an agent that was unbound after save would
     // otherwise let us run an arbitrary XTM One agent under the
-    // platform automation identity.
-    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_TRANSFORM_INTENT, agent_slug))) {
+    // configured run-as identity. The check runs as the SAME identity
+    // as the agent call so the per-user XTM One catalog visibility
+    // matches what the call will actually see.
+    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_TRANSFORM_INTENT, agent_slug, jwtUser))) {
       logApp.warn('[PLAYBOOK AI AGENT] Configured agent is not bound to the transformer intent, returning bundle unmodified', {
         agentSlug: agent_slug,
         intent: PLAYBOOK_AI_AGENT_TRANSFORM_INTENT,
@@ -172,7 +211,7 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
       return { output_port: 'unmodified', bundle };
     }
     const content = buildAgentMessageContent(bundle, prompt);
-    const rawResponse = await callXtmAgent(agent_slug, content);
+    const rawResponse = await callXtmAgent(agent_slug, content, jwtUser);
     if (rawResponse === null) {
       return { output_port: 'unmodified', bundle };
     }

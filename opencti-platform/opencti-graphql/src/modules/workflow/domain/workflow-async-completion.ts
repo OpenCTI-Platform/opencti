@@ -85,9 +85,16 @@ export const reportWorkflowAsyncActionResult = async (
   }
 
   // All async tasks succeeded — run syncActions (phase 2)
+  // Load the full target entity so dynamic resolvers (AUTHOR, CREATORS, etc.) have the data they need.
+  // Fall back to a minimal stub if the load fails (e.g. entity deleted during the async window or transient DB error).
+  const fullEntity = await storeLoadById<any>(executionContext, executionUser, instanceEntity.entity_id, 'Basic-Object')
+    .catch((err) => {
+      logApp.warn('[workflow-async-completion] Failed to load full entity, falling back to stub', { entityId: instanceEntity.entity_id, error: err });
+      return null;
+    });
   const workflowContext = {
     user: executionUser,
-    entity: { id: instanceEntity.entity_id },
+    entity: fullEntity ?? { id: instanceEntity.entity_id },
     context: executionContext,
     runtimeParams: pendingTransition.runtimeParams ?? {},
   };
@@ -97,6 +104,7 @@ export const reportWorkflowAsyncActionResult = async (
     if (!actionFn) {
       logApp.error('[workflow-async-completion] Unknown syncAction type', { type: actionConfig.type });
       await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
         { key: 'pendingStatus', value: ['error'] },
         { key: 'pendingError', value: [`Unknown syncAction type: ${actionConfig.type}`] },
       ]);
@@ -108,8 +116,35 @@ export const reportWorkflowAsyncActionResult = async (
       const syncErrorMsg = syncError instanceof Error ? syncError.message : String(syncError);
       logApp.error('[workflow-async-completion] syncAction failed', { type: actionConfig.type, error: syncErrorMsg });
       await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
         { key: 'pendingStatus', value: ['error'] },
         { key: 'pendingError', value: [`syncAction '${actionConfig.type}' failed: ${syncErrorMsg}`] },
+      ]);
+      return;
+    }
+  }
+
+  // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block)
+  for (const actionConfig of (pendingTransition.onEnterActions ?? [])) {
+    const actionFn = ActionRegistry[actionConfig.type];
+    if (!actionFn) {
+      logApp.error('[workflow-async-completion] Unknown onEnter action type', { type: actionConfig.type });
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: [`Unknown onEnter action type: ${actionConfig.type}`] },
+      ]);
+      return;
+    }
+    try {
+      await actionFn(workflowContext, actionConfig.params);
+    } catch (onEnterError) {
+      const onEnterErrorMsg = onEnterError instanceof Error ? onEnterError.message : String(onEnterError);
+      logApp.error('[workflow-async-completion] onEnter action failed', { type: actionConfig.type, error: onEnterErrorMsg });
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: [`onEnter action '${actionConfig.type}' failed: ${onEnterErrorMsg}`] },
       ]);
       return;
     }

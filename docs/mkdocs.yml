@@ -117,11 +117,12 @@ nav:
       - Configuration: deployment/configuration.md
       - Authentication:
         - Authentication via environment variables: deployment/authentication.md
-      - Telemetry: deployment/telemetry.md
+      - Observability metrics: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
+      - MCP server (via XTM One): deployment/mcp-server.md
       - Manager:
         - Overview: deployment/integration-manager.md
         - Quick start: deployment/integration-manager/quick-start.md

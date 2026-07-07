@@ -69,7 +69,6 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
     <Tooltip title={t_i18n('Import a theme')}>
       <IconButton
         color="primary"
-        aria-label={t_i18n('Import')}
         size="small"
         component="label"
         onChange={handleImport}

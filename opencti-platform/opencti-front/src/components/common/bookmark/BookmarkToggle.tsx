@@ -4,6 +4,7 @@ import { graphql } from 'react-relay';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { deleteNode, insertNode } from '../../../utils/store';
 import IconButton from '../button/IconButton';
+import { useFormatter } from '../../i18n';
 
 const bookmarkAddMutation = graphql`
   mutation BookmarkToggleAddMutation($id: ID!, $type: String!) {
@@ -33,6 +34,7 @@ const BookmarkToggle = ({
 }: BookmarkToggleProps) => {
   const [addMutation] = useApiMutation(bookmarkAddMutation);
   const [deleteMutation] = useApiMutation(bookmarkDeleteMutation);
+  const { t_i18n } = useFormatter();
 
   const addBookmark = () => {
     addMutation({
@@ -68,8 +70,8 @@ const BookmarkToggle = ({
   };
 
   return (
-    <IconButton size="small" onClick={toggle}>
-      {!isBookmarked ? <StarBorder /> : <Star />}
+    <IconButton aria-label={isBookmarked ? t_i18n('Remove bookmark') : t_i18n('Bookmark this item')} size="small" onClick={toggle}>
+      {isBookmarked ? <Star /> : <StarBorder />}
     </IconButton>
   );
 };

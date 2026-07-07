@@ -38,6 +38,9 @@ import stixCoreRelationshipFilterKeys from '../../data/filter-keys-schema/stix-c
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import indicatorFilterKeys from '../../data/filter-keys-schema/indicatorFilterKeys';
 
+import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
+import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 
 describe('Filter keys schema generation testing', async () => {
@@ -248,5 +251,16 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.type).toEqual('string');
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get('indicator_types');
     expect(filterDefinition?.type).toEqual('vocabulary');
+  });
+  it('should construct correct filter definition for DraftWorkspace workflow instance status', () => {
+    const filterDefinition = filterKeysSchema.get(ENTITY_TYPE_DRAFT_WORKSPACE)?.get(WORKFLOW_INSTANCE_STATUS_FILTER);
+    expect(filterDefinition?.filterKey).toEqual(WORKFLOW_INSTANCE_STATUS_FILTER);
+    expect(filterDefinition?.type).toEqual('id');
+    expect(filterDefinition?.label).toEqual('Workflow status');
+    expect(filterDefinition?.multiple).toEqual(true);
+    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
+    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ENTITY_TYPE_STATUS_TEMPLATE);
+    expect(filterDefinition?.subEntityTypes.length).toEqual(1);
+    expect(filterDefinition?.subEntityTypes[0]).toEqual(ENTITY_TYPE_DRAFT_WORKSPACE);
   });
 });

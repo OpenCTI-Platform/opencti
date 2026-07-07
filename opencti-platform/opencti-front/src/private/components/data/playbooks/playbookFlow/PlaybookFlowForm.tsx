@@ -38,6 +38,7 @@ import PlaybookFlowFieldInPirFilters from './playbookFlowFields/PlaybookFlowFiel
 import PlaybookFlowFieldNumber from './playbookFlowFields/PlaybookFlowFieldNumber';
 import PlaybookFlowFieldOrganizations from './playbookFlowFields/PlaybookFlowFieldOrganizations';
 import PlaybookFlowFieldPeriod from './playbookFlowFields/PlaybookFlowFieldPeriod';
+import PlaybookFlowFieldRunAs from './playbookFlowFields/PlaybookFlowFieldRunAs';
 import PlaybookFlowFieldString from './playbookFlowFields/PlaybookFlowFieldString';
 import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
@@ -185,6 +186,14 @@ const PlaybookFlowForm = ({
         }
         initialValues.actionsFormValues = actionsFormValues;
       });
+    // Ensure applyToElements defaults to 'only-main' for existing configs missing it
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      initialValues.applyToElements = 'only-main';
+    }
   }
 
   // endregion
@@ -231,6 +240,16 @@ const PlaybookFlowForm = ({
                   }
                   if (propName === 'authorized_members') {
                     return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
+                  }
+                  if (propName === 'run_as') {
+                    return (
+                      <PlaybookFlowFieldRunAs
+                        key={propName}
+                        name={propName}
+                        label={property.$ref ?? 'Run as'}
+                        style={fieldSpacingContainerStyle}
+                      />
+                    );
                   }
                   if (propName === 'periodicity' || propName === 'duration') {
                     return (

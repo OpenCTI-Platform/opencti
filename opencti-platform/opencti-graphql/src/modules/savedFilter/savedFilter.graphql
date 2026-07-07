@@ -2,6 +2,7 @@ type SavedFilter implements InternalObject & BasicObject {
     id: ID!
     standard_id: String!
     entity_type: String!
+    representative: Representative!
     parent_types: [String!]!
     metrics:[Metric]
     # SavedFilters
@@ -10,8 +11,8 @@ type SavedFilter implements InternalObject & BasicObject {
     scope: String!
     creator_id: String
     # Sharing
-    authorizedMembers: [MemberAccess!]! @ff(flags: ["SHARE_FILTERS"], softFail: true, defaultValue: "[]")
-    currentUserAccessRight: String @ff(flags: ["SHARE_FILTERS"], softFail: true)
+    authorizedMembers: [MemberAccess!]!
+    currentUserAccessRight: String
 }
 
 type SavedFilterEdge {
@@ -52,5 +53,5 @@ type Mutation {
     savedFilterAdd(input: SavedFilterAddInput!): SavedFilter @auth
     savedFilterDelete(id: ID!): ID @auth
     savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter @auth
-    savedFilterEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): SavedFilter @auth(for: [KNOWLEDGE_KNSHAREFILTERS]) @ff(flags: ["SHARE_FILTERS"])
+    savedFilterEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): SavedFilter @auth(for: [KNOWLEDGE_KNSHAREFILTERS])
 }

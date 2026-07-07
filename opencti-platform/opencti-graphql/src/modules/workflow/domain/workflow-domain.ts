@@ -1,30 +1,38 @@
 import { randomUUID } from 'node:crypto';
+import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
-import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
+import { extractEntityRepresentativeName } from '../../../database/entity-representative';
+import { loadAssignees, loadParticipants } from '../../../database/members';
+import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
+import { resolveUserById } from '../../../domain/user';
 import { createListTask } from '../../../domain/backgroundTask-common';
-import { FilterMode, type EditInput } from '../../../generated/graphql';
+import { type EditInput, FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
-import { WORKFLOW_MANAGER_USER } from '../../../utils/access';
+import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
+import { now } from '../../../utils/format';
+import { addNotification } from '../../notification/notification-domain';
+import type { NotificationAddInput } from '../../notification/notification-types';
 import { WorkflowFactory } from '../engine/workflow-factory';
 import type { WorkflowSchema } from '../engine/workflow-schema';
 import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import {
+  type AsyncActionSlot,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
-  type AsyncActionSlot,
   type TriggerResult,
-  type WorkflowValidationError,
   type WorkflowActionConfig,
-  type WorkflowSerializedTransition,
-  type WorkflowSerializedState,
   type WorkflowPendingTransition,
+  type WorkflowSerializedState,
+  type WorkflowSerializedTransition,
+  type WorkflowValidationError,
 } from '../types/workflow-types';
 import { validateWorkflowDefinitionData } from '../workflow-validation';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
@@ -92,6 +100,88 @@ const validateVersionConsistency = (workflowEntity: WorkflowDefinitionEntity): v
         publishedVersionId: published_version.id,
       });
     }
+  }
+};
+
+/**
+ * Sends a UI notification to all assignees and participants of the entity
+ * (excluding the user who triggered the transition) when a comment is provided.
+ */
+const notifyWorkflowTransitionComment = async (
+  context: AuthContext,
+  entity: BasicStoreEntity,
+  eventName: string,
+  comment: string,
+  triggeredByUserId: string,
+): Promise<void> => {
+  try {
+    const [assignees, participants] = await Promise.all([
+      loadAssignees(context, SYSTEM_USER, entity),
+      loadParticipants(context, SYSTEM_USER, entity),
+    ]);
+
+    const seenIds = new Set<string>();
+    const uniqueRecipients = [...assignees, ...participants].filter((recipient) => {
+      const recipientId = recipient.id;
+      if (!recipientId || seenIds.has(recipientId) || recipientId === triggeredByUserId) return false;
+      seenIds.add(recipientId);
+      return true;
+    });
+
+    if (uniqueRecipients.length === 0) return;
+
+    const recipientIdsWithAccess = new Set<string>();
+    await Promise.all(
+      uniqueRecipients.map(async (recipient) => {
+        const recipientId = recipient.id;
+        try {
+          const recipientUser = await resolveUserById(context, recipientId);
+          if (!recipientUser) return;
+          const hasAccess = await internalLoadById(context, recipientUser, entity.internal_id ?? entity.id);
+          if (hasAccess) {
+            recipientIdsWithAccess.add(recipientId);
+          }
+        } catch {
+          // Recipient is ignored when user resolution or access check fails.
+        }
+      }),
+    );
+
+    const recipientsWithAccess = uniqueRecipients.filter((recipient) => recipientIdsWithAccess.has(recipient.id));
+    if (recipientsWithAccess.length === 0) return;
+
+    const entityName = extractEntityRepresentativeName(entity) || entity.entity_type;
+    const results = await Promise.allSettled(
+      recipientsWithAccess.map((recipient) => {
+        const recipientId = recipient.id;
+        const notificationPayload: NotificationAddInput = {
+          is_read: false,
+          name: entityName,
+          notification_type: 'live',
+          user_id: recipientId,
+          created: now(),
+          created_at: now(),
+          updated_at: now(),
+          notification_content: [{
+            title: entityName,
+            events: [{
+              operation: 'update',
+              message: `[${eventName}] ${comment}`,
+              instance_id: entity.internal_id ?? entity.id,
+              entity_type: entity.entity_type,
+            }],
+          }],
+        };
+        return addNotification(context, SYSTEM_USER, notificationPayload);
+      }),
+    );
+    results
+      .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      .forEach(({ reason }) => {
+        logApp.error('[OPENCTI-MODULE] Failed to send workflow notification to recipient', { cause: reason });
+      });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Failed to send workflow transition comment notifications', { cause: error });
   }
 };
 
@@ -270,6 +360,24 @@ export const getWorkflowDefinition = async (
 ): Promise<WorkflowDefinitionResponse | null> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   return getDefinitionData(context, user, entitySetting, allowDraft);
+};
+
+/**
+ * Returns the ID of the published version for the given entity setting's workflow, or null if not published.
+ */
+export const getWorkflowPublishedVersionId = async (
+  context: AuthContext,
+  entitySetting: BasicStoreEntityEntitySetting,
+): Promise<string | null> => {
+  if (!entitySetting.workflow_id) return null;
+  const executionContext = bypassDraftContext(context);
+  const workflowDefinitionEntity = await storeLoadById(
+    executionContext,
+    executionContext.user!,
+    entitySetting.workflow_id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ) as WorkflowDefinitionEntity | undefined;
+  return workflowDefinitionEntity?.published_version?.id ?? null;
 };
 
 /**
@@ -489,6 +597,8 @@ export const publishWorkflowDefinition = async (
   ) as WorkflowDefinitionEntity;
   // Validate consistency after update
   validateVersionConsistency(updatedWorkflow);
+
+  addWorkflowPublishCount();
 
   const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
   return {
@@ -757,15 +867,21 @@ export const triggerWorkflowEvent = async (
       // fallback on actions if syncActions not explicitly defined on transition (legacy support)
       const serializedTransitions: WorkflowActionConfig[] = targetTransitionForSync?.syncActions ?? [];
 
+      // Collect the onEnter actions of the target state so phase 2 can replay them.
+      const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
+      const targetStateDef = definitionData.states?.find((s: any) => s.statusId === toStateId);
+      const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
+
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
-        toState: targetTransitionForSync?.to ?? instance.getCurrentState(),
+        toState: toStateId,
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
         ...(comment ? { comment } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
+        ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
       };
 
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -806,6 +922,11 @@ export const triggerWorkflowEvent = async (
     ]);
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);
+    // Notify assignees and participants when a non-empty comment was provided
+    if (comment?.trim()) {
+      await notifyWorkflowTransitionComment(executionContext, entity as BasicStoreEntity, eventName, comment, user.id);
+    }
+
     return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';

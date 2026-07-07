@@ -68,7 +68,7 @@ test('IMSI CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await observableForm.chooseType('IMSI');
   await observableForm.openBulk();
   await observableForm.bulkValuesField.fill(`${bulkImsi1}\n${bulkImsi2}`);
-  await observableForm.validateBulk();
+  await observableForm.validateBulk(2);
   await observableForm.submit();
   await observableForm.closeBulk();
 

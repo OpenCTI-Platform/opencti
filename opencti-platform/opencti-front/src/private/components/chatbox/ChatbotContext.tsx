@@ -8,6 +8,7 @@ interface ChatbotContextType {
   sidebarWidth: number;
   isResizing: boolean;
   xtmOneConfigured: boolean | null;
+  xtmOneUrl: string | null;
   openChat: () => void;
   closeChat: () => void;
   toggleChat: () => void;
@@ -30,6 +31,7 @@ interface ChatbotProviderProps {
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(() => localStorage.getItem(CHAT_OPEN_STORAGE_KEY) === 'true');
   const [xtmOneConfigured, setXtmOneConfigured] = useState<boolean | null>(null);
+  const [xtmOneUrl, setXtmOneUrl] = useState<string | null>(null);
   const [mode, setModeState] = useState<ChatMode>(() => {
     const stored = localStorage.getItem(CHAT_MODE_STORAGE_KEY);
     return (stored as ChatMode) || 'sidebar';
@@ -49,9 +51,11 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         setXtmOneConfigured(data?.xtm_one_configured === true);
+        setXtmOneUrl(typeof data?.xtm_one_url === 'string' ? data.xtm_one_url : null);
       })
       .catch(() => {
         setXtmOneConfigured(false);
+        setXtmOneUrl(null);
       });
   }, []);
 
@@ -87,13 +91,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
     sidebarWidth,
     isResizing,
     xtmOneConfigured,
+    xtmOneUrl,
     openChat,
     closeChat,
     toggleChat,
     setMode,
     setSidebarWidth,
     setIsResizing,
-  }), [isOpen, mode, sidebarWidth, isResizing, xtmOneConfigured, openChat, closeChat, toggleChat, setMode, setSidebarWidth]);
+  }), [isOpen, mode, sidebarWidth, isResizing, xtmOneConfigured, xtmOneUrl, openChat, closeChat, toggleChat, setMode, setSidebarWidth]);
 
   return (
     <ChatbotContext.Provider value={value}>

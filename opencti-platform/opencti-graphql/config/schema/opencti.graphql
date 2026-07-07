@@ -145,6 +145,8 @@ enum FilterOperator {
   within
   only_eq_to
   not_only_eq_to
+  has_changed
+  not_has_changed
 }
 
 enum XTMHubRegistrationStatus {
@@ -487,15 +489,6 @@ type AiHistory {
 ###### INTERNAL
 
 ############## Logs
-type LogsWorkerConfig {
-  elasticsearch_url: [String]!
-  elasticsearch_proxy: String
-  elasticsearch_index: String!
-  elasticsearch_username: String
-  elasticsearch_password: String
-  elasticsearch_api_key: String
-  elasticsearch_ssl_reject_unauthorized: Boolean
-}
 enum LogsOrdering {
   event
   timestamp
@@ -1107,6 +1100,7 @@ interface InternalObject {
   # BasicObject
   id: ID! # internal_id!
   entity_type: String!
+  representative: Representative!
 }
 
 ############## Settings
@@ -1321,6 +1315,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Settings
@@ -1349,6 +1344,9 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_banner_text: String
   platform_banner_level: String
   platform_no_access_message: String
+  platform_ip_whitelist: [String!]
+  platform_ip_whitelist_enabled: Boolean
+  platform_ip_whitelist_exclusions: [Member!]
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
   platform_whitemark: Boolean
@@ -1377,6 +1375,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   cert_auth: CertAuthConfig
   headers_auth: HeadersAuthConfig
   platform_https_enabled: Boolean!
+  caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
@@ -1396,6 +1395,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
+  # Notifiers
+  platform_notifier_auto_trigger_assignee: Boolean!
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String
@@ -1439,6 +1440,7 @@ type Group implements InternalObject & BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   auto_integration_assignation: [String]!
   parent_types: [String!]!
   metrics:[Metric]
@@ -1643,6 +1645,7 @@ type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # User
@@ -1708,6 +1711,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   user_email: String!
@@ -1840,6 +1844,7 @@ type Role implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Role
@@ -1872,6 +1877,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Capability
@@ -2185,6 +2191,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Connector
@@ -2235,6 +2242,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Connector
@@ -2265,6 +2273,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Manager
@@ -14072,6 +14081,8 @@ union StixObjectOrStixRelationshipOrCreator =
   | IMEI
   | ICCID
   | IMSI
+  | SavedFilter
+  | Vocabulary
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -14165,6 +14176,7 @@ union StixObjectOrStixRelationship =
   | IMEI
   | ICCID
   | IMSI
+  | SavedFilter
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -14714,7 +14726,6 @@ type Query {
   ###### INTERNAL
 
   about: AppInfo @auth
-  logsWorkerConfig: LogsWorkerConfig @auth(for: [CONNECTORAPI])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
   logs(
@@ -15971,7 +15982,7 @@ type WorkEditMutations {
 ######## INTERNAL OBJECT ENTITIES
 
 type SettingsEditMutations {
-  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY])
+  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION])
   contextPatch(input: EditContext): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   contextClean: Settings @auth(for: [SETTINGS_SETPARAMETERS])
   editMessage(input: SettingsMessageInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS])

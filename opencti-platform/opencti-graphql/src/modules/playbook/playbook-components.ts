@@ -14,37 +14,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
-import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { type PlaybookComponent } from './playbook-types';
+import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import type { BasicStoreRelation, StoreRelation } from '../../types/store';
 import { utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
-import { convertStixToInternalTypes, generateInternalType } from '../../schema/schemaUtils';
+import { generateInternalType } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
-import { getEntityFromCache } from '../../database/cache';
+import { fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { stixLoadByIds } from '../../database/middleware';
-import { usableNotifiers } from '../notifier/notifier-domain';
-import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
-import { storeNotificationEvent } from '../../database/stream/stream-handler';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { FilterMode } from '../../generated/graphql';
-import { generateCreateMessage } from '../../database/data-changes';
-import type { BasicStoreSettings } from '../../types/settings';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
+import { extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
@@ -58,6 +51,7 @@ import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from './components/create-indicat
 import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observable-component';
 import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from './components/ai-agent-component';
 import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from './components/ai-agent-send-component';
+import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -594,86 +588,6 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       }
     }
     return { output_port: 'unmodified', bundle };
-  },
-};
-
-export interface NotifierConfiguration {
-  notifiers: string[];
-  authorized_members: { value: string }[];
-}
-const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
-  type: 'object',
-  properties: {
-    notifiers: {
-      type: 'array',
-      uniqueItems: true,
-      default: [],
-      $ref: 'Notifiers',
-      items: { type: 'string', oneOf: [] },
-    },
-    authorized_members: {
-      type: 'array',
-      default: [],
-      items: {
-        type: 'object',
-        properties: {
-          value: { type: 'string' },
-        },
-        required: ['value'],
-      },
-    },
-  },
-  required: ['notifiers', 'authorized_members'],
-};
-const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
-  id: 'PLAYBOOK_NOTIFIER_COMPONENT',
-  name: 'Send to notifier',
-  description: 'Automatically send notification',
-  icon: 'notification',
-  category: 'end_playbook',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [],
-  configuration_schema: PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA,
-  schema: async () => {
-    const context = executionContext('playbook_components');
-    const notifiers = await usableNotifiers(context, SYSTEM_USER);
-    const elements = notifiers.map((c) => ({ const: c.id, title: c.name }));
-    const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
-    return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
-  },
-  executor: async ({ dataInstanceId, playbookId, playbookNode, bundle }) => {
-    const context = executionContext('playbook_components');
-    const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
-    const { notifiers, authorized_members } = playbookNode.configuration;
-    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const targetUsers = await convertMembersToUsers(authorized_members as { value: string }[], baseData, bundle);
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const notificationsCall = [];
-    for (let index = 0; index < targetUsers.length; index += 1) {
-      const targetUser = targetUsers[index];
-      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
-      const userContext = { ...context, user_inside_platform_organization };
-      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
-      const notificationEvent: DigestEvent = {
-        version: EVENT_NOTIFICATION_VERSION,
-        playbook_source: playbook.name,
-        notification_id: playbookNode.id,
-        target: convertToNotificationUser(targetUser, notifiers),
-        type: 'digest',
-        data: stixElements.map((stixObject) => ({
-          notification_id: playbookNode.id,
-          instance: stixObject,
-          type: 'create', // TODO Improve that with type event follow up
-          message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
-        })),
-      };
-      notificationsCall.push(storeNotificationEvent(context, notificationEvent));
-    }
-    if (notificationsCall.length > 0) {
-      await Promise.all(notificationsCall);
-    }
-    return { output_port: undefined, bundle };
   },
 };
 

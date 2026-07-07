@@ -219,10 +219,11 @@ const Audit = () => {
   ) : <></>;
   return (
     <div className={classes.container} data-testid="audit-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
-        label: t_i18n('Events'),
-        current: true,
-      }]}
+      <Breadcrumbs elements={[
+        { label: t_i18n('Settings') },
+        { label: t_i18n('Activity') },
+        { label: t_i18n('Events'), current: true },
+      ]}
       />
       {settings.platform_demo && (
         <Alert severity="info" variant="outlined" style={{ marginBottom: 30 }}>

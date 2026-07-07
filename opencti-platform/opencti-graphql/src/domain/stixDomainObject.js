@@ -22,7 +22,7 @@ import {
 } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -46,7 +46,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteR
 import { entityLocationType, identityClass, xOpenctiType } from '../schema/attribute-definition';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { validateMarking } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
@@ -297,11 +297,22 @@ export const stixDomainObjectDeleteRelation = async (context, user, stixDomainOb
 };
 // endregion
 
+const verifyGrantableGroupInput = (user, input) => {
+  const grantableGroupsInput = input.find((e) => e.key === 'grantable_groups');
+  if (!grantableGroupsInput) {
+    return;
+  }
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw ForbiddenAccess();
+  }
+};
+
 export const stixDomainObjectEditField = async (context, user, stixObjectId, input, opts = {}) => {
   const stixDomainObject = await storeLoadById(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.', { stixObjectId });
   }
+  verifyGrantableGroupInput(user, input);
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];

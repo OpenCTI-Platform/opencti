@@ -21,6 +21,7 @@ type DraftContainerObjectChange {
 type DraftWorkspace implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
+    representative: Representative!
     standard_id: String!
     parent_types: [String!]!
     metrics:[Metric]
@@ -61,6 +62,7 @@ enum DraftWorkspacesOrdering {
     createdBy
     objectAssignee
     objectParticipant
+    workflowInstance
     _score
 }
 
@@ -133,6 +135,33 @@ type Query {
     draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]! @auth(for: [KNOWLEDGE])
     draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]! @auth(for: [KNOWLEDGE])
     draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]! @auth(for: [KNOWLEDGE])
+    draftWorkspacesNumber(
+        dateAttribute: String
+        startDate: DateTime
+        endDate: DateTime
+        filters: FilterGroup
+        search: String
+    ): Number @auth(for: [KNOWLEDGE]) @ff(flags: ["DRAFT_WORKFLOW"], softFail: true, defaultValue: "null")
+    draftWorkspacesTimeSeries(
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime!
+        endDate: DateTime
+        interval: String!
+        filters: FilterGroup
+        search: String
+    ): [TimeSeries] @auth(for: [KNOWLEDGE]) @ff(flags: ["DRAFT_WORKFLOW"], softFail: true, defaultValue: "null")
+    draftWorkspacesDistribution(
+        field: String!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        operation: StatsOperation!
+        limit: Int
+        order: String
+        filters: FilterGroup
+        search: String
+    ): [Distribution] @auth(for: [KNOWLEDGE]) @ff(flags: ["DRAFT_WORKFLOW"], softFail: true, defaultValue: "null")
 }
 
 type DraftEntityField {

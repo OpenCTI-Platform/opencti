@@ -120,6 +120,7 @@ import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
+import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -228,6 +229,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const navigate = useNavigate();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -251,6 +253,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  const isDataHealthEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
 
   const [selectedMenu, setSelectedMenu] = useState(
     JSON.parse(localStorage.getItem('selectedMenu') ?? '[]'),
@@ -302,7 +305,7 @@ const LeftBarComponent = ({ queryRef }) => {
     localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
   };
   const handleGoToPage = (event, link) => {
-    if (event.ctrlKey) {
+    if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
     } else {
       navigate(link);
@@ -481,21 +484,21 @@ const LeftBarComponent = ({ queryRef }) => {
                 {...itemProps}
                 id="dashboards"
                 icon={<InsertChartOutlinedOutlined />}
-                label="Dashboards"
+                label={t_i18n('Dashboards')}
                 link="/dashboard/workspaces/dashboards"
                 subItems={[
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards',
-                    label: 'Custom dashboards',
+                    label: t_i18n('Custom dashboards'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_public',
-                    label: 'Public dashboards',
+                    label: t_i18n('Public dashboards'),
                     exact: true,
                   },
                 ]}
@@ -621,7 +624,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   {
                     type: 'Threat-Actor-Individual',
                     link: '/dashboard/threats/threat_actors_individual',
-                    label: 'Threat actors (individual)',
+                    label: t_i18n('Threat actors (individual)'),
                     icon: <LaptopAccount fontSize="small" />,
                   },
                   { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },
@@ -721,6 +724,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
                   { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
+                  { granted: isDataHealthEnabled && isGrantedToManage && !draftContext, link: '/dashboard/data/health', label: t_i18n('Health') },
                 ]}
               />
             </Security>

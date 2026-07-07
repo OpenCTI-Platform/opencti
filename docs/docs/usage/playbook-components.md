@@ -31,6 +31,10 @@ With this event source, the playbook triggers on any knowledge event (create, up
 
 To make this playbook available for manual enrollment, activate the ****Available for manual enrollment**** toggle. The playbook then appears as an option when you select an entity that matches the event source filter criteria. Deactivate this toggle to hide the playbook from manual enrollment.
 
+***Component details***
+
+As this component listens to the stream of events from knowledge it is able to be triggered with two additional conditions, 'has changed' and 'has not changed'. This operator can be applied when adding any property filter and will match if the property has been changed (or has not changed). This allows you to listen for temporal event changes on an entity such as when the status or score property has changed or when a vulnerability has been flagged as part of the CISA Known Exploited Vulnerabilities catalogue. These trigger conditions are particularly useful in combination with dynamic notifications or emails that can notify users when a case they are participating in has the status changed or similar actions. 
+
 ![Playbook listening for creation events on TLP:GREEN IP addresses and domain names](assets/playbook_listen.png)
 
 ### Listen PIR events
@@ -44,9 +48,12 @@ This event source listens to Priority Intelligence Requirement (PIR) events. You
 
 > Note: By default, if no PIR is selected, all available PIR events will be processed by the playbook.
 
+***Component details***
+
+The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score. Additionally as this component listens to the stream of events from knowledge it can be triggered with two specific conditions, 'has changed' and 'has not changed'. This operator can be applied when adding any property filter and will match if the property has been changed (or has not changed). This allows you to listen for specific property changes for an entity that is part of the PIR. 
+
 ![Playbook configuration panel for listening to PIR events](assets/listen-pir-events-in-playbook.png)
 
-The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a **PIR score** so that the playbook is triggered when an entity in your PIR is added with a high PIR score.
 
 ### Query knowledge on a regular basis
 
@@ -281,19 +288,19 @@ This component supports dynamic variables:
 
 - ***Dynamic from the triggering entity***: Applies authorized members based on a field of the triggering entity only. You can choose from:
 
-- ****Author (organization)****: If the author is an organization, applies authorized members to that organization.
+  - ****Author (organization)****: If the author is an organization, applies authorized members to that organization.
 
-- ****Creator****: Applies authorized members to all users in the Creator field.
+  - ****Creator****: Applies authorized members to all users in the Creator field.
 
-- ****Assignee****: Applies authorized members to all users in the Assignee field.
+  - ****Assignee****: Applies authorized members to all users in the Assignee field.
 
-- ****Participant****: Applies authorized members to all users in the Participant field.
+  - ****Participant****: Applies authorized members to all users in the Participant field.
 
 - ***Dynamic from the bundle***: Applies authorized members based on all entities in the bundle, not only the triggering entity.
 
-- ****Organization****: All users belonging to the organizations in the bundle are added as authorized members.
+  - ****Organization****: All users belonging to the organization entities in the bundle are added as authorized members.
 
-- ***Static fields***
+  - ***Static fields***
 
 This component also supports static fields for authorized members: users, groups, and organizations.
 
@@ -331,6 +338,15 @@ This component makes a direct query to the database before the Send for ingestio
 
 For more details, see [Organization segregation](https://docs.opencti.io/latest/administration/organization-segregation/).
 
+### Transform with AI
+
+This component sends the bundle to the configured AI agent. By default, it uses the "CTI STIX transformer" agent, which is configured to only use the STIX 2.1 data schema and returns a STIX bundle that can then be further processed by the playbook.
+
+Use **Additional user instructions** to provide the agent with a prompt to follow, and choose the user the agent should run as so that it only has access to the data it needs. For security reasons, the **Run as** selection is limited to yourself (the user editing the playbook) and service accounts.
+
+!!! warning "This component requires access to the XTM One platform and will consume usage of your XTM One quota."
+
+
 ### Unshare with organizations
 
 This component removes sharing for the configured entities in the received STIX 2.1 bundle from the organizations you set. Your platform must have a main organization declared in ****Settings > Parameters****. To avoid conflicts between playbook components, apply the Unshare with Organisations step before any Share with Organisation steps — or, handle unsharing in a separate playbook altogether.
@@ -355,26 +371,27 @@ These components end the playbook or branch.
 
 ### Send email from template
 
-This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use.
+This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
 
 ***Component details***
-***Dynamic variables***
 
-This component supports dynamic variables:
+***Dynamic targets***
 
-- ***Dynamic from the triggering entity (as target)***: Sends the email to the corresponding user of the field you choose, based on the triggering entity only. You can choose from:
+This component supports dynamic targets on the field selected and then based on the entities set in the 'Resolve dynamic targets from'. 
 
-- ****Creator****: Sends an email using the selected template to the corresponding user.
+***Dynamic from context***
+Sends the email to the corresponding user of the field you choose, based on the entity specified in the bundle scope. You can choose the email targets from:
 
-- ****Assignee****: Sends an email using the selected template to the corresponding user.
+- ****Creator****: Sends an email using the selected template to the user(s) listed as creator(s) on the entity.
 
-- ****Participant****: Sends an email using the selected template to the corresponding user.
+- ****Assignee****: Sends an email using the selected template to the user(s) listed as assignee(s) on the entity.
 
-- ***Dynamic from the bundle (as target)***: Sends the email to the corresponding users of all entities in the bundle, not only the triggering entity.
+- ****Participant****: Sends an email using the selected template to the user(s) listed as participant(s) on the entity.
 
-- ****Organization****: All users of all organizations in the bundle receive an email.
+***Dynamic from organizations present in the bundle***
+Sends the email to the corresponding users of the organization entities in the bundle.
 
-- ***Static fields***
+***Static fields***
 
 This component also supports static fields for recipients: users, groups, and organizations.
 
@@ -382,8 +399,31 @@ This component also supports static fields for recipients: users, groups, and or
 
 This component passes the STIX 2.1 bundle to the data stream for writing. It has no output and should be the final component in a branch of your playbook.
 
+### Send to AI
+
+This component passes the STIX 2.1 bundle to the AI agent, by default this will be set to the CTI STIX Consumer. Configure this component with the additional user provided instructions that will act as the user prompt and set the user account that the agent will run as to ensure it has the correct access permissions. For security reasons, the **Run as** selection is limited to yourself (the user editing the playbook) and service accounts. Once the data is processed the playbook will complete and the bundle will continue to be processed by the AI agent depending on instructions. For example the instructions may specify the creation of a new weekly grouping of data to be created in OpenCTI, the AI agent would then create the new grouping in the Draft space within OpenCTI where an analyst can review the AI agent's output.
+
 ### Send to notifier
 
-This component generates a notification each time it receives a STIX 2.1 bundle. The Send to notifier component ends a branch but does not save any changes.
+This component generates a notification each time it receives a STIX 2.1 bundle. The Send to notifier component ends a branch but does not save any changes. You can select the notifier to be used and set the notification targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
+
+***Component details***
+***Dynamic variables***
+This component supports dynamic targets on the field selected and then based on the entities set in the 'Resolve dynamic targets from'. 
+
+***Dynamic from context***
+Sends the notification to the corresponding user of the field you choose, based on the entity specified in the bundle scope. You can choose the notifier targets from:
+
+- ****Creator****: Sends a notification using the selected notifier to the user(s) listed as creator(s) on the entity.
+
+- ****Assignee****: Sends a notification using the selected notifier to the user(s) listed as assignee(s) on the entity.
+
+- ****Participant****: Sends a notification using the selected notifier to the user(s) listed as participant(s) on the entity.
+
+***Dynamic from organizations present in the bundle***: Sends the notification to the corresponding users of all organization entities in the bundle.
+
+***Static fields***
+
+This component also supports static fields for recipients: users, groups, and organizations.
 
 To save changes, create a branch next to the notifier by clicking the ****arrow**** icon in the bottom-right corner of the component, and add a ****Send for ingestion**** component in that branch.

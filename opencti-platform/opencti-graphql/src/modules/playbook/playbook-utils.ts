@@ -108,6 +108,23 @@ export const convertMembersToUsers = async (
   baseData: StixObject,
   bundle: StixBundle,
 ) => {
+  return convertMembersToUsersFromElements(members, [baseData], bundle);
+};
+
+/**
+ * Returns the list of all users authorized based on given members array,
+ * resolving dynamic targets (ASSIGNEES, PARTICIPANTS, etc.) from multiple source elements.
+ *
+ * @param members Array of members.
+ * @param sourceElements Array of STIX elements to extract dynamic targets from.
+ * @param bundle Stix bundle transiting through playbook components.
+ * @returns List of users.
+ */
+export const convertMembersToUsersFromElements = async (
+  members: { value: string }[],
+  sourceElements: StixObject[],
+  bundle: StixBundle,
+) => {
   if (isEmptyField(members)) return [];
   const platformUsers = await getEntitiesListFromCache<AuthUser>(
     executionContext('playbook_components'),
@@ -115,27 +132,37 @@ export const convertMembersToUsers = async (
     ENTITY_TYPE_USER,
   );
 
-  const membersIds: string[] = [];
+  const membersIdsSet = new Set<string>();
   members?.forEach((m) => {
     if (m.value === 'AUTHOR') {
-      membersIds.push(baseData.extensions[STIX_EXT_OCTI].created_by_ref_id);
+      for (const element of sourceElements) {
+        const refId = element.extensions[STIX_EXT_OCTI].created_by_ref_id;
+        if (refId) membersIdsSet.add(refId);
+      }
     } else if (m.value === 'CREATORS') {
-      const creatorIds = baseData.extensions[STIX_EXT_OCTI].creator_ids;
-      pushAll(membersIds, creatorIds);
+      for (const element of sourceElements) {
+        const creatorIds = element.extensions[STIX_EXT_OCTI].creator_ids;
+        if (creatorIds) creatorIds.forEach((id: string) => membersIdsSet.add(id));
+      }
     } else if (m.value === 'ASSIGNEES') {
-      const assigneeIds = baseData.extensions[STIX_EXT_OCTI].assignee_ids;
-      pushAll(membersIds, assigneeIds);
+      for (const element of sourceElements) {
+        const assigneeIds = element.extensions[STIX_EXT_OCTI].assignee_ids;
+        if (assigneeIds) assigneeIds.forEach((id: string) => membersIdsSet.add(id));
+      }
     } else if (m.value === 'PARTICIPANTS') {
-      const participantIds = baseData.extensions[STIX_EXT_OCTI].participant_ids;
-      pushAll(membersIds, participantIds);
+      for (const element of sourceElements) {
+        const participantIds = element.extensions[STIX_EXT_OCTI].participant_ids;
+        if (participantIds) participantIds.forEach((id: string) => membersIdsSet.add(id));
+      }
     } else if (m.value === 'BUNDLE_ORGANIZATIONS') {
       const bundleOrganizations = bundle.objects.filter((o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
-      const bundleOrganizationsIds = bundleOrganizations.map((o) => o.extensions[STIX_EXT_OCTI].id);
-      pushAll(membersIds, bundleOrganizationsIds);
+      bundleOrganizations.forEach((o) => membersIdsSet.add(o.extensions[STIX_EXT_OCTI].id));
     } else {
-      membersIds.push(m.value);
+      membersIdsSet.add(m.value);
     }
   });
+
+  const membersIds = [...membersIdsSet];
 
   const users = platformUsers.filter((user) => {
     if (isInternalUser(user)) return false;

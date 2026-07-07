@@ -15,8 +15,18 @@ import StixCoreObjectsRadar from '../../private/components/common/stix_core_obje
 import StixCoreObjectsMultiHeatMap from '../../private/components/common/stix_core_objects/StixCoreObjectsMultiHeatMap';
 import StixCoreObjectsTreeMap from '../../private/components/common/stix_core_objects/StixCoreObjectsTreeMap';
 import StixCoreObjectsWordCloud from '../../private/components/common/stix_core_objects/StixCoreObjectsWordCloud';
+import DraftsNumber from '@components/common/drafts/DraftsNumber';
+import DraftsList from '@components/common/drafts/DraftsList';
+import DraftsDistributionList from '@components/common/drafts/DraftsDistributionList';
+import DraftsDonut from '@components/common/drafts/DraftsDonut';
+import DraftsHorizontalBars from '@components/common/drafts/DraftsHorizontalBars';
+import DraftsMultiVerticalBars from '@components/common/drafts/DraftsMultiVerticalBars';
+import DraftsMultiLineChart from '@components/common/drafts/DraftsMultiLineChart';
+import DraftsMultiAreaChart from '@components/common/drafts/DraftsMultiAreaChart';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
+import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
+import useHelper from '../../utils/hooks/useHelper';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
@@ -26,6 +36,11 @@ interface DashboardEntitiesVizProps {
   refreshRate?: number | null;
 }
 
+const isDraftWorkspaceWidget = (widgetData: Widget): boolean => {
+  return widgetData.dataSelection.length > 0
+    && widgetData.dataSelection.every((selection) => isDraftWorkspaceFilterGroup(selection.filters));
+};
+
 const DashboardEntitiesViz = ({
   widget,
   popover,
@@ -33,6 +48,11 @@ const DashboardEntitiesViz = ({
   host,
   refreshRate,
 }: DashboardEntitiesVizProps) => {
+  const { isFeatureEnable } = useHelper();
+  // TODO(DRAFT_WORKFLOW): remove isDraftWorkflowEnabled and isDraftWidget flag check when flag is removed
+  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
+  const isDraftWidget = isDraftWorkflowEnabled && isDraftWorkspaceWidget(widget);
+
   switch (widget.type) {
     case 'bookmark':
       return (
@@ -48,6 +68,20 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'number':
+      if (isDraftWidget) {
+        return (
+          <DraftsNumber
+            variant={undefined} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       return (
         <StixCoreObjectsNumber
           variant={undefined}
@@ -62,6 +96,22 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'list':
+      if (isDraftWidget) {
+        return (
+          <DraftsList
+            variant={undefined} // because calling js component in ts
+            widgetId={widget.id}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            title={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       return (
         <StixCoreObjectsList
           variant={undefined}
@@ -77,6 +127,20 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'distribution-list':
+      if (isDraftWidget) {
+        return (
+          <DraftsDistributionList
+            variant={undefined} // because calling js component in ts
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       return (
         <StixCoreObjectsDistributionList
           variant={undefined}
@@ -90,6 +154,20 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'vertical-bar':
+      if (isDraftWidget) {
+        return (
+          <DraftsMultiVerticalBars
+            variant={undefined} // because calling js component in ts
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       return (
         <StixCoreObjectsMultiVerticalBars
           variant={undefined}
@@ -103,6 +181,20 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'line':
+      if (isDraftWidget) {
+        return (
+          <DraftsMultiLineChart
+            variant={undefined} // because calling js component in ts
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       return (
         <StixCoreObjectsMultiLineChart
           variant={undefined}
@@ -116,6 +208,20 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'area':
+      if (isDraftWidget) {
+        return (
+          <DraftsMultiAreaChart
+            variant={undefined} // because calling js component in ts
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       return (
         <StixCoreObjectsMultiAreaChart
           variant={undefined}
@@ -142,6 +248,20 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'donut':
+      if (isDraftWidget) {
+        return (
+          <DraftsDonut
+            variant={undefined} // because calling js component in ts
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       return (
         <StixCoreObjectsDonut
           variant={undefined}
@@ -167,6 +287,20 @@ const DashboardEntitiesViz = ({
         />
       );
     case 'horizontal-bar':
+      if (isDraftWidget) {
+        return (
+          <DraftsHorizontalBars
+            variant={undefined} // because calling js component in ts
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
       if (
         widget.dataSelection.length > 1
         && widget.dataSelection[0].attribute?.endsWith('_id')

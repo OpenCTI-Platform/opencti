@@ -145,16 +145,18 @@ class Vocabulary:
         :return: Vocabulary object or None
         :rtype: dict or None
         """
-        if "vocab_" + vocab in cache:
-            vocab_data = cache["vocab_" + vocab]
+        category = field.get("category", cache.get("category_" + field["key"]))
+        cache_key = f"vocab_{category}_{vocab}"
+        if cache_key in cache:
+            vocab_data = cache[cache_key]
         else:
             vocab_data = self.read_or_create_unchecked(
                 name=vocab,
                 required=field["required"],
-                category=cache["category_" + field["key"]],
+                category=category,
             )
         if vocab_data is not None:
-            cache["vocab_" + vocab] = vocab_data
+            cache[cache_key] = vocab_data
         return vocab_data
 
     def create(self, **kwargs):

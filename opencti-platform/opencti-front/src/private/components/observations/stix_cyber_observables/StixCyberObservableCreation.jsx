@@ -930,6 +930,29 @@ const StixCyberObservableCreation = ({
                               />
                             );
                           }
+                          if (
+                            attribute.value === 'name'
+                            && status.type === 'Autonomous-System'
+                          ) {
+                            const setDefaultAutonomousSystemId = (_, value) => {
+                              const match = value.match(/^as(\d+)$/i);
+                              if (match && !values.number) {
+                                setFieldValue('number', parseInt(match[1], 10));
+                              }
+                            };
+                            return (
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                key={attribute.value}
+                                name={attribute.value}
+                                label={t_i18n(attribute.value)}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onSubmit={setDefaultAutonomousSystemId}
+                              />
+                            );
+                          }
                           return (
                             <Field
                               component={TextField}

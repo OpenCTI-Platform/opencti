@@ -156,6 +156,7 @@ const KillChainPhases = () => {
           contextFilters={contextFilters}
           lineFragment={lineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
+          taskScope="SETTINGS"
           actions={(killChainPhase) => <KillChainPhasePopover killChainPhase={killChainPhase} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Kill-Chain-Phase'] }}
           disableNavigation

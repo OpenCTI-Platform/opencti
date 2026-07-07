@@ -1,7 +1,7 @@
-import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from '../../utils/widget/widget';
-import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
-import { type FilterDefinition } from '../../utils/hooks/useAuth';
-import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
+import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from 'src/utils/widget/widget';
+import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes } from 'src/utils/filters/filtersUtils';
+import { type FilterDefinition } from 'src/utils/hooks/useAuth';
+import { computeRelativeDate, dayStartDate, formatDate } from 'src/utils/Time';
 import { DashboardConfig } from './dashboard-types';
 
 export const resolveDataSelection = ({
@@ -15,7 +15,7 @@ export const resolveDataSelection = ({
   perspective: WidgetPerspective;
   host?: WidgetHost;
 }) => {
-  let mainEntityTypes = ['Stix-Core-Object'];
+  let mainEntityTypes = ['Stix-Core-Object', 'DraftWorkspace'];
   if (perspective === 'relationships') {
     mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
   } else if (perspective === 'audits') {
@@ -49,14 +49,14 @@ export const resolveDataSelection = ({
   };
 };
 
-export const computeStartEndDates = (config: DashboardConfig) => {
-  const startDate = config.relativeDate
+export const computeStartEndDates = (config?: DashboardConfig) => {
+  const startDate = config?.relativeDate
     ? computeRelativeDate(config.relativeDate)
-    : config.startDate;
+    : config?.startDate;
 
-  const endDate = config.relativeDate
+  const endDate = config?.relativeDate
     ? formatDate(dayStartDate(null, false))
-    : config.endDate;
+    : config?.endDate;
 
   return { startDate, endDate };
 };

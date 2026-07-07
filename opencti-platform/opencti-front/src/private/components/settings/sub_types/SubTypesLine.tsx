@@ -14,6 +14,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,6 +53,7 @@ const subTypesLinesFragment = graphql`
       platform_hidden_type
       target_type
       availableSettings
+      workflow_published_version_id
     }
     statuses {
       id
@@ -91,6 +93,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const nodeSubType = useFragment(subTypesLinesFragment, node);
 
   const renderOptionIcon = (option: string) => {
@@ -105,6 +108,11 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
   const renderWorkflowStatus = () => {
     if (!nodeSubType.settings?.availableSettings?.includes('workflow_configuration')) {
       return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
+    }
+    if (nodeSubType.label === 'DraftWorkspace' && isFeatureEnable('DRAFT_WORKFLOW')) {
+      return nodeSubType.settings?.workflow_published_version_id
+        ? <CheckCircleOutlined fontSize="small" color="success" />
+        : <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
     }
     if (nodeSubType.workflowEnabled) {
       return <CheckCircleOutlined fontSize="small" color="success" />;

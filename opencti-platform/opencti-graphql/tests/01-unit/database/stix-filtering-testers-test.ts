@@ -185,6 +185,52 @@ describe('Stix filter testers', () => {
       expect(testers.testWorkflow(reportWithWorkflow, filter)).toEqual(false);
       expect(testers.testWorkflow(reportWithoutWorkflow, filter)).toEqual(false);
     });
+
+    it('should test has_changed with workflow attribute changed', () => {
+      const filter: Filter = {
+        key: ['x_opencti_workflow_id'],
+        mode: 'or',
+        operator: 'has_changed',
+        values: [],
+      } as Filter;
+      const changeContext = { filterKey: 'x_opencti_workflow_id', eventContext: { changedAttributes: ['x_opencti_workflow_id', 'confidence'] } };
+      expect(testers.testWorkflow(reportWithWorkflow, filter, changeContext)).toEqual(true);
+      expect(testers.testWorkflow(reportWithoutWorkflow, filter, changeContext)).toEqual(true);
+    });
+
+    it('should test has_changed with workflow attribute NOT changed', () => {
+      const filter: Filter = {
+        key: ['x_opencti_workflow_id'],
+        mode: 'or',
+        operator: 'has_changed',
+        values: [],
+      } as Filter;
+      const changeContext = { filterKey: 'x_opencti_workflow_id', eventContext: { changedAttributes: ['confidence', 'description'] } };
+      expect(testers.testWorkflow(reportWithWorkflow, filter, changeContext)).toEqual(false);
+      expect(testers.testWorkflow(reportWithoutWorkflow, filter, changeContext)).toEqual(false);
+    });
+
+    it('should test not_has_changed with workflow attribute changed', () => {
+      const filter: Filter = {
+        key: ['x_opencti_workflow_id'],
+        mode: 'or',
+        operator: 'not_has_changed',
+        values: [],
+      } as Filter;
+      const changeContext = { filterKey: 'x_opencti_workflow_id', eventContext: { changedAttributes: ['x_opencti_workflow_id'] } };
+      expect(testers.testWorkflow(reportWithWorkflow, filter, changeContext)).toEqual(false);
+    });
+
+    it('should test not_has_changed with workflow attribute NOT changed', () => {
+      const filter: Filter = {
+        key: ['x_opencti_workflow_id'],
+        mode: 'or',
+        operator: 'not_has_changed',
+        values: [],
+      } as Filter;
+      const changeContext = { filterKey: 'x_opencti_workflow_id', eventContext: { changedAttributes: ['confidence'] } };
+      expect(testers.testWorkflow(reportWithWorkflow, filter, changeContext)).toEqual(true);
+    });
   });
 
   describe('by CreatedBy (key=createdBy)', () => {

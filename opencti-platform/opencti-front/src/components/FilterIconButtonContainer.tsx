@@ -14,7 +14,7 @@ import { DataColumns } from './list_lines';
 import type { WidgetHost } from '../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
-import DisplayFilterGroup from './filters/DisplayFilterGroup';
+import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
@@ -239,7 +239,7 @@ const FilterIconButtonContainer: FunctionComponent<
         );
         const isNotLastFilter = index < displayedFilters.length - 1;
 
-        const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator ?? 'eq')
+        const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
         // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
@@ -380,7 +380,7 @@ const FilterIconButtonContainer: FunctionComponent<
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-        <DisplayFilterGroup
+        <ImbricatedFilterGroupDisplay
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}

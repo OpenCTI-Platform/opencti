@@ -290,6 +290,8 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               controlledSelectedTab={selectedTab}
               controlledSetSelectTab={handleChangeSelectedTab}
               height={400}
+              uploadEntityId={containerData.id}
+              uploadFileMarkings={containerData.objectMarking?.map(({ id }) => id) ?? []}
             />
             <Field
               component={RichTextField}

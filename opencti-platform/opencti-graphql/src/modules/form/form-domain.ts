@@ -4,7 +4,7 @@ import type { FileHandle } from 'fs/promises';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
-import { ENTITY_TYPE_FORM, FormSchemaDefinitionSchema } from './form-types';
+import { ENTITY_TYPE_FORM, FormFieldType, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
@@ -222,6 +222,31 @@ const normalizeOptionId = (option: unknown): string | undefined => {
   return typeof option === 'string' && option.length > 0 ? option : undefined;
 };
 
+export const resolveMainEntityAuthorFromValues = (
+  schema: FormSchemaDefinition,
+  values: Record<string, any>,
+): string | null => {
+  const createdByField = schema.fields.find((f) => f.type === FormFieldType.CreatedBy);
+  const createdByKeys = Array.from(new Set([
+    createdByField?.name,
+    createdByField?.attributeMapping?.attributeName,
+    'createdBy',
+  ].filter((k): k is string => typeof k === 'string' && k.length > 0)));
+  const resolveIn = (container: any): string | undefined => {
+    for (let i = 0; i < createdByKeys.length; i += 1) {
+      const id = normalizeOptionId(container?.[createdByKeys[i]]);
+      if (id) return id;
+    }
+    return undefined;
+  };
+  return (
+    resolveIn(values)
+    || resolveIn(values.mainEntityFields)
+    || resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined)
+    || null
+  );
+};
+
 export const resolveDraftFieldDefaults = (
   formName: string,
   values: Record<string, unknown>,
@@ -332,6 +357,7 @@ const makeCompositeKey = (id: string, groupsRestrictionIds: string[] | undefined
 export const resolveAuthorizedMembersForDraft = (
   user: AuthUser,
   rawRules: unknown[],
+  createdBy: string | null = null,
 ): MemberAccessInput[] => {
   const authorizedMembersMap = new Map<string, MemberAccessInput>();
   rawRules.forEach((rule) => {
@@ -355,19 +381,16 @@ export const resolveAuthorizedMembersForDraft = (
     }
 
     if (value === 'AUTHOR') {
-      if (user.organizations) {
-        user.organizations.forEach((org) => {
-          // Each (org, groupsRestriction) combination is a separate entry so that
-          // e.g. "Org A + analyst → edit" and "Org A + manager → view" are kept distinct.
-          const key = makeCompositeKey(org.internal_id, groupsRestrictionIds);
-          if (!authorizedMembersMap.has(key)) {
-            authorizedMembersMap.set(key, {
-              id: org.internal_id,
-              access_right: accessRight,
-              groups_restriction_ids: groupsRestrictionIds,
-            });
-          }
-        });
+      if (createdBy) {
+        // AUTHOR resolves to the STIX author of the draft (the createdBy entity, typically an Organization).
+        const key = makeCompositeKey(createdBy, groupsRestrictionIds);
+        if (!authorizedMembersMap.has(key)) {
+          authorizedMembersMap.set(key, {
+            id: createdBy,
+            access_right: accessRight,
+            groups_restriction_ids: groupsRestrictionIds,
+          });
+        }
       }
       return;
     }
@@ -475,10 +498,7 @@ export const formSubmit = async (
         if (schema.draftDefaults.author.type === 'static') {
           createdBy = schema.draftDefaults.author.defaultValue || null;
         } else if (schema.draftDefaults.author.type === 'main_entity_author') {
-          const possibleAuthor = values.createdBy
-            || values.mainEntityFields?.createdBy
-            || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
-          createdBy = normalizeOptionId(possibleAuthor) || null;
+          createdBy = resolveMainEntityAuthorFromValues(schema, values);
         } else if (schema.draftDefaults.author.type === 'none') {
           createdBy = null;
         }
@@ -489,9 +509,9 @@ export const formSubmit = async (
       const canOverrideAuthorizedMembers = isFormIntakeDefaultsEnabled && (isBypass || schema.draftDefaults?.authorizedMembers?.isEditable);
       let authorized_members: MemberAccessInput[] = [];
       if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
+        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
       } else if (isFormIntakeDefaultsEnabled && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
+        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
       }
 
       const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
@@ -517,6 +537,7 @@ export const formSubmit = async (
       work_id: work.id,
       draft_id: draftId,
       update: true,
+      no_split: true,
     });
 
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });

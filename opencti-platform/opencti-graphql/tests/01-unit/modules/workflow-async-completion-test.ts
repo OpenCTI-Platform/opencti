@@ -280,6 +280,108 @@ describe('reportWorkflowAsyncActionResult', () => {
     expect(history[history.length - 1].state).toBe('reviewing');
   });
 
+  it('sets pendingStatus=error and persists pendingTransition when an unknown onEnter action type is encountered', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      onEnterActions: [{ type: 'unknownOnEnterType', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).unknownOnEnterType = undefined;
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const calls = (updateAttribute as any).mock.calls;
+    const lastPatches = calls[calls.length - 1][4];
+    expect(lastPatches.find((p: any) => p.key === 'pendingStatus')?.value[0]).toBe('error');
+    expect(lastPatches.find((p: any) => p.key === 'pendingError')?.value[0]).toContain('Unknown onEnter action type');
+    // pendingTransition must be persisted so the UI shows the correct slot statuses
+    const ptPatch = lastPatches.find((p: any) => p.key === 'pendingTransition');
+    expect(ptPatch).toBeDefined();
+    const ptPersisted = JSON.parse(ptPatch.value[0]);
+    expect(ptPersisted.asyncActions[0].status).toBe('success');
+  });
+
+  it('sets pendingStatus=error and persists pendingTransition when an onEnter action throws', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      onEnterActions: [{ type: 'throwingOnEnter', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).throwingOnEnter = vi.fn().mockRejectedValue(new Error('onEnter blew up'));
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const calls = (updateAttribute as any).mock.calls;
+    const lastPatches = calls[calls.length - 1][4];
+    expect(lastPatches.find((p: any) => p.key === 'pendingStatus')?.value[0]).toBe('error');
+    expect(lastPatches.find((p: any) => p.key === 'pendingError')?.value[0]).toContain('onEnter blew up');
+    const ptPatch = lastPatches.find((p: any) => p.key === 'pendingTransition');
+    expect(ptPatch).toBeDefined();
+    const ptPersisted = JSON.parse(ptPatch.value[0]);
+    expect(ptPersisted.asyncActions[0].status).toBe('success');
+  });
+
+  it('runs onEnterActions after syncActions and then advances state', async () => {
+    const executionOrder: string[] = [];
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [{ type: 'syncFirst', params: {} }],
+      onEnterActions: [{ type: 'onEnterSecond', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).syncFirst = vi.fn().mockImplementation(() => { executionOrder.push('sync'); });
+    (ActionRegistry as any).onEnterSecond = vi.fn().mockImplementation(() => { executionOrder.push('onEnter'); });
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    // syncActions must run before onEnterActions
+    expect(executionOrder).toEqual(['sync', 'onEnter']);
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    expect(patches.find((p: any) => p.key === 'currentState')?.value[0]).toBe('reviewing');
+    expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
+    expect(patches.find((p: any) => p.key === 'pendingStatus')?.value[0]).toBeNull();
+  });
+
+  it('advances state when all slots succeed and onEnterActions all succeed', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      onEnterActions: [{ type: 'onEnterOk', params: { flag: true } }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).onEnterOk = vi.fn().mockResolvedValue(undefined);
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    expect((ActionRegistry as any).onEnterOk).toHaveBeenCalledTimes(1);
+    expect(updateAttribute).toHaveBeenCalledTimes(1);
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    expect(patches.find((p: any) => p.key === 'currentState')?.value[0]).toBe('reviewing');
+    expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
+  });
+
   it('accepts a pendingTransition stored as a JSON object (not a string)', async () => {
     const pt = makePendingTransition({
       asyncActions: [
@@ -295,5 +397,198 @@ describe('reportWorkflowAsyncActionResult', () => {
     expect(updateAttribute).toHaveBeenCalledTimes(1);
     const [, , , , patches] = (updateAttribute as any).mock.calls[0];
     expect(patches.find((p: any) => p.key === 'currentState')?.value[0]).toBe('reviewing');
+  });
+
+  // ---------------------------------------------------------------------------
+  // Full entity loading (fix for "Draft author org" not resolved in onEnterActions)
+  // ---------------------------------------------------------------------------
+
+  describe('full entity loading for workflowContext', () => {
+    it('passes the full entity (with all relations) to onEnterActions', async () => {
+      const fullEntity = {
+        id: 'entity-id',
+        internal_id: 'entity-id',
+        entity_type: 'DraftWorkspace',
+        'createdBy': 'org-author-id',
+        creator_id: 'creator-id',
+      };
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [],
+        onEnterActions: [{ type: 'captureEntityAction', params: {} }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      // First call: load workflow instance; second call: load full target entity
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureEntityAction = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // The action must receive the full entity, not just { id }
+      expect(capturedEntity).toEqual(fullEntity);
+      expect(capturedEntity['createdBy']).toBe('org-author-id');
+      expect(capturedEntity.creator_id).toBe('creator-id');
+    });
+
+    it('passes the full entity (with all relations) to syncActions', async () => {
+      const fullEntity = {
+        id: 'entity-id',
+        internal_id: 'entity-id',
+        entity_type: 'DraftWorkspace',
+        'createdBy': 'org-author-id',
+      };
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [{ type: 'captureSyncEntity', params: {} }],
+        onEnterActions: [],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureSyncEntity = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(capturedEntity).toEqual(fullEntity);
+      expect(capturedEntity['createdBy']).toBe('org-author-id');
+    });
+
+    it('falls back to { id } when the full target entity cannot be found (e.g. deleted during async window)', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [],
+        onEnterActions: [{ type: 'captureFallbackEntity', params: {} }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      // First call: load workflow instance; second call: entity not found
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(null);
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureFallbackEntity = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // Should fall back to minimal stub so the rest of the pipeline can still proceed
+      expect(capturedEntity).toEqual({ id: 'entity-id' });
+    });
+
+    it('falls back to { id } and logs a warning when storeLoadById throws (e.g. transient DB error)', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [
+          { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+        ],
+        syncActions: [],
+        onEnterActions: [{ type: 'captureErrorFallbackEntity', params: {} }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockRejectedValueOnce(new Error('DB connection lost'));
+
+      let capturedEntity: any;
+      (ActionRegistry as any).captureErrorFallbackEntity = vi.fn().mockImplementation((ctx: any) => {
+        capturedEntity = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      const { logApp } = await import('../../../src/config/conf');
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // Should still proceed with the minimal stub
+      expect(capturedEntity).toEqual({ id: 'entity-id' });
+      // And the error should be logged
+      expect((logApp.warn as any)).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load full entity'),
+        expect.objectContaining({ entityId: 'entity-id' }),
+      );
+    });
+
+    // Regression test for #16843: the second storeLoadById call must happen and its result
+    // must reach the action so that dynamic members (AUTHOR/CREATORS/ASSIGNEES/PARTICIPANTS)
+    // can be resolved correctly.
+    it('calls storeLoadById a second time with the entity_id to load the full entity', async () => {
+      const pt = makePendingTransition({
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [],
+        onEnterActions: [],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+      const fullEntity = { id: 'entity-id', entity_type: 'DraftWorkspace' };
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // Must have been called exactly twice: once for instance, once for the full target entity
+      expect(storeLoadById).toHaveBeenCalledTimes(2);
+      const secondCall = (storeLoadById as any).mock.calls[1];
+      expect(secondCall[2]).toBe('entity-id'); // id argument
+      expect(secondCall[3]).toBe('Basic-Object'); // type argument
+    });
+
+    // Regression test for #16843: updateAuthorizedMembers running as an onEnterAction must
+    // receive an entity that carries RELATION_CREATED_BY so the AUTHOR dynamic member resolves.
+    it('passes RELATION_CREATED_BY on the entity to updateAuthorizedMembers in onEnterActions (AUTHOR resolution)', async () => {
+      const RELATION_CREATED_BY = 'createdBy';
+      const fullEntity = {
+        id: 'entity-id',
+        entity_type: 'DraftWorkspace',
+        [RELATION_CREATED_BY]: 'org-author-id',
+      };
+      const pt = makePendingTransition({
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [],
+        onEnterActions: [{ type: 'updateAuthorizedMembers', params: { members: [{ id: 'AUTHOR', access_right: 'edit' }] } }],
+      });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+
+      let entitySeenByAction: any;
+      (ActionRegistry as any).updateAuthorizedMembers = vi.fn().mockImplementation((ctx: any) => {
+        entitySeenByAction = ctx.entity;
+      });
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      // The action must see the full entity with RELATION_CREATED_BY so AUTHOR can resolve
+      expect(entitySeenByAction).toEqual(fullEntity);
+      expect(entitySeenByAction[RELATION_CREATED_BY]).toBe('org-author-id');
+    });
   });
 });

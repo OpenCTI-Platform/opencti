@@ -10,6 +10,7 @@ import {
   getUserIdByEmail,
   getOrganizationIdByName,
   queryInitPlatformAsAdmin,
+  buildStandardUser,
 } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAuthUser } from '../../utils/testQueryHelper';
 import { resolveUserById } from '../../../src/domain/user';
@@ -20,6 +21,7 @@ import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspa
 import { fileToReadStream } from '../../../src/database/file-storage';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
+import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
@@ -1065,6 +1067,245 @@ describe('Drafts workspace resolver testing', () => {
         query: DELETE_DRAFT_WORKSPACE_QUERY,
         variables: { id: restrictedDraftId },
       });
+    });
+  });
+
+  describe('draftWorkspacesNumber, draftWorkspacesTimeSeries, draftWorkspacesDistribution', () => {
+    const DRAFT_WORKSPACES_NUMBER_QUERY = gql`
+      query DraftWorkspacesNumber($filters: FilterGroup) {
+        draftWorkspacesNumber(filters: $filters) {
+          count
+          total
+        }
+      }
+    `;
+
+    const DRAFT_WORKSPACES_TIME_SERIES_QUERY = gql`
+      query DraftWorkspacesTimeSeries(
+        $field: String!
+        $operation: StatsOperation!
+        $startDate: DateTime!
+        $endDate: DateTime
+        $interval: String!
+        $filters: FilterGroup
+      ) {
+        draftWorkspacesTimeSeries(
+          field: $field
+          operation: $operation
+          startDate: $startDate
+          endDate: $endDate
+          interval: $interval
+          filters: $filters
+        ) {
+          date
+          value
+        }
+      }
+    `;
+
+    const DRAFT_WORKSPACES_DISTRIBUTION_QUERY = gql`
+      query DraftWorkspacesDistribution(
+        $field: String!
+        $operation: StatsOperation!
+        $filters: FilterGroup
+      ) {
+        draftWorkspacesDistribution(
+          field: $field
+          operation: $operation
+          filters: $filters
+        ) {
+          label
+          value
+        }
+      }
+    `;
+
+    let statsDraftId = '';
+
+    it('should create a draft for stats queries', async () => {
+      const result = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'Stats test draft', entity_id: 'stats-test-entity' } },
+      });
+      expect(result.errors).toBeUndefined();
+      statsDraftId = result.data?.draftWorkspaceAdd.id;
+      expect(statsDraftId).toBeDefined();
+    });
+
+    it('should return a number with count and total', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_NUMBER_QUERY,
+        variables: {},
+      });
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.draftWorkspacesNumber).toBeDefined();
+      expect(result.data?.draftWorkspacesNumber.total).toBeGreaterThanOrEqual(1);
+      expect(result.data?.draftWorkspacesNumber.count).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return a number filtered by entity_type=DraftWorkspace', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_NUMBER_QUERY,
+        variables: {
+          filters: {
+            mode: 'and',
+            filters: [{ key: 'entity_type', values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }],
+            filterGroups: [],
+          },
+        },
+      });
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.draftWorkspacesNumber.total).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return empty count when filtering by workflowInstanceCurrentState with no matching instances', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_NUMBER_QUERY,
+        variables: {
+          filters: {
+            mode: 'and',
+            filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['non-existent-status-template-id'], operator: 'eq', mode: 'or' }],
+            filterGroups: [],
+          },
+        },
+      });
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.draftWorkspacesNumber.count).toEqual(0);
+    });
+
+    it('should return a time series array', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_TIME_SERIES_QUERY,
+        variables: {
+          field: 'created_at',
+          operation: 'count',
+          startDate: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date().toISOString(),
+          interval: 'month',
+        },
+      });
+      expect(result.errors).toBeUndefined();
+      expect(Array.isArray(result.data?.draftWorkspacesTimeSeries)).toBe(true);
+      const total = result.data?.draftWorkspacesTimeSeries.reduce((sum: number, entry: { value: number }) => sum + entry.value, 0);
+      expect(total).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return a distribution by draft_status', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_DISTRIBUTION_QUERY,
+        variables: {
+          field: 'draft_status',
+          operation: 'count',
+        },
+      });
+      expect(result.errors).toBeUndefined();
+      expect(Array.isArray(result.data?.draftWorkspacesDistribution)).toBe(true);
+      expect(result.data?.draftWorkspacesDistribution.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return an empty distribution when field is workflowInstanceCurrentState and no instances exist', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_DISTRIBUTION_QUERY,
+        variables: {
+          field: WORKFLOW_INSTANCE_STATUS_FILTER,
+          operation: 'count',
+        },
+      });
+      expect(result.errors).toBeUndefined();
+      expect(Array.isArray(result.data?.draftWorkspacesDistribution)).toBe(true);
+    });
+
+    it('should clean up stats test draft', async () => {
+      const result = await queryAsAdmin({
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: statsDraftId },
+      });
+      expect(result.errors).toBeUndefined();
+    });
+  });
+
+  describe('Draft access with KNOWLEDGE_KNUPDATE capability in draft only (not in main)', () => {
+    // A user who has KNOWLEDGE_KNUPDATE only in their draft capabilities (not in main capabilities).
+    // This models a real-world scenario where the platform grants update rights exclusively in
+    // draft contexts — the user has no edit permissions on the live platform.
+    const userWithDraftCapaOnly = {
+      ...buildStandardUser([], [], []),
+      capabilities: [],
+      capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }],
+    };
+    const userWithNoCapa = {
+      ...buildStandardUser([], [], []),
+      capabilities: [],
+    };
+
+    let draftCreatedByDraftUser = '';
+
+    // The draftWorkspaceAdd mutation carries @auth(forDraft: [KNOWLEDGE_KNUPDATE]), which means
+    // the platform checks capabilitiesInDraft even without an active draft_context.
+    it('should allow creating a draft with KNOWLEDGE_KNUPDATE in draft capabilities only', async () => {
+      const result = await queryAsAuthUser(userWithDraftCapaOnly, {
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'draft-created-by-draft-only-user' } },
+      });
+      expect(result.errors, `Unexpected errors: ${JSON.stringify(result.errors)}`).toBeUndefined();
+      expect(result.data?.draftWorkspaceAdd).toBeDefined();
+      expect(result.data?.draftWorkspaceAdd.draft_status).toEqual(DRAFT_STATUS_OPEN);
+      draftCreatedByDraftUser = result.data?.draftWorkspaceAdd.id;
+    });
+
+    // draftWorkspacesRestricted carries @auth(for: [KNOWLEDGE]).
+    // KNOWLEDGE_KNUPDATE.includes('KNOWLEDGE') is true, so when draft_context is active the user
+    // passes the capability check through capabilitiesInDraft.
+    it('should allow listing drafts when KNOWLEDGE_KNUPDATE is in draft capabilities and a draft context is active', async () => {
+      // A pre-existing draft is needed to supply a valid draft_context.
+      const setupDraft = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'draft-context-for-list-access-test' } },
+      });
+      const draftContextId = setupDraft.data?.draftWorkspaceAdd.id;
+      expect(draftContextId).toBeDefined();
+
+      const userInDraftContext = {
+        ...userWithDraftCapaOnly,
+        draft_context: draftContextId,
+      };
+
+      const listResult = await queryAsAuthUser(userInDraftContext, {
+        query: gql`
+          query DraftWorkspacesRestricted {
+            draftWorkspacesRestricted(first: 5) {
+              edges {
+                node {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        `,
+      });
+      expect(listResult.errors, `Unexpected errors: ${JSON.stringify(listResult.errors)}`).toBeUndefined();
+      expect(listResult.data?.draftWorkspacesRestricted).toBeDefined();
+
+      // Cleanup the setup draft
+      await queryAsAdmin({ query: DELETE_DRAFT_WORKSPACE_QUERY, variables: { id: draftContextId } });
+    });
+
+    // Negative case: a user with no capabilities at all must be rejected with FORBIDDEN_ACCESS.
+    it('should not allow creating a draft with no capabilities', async () => {
+      const result = await queryAsAuthUser(userWithNoCapa, {
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'draft-should-be-forbidden' } },
+      });
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.length).toBe(1);
+      expect(result.errors?.[0].extensions?.code).toBe('FORBIDDEN_ACCESS');
+    });
+
+    it('should clean up drafts created during draft-only capability tests', async () => {
+      if (draftCreatedByDraftUser) {
+        await queryAsAdmin({ query: DELETE_DRAFT_WORKSPACE_QUERY, variables: { id: draftCreatedByDraftUser } });
+      }
     });
   });
 });

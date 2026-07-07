@@ -5,10 +5,11 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '../../../components/Theme';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, isDraftWorkspaceFilterGroup, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
+import useHelper from '../../../utils/hooks/useHelper';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -20,6 +21,9 @@ interface WidgetFiltersProps {
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  // TODO(DRAFT_WORKFLOW): remove isDraftWorkflowEnabled and related checks when flag is removed
+  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
@@ -45,8 +49,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
+      ...(isDraftWorkflowEnabled ? ['DraftWorkspace'] : []),
     ];
-    searchContext = { entityTypes: ['Stix-Core-Object'] };
+    const isDraftWorkspaceOnly = isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(filters);
+    searchContext = isDraftWorkspaceOnly
+      ? { entityTypes: ['Stix-Core-Object', 'DraftWorkspace'] }
+      : { entityTypes: ['Stix-Core-Object'] };
   }
 
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);

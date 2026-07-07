@@ -70,7 +70,7 @@ describe('PublishButton', () => {
       },
     ];
 
-    it('should render disabled button when not published and has errors', () => {
+    it('should render enabled button when not published and has errors', () => {
       renderWithTheme(
         <PublishButton
           validationStatus={{ published: false, validationErrors }}
@@ -80,7 +80,20 @@ describe('PublishButton', () => {
 
       const button = screen.getByRole('button', { name: /Publish/i });
       expect(button).toBeInTheDocument();
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+    });
+
+    it('should call onPublish when button is clicked (to trigger toast)', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ published: false, validationErrors }}
+          onPublish={mockOnPublish}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /Publish/i }));
+      expect(mockOnPublish).toHaveBeenCalledTimes(1);
     });
   });
 

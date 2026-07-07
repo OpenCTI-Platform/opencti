@@ -6,6 +6,7 @@ import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
+import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 
 // region platform start and stop
 export const platformStart = async () => {
@@ -55,6 +56,8 @@ export const platformStart = async () => {
       logApp.error('[OPENCTI] Modules startup failed', { cause: modulesError });
       throw modulesError;
     }
+    // Start the engine health monitoring CRON
+    startEngineHealthMonitor();
     logApp.info(`[OPENCTI] Platform started ${Date.now() - startTime} ms`);
   } catch (_mainError) {
     process.exit(1);
@@ -65,6 +68,8 @@ export const platformStop = async () => {
   const stopTime = new Date().getTime();
   // Shutdown the liveness probe
   await stopLivenessServer();
+  // Stop the engine health monitoring CRON
+  stopEngineHealthMonitor();
   // Shutdown the cache manager
   await cacheManager.shutdown();
   // Destroy the modules

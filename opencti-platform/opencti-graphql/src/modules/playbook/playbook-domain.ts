@@ -16,17 +16,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS } from '../../config/conf';
-import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, stixLoadById, stixLoadByIds, stixLoadByFilters, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { deleteAllPlaybookExecutions, notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EditInput, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
+import { type EditInput, type FilterGroup, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS, type StreamConfiguration } from './playbook-components';
 import xtmOneClient from '../xtm/one/xtm-one-client';
+import { getEnrollmentEligibility, excludeEntitiesByIds, matchPlaybooksToEntities, type StixFilterMatchFn, ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT } from './playbook-enrollment';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -41,6 +42,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
 import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
 import { type SharingConfiguration } from './components/sharing-component';
+import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -86,25 +88,44 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
   return filteredPlaybooks;
 };
 
+const getEligiblePlaybooksForEnrollment = async (context: AuthContext) => {
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  return playbooks.map(getEnrollmentEligibility).filter((e): e is NonNullable<typeof e> => e !== null);
+};
+
 export const findPlaybooksForEnrollment = async (
   context: AuthContext,
+  user: AuthUser,
+  ids: string[],
 ) => {
   await checkEnterpriseEdition(context);
-  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
-  const filteredPlaybooks: BasicStoreEntityPlaybook[] = [];
-  for (const playbook of playbooks) {
-    if (playbook.playbook_definition) {
-      const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
-      const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
-      if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
-        const { canEnrollManually } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
-        const isAvailableForManualEnrollment = canEnrollManually ?? true;
-        if (!isAvailableForManualEnrollment) continue;
-        filteredPlaybooks.push(playbook);
-      }
-    }
-  }
-  return filteredPlaybooks;
+  const eligible = await getEligiblePlaybooksForEnrollment(context);
+  if (eligible.length === 0) return [];
+  const cappedIds = ids.slice(0, ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT);
+  const stixEntities = await stixLoadByIds(context, user, cappedIds);
+  const isEntityMatchingFilterGroup: StixFilterMatchFn = (entity, filters) => isStixMatchFilterGroup(context, SYSTEM_USER, entity, filters);
+  return matchPlaybooksToEntities(eligible, stixEntities, isEntityMatchingFilterGroup);
+};
+
+export const findPlaybooksForEnrollmentByFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  filters: FilterGroup | null,
+  search: string | null,
+  excludedIds: string[],
+): Promise<BasicStoreEntityPlaybook[]> => {
+  await checkEnterpriseEdition(context);
+  const eligible = await getEligiblePlaybooksForEnrollment(context);
+  if (eligible.length === 0) return [];
+  const stixEntities = await stixLoadByFilters(context, user, [ABSTRACT_STIX_CORE_OBJECT], {
+    filters: filters ?? undefined,
+    search: search ?? undefined,
+    maxSize: ENROLLMENT_PLAYBOOK_EVALUATION_LIMIT,
+  });
+  const filteredEntities = excludeEntitiesByIds(stixEntities, excludedIds);
+  if (filteredEntities.length === 0) return [];
+  const isEntityMatchingFilterGroup: StixFilterMatchFn = (entity, filterGroup) => isStixMatchFilterGroup(context, SYSTEM_USER, entity, filterGroup);
+  return matchPlaybooksToEntities(eligible, filteredEntities, isEntityMatchingFilterGroup);
 };
 
 // IDs of playbook components that delegate their work to an XTM One agent
@@ -159,9 +180,27 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
+// Enforce the AI-agent `run_as` guardrail on a node configuration: the
+// agent runs on behalf of the configured user, so only the author
+// themselves or a service account may be selected. Components without a
+// `run_as` value are a no-op (see assertRunAsUserAllowed). The
+// configuration can be a raw client-provided JSON string (insert path),
+// so a parse failure is treated as "no run_as" rather than throwing here.
+const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configuration?: string | null) => {
+  if (!configuration) return;
+  let parsed: { run_as?: string | { label?: string; value?: string } | null };
+  try {
+    parsed = JSON.parse(configuration);
+  } catch {
+    return;
+  }
+  await assertRunAsUserAllowed(context, user, parsed.run_as);
+};
+
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
+  await validateNodeRunAs(context, user, configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -217,6 +256,7 @@ export const playbookReplaceNode = async (
 ) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
+  await validateNodeRunAs(context, user, configuration);
 
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
@@ -272,6 +312,7 @@ export const playbookInsertNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
+  await validateNodeRunAs(context, user, input.configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -449,6 +490,14 @@ export const playbookDelete = async (context: AuthContext, user: AuthUser, playb
 
 export const playbookEdit = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   await checkEnterpriseEdition(context);
+  // The editor sets the definition through the granular node mutations, never
+  // through playbookFieldPatch, but the field patch is exposed on the API and
+  // could be used to persist a whole definition directly. Re-validate the
+  // run_as guardrail on any such crafted call so it cannot be bypassed.
+  const definitionInput = input.find((editInput) => editInput.key === 'playbook_definition');
+  if (definitionInput) {
+    await assertDefinitionRunAsAllowed(context, user, definitionInput.value?.[0]);
+  }
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
@@ -482,7 +531,10 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
   }
   const config = parsedData.configuration;
   const updatedPlaybookDefinition = updateImportedPlaybookDefinitionScope(config.playbook_definition, parsedData.openCTI_version);
-  config.playbook_definition = updatedPlaybookDefinition;
+  // Imported definitions carry user ids from another platform; reset any
+  // disallowed AI-agent run_as to the importing user so the import cannot set
+  // up an impersonation, without hard-failing on now-unknown foreign ids.
+  config.playbook_definition = await sanitizeDefinitionRunAs(context, user, updatedPlaybookDefinition);
 
   const importData = {
     name: config.name,
@@ -511,13 +563,17 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
 
 export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id: string) => {
   const playbook = await findById(context, user, id);
+  // The source may run an AI-agent node as another (real) user; reset any
+  // disallowed run_as to the user performing the duplication so the copy
+  // cannot be used to keep impersonating that user.
+  const playbook_definition = (await sanitizeDefinitionRunAs(context, user, playbook.playbook_definition)) ?? undefined;
   const newPlaybook = {
     name: `${playbook.name} - copy`,
     description: playbook.description,
     playbook_running: false,
     playbook_start: playbook.playbook_start,
     playbook_mode: playbook.playbook_mode as string,
-    playbook_definition: playbook.playbook_definition,
+    playbook_definition,
   };
   const importPlaybook = await createPlaybook(context, user, newPlaybook);
   const importPlaybookId = importPlaybook.id;

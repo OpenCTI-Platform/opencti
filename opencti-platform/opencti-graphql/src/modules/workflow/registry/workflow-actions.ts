@@ -3,6 +3,57 @@ import { draftWorkspaceEditAuthorizedMembers, validateDraftWorkspace } from '../
 import type { AsyncActionSlot, Context } from '../types/workflow-types';
 import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
+import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
+import type { MemberAccessInput } from '../../../generated/graphql';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
+import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+
+/**
+ * Resolves dynamic authorized member keys (AUTHOR, CREATORS, ASSIGNEES, PARTICIPANTS)
+ */
+const resolveDynamicAuthorizedMembers = (
+  entity: any,
+  rawMembers: Array<{ id: string; access_right: string; groups_restriction_ids?: string[] }>,
+): MemberAccessInput[] => {
+  const resolved: MemberAccessInput[] = [];
+  for (const member of rawMembers) {
+    const { id, access_right, groups_restriction_ids } = member;
+    if (id === 'AUTHOR') {
+      // AUTHOR resolves to the STIX author of the draft (the createdBy entity, typically an Organization).
+      const createdByRef = entity[RELATION_CREATED_BY];
+      const createdByIds: string[] = Array.isArray(createdByRef)
+        ? createdByRef
+        : (createdByRef ? [createdByRef] : []);
+      for (const authorId of createdByIds) {
+        if (authorId) resolved.push({ id: authorId, access_right, groups_restriction_ids });
+      }
+    } else if (id === 'CREATORS') {
+      const creatorIds: string[] = Array.isArray(entity.creator_id)
+        ? entity.creator_id
+        : (entity.creator_id ? [entity.creator_id] : []);
+      for (const creatorId of creatorIds) {
+        if (creatorId) resolved.push({ id: creatorId, access_right, groups_restriction_ids });
+      }
+    } else if (id === 'ASSIGNEES') {
+      const assigneeIds: string[] = Array.isArray(entity[RELATION_OBJECT_ASSIGNEE])
+        ? entity[RELATION_OBJECT_ASSIGNEE]
+        : (entity[RELATION_OBJECT_ASSIGNEE] ? [entity[RELATION_OBJECT_ASSIGNEE]] : []);
+      for (const assigneeId of assigneeIds) {
+        if (assigneeId) resolved.push({ id: assigneeId, access_right, groups_restriction_ids });
+      }
+    } else if (id === 'PARTICIPANTS') {
+      const participantIds: string[] = Array.isArray(entity[RELATION_OBJECT_PARTICIPANT])
+        ? entity[RELATION_OBJECT_PARTICIPANT]
+        : (entity[RELATION_OBJECT_PARTICIPANT] ? [entity[RELATION_OBJECT_PARTICIPANT]] : []);
+      for (const participantId of participantIds) {
+        if (participantId) resolved.push({ id: participantId, access_right, groups_restriction_ids });
+      }
+    } else {
+      resolved.push({ id, access_right, groups_restriction_ids });
+    }
+  }
+  return resolved;
+};
 
 export type ActionFunction<TContext extends Context = Context> = (executionContext: TContext, params?: any) => Promise<void> | void;
 
@@ -36,8 +87,20 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     await validateDraftWorkspace(context, user, entity.id);
   },
   updateAuthorizedMembers: async (executionContext, params) => {
-    const { entity, user, context } = executionContext;
-    await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, params?.authorized_members);
+    const { entity, context, user } = executionContext;
+    const rawMembers: Array<{ id: string; access_right: string; groups_restriction_ids?: string[] }> = params?.authorized_members ?? [];
+    const resolvedMembers = resolveDynamicAuthorizedMembers(entity, rawMembers);
+
+    if (entity?.entity_type === 'DraftWorkspace') {
+      await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, resolvedMembers);
+    } else {
+      await editAuthorizedMembers(context, user, {
+        entityId: entity.id ?? entity.internal_id,
+        input: resolvedMembers,
+        requiredCapabilities: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS],
+        entityType: entity.entity_type,
+      });
+    }
   },
   /**
    * asyncBulkAction: spawns a BackgroundTask + Work via createListTask.

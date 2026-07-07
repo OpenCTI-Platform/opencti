@@ -7,7 +7,7 @@
     "requireindex": "1.2.0"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "8.60.1"
+    "@typescript-eslint/parser": "8.62.1"
   },
   "peerDependencies": {
     "eslint": ">=7"

@@ -49,6 +49,7 @@ type WorkflowEntityRef {
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
+    workflow_published_version_id: String
 }
 
 type WorkflowDefinitionMutationResult {
@@ -126,12 +127,12 @@ type WorkflowInstance {
 }
 
 extend type DraftWorkspace {
-    workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+    workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
 }
 
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+    workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 

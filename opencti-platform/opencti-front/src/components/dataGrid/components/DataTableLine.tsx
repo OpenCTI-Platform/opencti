@@ -9,6 +9,7 @@ import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
+import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
 
 const cellContainerStyle = (theme: Theme) => ({
   display: 'flex',
@@ -118,6 +119,7 @@ const DataTableLine = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { redirectionMode },
     },
+    formatter: { t_i18n },
   } = useDataTableContext();
 
   const data = useLineData(row);
@@ -141,8 +143,10 @@ const DataTableLine = ({
 
   const handleNavigate = (event: React.MouseEvent) => {
     if (!navigable || !link) return;
+    event.preventDefault();
+    event.stopPropagation();
 
-    if (event.ctrlKey) {
+    if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
     } else {
       navigate(link);
@@ -188,8 +192,9 @@ const DataTableLine = ({
         style={linkStyle}
         href={navigable ? link : undefined}
         // We need both to handle accessibility and widget.
-        onMouseDown={variant === DataTableVariant.widget ? handleNavigate : undefined}
-        onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
+        onClick={variant !== DataTableVariant.widget
+          ? handleRowClick
+          : (variant === DataTableVariant.widget ? handleNavigate : undefined)}
         data-testid={getMainRepresentative(data)}
       >
         {(startsWithAction || startsWithIcon) && (
@@ -200,7 +205,7 @@ const DataTableLine = ({
               width: startColumnWidth,
             }}
           >
-            { startsWithAction && (
+            {startsWithAction && (
               <Checkbox
                 onClick={handleSelectLine}
                 sx={{
@@ -245,7 +250,7 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton onClick={() => (link ? navigate(link) : undefined)}>
+              <IconButton aria-label={t_i18n('Open link')} onClick={() => (link ? navigate(link) : undefined)}>
                 <KeyboardArrowRightOutlined />
               </IconButton>
             )}

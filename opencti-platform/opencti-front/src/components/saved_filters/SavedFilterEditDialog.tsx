@@ -6,17 +6,13 @@ import { Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import { useFormatter } from 'src/components/i18n';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
-import { invalidateConnection } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
 import useGranted, { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
 import { AccessRight, type AuthorizedMemberOption } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
-import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Security from '../../utils/Security';
-import useHelper from '../../utils/hooks/useHelper';
 
 const savedFilterFieldPatchMutation = graphql`
   mutation SavedFilterEditDialogFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -62,7 +58,7 @@ type SavedFilterEditDialogProps = {
   onClose: () => void;
   isOpen: boolean;
   savedFilter: SavedFiltersSelectionData;
-  localStorageKey: string;
+  onSaved?: () => void;
 };
 
 interface SavedFilterEditFormValues {
@@ -74,16 +70,20 @@ const SavedFilterEditDialog = ({
   isOpen,
   onClose,
   savedFilter,
-  localStorageKey,
+  onSaved,
 }: SavedFilterEditDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const hasShareFilterCapability = useGranted([KNOWLEDGE_KNSHAREFILTERS]);
 
-  const { isFeatureEnable } = useHelper();
-  const isSharingSavedFiltersFeatureEnabled = isFeatureEnable('SHARE_FILTERS');
-
-  const owner = { id: me.id, name: me.name, entity_type: 'User' };
+  const ownerMember = savedFilter.authorizedMembers?.find((a) => a.member_id === savedFilter.creator_id);
+  const owner = ownerMember
+    ? {
+        id: ownerMember.member_id,
+        name: ownerMember.name,
+        entity_type: ownerMember.entity_type,
+      }
+    : { id: me.id, name: me.name, entity_type: 'User' };
 
   const [commitFieldPatch] = useApiMutation(
     savedFilterFieldPatchMutation,
@@ -96,12 +96,6 @@ const SavedFilterEditDialog = ({
   );
 
   const handleSubmit = (values: SavedFilterEditFormValues) => {
-    const filters = getSavedFilterScopeFilter(localStorageKey);
-
-    const updater = (store: RecordSourceSelectorProxy) => {
-      invalidateConnection(store, 'SavedFilters_savedFilters', { filters });
-    };
-
     // Update name
     if (values.name !== savedFilter.name) {
       commitFieldPatch({
@@ -109,12 +103,12 @@ const SavedFilterEditDialog = ({
           id: savedFilter.id,
           input: [{ key: 'name', value: [values.name] }],
         },
-        updater,
+        onCompleted: () => onSaved?.(),
       });
     }
 
     // Update authorized members
-    if (isSharingSavedFiltersFeatureEnabled && hasShareFilterCapability && values.authorized_members) {
+    if (hasShareFilterCapability && values.authorized_members) {
       const memberAccessInput = values.authorized_members.map((m: AuthorizedMemberOption) => ({
         id: m.value,
         access_right: m.accessRight,
@@ -124,7 +118,7 @@ const SavedFilterEditDialog = ({
           id: savedFilter.id,
           input: memberAccessInput,
         },
-        updater,
+        onCompleted: () => onSaved?.(),
       });
     }
 
@@ -167,16 +161,12 @@ const SavedFilterEditDialog = ({
               value={values.name}
               onChange={(e) => setFieldValue('name', e.target.value)}
             />
-            {isSharingSavedFiltersFeatureEnabled
-              && (
-                <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
-                  <SavedFilterSharingSection
-                    owner={owner}
-                    isEditMode
-                  />
-                </Security>
-              )
-            }
+            <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
+              <SavedFilterSharingSection
+                owner={owner}
+                isEditMode
+              />
+            </Security>
             <DialogActions>
               <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={!values.name}>{t_i18n('Save')}</Button>

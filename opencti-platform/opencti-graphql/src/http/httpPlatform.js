@@ -14,6 +14,7 @@ import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
@@ -112,7 +113,10 @@ export const decodeStoragePath = (fileParts = []) => fileParts
 
 const createApp = async (app, schema) => {
   // Init the http server
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  const defaultTrustedProxies = ['loopback', 'linklocal', 'uniquelocal'];
+  const extraProxies = nconf.get('trust_proxy_addresses') || [];
+  const trustedProxies = [...defaultTrustedProxies, ...extraProxies];
+  app.set('trust proxy', trustedProxies);
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
@@ -128,6 +132,13 @@ const createApp = async (app, schema) => {
     } else {
       defaultSecurityMiddleware(req, res, next);
     }
+  });
+
+  // -- robots.txt: disallow all crawlers on every path
+  app.get(`${basePath}/robots.txt`, (_req, res) => {
+    res.type('text/plain');
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send('User-agent: *\nDisallow: /\n');
   });
 
   // complement the <meta name="robots" tag in index.html
@@ -487,6 +498,12 @@ const createApp = async (app, schema) => {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await sessionAuthenticateUser(context, req, logged, provider);
+      // Check IP whitelist after successful auth
+      const ipBlocked = await checkIpWhitelistForRequest(req, logged.id);
+      if (ipBlocked) {
+        req.session.destroy(() => {});
+        setCookieError(res, 'Your IP address is not allowed to access this platform');
+      }
     } catch (err) {
       if (err instanceof AuthenticationProviderError) {
         setCookieError(res, err.message);

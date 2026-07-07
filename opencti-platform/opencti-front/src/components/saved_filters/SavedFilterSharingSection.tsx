@@ -30,9 +30,11 @@ const SavedFilterSharingSection = ({
             component={AuthorizedMembersField}
             owner={owner}
             enableAccesses
+            showAllMembersLine
             addMeUserWithAdminRights={!isEditMode}
             hideInfo
             customAccessRights={['view', 'admin']}
+            disableOwnerAccessRightsEdition
           />
         </AccordionDetails>
       </Accordion>

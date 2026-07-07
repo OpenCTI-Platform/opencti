@@ -67,6 +67,11 @@ const auditsDistributionListDistributionQuery = graphql`
           id
           entity_type
         }
+        ... on InternalObject {
+          representative {
+            main
+          }
+        }
         ... on StixObject {
           representative {
             main
@@ -80,9 +85,6 @@ const auditsDistributionListDistributionQuery = graphql`
         # objects without representative
         ... on Creator {
           entity_type
-          name
-        }
-        ... on Group {
           name
         }
       }
