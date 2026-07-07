@@ -938,6 +938,9 @@ workflows:
           filters:
             tags:
               only: /.*/
+            branches:
+              only:
+                - master
       - wait_for_connector_release:
           filters:
             tags:
