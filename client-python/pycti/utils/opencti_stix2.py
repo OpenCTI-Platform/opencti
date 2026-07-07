@@ -123,6 +123,9 @@ class OpenCTIStix2:
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
+        self._readers = None
+        self._stix_helpers = None
+        self._internal_helpers = None
 
     def get_in_cache(self, data_id):
         """Get an item from the cache.
@@ -1096,52 +1099,54 @@ class OpenCTIStix2:
         :return: Dictionary mapping entity types to read functions
         :rtype: dict
         """
-        return {
-            "Attack-Pattern": self.opencti.attack_pattern.read,
-            "Campaign": self.opencti.campaign.read,
-            "Case-Incident": self.opencti.case_incident.read,
-            "Case-Rfi": self.opencti.case_rfi.read,
-            "Case-Rft": self.opencti.case_rft.read,
-            "Channel": self.opencti.channel.read,
-            "Course-Of-Action": self.opencti.course_of_action.read,
-            "Data-Component": self.opencti.data_component.read,
-            "Data-Source": self.opencti.data_source.read,
-            "Event": self.opencti.event.read,
-            "External-Reference": self.opencti.external_reference.read,
-            "Feedback": self.opencti.feedback.read,
-            "Grouping": self.opencti.grouping.read,
-            "Incident": self.opencti.incident.read,
-            "Identity": self.opencti.identity.read,
-            "Indicator": self.opencti.indicator.read,
-            "Infrastructure": self.opencti.infrastructure.read,
-            "Intrusion-Set": self.opencti.intrusion_set.read,
-            "Kill-Chain-Phase": self.opencti.kill_chain_phase.read,
-            "Label": self.opencti.label.read,
-            "Location": self.opencti.location.read,
-            "Language": self.opencti.language.read,
-            "Malware": self.opencti.malware.read,
-            "Malware-Analysis": self.opencti.malware_analysis.read,
-            "Marking-Definition": self.opencti.marking_definition.read,
-            "Narrative": self.opencti.narrative.read,
-            "Note": self.opencti.note.read,
-            "Observed-Data": self.opencti.observed_data.read,
-            "Opinion": self.opencti.opinion.read,
-            "Report": self.opencti.report.read,
-            "Stix-Core-Object": self.opencti.stix_core_object.read,
-            "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
-            "Stix-Domain-Object": self.opencti.stix_domain_object.read,
-            "stix-core-relationship": self.opencti.stix_core_relationship.read,
-            "stix-sighting-relationship": self.opencti.stix_sighting_relationship.read,
-            "stix-nested-relationship": self.opencti.stix_nested_ref_relationship.read,
-            "Task": self.opencti.task.read,
-            "Threat-Actor": self.opencti.threat_actor.read,
-            "Threat-Actor-Group": self.opencti.threat_actor_group.read,
-            "Threat-Actor-Individual": self.opencti.threat_actor_individual.read,
-            "Tool": self.opencti.tool.read,
-            "Vocabulary": self.opencti.vocabulary.read,
-            "Vulnerability": self.opencti.vulnerability.read,
-            "Security-Coverage": self.opencti.security_coverage.read,
-        }
+        if self._readers is None:
+            self._readers = {
+                "Attack-Pattern": self.opencti.attack_pattern.read,
+                "Campaign": self.opencti.campaign.read,
+                "Case-Incident": self.opencti.case_incident.read,
+                "Case-Rfi": self.opencti.case_rfi.read,
+                "Case-Rft": self.opencti.case_rft.read,
+                "Channel": self.opencti.channel.read,
+                "Course-Of-Action": self.opencti.course_of_action.read,
+                "Data-Component": self.opencti.data_component.read,
+                "Data-Source": self.opencti.data_source.read,
+                "Event": self.opencti.event.read,
+                "External-Reference": self.opencti.external_reference.read,
+                "Feedback": self.opencti.feedback.read,
+                "Grouping": self.opencti.grouping.read,
+                "Incident": self.opencti.incident.read,
+                "Identity": self.opencti.identity.read,
+                "Indicator": self.opencti.indicator.read,
+                "Infrastructure": self.opencti.infrastructure.read,
+                "Intrusion-Set": self.opencti.intrusion_set.read,
+                "Kill-Chain-Phase": self.opencti.kill_chain_phase.read,
+                "Label": self.opencti.label.read,
+                "Location": self.opencti.location.read,
+                "Language": self.opencti.language.read,
+                "Malware": self.opencti.malware.read,
+                "Malware-Analysis": self.opencti.malware_analysis.read,
+                "Marking-Definition": self.opencti.marking_definition.read,
+                "Narrative": self.opencti.narrative.read,
+                "Note": self.opencti.note.read,
+                "Observed-Data": self.opencti.observed_data.read,
+                "Opinion": self.opencti.opinion.read,
+                "Report": self.opencti.report.read,
+                "Stix-Core-Object": self.opencti.stix_core_object.read,
+                "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
+                "Stix-Domain-Object": self.opencti.stix_domain_object.read,
+                "stix-core-relationship": self.opencti.stix_core_relationship.read,
+                "stix-sighting-relationship": self.opencti.stix_sighting_relationship.read,
+                "stix-nested-relationship": self.opencti.stix_nested_ref_relationship.read,
+                "Task": self.opencti.task.read,
+                "Threat-Actor": self.opencti.threat_actor.read,
+                "Threat-Actor-Group": self.opencti.threat_actor_group.read,
+                "Threat-Actor-Individual": self.opencti.threat_actor_individual.read,
+                "Tool": self.opencti.tool.read,
+                "Vocabulary": self.opencti.vocabulary.read,
+                "Vulnerability": self.opencti.vulnerability.read,
+                "Security-Coverage": self.opencti.security_coverage.read,
+            }
+        return self._readers
 
     def get_reader(self, entity_type: str):
         """Get the appropriate reader function for a given entity type.
@@ -1176,54 +1181,55 @@ class OpenCTIStix2:
         :return: Dictionary mapping STIX types to generate_id functions
         :rtype: dict
         """
-        # Import
-        return {
-            # entities
-            "attack-pattern": self.opencti.attack_pattern,
-            "campaign": self.opencti.campaign,
-            "note": self.opencti.note,
-            "observed-data": self.opencti.observed_data,
-            "opinion": self.opencti.opinion,
-            "report": self.opencti.report,
-            "course-of-action": self.opencti.course_of_action,
-            "identity": self.opencti.identity,
-            "infrastructure": self.opencti.infrastructure,
-            "intrusion-set": self.opencti.intrusion_set,
-            "location": self.opencti.location,
-            "malware": self.opencti.malware,
-            "threat-actor": self.opencti.threat_actor,
-            "tool": self.opencti.tool,
-            "vulnerability": self.opencti.vulnerability,
-            "incident": self.opencti.incident,
-            "x-opencti-incident": self.opencti.incident,
-            "marking-definition": self.opencti.marking_definition,
-            "case-rfi": self.opencti.case_rfi,
-            "x-opencti-case-rfi": self.opencti.case_rfi,
-            "case-rft": self.opencti.case_rft,
-            "x-opencti-case-rft": self.opencti.case_rft,
-            "case-incident": self.opencti.case_incident,
-            "x-opencti-case-incident": self.opencti.case_incident,
-            "feedback": self.opencti.feedback,
-            "x-opencti-feedback": self.opencti.feedback,
-            "channel": self.opencti.channel,
-            "data-component": self.opencti.data_component,
-            "x-mitre-data-component": self.opencti.data_component,
-            "data-source": self.opencti.data_source,
-            "x-mitre-data-source": self.opencti.data_source,
-            "event": self.opencti.event,
-            "grouping": self.opencti.grouping,
-            "indicator": self.opencti.indicator,
-            "language": self.opencti.language,
-            "malware-analysis": self.opencti.malware_analysis,
-            "narrative": self.opencti.narrative,
-            "task": self.opencti.task,
-            "x-opencti-task": self.opencti.task,
-            "security-coverage": self.opencti.security_coverage,
-            "vocabulary": self.opencti.vocabulary,
-            # relationships
-            "relationship": self.opencti.stix_core_relationship,
-            "sighting": self.opencti.stix_sighting_relationship,
-        }
+        if self._stix_helpers is None:
+            self._stix_helpers = {
+                # entities
+                "attack-pattern": self.opencti.attack_pattern,
+                "campaign": self.opencti.campaign,
+                "note": self.opencti.note,
+                "observed-data": self.opencti.observed_data,
+                "opinion": self.opencti.opinion,
+                "report": self.opencti.report,
+                "course-of-action": self.opencti.course_of_action,
+                "identity": self.opencti.identity,
+                "infrastructure": self.opencti.infrastructure,
+                "intrusion-set": self.opencti.intrusion_set,
+                "location": self.opencti.location,
+                "malware": self.opencti.malware,
+                "threat-actor": self.opencti.threat_actor,
+                "tool": self.opencti.tool,
+                "vulnerability": self.opencti.vulnerability,
+                "incident": self.opencti.incident,
+                "x-opencti-incident": self.opencti.incident,
+                "marking-definition": self.opencti.marking_definition,
+                "case-rfi": self.opencti.case_rfi,
+                "x-opencti-case-rfi": self.opencti.case_rfi,
+                "case-rft": self.opencti.case_rft,
+                "x-opencti-case-rft": self.opencti.case_rft,
+                "case-incident": self.opencti.case_incident,
+                "x-opencti-case-incident": self.opencti.case_incident,
+                "feedback": self.opencti.feedback,
+                "x-opencti-feedback": self.opencti.feedback,
+                "channel": self.opencti.channel,
+                "data-component": self.opencti.data_component,
+                "x-mitre-data-component": self.opencti.data_component,
+                "data-source": self.opencti.data_source,
+                "x-mitre-data-source": self.opencti.data_source,
+                "event": self.opencti.event,
+                "grouping": self.opencti.grouping,
+                "indicator": self.opencti.indicator,
+                "language": self.opencti.language,
+                "malware-analysis": self.opencti.malware_analysis,
+                "narrative": self.opencti.narrative,
+                "task": self.opencti.task,
+                "x-opencti-task": self.opencti.task,
+                "security-coverage": self.opencti.security_coverage,
+                "vocabulary": self.opencti.vocabulary,
+                # relationships
+                "relationship": self.opencti.stix_core_relationship,
+                "sighting": self.opencti.stix_sighting_relationship,
+            }
+        return self._stix_helpers
 
     def get_internal_helper(self):
         """Get a dictionary mapping internal types to their helper functions.
@@ -1231,22 +1237,23 @@ class OpenCTIStix2:
         :return: Dictionary mapping internal types to generate_id functions
         :rtype: dict
         """
-        # Import
-        return {
-            "user": self.opencti.user,
-            "group": self.opencti.group,
-            "capability": self.opencti.capability,
-            "role": self.opencti.role,
-            "settings": self.opencti.settings,
-            "work": self.opencti.work,
-            "deleteoperation": self.opencti.trash,
-            "draftworkspace": self.opencti.draft,
-            "playbook": self.opencti.playbook,
-            "workspace": self.opencti.workspace,
-            "publicdashboard": self.opencti.public_dashboard,
-            "notification": self.opencti.notification,
-            "internalfile": self.opencti.internal_file,
-        }
+        if self._internal_helpers is None:
+            self._internal_helpers = {
+                "user": self.opencti.user,
+                "group": self.opencti.group,
+                "capability": self.opencti.capability,
+                "role": self.opencti.role,
+                "settings": self.opencti.settings,
+                "work": self.opencti.work,
+                "deleteoperation": self.opencti.trash,
+                "draftworkspace": self.opencti.draft,
+                "playbook": self.opencti.playbook,
+                "workspace": self.opencti.workspace,
+                "publicdashboard": self.opencti.public_dashboard,
+                "notification": self.opencti.notification,
+                "internalfile": self.opencti.internal_file,
+            }
+        return self._internal_helpers
 
     def generate_standard_id_from_stix(self, data):
         """Generate a standard ID from STIX data.
