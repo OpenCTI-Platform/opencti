@@ -720,7 +720,7 @@ export const completeSpecialFilterKeys = async (
   }
   for (let index = 0; index < filters.length; index += 1) {
     const filter = filters[index];
-    const { key, operator } = filter;
+    const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
     if (arrayKeys.some((filterKey) => isComplexConversionFilterKey(filterKey))) {
       if (arrayKeys.length > 1) {
@@ -851,7 +851,6 @@ export const completeSpecialFilterKeys = async (
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey))
       && !arrayKeys.some((filterKey) => filterKey === 'connections')
-      && !['script', 'internal_script'].includes(operator ?? 'eq')
     ) {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
