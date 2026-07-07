@@ -187,7 +187,6 @@
     "@filigran/chatbot/uuid": "14.0.1",
     "@types/pdfmake": "0.3.3",
     "axios": "1.18.1",
-    "cookie": "1.1.1",
     "d3-color": "3.1.0",
     "glob-parent": "6.0.2",
     "json5": "2.2.3",
@@ -196,9 +195,6 @@
     "unrs-resolver": "1.11.1"
   },
   "dependenciesMeta": {
-    "canvas": {
-      "built": false
-    },
     "core-js": {
       "built": false
     },

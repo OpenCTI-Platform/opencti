@@ -7356,7 +7356,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:1.1.1":
+"cookie@npm:^1.1.1":
   version: 1.1.1
   resolution: "cookie@npm:1.1.1"
   checksum: 10c0/79c4ddc0fcad9c4f045f826f42edf54bcc921a29586a4558b0898277fa89fb47be95bc384c2253f493af7b29500c830da28341274527328f18eba9f58afa112c
@@ -13306,8 +13306,6 @@ __metadata:
     vitest: "npm:4.1.9"
     yup: "npm:1.7.1"
   dependenciesMeta:
-    canvas:
-      built: false
     core-js:
       built: false
     esbuild:
