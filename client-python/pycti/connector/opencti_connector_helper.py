@@ -61,6 +61,9 @@ TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
 """List of string values considered as boolean False."""
 
+DIRECTORY_RETENTION_CLEANUP_INTERVAL_SECONDS = 60
+"""Minimum interval between full directory retention scans."""
+
 app = FastAPI()
 
 
@@ -2168,6 +2171,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             isNumber=True,
             default=7,
         )
+        self._directory_cleanup_lock = threading.Lock()
+        self._directory_cleanup_deadlines = {}
         # S3 send mode configuration
         self.bundle_send_to_s3 = get_config_variable(
             "CONNECTOR_SEND_TO_S3",
@@ -2606,7 +2611,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connect_name.lower().replace(" ", "_")
             + "-"
             + time.strftime("%Y%m%d-%H%M%S-")
-            + str(time.time())
+            + str(uuid.uuid4())
             + ".json"
         )
 
@@ -2741,6 +2746,33 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_logger.warning(
                 "Failed to cleanup old S3 bundles", {"error": str(e)}
             )
+
+    def _cleanup_old_directory_bundles(
+        self, directory_path: str, retention_days: int
+    ) -> None:
+        """Delete expired directory bundles at most once per cleanup interval."""
+
+        cleanup_key = (directory_path, retention_days)
+        now_monotonic = time.monotonic()
+        with self._directory_cleanup_lock:
+            next_cleanup_at = self._directory_cleanup_deadlines.get(cleanup_key, 0)
+            if now_monotonic < next_cleanup_at:
+                return
+            self._directory_cleanup_deadlines[cleanup_key] = (
+                now_monotonic + DIRECTORY_RETENTION_CLEANUP_INTERVAL_SECONDS
+            )
+
+        cutoff_time = time.time() - 86400 * retention_days
+        for filename in os.listdir(directory_path):
+            if not filename.endswith(".json"):
+                continue
+            file_location = os.path.join(directory_path, filename)
+            try:
+                if os.stat(file_location).st_mtime < cutoff_time:
+                    os.remove(file_location)
+            except FileNotFoundError:
+                # Another sender or cleanup process already removed the file.
+                continue
 
     def stop(self) -> None:
         """Stop the connector and clean up resources.
@@ -3776,17 +3808,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             # Maintains the list of files under control
             if bundle_send_to_directory_retention > 0:  # If 0, disable the auto remove
-                current_time = time.time()
-                for f in os.listdir(bundle_send_to_directory_path):
-                    if f.endswith(".json"):
-                        file_location = os.path.join(bundle_send_to_directory_path, f)
-                        file_time = os.stat(file_location).st_mtime
-                        is_expired_file = (
-                            file_time
-                            < current_time - 86400 * bundle_send_to_directory_retention
-                        )  # 86400 = 1 day
-                        if is_expired_file:
-                            os.remove(file_location)
+                self._cleanup_old_directory_bundles(
+                    bundle_send_to_directory_path,
+                    bundle_send_to_directory_retention,
+                )
             # Write the bundle to target directory
             with open(write_file, "w") as f:
                 str_bundle = json.dumps(message_bundle)
