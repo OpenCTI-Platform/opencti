@@ -10436,16 +10436,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-proxy-middleware@npm:4.1.1":
-  version: 4.1.1
-  resolution: "http-proxy-middleware@npm:4.1.1"
+"http-proxy-middleware@npm:4.2.0":
+  version: 4.2.0
+  resolution: "http-proxy-middleware@npm:4.2.0"
   dependencies:
     debug: "npm:^4.4.3"
-    httpxy: "npm:^0.5.3"
+    httpxy: "npm:^0.5.4"
     is-glob: "npm:^4.0.3"
     is-plain-obj: "npm:^4.1.0"
     micromatch: "npm:^4.0.8"
-  checksum: 10c0/51bbabf7141567f2bc985cb9289c1f4360817ed2356f97da9011d906e6861b18d6a7de351379d593b65b74c52ba643c46bcd75c562d71f52526ca7c109b62bbf
+  checksum: 10c0/2e8cffa4ff39f3daa8e4c14a6ba5c227d882c29c9163f5e5a089c69f49245845a09697ed4f6858be7cb840c8bc1c8fa5df49406ed0f753fa84a96283b116dd0b
   languageName: node
   linkType: hard
 
@@ -10469,10 +10469,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"httpxy@npm:^0.5.3":
-  version: 0.5.3
-  resolution: "httpxy@npm:0.5.3"
-  checksum: 10c0/8120753638d1a50b13396d7c55536db076a04609dfb7eea19f5b461f9541acf4646fa6bfb8991f14bad62e0037b524481c5d625892b4ff94a6ab744149ed9387
+"httpxy@npm:^0.5.4":
+  version: 0.5.4
+  resolution: "httpxy@npm:0.5.4"
+  checksum: 10c0/03353a75a25ab408f2f9b2f250c0b729018e897f85a0562e3e4934c92c5996a0da5505debe94bec4d90b56fc6051ca05f2d9cc55d968fee7b062cba460b3d3de
   languageName: node
   linkType: hard
 
@@ -13482,7 +13482,7 @@ __metadata:
     html-react-parser: "npm:6.1.4"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.33"
-    http-proxy-middleware: "npm:4.1.1"
+    http-proxy-middleware: "npm:4.2.0"
     i18n-auto-translation: "npm:2.2.3"
     invert-color: "npm:2.0.0"
     ipaddr.js: "npm:2.4.0"
