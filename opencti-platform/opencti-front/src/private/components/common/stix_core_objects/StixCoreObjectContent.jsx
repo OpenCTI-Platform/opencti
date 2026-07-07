@@ -6,7 +6,7 @@ import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
@@ -30,7 +30,7 @@ import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useHelper from '../../../../utils/hooks/useHelper';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+import '../../../../utils/pdfWorker-setup';
 
 const styles = (theme) => ({
   container: {

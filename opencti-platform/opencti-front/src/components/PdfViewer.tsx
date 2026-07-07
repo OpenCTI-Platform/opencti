@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import Loader from './Loader';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+import '../utils/pdfWorker-setup';
 
 interface PdfViewerProps {
   pdf: File;
