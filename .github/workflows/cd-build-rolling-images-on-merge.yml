@@ -5,36 +5,75 @@ name: OpenCTI CD Rolling
 on:
   push:
     branches:
-      - master
+      # FIXME change again to target master before merge
+      - issue/16821-docker-wf
 
 jobs:
   # -----------------------
-  # Standard default images
+  # Build platform images
   # -----------------------
-  build-platform-standard:
-    name: Build platform (standard)
+  build-platform:
+    name: Build platform (${{ matrix.variant }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
+          docker_image_suffix: ${{ matrix.suffix }}
 
-  build-worker-standard:
-    name: Build worker (standard)
+  # -----------------------
+  # Build worker images
+  # -----------------------
+  build-worker:
+    name: Build worker (${{ matrix.variant }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
+          docker_image_suffix: ${{ matrix.suffix }}
 
-  generate-sbom-platform-standard:
-    name: Generate SBOM (platform standard)
+  # -----------------------
+  # Generate SBOMs
+  # -----------------------
+  generate-sbom-platform:
+    name: Generate SBOM (platform ${{ matrix.variant }})
     runs-on: ubuntu-latest
-    needs: [build-platform-standard]
+    needs: [build-platform]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/generate-sbom
@@ -42,12 +81,22 @@ jobs:
           tags: '["${{ github.sha }}"]'
           image_name: "filigran/platform"
           source: "artifact"
-          artifact_name: "docker-image-opencti-platform"
+          artifact_name: "docker-image-opencti-platform${{ matrix.suffix }}"
 
-  generate-sbom-worker-standard:
-    name: Generate SBOM (worker standard)
+  generate-sbom-worker:
+    name: Generate SBOM (worker ${{ matrix.variant }})
     runs-on: ubuntu-latest
-    needs: [build-worker-standard]
+    needs: [build-worker]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/generate-sbom
@@ -55,114 +104,12 @@ jobs:
           tags: '["${{ github.sha }}"]'
           image_name: "filigran/worker"
           source: "artifact"
-          artifact_name: "docker-image-opencti-worker"
-
-  # -----------------------
-  # UBI 9 images
-  # -----------------------
-  build-platform-ubi9:
-    name: Build platform (UBI9)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/docker-build-platform
-        with:
-          checkout_ref: ${{ github.sha }}
-          client_python_local: true
-          docker_image_suffix: "_ubi9"
-
-  build-worker-ubi9:
-    name: Build worker (UBI9)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/docker-build-worker
-        with:
-          checkout_ref: ${{ github.sha }}
-          client_python_local: true
-          docker_image_suffix: "_ubi9"
-
-  generate-sbom-platform-ubi9:
-    name: Generate SBOM (platform UBI9)
-    runs-on: ubuntu-latest
-    needs: [build-platform-ubi9]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/generate-sbom
-        with:
-          tags: '["${{ github.sha }}"]'
-          image_name: "filigran/platform"
-          source: "artifact"
-          artifact_name: "docker-image-opencti-platform_ubi9"
-
-  generate-sbom-worker-ubi9:
-    name: Generate SBOM (worker UBI9)
-    runs-on: ubuntu-latest
-    needs: [build-worker-ubi9]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/generate-sbom
-        with:
-          tags: '["${{ github.sha }}"]'
-          image_name: "filigran/worker"
-          source: "artifact"
-          artifact_name: "docker-image-opencti-worker_ubi9"
-
-  # -----------------------
-  # FIPS 9 images
-  # -----------------------
-  build-platform-fips:
-    name: Build platform (FIPS)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/docker-build-platform
-        with:
-          checkout_ref: ${{ github.sha }}
-          client_python_local: true
-          docker_image_suffix: "_fips"
-
-  build-worker-fips:
-    name: Build worker (FIPS)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/docker-build-worker
-        with:
-          checkout_ref: ${{ github.sha }}
-          client_python_local: true
-          docker_image_suffix: "_fips"
-
-  generate-sbom-platform-fips:
-    name: Generate SBOM (platform FIPS)
-    runs-on: ubuntu-latest
-    needs: [build-platform-fips]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/generate-sbom
-        with:
-          tags: '["${{ github.sha }}"]'
-          image_name: "filigran/platform"
-          source: "artifact"
-          artifact_name: "docker-image-opencti-platform_fips"
-
-  generate-sbom-worker-fips:
-    name: Generate SBOM (worker FIPS)
-    runs-on: ubuntu-latest
-    needs: [ build-worker-fips ]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/generate-sbom
-        with:
-          tags: '["${{ github.sha }}"]'
-          image_name: "filigran/worker"
-          source: "artifact"
-          artifact_name: "docker-image-opencti-worker_fips"
+          artifact_name: "docker-image-opencti-worker${{ matrix.suffix }}"
 
   upload-artifacts:
     name: Upload all artifacts
     runs-on: ubuntu-latest
-    needs: [generate-sbom-platform-standard, generate-sbom-platform-ubi9, generate-sbom-platform-fips, generate-sbom-worker-standard, generate-sbom-worker-ubi9, generate-sbom-worker-fips]
+    needs: [generate-sbom-platform, generate-sbom-worker]
     steps:
       - name: Download all SBOM artifacts
         uses: actions/download-artifact@v8
