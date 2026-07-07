@@ -13,7 +13,7 @@ inputs:
     required: false
     default: "false"
   docker_image_suffix:
-    description: "Dockerfile image suffix such as ubi9 or fips"
+    description: "Dockerfile image suffix such as _ubi9 or _fips"
     default: ""
 
 runs:
