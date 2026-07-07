@@ -2,6 +2,7 @@ const esbuild = require('esbuild');
 const {default: importGlobPlugin} = require('esbuild-plugin-import-glob');
 const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql-loader');
 const nativeNodePlugin = require('../plugin/native.node.plugin');
+const nodeGypBuildShimPlugin = require('../plugin/node-gyp-build-shim.plugin');
 const {copy} = require('esbuild-plugin-copy');
 
 esbuild.build({
@@ -11,6 +12,7 @@ esbuild.build({
         importGlobPlugin(),
         graphqlLoaderPlugin(),
         nativeNodePlugin(),
+        nodeGypBuildShimPlugin(),
         copy({
             assets: {
                 from: ['./node_modules/@datadog/pprof/prebuilds/**/*'],

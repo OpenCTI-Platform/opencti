@@ -751,6 +751,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@datadog/pprof@npm:5.14.4":
+  version: 5.14.4
+  resolution: "@datadog/pprof@npm:5.14.4"
+  dependencies:
+    node-gyp: "npm:latest"
+    node-gyp-build: "npm:^4.8.4"
+    pprof-format: "npm:^2.2.1"
+    source-map: "npm:^0.7.4"
+  checksum: 10c0/6386c1660892c9910fa4da9c0b7b76bdfd1b3026da3f4a6457c80a93d3f9f87cbaa5c4f30bb739704e2f88667ef21ec9fc6686d3495692ebd82b810cd529c74e
+  languageName: node
+  linkType: hard
+
 "@datadog/pprof@npm:5.16.0":
   version: 5.16.0
   resolution: "@datadog/pprof@npm:5.16.0"
@@ -760,18 +772,6 @@ __metadata:
     pprof-format: "npm:^2.2.1"
     source-map: "npm:^0.7.4"
   checksum: 10c0/37bc6acd0ec068331ee8391499e23735ab30688e6293ab1077ba04edecf76064d6799604fa2b53619b15ddb46c50ea8c5e59c19ed13f46fad12f132f356a6336
-  languageName: node
-  linkType: hard
-
-"@datadog/pprof@patch:@datadog/pprof@5.16.0#./patch/@datadog-pprof.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 5.16.0
-  resolution: "@datadog/pprof@patch:@datadog/pprof@npm%3A5.16.0#./patch/@datadog-pprof.patch::version=5.16.0&hash=58019d&locator=opencti-graphql%40workspace%3A."
-  dependencies:
-    node-gyp: "npm:latest"
-    node-gyp-build: "npm:^4.8.4"
-    pprof-format: "npm:^2.2.1"
-    source-map: "npm:^0.7.4"
-  checksum: 10c0/a2d52de049dfde297eaaf7d3dee3ac6c4a956ef30dcad0ea980709cf33dbb7e7e39516f24d33c6b606fecd9d87d9446c978c8bf20e53f9e7c2593b339acdeea3
   languageName: node
   linkType: hard
 

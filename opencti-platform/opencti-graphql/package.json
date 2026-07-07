@@ -226,7 +226,6 @@
     "ioredis": "5.8.2",
     "openid-clientv5/jose": "5.10.0",
     "json5": "2.2.3",
-    "@datadog/pprof": "patch:@datadog/pprof@5.16.0#./patch/@datadog-pprof.patch",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.11.1#./patch/node-calls-python.patch",
