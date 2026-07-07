@@ -20,16 +20,25 @@ export interface CustomFieldValue {
   select_value?: string;
 }
 
+// Per-entity-type settings of a custom field definition.
+// `mandatory` and `default_value` are defined for each entity type the field is
+// attached to (US.2), not globally on the definition. Field-intrinsic constraints
+// (field_type, min/max, select_options) stay global on the definition.
+export interface CustomFieldEntityTypeSetting {
+  entity_type: string;
+  mandatory: boolean;
+  default_value?: string;
+}
+
 export interface BasicStoreEntityCustomFieldDefinition extends BasicStoreEntity {
   name: string;
   description: string;
   label: string;
   field_type: CustomFieldType;
   entity_types?: string[];
-  mandatory: boolean;
+  // Per-entity-type mandatory / default_value settings
+  entity_type_settings?: CustomFieldEntityTypeSetting[];
   multiple: boolean;
-  // Common optional
-  default_value?: string;
   // Integer-specific
   min_value?: number;
   max_value?: number;
@@ -43,9 +52,8 @@ export interface StoreEntityCustomFieldDefinition extends StoreEntity {
   label: string;
   field_type: CustomFieldType;
   entity_types?: string[];
-  mandatory: boolean;
+  entity_type_settings?: CustomFieldEntityTypeSetting[];
   multiple: boolean;
-  default_value?: string;
   min_value?: number;
   max_value?: number;
   select_options?: string[];
@@ -57,9 +65,8 @@ export interface StixCustomFieldDefinition extends StixObject {
   label: string;
   field_type: CustomFieldType;
   entity_types?: string[];
-  mandatory: boolean;
+  entity_type_settings?: CustomFieldEntityTypeSetting[];
   multiple: boolean;
-  default_value?: string;
   min_value?: number;
   max_value?: number;
   select_options?: string[];
