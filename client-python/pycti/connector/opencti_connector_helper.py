@@ -64,6 +64,9 @@ FALSY: List[str] = ["no", "false", "False"]
 BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS = 60
 """Minimum interval between full bundle retention scans."""
 
+S3_DELETE_BATCH_SIZE = 1000
+"""Maximum number of object keys accepted by one S3 bulk delete request."""
+
 app = FastAPI()
 
 
@@ -2742,20 +2745,43 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         try:
             paginator = s3_client.get_paginator("list_objects_v2")
             paginate_args = {"Bucket": self.bundle_send_to_s3_bucket, "Prefix": prefix}
+            expired_keys = []
             for page in paginator.paginate(**paginate_args):
                 for obj in page.get("Contents", []):
                     if obj["LastModified"] < cutoff_time:
-                        s3_client.delete_object(
-                            Bucket=self.bundle_send_to_s3_bucket, Key=obj["Key"]
-                        )
-                        self.connector_logger.debug(
-                            "Deleted expired S3 bundle",
-                            {"key": obj["Key"], "modified": str(obj["LastModified"])},
-                        )
+                        expired_keys.append({"Key": obj["Key"]})
+                        if len(expired_keys) == S3_DELETE_BATCH_SIZE:
+                            self._delete_s3_bundle_batch(s3_client, expired_keys)
+                            expired_keys = []
+            if expired_keys:
+                self._delete_s3_bundle_batch(s3_client, expired_keys)
         except Exception as e:
             self.connector_logger.warning(
                 "Failed to cleanup old S3 bundles", {"error": str(e)}
             )
+
+    def _delete_s3_bundle_batch(
+        self, s3_client, expired_keys: List[Dict[str, str]]
+    ) -> None:
+        """Delete one bounded batch of expired S3 bundle keys."""
+
+        response = s3_client.delete_objects(
+            Bucket=self.bundle_send_to_s3_bucket,
+            Delete={"Objects": expired_keys, "Quiet": True},
+        )
+        errors = [] if response is None else response.get("Errors", [])
+        if errors:
+            self.connector_logger.warning(
+                "Failed to delete some expired S3 bundles",
+                {"count": len(errors), "errors": errors},
+            )
+        self.connector_logger.debug(
+            "Deleted expired S3 bundle batch",
+            {
+                "deleted_count": len(expired_keys) - len(errors),
+                "failed_count": len(errors),
+            },
+        )
 
     def _cleanup_old_directory_bundles(
         self, directory_path: str, retention_days: int

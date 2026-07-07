@@ -5,6 +5,9 @@ from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class _NoopLogger:
+    def __init__(self):
+        self.warning_calls = []
+
     def info(self, *args, **kwargs):
         pass
 
@@ -12,7 +15,7 @@ class _NoopLogger:
         pass
 
     def warning(self, *args, **kwargs):
-        pass
+        self.warning_calls.append((args, kwargs))
 
     def error(self, *args, **kwargs):
         pass
@@ -38,6 +41,8 @@ class _FakeS3Client:
         self.list_calls = 0
         self.put_calls = 0
         self.deleted_keys = []
+        self.delete_requests = 0
+        self.delete_errors = []
 
     def put_object(self, **kwargs):
         self.put_calls += 1
@@ -46,8 +51,10 @@ class _FakeS3Client:
         assert name == "list_objects_v2"
         return _FakePaginator(self)
 
-    def delete_object(self, **kwargs):
-        self.deleted_keys.append(kwargs["Key"])
+    def delete_objects(self, **kwargs):
+        self.delete_requests += 1
+        self.deleted_keys.extend(item["Key"] for item in kwargs["Delete"]["Objects"])
+        return {"Errors": self.delete_errors}
 
 
 def _helper(client):
@@ -105,3 +112,49 @@ def test_send_bundle_to_s3_deletes_expired_bundle_on_scan():
     helper._send_bundle_to_s3("{}", "bundle.json")
 
     assert client.deleted_keys == ["bundles/test-retained.json"]
+
+
+def test_send_bundle_to_s3_batches_expired_bundle_deletes():
+    client = _FakeS3Client()
+    client.objects = [
+        {
+            "Key": f"bundles/test-retained-{index}.json",
+            "LastModified": datetime.datetime.now(datetime.timezone.utc)
+            - datetime.timedelta(days=8),
+        }
+        for index in range(1001)
+    ]
+    helper = _helper(client)
+
+    helper._send_bundle_to_s3("{}", "bundle.json")
+
+    assert client.delete_requests == 2
+    assert len(client.deleted_keys) == 1001
+
+
+def test_send_bundle_to_s3_warns_on_partial_bulk_delete_failure():
+    client = _FakeS3Client()
+    client.objects[0]["LastModified"] = datetime.datetime.now(
+        datetime.timezone.utc
+    ) - datetime.timedelta(days=8)
+    client.delete_errors = [
+        {"Key": "bundles/test-retained.json", "Code": "AccessDenied"}
+    ]
+    helper = _helper(client)
+
+    helper._send_bundle_to_s3("{}", "bundle.json")
+
+    assert helper.connector_logger.warning_calls == [
+        (
+            (
+                "Failed to delete some expired S3 bundles",
+                {
+                    "count": 1,
+                    "errors": [
+                        {"Key": "bundles/test-retained.json", "Code": "AccessDenied"}
+                    ],
+                },
+            ),
+            {},
+        )
+    ]
